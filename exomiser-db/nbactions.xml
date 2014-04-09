@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-flyway:migrate</actionName>
+            <displayName>flyway:migrate</displayName>
+            <goals>
+                <goal>compile</goal>
+                <goal>flyway:migrate</goal>
+                
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-flyway:repair</actionName>
+            <displayName>flyway:repair</displayName>
+            <goals>
+                <goal>compile</goal>
+                <goal>flyway:repair</goal>
+            </goals>
+        </action>
+    </actions>

@@ -1,0 +1,1 @@
+INSERT INTO variant SELECT * FROM CSVREAD('${import.path}/variant.pg', 'chromosome|position|ref|alt|aaref|aaalt|aapos|sift|polyphen|mut_taster|phylop','charset=UTF-8 fieldDelimiter='' fieldSeparator=| nullString=NULL');
