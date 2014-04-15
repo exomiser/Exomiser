@@ -34,14 +34,11 @@ public class App {
         DataSource h2DataSource = (DataSource) context.getBean("exomiserH2DataSource");
         DataSource postGresDataSource = (DataSource) context.getBean("exomiserPostgresDataSource");
         Set<ExternalResource> externalResources = (Set<ExternalResource>) context.getBean("externalResources");
-        Path dataPath = (Path) context.getBean("dataPath");
-        String ucscFileName = (String) context.getBean("ucscFileName");
-                
-        Path downloadPath = Paths.get(dataPath.toString() + "/download");
 
-        if (downloadPath.toFile().mkdir()) {
-            logger.info("Made new data download directory: {}", downloadPath.toAbsolutePath());
-        }
+        Path dataPath = (Path) context.getBean("dataPath");
+
+        Path downloadPath = (Path) context.getBean("downloadPath");
+
         //TODO: get from properties
         boolean downloadExternalResources = false;
         if (downloadExternalResources) {
@@ -52,10 +49,7 @@ public class App {
             logger.info("Skipping download of external resource files.");
         }
         //Path for processing the downloaded files to prepare them for parsing (i.e. unzip, untar)
-        Path proccessPath = Paths.get(dataPath.toString() + "/extracted");
-        if (proccessPath.toFile().mkdir()) {
-            logger.info("Made new processed data directory: {}", proccessPath.toAbsolutePath());
-        }
+        Path proccessPath = (Path) context.getBean("processPath");
 
         //TODO: get from properties
         boolean extractExternalResources = false;
@@ -70,19 +64,10 @@ public class App {
         //TODO: get from properties
         boolean parseExternalResources = true;
         if (parseExternalResources) {
-            //first we need to prepare the serialized ucsc18 data file using Jannovar
-            //this is required for parsing the dbSNP data where it is used as a filter to 
-            // remove variants outside of exonic regions.
-            File ucscSerializedData = new File(proccessPath.toFile(), ucscFileName);
-            if (!ucscSerializedData.exists()) {
-                logger.warn("UCSC serialized data file is not present in the process path. Please add it here: {}", ucscSerializedData.getPath());
-                //no useable API for Jannovar so we have to add it manually 
-            }
-            
             //parse the file and output to the project output dir.
-            logger.info("Parsing files for db dump...");            
-            ResourceParserHandler.parseResources(externalResources, ucscSerializedData, proccessPath, dataPath);
-            
+            logger.info("Parsing files for db dump...");
+            ResourceParserHandler.parseResources(externalResources, proccessPath, dataPath);
+
         } else {
             logger.info("Skipping parsing of external resource files.");
         }
@@ -127,7 +112,7 @@ public class App {
             h2Flyway.setPlaceholders(propertyPlaceHolders);
             h2Flyway.clean();
             h2Flyway.migrate();
-            
+
         } else {
             logger.info("Skipping migration of database.");
         }

@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -47,7 +47,7 @@ public class HPOOntologyFileParser implements Parser {
      * @param outPath PAth where output file is to be written
      */
     @Override
-    public FileOperationStatus parse(String inPath, String outPath) {
+    public ResourceOperationStatus parse(String inPath, String outPath) {
         logger.info("Parsing HPO file: {}. Writing out to: {}", inPath, outPath);
         int termCount = 0; /* count of terms */
 
@@ -109,12 +109,12 @@ public class HPOOntologyFileParser implements Parser {
 
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
-            return FileOperationStatus.FILE_NOT_FOUND;
+            return ResourceOperationStatus.FILE_NOT_FOUND;
         } catch (IOException ex) {
             logger.error(null, ex);
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
-        return FileOperationStatus.SUCCESS;
+        return ResourceOperationStatus.SUCCESS;
     }
 
 //    /**

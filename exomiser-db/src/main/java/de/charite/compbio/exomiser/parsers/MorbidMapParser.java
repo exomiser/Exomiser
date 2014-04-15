@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.InheritanceMode;
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import jannovar.common.Constants;
 import java.io.*;
 import java.util.*;
@@ -31,17 +31,17 @@ public class MorbidMapParser implements Parser {
     }
 
     @Override
-    public FileOperationStatus parse(String inPath, String outPath) {
+    public ResourceOperationStatus parse(String inPath, String outPath) {
 
         if (diseaseInheritanceCache.isEmpty()) {
             logger.error("Aborting attempt to parse morbidmap file as the required DiseaseInheritanceCache is empty.");
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
         // Parse morbidmap file
         List<MIM> mimList = parseMorbidMap(inPath, mim2geneMap);
         if (mimList.isEmpty()) {
             logger.error("Error parsing morbidmap file. Expected some data to write out but there is none.");
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
         //write out the list
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
@@ -51,12 +51,12 @@ public class MorbidMapParser implements Parser {
         
         } catch (IOException e) {
             logger.error("Error parsing morbidmap file: {}", inPath, e);
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
         
         logger.info("Wrote {} OMIM entries to outfile: {}", mimList.size(), outPath);
         
-        return FileOperationStatus.SUCCESS;
+        return ResourceOperationStatus.SUCCESS;
     }
 
     /**

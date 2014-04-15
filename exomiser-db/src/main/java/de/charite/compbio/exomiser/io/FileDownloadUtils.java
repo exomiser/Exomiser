@@ -6,6 +6,7 @@
 
 package de.charite.compbio.exomiser.io;
 
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -28,8 +29,8 @@ public class FileDownloadUtils {
      * @param destination
      * @return 
      */
-    public static FileOperationStatus fetchFile(URL source, File destination) {
-        FileOperationStatus status = FileOperationStatus.FAILURE;
+    public static ResourceOperationStatus fetchFile(URL source, File destination) {
+        ResourceOperationStatus status = ResourceOperationStatus.FAILURE;
         
         try {
             logger.info("Creating new file: {}", destination.getAbsolutePath());
@@ -42,7 +43,7 @@ public class FileDownloadUtils {
             FileUtils.copyURLToFile(source, destination, 2500, 15000);       
         } catch (IOException ex) {
             logger.error("Unable to copy file from external resource due to error: ", ex);
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
 
         //always the optimist
@@ -50,7 +51,7 @@ public class FileDownloadUtils {
             logger.info("{} is empty - deleting file.", destination.getAbsolutePath());
             destination.delete();
         } else {
-            status = FileOperationStatus.SUCCESS;
+            status = ResourceOperationStatus.SUCCESS;
         }
         
         return status;

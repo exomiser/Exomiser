@@ -6,7 +6,7 @@
 
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 
 /**
  * 
@@ -14,6 +14,6 @@ import de.charite.compbio.exomiser.io.FileOperationStatus;
  */
 public interface Parser {
     
-    public FileOperationStatus parse(String inPath, String outPath);
+    public ResourceOperationStatus parse(String inPath, String outPath);
 
 }

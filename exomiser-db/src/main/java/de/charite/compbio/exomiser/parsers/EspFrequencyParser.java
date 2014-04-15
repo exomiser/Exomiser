@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.reference.Frequency;
 import jannovar.common.Constants;
 import java.io.BufferedReader;
@@ -82,18 +82,18 @@ public class EspFrequencyParser implements Parser {
      * @return
      */
     @Override
-    public FileOperationStatus parse(String inputDir, String outputDir) {
+    public ResourceOperationStatus parse(String inputDir, String outputDir) {
         //n.b. we ignore the ouputDir for the sake of consistency with the other
         //Frequency parser - the writing out of the file is handled elsewhere. 
-        FileOperationStatus status = FileOperationStatus.SUCCESS;
+        ResourceOperationStatus status = ResourceOperationStatus.SUCCESS;
         if (frequencyList == null) {
             logger.error("Require a frequency list to refer to.");
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
         File[] espFilePaths = new File(inputDir).listFiles();
         for (File espFile : espFilePaths) {
-            FileOperationStatus fileStatus = parseEspFile(espFile.getAbsolutePath());
-            if (fileStatus != FileOperationStatus.SUCCESS) {
+            ResourceOperationStatus fileStatus = parseEspFile(espFile.getAbsolutePath());
+            if (fileStatus != ResourceOperationStatus.SUCCESS) {
                 status = fileStatus;
             }
         }
@@ -112,7 +112,7 @@ public class EspFrequencyParser implements Parser {
      *
      * @param path Absolute path to the ESP VCF file for a chromosome.
      */
-    private FileOperationStatus parseEspFile(String path) {
+    private ResourceOperationStatus parseEspFile(String path) {
         logger.info("Parsing ESP File: " + path);
         try {
 //            FileReader fstream = new FileInputStream(path);
@@ -129,10 +129,10 @@ public class EspFrequencyParser implements Parser {
             }
         } catch (IOException e) {
             logger.error("Error parsing ESP file: {}", path, e.getMessage());
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
 
-        return FileOperationStatus.SUCCESS;
+        return ResourceOperationStatus.SUCCESS;
     }
 
     /**

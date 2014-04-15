@@ -7,7 +7,7 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.VariantPathogenicity;
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -86,8 +86,8 @@ public class NSFP2SQLDumpParserTest {
         String inPath = "src/test/resources/data/dbNSFP2.3_test.zip";
         String outPath = "target/test-data/testVariant.pg";
         NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser();
-        FileOperationStatus expResult = FileOperationStatus.SUCCESS;
-        FileOperationStatus result = instance.parse(inPath, outPath);
+        ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
+        ResourceOperationStatus result = instance.parse(inPath, outPath);
         assertEquals(expResult, result);
     }
     

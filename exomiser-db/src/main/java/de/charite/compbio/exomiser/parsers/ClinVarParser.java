@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -139,7 +139,7 @@ public class ClinVarParser implements Parser {
     }
 
     @Override
-    public FileOperationStatus parse(String path, String outPath) {
+    public ResourceOperationStatus parse(String path, String outPath) {
 
         int noPositionInfoVariants = 0;
         int wrongBuildVariants = 0;
@@ -160,7 +160,7 @@ public class ClinVarParser implements Parser {
                 if (split.length < expectedFieldLength) {
                     logger.warn("Malformed line: {}", line);
                     logger.warn("Line has only {} fields. Expected at least %s fields", split.length, expectedFieldLength);
-                    return FileOperationStatus.FAILURE;
+                    return ResourceOperationStatus.FAILURE;
                 }
                 String build = split[12];
                 String RCV = split[8];
@@ -212,11 +212,11 @@ public class ClinVarParser implements Parser {
             }
         } catch (IOException e) {
             logger.error("Could not parse clinvar file: ", e);
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
         logger.info("No position information for {} variants", noPositionInfoVariants);
         logger.info("Found information for {} variants", goodVariants);
         logger.info("{} variants were skipped because they are not from build {}", wrongBuildVariants, expectedBuild);
-        return FileOperationStatus.SUCCESS;
+        return ResourceOperationStatus.SUCCESS;
     }
 }

@@ -6,7 +6,7 @@
 
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,8 +55,8 @@ public class MorbidMapParserTest {
         Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
         
         MorbidMapParser instance = new MorbidMapParser(cache, mim2geneMap);
-        FileOperationStatus expResult = FileOperationStatus.SUCCESS;
-        FileOperationStatus result = instance.parse(inPath, outPath);
+        ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
+        ResourceOperationStatus result = instance.parse(inPath, outPath);
         assertEquals(expResult, result); 
         
     }

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.resources;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
 import de.charite.compbio.exomiser.parsers.DbSnpFrequencyParser;
 import de.charite.compbio.exomiser.parsers.DiseaseInheritanceCache;
 import de.charite.compbio.exomiser.parsers.EspFrequencyParser;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -35,62 +33,77 @@ public class ResourceParserHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceParserHandler.class.getName());
 
-    public static void parseResources(Iterable<ExternalResource> externalResources, File ucscSerializedData, Path inPath, Path outPath) {
+    public static void parseResources(Iterable<ExternalResource> externalResources, Path inPath, Path outPath) {
 
-        ExternalResource dbSnpResource = null;
-        ExternalResource espResource = null;
         //the ESP and dnSNP files are a special case where they are handled 
         //together to create a single output file. There will probably be more 
         //special cases at some point making this a bit of a mess...
         Map<String, ExternalResource> frequencyResources = new HashMap<>();
-        Map<String, ExternalResource>  omimResources = new HashMap<>();
+        //...like the OMIM files for instance.
+        Map<String, ExternalResource> omimResources = new HashMap<>();
+
+        final String frequencyGroupName = "frequency";
+        final String omimGroupName = "omim";
         
         for (ExternalResource resource : externalResources) {
             switch (resource.getParserGroup()) {
-                case "frequency":
+                case frequencyGroupName:
                     frequencyResources.put(resource.getName(), resource);
                     break;
-                case "omim":
+                case omimGroupName:
                     omimResources.put(resource.getName(), resource);
                     break;
                 default:
                     parseResource(resource, inPath, outPath);
             }
         }
-
-        if (dbSnpResource != null && espResource != null) {
-            parseVariantFrequencyResources(ucscSerializedData, dbSnpResource, espResource, inPath, outPath);
-        } else {
-            logger.warn("Not parsing variant frequency resources as one or both resources have not been defined. Check the external-resources file.");
+        int requiredNumFrequencyResources = 3;
+        if (resourceParserGroupIsComplete(frequencyGroupName, requiredNumFrequencyResources, frequencyResources)) {
+            parseVariantFrequencyResources(frequencyResources, inPath, outPath);
         }
-        int requiredOmimResources = 3;
-        if (omimResources.size() == requiredOmimResources) {
+        
+        int requiredNumOmimResources = 3;
+        if (resourceParserGroupIsComplete(omimGroupName, requiredNumOmimResources, omimResources)) {
             parseOmimResources(omimResources, inPath, outPath);
-        } else {
-            logger.warn("Not parsing omim resources as only {} of {} required resources have been defined. Check the external-resources file.", omimResources.size(), requiredOmimResources);            
         }
-
+        
     }
 
-    public static void parseResource(ExternalResource externalResource, Path inPath, Path outPath) {
+    public static ResourceOperationStatus parseResource(ExternalResource externalResource, Path inPath, Path outPath) {
         try {
             logger.info("Parsing file: {} using parser: {}", externalResource.getExtractedFileName(), externalResource.getParser());
-            if (externalResource.getParser().isEmpty()) {
+            if (externalResource.getParser() == null || externalResource.getParser().isEmpty()) {
                 logger.error("No parser defined for resource: {}", externalResource.getExtractedFileName());
-                return;
+                externalResource.setParseStatus(ResourceOperationStatus.PARSER_NOT_FOUND);
+                return ResourceOperationStatus.PARSER_NOT_FOUND;
             }
             //this might be a bit too generic really as there are likely as many special cases as generic ones. We'll see...
             Class parserClass = Class.forName(externalResource.getParser());
             Parser parser = (Parser) parserClass.newInstance();
             //now do the actual parsing
-            parseResourseFile(parser, externalResource, inPath, outPath);
+            return parseResourseFile(parser, externalResource, inPath, outPath);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
             logger.error("Error parsing resource {}", externalResource.getName(), ex);
+            externalResource.setParseStatus(ResourceOperationStatus.FAILURE);
         }
+        return ResourceOperationStatus.FAILURE;
     }
 
-    private static void parseVariantFrequencyResources(File ucscSerializedData, ExternalResource dbSnpResource, ExternalResource espResource, Path inPath, Path outPath) {
+    private static void parseVariantFrequencyResources(Map<String, ExternalResource> frequencyResources, Path inPath, Path outPath) {
         logger.info("Parsing variant frequency files. Writing out to: {}", outPath);
+
+        ExternalResource dbSnpResource = frequencyResources.get("dbSNP");
+        ExternalResource espResource = frequencyResources.get("ESP");
+        ExternalResource ucscResource = frequencyResources.get("UCSC_HG19");
+
+        //first we need to prepare the serialized ucsc19 data file using Jannovar
+        //this is required for parsing the dbSNP data where it is used as a filter to 
+        // remove variants outside of exonic regions.
+        File ucscSerializedData = new File(inPath.toFile(), ucscResource.getExtractedFileName());
+        if (!ucscSerializedData.exists()) {
+            logger.warn("UCSC serialized data file is not present in the process path. Please add it here: {}", ucscSerializedData.getPath());
+            //no useable API for Jannovar so we have to add it manually 
+        }
 
         //doesn't matter
         File outputFile = new File(outPath.toFile(), dbSnpResource.getParsedFileName());
@@ -125,7 +138,7 @@ public class ResourceParserHandler {
             logger.error("Error writing out frequency files", e);
         }
     }
-       
+
     private static void parseOmimResources(Map<String, ExternalResource> omimResources, Path inPath, Path outPath) {
         logger.info("Parsing omim files. Writing out to: {}", outPath);
         ExternalResource morbidMapResource = omimResources.get("OMIM_morbidmap");
@@ -136,13 +149,13 @@ public class ResourceParserHandler {
         //first parse the mim2gene file
         MimToGeneParser mimParser = new MimToGeneParser(mim2geneMap);
         parseResourseFile(mimParser, mim2geneResource, inPath, outPath);
-        
+
         //now parse the morbidmap file 
-        File hpoAnnototaionsFile = new File(inPath.toFile(), hpoPhenotypeAnnotations.getExtractedFileName());
+        File hpoAnnotationsFile = new File(inPath.toFile(), hpoPhenotypeAnnotations.getExtractedFileName());
         //Need to make the cache for the morbidmap parser
-        DiseaseInheritanceCache diseaseInheritanceCache = new DiseaseInheritanceCache(hpoAnnototaionsFile.getAbsolutePath());
+        DiseaseInheritanceCache diseaseInheritanceCache = new DiseaseInheritanceCache(hpoAnnotationsFile.getAbsolutePath());
         if (!diseaseInheritanceCache.isEmpty()) {
-            hpoPhenotypeAnnotations.setParseStatus(FileOperationStatus.SUCCESS);
+            hpoPhenotypeAnnotations.setParseStatus(ResourceOperationStatus.SUCCESS);
         }
         //make the MimList which morbid map will populate
         MorbidMapParser morbidParser = new MorbidMapParser(diseaseInheritanceCache, mim2geneMap);
@@ -150,30 +163,57 @@ public class ResourceParserHandler {
     }
 
     /**
-     * Handles the calling of <code>Parser.parse</code> for the parser of an 
+     * Handles the calling of <code>Parser.parse</code> for the parser of an
      * <code>ExternalResource</code>.
-     * 
+     *
      * @param parser
      * @param externalResource
      * @param inPath
      * @param outPath
-     * @return The status from the <code>Parser.parse</code> 
+     * @return The status from the <code>Parser.parse</code>
      */
-    private static FileOperationStatus parseResourseFile(Parser parser, ExternalResource externalResource, Path inPath, Path outPath) {
+    private static ResourceOperationStatus parseResourseFile(Parser parser, ExternalResource externalResource, Path inPath, Path outPath) {
         File inputFile = new File(inPath.toFile(), externalResource.getExtractedFileName());
         File outputFile = new File(outPath.toFile(), externalResource.getParsedFileName());
-        FileOperationStatus parseStatus;
+        ResourceOperationStatus parseStatus;
         //check the file exists before trying to parse it!
         if (inputFile.exists()) {
             parseStatus = parser.parse(inputFile.getPath(), outputFile.getPath());
             logger.info("{} {}", parseStatus, parser.getClass().getCanonicalName());
         } else {
-            parseStatus = FileOperationStatus.FILE_NOT_FOUND;
+            parseStatus = ResourceOperationStatus.FILE_NOT_FOUND;
             logger.error("Did not try to parse file {} as it does not exist.", externalResource.getExtractedFileName());
         }
         //remember to set the status for later
         externalResource.setParseStatus(parseStatus);
         return parseStatus;
+    }
+
+    /**
+     * Checks that the expected number of resources for a particular parser group
+     * have been provided. This is hard-coded in the <code>parseResources</code>
+     * method, but serves to verify everything has been correctly defined before
+     * continuing otherwise the resources will be skipped.
+     * 
+     * @param groupName
+     * @param requiredResourcesMapSize
+     * @param resourcesMap
+     * @return 
+     */
+    
+    private static boolean resourceParserGroupIsComplete(String groupName, int requiredResourcesMapSize, Map<String, ExternalResource> resourcesMap) {
+        if (resourcesMap.size() == requiredResourcesMapSize) {
+            return true;
+        } else {
+            logger.warn("Not parsing '{}' parserGroup group as only {} of the {} required resources following resources have been defined:", groupName, resourcesMap.size(), requiredResourcesMapSize);
+            int resourceCounter = 1;
+            for (ExternalResource resource : resourcesMap.values()) {
+                logger.warn("{} - {}", resourceCounter, resource);
+                resourceCounter++;
+            }
+            logger.warn("Check the external-resources file for resources with parserGroup '{}'", groupName);
+        }
+        return false;
     }
 
 }

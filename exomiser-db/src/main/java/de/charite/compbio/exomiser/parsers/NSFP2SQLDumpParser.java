@@ -1,7 +1,7 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.VariantPathogenicity;
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import jannovar.common.Constants;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -211,7 +211,7 @@ public class NSFP2SQLDumpParser implements Parser {
     }
 
     @Override
-    public FileOperationStatus parse(String inPath, String outPath) {
+    public ResourceOperationStatus parse(String inPath, String outPath) {
         File outFile = new File(outPath);
         logger.info("Parsing dbNSFP data from file: {}", inPath);
         try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(inPath));
@@ -241,10 +241,10 @@ public class NSFP2SQLDumpParser implements Parser {
             }
         } catch (IOException e) {
             logger.error("Error trying to open file {}", inPath, e);
-            return FileOperationStatus.FAILURE;
+           return ResourceOperationStatus.FAILURE;
         }
 
-        return FileOperationStatus.SUCCESS;
+    return ResourceOperationStatus.SUCCESS;
     }
 
     /**

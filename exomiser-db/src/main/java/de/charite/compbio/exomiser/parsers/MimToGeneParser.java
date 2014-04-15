@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -61,7 +61,7 @@ public class MimToGeneParser implements Parser {
     }
 
     @Override
-    public FileOperationStatus parse(String inPath, String outPath) {
+    public ResourceOperationStatus parse(String inPath, String outPath) {
         
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outPath)));) {      
             // Parse OMIM gene ID information */
@@ -70,10 +70,10 @@ public class MimToGeneParser implements Parser {
                     
         } catch (IOException e) {
             logger.error("Error parsing mim2gene file: {}", inPath, e);
-            return FileOperationStatus.FAILURE;
+           return ResourceOperationStatus.FAILURE;
         } 
         
-        return FileOperationStatus.SUCCESS;
+    return ResourceOperationStatus.SUCCESS;
     }
 
 //    /**

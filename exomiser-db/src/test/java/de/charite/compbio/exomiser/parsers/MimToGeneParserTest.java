@@ -7,7 +7,7 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.config.AppConfig;
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +57,8 @@ public class MimToGeneParserTest {
         Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
 
         MimToGeneParser instance = new MimToGeneParser(mim2geneMap);
-        FileOperationStatus expResult = FileOperationStatus.SUCCESS;
-        FileOperationStatus result = instance.parse(mim2geneTestFile, outPath);
+        ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
+        ResourceOperationStatus result = instance.parse(mim2geneTestFile, outPath);
         assertFalse(mim2geneMap.isEmpty());
         for (Entry<Integer, Set<Integer>> entry : mim2geneMap.entrySet()) {
             if (entry.getValue().size() > 1) {

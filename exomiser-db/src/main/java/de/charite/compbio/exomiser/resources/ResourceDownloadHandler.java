@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.resources;
 
 import de.charite.compbio.exomiser.io.FileDownloadUtils;
-import de.charite.compbio.exomiser.io.FileOperationStatus;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,17 +38,23 @@ public class ResourceDownloadHandler {
     }
 
     public static void downloadResource(ExternalResource externalResource, Path downloadPath) {
-
+    ResourceOperationStatus status;
+        if (externalResource.getUrl().isEmpty()) {
+            logger.info("Resource {} has no URL set - skipping resource.", externalResource.getName());
+            return;
+        }
         try {
 
             URL resourceUrl = new URL(externalResource.getUrl() + externalResource.getRemoteFileName());
             logger.info("Resource: {}: Getting {} from {}", externalResource.getName(), externalResource.getRemoteFileName(), resourceUrl);
-            FileOperationStatus status = FileDownloadUtils.fetchFile(resourceUrl, new File(String.format("%s/%s", downloadPath, externalResource.getRemoteFileName())));
+            status = FileDownloadUtils.fetchFile(resourceUrl, new File(String.format("%s/%s", downloadPath, externalResource.getRemoteFileName())));
             externalResource.setDownloadStatus(status);
 
         } catch (MalformedURLException ex) {
+            status = ResourceOperationStatus.FAILURE;
             logger.error(null, ex);
         }
+        externalResource.setDownloadStatus(status);
 
         logger.info("{}", externalResource.getStatus());
 

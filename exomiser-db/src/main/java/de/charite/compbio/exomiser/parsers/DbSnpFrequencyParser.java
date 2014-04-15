@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.reference.Frequency;
 import jannovar.common.Constants;
 import jannovar.exception.JannovarException;
@@ -114,7 +114,7 @@ public class DbSnpFrequencyParser implements Parser {
      * @return
      */
     @Override
-    public FileOperationStatus parse(String inPath, String outPath) {
+    public ResourceOperationStatus parse(String inPath, String outPath) {
 
         long startTime = System.currentTimeMillis();
 
@@ -122,7 +122,7 @@ public class DbSnpFrequencyParser implements Parser {
 
         if (chromosomeMap.isEmpty()) {
             logger.error("Unable to parse file: {} as the chromosomeMap is empty", inPath);
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
 
         try {
@@ -163,12 +163,12 @@ public class DbSnpFrequencyParser implements Parser {
             }
         } catch (IOException e) {
             logger.error("Error parsing dbSNP file: ", e);
-            return FileOperationStatus.FAILURE;
+            return ResourceOperationStatus.FAILURE;
         }
 
         logger.info("Found " + n_exonic_vars + " exonic vars and " + n_non_exonic_vars + " non-exonics");
         logger.info("Got " + n_duplicates + " duplicates");
-        return FileOperationStatus.SUCCESS;
+        return ResourceOperationStatus.SUCCESS;
     }
 
     /**

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.resources;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -52,7 +51,7 @@ public class ResourceExtractionHandler {
         File inFile = new File(inPath.toFile(), externalResource.getRemoteFileName());
         File outFile = new File(outPath.toFile(), externalResource.getExtractedFileName());
         
-        FileOperationStatus status = FileOperationStatus.FAILURE;
+        ResourceOperationStatus status = ResourceOperationStatus.FAILURE;
         String scheme = externalResource.getExtractionScheme();
         logger.info("Using resource extractionScheme: {}", scheme);
         switch (scheme) {
@@ -69,7 +68,7 @@ public class ResourceExtractionHandler {
                 status = copyFile(inFile, outFile);                
                 break;
             case "none":
-                status = FileOperationStatus.SUCCESS;
+                status = ResourceOperationStatus.SUCCESS;
                 break;
             default:
                 status = copyFile(inFile, outFile);
@@ -78,7 +77,7 @@ public class ResourceExtractionHandler {
         externalResource.setExtractStatus(status);
     }
     
-    private static FileOperationStatus gunZipFile(File inFile, File outFile) {
+    private static ResourceOperationStatus gunZipFile(File inFile, File outFile) {
         logger.info("Unzipping file: {} to {}", inFile, outFile);
         
         try (FileInputStream fileInputStream = new FileInputStream(inFile);
@@ -88,15 +87,15 @@ public class ResourceExtractionHandler {
             //good for under 2GB otherwise IOUtils.copyLarge is needed
             IOUtils.copy(gZIPInputStream, out);
            
-            return FileOperationStatus.SUCCESS;
+            return ResourceOperationStatus.SUCCESS;
 
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
-            return FileOperationStatus.FILE_NOT_FOUND;
+            return ResourceOperationStatus.FILE_NOT_FOUND;
         } catch (IOException ex) {
             logger.error(null, ex);            
         }
-        return FileOperationStatus.FAILURE;
+        return ResourceOperationStatus.FAILURE;
     }
 
     /**
@@ -105,7 +104,7 @@ public class ResourceExtractionHandler {
      * @param outPath
      * @return 
      */
-    private static FileOperationStatus extractArchive(File inFile, File outFile) {
+    private static ResourceOperationStatus extractArchive(File inFile, File outFile) {
         
         try {
             URI inFileUri = inFile.toURI();
@@ -122,29 +121,29 @@ public class ResourceExtractionHandler {
             } finally {
                 tarFile.close();
             }
-            return FileOperationStatus.SUCCESS;
+            return ResourceOperationStatus.SUCCESS;
 
         } catch (FileSystemException ex) {
             logger.error(null, ex);
         }
-        return FileOperationStatus.FAILURE;
+        return ResourceOperationStatus.FAILURE;
     }
 
-    private static FileOperationStatus extractTgzArchive(File inFile, File outFile) {
+    private static ResourceOperationStatus extractTgzArchive(File inFile, File outFile) {
         logger.info("Extracting tar.gz file: {} to {}", inFile, outFile);
         File intermediateTarArchive = new File(outFile.getParentFile(), outFile.getName() + ".tar");
         
         //first unzip the file
         gunZipFile(inFile, intermediateTarArchive);
         //then extract the archive files
-        FileOperationStatus returnStatus = extractArchive(intermediateTarArchive, outFile);       
+        ResourceOperationStatus returnStatus = extractArchive(intermediateTarArchive, outFile);       
         //finally clean-up the intermediate file
         intermediateTarArchive.delete();
         return returnStatus;
     }
         
 
-    private static FileOperationStatus copyFile(File inFile, File outFile) {
+    private static ResourceOperationStatus copyFile(File inFile, File outFile) {
         logger.info("Copying file {} to {}", inFile, outFile);
         
         try {
@@ -153,10 +152,10 @@ public class ResourceExtractionHandler {
             //copied over otherwise the last modified time will be when the file was downloaded.
             //this is merely a nicety for when manually inspecting the db build process. 
             outFile.setLastModified(System.currentTimeMillis());
-            return FileOperationStatus.SUCCESS;
+            return ResourceOperationStatus.SUCCESS;
         } catch (IOException ex) {
             logger.error(null, ex);
         }
-        return FileOperationStatus.FAILURE;
+        return ResourceOperationStatus.FAILURE;
     }
 }

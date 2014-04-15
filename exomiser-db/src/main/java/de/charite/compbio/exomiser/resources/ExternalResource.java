@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.resources;
 
-import de.charite.compbio.exomiser.io.FileOperationStatus;
 import java.util.Objects;
 
 /**
@@ -26,14 +25,14 @@ public class ExternalResource {
     private String parserGroup;
     private String parsedFileName;
     
-    private FileOperationStatus downloadStatus;
-    private FileOperationStatus extractStatus;
-    private FileOperationStatus parseStatus;
+    private ResourceOperationStatus downloadStatus;
+    private ResourceOperationStatus extractStatus;
+    private ResourceOperationStatus parseStatus;
 
     public ExternalResource() {
-        downloadStatus = FileOperationStatus.UNTRIED;
-        extractStatus = FileOperationStatus.UNTRIED;
-        parseStatus = FileOperationStatus.UNTRIED;
+        downloadStatus = ResourceOperationStatus.UNTRIED;
+        extractStatus = ResourceOperationStatus.UNTRIED;
+        parseStatus = ResourceOperationStatus.UNTRIED;
     }
     
     
@@ -93,15 +92,15 @@ public class ExternalResource {
         this.extractionScheme = extractionScheme;
     }
 
-    public void setDownloadStatus(FileOperationStatus downloadStatus) {
+    public void setDownloadStatus(ResourceOperationStatus downloadStatus) {
         this.downloadStatus = downloadStatus;
     }
 
-    public void setExtractStatus(FileOperationStatus extractStatus) {
+    public void setExtractStatus(ResourceOperationStatus extractStatus) {
         this.extractStatus = extractStatus;
     }
 
-    public void setParseStatus(FileOperationStatus parseStatus) {
+    public void setParseStatus(ResourceOperationStatus parseStatus) {
         this.parseStatus = parseStatus;
     }
 
