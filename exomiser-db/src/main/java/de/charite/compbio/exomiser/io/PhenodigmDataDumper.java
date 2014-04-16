@@ -52,6 +52,38 @@ public class PhenodigmDataDumper {
         dumpMouseGeneLevelSummary(outputPath, "mouseGeneLevelSummary.pg");
         dumpFishGeneLevelSummary(outputPath, "fishGeneLevelSummary.pg");
         dumpFishGeneOrthologs(outputPath, "human2fishOrthologs.pg");
+        dumpOrphanet(outputPath, "orphanet.pg");
+    }
+
+    protected static File dumpOrphanet(Path outputPath, String outName) {
+        File outfile = new File(outputPath.toFile(), outName);
+        logger.info("Dumping Orphanet data to file: {}", outfile);
+
+        String sql = "select d.disease_id, entrezgene, disease_term "
+                + "from mouse_disease_gene_summary mdm, disease d, mouse_gene_ortholog mgo "
+                + "where d.disease_id=mdm.disease_id and mdm.model_gene_id = mgo.model_gene_id and "
+                + "human_curated = 1 and d.disease_id like '%ORPHA%'";
+        //no need to close things when using the try-with-resources            
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
+                Connection connection = phenodigmConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
+            ps.setFetchSize(Integer.MIN_VALUE);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String diseaseId = rs.getString("disease_id");
+                String entrezId = rs.getString("entrezgene");
+                String diseaseTerm = rs.getString("disease_term");
+
+                String outLine = String.format("%s|%s|%s", diseaseId, entrezId, diseaseTerm);
+                writer.write(outLine);
+                writer.newLine();
+            }
+
+        } catch (IOException | SQLException ex) {
+            logger.error(null, ex);
+        }
+        return outfile;
     }
 
     protected static File dumpMp(Path outputPath, String outName) {
@@ -80,7 +112,7 @@ public class PhenodigmDataDumper {
         }
         return outfile;
     }
-    
+
     protected static File dumpMouseGeneOrthologs(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm MouseGeneOrtholog data to file: {}", outfile);
@@ -97,7 +129,7 @@ public class PhenodigmDataDumper {
                 String modelGeneId = rs.getString("model_gene_id");
                 String modelGeneSymbol = rs.getString("model_gene_symbol");
                 String hgncGeneId = rs.getString("hgnc_gene_symbol");
-                String entrez = rs.getString("entrezgene");    
+                String entrez = rs.getString("entrezgene");
 
                 String outLine = String.format("%s|%s|%s|%s", modelGeneId, modelGeneSymbol, hgncGeneId, entrez);
                 writer.write(outLine);
@@ -110,7 +142,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-     protected static File dumpFishGeneOrthologs(Path outputPath, String outName) {
+    protected static File dumpFishGeneOrthologs(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm FishGeneOrtholog data to file: {}", outfile);
 
@@ -126,7 +158,7 @@ public class PhenodigmDataDumper {
                 String modelGeneId = rs.getString("model_gene_id");
                 String modelGeneSymbol = rs.getString("model_gene_symbol");
                 String hgncGeneId = rs.getString("hgnc_id");
-                String entrez = rs.getString("entrezgene");    
+                String entrez = rs.getString("entrezgene");
 
                 String outLine = String.format("%s|%s|%s|%s", modelGeneId, modelGeneSymbol, hgncGeneId, entrez);
                 writer.write(outLine);
@@ -138,7 +170,7 @@ public class PhenodigmDataDumper {
         }
         return outfile;
     }
-    
+
     protected static File dumpDiseaseHp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm diseaseHp data to file: {}", outfile);
@@ -224,7 +256,6 @@ public class PhenodigmDataDumper {
 //        }
 //        return outfile;
 //    }
-
     protected static File dumpOmimTerms(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm omimTerms data to file: {}", outfile);
@@ -257,7 +288,7 @@ public class PhenodigmDataDumper {
         logger.info("Dumping Phenodigm hpMpMapping data to file: {}", outfile);
         //hp_mp_mapping has a mapping_id column 
         int id = 0;
-        
+
         String sql = "select hp_id, mp_id, sqrt(ic*simJ) as score from hp_mp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
@@ -289,7 +320,7 @@ public class PhenodigmDataDumper {
 
         //hp_hp_mapping has a mapping_id column 
         int id = 0;
-        
+
         String sql = "select hp_id, hp_id_hit, sqrt(ic*simJ) as score from hp_hp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
@@ -349,7 +380,7 @@ public class PhenodigmDataDumper {
         }
         return outfile;
     }
-    
+
     protected static File dumpFishGeneLevelSummary(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm FishGeneLevelSummary data to file: {}", outfile);

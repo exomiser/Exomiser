@@ -246,9 +246,26 @@ CREATE TABLE disease_hp (
 );
 
 CREATE TABLE orphanet (
-    orphanumber  integer not null, 
+    orphanumber  character varying(20), 
     entrezgeneid integer not null, 
     diseasename  character varying(2056)
+);
+
+CREATE TABLE metadata (
+    resource VARCHAR(1024),
+    version  VARCHAR(1024)
+);
+
+CREATE TABLE entrez2sym (
+    entrezID INTEGER PRIMARY KEY,
+    symbol VARCHAR(24)
+);
+
+CREATE TABLE string (
+    entrezA INTEGER,
+    entrezB INTEGER,
+    score INTEGER,
+    PRIMARY KEY(entrezA,entrezB)
 );
 
 --
