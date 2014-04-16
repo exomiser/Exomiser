@@ -2,19 +2,27 @@
 ---
 # external resources required for loading into the exomiser database
 # supported extractionSchemes are 'zip', 'gz', 'tgz', 'copy' and 'none' these tell the 
-# FileExtractionHandler what to do with the file.
-# extractedFileName tells the FileExtractionHandler what the final resource 
+# ResourceExtractionHandler what to do with the file.
+# -extractedFileName tells the FileExtractionHandler what the final resource 
 # filename should be.
+# -parserGroup will bundle all resources with the same parserGroup to be handled
+# by the ResourceParserHandler together. Resources can still have a different parser
+# specified.
+# -parsedFileName is the name of the output file from the parser. Don't change 
+# this without changing the relevant name in the db.migration packages otherwise
+# the migrations will fail.
 External resources:
 #      - !resource
-#        name: TEST
+#        name: EXAMPLE
 #        url: http://solr-slave-sanger.sanger.ac.uk/solr451/phenodigm/select?q=%22OMIM%3A101600%22&fq=type%3A%22disease%22&wt=xml
 #        remoteFileName: test.zip
 #        version:
 #        extractedFileName: test
 #        extractionScheme: zip
-#        parser: de.charite.compbio.exomiser.parsers.HPOOntologyFileParser
-            
+#        parser: de.charite.compbio.exomiser.parsers.HPOOntologyFileParser #requires fully-qualified name
+#        parserGroup: test
+#        parsedFileName: test.pg
+
 #      - !resource
 #        name: HPO
 #        url: http://compbio.charite.de/hudson/job/hpo/lastStableBuild/artifact/ontology/release/
@@ -151,6 +159,7 @@ External resources:
 #        parserGroup: clinvar
 #        parsedFileName: clinvar.pg
 
+################################################################################
 #### These next ones are only required for creating the ucsc_hg19.ser file with 
 #### jannovar in order that the dbSnpParser can filter the variants within known
 #### gene coding-regions
