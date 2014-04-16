@@ -35,7 +35,7 @@
         <profile>
             <id>migrate-PostgreSQL</id>
             <properties>
-                <db.url>jdbc:postgresql://exomiser-dev:5443/nsfpalizer</db.url>
+                <db.url>jdbc:postgresql://exomiser-dev:5451/nsfpalizer</db.url>
                 <db.username>nsfp</db.username>
                 <db.password>vcfanalysis</db.password>
                 <db.location>db.migration.postgres</db.location>
