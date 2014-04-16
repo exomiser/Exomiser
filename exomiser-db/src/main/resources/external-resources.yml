@@ -105,40 +105,80 @@ External resources:
 #        parserGroup: omim
 #        parsedFileName: omim.pg   
             
-      - !resource
-        name: ExomeWalker_phenotypic_series
-        url: #this file is contained in the resources package
-        remoteFileName: pheno2gene.txt
+       - !resource
+        name: String_entrez2sym
+        url: http://www.ensembl.org/biomart/martservice?query=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%20%3C!DOCTYPE%20Query%3E%20%3CQuery%20%20virtualSchemaName%20=%20%22default%22%20formatter%20=%20%22TSV%22%20header%20=%20%220%22%20uniqueRows%20=%20%220%22%20count%20=%20%22%22%20datasetConfigVersion%20=%20%220.6%22%20%3E%20%20%3CDataset%20name%20=%20%22hsapiens_gene_ensembl%22%20interface%20=%20%22default%22%20%3E%20%3CAttribute%20name%20=%20%22ensembl_peptide_id%22%20/%3E%20%3CAttribute%20name%20=%20%22entrezgene%22%20/%3E%20%3CAttribute%20name%20=%20%22hgnc_symbol%22%20/%3E%20%3C/Dataset%3E%20%3C/
+        remoteFileName: Query%3E
         version: 
-        extractedFileName: pheno2gene.txt
+        extractedFileName: ensembl_biomart.txt
         extractionScheme: copy
-        parser: de.charite.compbio.exomiser.parsers.PhenoSeriesParser
-        parserGroup: exomeWalker
-        parsedFileName: phenoseries.pg     
+        parser: de.charite.compbio.exomiser.parsers.EntrezParser
+        parserGroup: string
+        parsedFileName: entrez2sym.pg     
+            
+       - !resource
+        name: String_protein_links
+        url: http://string-db.org/newstring_download/protein.links.v9.1/
+        remoteFileName: 9606.protein.links.v9.1.txt.gz
+        version: 9.1
+        extractedFileName: 9606.protein.links.v9.1.txt
+        extractionScheme: gz
+        parser: de.charite.compbio.exomiser.parsers.StringParser
+        parserGroup: string
+        parsedFileName: string.pg     
+    
+    
+    
+#        - !resource
+#        name: ExomeWalker_phenotypic_series
+#        url: #this file is contained in the resources package
+#        remoteFileName: pheno2gene.txt
+#        version: 
+#        extractedFileName: pheno2gene.txt
+#        extractionScheme: copy
+#        parser: de.charite.compbio.exomiser.parsers.PhenoSeriesParser
+#        parserGroup: exomeWalker
+#        parsedFileName: phenoseries.pg     
+        
     #pheno2gene.txt is produced from a custom data-dump from OMIM which is then post-processed
     #with some perl scripts using data from the mim2gene_medgen and gene_info files from NCBI
     #(ftp://ftp.ncbi.nlm.nih.gov/gene/DATA) consequently this is treated as static data.
-      - !resource
-        name: ExomeWalker_omim2gene
-        url: #this file is contained in the resources package
-        remoteFileName: pheno2gene.txt
-        version: 
-        extractedFileName: pheno2gene.txt
-        extractionScheme: copy
-        parser: de.charite.compbio.exomiser.parsers.Omim2GeneParser
-        parserGroup: exomeWalker
-        parsedFileName: omim2gene.pg     
+#      - !resource
+#        name: ExomeWalker_omim2gene
+#        url: #this file is contained in the resources package
+#        remoteFileName: pheno2gene.txt
+#        version: 
+#        extractedFileName: pheno2gene.txt
+#        extractionScheme: copy
+#        parser: de.charite.compbio.exomiser.parsers.Omim2GeneParser
+#        parserGroup: exomeWalker
+#        parsedFileName: omim2gene.pg     
 #
 #      - !resource
-#        name: ORPHANET
-#        url: 
-#        remoteFileName: 
+#        name: ExomeWalker_phenotypic_series
+#        url: #this file is contained in the resources package
+#        remoteFileName: pheno2gene.txt
 #        version: 
-#        extractedFileName: 
+#        extractedFileName: pheno2gene.txt
 #        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.OrphaParser
-#        parserGroup: orphanet
-#        parsedFileName:
+#        parser: de.charite.compbio.exomiser.parsers.PhenoSeriesParser
+#        parserGroup: exomeWalker
+#        parsedFileName: phenoseries.pg     
+#    #pheno2gene.txt is produced from a custom data-dump from OMIM which is then post-processed
+#    #with some perl scripts using data from the mim2gene_medgen and gene_info files from NCBI
+#    #(ftp://ftp.ncbi.nlm.nih.gov/gene/DATA) consequently this is treated as static data.
+#      - !resource
+#        name: ExomeWalker_omim2gene
+#        url: #this file is contained in the resources package
+#        remoteFileName: pheno2gene.txt
+#        version: 
+#        extractedFileName: pheno2gene.txt
+#        extractionScheme: copy
+#        parser: de.charite.compbio.exomiser.parsers.Omim2GeneParser
+#        parserGroup: exomeWalker
+#        parsedFileName: omim2gene.pg     
+
+ 
 #    
 #      - !resource
 #        name: ClinVar
