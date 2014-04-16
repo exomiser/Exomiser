@@ -10,6 +10,8 @@ import de.charite.compbio.exomiser.parsers.DiseaseInheritanceCache;
 import de.charite.compbio.exomiser.parsers.EspFrequencyParser;
 import de.charite.compbio.exomiser.parsers.MimToGeneParser;
 import de.charite.compbio.exomiser.parsers.MorbidMapParser;
+import de.charite.compbio.exomiser.parsers.StringParser;
+import de.charite.compbio.exomiser.parsers.EntrezParser;
 import de.charite.compbio.exomiser.parsers.Parser;
 import de.charite.compbio.exomiser.reference.Frequency;
 import java.io.BufferedWriter;
@@ -41,10 +43,13 @@ public class ResourceParserHandler {
         Map<String, ExternalResource> frequencyResources = new HashMap<>();
         //...like the OMIM files for instance.
         Map<String, ExternalResource> omimResources = new HashMap<>();
+        //...and the STRING DB files
+        Map<String, ExternalResource> stringResources = new HashMap<>();
 
         final String frequencyGroupName = "frequency";
         final String omimGroupName = "omim";
-        
+        final String stringGroupName = "string";
+
         for (ExternalResource resource : externalResources) {
             switch (resource.getParserGroup()) {
                 case frequencyGroupName:
@@ -52,6 +57,9 @@ public class ResourceParserHandler {
                     break;
                 case omimGroupName:
                     omimResources.put(resource.getName(), resource);
+                    break;
+                case stringGroupName:
+                    stringResources.put(resource.getName(), resource);
                     break;
                 default:
                     parseResource(resource, inPath, outPath);
@@ -61,12 +69,17 @@ public class ResourceParserHandler {
         if (resourceParserGroupIsComplete(frequencyGroupName, requiredNumFrequencyResources, frequencyResources)) {
             parseVariantFrequencyResources(frequencyResources, inPath, outPath);
         }
-        
+
         int requiredNumOmimResources = 3;
         if (resourceParserGroupIsComplete(omimGroupName, requiredNumOmimResources, omimResources)) {
             parseOmimResources(omimResources, inPath, outPath);
         }
-        
+
+        int requiredNumStringResources = 2;
+        if (resourceParserGroupIsComplete(stringGroupName, requiredNumStringResources, stringResources)) {
+            parseStringResources(stringResources, inPath, outPath);
+        }
+
     }
 
     public static ResourceOperationStatus parseResource(ExternalResource externalResource, Path inPath, Path outPath) {
@@ -108,7 +121,9 @@ public class ResourceParserHandler {
         //doesn't matter
         File outputFile = new File(outPath.toFile(), dbSnpResource.getParsedFileName());
 
-        /* First parse the dnSNP data. */
+        /*
+         * First parse the dnSNP data.
+         */
         logger.info("Parsing dbSNP data");
         //this is the Frequency List we're going to populate and the write out to file
         ArrayList<Frequency> frequencyList = new ArrayList<>();
@@ -162,15 +177,32 @@ public class ResourceParserHandler {
         parseResourseFile(morbidParser, morbidMapResource, inPath, outPath);
     }
 
+    private static void parseStringResources(Map<String, ExternalResource> stringResources, Path inPath, Path outPath) {
+        logger.info("Parsing omim files. Writing out to: {}", outPath);
+        ExternalResource entrezResource = stringResources.get("String_entrez2sym");
+        ExternalResource stringResource = stringResources.get("String_protein_links");
+
+        HashMap<String, ArrayList<Integer>> ensembl2EntrezGene = new HashMap<>();
+        //first parse the entrez gene to symbol and ensembl peptide biomart file
+        EntrezParser entrezParser = new EntrezParser(ensembl2EntrezGene);
+        parseResourseFile(entrezParser, entrezResource, inPath, outPath);
+
+        //now parse the STRING DB file
+        StringParser stringParser = new StringParser(ensembl2EntrezGene);
+        parseResourseFile(stringParser, stringResource, inPath, outPath);
+    }
+
     /**
-     * Handles the calling of <code>Parser.parse</code> for the parser of an
+     * Handles the calling of
+     * <code>Parser.parse</code> for the parser of an
      * <code>ExternalResource</code>.
      *
      * @param parser
      * @param externalResource
      * @param inPath
      * @param outPath
-     * @return The status from the <code>Parser.parse</code>
+     * @return The status from the
+     * <code>Parser.parse</code>
      */
     private static ResourceOperationStatus parseResourseFile(Parser parser, ExternalResource externalResource, Path inPath, Path outPath) {
         File inputFile = new File(inPath.toFile(), externalResource.getExtractedFileName());
@@ -190,17 +222,17 @@ public class ResourceParserHandler {
     }
 
     /**
-     * Checks that the expected number of resources for a particular parser group
-     * have been provided. This is hard-coded in the <code>parseResources</code>
-     * method, but serves to verify everything has been correctly defined before
-     * continuing otherwise the resources will be skipped.
-     * 
+     * Checks that the expected number of resources for a particular parser
+     * group have been provided. This is hard-coded in the
+     * <code>parseResources</code> method, but serves to verify everything has
+     * been correctly defined before continuing otherwise the resources will be
+     * skipped.
+     *
      * @param groupName
      * @param requiredResourcesMapSize
      * @param resourcesMap
-     * @return 
+     * @return
      */
-    
     private static boolean resourceParserGroupIsComplete(String groupName, int requiredResourcesMapSize, Map<String, ExternalResource> resourcesMap) {
         if (resourcesMap.size() == requiredResourcesMapSize) {
             return true;
@@ -215,5 +247,4 @@ public class ResourceParserHandler {
         }
         return false;
     }
-
 }
