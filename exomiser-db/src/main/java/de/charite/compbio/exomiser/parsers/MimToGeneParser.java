@@ -63,17 +63,16 @@ public class MimToGeneParser implements Parser {
     @Override
     public ResourceOperationStatus parse(String inPath, String outPath) {
         
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outPath)));) {      
+        //this needs refactoring to properly test the process...
             // Parse OMIM gene ID information */
             parseMim2Gene(inPath, mim2geneMap);
             logger.info("Extracted {} genes from {}", mim2geneMap.size(), inPath);
-                    
-        } catch (IOException e) {
-            logger.error("Error parsing mim2gene file: {}", inPath, e);
-           return ResourceOperationStatus.FAILURE;
-        } 
-        
-    return ResourceOperationStatus.SUCCESS;
+             
+            if (mim2geneMap.isEmpty()) {
+                return ResourceOperationStatus.FAILURE;
+            }
+ 
+        return ResourceOperationStatus.SUCCESS;
     }
 
 //    /**
@@ -168,7 +167,6 @@ public class MimToGeneParser implements Parser {
             }
         } catch (IOException e) {
             logger.error("Error parsing mim2gene file: {}", mim2genePath, e);
-            System.exit(1);
         }
         return mim2geneMap;
 
