@@ -307,7 +307,7 @@ ALTER TABLE phenoseries
 --    ADD CONSTRAINT variant_pkey PRIMARY KEY (chromosome, "position", ref, alt);
 
 
-CREATE INDEX variant1 ON EXOMISER.variant (chromosome, "position", ref, alt);
+CREATE INDEX variant1 ON variant (chromosome, "position", ref, alt);
 
 
 -- CREATE INDEX disease_hit ON disease_disease_summary (disease_hit);
