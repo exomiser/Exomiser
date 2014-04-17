@@ -10,7 +10,7 @@ import de.charite.compbio.exomiser.parsers.DiseaseInheritanceCache;
 import de.charite.compbio.exomiser.parsers.EspFrequencyParser;
 import de.charite.compbio.exomiser.parsers.MimToGeneParser;
 import de.charite.compbio.exomiser.parsers.MorbidMapParser;
-import de.charite.compbio.exomiser.parsers.StringParser;
+import de.charite.compbio.exomiser.parsers.STRINGParser;
 import de.charite.compbio.exomiser.parsers.EntrezParser;
 import de.charite.compbio.exomiser.parsers.Parser;
 import de.charite.compbio.exomiser.reference.Frequency;
@@ -188,7 +188,7 @@ public class ResourceParserHandler {
         parseResourseFile(entrezParser, entrezResource, inPath, outPath);
 
         //now parse the STRING DB file
-        StringParser stringParser = new StringParser(ensembl2EntrezGene);
+        STRINGParser stringParser = new STRINGParser(ensembl2EntrezGene);
         parseResourseFile(stringParser, stringResource, inPath, outPath);
     }
 

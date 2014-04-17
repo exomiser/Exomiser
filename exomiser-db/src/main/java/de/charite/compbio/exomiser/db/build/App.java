@@ -40,7 +40,7 @@ public class App {
         Path downloadPath = (Path) context.getBean("downloadPath");
 
         //TODO: get from properties
-        boolean downloadExternalResources = false;
+        boolean downloadExternalResources = true;
         if (downloadExternalResources) {
             //download and unzip the necessary input files
             logger.info("Downloading required flatfiles...");
@@ -52,7 +52,7 @@ public class App {
         Path proccessPath = (Path) context.getBean("processPath");
 
         //TODO: get from properties
-        boolean extractExternalResources = false;
+        boolean extractExternalResources = true;
         if (extractExternalResources) {
             //process the downloaded files to prepare them for parsing (i.e. unzip, untar)
             logger.info("Extracting required flatfiles...");

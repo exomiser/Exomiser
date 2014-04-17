@@ -45,9 +45,6 @@ public class EntrezParser implements Parser {
     @Override
     public ResourceOperationStatus parse(String inPath, String outPath) {
 
-        // hack to cope with 2 files needed for StringParser but 2 output files generated - refactor when have working model
-        logger.info(inPath);
-        logger.info(outPath);
         logger.info("Parsing Entrez gene to  file: {}. Writing out to: {}", "data/extracted/ensembl_biomart.txt", "data/entrez2sym.pg");
         HashMap<Integer, String> entrez2sym = new HashMap<>();
         try (FileReader fileReader = new FileReader(inPath);
