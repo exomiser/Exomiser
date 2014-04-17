@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter Robinson
  * @version 0.05 (15 Feb, 2014).
  */
-public class STRINGParser implements Parser {
+public class StringParser implements Parser {
 
 
     private static final Logger logger = LoggerFactory.getLogger(EntrezParser.class);
@@ -44,7 +44,7 @@ public class STRINGParser implements Parser {
     
     private HashSet<Interaction> interactionSet = null;
 
-    public STRINGParser(HashMap<String, ArrayList<Integer>> ensembl2EntrezGene) {
+    public StringParser(HashMap<String, ArrayList<Integer>> ensembl2EntrezGene) {
 	this.ensembl2EntrezGene = ensembl2EntrezGene;
 	this.interactionSet = new HashSet<Interaction>();
    }

@@ -123,7 +123,7 @@ External resources:
         version: 9.1
         extractedFileName: 9606.protein.links.v9.1.txt
         extractionScheme: gz
-        parser: de.charite.compbio.exomiser.parsers.STRINGParser
+        parser: de.charite.compbio.exomiser.parsers.StringParser
         parserGroup: string
         parsedFileName: string.pg     
     
