@@ -223,7 +223,8 @@ CREATE TABLE omim_terms (
 
 CREATE TABLE phenoseries (
     seriesid integer NOT NULL,
-    name character varying(2056)
+    name character varying(2056),
+    genecount INTEGER
 );
 
 
