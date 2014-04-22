@@ -8,49 +8,43 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Parse the good old human-phenotype-ontology.obo file (or alternatively the
- * hp.obo file from our Hudson server). We want to create a table in the
- * database with lcname - HP:id - preferred name, where lcname is the lower-case
- * name or synonym, ID is the HPO id, and preferred name is the HPO Term name.
- * We lower-case the name ans synonyms to be able to search only over lower
- * cased names for the autosuggestion. However, we want to display the preferred
- * name in the end.
- *
- * @version 0.04 (27 November, 2013)
- * @author Peter Robinson
+ * 
  */
 public class EntrezParser implements Parser {
 
     private static final Logger logger = LoggerFactory.getLogger(EntrezParser.class);
-    private HashMap<String, ArrayList<Integer>> ensembl2EntrezGene;
+    private final HashMap<String, List<Integer>> ensembl2EntrezGene;
     
     /**
-     * @param conn COnnection to the Exomiser database.
+     * @param ensembl2EntrezGene
      */
-    public EntrezParser(HashMap<String, ArrayList<Integer>> ensembl2EntrezGene) {
+    public EntrezParser(HashMap<String, List<Integer>> ensembl2EntrezGene) {
         this.ensembl2EntrezGene = ensembl2EntrezGene;
     }
 
     /**
-     * This function does the actual work of parsing the HPO file.
+     * This function does the actual work of parsing the Entrez data.
      *
      * @param inPath Complete path to string file.
-     * @param outPath PAth where output file is to be written
+     * @param outPath Path where output file is to be written
+     * @return the ResourceOperationStatus
      */
     @Override
     public ResourceOperationStatus parse(String inPath, String outPath) {
 
-        logger.info("Parsing Entrez gene to  file: {}. Writing out to: {}", "data/extracted/ensembl_biomart.txt", "data/entrez2sym.pg");
+        logger.info("Parsing Entrez gene to  file: {}. Writing out to: {}", inPath, outPath);
         HashMap<Integer, String> entrez2sym = new HashMap<>();
-        try (FileReader fileReader = new FileReader(inPath);
-                BufferedReader br = new BufferedReader(fileReader);
-                FileWriter fileWriter = new FileWriter(new File(outPath));
-                BufferedWriter writer = new BufferedWriter(fileWriter)) {            
+        try (
+                BufferedReader br = new BufferedReader(new FileReader(inPath));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outPath)))) {            
             String line;
             while ((line = br.readLine()) != null) {
                 String[] split = line.split("\t");
@@ -75,12 +69,12 @@ public class EntrezParser implements Parser {
                 String symbol = split[2];
                 entrez2sym.put(entrez, symbol);
                 if (this.ensembl2EntrezGene.containsKey(ens)) {
-                    ArrayList<Integer> test = this.ensembl2EntrezGene.get(ens);
+                    List<Integer> test = this.ensembl2EntrezGene.get(ens);
                     if (!test.contains(entrez)) {
                         test.add(entrez);
                     }
                 } else {
-                    ArrayList<Integer> lst = new ArrayList<Integer>();
+                    List<Integer> lst = new ArrayList<>();
                     lst.add(entrez);
                     this.ensembl2EntrezGene.put(ens, lst);
                 }
@@ -108,6 +102,3 @@ public class EntrezParser implements Parser {
         return ResourceOperationStatus.SUCCESS;
     }
 }
-/*
- * eof
- */
