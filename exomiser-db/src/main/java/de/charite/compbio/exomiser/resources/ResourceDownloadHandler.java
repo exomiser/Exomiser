@@ -10,6 +10,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,10 @@ public class ResourceDownloadHandler {
             logger.info("Resource: {}: Getting {} from {}", externalResource.getName(), externalResource.getRemoteFileName(), resourceUrl);
             status = FileDownloadUtils.fetchFile(resourceUrl, new File(String.format("%s/%s", downloadPath, externalResource.getRemoteFileName())));
             externalResource.setDownloadStatus(status);
+            //if there is no version info for the resource, set a timestamp
+            if (externalResource.getVersion().isEmpty()) {
+                externalResource.setVersion(Instant.now().toString());
+            }
 
         } catch (MalformedURLException ex) {
             status = ResourceOperationStatus.FAILURE;
