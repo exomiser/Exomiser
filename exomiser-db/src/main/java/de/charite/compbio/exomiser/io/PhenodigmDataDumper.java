@@ -79,7 +79,7 @@ public class PhenodigmDataDumper {
                 String entrezId = rs.getString("entrezgene");
                 String diseaseTerm = rs.getString("disease_term");
 
-                String outLine = String.format("%s||%s|%s|||", diseaseId, diseaseTerm,entrezId);
+                String outLine = String.format("%s||%s|%s||", diseaseId, diseaseTerm,entrezId);
                 writer.write(outLine);
                 writer.newLine();
             }
