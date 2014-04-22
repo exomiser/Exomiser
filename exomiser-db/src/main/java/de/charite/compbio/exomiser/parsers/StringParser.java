@@ -2,17 +2,18 @@ package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.*; 
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,12 +40,12 @@ public class StringParser implements Parser {
 
 
     private static final Logger logger = LoggerFactory.getLogger(EntrezParser.class);
-    private HashMap<String,ArrayList<Integer>> ensembl2EntrezGene=null;
+    private HashMap<String, List<Integer>> ensembl2EntrezGene=null;
 
     
     private HashSet<Interaction> interactionSet = null;
 
-    public StringParser(HashMap<String, ArrayList<Integer>> ensembl2EntrezGene) {
+    public StringParser(HashMap<String, List<Integer>> ensembl2EntrezGene) {
 	this.ensembl2EntrezGene = ensembl2EntrezGene;
 	this.interactionSet = new HashSet<Interaction>();
    }
@@ -135,8 +136,8 @@ public class StringParser implements Parser {
 		System.err.println("Malformed score: " + line + "\n\t(could not parse field: \"" + split[2] + "\"");
 		System.exit(1);
 	    }
-	    ArrayList<Integer> e1 = this.ensembl2EntrezGene.get(p1);
-	    ArrayList<Integer> e2 = this.ensembl2EntrezGene.get(p2);
+	    List<Integer> e1 = this.ensembl2EntrezGene.get(p1);
+	    List<Integer> e2 = this.ensembl2EntrezGene.get(p2);
 	    if (e1==null || e2==null) {
 		/* cannot find entrezgene id, just skip */
 		continue;

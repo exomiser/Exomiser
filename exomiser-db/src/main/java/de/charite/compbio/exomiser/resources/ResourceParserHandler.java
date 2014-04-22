@@ -7,12 +7,13 @@ package de.charite.compbio.exomiser.resources;
 
 import de.charite.compbio.exomiser.parsers.DbSnpFrequencyParser;
 import de.charite.compbio.exomiser.parsers.DiseaseInheritanceCache;
+import de.charite.compbio.exomiser.parsers.EntrezParser;
 import de.charite.compbio.exomiser.parsers.EspFrequencyParser;
+import de.charite.compbio.exomiser.parsers.MetaDataParser;
 import de.charite.compbio.exomiser.parsers.MimToGeneParser;
 import de.charite.compbio.exomiser.parsers.MorbidMapParser;
-import de.charite.compbio.exomiser.parsers.StringParser;
-import de.charite.compbio.exomiser.parsers.EntrezParser;
 import de.charite.compbio.exomiser.parsers.Parser;
+import de.charite.compbio.exomiser.parsers.StringParser;
 import de.charite.compbio.exomiser.reference.Frequency;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -45,10 +47,14 @@ public class ResourceParserHandler {
         Map<String, ExternalResource> omimResources = new HashMap<>();
         //...and the STRING DB files
         Map<String, ExternalResource> stringResources = new HashMap<>();
+        //...and the MetaData 'file'
+        ExternalResource metaDataResource = null;
 
+        //these will be re-factored so that the resource file contains this information
         final String frequencyGroupName = "frequency";
         final String omimGroupName = "omim";
         final String stringGroupName = "string";
+        final String metaDataGroupName = "metadata";
 
         for (ExternalResource resource : externalResources) {
             switch (resource.getParserGroup()) {
@@ -60,6 +66,11 @@ public class ResourceParserHandler {
                     break;
                 case stringGroupName:
                     stringResources.put(resource.getName(), resource);
+                    break;
+                case metaDataGroupName:
+                    //this is handled after all the others as the parsers could 
+                    //set the file version in the ExternalResource 
+                    metaDataResource = resource;
                     break;
                 default:
                     parseResource(resource, inPath, outPath);
@@ -79,7 +90,10 @@ public class ResourceParserHandler {
         if (resourceParserGroupIsComplete(stringGroupName, requiredNumStringResources, stringResources)) {
             parseStringResources(stringResources, inPath, outPath);
         }
-
+        
+        if (metaDataResource != null) {
+            parseMetaData(metaDataResource, externalResources, outPath);
+        }
     }
 
     public static ResourceOperationStatus parseResource(ExternalResource externalResource, Path inPath, Path outPath) {
@@ -182,7 +196,7 @@ public class ResourceParserHandler {
         ExternalResource entrezResource = stringResources.get("String_entrez2sym");
         ExternalResource stringResource = stringResources.get("String_protein_links");
 
-        HashMap<String, ArrayList<Integer>> ensembl2EntrezGene = new HashMap<>();
+        HashMap<String, List<Integer>> ensembl2EntrezGene = new HashMap<>();
         //first parse the entrez gene to symbol and ensembl peptide biomart file
         EntrezParser entrezParser = new EntrezParser(ensembl2EntrezGene);
         parseResourseFile(entrezParser, entrezResource, inPath, outPath);
@@ -193,16 +207,14 @@ public class ResourceParserHandler {
     }
 
     /**
-     * Handles the calling of
-     * <code>Parser.parse</code> for the parser of an
+     * Handles the calling of <code>Parser.parse</code> for the parser of an
      * <code>ExternalResource</code>.
      *
      * @param parser
      * @param externalResource
      * @param inPath
      * @param outPath
-     * @return The status from the
-     * <code>Parser.parse</code>
+     * @return The status from the <code>Parser.parse</code>
      */
     private static ResourceOperationStatus parseResourseFile(Parser parser, ExternalResource externalResource, Path inPath, Path outPath) {
         File inputFile = new File(inPath.toFile(), externalResource.getExtractedFileName());
@@ -246,5 +258,29 @@ public class ResourceParserHandler {
             logger.warn("Check the external-resources file for resources with parserGroup '{}'", groupName);
         }
         return false;
+    }
+
+    /**
+     * Parses out the file version info from the supplied ExternalResources and
+     * dumps them out to a dump file.
+     *
+     * @param externalResources
+     * @param outPath
+     */
+    private static ResourceOperationStatus parseMetaData(ExternalResource metaDataResource, Iterable<ExternalResource> externalResources, Path outPath) {
+
+        logger.info("Handling resource: {}", metaDataResource.getName());
+                
+        File outputFile = new File(outPath.toFile(), metaDataResource.getParsedFileName());
+        ResourceOperationStatus parseStatus;
+
+        Parser metaDataParser = new MetaDataParser(metaDataResource, externalResources);
+        parseStatus = metaDataParser.parse(null, outputFile.getPath());
+        logger.info("{} {}", parseStatus, metaDataParser.getClass().getCanonicalName());
+
+        //remember to set the status for later
+        metaDataResource.setParseStatus(parseStatus);
+        return parseStatus;
+
     }
 }
