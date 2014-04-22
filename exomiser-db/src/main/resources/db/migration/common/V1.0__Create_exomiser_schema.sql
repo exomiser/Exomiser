@@ -179,9 +179,9 @@ CREATE TABLE mouse_gene_level_summary (
 -- Name: omim; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE omim (
-    phenmim VARCHAR(12) NOT NULL,
-    genemim VARCHAR(12) NOT NULL,
+CREATE TABLE disease (
+    disease_id VARCHAR(20) NOT NULL,
+    omim_gene_id VARCHAR(20),
     diseasename character varying(2056),
     gene_id integer NOT NULL,
     type character(1),
@@ -265,11 +265,11 @@ CREATE TABLE disease_hp (
     hp_id character varying(3000)
 );
 
-CREATE TABLE orphanet (
-    orphanumber  character varying(20), 
-    entrezgeneid integer not null, 
-    diseasename  character varying(2056)
-);
+--CREATE TABLE orphanet (
+--    orphanumber  character varying(20), 
+--    entrezgeneid integer not null, 
+--    diseasename  character varying(2056)
+--);
 
 CREATE TABLE metadata (
     resource VARCHAR(1024),
@@ -303,9 +303,10 @@ ALTER TABLE omim2gene
 -- Name: omim_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE omim
-    ADD CONSTRAINT omim_pkey PRIMARY KEY (gene_id, phenmim, genemim);
+--ALTER TABLE disease
+--    ADD CONSTRAINT omim_pkey PRIMARY KEY (gene_id, disease_id, omim_gene_id);
 
+CREATE INDEX disease1 ON disease (gene_id, disease_id);
 
 --
 -- TOC entry 1862 (class 2606 OID 16458)

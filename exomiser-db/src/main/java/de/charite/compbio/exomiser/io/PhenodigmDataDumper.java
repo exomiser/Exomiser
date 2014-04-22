@@ -63,7 +63,7 @@ public class PhenodigmDataDumper {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Orphanet data to file: {}", outfile);
 
-        String sql = "select d.disease_id, entrezgene, disease_term "
+        String sql = "select distinct d.disease_id, entrezgene, disease_term "
                 + "from mouse_disease_gene_summary mdm, disease d, mouse_gene_ortholog mgo "
                 + "where d.disease_id=mdm.disease_id and mdm.model_gene_id = mgo.model_gene_id and "
                 + "human_curated = 1 and d.disease_id like '%ORPHA%' and entrezgene is not null";
@@ -79,7 +79,7 @@ public class PhenodigmDataDumper {
                 String entrezId = rs.getString("entrezgene");
                 String diseaseTerm = rs.getString("disease_term");
 
-                String outLine = String.format("%s|%s|%s", diseaseId, entrezId, diseaseTerm);
+                String outLine = String.format("%s||%s|%s|||", diseaseId, diseaseTerm,entrezId);
                 writer.write(outLine);
                 writer.newLine();
             }

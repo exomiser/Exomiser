@@ -23,7 +23,7 @@ public class V2_3__Insert_omim implements JdbcMigration {
     public void migrate(Connection connection) throws Exception {
         CopyManager copyManager = new CopyManager((BaseConnection) connection);
         try (FileReader fileReader = new FileReader("data/omim.pg")) {
-            copyManager.copyIn("COPY omim from STDIN WITH DELIMITER '|';", fileReader, 1024);
+            copyManager.copyIn("COPY disease from STDIN WITH DELIMITER '|';", fileReader, 1024);
         }
     }
 }
