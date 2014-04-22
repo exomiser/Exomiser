@@ -41,7 +41,7 @@ External resources:
 #        name: dbSNP
 #        url: ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/
 #        remoteFileName: 00-All.vcf.gz
-#        version: 00
+#        version:
 #        extractedFileName: dbSNP_00-All.vcf
 #        extractionScheme: copy #can also do a gz 
 #        parser: de.charite.compbio.exomiser.parsers.DbSnpFrequencyParser
@@ -52,7 +52,7 @@ External resources:
 #        name: ESP
 #        url: http://evs.gs.washington.edu/evs_bulk_data/
 #        remoteFileName: ESP6500SI-V2-SSA137.protein-hgvs-update.snps_indels.vcf.tar.gz
-#        version: 2
+#        version:
 #        extractedFileName: ESP_snps_indels
 #        extractionScheme: tgz
 #        parser: de.charite.compbio.exomiser.parsers.EspFrequencyParser
@@ -63,7 +63,7 @@ External resources:
 #        name: UCSC_HG19
 #        url: #this file is contained in the resources package as it needs to be made manually with Jannovar
 #        remoteFileName: ucsc_hg19.ser.gz
-#        version: 2
+#        version: HG19
 #        extractedFileName: ucsc_hg19.ser
 #        extractionScheme: gz
 #        parser: 
@@ -75,7 +75,7 @@ External resources:
 #        url: ftp://anonymous:jj8%40sanger.ac.uk@ftp.omim.org/OMIM/
 ##        url: ftp://ftp.omim.org/OMIM/
 #        remoteFileName: mim2gene.txt
-#        version: 2
+#        version:
 #        extractedFileName: OMIM_mim2gene.txt
 #        extractionScheme: copy
 #        parser: de.charite.compbio.exomiser.parsers.MimToGeneParser
@@ -87,7 +87,7 @@ External resources:
 #        url: ftp://anonymous:jj8%40sanger.ac.uk@ftp.omim.org/OMIM/
 ##        url: ftp://ftp.omim.org/OMIM/
 #        remoteFileName: morbidmap
-#        version: 2
+#        version:
 #        extractedFileName: OMIM_morbidmap.txt
 #        extractionScheme: copy
 #        parser: de.charite.compbio.exomiser.parsers.MorbidMapParser
@@ -126,39 +126,13 @@ External resources:
 #        parser: de.charite.compbio.exomiser.parsers.StringParser
 #        parserGroup: string
 #        parsedFileName: string.pg     
-    
-    
-    
-#        - !resource
-#        name: ExomeWalker_phenotypic_series
-#        url: #this file is contained in the resources package
-#        remoteFileName: pheno2gene.txt
-#        version: 
-#        extractedFileName: pheno2gene.txt
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.PhenoSeriesParser
-#        parserGroup: exomeWalker
-#        parsedFileName: phenoseries.pg     
-        
-    #pheno2gene.txt is produced from a custom data-dump from OMIM which is then post-processed
-    #with some perl scripts using data from the mim2gene_medgen and gene_info files from NCBI
-    #(ftp://ftp.ncbi.nlm.nih.gov/gene/DATA) consequently this is treated as static data.
-#      - !resource
-#        name: ExomeWalker_omim2gene
-#        url: #this file is contained in the resources package
-#        remoteFileName: pheno2gene.txt
-#        version: 
-#        extractedFileName: pheno2gene.txt
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.Omim2GeneParser
-#        parserGroup: exomeWalker
-#        parsedFileName: omim2gene.pg     
-#
+
+
 #      - !resource
 #        name: ExomeWalker_phenotypic_series
 #        url: #this file is contained in the resources package
 #        remoteFileName: pheno2gene.txt
-#        version: 
+#        version: 2013-02-01T20:10
 #        extractedFileName: pheno2gene.txt
 #        extractionScheme: copy
 #        parser: de.charite.compbio.exomiser.parsers.PhenoSeriesParser
@@ -171,20 +145,18 @@ External resources:
 #        name: ExomeWalker_omim2gene
 #        url: #this file is contained in the resources package
 #        remoteFileName: pheno2gene.txt
-#        version: 
+#        version: 2013-02-01T20:10
 #        extractedFileName: pheno2gene.txt
 #        extractionScheme: copy
 #        parser: de.charite.compbio.exomiser.parsers.Omim2GeneParser
 #        parserGroup: exomeWalker
 #        parsedFileName: omim2gene.pg     
-
- 
 #    
 #      - !resource
 #        name: ClinVar
 #        url: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/
 #        remoteFileName: variant_summary.txt.gz
-#        version: Feb 13 20:10
+#        version:
 #        extractedFileName: ClinVar_variant_summary.txt
 #        extractionScheme: gz
 #        parser: de.charite.compbio.exomiser.parsers.ClinVarParser
