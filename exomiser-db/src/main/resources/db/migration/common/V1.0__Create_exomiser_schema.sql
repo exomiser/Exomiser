@@ -80,7 +80,21 @@ CREATE TABLE hp_mp_mappings (
 
 CREATE TABLE mp(
     mp_id       CHAR(10),
-    mp_term VARCHAR(256));
+    mp_term VARCHAR(256)
+);
+
+CREATE TABLE hp_zp_mappings (
+    mapping_id integer,
+    hp_id character varying(10),
+    zp_id character varying(10),
+    score double precision
+);
+
+
+CREATE TABLE zp(
+    zp_id       CHAR(10),
+    zp_term VARCHAR(256)
+);
 
 --
 -- TOC entry 164 (class 1259 OID 16403)
@@ -140,6 +154,12 @@ CREATE TABLE mgi_mp (
     mp_id character varying(3000)
 );
 
+CREATE TABLE zfin_zp (
+    zfin_gene_id character varying(20),
+    zfin_gene_symbol character varying(200),
+    zfin_model_id integer,
+    zp_id character varying(3000)
+);
 
 --
 -- TOC entry 168 (class 1259 OID 16418)
@@ -330,6 +350,7 @@ CREATE INDEX hp_id ON hp_mp_mappings (hp_id);
 
 CREATE INDEX hp_id2 ON hp_hp_mappings (hp_id);
 
+CREATE INDEX hp_id3 ON hp_zp_mappings (hp_id);
 
 --
 -- TOC entry 1853 (class 1259 OID 16469)
@@ -396,6 +417,7 @@ CREATE INDEX zfin_gene_id_2 ON fish_gene_level_summary (zfin_gene_id);
 
 
 CREATE INDEX mgi_gene_id_4 ON mgi_mp (mgi_gene_id);
+CREATE INDEX zfin_gene_id_4 ON zfin_zp (zfin_gene_id);
 CREATE INDEX disease_id_3 ON disease_hp (disease_id);
 -- Completed on 2013-12-05 14:38:16
 
