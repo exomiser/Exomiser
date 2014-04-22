@@ -23,7 +23,7 @@ public class V2_9__Insert_metadata implements JdbcMigration {
     public void migrate(Connection connection) throws Exception {
         CopyManager copyManager = new CopyManager((BaseConnection) connection);
         try (FileReader fileReader = new FileReader("data/metadata.pg")) {
-            copyManager.copyIn("COPY string from STDIN WITH DELIMITER '|';", fileReader, 1024);
+            copyManager.copyIn("COPY metadata from STDIN WITH DELIMITER '|';", fileReader, 1024);
         }
     }
 }
