@@ -100,6 +100,12 @@
             <artifactId>commons-net</artifactId>
             <version>3.3</version>
         </dependency>
+        <!--Joda time as we're not using Java 8 yet -->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.3</version>      
+        </dependency>
     </dependencies>
     <build>
         <plugins>
