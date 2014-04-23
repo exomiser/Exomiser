@@ -39,10 +39,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -331,16 +328,13 @@ public class Exomizer {
         /**
          * ***********************************************************
          */
-        logger.info("STARTING EXOMISER - GETTING CONNECTION");
-
         Exomizer exomizer = new Exomizer(argv);
         try {
             exomizer.openNewDatabaseConnection();
         } catch (ExomizerInitializationException ex) {
-            logger.error("Could not open SQL connection. Terminating program... {}", ex);
+            logger.error("Could not open SQL connection. Terminating program...", ex);
             System.exit(1);
         }
-        logger.info("DESERIALISING UCSC");
         /**
          * ***********************************************************
          */
@@ -356,10 +350,9 @@ public class Exomizer {
         try {
             exomizer.deserializeUCSCdata();
         } catch (ExomizerException e) {
-            logger.error("Error with deserialization: {}", e);
+            logger.error("Error with deserialization:", e);
             System.exit(1);
         }
-        logger.info("READING VCF");
         /**
          * ***********************************************************
          */
@@ -372,7 +365,7 @@ public class Exomizer {
         try {
             exomizer.parseVCFFile();
         } catch (ExomizerException e) {
-            logger.error("Error with VCF input: {}", e);
+            logger.error("Error with VCF input:", e);
             System.exit(1);
         }
         /**
@@ -391,7 +384,7 @@ public class Exomizer {
              * "dummy" pedigree object.
              */
         } catch (ExomizerException e) {
-            logger.error("Error with pedigree data input: {}", e);
+            logger.error("Error with pedigree data input:", e);
             System.exit(1);
         }
         /**
@@ -411,7 +404,7 @@ public class Exomizer {
             logger.info("FILTERING AND PRIORITISING");
             exomizer.executePrioritization();
         } catch (ExomizerException e) {
-            logger.error("Error while prioritizing VCF data: {}", e);
+            logger.error("Error while prioritizing VCF data: ", e);
             System.exit(1);
         }
         logger.info("OUTPUTTING RESULTS");
@@ -439,7 +432,7 @@ public class Exomizer {
             try {
                 exomizer.outputHTML();
             } catch (ExomizerException e) {
-                logger.error("Error writing output: {}", e);
+                logger.error("Error writing output: ", e);
                 System.exit(1);
             }
         }
@@ -467,6 +460,7 @@ public class Exomizer {
      * @param argv an array with the command line arguments
      */
     public Exomizer(String argv[]) {
+        logger.info("STARTING EXOMISER");
         parseCommandLineArguments(argv);
         this.status_message = new ArrayList<String>();
         if (outfile == null) {
@@ -495,7 +489,7 @@ public class Exomizer {
         try {
             deserializeUCSCdata();
         } catch (ExomizerException e) {
-            logger.error("Error trying to de-serialise UCSC HG data: {}", e);
+            logger.error("Error trying to de-serialise UCSC HG data: ", e);
             System.exit(1);
         }
     }
@@ -592,6 +586,7 @@ public class Exomizer {
      * from an affected person.
      */
     public void processPedigreeData() throws ExomizerException {
+        logger.info("PROCESSING PEDIGREE DATA");
         if (this.n_samples == 1) {
             String sample = "single sample";
             if (this.sampleNames.size() > 0) {
@@ -656,6 +651,7 @@ public class Exomizer {
      * chromosomes.
      */
     public void deserializeUCSCdata() throws ExomizerException {
+        logger.info("DESERIALISING UCSC...");
         ArrayList<TranscriptModel> kgList = null;
         SerializationManager manager = new SerializationManager();
         try {
@@ -665,6 +661,7 @@ public class Exomizer {
             throw new ExomizerException(s);
         }
         this.chromosomeMap = Chromosome.constructChromosomeMapWithIntervalTree(kgList);
+        logger.info("DONE DESERIALISING UCSC");
     }
 
     /**
@@ -822,6 +819,7 @@ public class Exomizer {
      * @throws ExomizerException
      */
     public void parseVCFFile() throws ExomizerException {
+        logger.info("READING VCF");
         /**
          * ***********************************************************
          */
@@ -896,6 +894,7 @@ public class Exomizer {
      * Connect to database and store connection in handle this.connect.
      */
     public void openNewDatabaseConnection() throws ExomizerInitializationException {
+        logger.info("GETTING DATABASE CONNECTION");
         this.connection = ExomiserDatabase.openNewDatabaseConnection();
     }
 
@@ -904,6 +903,7 @@ public class Exomizer {
      * stale connections
      */
     public void closeDatabaseConnection() throws ExomizerInitializationException {
+        logger.info("CLOSING DATABASE CONNECTION");
         ExomiserDatabase.closeDatabaseConnection(this.connection);
     }
 
@@ -972,7 +972,7 @@ public class Exomizer {
             }
             out.close();
         } catch (IOException e) {
-            logger.error("Error writing TSV file. {}", e);
+            logger.error("Error writing TSV file:", e);
         }
     }
 
@@ -1014,7 +1014,7 @@ public class Exomizer {
             }
             out.close();
         } catch (IOException e) {
-            logger.error("Error writing VCF file: {}", e);
+            logger.error("Error writing VCF file:", e);
         }
     }
 
@@ -1723,4 +1723,3 @@ public class Exomizer {
         this.diseaseGeneFamilyName = name;
     }
 }
-/* eof  */

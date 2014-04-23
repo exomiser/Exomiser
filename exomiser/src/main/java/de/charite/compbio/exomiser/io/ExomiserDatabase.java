@@ -141,7 +141,7 @@ public class ExomiserDatabase {
      */
     public static void updateVersionInfo(String resource, String versionInfo, Connection connection)
             throws ExomizerInitializationException {
-        logger.info("Adding version information for " + resource + ", version: " + versionInfo);
+        logger.info("Adding version information for {} version: {}", resource, versionInfo);
 
         try {
             if (versionEntryExists(resource, connection)) {
