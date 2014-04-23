@@ -3,36 +3,35 @@ package de.charite.compbio.exomiser.priority;
 
 
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Calendar;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import jannovar.common.ModeOfInheritance;
-import jannovar.exome.Variant;
-
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
+import de.charite.compbio.exomiser.filter.BedFilter;
 import de.charite.compbio.exomiser.filter.FrequencyFilter;
 import de.charite.compbio.exomiser.filter.IFilter;
 import de.charite.compbio.exomiser.filter.IntervalFilter;
 import de.charite.compbio.exomiser.filter.PathogenicityFilter;
 import de.charite.compbio.exomiser.filter.QualityFilter;
 import de.charite.compbio.exomiser.filter.TargetFilter;
-import de.charite.compbio.exomiser.filter.BedFilter;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
+import jannovar.common.ModeOfInheritance;
+import jannovar.exome.Variant;
+import java.sql.Connection;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -98,7 +97,9 @@ import de.charite.compbio.exomiser.priority.util.DataMatrix;
  * @author Peter Robinson
  */
 public class Prioritiser {
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(Prioritiser.class);
+    
     /** Database handle to the postgreSQL database used by this application. */
     private Connection connection = null;
     /**
@@ -176,11 +177,9 @@ public class Prioritiser {
 	}
 	/** Now create a list of Genes so we can sort them. */
 	this.geneList = new ArrayList<Gene>(gene_map.values());
-	for (IPriority f : this.priorityList) {
-            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-            Calendar cal = Calendar.getInstance();
-            System.out.println(f.getPriorityName() + " STARTING:"+dateFormat.format(cal.getTime()));
-            f.prioritize_list_of_genes(this.geneList);
+	for (IPriority priority : this.priorityList) {
+            logger.info("STARTING prioritiser: {}", priority.getPriorityName());
+            priority.prioritize_list_of_genes(this.geneList);
 	}
     }
 
@@ -199,9 +198,7 @@ public class Prioritiser {
      */
     private void filterVariants(List<VariantEvaluation> variantList) {
 	for (IFilter f : this.filterList) {
-            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-            Calendar cal = Calendar.getInstance();
-            System.out.println(f.getFilterName() + " STARTING:"+dateFormat.format(cal.getTime()));
+            logger.info("STARTING filter: {}", f.getFilterName());
 	    f.filter_list_of_variants(variantList);
 	}
     }
@@ -223,27 +220,21 @@ public class Prioritiser {
     public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) 
 	throws ExomizerException 
     {
-
-	
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        Calendar cal = Calendar.getInstance();
-        System.out.println("FILTERING:"+dateFormat.format(cal.getTime()));
 	/**************************************************************/
 	/* 1) Filter the variants according to user-supplied params. */
 	/**************************************************************/
+        logger.info("FILTERING VARIANTS");
 	filterVariants(variantList);
-        cal = Calendar.getInstance();
-        System.out.println("PRIORITISING:"+dateFormat.format(cal.getTime()));
 	/**************************************************************/
 	/* 2) Prioritize the variants according to phenotype, model */
 	/* organism data, protein protein interactions, whatever */
 	/**************************************************************/
+        logger.info("PRIORITISING GENES");
 	prioritizeGenes(variantList);
 	/**************************************************************/
 	/* 3) Rank all genes now according to combined score. */
 	/**************************************************************/
-        cal = Calendar.getInstance();
-        System.out.println("RANKING GENES:"+dateFormat.format(cal.getTime()));
+        logger.info("RANKING GENES");
         if (rankBasedScoring) {
 	    scoreCandidateGenesByRank();
 	} else {
@@ -507,11 +498,4 @@ public class Prioritiser {
 	}
 	this.priorityList.add(ip);
     }
-    
-
-
-
-
-
 }
-/* eof. */
