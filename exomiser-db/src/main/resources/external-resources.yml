@@ -15,155 +15,155 @@ External resources:
 #        extractionScheme: zip
 #        parser: de.charite.compbio.exomiser.parsers.HPOOntologyFileParser
             
-#      - !resource
-#        name: HPO
-#        url: http://compbio.charite.de/hudson/job/hpo/lastStableBuild/artifact/ontology/release/
-#        remoteFileName: hp.obo
-#        version: 
-#        extractedFileName: hpo.obo
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.HPOOntologyFileParser
-#        parserGroup: hpo
-#        parsedFileName: hpo.pg
+      - !resource
+        name: HPO
+        url: http://compbio.charite.de/hudson/job/hpo/lastStableBuild/artifact/ontology/release/
+        remoteFileName: hp.obo
+        version: 
+        extractedFileName: hpo.obo
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.HPOOntologyFileParser
+        parserGroup: hpo
+        parsedFileName: hpo.pg
 
-#      - !resource
-#        name: dbNSFP # this is a 4.4GB file so might take a while
-#        url: http://dbnsfp.houstonbioinformatics.org/dbNSFPzip/
-#        remoteFileName: dbNSFPv2.3.zip #it is also about 25GB when uncompresssed
-#        version: 2.3  #so fear it
-#        extractedFileName: dbNSFPv2.3.zip
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.NSFP2SQLDumpParser
-#        parserGroup: variant
-#        parsedFileName: variant.pg
-#    
-#      - !resource
-#        name: dbSNP
-#        url: ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/
-#        remoteFileName: 00-All.vcf.gz
-#        version:
-#        extractedFileName: dbSNP_00-All.vcf
-#        extractionScheme: copy #can also do a gz 
-#        parser: de.charite.compbio.exomiser.parsers.DbSnpFrequencyParser
-#        parserGroup: frequency
-#        parsedFileName: frequency.pg
-#        
-#      - !resource
-#        name: ESP
-#        url: http://evs.gs.washington.edu/evs_bulk_data/
-#        remoteFileName: ESP6500SI-V2-SSA137.protein-hgvs-update.snps_indels.vcf.tar.gz
-#        version:
-#        extractedFileName: ESP_snps_indels
-#        extractionScheme: tgz
-#        parser: de.charite.compbio.exomiser.parsers.EspFrequencyParser
-#        parserGroup: frequency
-#        parsedFileName: frequency.pg
-#
-#      - !resource
-#        name: UCSC_HG19
-#        url: #this file is contained in the resources package as it needs to be made manually with Jannovar
-#        remoteFileName: ucsc_hg19.ser.gz
-#        version: HG19
-#        extractedFileName: ucsc_hg19.ser
-#        extractionScheme: gz
-#        parser: 
-#        parserGroup: frequency
-#        parsedFileName: 
-#        
-#      - !resource
-#        name: OMIM_mim2gene
-#        url: ftp://anonymous:jj8%40sanger.ac.uk@ftp.omim.org/OMIM/
-##        url: ftp://ftp.omim.org/OMIM/
-#        remoteFileName: mim2gene.txt
-#        version:
-#        extractedFileName: OMIM_mim2gene.txt
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.MimToGeneParser
-#        parserGroup: omim
-#        parsedFileName: omim.pg
-#
-#      - !resource
-#        name: OMIM_morbidmap
-#        url: ftp://anonymous:jj8%40sanger.ac.uk@ftp.omim.org/OMIM/
-##        url: ftp://ftp.omim.org/OMIM/
-#        remoteFileName: morbidmap
-#        version:
-#        extractedFileName: OMIM_morbidmap.txt
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.MorbidMapParser
-#        parserGroup: omim
-#        parsedFileName: omim.pg
-#        
-#      - !resource
-#        name: HPO_phenotype_annotations
-#        url: http://compbio.charite.de/hudson/job/hpo.annotations/lastStableBuild/artifact/misc/
-#        remoteFileName: phenotype_annotation.tab
-#        version: 
-#        extractedFileName: phenotype_annotation.tab
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.MorbidMapParser
-#        parserGroup: omim
-#        parsedFileName: omim.pg   
+      - !resource
+        name: dbNSFP # this is a 4.4GB file so might take a while
+        url: http://dbnsfp.houstonbioinformatics.org/dbNSFPzip/
+        remoteFileName: dbNSFPv2.3.zip #it is also about 25GB when uncompresssed
+        version: 2.3  #so fear it
+        extractedFileName: dbNSFPv2.3.zip
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.NSFP2SQLDumpParser
+        parserGroup: variant
+        parsedFileName: variant.pg
+    
+      - !resource
+        name: dbSNP
+        url: ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/
+        remoteFileName: 00-All.vcf.gz
+        version: 00
+        extractedFileName: dbSNP_00-All.vcf
+        extractionScheme: copy #can also do a gz 
+        parser: de.charite.compbio.exomiser.parsers.DbSnpFrequencyParser
+        parserGroup: frequency
+        parsedFileName: frequency.pg
+        
+      - !resource
+        name: ESP
+        url: http://evs.gs.washington.edu/evs_bulk_data/
+        remoteFileName: ESP6500SI-V2-SSA137.protein-hgvs-update.snps_indels.vcf.tar.gz
+        version: 2
+        extractedFileName: ESP_snps_indels
+        extractionScheme: tgz
+        parser: de.charite.compbio.exomiser.parsers.EspFrequencyParser
+        parserGroup: frequency
+        parsedFileName: frequency.pg
+
+      - !resource
+        name: UCSC_HG19
+        url: #this file is contained in the resources package as it needs to be made manually with Jannovar
+        remoteFileName: ucsc_hg19.ser.gz
+        version: 2
+        extractedFileName: ucsc_hg19.ser
+        extractionScheme: gz
+        parser: 
+        parserGroup: frequency
+        parsedFileName: 
+        
+      - !resource
+        name: OMIM_mim2gene
+        url: ftp://anonymous:jj8%40sanger.ac.uk@ftp.omim.org/OMIM/
+#        url: ftp://ftp.omim.org/OMIM/
+        remoteFileName: mim2gene.txt
+        version: 2
+        extractedFileName: OMIM_mim2gene.txt
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.MimToGeneParser
+        parserGroup: omim
+        parsedFileName: omim.pg
+
+      - !resource
+        name: OMIM_morbidmap
+        url: ftp://anonymous:jj8%40sanger.ac.uk@ftp.omim.org/OMIM/
+#        url: ftp://ftp.omim.org/OMIM/
+        remoteFileName: morbidmap
+        version: 2
+        extractedFileName: OMIM_morbidmap.txt
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.MorbidMapParser
+        parserGroup: omim
+        parsedFileName: omim.pg
+        
+      - !resource
+        name: HPO_phenotype_annotations
+        url: http://compbio.charite.de/hudson/job/hpo.annotations/lastStableBuild/artifact/misc/
+        remoteFileName: phenotype_annotation.tab
+        version: 
+        extractedFileName: phenotype_annotation.tab
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.MorbidMapParser
+        parserGroup: omim
+        parsedFileName: omim.pg   
             
-#       - !resource
-#        name: String_entrez2sym
-#        url: http://www.ensembl.org/biomart/martservice?query=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%20%3C!DOCTYPE%20Query%3E%20%3CQuery%20%20virtualSchemaName%20=%20%22default%22%20formatter%20=%20%22TSV%22%20header%20=%20%220%22%20uniqueRows%20=%20%220%22%20count%20=%20%22%22%20datasetConfigVersion%20=%20%220.6%22%20%3E%20%20%3CDataset%20name%20=%20%22hsapiens_gene_ensembl%22%20interface%20=%20%22default%22%20%3E%20%3CAttribute%20name%20=%20%22ensembl_peptide_id%22%20/%3E%20%3CAttribute%20name%20=%20%22entrezgene%22%20/%3E%20%3CAttribute%20name%20=%20%22hgnc_symbol%22%20/%3E%20%3C/Dataset%3E%20%3C/
-#        remoteFileName: Query%3E
-#        version: 
-#        extractedFileName: ensembl_biomart.txt
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.EntrezParser
-#        parserGroup: string
-#        parsedFileName: entrez2sym.pg     
-#            
-#       - !resource
-#        name: String_protein_links
-#        url: http://string-db.org/newstring_download/protein.links.v9.1/
-#        remoteFileName: 9606.protein.links.v9.1.txt.gz
-#        version: 9.1
-#        extractedFileName: 9606.protein.links.v9.1.txt
-#        extractionScheme: gz
-#        parser: de.charite.compbio.exomiser.parsers.StringParser
-#        parserGroup: string
-#        parsedFileName: string.pg     
+      - !resource
+        name: String_entrez2sym
+        url: http://www.ensembl.org/biomart/martservice?query=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%20%3C!DOCTYPE%20Query%3E%20%3CQuery%20%20virtualSchemaName%20=%20%22default%22%20formatter%20=%20%22TSV%22%20header%20=%20%220%22%20uniqueRows%20=%20%220%22%20count%20=%20%22%22%20datasetConfigVersion%20=%20%220.6%22%20%3E%20%20%3CDataset%20name%20=%20%22hsapiens_gene_ensembl%22%20interface%20=%20%22default%22%20%3E%20%3CAttribute%20name%20=%20%22ensembl_peptide_id%22%20/%3E%20%3CAttribute%20name%20=%20%22entrezgene%22%20/%3E%20%3CAttribute%20name%20=%20%22hgnc_symbol%22%20/%3E%20%3C/Dataset%3E%20%3C/
+        remoteFileName: Query%3E
+        version: 
+        extractedFileName: ensembl_biomart.txt
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.EntrezParser
+        parserGroup: string
+        parsedFileName: entrez2sym.pg     
+            
+      - !resource
+        name: String_protein_links
+        url: http://string-db.org/newstring_download/protein.links.v9.1/
+        remoteFileName: 9606.protein.links.v9.1.txt.gz
+        version: 9.1
+        extractedFileName: 9606.protein.links.v9.1.txt
+        extractionScheme: gz
+        parser: de.charite.compbio.exomiser.parsers.StringParser
+        parserGroup: string
+        parsedFileName: string.pg     
+    
+      - !resource
+        name: ExomeWalker_phenotypic_series
+        url: #this file is contained in the resources package
+        remoteFileName: pheno2gene.txt
+        version: 
+        extractedFileName: pheno2gene.txt
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.PhenoSeriesParser
+        parserGroup: exomeWalker
+        parsedFileName: phenoseries.pg     
+        
+    #pheno2gene.txt is produced from a custom data-dump from OMIM which is then post-processed
+    #with some perl scripts using data from the mim2gene_medgen and gene_info files from NCBI
+    #(ftp://ftp.ncbi.nlm.nih.gov/gene/DATA) consequently this is treated as static data.
+      - !resource
+        name: ExomeWalker_omim2gene
+        url: #this file is contained in the resources package
+        remoteFileName: pheno2gene.txt
+        version: 
+        extractedFileName: pheno2gene.txt
+        extractionScheme: copy
+        parser: de.charite.compbio.exomiser.parsers.Omim2GeneParser
+        parserGroup: exomeWalker
+        parsedFileName: omim2gene.pg     
+    
+      - !resource
+        name: ClinVar
+        url: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/
+        remoteFileName: variant_summary.txt.gz
+        version: Feb 13 20:10
+        extractedFileName: ClinVar_variant_summary.txt
+        extractionScheme: gz
+        parser: de.charite.compbio.exomiser.parsers.ClinVarParser
+        parserGroup: clinvar
+        parsedFileName: clinvar.pg
 
-
-#      - !resource
-#        name: ExomeWalker_phenotypic_series
-#        url: #this file is contained in the resources package
-#        remoteFileName: pheno2gene.txt
-#        version: 2013-02-01T20:10
-#        extractedFileName: pheno2gene.txt
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.PhenoSeriesParser
-#        parserGroup: exomeWalker
-#        parsedFileName: phenoseries.pg     
-#    #pheno2gene.txt is produced from a custom data-dump from OMIM which is then post-processed
-#    #with some perl scripts using data from the mim2gene_medgen and gene_info files from NCBI
-#    #(ftp://ftp.ncbi.nlm.nih.gov/gene/DATA) consequently this is treated as static data.
-#      - !resource
-#        name: ExomeWalker_omim2gene
-#        url: #this file is contained in the resources package
-#        remoteFileName: pheno2gene.txt
-#        version: 2013-02-01T20:10
-#        extractedFileName: pheno2gene.txt
-#        extractionScheme: copy
-#        parser: de.charite.compbio.exomiser.parsers.Omim2GeneParser
-#        parserGroup: exomeWalker
-#        parsedFileName: omim2gene.pg     
-#    
-#      - !resource
-#        name: ClinVar
-#        url: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/
-#        remoteFileName: variant_summary.txt.gz
-#        version:
-#        extractedFileName: ClinVar_variant_summary.txt
-#        extractionScheme: gz
-#        parser: de.charite.compbio.exomiser.parsers.ClinVarParser
-#        parserGroup: clinvar
-#        parsedFileName: clinvar.pg
-
-       - !resource
+      - !resource
         name: MetaData
         url: 
         remoteFileName: 

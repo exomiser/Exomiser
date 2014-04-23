@@ -70,7 +70,7 @@ public class PathogenicityTriage implements ITriage  {
     /**
      * Overall threshold for non-missense mutation pathogenicity.
      */
-    private static final float PATHOGENICITY_SCORE_THRESHOLD = 0.5f;
+    private static float PATHOGENICITY_SCORE_THRESHOLD = 0.5f;
     
 
     
@@ -155,6 +155,10 @@ public class PathogenicityTriage implements ITriage  {
     	PathogenicityTriage.missense_filtering = par; 
     }
     
+    public static void keepSynVariants() throws ExomizerInitializationException {
+        System.out.println("SETTING CUTOFF TO 0");
+    	PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0; 
+    }
      /** @return true if the variant being analyzed passes the filter (e.g., has high quality ) */
     public boolean passesFilter() { 
 	if (this.variantType == VariantType.MISSENSE) {

@@ -205,30 +205,41 @@ public class MGIPhenodigmPriority implements IPriority {
 	    "WHERE M.mgi_gene_id=H.mgi_gene_id "+
 	    "AND omim_disease_id = \'187500\' AND human_gene_symbol = \'FBN1\'";
 
-	score_query ="SELECT M.mgi_gene_id, M.mgi_gene_symbol, max_combined_perc/100 "+
+//	score_query ="SELECT M.mgi_gene_id, M.mgi_gene_symbol, max_combined_perc/100 "+
+//	    "FROM mouse_gene_level_summary M, human2mouse_orthologs H "+
+//	    "WHERE M.mgi_gene_id=H.mgi_gene_id "+
+//	    "AND omim_disease_id = ?  AND human_gene_symbol = ?";
+ 
+        // Query for new Exomiser db
+        score_query ="SELECT M.mgi_gene_id, M.mgi_gene_symbol, max_combined_perc/100 "+
 	    "FROM mouse_gene_level_summary M, human2mouse_orthologs H "+
 	    "WHERE M.mgi_gene_id=H.mgi_gene_id "+
-	    "AND omim_disease_id = ?  AND human_gene_symbol = ?";
-
+	    "AND disease_id = ?  AND human_gene_symbol = ?";
 	
 
 	try {
 	    this.findScoreStatement  = connection.prepareStatement(score_query);
 	  
         } catch (SQLException e) {
-	    String error = "Problem setting up SQL query:" +score_query;
+	    String error = "Problem setting up SQL query:" +score_query + e.toString();
 	    throw new ExomizerInitializationException(error);
         }
 
-	String test_gene_query = String.format("SELECT human_gene_symbol, human2mouse_orthologs.mgi_gene_id, human2mouse_orthologs.mgi_gene_symbol " +
-                        "FROM mouse_gene_level_summary, human2mouse_orthologs "+
-                        "WHERE mouse_gene_level_summary.mgi_gene_id=human2mouse_orthologs.mgi_gene_id " +
+//	String test_gene_query = String.format("SELECT human_gene_symbol, hm.mgi_gene_id, hm.mgi_gene_symbol " +
+//                        "FROM mouse_gene_level_summary, human2mouse_orthologs_new hm "+
+//                        "WHERE mouse_gene_level_summary.mgi_gene_id=hm.mgi_gene_id " +
+//					       "AND human_gene_symbol = ? LIMIT 1");
+        // Query for new Exomiser db
+        String test_gene_query = String.format("SELECT human_gene_symbol, hm.mgi_gene_id, hm.mgi_gene_symbol " +
+                        "FROM mouse_gene_level_summary, human2mouse_orthologs hm "+
+                        "WHERE mouse_gene_level_summary.mgi_gene_id=hm.mgi_gene_id " +
 					       "AND human_gene_symbol = ? LIMIT 1");
+        
 	try {
 	    this.testGeneStatement  = connection.prepareStatement(test_gene_query);
 	  
         } catch (SQLException e) {
-	    String error = "Problem setting up SQL query:" +score_query;
+	    String error = "Problem setting up SQL query:" +score_query + e.toString();
 	    throw new ExomizerInitializationException(error);
         }
 	

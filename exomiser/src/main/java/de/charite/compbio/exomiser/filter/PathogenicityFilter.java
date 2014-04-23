@@ -78,6 +78,14 @@ public class PathogenicityFilter implements IFilter {
 	 return; // note there are no parameters for this filter.
      }
 
+     public void set_syn_filter_status (boolean flag) throws ExomizerInitializationException
+     {  
+         if (!flag){
+             PathogenicityTriage.keepSynVariants();
+             //PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0;
+         }
+     }
+     
     /**
      * @return list of messages representing process, result, and if any, errors of frequency filtering. 
      */
@@ -106,7 +114,7 @@ public class PathogenicityFilter implements IFilter {
      */
     @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list)
     {
-	Iterator<VariantEvaluation> it = variant_list.iterator();
+        Iterator<VariantEvaluation> it = variant_list.iterator();
 	
 	this.n_before = variant_list.size();
 	while (it.hasNext()) {
@@ -159,11 +167,24 @@ public class PathogenicityFilter implements IFilter {
 	    this.getPathogenicityDataStatement.setString(4,Character.toString(alt));
 	    
 	    rs = getPathogenicityDataStatement.executeQuery();
-	    if ( rs.next() ) { /* The way the db was constructed, there is just one line for each such query. */
-		sift = rs.getFloat(1);
-		polyphen  = rs.getFloat(2);
-		mutation_taster  = rs.getFloat(3);
-	    }
+	    
+            /* 
+           * Switched db back to potentially having multiple rows per variant
+           * if alt transcripts leads to diff aa changes and pathogenicities.
+           * In future if know which transcript is more likely in the disease
+           * tissue can use the most appropriate row but for now take max
+           */
+          while ( rs.next() ) {
+	      if (sift == Constants.UNINITIALIZED_FLOAT || rs.getFloat(1) < sift) {sift = rs.getFloat(1);}
+	      if (polyphen == Constants.UNINITIALIZED_FLOAT || rs.getFloat(2) > polyphen) {polyphen = rs.getFloat(2);}
+              if (mutation_taster == Constants.UNINITIALIZED_FLOAT || rs.getFloat(3) > mutation_taster) {mutation_taster = rs.getFloat(3);}
+	  }
+//            
+//            if ( rs.next() ) { /* The way the db was constructed, there is just one line for each such query. */
+//		sift = rs.getFloat(1);
+//		polyphen  = rs.getFloat(2);
+//		mutation_taster  = rs.getFloat(3);
+//	    }
 	    rs.close();
 	} catch(SQLException e) {
 	    throw new ExomizerSQLException("Error executing pathogenicity query: " + e);

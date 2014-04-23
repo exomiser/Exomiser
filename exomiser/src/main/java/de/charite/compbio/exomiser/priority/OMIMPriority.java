@@ -111,8 +111,8 @@ public class OMIMPriority implements IPriority {
 	   
 	    while ( rs.next() ) { /* The way the db was constructed, there is just one line for each such query. */
 		//  phenmim,genemim,diseasename,type"+
-		int phenmim = rs.getInt(1);
-		int genemim = rs.getInt(2);
+		String phenmim = rs.getString(1);
+		String genemim = rs.getString(2);
 		String disease = rs.getString(3);
 		char typ = rs.getString(4).charAt(0);
 		char inheritance = rs.getString(5).charAt(0);
@@ -131,7 +131,7 @@ public class OMIMPriority implements IPriority {
 	    this.orphanetQuery.setInt(1,entrez);
 	    rs2 = orphanetQuery.executeQuery();
 	    while ( rs2.next() ) { 
-		 int orphanum = rs2.getInt(1);
+		 String orphanum = rs2.getString(1);
 		 String disease = rs2.getString(2);
 		 rel.addOrphanetRow(orphanum,disease);
 		 }
@@ -194,23 +194,23 @@ public class OMIMPriority implements IPriority {
      */
     private void setUpSQLPreparedStatement() throws ExomizerInitializationException
     {	
-	String query = String.format("SELECT phenmim,genemim,diseasename,type,inheritance "+
-				     "FROM omim " +
-				     "WHERE gene_id = ?");
+	String query = "SELECT disease_id,omim_gene_id,diseasename,type,inheritance "+
+				     "FROM disease " +
+				     "WHERE disease_id LIKE '%OMIM%' AND gene_id = ?";
         try {
 	    this.omimQuery  = connection.prepareStatement(query);
         } catch (SQLException e) {
-	    String error = "Problem setting up OMIM SQL query:" + query;
+	    String error = "Problem setting up OMIM SQL query:" + query + e.toString();
 	    throw new ExomizerInitializationException(error);
         }
 	/* Now the same for Orphanet. */
-	query = String.format("SELECT orphanumber,diseasename "+
-			      "FROM orphanet " +
-			      "WHERE entrezGeneID = ?");
+	query = "SELECT disease_id,diseasename "+
+			      "FROM disease " +
+			      "WHERE disease_id LIKE '%ORPHA%' AND gene_id = ?";
 	try {
 	    this.orphanetQuery  = connection.prepareStatement(query);
         } catch (SQLException e) {
-	    String error = "Problem setting up Orphanet SQL query:" + query;
+	    String error = "Problem setting up Orphanet SQL query:" + query + e.toString();
 	    throw new ExomizerInitializationException(error);
         }
     }
