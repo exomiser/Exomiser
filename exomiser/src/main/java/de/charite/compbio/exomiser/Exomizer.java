@@ -1,17 +1,21 @@
 package de.charite.compbio.exomiser;
 
+import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.IFilter;
 import de.charite.compbio.exomiser.filter.TargetFilter;
+import de.charite.compbio.exomiser.io.ExomiserDatabase;
 import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.io.html.HTMLWriterBOQA;
 import de.charite.compbio.exomiser.io.html.HTMLWriterCRE;
 import de.charite.compbio.exomiser.io.html.HTMLWriterWalker;
 import de.charite.compbio.exomiser.priority.IPriority;
 import de.charite.compbio.exomiser.priority.Prioritiser;
+import de.charite.compbio.exomiser.reference.Network;
+import de.charite.compbio.exomiser.reference.STRINGNetwork;
 import jannovar.annotation.AnnotationList;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exception.AnnotationException;
@@ -1104,7 +1108,7 @@ public class Exomizer {
     public void outputCRE() throws ExomizerException {
         List<String> lst = getHPOURLs(this.hpo_ids);
         this.htmlWriter.addHPOList(lst);
-        ArrayList<String> hgmd = getHGMDHits();
+        List<String> hgmd = getHGMDHits();
         this.htmlWriter.addHGMDHits(hgmd);
         addMutationHitsToTopVariants();
         try {
