@@ -1223,7 +1223,7 @@ public class Exomizer {
                     this.prioritiser.getPriorityList());
             VariantTypeCounter vtc = getVariantTypeCounter();
             this.htmlWriter.writeVariantDistributionTable(vtc, this.sampleNames);
-            HashMap<String, String> mp = ExomiserDatabase.getVersionInfoMap(this.connection);
+            Map<String, String> mp = ExomiserDatabase.getVersionInfoMap(this.connection);
             this.htmlWriter.addVersionInfo(mp);
             this.htmlWriter.writeAbout();
             this.htmlWriter.writeHTMLFooter();
