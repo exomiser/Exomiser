@@ -179,9 +179,15 @@ public class ExomiserDatabase {
                 String propertiesError = "Unable to find the jdbc.properties file";
                 throw new ExomizerInitializationException(propertiesError + e);
             }
-
+            
             registerJdbcDriver(driverName);
-            return DriverManager.getConnection(url, user, password);
+            Connection c = DriverManager.getConnection(url, user, password);
+            if (url.startsWith("jdbc:postgresql:")){
+                    String sql = "set search_path to 'EXOMISER'";
+                    PreparedStatement searchPathStatement = c.prepareStatement(sql);
+                    searchPathStatement.execute();
+                }
+            return c;
 
         } catch (SQLException e) {
             String error = "Problem connecting to SQL Exomizer Database: "
