@@ -7,6 +7,7 @@ import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.IFilter;
 import de.charite.compbio.exomiser.filter.TargetFilter;
+import de.charite.compbio.exomiser.io.ExomiserDatabase;
 import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
 import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.io.html.HTMLWriterBOQA;
@@ -17,8 +18,6 @@ import de.charite.compbio.exomiser.priority.Prioritiser;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.reference.Network;
 import de.charite.compbio.exomiser.reference.STRINGNetwork;
-import de.charite.compbio.exomiser.io.ExomiserDatabase;
-import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
 import jannovar.annotation.AnnotationList;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exception.AnnotationException;
@@ -33,7 +32,6 @@ import jannovar.io.VCFReader;
 import jannovar.pedigree.Pedigree;
 import jannovar.reference.Chromosome;
 import jannovar.reference.TranscriptModel;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -41,15 +39,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Calendar;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -57,6 +53,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is the main driver class for analyzing VCF files. It uses the
@@ -79,6 +77,7 @@ import org.apache.commons.cli.Parser;
  */
 public class Exomizer {
 
+    private static final Logger logger = LoggerFactory.getLogger(Exomizer.class);
     /**
      * Name of the VCF file used for input.
      */
@@ -332,20 +331,16 @@ public class Exomizer {
         /**
          * ***********************************************************
          */
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        Calendar cal = Calendar.getInstance();
-        System.out.println("STARTING EXOMISER - GETTING CONNECTION:" + dateFormat.format(cal.getTime()));
+        logger.info("STARTING EXOMISER - GETTING CONNECTION");
 
         Exomizer exomizer = new Exomizer(argv);
         try {
             exomizer.openNewDatabaseConnection();
-        } catch (Exception sqle) {
-            System.out.println("Could not open SQL connection. Terminating program...");
-            sqle.printStackTrace();
+        } catch (ExomizerInitializationException ex) {
+            logger.error("Could not open SQL connection. Terminating program... {}", ex);
             System.exit(1);
         }
-        cal = Calendar.getInstance();
-        System.out.println("DESERIALISING UCSC:" + dateFormat.format(cal.getTime()));
+        logger.info("DESERIALISING UCSC");
         /**
          * ***********************************************************
          */
@@ -361,11 +356,10 @@ public class Exomizer {
         try {
             exomizer.deserializeUCSCdata();
         } catch (ExomizerException e) {
-            System.out.println("[Exomizer] Error with deserialization: " + e.toString());
+            logger.error("Error with deserialization: {}", e);
             System.exit(1);
         }
-        cal = Calendar.getInstance();
-        System.out.println("READING VCF:" + dateFormat.format(cal.getTime()));
+        logger.info("READING VCF");
         /**
          * ***********************************************************
          */
@@ -378,7 +372,7 @@ public class Exomizer {
         try {
             exomizer.parseVCFFile();
         } catch (ExomizerException e) {
-            System.out.println("[Exomizer] Error with VCF input: " + e.toString());
+            logger.error("Error with VCF input: {}", e);
             System.exit(1);
         }
         /**
@@ -397,7 +391,7 @@ public class Exomizer {
              * "dummy" pedigree object.
              */
         } catch (ExomizerException e) {
-            System.out.println("[Exomizer] Error with pedigree data input: " + e.toString());
+            logger.error("Error with pedigree data input: {}", e);
             System.exit(1);
         }
         /**
@@ -410,21 +404,17 @@ public class Exomizer {
          * ***********************************************************
          */
         try {
-            cal = Calendar.getInstance();
-            System.out.println("INIT FILTERS AND PRIORITISERS:" + dateFormat.format(cal.getTime()));
+            logger.info("INIT FILTERS AND PRIORITISERS");
             exomizer.initializeFiltersAndPrioritizers();
-            cal = Calendar.getInstance();
-            System.out.println("ANNOTATING VARIANTS:" + dateFormat.format(cal.getTime()));
+            logger.info("ANNOTATING VARIANTS");
             exomizer.annotateVariants();
-            cal = Calendar.getInstance();
-            System.out.println("FILTERING AND PRIORITISING:"+dateFormat.format(cal.getTime()));
+            logger.info("FILTERING AND PRIORITISING");
             exomizer.executePrioritization();
         } catch (ExomizerException e) {
-            System.out.println("[Exomizer] Error while prioritizing VCF data: " + e.toString());
+            logger.error("Error while prioritizing VCF data: {}", e);
             System.exit(1);
         }
-        cal = Calendar.getInstance();
-        System.out.println("OUTPUTTING RESULTS:"+dateFormat.format(cal.getTime()));
+        logger.info("OUTPUTTING RESULTS");
         /**
          * ***********************************************************
          */
@@ -449,12 +439,11 @@ public class Exomizer {
             try {
                 exomizer.outputHTML();
             } catch (ExomizerException e) {
-                System.out.println("[Exomizer] Error with output: " + e.toString());
+                logger.error("Error writing output: {}", e);
                 System.exit(1);
             }
         }
-        cal = Calendar.getInstance();
-        System.out.println("ENDED EXOMISER:"+dateFormat.format(cal.getTime()));
+        logger.info("FINISHED EXOMISER");
 
     }
 
@@ -481,7 +470,7 @@ public class Exomizer {
         parseCommandLineArguments(argv);
         this.status_message = new ArrayList<String>();
         if (outfile == null) {
-            System.err.println("Outfile not indicated, terminating program execution...");
+            logger.error("Outfile not indicated, terminating program execution...");
             System.exit(1);
         }
     }
@@ -506,7 +495,7 @@ public class Exomizer {
         try {
             deserializeUCSCdata();
         } catch (ExomizerException e) {
-            System.out.println(e.toString());
+            logger.error("Error trying to de-serialise UCSC HG data: {}", e);
             System.exit(1);
         }
     }
@@ -693,12 +682,12 @@ public class Exomizer {
             String alt = v.get_alt();
             c = chromosomeMap.get(chr);
             if (c == null) {
-                System.err.println("[Annotator.java:anotateVariants()] Could not identify chromosome \"" + chr + "\"");
+                logger.error("Could not identify chromosome {}", chr);
             } else {
                 try {
                     AnnotationList anno = c.getAnnotationList(pos, ref, alt);
                     if (anno == null) {
-                        System.out.println("No annotations found for variant " + v);
+                        logger.info("No annotations found for variant {}", v);
                         continue;
                     }
                     v.setAnnotation(anno);
@@ -811,7 +800,7 @@ public class Exomizer {
      */
     public void setPrioritizer(IPriority ip) throws ExomizerInitializationException {
         if (ip == null) {
-            String s = "[ERROR] Attempt to initialize Exomiser with NULL IPriority object";
+            String s = "Attempt to initialize Exomiser with NULL IPriority object";
             throw new ExomizerInitializationException(s);
         }
         this.prioritiser.setPrioritizer(ip);
@@ -854,13 +843,13 @@ public class Exomizer {
             } else if (this.vcfBufferedReader != null) {
                 parser = new VCFReader(this.vcfBufferedReader);
             } else {
-                String s = "[Exomiser] Error, no VCF file found. " + "Need to pass the path to a VCF file or an opened file handle";
+                String s = "Error, no VCF file found. Need to pass the path to a VCF file or an opened file handle";
                 throw new ExomizerException(s);
             }
             parser.parseFile();
         } catch (VCFParseException ve) {
             String message = "Could not parse the VCF file: " + ve.toString();
-            System.err.println(message);
+            logger.error(message);
             throw new ExomizerException(message);
         }
         ArrayList<Variant> vlist = parser.getVariantList();
@@ -928,9 +917,9 @@ public class Exomizer {
      */
     public void setDatabaseConnection(Connection conn) {
         try {
-            System.out.println("Exomizer: setDatabaseConnection: closed=" + conn.isClosed());
+            logger.info("Exomizer: setDatabaseConnection: closed={}", conn.isClosed());
         } catch (SQLException e) {
-            System.out.println("Exomizer: setDatabaseConnection - exception: connections is " + conn);
+            logger.error("Exomizer: setDatabaseConnection - exception: connections is {}", conn);
         }
         this.connection = conn;
     }
@@ -955,7 +944,7 @@ public class Exomizer {
      */
     public void outputTSV() {
         String fname = vcf_file + ".results.tsv";
-        System.out.println("Writing " + fname);
+        logger.info("Writing TSV file to: {}", fname);
         try {
             FileWriter fstream = new FileWriter(fname);
             BufferedWriter out = new BufferedWriter(fstream);
@@ -983,7 +972,7 @@ public class Exomizer {
             }
             out.close();
         } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
+            logger.error("Error writing TSV file. {}", e);
         }
     }
 
@@ -994,7 +983,7 @@ public class Exomizer {
      */
     public void outputVCF() {
         String fname = vcf_file + ".results.vcf";
-        System.out.println("Writing " + fname);
+        logger.info("Writing VCF file to: {}", fname);
         try {
             FileWriter fstream = new FileWriter(fname);
             BufferedWriter out = new BufferedWriter(fstream);
@@ -1024,9 +1013,8 @@ public class Exomizer {
                 }
             }
             out.close();
-            return;
         } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
+            logger.error("Error writing VCF file: {}", e);
         }
     }
 
@@ -1046,7 +1034,7 @@ public class Exomizer {
         try {
             htmlWriter.writeVariantDistributionTable(vtc, this.sampleNames);
         } catch (ExomizerException e) {
-            System.err.println("[ERROR]: Exception while output variant distribution: " + e);
+            logger.error("Exception while output variant distribution: {}", e);
         }
         out.write("<hr/>\n");
         this.htmlWriter.writeHTMLBody(this.pedigree, this.geneList);
@@ -1202,14 +1190,14 @@ public class Exomizer {
      */
     public void outputWalker() throws ExomizerException {
         try {
-            System.out.println("Exomiser outputWalkter");
+            logger.info("outputWalker");
             if (this.numberOfGenesToShow == null) {
                 this.numberOfGenesToShow = this.geneList.size();
             }
             this.htmlWriter.setNumberOfGenes(this.numberOfGenesToShow);
             ArrayList<String> seeds = ExomiserDatabase.getSeedGeneURLs(this.connection, this.entrezSeedGenes);
             this.htmlWriter.setSeedGeneURLs(seeds);
-            System.out.println("entrez genes are:" + this.entrezSeedGenes);
+            logger.info("entrez genes are: {}", this.entrezSeedGenes);
             Network rwNetwork = new STRINGNetwork(this.connection, this.entrezSeedGenes);
             //this.htmlWriter.setInteractionMap(interactionMap);
             this.htmlWriter.setNetwork(rwNetwork);
@@ -1244,13 +1232,14 @@ public class Exomizer {
             /*
              * This should never happen, just a sanity check.
              */
-            System.out.println("[Error] Attempt to write HTML File with variant list uninitialized");
+            logger.error("Attempt to write HTML File with null variant list");
             System.exit(1);
         }
         try {
-            String fname = "exomizer.html"; /*
-             * default file name
-             */
+            //default file name
+            String fname = "exomizer.html";            
+            logger.info("Writing HTML file to: {}", fname);            
+            
             if (this.outfile != null) {
                 fname = this.outfile;
             }
@@ -1269,13 +1258,12 @@ public class Exomizer {
                  */
                 this.htmlWriter = new HTMLWriter(fname);
             }
-            System.out.println("about to write header");
             this.htmlWriter.writeHTMLHeaderAndCSS();
             this.htmlWriter.writeHTMLFilterSummary(this.prioritiser.getFilterList(),
                     this.prioritiser.getPriorityList());
             VariantTypeCounter vtc = getVariantTypeCounter();
             this.htmlWriter.writeVariantDistributionTable(vtc, this.sampleNames);
-            System.out.println("about to write body with genelist of size " + geneList.size());
+            logger.info("Writing HTML body with {} gene results", geneList.size());
             this.htmlWriter.writeHTMLBody(this.pedigree, this.geneList);
             this.htmlWriter.writeAbout();
             this.htmlWriter.writeHTMLFooter();
@@ -1466,11 +1454,10 @@ public class Exomizer {
                 setUseZFINphenodigmFilter(false);
                 setUseMGIphenodigmFilter(true);
             } else {
-                System.err.println("Warning: Non-standard combination of arguments passed to perform analysis.");
+                logger.warn("Non-standard combination of arguments passed to perform analysis.");
             }
         } catch (ParseException pe) {
-            System.err.println("Error parsing command line options");
-            System.err.println(pe.getMessage());
+            logger.error("Error parsing command line options: {}", pe);
             System.exit(1);
         }
     }
@@ -1487,7 +1474,7 @@ public class Exomizer {
     private static String getRequiredOptionValue(CommandLine cmd, char name) {
         String val = cmd.getOptionValue(name);
         if (val == null) {
-            System.err.println("Aborting because the required argument \"-" + name + "\" wasn't specified! Use the -h for more help.");
+            logger.error("Aborting because the required argument -{} wasn't specified! Use the -h for more help.", name);
             System.exit(-1);
         }
         return val;
@@ -1569,7 +1556,7 @@ public class Exomizer {
             this.numberOfGenesToShow = Integer.parseInt(n);
         } catch (NumberFormatException e) {
             this.numberOfGenesToShow = null;
-            e.printStackTrace();
+            logger.error("Error setting number of genes to show.", e);
         }
     }
 
