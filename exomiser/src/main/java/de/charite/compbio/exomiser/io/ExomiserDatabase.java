@@ -65,6 +65,7 @@ public class ExomiserDatabase {
      * Registering the JDBC driver for the database.
      */
     private static void registerJdbcDriver(String driverClassName) throws ExomizerInitializationException {
+        logger.info("Registering JDBC driver: {}", driverClassName);
         try {
             Class.forName(driverClassName);
         } catch (ClassNotFoundException cnfe) {
@@ -165,10 +166,9 @@ public class ExomiserDatabase {
     public static Connection openNewDatabaseConnection()
             throws ExomizerInitializationException {
         try {
-
             Properties properties = new Properties();
             try {
-                properties.load(new FileInputStream("jdbc.properties"));
+                properties.load(ExomiserDatabase.class.getResourceAsStream("/jdbc.properties"));
                 //set the connection details here
                 driverName = properties.getProperty("exomiser.driverClassName");
                 url = properties.getProperty("exomiser.url");
@@ -176,11 +176,10 @@ public class ExomiserDatabase {
                 password = properties.getProperty("exomiser.password");
 
             } catch (IOException e) {
-                String propertiesError = "Unable to find the jdbc.properties file";
-                throw new ExomizerInitializationException(propertiesError + e);
+                logger.error("Unable to find the jdbc.properties file", e);
             }
-            
             registerJdbcDriver(driverName);
+            logger.info("Trying to connect as user {} to {}", user, url);
             Connection c = DriverManager.getConnection(url, user, password);
             if (url.startsWith("jdbc:postgresql:")){
                     String sql = "set search_path to 'EXOMISER'";
