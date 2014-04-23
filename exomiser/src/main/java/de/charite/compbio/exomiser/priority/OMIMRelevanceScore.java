@@ -60,27 +60,29 @@ public class OMIMRelevanceScore implements IRelevanceScore {
      * @param  inheritance One of 'D', 'R', 'B', 'X'. 'Y', 'M'
      * @param factor Factor for whether the inheritance pattern matches (see above).
      */
-    public void addRow(int phenmim, int genemim, String disease,char typ,char inheritance, float factor){
-	String mimGeneUrl = String.format("http://www.omim.org/entry/%d",genemim);
-	String mimPhenUrl = String.format("http://www.omim.org/entry/%d",phenmim);
+    public void addRow(String phenmim, String genemim, String disease,char typ,char inheritance, float factor){
+	String mimGeneUrl = String.format("http://www.omim.org/entry/%s",genemim);
+        String[] phenParts = phenmim.split(":");
+	String mimPhenUrl = String.format("http://www.omim.org/entry/%s",phenParts[1]);
 	String display = null;
 	if (inheritance=='D') {
-	    display = String.format("%s [MIM:%d; gene: MIM:%d], autosomal dominant",disease,phenmim,genemim);
+	    display = String.format("%s [%s; gene: %s], autosomal dominant",disease,phenmim,genemim);
 	} else if (inheritance=='R') {
-	    display = String.format("%s [MIM:%d; gene: MIM:%d], autosomal recessive",disease,phenmim,genemim);
+	    display = String.format("%s [%s; gene: %s], autosomal recessive",disease,phenmim,genemim);
 	} else if (inheritance=='B') {
-	    display = String.format("%s [MIM:%d; gene: MIM:%d], autosomal dominant/recessive",disease,phenmim,genemim);
+	    display = String.format("%s [%s; gene: %s], autosomal dominant/recessive",disease,phenmim,genemim);
 	} else if (inheritance=='X') {
-	    display = String.format("%s [MIM:%d; gene: MIM:%d], X chromosomal",disease,phenmim,genemim);
+	    display = String.format("%s [%s; gene: %s], X chromosomal",disease,phenmim,genemim);
 	} else
-	    display = String.format("%s [MIM:%d; gene: MIM:%d]",disease,phenmim,genemim);
-	String href = String.format("<a href=\"%s\">%s</a>",
-				    mimPhenUrl,display);
+	    display = String.format("%s [%s; gene: %s]",disease,phenmim,genemim);
+	//String href = String.format("<a href=\"%s\">%s</a>",mimPhenUrl,display);
+	String href = String.format("<a href=\"%s\">%s</a>", mimPhenUrl,disease);
 	if (factor > this.score) this.score=factor;
+
 	if (typ=='D') {
 	    mimEntryList.add(href);
 	} else if (typ=='N') {
-	    String row = String.format("OIMIM: %s (non-disease)",href);
+	    String row = String.format("OMIM: %s (non-disease)",href);
 	    mimEntryList.add(row);
 	} else if (typ=='S') {
 	    String row = String.format("OMIM: %s (susceptibility)",href);
@@ -100,8 +102,9 @@ public class OMIMRelevanceScore implements IRelevanceScore {
      * @param orphanum The Number of the disease in Orphanet.
      * @param disease The name of the disease in English
      */
-    public void addOrphanetRow(Integer orphanum, String disease) {
-	String url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%d",orphanum);
+    public void addOrphanetRow(String orphanum, String disease) {
+        String[] orphaParts = orphanum.split(":");
+	String url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s",orphaParts[1]);
 	String href = String.format("Orphanet: <a href=\"%s\">%s</a>",
 				    url,disease);
 	mimEntryList.add(href);

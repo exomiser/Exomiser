@@ -52,7 +52,7 @@ public class DynamicPhenoWandererRelevanceScore implements IRelevanceScore,Const
      * @see exomizer.filter.ITriage#getHTMLCode()
      */
     @Override public String getHTMLCode() {
-        return String.format("<ul><li>Uberiser similarity score: %.3f %s</li></ul>",this.genewandererScore,this.evidence);
+        return String.format("<ul><li>Similarity score: %.3f %s</li></ul>",this.genewandererScore,this.evidence);
     }
 
     

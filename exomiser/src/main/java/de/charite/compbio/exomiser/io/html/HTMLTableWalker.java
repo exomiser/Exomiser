@@ -74,12 +74,12 @@ public class HTMLTableWalker extends HTMLTable {
     private String getOmimText(Gene gene) {
 	Map<FilterType,IRelevanceScore> relevanceMap = gene.getRelevanceMap();
 	IRelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
-	List<String> lst = mim.getFilterResultList();
 	if (mim == null) {
 	    return "No known human Mendelian disease";
 	} else {
 	    StringBuilder sb = new StringBuilder();
 	    sb.append(String.format("Diseases associated with %s:<br/>\n",gene.getGeneSymbol()));
+            List<String> lst = mim.getFilterResultList();
 	    for (String a : lst) {
 		sb.append(String.format("%s<br/>\n",a));
 	    }

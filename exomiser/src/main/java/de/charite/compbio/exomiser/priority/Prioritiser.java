@@ -13,6 +13,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Calendar;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
@@ -28,6 +32,7 @@ import de.charite.compbio.exomiser.filter.PathogenicityFilter;
 import de.charite.compbio.exomiser.filter.QualityFilter;
 import de.charite.compbio.exomiser.filter.TargetFilter;
 import de.charite.compbio.exomiser.filter.BedFilter;
+import de.charite.compbio.exomiser.priority.util.DataMatrix;
 
 
 
@@ -172,6 +177,9 @@ public class Prioritiser {
 	/** Now create a list of Genes so we can sort them. */
 	this.geneList = new ArrayList<Gene>(gene_map.values());
 	for (IPriority f : this.priorityList) {
+            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
+            Calendar cal = Calendar.getInstance();
+            System.out.println(f.getPriorityName() + " STARTING:"+dateFormat.format(cal.getTime()));
             f.prioritize_list_of_genes(this.geneList);
 	}
     }
@@ -191,7 +199,9 @@ public class Prioritiser {
      */
     private void filterVariants(List<VariantEvaluation> variantList) {
 	for (IFilter f : this.filterList) {
-	    //System.out.println("[INFO] Prioritizer.java, filterVariants: " + f.getFilterName());
+            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
+            Calendar cal = Calendar.getInstance();
+            System.out.println(f.getFilterName() + " STARTING:"+dateFormat.format(cal.getTime()));
 	    f.filter_list_of_variants(variantList);
 	}
     }
@@ -215,12 +225,15 @@ public class Prioritiser {
     {
 
 	
-
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
+        Calendar cal = Calendar.getInstance();
+        System.out.println("FILTERING:"+dateFormat.format(cal.getTime()));
 	/**************************************************************/
 	/* 1) Filter the variants according to user-supplied params. */
 	/**************************************************************/
 	filterVariants(variantList);
-
+        cal = Calendar.getInstance();
+        System.out.println("PRIORITISING:"+dateFormat.format(cal.getTime()));
 	/**************************************************************/
 	/* 2) Prioritize the variants according to phenotype, model */
 	/* organism data, protein protein interactions, whatever */
@@ -229,7 +242,9 @@ public class Prioritiser {
 	/**************************************************************/
 	/* 3) Rank all genes now according to combined score. */
 	/**************************************************************/
-	if (rankBasedScoring) {
+        cal = Calendar.getInstance();
+        System.out.println("RANKING GENES:"+dateFormat.format(cal.getTime()));
+        if (rankBasedScoring) {
 	    scoreCandidateGenesByRank();
 	} else {
 	    rankCandidateGenes();
@@ -390,18 +405,18 @@ public class Prioritiser {
 	this.priorityList.add(ip);
     }
     
-    public void addPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String disease, String candGene) 
+//    public void addPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String disease, String candGene) 
+//	throws ExomizerInitializationException
+//    {
+//	IPriority ip = new PhenoWandererPriority(rwFilePath, rwIndexPath, disease, candGene);
+//        ip.setDatabaseConnection(this.connection);
+//	this.priorityList.add(ip);
+//    }
+//    
+    public void addDynamicPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String hpoids, String candGene, String disease, DataMatrix rwMatrix) 
 	throws ExomizerInitializationException
     {
-	IPriority ip = new PhenoWandererPriority(rwFilePath, rwIndexPath, disease, candGene);
-        ip.setDatabaseConnection(this.connection);
-	this.priorityList.add(ip);
-    }
-    
-    public void addDynamicPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String hpoids, String candGene) 
-	throws ExomizerInitializationException
-    {
-        IPriority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene);
+        IPriority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene, disease, rwMatrix);
         ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -464,14 +479,15 @@ public class Prioritiser {
 	}
      }
 
-    public void addPathogenicityFilter(boolean filterOutNonpathogenic) 
+    public void addPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSyn) 
     	throws ExomizerInitializationException
     {
-	IFilter f = new PathogenicityFilter();
+	PathogenicityFilter f = new PathogenicityFilter();
 	f.setDatabaseConnection(this.connection);
 	if (filterOutNonpathogenic) {
 	    f.set_parameters("filter");
 	}
+        f.set_syn_filter_status(removeSyn);
 	this.filterList.add(f);
     }
 
