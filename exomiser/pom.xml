@@ -125,6 +125,10 @@
                                     <directory>src/main/resources</directory>
                                     <filtering>false</filtering>
                                 </resource>
+                                <resource>
+                                    <directory>src/test/resources</directory>
+                                    <filtering>Pfeiffer.vcf</filtering>
+                                </resource>
                             </resources>              
                         </configuration>            
                     </execution>
