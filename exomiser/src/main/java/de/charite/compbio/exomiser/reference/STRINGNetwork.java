@@ -7,13 +7,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -32,6 +33,7 @@ import java.util.HashSet;
  */
 public class STRINGNetwork implements Network {
 
+    private final Logger logger = LoggerFactory.getLogger(STRINGNetwork.class);
     /**
      * Handle to the SQL database (postgreSQL)
      */
@@ -61,7 +63,7 @@ public class STRINGNetwork implements Network {
         this.connection = c;
         this.interactionPath = new HashMap<Integer, List<String>>();
         this.seedGeneIdSet = new HashSet<Integer>();
-        System.out.println("initialising seed genes");
+        logger.info("initialising seed genes");
         initializeSeedGenesAndNeighbors(seedGeneList);
     }
 
@@ -125,7 +127,7 @@ public class STRINGNetwork implements Network {
         }
         List<String> lst = this.interactionPath.get(id);
         lst.add(path);
-        //System.out.println("Adding path" + path);
+        //logger.info("Adding path {}", path);
     }
 
     /**
@@ -252,15 +254,15 @@ public class STRINGNetwork implements Network {
         String A[] = seedGenes.split(",");
         for (String a : A) {
             Integer entrezID = Integer.parseInt(a.trim());
-            System.out.println("DOING " + entrezID);
+            logger.info("DOING {}", entrezID);
             this.seedGeneIdSet.add(entrezID);
             String symbol = getSymbol(entrezID);
-            System.out.println("GOT SYMBOL" + symbol);
+            logger.info("GOT SYMBOL {}", symbol);
             if (symbol == null) {
                 continue; /* i.e., no symbol could be found. */
             }
             addSinglePath(entrezID, symbol);
-            System.out.println("FINISHED");
+            logger.info("FINISHED");
         }
     }
 }

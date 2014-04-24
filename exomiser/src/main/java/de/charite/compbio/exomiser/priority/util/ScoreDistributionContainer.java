@@ -3,13 +3,17 @@ package de.charite.compbio.exomiser.priority.util;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScoreDistributionContainer {
 
+    private final Logger logger = LoggerFactory.getLogger(ScoreDistributionContainer.class);
+    
 	private boolean verboseParsing;
 
 	private int maxNumberQueryTerms = 20;
@@ -122,7 +126,7 @@ public class ScoreDistributionContainer {
 		// file = folder+key+".out";
 
 		if (verboseParsing)
-			System.out.println("try parsing file: " + file);
+			logger.info("try parsing file: {}", file);
 		try {
 			final BufferedReader in = new BufferedReader(new FileReader(file));
 			ScoreDistribution actualDistribution = null;
@@ -163,7 +167,7 @@ public class ScoreDistributionContainer {
 				}
 			}// end while
 			if (verboseParsing)
-				System.out.println("done while loop.... add last");
+				logger.info("done while loop.... add last");
 
 			actualDistribution.setDistribution(scores, pvalues, numberRandomizations);
 			addDistribution(actualDiseaseId, numQueryTerms, symmetric, actualDistribution);
@@ -172,7 +176,7 @@ public class ScoreDistributionContainer {
 
 		}
 		if (verboseParsing)
-			System.out.println("done parsing");
+			logger.info("done parsing");
 
 	}
 
