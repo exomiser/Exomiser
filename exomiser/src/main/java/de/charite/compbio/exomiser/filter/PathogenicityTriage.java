@@ -1,13 +1,13 @@
 package de.charite.compbio.exomiser.filter;
 
-import java.util.List;
-import java.util.ArrayList;
-
+import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import jannovar.common.Constants;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
-
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -19,6 +19,9 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  
  */
 public class PathogenicityTriage implements ITriage  {
+    
+    private static final Logger logger = LoggerFactory.getLogger(PathogenicityTriage.class);
+    
     /** Pathogenicity score according to POLYPHEN2 */
     private  float polyphen = Constants.UNINITIALIZED_FLOAT;
     /** Pathogenicity score according to MutTaster */
@@ -156,7 +159,7 @@ public class PathogenicityTriage implements ITriage  {
     }
     
     public static void keepSynVariants() throws ExomizerInitializationException {
-        System.out.println("SETTING CUTOFF TO 0");
+        logger.info("SETTING PATHOGENICITY_SCORE_THRESHOLD TO 0");
     	PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0; 
     }
      /** @return true if the variant being analyzed passes the filter (e.g., has high quality ) */

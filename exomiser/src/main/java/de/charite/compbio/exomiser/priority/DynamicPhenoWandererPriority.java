@@ -11,6 +11,7 @@ import org.jblas.DoubleMatrix;
 import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,6 +20,8 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -37,6 +40,8 @@ import java.util.*;
  * @version 0.09 (3 November, 2013)
  */
 public class DynamicPhenoWandererPriority implements IPriority, Constants {
+
+    private final Logger logger = LoggerFactory.getLogger(DynamicPhenoWandererPriority.class);
 
     private Connection connection = null;
     /**
@@ -115,7 +120,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 throw new ExomizerInitializationException(rwe);
             }
         } else {
-            System.out.println("USING bootstrapped matrix");
+            logger.info("USING bootstrapped matrix");
             randomWalkMatrix = rwMatrix;
         }
         /*
@@ -167,9 +172,8 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
         HashMap<String, String> best_mapped_term_mpid = new HashMap<String, String>();
         HashMap<String, Integer> knownMps = new HashMap<String, Integer>();
         HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
-        Calendar cal = Calendar.getInstance();
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        System.out.println("Collecting hp mappings for " + species + " :" + dateFormat.format(cal.getTime()));
+
+        logger.info("Collecting hp mappings for species: {}", species);
         for (String hpid : hps_initial) {
             try {
                 findMappingStatement.setString(1, hpid);
@@ -211,8 +215,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 throw new ExomizerInitializationException(error);
             }
         }
-        cal = Calendar.getInstance();
-        System.out.println("Calc perf " + species + " :" + dateFormat.format(cal.getTime()));
+        logger.info("Calc perf {}", species);
         String[] hps = new String[hp_list.size()];
         hp_list.toArray(hps);
         // calculate perfect model scores
@@ -249,8 +252,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
             }
         }
         float best_avg_score = sum_best_score / best_hit_counter;
-        cal = Calendar.getInstance();
-        System.out.println("Calc scores for all " + species + " genes:" + dateFormat.format(cal.getTime()));
+        logger.info("Calc scores for all {} genes ", species);
         // calculate score for this gene
         try {
             ResultSet rs = findAnnotationStatement.executeQuery();
@@ -363,7 +365,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                     // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
                     if ((hit == null ? disease == null : hit.equals(disease))
                             && (humanGene == null ? candGene == null : humanGene.equals(candGene))) {
-                        //System.out.println("FOUND self hit " + disease + ":"+candGene);
+                        //logger.info("FOUND self hit {} : {}", disease, candGene);
                         if (scores.get(entrez) != null) {
                             phenoGenes.add(entrez);
                             phenoGeneSymbols.add(humanGene);
@@ -409,9 +411,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
      * seed genes given by the user.
      */
     private void computeDistanceAllNodesFromStartNodes() throws ExomizerInitializationException {
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        Calendar cal = Calendar.getInstance();
-        System.out.println("STARTING pre-queries:" + dateFormat.format(cal.getTime()));
+        logger.info("STARTING pre-queries:");
         if (disease != null) {
             setHPOfromDisease(disease);
         }
@@ -483,8 +483,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
             throw new ExomizerInitializationException(error);
         }
         // Mouse
-        cal = Calendar.getInstance();
-        System.out.println("STARTING mouse:" + dateFormat.format(cal.getTime()));
+        logger.info("STARTING mouse:");
         String mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?");
         PreparedStatement findMappingStatement = null;
         try {
@@ -506,8 +505,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
 
 
         // Human
-        cal = Calendar.getInstance();
-        System.out.println("STARTING human:" + dateFormat.format(cal.getTime()));
+        logger.info("STARTING human:");
         mapping_query = String.format("SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?");
         findMappingStatement = null;
         try {
@@ -526,8 +524,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
         hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hps_initial, "human");
 
         // Fish
-        cal = Calendar.getInstance();
-        System.out.println("STARTING fish:" + dateFormat.format(cal.getTime()));
+        logger.info("STARTING fish:");
         mapping_query = String.format("SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?");
         try {
             findMappingStatement = connection.prepareStatement(mapping_query);
@@ -545,8 +542,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
         hps_initial = hpo_ids.split(",");
         hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hps_initial, "fish");
 
-        cal = Calendar.getInstance();
-        System.out.println("Process rw matrix:" + dateFormat.format(cal.getTime()));
+        logger.info("Process rw matrix:");
         int rows = randomWalkMatrix.data.getColumn(0).getRows();
         int cols = phenoGenes.size();
         DoubleMatrix combinedProximityVector = DoubleMatrix.zeros(rows, cols);
@@ -594,13 +590,10 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
      */
     @Override
         public void prioritize_list_of_genes(List<Gene> gene_list) {
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        Calendar cal = Calendar.getInstance();
-        System.out.println("STARTING compDistanceAllNodes:" + dateFormat.format(cal.getTime()));
+        logger.info("STARTING compDistanceAllNodes:");
         try {
             computeDistanceAllNodesFromStartNodes();
-            cal = Calendar.getInstance();
-            System.out.println("ENDED compDistanceAllNodes:" + dateFormat.format(cal.getTime()));
+            logger.info("ENDED compDistanceAllNodes:");
         } catch (ExomizerInitializationException e) {
             String error = String.format("Error computing distance for all nodes", e.toString());
         }
