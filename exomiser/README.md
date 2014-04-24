@@ -13,8 +13,6 @@ cp ../../exomiser-db/data/extracted/ucsc_hg19.ser data/.
 mv Pfeiffer.vcf data/.
 # copy in the extra phenix data to data/
 ... from somewhere
-# delete existing tgz if there is one as the next step will add files
-rm exomiser.tgz
 # make the archive.
 tar -cvzf exomiser.tgz exomiser-2.0.0.jar jdbc.properties log4j2.xml lib data 
 
