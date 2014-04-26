@@ -8,12 +8,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
 import org.jblas.DoubleMatrix;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Contains the random walk relationships and the entrez-id to index relations.
@@ -23,6 +24,8 @@ import org.jblas.DoubleMatrix;
  */
 public class DataMatrix{
 	
+    private final Logger logger = LoggerFactory.getLogger(DataMatrix.class);
+    
 	public Map<Integer, Integer> idx2objectid = new HashMap<Integer, Integer>();
 	public Map<Integer, Integer> objectid2idx = new HashMap<Integer, Integer>();
 	public DoubleMatrix data;
@@ -82,7 +85,7 @@ public class DataMatrix{
 			int i 			= 0;
 			while ( ( line = in.readLine()) != null){
 				
-				if (i%500==0) System.out.println("   -> read line "+i);
+				if (i%500==0) logger.info("   -> read line {}", i);
 				
 				String[] row = splitPattern.split(line);	
 				for (int j = 0; j < matrixSize ; j++){

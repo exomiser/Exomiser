@@ -5,8 +5,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -20,6 +22,8 @@ import java.util.ArrayList;
  */
 public class PublishedMutationSearcher {
 
+    private final Logger logger = LoggerFactory.getLogger(PublishedMutationSearcher.class);
+    
     /** List of variants for which we want to search the database for 
      * known mutations in the HGMD data. 
      */
@@ -84,7 +88,7 @@ public class PublishedMutationSearcher {
 		}
 	    }
 	} catch (SQLException e) {
-	    System.out.println("[PhenIX] SQL Error while retrieving ClinVar data: " + e);
+	    logger.error("SQL Error while retrieving ClinVar data.", e);
 	    // skip
 	}
 	/* Now HGMD PRO */
@@ -108,7 +112,7 @@ public class PublishedMutationSearcher {
 		}
 	    }
 	} catch (SQLException e) {
-	    System.out.println("[PhenIX] SQL Error while retrieving HGMD data: " + e);
+	    logger.error("SQL Error while retrieving HGMD data", e);
 	    // skip
 	}
     }

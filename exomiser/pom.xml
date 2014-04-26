@@ -80,6 +80,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
+                            <!--<classpathPrefix>settings/</classpathPrefix>-->
                             <mainClass>de.charite.compbio.exomiser.Exomizer</mainClass>
                         </manifest>
                     </archive>
@@ -123,6 +124,10 @@
                                 <resource>
                                     <directory>src/main/resources</directory>
                                     <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>src/test/resources</directory>
+                                    <filtering>Pfeiffer.vcf</filtering>
                                 </resource>
                             </resources>              
                         </configuration>            
