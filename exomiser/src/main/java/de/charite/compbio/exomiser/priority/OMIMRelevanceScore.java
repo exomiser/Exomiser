@@ -82,16 +82,16 @@ public class OMIMRelevanceScore implements IRelevanceScore {
 	if (typ=='D') {
 	    mimEntryList.add(href);
 	} else if (typ=='N') {
-	    String row = String.format("OMIM: %s (non-disease)",href);
+	    String row = String.format("%s (non-disease)",href);
 	    mimEntryList.add(row);
 	} else if (typ=='S') {
-	    String row = String.format("OMIM: %s (susceptibility)",href);
+	    String row = String.format("%s (susceptibility)",href);
 	    mimEntryList.add(row);
 	} else if (typ=='?') {
-	    String row = String.format("OMIM: %s (unconfirmed)",href);
+	    String row = String.format("%s (unconfirmed)",href);
 	    mimEntryList.add(row);
 	} else if (typ=='C') {
-	    String row = String.format("OMIM: %s (CNV)",href);
+	    String row = String.format("%s (CNV)",href);
 	    mimEntryList.add(row);
 	}
     }
@@ -105,7 +105,7 @@ public class OMIMRelevanceScore implements IRelevanceScore {
     public void addOrphanetRow(String orphanum, String disease) {
         String[] orphaParts = orphanum.split(":");
 	String url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s",orphaParts[1]);
-	String href = String.format("Orphanet: <a href=\"%s\">%s</a>",
+	String href = String.format("<a href=\"%s\">%s</a>",
 				    url,disease);
 	mimEntryList.add(href);
     }
@@ -121,8 +121,9 @@ public class OMIMRelevanceScore implements IRelevanceScore {
      * @return A string with HTML code producing a bullet list of OMIM entries/links.
      */
     @Override public String getHTMLCode() {
-	 if (is_empty()) return "<ul class=\"mim\"><li>No OMIM disease entry</li></ul>";
+	 if (is_empty()) return "<ul><li>No known disease</ul></li>";
 	 StringBuilder sb = new StringBuilder();
+         sb.append("<ul><li>Known diseases</li></ul>");
 	 if (this.score<1f && this.score != DEFAULT_SCORE) {
 	     sb.append("Observed variants not compatible with mode of inheritance:");
 	 }

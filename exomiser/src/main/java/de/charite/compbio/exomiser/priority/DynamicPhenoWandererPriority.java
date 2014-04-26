@@ -1,7 +1,5 @@
 package de.charite.compbio.exomiser.priority;
 
-
-
 import jannovar.common.Constants;
 
 import java.util.ArrayList;
@@ -16,10 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
-
 
 /**
  * Filter genes according to the random walk proximity in the protein-protein
@@ -66,6 +61,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
     private String candGene;
     private String disease;
     private Map<Integer, Double> scores = new HashMap<Integer, Double>();
+    private Map<Integer, Double> mouseScores = new HashMap<Integer, Double>();
     private Map<Integer, Double> humanScores = new HashMap<Integer, Double>();
     private Map<Integer, Double> fishScores = new HashMap<Integer, Double>();
     private Map<Integer, String> humanDiseases = new HashMap<Integer, String>();
@@ -130,7 +126,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
      */
     @Override
     public String getPriorityName() {
-        return "Uberiser";
+        return "Phenotypic analysis";
     }
 
     /**
@@ -167,9 +163,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
         HashMap<String, String> best_mapped_term_mpid = new HashMap<String, String>();
         HashMap<String, Integer> knownMps = new HashMap<String, Integer>();
         HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
-        Calendar cal = Calendar.getInstance();
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        System.out.println("Collecting hp mappings for " + species + " :" + dateFormat.format(cal.getTime()));
         for (String hpid : hps_initial) {
             try {
                 findMappingStatement.setString(1, hpid);
@@ -211,8 +204,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 throw new ExomizerInitializationException(error);
             }
         }
-        cal = Calendar.getInstance();
-        System.out.println("Calc perf " + species + " :" + dateFormat.format(cal.getTime()));
         String[] hps = new String[hp_list.size()];
         hp_list.toArray(hps);
         // calculate perfect model scores
@@ -249,8 +240,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
             }
         }
         float best_avg_score = sum_best_score / best_hit_counter;
-        cal = Calendar.getInstance();
-        System.out.println("Calc scores for all " + species + " genes:" + dateFormat.format(cal.getTime()));
         // calculate score for this gene
         try {
             ResultSet rs = findAnnotationStatement.executeQuery();
@@ -285,7 +274,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                             if (score > best_score) {
                                 best_score = score;
                             }
-                            if (score > 1.5) {
+                            if (score > 1.75) {
                                 if (hpMatches.get(entrez) == null) {
                                     hpMatches.put(entrez, new HashMap<String, HashMap<Float, String>>());
                                     hpMatches.get(entrez).put(hpid, new HashMap<Float, String>());
@@ -320,7 +309,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                             if (score > best_score) {
                                 best_score = score;
                             }
-                            if (score > 1.5) {
+                            if (score > 1.75) {
                                 if (hpMatches.get(entrez) == null) {
                                     hpMatches.put(entrez, new HashMap<String, HashMap<Float, String>>());
                                     hpMatches.get(entrez).put(hpid, new HashMap<Float, String>());
@@ -351,14 +340,16 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                         combined_score = 100;
                     }
                     double score = combined_score / 100;
-                    if (species.equals("human")) {
-                        /*
-                         * Adjust human score as a hit that is 60% of the
-                         * perfect (identical) HPO match is a much better match
-                         * than something that is 60% of the perfect mouse match
-                         * - imperfect HP-MP mapping
+                    /*
+                         * Adjust human score as a hit that is 60% of the perfect (identical) HPO match is a much better match
+                         * than something that is 60% of the perfect mouse match - imperfect HP-MP mapping
                          */
+                    if (species.equals("human")) {
                         score = score + ((1 - score) / 2);
+                    }
+                    // adjust fish score - over-scoring at moment as even a perfect fish match is much worse than the mouse and human hits
+                    if (species.equals("fish")) {
+                        score = score - ((score) / 2);
                     }
                     // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
                     if ((hit == null ? disease == null : hit.equals(disease))
@@ -372,12 +363,13 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                         if (scores.get(entrez) != null) {
                             if (score > scores.get(entrez)) {
                                 scores.put(entrez, score);
-                                if (species.equals("human")){
+                                if (species.equals("human")) {
                                     humanScores.put(entrez, score);
                                     humanDiseases.put(entrez, hit);
-                                }
-                                else if (species.equals("fish")){
-                                    fishScores.put(entrez,score);
+                                } else if (species.equals("fish")) {
+                                    fishScores.put(entrez, score);
+                                } else if (species.equals("mouse")) {
+                                    mouseScores.put(entrez, score);
                                 }
                             }
                         } else {
@@ -386,12 +378,13 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                                 phenoGeneSymbols.add(humanGene);
                             }
                             scores.put(entrez, score);
-                            if (species.equals("human")){
+                            if (species.equals("human")) {
                                 humanScores.put(entrez, score);
                                 humanDiseases.put(entrez, hit);
-                            }
-                            else if (species.equals("fish")){
-                                fishScores.put(entrez,score);
+                            } else if (species.equals("fish")) {
+                                fishScores.put(entrez, score);
+                            } else if (species.equals("mouse")) {
+                                mouseScores.put(entrez, score);
                             }
                         }
                     }
@@ -409,9 +402,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
      * seed genes given by the user.
      */
     private void computeDistanceAllNodesFromStartNodes() throws ExomizerInitializationException {
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        Calendar cal = Calendar.getInstance();
-        System.out.println("STARTING pre-queries:" + dateFormat.format(cal.getTime()));
         if (disease != null) {
             setHPOfromDisease(disease);
         }
@@ -483,8 +473,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
             throw new ExomizerInitializationException(error);
         }
         // Mouse
-        cal = Calendar.getInstance();
-        System.out.println("STARTING mouse:" + dateFormat.format(cal.getTime()));
         String mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?");
         PreparedStatement findMappingStatement = null;
         try {
@@ -506,8 +494,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
 
 
         // Human
-        cal = Calendar.getInstance();
-        System.out.println("STARTING human:" + dateFormat.format(cal.getTime()));
         mapping_query = String.format("SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?");
         findMappingStatement = null;
         try {
@@ -526,8 +512,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
         hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hps_initial, "human");
 
         // Fish
-        cal = Calendar.getInstance();
-        System.out.println("STARTING fish:" + dateFormat.format(cal.getTime()));
         mapping_query = String.format("SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?");
         try {
             findMappingStatement = connection.prepareStatement(mapping_query);
@@ -545,8 +529,6 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
         hps_initial = hpo_ids.split(",");
         hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hps_initial, "fish");
 
-        cal = Calendar.getInstance();
-        System.out.println("Process rw matrix:" + dateFormat.format(cal.getTime()));
         int rows = randomWalkMatrix.data.getColumn(0).getRows();
         int cols = phenoGenes.size();
         DoubleMatrix combinedProximityVector = DoubleMatrix.zeros(rows, cols);
@@ -593,14 +575,9 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
      * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
-        public void prioritize_list_of_genes(List<Gene> gene_list) {
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS");
-        Calendar cal = Calendar.getInstance();
-        System.out.println("STARTING compDistanceAllNodes:" + dateFormat.format(cal.getTime()));
+    public void prioritize_list_of_genes(List<Gene> gene_list) {
         try {
             computeDistanceAllNodesFromStartNodes();
-            cal = Calendar.getInstance();
-            System.out.println("ENDED compDistanceAllNodes:" + dateFormat.format(cal.getTime()));
         } catch (ExomizerInitializationException e) {
             String error = String.format("Error computing distance for all nodes", e.toString());
         }
@@ -613,106 +590,222 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
         for (Gene gene : gene_list) {
             String evidence = "";
             double val = 0f;
-            if (scores.get(gene.getEntrezGeneID()) != null) {// DIRECT PHENO HIT : scores from 0 to 1
-                val = scores.get(gene.getEntrezGeneID());
-                if (humanScores.get(gene.getEntrezGeneID()) != null && humanScores.get(gene.getEntrezGeneID()) >= scores.get(gene.getEntrezGeneID())) {
-                    String diseaseId = humanDiseases.get(gene.getEntrezGeneID());
+            // DIRECT PHENO HIT
+            int entrezGeneID = gene.getEntrezGeneID();
+            if (scores.get(entrezGeneID) != null) {
+                val = scores.get(entrezGeneID);
+                // HUMAN
+                if (humanScores.get(entrezGeneID) != null) {
+                    String diseaseId = humanDiseases.get(entrezGeneID);
                     String diseaseLink = diseaseTerms.get(diseaseId);
-                    diseaseId = diseaseId.split(":")[1];
-                    diseaseLink = "<a href=\"http://www.omim.org/" + diseaseId + "\">" + diseaseLink + "</a>";
-                    evidence = "based on phenotypic similarity to " + diseaseLink + " associated with " + gene.getGeneSymbol();
-                    if (hpHpMatches.get(gene.getEntrezGeneID()) != null) {
-                        evidence = evidence + "<li><b>Clinical phenotype - Matched phenotype</b>";
-                        Set<String> hpIds = hpHpMatches.get(gene.getEntrezGeneID()).keySet();
-                        for (String hpId : hpIds) {
+                    if (diseaseId.split(":")[0].equals("OMIM")) {
+                        diseaseId = diseaseId.split(":")[1];
+                        diseaseLink = "<a href=\"http://www.omim.org/" + diseaseId + "\">" + diseaseLink + "</a>";
+                    } else {
+                        diseaseId = diseaseId.split(":")[1];
+                        diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
+                    }
+                    //evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to %s associated with %s. Best phenotype matches: </li></ul>", humanScores.get(gene.getEntrezGeneID()), diseaseLink, gene.getGeneSymbol());
+                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to %s associated with %s.", humanScores.get(gene.getEntrezGeneID()), diseaseLink, gene.getGeneSymbol());
+                    //evidence = evidence + "<a class=\"op2\" id=\"";
+                   
+                    
+                    
+                    if (hpHpMatches.get(entrezGeneID) != null) {
+                        // New code to display all entered HPO terms
+                        evidence = evidence + "<table><tr><td><b>Patient phenotype</b></td><td><b>Disease phenotype</b></td></tr>";
+                        String[] hps_initial = hpo_ids.split(",");
+                        for (String hpId: hps_initial){
                             String hpTerm = hpoTerms.get(hpId);
-                            Set<Float> hpIdScores = hpHpMatches.get(gene.getEntrezGeneID()).get(hpId).keySet();
-                            for (float hpIdScore : hpIdScores) {
-                                String hpIdHit = hpHpMatches.get(gene.getEntrezGeneID()).get(hpId).get(hpIdScore);
-                                String hpTermHit = hpoTerms.get(hpIdHit);
-                                evidence = evidence + "<li>" + hpTerm + "(" + hpId + ") - " + hpIdScore + " - " + hpTermHit + "(" + hpIdHit + ")";
+                            if (hpHpMatches.get(entrezGeneID).get(hpId) != null){
+                                Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(hpId).keySet();
+                                for (float hpIdScore : hpIdScores) {
+                                    String hpIdHit = hpHpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String hpTermHit = hpoTerms.get(hpIdHit);
+                                    evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s (%s)</td></tr>",hpTerm,hpId,hpTermHit,hpIdHit);
+                                }
+                            }
+                            else{
+                                evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s</td></tr>",hpTerm,hpId,"");
                             }
                         }
+                        evidence = evidence + "</table>";
+//                        evidence = evidence + "<table><tr><td><b>Patient|phenotype</b></td><td><b>Disease|phenotype</b></td></tr>";
+//                        Set<String> hpIds = hpHpMatches.get(entrezGeneID).keySet();
+//                        for (String hpId : hpIds) {
+//                            String hpTerm = hpoTerms.get(hpId);
+//                            Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(hpId).keySet();
+//                            for (float hpIdScore : hpIdScores) {
+//                                String hpIdHit = hpHpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+//                                String hpTermHit = hpoTerms.get(hpIdHit);
+//                                evidence = evidence + String.format("<tr><td>%s|(%s)</td><td>%s|(%s)</td></tr>",hpTerm,hpId,hpTermHit,hpIdHit);
+//                            }
+//                        }
+//                        evidence = evidence + "</table>";
                     }
-                } else if (fishScores.get(gene.getEntrezGeneID()) != null && fishScores.get(gene.getEntrezGeneID()) >= scores.get(gene.getEntrezGeneID())) {
-                    evidence = "based on phenotypic similarity to zebrafish mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=" + gene.getGeneSymbol() + "\">" + gene.getGeneSymbol() + "</a>";
-                    if (hpZpMatches.get(gene.getEntrezGeneID()) != null) {
-                        evidence = evidence + "<li><b>Clinical phenotype - Matched phenotype</b>";
-                        Set<String> hpIds = hpZpMatches.get(gene.getEntrezGeneID()).keySet();
-                        for (String hpId : hpIds) {
-                            String hpTerm = hpoTerms.get(hpId);
-                            Set<Float> hpIdScores = hpZpMatches.get(gene.getEntrezGeneID()).get(hpId).keySet();
-                            for (float hpIdScore : hpIdScores) {
-                                String zpIdHit = hpZpMatches.get(gene.getEntrezGeneID()).get(hpId).get(hpIdScore);
-                                String zpTermHit = zpoTerms.get(zpIdHit);
-                                evidence = evidence + "<li>" + hpTerm + "(" + hpId + ") - " + hpIdScore + " - " + zpTermHit + "(" + zpIdHit + ")";
-                            }
-                        }
+                    //evidence = evidence + "\">Show phenotype matches</a></li></ul>";
+                    else {
+                        evidence = evidence + "None";
                     }
-                } else {
-                    evidence = "based on phenotypic similarity to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=" + gene.getGeneSymbol() + "\">" + gene.getGeneSymbol() + "</a>";
+                }
+                // MOUSE
+                if (mouseScores.get(gene.getEntrezGeneID()) != null) {
+                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>. Best phenotype matches: </li></ul>", mouseScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     if (hpMpMatches.get(gene.getEntrezGeneID()) != null) {
-                        evidence = evidence + "<li><b>Clinical phenotype - Matched phenotype</b>";
-                        Set<String> hpIds = hpMpMatches.get(gene.getEntrezGeneID()).keySet();
-                        for (String hpId : hpIds) {
+                        evidence = evidence + "<table><tr><td><b>Patient phenotype</b></td><td><b>Mouse phenotype</b></td></tr>";
+                        String[] hps_initial = hpo_ids.split(",");
+                        for (String hpId: hps_initial){
                             String hpTerm = hpoTerms.get(hpId);
-                            Set<Float> hpIdScores = hpMpMatches.get(gene.getEntrezGeneID()).get(hpId).keySet();
-                            for (float hpIdScore : hpIdScores) {
-                                String mpIdHit = hpMpMatches.get(gene.getEntrezGeneID()).get(hpId).get(hpIdScore);
-                                String mpTermHit = mpoTerms.get(mpIdHit);
-                                evidence = evidence + "<li>" + hpTerm + "(" + hpId + ") - " + hpIdScore + " - " + mpTermHit + "(" + mpIdHit + ")";
+                            if (hpMpMatches.get(entrezGeneID).get(hpId) != null){
+                                Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(hpId).keySet();
+                                for (float hpIdScore : hpIdScores) {
+                                    String mpIdHit = hpMpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String mpTermHit = mpoTerms.get(mpIdHit);
+                                    evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s (%s)</td></tr>",hpTerm,hpId,mpTermHit,mpIdHit);
+                                }
+                            }
+                            else{
+                                evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s</td></tr>",hpTerm,hpId,"");
                             }
                         }
+                        evidence = evidence + "</table>";                        
+                    } else {
+                        evidence = evidence + "None";
                     }
 
                 }
-                ++PPIdataAvailable;
-            } else if (randomWalkMatrix.objectid2idx.containsKey(gene.getEntrezGeneID())) { //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.5 once scaled
-                int col_idx = computeSimStartNodesToNode(gene);
-                int row_idx = randomWalkMatrix.objectid2idx.get(gene.getEntrezGeneID());
-                val = combinedProximityVector.get(row_idx, col_idx);// ? IF THIS RIGHT WAY ROUND
-                String closestGene = phenoGeneSymbols.get(col_idx);
-                String thisGene = gene.getGeneSymbol();
-                String stringDbImageLink = "http://string-db.org/api/image/networkList?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
-                double phenoScore = scores.get(phenoGenes.get(col_idx));
-                if (humanScores.get(phenoGenes.get(col_idx)) != null && humanScores.get(phenoGenes.get(col_idx)) >= scores.get(phenoGenes.get(col_idx))) {
-                    String diseaseId = humanDiseases.get(phenoGenes.get(col_idx));
-                    String diseaseLink = diseaseTerms.get(diseaseId);
-                    diseaseId = diseaseId.split(":")[1];
-                    diseaseLink = "<a href=\"http://www.omim.org/" + diseaseId + "\">" + diseaseLink + "</a>";
-                    evidence = String.format("based on proximity in interactome to %s associated with %s with phenotypic similarity</br><img width = \"450\" src=\"%s\">", closestGene, diseaseLink, stringDbImageLink);
-                    if (hpHpMatches.get(phenoGenes.get(col_idx)) != null) {
-                        evidence = evidence + "<li><b>Clinical phenotype - Matched phenotype</b>";
-                        Set<String> hpIds = hpHpMatches.get(phenoGenes.get(col_idx)).keySet();
-                        for (String hpId : hpIds) {
+                // FISH
+                if (fishScores.get(gene.getEntrezGeneID()) != null) {
+                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>. Best phenotype matches: </li></ul>", fishScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
+                    //evidence = evidence + "<br>Best phenotype matches: ";
+                    if (hpZpMatches.get(gene.getEntrezGeneID()) != null) {
+                        evidence = evidence + "<table><tr><td><b>Patient phenotype</b></td><td><b>Fish phenotype</b></td></tr>";
+                        String[] hps_initial = hpo_ids.split(",");
+                        for (String hpId: hps_initial){
                             String hpTerm = hpoTerms.get(hpId);
-                            Set<Float> hpIdScores = hpHpMatches.get(phenoGenes.get(col_idx)).get(hpId).keySet();
-                            for (float hpIdScore : hpIdScores) {
-                                String hpIdHit = hpHpMatches.get(phenoGenes.get(col_idx)).get(hpId).get(hpIdScore);
-                                String hpTermHit = hpoTerms.get(hpIdHit);
-                                evidence = evidence + "<li>" + hpTerm + "(" + hpId + ") - " + hpTermHit + "(" + hpIdHit + ")";
+                            if (hpZpMatches.get(entrezGeneID).get(hpId) != null){
+                                Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(hpId).keySet();
+                                for (float hpIdScore : hpIdScores) {
+                                    String zpIdHit = hpZpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String zpTermHit = zpoTerms.get(zpIdHit);
+                                    evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s (%s)</td></tr>",hpTerm,hpId,zpTermHit,zpIdHit);
+                                }
+                            }
+                            else{
+                                evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s</td></tr>",hpTerm,hpId,"");
                             }
                         }
-                    }
-                } else {
-                    evidence = String.format("based on proximity in interactome to %s with score %.3f based on phenotypic similarity to mouse mutant</br><img width = \"450\" src=\"%s\">", closestGene, phenoScore, stringDbImageLink);
-                    if (hpMpMatches.get(phenoGenes.get(col_idx)) != null) {
-                        evidence = evidence + "<li><b>Clinical phenotype - Matched phenotype</b>";
-                        Set<String> hpIds = hpMpMatches.get(phenoGenes.get(col_idx)).keySet();
-                        for (String hpId : hpIds) {
-                            String hpTerm = hpoTerms.get(hpId);
-                            Set<Float> hpIdScores = hpMpMatches.get(phenoGenes.get(col_idx)).get(hpId).keySet();
-                            for (float hpIdScore : hpIdScores) {
-                                String mpIdHit = hpMpMatches.get(phenoGenes.get(col_idx)).get(hpId).get(hpIdScore);
-                                String mpTermHit = mpoTerms.get(mpIdHit);
-                                evidence = evidence + "<li>" + hpTerm + "(" + hpId + ") - " + mpTermHit + "(" + mpIdHit + ")";
-                            }
-                        }
+                        evidence = evidence + "</table>";
+                    } else {
+                        evidence = evidence + "None";
                     }
                 }
                 ++PPIdataAvailable;
-            } else {// NO PHENO HIT OR PPI INTERACTION
-                evidence = "as no phenotype or PPI evidence";
+            }
+            //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
+            else if (randomWalkMatrix.objectid2idx.containsKey(gene.getEntrezGeneID())) {
+                int col_idx = computeSimStartNodesToNode(gene);
+                int row_idx = randomWalkMatrix.objectid2idx.get(gene.getEntrezGeneID());
+                val = combinedProximityVector.get(row_idx, col_idx);
+                String closestGene = phenoGeneSymbols.get(col_idx);
+                String thisGene = gene.getGeneSymbol();
+                //String stringDbImageLink = "http://string-db.org/api/image/networkList?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
+                String stringDbLink = "http://string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
+                double phenoScore = scores.get(phenoGenes.get(col_idx));
+                entrezGeneID = phenoGenes.get(col_idx);
+                // HUMAN
+                if (humanScores.get(phenoGenes.get(col_idx)) != null) {
+                    String diseaseId = humanDiseases.get(phenoGenes.get(col_idx));
+                    String diseaseLink = diseaseTerms.get(diseaseId);
+                    if (diseaseId.split(":")[0].equals("OMIM")) {
+                        diseaseId = diseaseId.split(":")[1];
+                        diseaseLink = "<a href=\"http://www.omim.org/" + diseaseId + "\">" + diseaseLink + "</a>";
+                    } else {
+                        diseaseId = diseaseId.split(":")[1];
+                        diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
+                    }
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s. Best phenotype matches: </li></ul>", stringDbLink, closestGene, diseaseLink, closestGene);
+                    //evidence = evidence + "<br>Best phenotype matches";
+                    if (hpHpMatches.get(phenoGenes.get(col_idx)) != null) {
+                        evidence = evidence + "<table><tr><td><b>Patient phenotype</b></td><td><b>Disease phenotype</b></td></tr>";
+                        String[] hps_initial = hpo_ids.split(",");
+                        for (String hpId: hps_initial){
+                            String hpTerm = hpoTerms.get(hpId);
+                            if (hpHpMatches.get(entrezGeneID).get(hpId) != null){
+                                Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(hpId).keySet();
+                                for (float hpIdScore : hpIdScores) {
+                                    String hpIdHit = hpHpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String hpTermHit = hpoTerms.get(hpIdHit);
+                                    evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s (%s)</td></tr>",hpTerm,hpId,hpTermHit,hpIdHit);
+                                }
+                            }
+                            else{
+                                evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s</td></tr>",hpTerm,hpId,"");
+                            }
+                        }
+                        evidence = evidence + "</table>";
+                    } else {
+                        evidence = evidence + "None";
+                    }
+                }
+                // MOUSE
+                if (mouseScores.get(phenoGenes.get(col_idx)) != null) {
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to mouse mutant of %s. Best phenotype matches: </li></ul>", stringDbLink, closestGene, closestGene);
+                    //evidence = evidence + "<br>Best phenotype matches: ";
+                    if (hpMpMatches.get(phenoGenes.get(col_idx)) != null) {
+                        evidence = evidence + "<table><tr><td><b>Patient phenotype</b></td><td><b>Mouse phenotype</b></td></tr>";
+                        String[] hps_initial = hpo_ids.split(",");
+                        for (String hpId: hps_initial){
+                            String hpTerm = hpoTerms.get(hpId);
+                            if (hpMpMatches.get(entrezGeneID).get(hpId) != null){
+                                Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(hpId).keySet();
+                                for (float hpIdScore : hpIdScores) {
+                                    String mpIdHit = hpMpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String mpTermHit = mpoTerms.get(mpIdHit);
+                                    evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s (%s)</td></tr>",hpTerm,hpId,mpTermHit,mpIdHit);
+                                }
+                            }
+                            else{
+                                evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s</td></tr>",hpTerm,hpId,"");
+                            }
+                        }
+                        evidence = evidence + "</table>";
+                    } else {
+                        evidence = evidence + "None";
+                    }
+
+                }
+                // FISH
+                if (fishScores.get(phenoGenes.get(col_idx)) != null) {
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.  Best phenotype matches: </li></ul>", stringDbLink, closestGene, closestGene);
+                    //evidence = evidence + "<br>Best phenotype matches: ";
+                    if (hpZpMatches.get(phenoGenes.get(col_idx)) != null) {
+                        evidence = evidence + "<table><tr><td><b>Patient phenotype</b></td><td><b>Fish phenotype</b></td></tr>";
+                        String[] hps_initial = hpo_ids.split(",");
+                        for (String hpId: hps_initial){
+                            String hpTerm = hpoTerms.get(hpId);
+                            if (hpZpMatches.get(entrezGeneID).get(hpId) != null){
+                                Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(hpId).keySet();
+                                for (float hpIdScore : hpIdScores) {
+                                    String zpIdHit = hpZpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String zpTermHit = zpoTerms.get(zpIdHit);
+                                    evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s (%s)</td></tr>",hpTerm,hpId,zpTermHit,zpIdHit);
+                                }
+                            }
+                            else{
+                                evidence = evidence + String.format("<tr><td>%s (%s)</td><td>%s</td></tr>",hpTerm,hpId,"");
+                            }
+                        }
+                        evidence = evidence + "</table>";
+                    } else {
+                        evidence = evidence + "None";
+                    }
+                }
+                ++PPIdataAvailable;
+            }
+            // NO PHENO HIT OR PPI INTERACTION
+            else {
+                evidence = "<ul><li>No phenotype or PPI evidence</li></ul>";
             }
             DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence);
             gene.addRelevanceScore(relScore, FilterType.DYNAMIC_PHENOWANDERER_FILTER);
@@ -753,17 +846,18 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 g.resetRelevanceScore(FilterType.DYNAMIC_PHENOWANDERER_FILTER, newScore);
             }
         }
-        String s = String.format("Phenotype and Protein-Protein Interaction evidence was available for %d of %d genes (%.1f%%)",
+        String s = String.format("Phenotype and Protein-Protein Interaction evidence was available for %d of %d genes (%.1f%%). Phenotypes searched:",
                 PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
-        this.n_before = totalGenes;
-        this.n_after = PPIdataAvailable;
         this.messages.add(s);
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("Seed genes:");
-//        for (Integer seed : phenoGenes) {
-//            sb.append(seed + "&nbsp;");
-//        }
-//        this.messages.add(sb.toString());
+        String[] hps_initial = hpo_ids.split(",");
+        String hpInput = "";
+        for (String hp: hps_initial){
+            String hpTerm = hpoTerms.get(hp);
+            hpInput = hpInput + (String.format("%s (%s), ", hpTerm,hp));
+        }
+        //this.messages.add(hpInput);// now display all HPO terms on results no need for this
+        this.n_before = totalGenes;
+        this.n_after = totalGenes;
     }
 
     /**
@@ -834,7 +928,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
     }
 
     @Override
-        public void setParameters(String par) throws ExomizerInitializationException {
+    public void setParameters(String par) throws ExomizerInitializationException {
     }
 
     /**
