@@ -14,13 +14,19 @@ public class DynamicPhenoWandererRelevanceScore implements IRelevanceScore,Const
      */
     private double genewandererScore;
     private String evidence;
+    private String humanPhenotypeEvidence;
+    private String mousePhenotypeEvidence;
+    private String fishPhenotypeEvidence;
 
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public DynamicPhenoWandererRelevanceScore(double score, String evidence) {
+    public DynamicPhenoWandererRelevanceScore(double score, String evidence, String humanPhenotypeEvidence, String mousePhenotypeEvidence, String fishPhenotypeEvidence) {
 	this.genewandererScore = score;
         this.evidence = evidence;
+        this.humanPhenotypeEvidence = humanPhenotypeEvidence;
+        this.mousePhenotypeEvidence = mousePhenotypeEvidence;
+        this.fishPhenotypeEvidence = fishPhenotypeEvidence;
     }
 
 
@@ -42,7 +48,7 @@ public class DynamicPhenoWandererRelevanceScore implements IRelevanceScore,Const
      */
     public static DynamicPhenoWandererRelevanceScore noPPIDataScore() {
 	float nodatascore = 0f;
-	DynamicPhenoWandererRelevanceScore grs = new DynamicPhenoWandererRelevanceScore(nodatascore,"");
+	DynamicPhenoWandererRelevanceScore grs = new DynamicPhenoWandererRelevanceScore(nodatascore,"","","","");
 	return grs;
     }
 
@@ -56,7 +62,26 @@ public class DynamicPhenoWandererRelevanceScore implements IRelevanceScore,Const
         return this.evidence;
     }
 
+     /** 
+     * @return HTML describing the phenotype evidence for the match
+     */
+    public String getHumanPhenotypeEvidence() {
+        return this.humanPhenotypeEvidence;
+    }
     
+        /** 
+     * @return HTML describing the phenotype evidence for the match
+     */
+    public String getMousePhenotypeEvidence() {
+        return this.mousePhenotypeEvidence;
+    }
+    
+        /** 
+     * @return HTML describing the phenotype evidence for the match
+     */
+    public String getFishPhenotypeEvidence() {
+        return this.fishPhenotypeEvidence;
+    }
     
     /**
      * Resets the value of the relevance score to a number between 0 and 1
