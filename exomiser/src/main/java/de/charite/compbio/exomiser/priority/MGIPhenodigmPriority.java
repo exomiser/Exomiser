@@ -72,7 +72,11 @@ public class MGIPhenodigmPriority implements IPriority {
     	this.disease = disease;
     	this.messages = new ArrayList<String>();
 	String url = String.format("http://omim.org/%s",disease);
-	String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">[MIM:%s]</a>\n",url,disease);
+        if (disease.contains("ORPHANET")){
+            String diseaseId = disease.split(":")[1];
+            url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s",diseaseId);
+        }
+	String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n",url,disease);
 	this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
 	messages.add(anchor);
      }
