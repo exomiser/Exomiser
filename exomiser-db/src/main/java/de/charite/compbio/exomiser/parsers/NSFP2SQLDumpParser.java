@@ -120,12 +120,12 @@ public class NSFP2SQLDumpParser implements Parser {
      * smaller than 0.5 and "deleterious" if the score is larger than 0.5.
      * Multiple entries separated by ";".
      */
-    private static int POLYPHEN2_HVAR_SCORE = 28;
+    private static int POLYPHEN2_HVAR_SCORE = 29;//28
 
     /**
      * MutationTaster score
      */
-    private static int MUTATION_TASTER_SCORE = 33;
+    private static int MUTATION_TASTER_SCORE = 35;//33
 
     /**
      * MutationTaster prediction, "A" ("disease_causing_automatic"), "D"
@@ -135,18 +135,24 @@ public class NSFP2SQLDumpParser implements Parser {
      * "N" or "P", we set the mutation score to zero. If the score is "A" or
      * "D", we report the score as given in dbNSFP.
      */
-    private static int MUTATION_TASTER_PRED = 35;
+    private static int MUTATION_TASTER_PRED = 37;//35
 
     /**
      * PhyloP score, the larger the score, the more conserved the site.
      */
-    private static int PHYLO_P = 50;
+    private static int PHYLO_P = 59;//50
     /// End of list of field indices for dbNSFP
 
     /**
      * Total number of fields in the dbNSFP database
      */
-    private static int N_NSFP_FIELDS = 59;
+    private static int N_NSFP_FIELDS = 86;//59
+    
+    private static int CADD_raw = 51;
+    
+    private static int CADD_raw_rankscore = 52;
+    
+    //private static int CADD_phred = 53;
 
     /**
      * Keep list of genes we have already seen (no need to have multiple SQL
@@ -293,10 +299,13 @@ public class NSFP2SQLDumpParser implements Parser {
         float polyphen2_HVAR = getMostPathogenicPolyphenScore(fields[POLYPHEN2_HVAR_SCORE]);
         float mut_taster = getMostPathogenicMutTasterScore(fields[MUTATION_TASTER_SCORE], fields[MUTATION_TASTER_PRED]);
         float phyloP = parsePhyloP(fields[PHYLO_P]);
+        float cadd_raw = parseCaddRaw(fields[CADD_raw]);
+        float cadd_raw_rankscore = parseCaddRawRankScore(fields[CADD_raw_rankscore]);
+        //float cadd_phred = parseCaddPhred(fields[CADD_phred]);
 
         return new VariantPathogenicity(c, pos, ref, alt, aaref, aaalt, aapos,
                 sift, polyphen2_HVAR, mut_taster,
-                phyloP);
+                phyloP,cadd_raw_rankscore,cadd_raw);
     }
 
     /**
@@ -356,7 +365,51 @@ public class NSFP2SQLDumpParser implements Parser {
         }
         return ret_value;
     }
+    
+       /**
+     * Some entries in dbNSFP are either nonnegative floats or "." . If the
+     * latter, then return -1f (NOPARSE_FLOAT; a flag)
+     */
+    private float parseCaddRawRankScore(String s) {
+        if (s.equals(".")) {
+            return Constants.NOPARSE_FLOAT;
+        }
+        int i = s.indexOf(";");
+        if (i > 0) {
+            s = s.substring(0, i);
+        }
+        float ret_value;
+        try {
+            ret_value = Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            logger.error("Could not parse float value: '{}'", s);
+            return Constants.NOPARSE_FLOAT;
+        }
+        return ret_value;
+    }
 
+          /**
+     * Some entries in dbNSFP are either nonnegative floats or "." . If the
+     * latter, then return -1f (NOPARSE_FLOAT; a flag)
+     */
+    private float parseCaddRaw(String s) {
+        if (s.equals(".")) {
+            return Constants.NOPARSE_FLOAT;
+        }
+        int i = s.indexOf(";");
+        if (i > 0) {
+            s = s.substring(0, i);
+        }
+        float ret_value;
+        try {
+            ret_value = Float.parseFloat(s);
+        } catch (NumberFormatException e) {
+            logger.error("Could not parse float value: '{}'", s);
+            return Constants.NOPARSE_FLOAT;
+        }
+        return ret_value;
+    }
+    
     /**
      * If there are SIFT scores for two different transcripts that correspond to
      * a given chromosomal variant, they are entered e.g. as 0.527;0.223. In
@@ -579,10 +632,12 @@ public class NSFP2SQLDumpParser implements Parser {
                 float polyphen2_HVAR = getMostPathogenicPolyphenScore(A[POLYPHEN2_HVAR_SCORE]);
                 float mut_taster = getMostPathogenicMutTasterScore(A[MUTATION_TASTER_SCORE], A[MUTATION_TASTER_PRED]);
                 float phyloP = parsePhyloP(A[PHYLO_P]);
-
+                float cadd_raw_rankscore = parseCaddRawRankScore(A[CADD_raw_rankscore]);
+                float cadd_raw_score = parseCaddRaw(A[CADD_raw]);
+                
                 v2p = new VariantPathogenicity(c, pos, ref, alt, aaref, aaalt, aapos,
                         sift, polyphen2_HVAR, mut_taster,
-                        phyloP);
+                        phyloP, cadd_raw_rankscore, cadd_raw_score);
                 String cu_var = String.format("%c%d%c", ref, pos, alt);
                 if (currentVar == null) { /* First iteration of loop */
 
