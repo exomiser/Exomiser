@@ -610,7 +610,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                         diseaseId = diseaseId.split(":")[1];
                         diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
                     }
-                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to %s associated with %s. <a class=\"op1\" id=\"" + entrezGeneID + "\"><button type=\"button\">Show Phenotype Matches</button></a></li></ul>", humanScores.get(gene.getEntrezGeneID()), diseaseLink, gene.getGeneSymbol());
+                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to %s associated with %s. <a class=\"op1\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", humanScores.get(gene.getEntrezGeneID()), diseaseLink, gene.getGeneSymbol());
                     if (hpHpMatches.get(entrezGeneID) != null) {
                         String[] hps_initial = hpo_ids.split(",");
                         for (String hpId : hps_initial) {
@@ -620,17 +620,17 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                                 for (float hpIdScore : hpIdScores) {
                                     String hpIdHit = hpHpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
                                     String hpTermHit = hpoTerms.get(hpIdHit);
-                                    humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|%s (%s),", hpTerm, hpId, hpTermHit, hpIdHit);
+                                    humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|%s (%s)[", hpTerm, hpId, hpTermHit, hpIdHit);
                                 }
                             } else {
-                                humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|,", hpTerm, hpId);
+                                humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|[", hpTerm, hpId);
                             }
                         }
                     }
                 }
                 // MOUSE
                 if (mouseScores.get(gene.getEntrezGeneID()) != null) {
-                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>. <a class=\"op2\" id=\"" + entrezGeneID + "\"><button type=\"button\">Show Phenotype Matches</button></a></li></ul>", mouseScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
+                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>. <a class=\"op2\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", mouseScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     if (hpMpMatches.get(gene.getEntrezGeneID()) != null) {
                         String[] hps_initial = hpo_ids.split(",");
                         for (String hpId : hps_initial) {
@@ -640,17 +640,17 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                                 for (float hpIdScore : hpIdScores) {
                                     String mpIdHit = hpMpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
                                     String mpTermHit = mpoTerms.get(mpIdHit);
-                                    mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|%s (%s),", hpTerm, hpId, mpTermHit, mpIdHit);
+                                    mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|%s (%s)[", hpTerm, hpId, mpTermHit, mpIdHit);
                                 }
                             } else {
-                                mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|,", hpTerm, hpId);
+                                mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|[", hpTerm, hpId);
                             }
                         }
                     }
                 }
                 // FISH
                 if (fishScores.get(gene.getEntrezGeneID()) != null) {
-                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>. <a class=\"op3\" id=\"" + entrezGeneID + "\"><button type=\"button\">Show Phenotype Matches</button></a></li></ul>", fishScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
+                    evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>. <a class=\"op3\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", fishScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     //evidence = evidence + "<br>Best phenotype matches: ";
                     if (hpZpMatches.get(gene.getEntrezGeneID()) != null) {
                         String[] hps_initial = hpo_ids.split(",");
@@ -661,10 +661,10 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                                 for (float hpIdScore : hpIdScores) {
                                     String zpIdHit = hpZpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
                                     String zpTermHit = zpoTerms.get(zpIdHit);
-                                    fishPhenotypeEvidence = fishPhenotypeEvidence + String.format("%s (%s)|%s (%s),", hpTerm, hpId, zpTermHit, zpIdHit);
+                                    fishPhenotypeEvidence = fishPhenotypeEvidence + String.format("%s (%s)|%s (%s)[", hpTerm, hpId, zpTermHit, zpIdHit);
                                 }
                             } else {
-                                fishPhenotypeEvidence = fishPhenotypeEvidence + String.format("%s (%s)|,", hpTerm, hpId);
+                                fishPhenotypeEvidence = fishPhenotypeEvidence + String.format("%s (%s)|[", hpTerm, hpId);
                             }
                         }
                     }
@@ -692,7 +692,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                         diseaseId = diseaseId.split(":")[1];
                         diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
                     }
-                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Show Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, diseaseLink, closestGene);
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, diseaseLink, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches";
                     if (hpHpMatches.get(phenoGenes.get(col_idx)) != null) {
                         String[] hps_initial = hpo_ids.split(",");
@@ -703,17 +703,17 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                                 for (float hpIdScore : hpIdScores) {
                                     String hpIdHit = hpHpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
                                     String hpTermHit = hpoTerms.get(hpIdHit);
-                                    humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|%s (%s),", hpTerm, hpId, hpTermHit, hpIdHit);
+                                    humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|%s (%s)[", hpTerm, hpId, hpTermHit, hpIdHit);
                                 }
                             } else {
-                                humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|,", hpTerm, hpId);
+                                humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("%s (%s)|[", hpTerm, hpId);
                             }
                         }
                     }
                 }
                 // MOUSE
                 if (mouseScores.get(phenoGenes.get(col_idx)) != null) {
-                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to mouse mutant of %s. <a class=\"op2\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Show Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to mouse mutant of %s. <a class=\"op2\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches: ";
                     if (hpMpMatches.get(phenoGenes.get(col_idx)) != null) {
                         String[] hps_initial = hpo_ids.split(",");
@@ -724,10 +724,10 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                                 for (float hpIdScore : hpIdScores) {
                                     String mpIdHit = hpMpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
                                     String mpTermHit = mpoTerms.get(mpIdHit);
-                                    mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|%s (%s),", hpTerm, hpId, mpTermHit, mpIdHit);
+                                    mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|%s (%s)[", hpTerm, hpId, mpTermHit, mpIdHit);
                                 }
                             } else {
-                                mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|,", hpTerm, hpId);
+                                mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|[", hpTerm, hpId);
                             }
                         }
                     }
@@ -735,7 +735,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 }
                 // FISH
                 if (fishScores.get(phenoGenes.get(col_idx)) != null) {
-                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.  <a class=\"op3\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Show Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.  <a class=\"op3\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches: ";
                     if (hpZpMatches.get(phenoGenes.get(col_idx)) != null) {
                         String[] hps_initial = hpo_ids.split(",");
@@ -746,10 +746,10 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                                 for (float hpIdScore : hpIdScores) {
                                     String zpIdHit = hpZpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
                                     String zpTermHit = zpoTerms.get(zpIdHit);
-                                    fishPhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|%s (%s),", hpTerm, hpId, zpTermHit, zpIdHit);
+                                    fishPhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|%s (%s)[", hpTerm, hpId, zpTermHit, zpIdHit);
                                 }
                             } else {
-                                fishPhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|,", hpTerm, hpId);
+                                fishPhenotypeEvidence = mousePhenotypeEvidence + String.format("%s (%s)|[", hpTerm, hpId);
                             }
                         }
                     }
