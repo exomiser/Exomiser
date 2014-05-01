@@ -11,8 +11,11 @@ mkdir data
 cp ../../exomiser-db/data/exomiser.h2.db data/.
 cp ../../exomiser-db/data/extracted/ucsc_hg19.ser data/.
 mv Pfeiffer.vcf data/.
+# copy in the rw_string_9_05* data to data/
+... from somewhere
 # copy in the extra phenix data to data/
 ... from somewhere
 # make the archive.
 tar -cvzf exomiser.tgz exomiser-2.0.0.jar jdbc.properties log4j2.xml lib data 
-
+# copy to the ftp site
+scp exomiser.tgz gen1:/nfs/disk69/ftp/pub/resources/software/exomiser/downloads/exomiser/ 
