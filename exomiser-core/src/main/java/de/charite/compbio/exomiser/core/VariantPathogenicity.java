@@ -30,7 +30,8 @@ public class VariantPathogenicity {
     private final float siftScore;
     private final float polyphenScore;
     private final float muttasterScore;
-
+    private final float caddRawRankScore;
+    private final float caddRawScore;
     /**
      * This class encapsulates the information in a single dbNSFP line. In some
      * cases, there are multiple lines for the same chromosomal position. We
@@ -55,7 +56,7 @@ public class VariantPathogenicity {
     public VariantPathogenicity(int chromosome, int position, char ref, char alt,
             char aaref, char aaalt, int aapos,
             float siftScore, float polyphen2_HVAR, float muttasterScore,
-            float phyloP) {
+            float phyloP, float caddRawRankScore, float caddRawScore) {
         this.chromosome = chromosome;
         this.position = position;
         this.ref = ref;
@@ -67,7 +68,8 @@ public class VariantPathogenicity {
         this.polyphenScore = polyphen2_HVAR;
         this.muttasterScore = muttasterScore;
         this.phylopScore = phyloP;
-
+        this.caddRawRankScore = caddRawRankScore;
+        this.caddRawScore = caddRawScore;
     }
 
     public int getChromosome() {
@@ -143,9 +145,9 @@ public class VariantPathogenicity {
      * @return
      */
     public String toDumpLine() {
-        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
+        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
                 chromosome, position, ref, alt, aaref, aaalt, aapos,
-                siftScore, polyphenScore, muttasterScore, phylopScore);
+                siftScore, polyphenScore, muttasterScore, phylopScore,caddRawRankScore, caddRawScore);
     }
 
     @Override

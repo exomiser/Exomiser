@@ -30,7 +30,7 @@ public class VariantPathogenicityTest {
         float siftScore = 0.1f;
         float polyPhenScore = 0.2f;
         float mutTasterScore = 0.3f;
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f);
+        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f,0.4f,0.4f);
         float expResult = 1 - siftScore;
         float result = instance.maxPathogenicity();
         assertEquals(expResult, result, 0.01);
@@ -44,7 +44,7 @@ public class VariantPathogenicityTest {
         float siftScore = 1.0f;
         float polyPhenScore = 0.2f;
         float mutTasterScore = 0.3f;
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f);
+        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f,0.4f,0.4f);
         float expResult = mutTasterScore;
         float result = instance.maxPathogenicity();
         assertEquals(expResult, result, 0.01);
@@ -58,7 +58,7 @@ public class VariantPathogenicityTest {
         float siftScore = 1.0f;
         float polyPhenScore = 0.4f;
         float mutTasterScore = 0.3f;
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f);
+        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f,0.4f,0.4f);
         float expResult = polyPhenScore;
         float result = instance.maxPathogenicity();
         assertEquals(expResult, result, 0.01);
@@ -69,8 +69,8 @@ public class VariantPathogenicityTest {
      */
     @Test
     public void testGetDumpLine() {
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, 0.1f, 0.2f, 0.3f, 0.4f);
-        String expResult = String.format("1|2|A|B|C|D|3|0.1|0.2|0.3|0.4%n");
+        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, 0.1f, 0.2f, 0.3f, 0.4f,0.4f,0.4f);
+        String expResult = String.format("1|2|A|B|C|D|3|0.1|0.2|0.3|0.4|0.4|0.4%n");
         String result = instance.toDumpLine();
         assertEquals(expResult, result);
     }
