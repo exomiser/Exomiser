@@ -29,9 +29,9 @@ External resources:
       - !resource
         name: dbNSFP # this is a 4.4GB file so might take a while
         url: http://dbnsfp.houstonbioinformatics.org/dbNSFPzip/
-        remoteFileName: dbNSFPv2.3.zip #it is also about 25GB when uncompresssed
-        version: 2.3  #so fear it
-        extractedFileName: dbNSFPv2.3.zip
+        remoteFileName: dbNSFPv2.4.zip #it is also about 25GB when uncompresssed
+        version: 2.4  #so fear it
+        extractedFileName: dbNSFPv2.4.zip
         extractionScheme: copy
         parser: de.charite.compbio.exomiser.parsers.NSFP2SQLDumpParser
         parserGroup: variant
