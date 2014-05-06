@@ -2,6 +2,7 @@ package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.reference.Frequency;
+import de.charite.compbio.exomiser.resources.Resource;
 import jannovar.common.Constants;
 import jannovar.exception.JannovarException;
 import jannovar.io.SerializationManager;
@@ -9,12 +10,13 @@ import jannovar.reference.TranscriptModel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is designed to parse the dbSNP file {@code 00-All.vcf} which is
+ * This class is designed to parseResource the dbSNP file {@code 00-All.vcf} which is
  * available in gzipped form at the dbSNP FTP site. We use a collection of
  * {@link jannovar.reference.TranscriptModel} objects in order to filter the
  * dbSNP variants to those that are located either within an exon or close to an
@@ -35,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @see <a
  * href="ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/">ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/</a>
  */
-public class DbSnpFrequencyParser implements Parser {
+public class DbSnpFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DbSnpFrequencyParser.class);
 
@@ -70,10 +72,10 @@ public class DbSnpFrequencyParser implements Parser {
      */
     private final HashMap<Byte, ChromosomalExonLocations> chromosomeMap;
 
-    public DbSnpFrequencyParser(File ucscSerializedData, List<Frequency> frequencyList) {
+    public DbSnpFrequencyParser(Path ucscSerializedData, List<Frequency> frequencyList) {
         this.frequencyList = frequencyList;
         chromosomeMap = new HashMap<>();
-        deserializeUCSCdata(ucscSerializedData.getAbsolutePath());
+        deserializeUCSCdata(ucscSerializedData.toAbsolutePath().toString());
     }
 
     /**
@@ -109,24 +111,31 @@ public class DbSnpFrequencyParser implements Parser {
     /**
      * Parse the main dbSNP file
      *
-     * @param inPath Complete path to the dbSNPfile {@code 00-All.vcf}
-     * @param outPath
-     * @return
+     * @param resource
+     * @param inDir
+     * @param outDir
      */
     @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
+
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
 
         long startTime = System.currentTimeMillis();
 
-        logger.info("Parsing file: {}", inPath);
-
+        ResourceOperationStatus status;
+        
         if (chromosomeMap.isEmpty()) {
-            logger.error("Unable to parse file: {} as the chromosomeMap is empty", inPath);
-            return ResourceOperationStatus.FAILURE;
+            logger.error("Unable to parse file: {} as the chromosomeMap is empty", inFile);
+            status = ResourceOperationStatus.FAILURE;
+            resource.setParseStatus(status);
+            return;
         }
 
         try {
-            FileInputStream fis = new FileInputStream(inPath);
+            FileInputStream fis = new FileInputStream(inFile.toString());
             InputStream is;
 
             /* First, attempt to use a gzip input stream, if this doesn't work, open it as usual */
@@ -134,7 +143,7 @@ public class DbSnpFrequencyParser implements Parser {
                 is = new GZIPInputStream(fis);
             } catch (IOException exp) {
                 fis.close();
-                is = fis = new FileInputStream(inPath);
+                is = fis = new FileInputStream(inFile.toString());
             }
 
             FileChannel fc = fis.getChannel();
@@ -161,14 +170,21 @@ public class DbSnpFrequencyParser implements Parser {
                     startTime = now;
                 }
             }
-        } catch (IOException e) {
-            logger.error("Error parsing dbSNP file: ", e);
-            return ResourceOperationStatus.FAILURE;
+            logger.info("Found " + n_exonic_vars + " exonic vars and " + n_non_exonic_vars + " non-exonics");
+            logger.info("Got " + n_duplicates + " duplicates");
+            
+            status = ResourceOperationStatus.SUCCESS;
+            
+        } catch (FileNotFoundException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FAILURE;
         }
 
-        logger.info("Found " + n_exonic_vars + " exonic vars and " + n_non_exonic_vars + " non-exonics");
-        logger.info("Got " + n_duplicates + " duplicates");
-        return ResourceOperationStatus.SUCCESS;
+        resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 
     /**

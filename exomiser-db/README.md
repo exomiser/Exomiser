@@ -50,6 +50,7 @@ src/main/resources/data
     This is where some static data required by some parsers but which requires 
 manual processing to produce is stored. The resources are referred to in the 
 external-resources.yml file but are moved into the process directory by spring.
+
 * pheno2gene.txt
     This requires extensive messing about with a one-off dump-file from OMIM, a 
 perl parser, data from Entrez Gene and some java parsing. Given this was a one-off

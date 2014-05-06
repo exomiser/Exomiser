@@ -35,21 +35,26 @@ public class ResourceExtractionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceExtractionHandler.class);
 
-    public static void extractResources(Iterable<ExternalResource> externalResources, Path inPath, Path outPath) {
-        for (ExternalResource externalResource : externalResources) {
-            extractResource(externalResource, inPath, outPath);
+    public static void extractResources(Iterable<Resource> externalResources, Path inDir, Path outDir) {
+        for (Resource externalResource : externalResources) {
+            extractResource(externalResource, inDir, outDir);
         }
     }
 
-    public static void extractResource(ExternalResource externalResource, Path inPath, Path outPath) {
+    public static void extractResource(Resource externalResource, Path inDir, Path outDir) {
         logger.info("Extracting resource {}...", externalResource.getRemoteFileName());
-
+        //make sure there is something to transfer... like the Metadata resource for instance 
+        if (externalResource.getRemoteFileName().isEmpty() || externalResource.getExtractedFileName().isEmpty()) {
+            externalResource.setExtractStatus(ResourceOperationStatus.SUCCESS);
+            return;
+        }
+        
         //make sure the output path exists
-        outPath.toFile().mkdir();
+        outDir.toFile().mkdir();
         
         //expected types: .tar.gz, .gz, .zip, anything else
-        File inFile = new File(inPath.toFile(), externalResource.getRemoteFileName());
-        File outFile = new File(outPath.toFile(), externalResource.getExtractedFileName());
+        File inFile = new File(inDir.toFile(), externalResource.getRemoteFileName());
+        File outFile = new File(outDir.toFile(), externalResource.getExtractedFileName());
         
         ResourceOperationStatus status = ResourceOperationStatus.FAILURE;
         String scheme = externalResource.getExtractionScheme();

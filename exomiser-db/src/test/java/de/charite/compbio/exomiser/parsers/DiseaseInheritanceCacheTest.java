@@ -7,12 +7,14 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.InheritanceMode;
+import de.charite.compbio.exomiser.resources.Resource;
+import java.nio.file.Paths;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Tests for Class DiseaseInheritanceCache.
@@ -27,7 +29,11 @@ public class DiseaseInheritanceCacheTest {
     
     @BeforeClass
     public static void setUpClass() {
-        instance = new DiseaseInheritanceCache("src/test/resources/data/phenotype_annotation_test.tab");
+        Resource testResource = new Resource();
+        testResource.setName("test_hpo_annotation_resource");
+        testResource.setExtractedFileName("phenotype_annotation_test.tab");
+        instance = new DiseaseInheritanceCache();
+        instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
     }
     
     @AfterClass
@@ -115,7 +121,7 @@ public class DiseaseInheritanceCacheTest {
     
     @Test
     public void testIsEmptyTrue() {
-        DiseaseInheritanceCache emptyCache = new DiseaseInheritanceCache("");
+        DiseaseInheritanceCache emptyCache = new DiseaseInheritanceCache();
         assertTrue(emptyCache.isEmpty());
     }
 }

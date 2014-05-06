@@ -4,9 +4,9 @@
  * and open the template in the editor.
  */
 
-package de.charite.compbio.exomiser.resource;
+package de.charite.compbio.exomiser.resources;
 
-import de.charite.compbio.exomiser.resources.ExternalResource;
+import de.charite.compbio.exomiser.resources.Resource;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,9 +18,9 @@ import static org.junit.Assert.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExternalResourceTest {
+public class ResourceTest {
     
-    public ExternalResourceTest() {
+    public ResourceTest() {
     }
     
     @BeforeClass
@@ -40,12 +40,11 @@ public class ExternalResourceTest {
     }
 
     /**
-     * Test of getStatus method, of class ExternalResource.
+     * Test of getStatus method, of class Resource.
      */
     @Test
     public void testGetStatus() {
-        System.out.println("getStatus");
-        ExternalResource instance = new ExternalResource();
+        Resource instance = new Resource();
         instance.setName("test");
         String expResult = "Status for: test     Download: UNTRIED, Extract: UNTRIED, Parse: UNTRIED";
         String result = instance.getStatus();

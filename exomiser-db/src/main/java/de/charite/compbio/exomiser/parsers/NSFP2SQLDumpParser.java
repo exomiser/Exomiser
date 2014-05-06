@@ -1,16 +1,19 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.VariantPathogenicity;
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import jannovar.common.Constants;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -54,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter N. Robinson
  * @version 0.06 (15 July 2013)
  */
-public class NSFP2SQLDumpParser implements Parser {
+public class NSFP2SQLDumpParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(NSFP2SQLDumpParser.class);
 
@@ -217,12 +220,17 @@ public class NSFP2SQLDumpParser implements Parser {
     }
 
     @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
-        File outFile = new File(outPath);
-        logger.info("Parsing dbNSFP data from file: {}", inPath);
-        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(inPath));
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
+
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
+        ResourceOperationStatus status;
+        
+        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(inFile.toString()));
                 BufferedReader reader = new BufferedReader(new InputStreamReader(zipInputStream));
-                BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
+                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
@@ -245,12 +253,18 @@ public class NSFP2SQLDumpParser implements Parser {
                     }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Error trying to open file {}", inPath, e);
-           return ResourceOperationStatus.FAILURE;
+        status = ResourceOperationStatus.SUCCESS;
+            
+        } catch (FileNotFoundException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FAILURE;
         }
 
-    return ResourceOperationStatus.SUCCESS;
+        resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 
     /**

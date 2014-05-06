@@ -6,9 +6,13 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.InheritanceMode;
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import jannovar.common.Constants;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +22,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class MorbidMapParser implements Parser {
+public class MorbidMapParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(MorbidMapParser.class);
 
@@ -30,35 +34,6 @@ public class MorbidMapParser implements Parser {
         this.mim2geneMap = mim2geneMap;
     }
 
-    @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
-
-        if (diseaseInheritanceCache.isEmpty()) {
-            logger.error("Aborting attempt to parse morbidmap file as the required DiseaseInheritanceCache is empty.");
-            return ResourceOperationStatus.FAILURE;
-        }
-        // Parse morbidmap file
-        List<MIM> mimList = parseMorbidMap(inPath, mim2geneMap);
-        if (mimList.isEmpty()) {
-            logger.error("Error parsing morbidmap file. Expected some data to write out but there is none.");
-            return ResourceOperationStatus.FAILURE;
-        }
-        //write out the list
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
-            for (MIM mim : mimList) {
-                writer.write(mim.dumpLine());
-            }
-        
-        } catch (IOException e) {
-            logger.error("Error parsing morbidmap file: {}", inPath, e);
-            return ResourceOperationStatus.FAILURE;
-        }
-        
-        logger.info("Wrote {} OMIM entries to outfile: {}", mimList.size(), outPath);
-        
-        return ResourceOperationStatus.SUCCESS;
-    }
-
     /**
      * This function parses the Morbid Map of OMIM and creates one
      * {@link exomizer.io.MIMParser.MIM MIM} object per line. However, the
@@ -66,17 +41,40 @@ public class MorbidMapParser implements Parser {
      * {@link exomizer.io.MIMParser.MIM MIM} is only created if we have an
      * Entrez Gene id for the gene in question.
      */
-    private List<MIM> parseMorbidMap(String morbidMapPath, Map<Integer, Set<Integer>> mim2geneMap) {
-        logger.info("Parsing morbidMap file: {}", morbidMapPath);
-        List<MIM> mimList = new ArrayList<>();
+    @Override
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
+
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        ResourceOperationStatus status;
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
+
+        if (diseaseInheritanceCache.isEmpty()) {
+            logger.error("Aborting attempt to parse morbidmap file as the required DiseaseInheritanceCache is empty.");
+            status = ResourceOperationStatus.FAILURE;
+            resource.setParseStatus(status);
+            logger.info("{}", status);
+            return;
+        }
+        
+        if (mim2geneMap.isEmpty()) {
+            logger.error("Aborting attempt to parse morbidmap file as the required mim2geneMap is empty.");
+            status = ResourceOperationStatus.FAILURE;
+            resource.setParseStatus(status);
+            logger.info("{}", status);
+            return;
+        }
+        
         // A heuristic to avoid duplicate entries. TODO refactor
         Set<Integer> seen = new HashSet<>();
-
-        try (FileReader fileReader = new FileReader(morbidMapPath);
-                BufferedReader br = new BufferedReader(fileReader)) {
+        
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
+                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())){
 
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
@@ -107,7 +105,7 @@ public class MorbidMapParser implements Parser {
                     try {
                         phenID = Integer.parseInt(phenMIM);
                     } catch (NumberFormatException e) {
-                        //System.out.println("Could not parse phenMIM: " + phenMIM);
+                        //System.out.println("Could not parseResource phenMIM: " + phenMIM);
                         // Note by inspection, these lines have no valid phenMIM, it is ok to skip them.
                         phenID = Constants.UNINITIALIZED_INT;
                     }
@@ -144,15 +142,23 @@ public class MorbidMapParser implements Parser {
                     if (!seen.contains(unique)) {
                         seen.add(unique);
                         MIM mim = new MIM(phenID, genemim, disease, id, diseaseType, inh);
-                        mimList.add(mim);
+                        writer.write(mim.dumpLine());
                     }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Error parsing morbid map file: " + e.getMessage());
+            logger.info("Extracted {} OMIM terms from morbidmap", seen.size());
+
+            status = ResourceOperationStatus.SUCCESS;
+        } catch (FileNotFoundException ex) {
+            logger.error("Error parsing morbid map file", ex);
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error("Error parsing morbid map file", ex);
+            status = ResourceOperationStatus.FAILURE;
         }
-        logger.info("Extracted {} OMIM terms from morbidmap", mimList.size());
-        return mimList;
+        resource.setParseStatus(status);
+        logger.info("{}", status);
+        
     }
 
     /**

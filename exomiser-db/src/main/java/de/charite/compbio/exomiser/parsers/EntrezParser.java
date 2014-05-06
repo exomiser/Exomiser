@@ -1,13 +1,14 @@
 package de.charite.compbio.exomiser.parsers;
 
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,13 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  */
-public class EntrezParser implements Parser {
+public class EntrezParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(EntrezParser.class);
     private final HashMap<String, List<Integer>> ensembl2EntrezGene;
-    
+
     /**
      * @param ensembl2EntrezGene
      */
@@ -33,20 +34,26 @@ public class EntrezParser implements Parser {
     /**
      * This function does the actual work of parsing the Entrez data.
      *
-     * @param inPath Complete path to string file.
-     * @param outPath Path where output file is to be written
+     * @param resource Resource containing the information about
+     * @param inDir Directory path to string file.
+     * @param outDir Directory where output file is to be written
      * @return the ResourceOperationStatus
      */
     @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
 
-        logger.info("Parsing Entrez gene to  file: {}. Writing out to: {}", inPath, outPath);
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
+
         HashMap<Integer, String> entrez2sym = new HashMap<>();
-        try (
-                BufferedReader br = new BufferedReader(new FileReader(inPath));
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outPath)))) {            
+        ResourceOperationStatus status;
+        
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
+                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 String[] split = line.split("\t");
                 if (split.length != 3) {
                     continue;
@@ -59,12 +66,11 @@ public class EntrezParser implements Parser {
                 try {
                     entrez = Integer.parseInt(split[1]);
                 } catch (NumberFormatException e) {
-                    System.err.println("Error: malformed line: " + line + " (could not parse entrez gene field: " + split[1]);
-                    System.exit(1);
+                    logger.error("Malformed line: {} (could not parse entrez gene field: '{}')", line, split[1]);
                 }
-                
+
                 if (split[2] == null || split[2].isEmpty()) {
-                    System.err.println("[WARN- could not extract symbol, skipping line: " + line);
+                    logger.warn("Could not extract symbol, skipping line: {}", line);
                 }
                 String symbol = split[2];
                 entrez2sym.put(entrez, symbol);
@@ -91,14 +97,16 @@ public class EntrezParser implements Parser {
                 writer.newLine();
             }
             writer.close();
-            br.close();
+            reader.close();
+            status = ResourceOperationStatus.SUCCESS;
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
-            return ResourceOperationStatus.FILE_NOT_FOUND;
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
         } catch (IOException ex) {
             logger.error(null, ex);
-            return ResourceOperationStatus.FAILURE;
+            status = ResourceOperationStatus.FAILURE;
         }
-        return ResourceOperationStatus.SUCCESS;
+        resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 }

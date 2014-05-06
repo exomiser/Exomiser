@@ -6,21 +6,19 @@
 package de.charite.compbio.exomiser.io;
 
 import de.charite.compbio.exomiser.config.AppConfig;
+import de.charite.compbio.exomiser.config.DataSourceConfig;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,12 +29,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author jj8
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {AppConfig.class})
+@ContextConfiguration(classes = {AppConfig.class, DataSourceConfig.class})
 public class PhenodigmDataDumperTest {
 
     private static final Path outputPath = Paths.get("target/test-data");
     private static final File outputDir = outputPath.toFile();
 
+    private PhenodigmDataDumper instance;
+    
     public PhenodigmDataDumperTest() {
     }
 
@@ -58,6 +58,8 @@ public class PhenodigmDataDumperTest {
 
     @Before
     public void setUp() {
+        //TODO: add the Config classes to a testContext
+        instance = new PhenodigmDataDumper();
     }
 
     @After
@@ -74,7 +76,7 @@ public class PhenodigmDataDumperTest {
     @Test
     public void testDumpPhenodigmData() {
 
-        PhenodigmDataDumper.dumpPhenodigmData(outputPath);
+        instance.dumpPhenodigmData(outputPath);
         File outputFile = outputPath.toFile();
         assertTrue("Expected output path to be a directory", Files.isDirectory(outputPath));
         assertNotEquals("Expected output path to contain some files!", 0, outputFile.listFiles().length);
@@ -110,63 +112,63 @@ public class PhenodigmDataDumperTest {
 
     @Test
     public void testDumpOmimTerms() {
-        File expectedFile = PhenodigmDataDumper.dumpOmimTerms(outputPath, "testDumpOmim.pg");
+        File expectedFile = instance.dumpOmimTerms(outputPath, "testDumpOmim.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
 
     @Test
     public void testDumpHpHpMapping() {
-        File expectedFile = PhenodigmDataDumper.dumpHpHpMapping(outputPath, "testDumpHpHp.pg");
+        File expectedFile = instance.dumpHpHpMapping(outputPath, "testDumpHpHp.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
 
     @Test
     public void testDumpHpMpMapping() {
-        File expectedFile = PhenodigmDataDumper.dumpHpMpMapping(outputPath, "testDumpHpMp.pg");
+        File expectedFile = instance.dumpHpMpMapping(outputPath, "testDumpHpMp.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
 
     @Test
     public void testDumpDiseaseHp() {
-        File expectedFile = PhenodigmDataDumper.dumpDiseaseHp(outputPath, "testDumpDiseaseHp.pg");
+        File expectedFile = instance.dumpDiseaseHp(outputPath, "testDumpDiseaseHp.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
 
     @Test
     public void testDumpMouseMp() {
-        File expectedFile = PhenodigmDataDumper.dumpMouseMp(outputPath, "testDumpMouseMp.pg");
+        File expectedFile = instance.dumpMouseMp(outputPath, "testDumpMouseMp.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
 
     @Test
     public void testDumpMouseGeneOrthologData() {
-        File expectedFile = PhenodigmDataDumper.dumpMouseGeneOrthologs(outputPath, "testDumpMouseGeneOrtholog.pg");
+        File expectedFile = instance.dumpMouseGeneOrthologs(outputPath, "testDumpMouseGeneOrtholog.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
 
     @Test
     public void testDumpMouseGeneSummaryData() {
-        File expectedFile = PhenodigmDataDumper.dumpMouseGeneLevelSummary(outputPath, "testDumpMouseGeneSummary.pg");
+        File expectedFile = instance.dumpMouseGeneLevelSummary(outputPath, "testDumpMouseGeneSummary.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
     
     @Test
     public void testDumpFishGeneLevelSummary() {
-        File expectedFile = PhenodigmDataDumper.dumpFishGeneLevelSummary(outputPath, "testDumpFishGeneLevelSummary.pg");
+        File expectedFile = instance.dumpFishGeneLevelSummary(outputPath, "testDumpFishGeneLevelSummary.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
     
     @Test
     public void testDumpFishGeneOrthologs() {
-        File expectedFile = PhenodigmDataDumper.dumpFishGeneOrthologs(outputPath, "testDumpFishGeneOrtholog.pg");
+        File expectedFile = instance.dumpFishGeneOrthologs(outputPath, "testDumpFishGeneOrtholog.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }

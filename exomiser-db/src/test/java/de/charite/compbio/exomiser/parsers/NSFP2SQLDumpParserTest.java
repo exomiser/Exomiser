@@ -7,7 +7,10 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.VariantPathogenicity;
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -78,17 +81,24 @@ public class NSFP2SQLDumpParserTest {
     }
 
     /**
-     * Test of parse method, of class NSFP2SQLDumpParser.
+     * Test of parseResource method, of class NSFP2SQLDumpParser.
      */
     @Test
     public void testParse() {
         System.out.println("parse");
-        String inPath = "src/test/resources/data/dbNSFP2.3_test.zip";
-        String outPath = "target/test-data/testVariant.pg";
-        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser();
+        
+        Path testResourceDir = Paths.get("src/test/resources/data");
+        Path testOutDir = Paths.get("target/test-data");
+        
+        Resource testResource = new Resource();
+        testResource.setName("dbNSFP2.3");
+        testResource.setExtractedFileName("dbNSFP2.3_test.zip");
+        testResource.setParsedFileName("testVariant.pg");
+        
         ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
-        ResourceOperationStatus result = instance.parse(inPath, outPath);
-        assertEquals(expResult, result);
+        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser();
+        instance.parseResource(testResource, testResourceDir, testOutDir);
+        assertEquals(expResult, testResource.getParseStatus());
     }
     
     /**

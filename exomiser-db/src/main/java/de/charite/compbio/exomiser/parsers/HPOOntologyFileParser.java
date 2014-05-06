@@ -1,13 +1,14 @@
 package de.charite.compbio.exomiser.parsers;
 
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * @version 0.04 (27 November, 2013)
  * @author Peter Robinson
  */
-public class HPOOntologyFileParser implements Parser {
+public class HPOOntologyFileParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(HPOOntologyFileParser.class);
 
@@ -43,21 +44,27 @@ public class HPOOntologyFileParser implements Parser {
     /**
      * This function does the actual work of parsing the HPO file.
      *
-     * @param inPath Complete path to human-phenotype-ontology.obo or hp.obo file.
-     * @param outPath PAth where output file is to be written
+     * @param resource
+     * @param inDir Complete path to directory containing the human-phenotype-ontology.obo or hp.obo file.
+     * @param outDir Directory where output file is to be written
+     * @return 
      */
     @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
-        logger.info("Parsing HPO file: {}. Writing out to: {}", inPath, outPath);
-        int termCount = 0; /* count of terms */
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
 
-        try (FileReader fileReader = new FileReader(inPath);
-                BufferedReader br = new BufferedReader(fileReader);
-                FileWriter fileWriter = new FileWriter(new File(outPath));
-                BufferedWriter writer = new BufferedWriter(fileWriter)) {
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
+        ResourceOperationStatus status;
+
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
+                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+
+            int termCount = 0; /* count of terms */
 
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.startsWith("[Term]")) {
                     break; // comment.
                 }
@@ -65,7 +72,7 @@ public class HPOOntologyFileParser implements Parser {
             String id = null;
             String name = null;
             List<String> synonymLst = new ArrayList<>();
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.startsWith("id:")) {
                     id = line.substring(3).trim(); /* Gets rid of "id:" and any whitespace in e.g., HP:0000003 */
 
@@ -104,17 +111,18 @@ public class HPOOntologyFileParser implements Parser {
 
             }
             writer.close();
-            br.close();
-            logger.info("Parsed {} term names/synonyms.", termCount);
-
+            reader.close();
+            logger.info("Parsed {} term names/synonyms.", termCount);     
+            status = ResourceOperationStatus.SUCCESS;
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
-            return ResourceOperationStatus.FILE_NOT_FOUND;
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
         } catch (IOException ex) {
             logger.error(null, ex);
-            return ResourceOperationStatus.FAILURE;
+            status = ResourceOperationStatus.FAILURE;
         }
-        return ResourceOperationStatus.SUCCESS;
+        resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 
 //    /**

@@ -23,22 +23,22 @@ public class ResourceDownloadHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceDownloadHandler.class);
 
-    public static void downloadResources(Iterable<ExternalResource> externalResources, Path downloadPath) {
+    public static void downloadResources(Iterable<Resource> externalResources, Path downloadPath) {
 
         int numResources = 0;
-        for (ExternalResource resource : externalResources) {
+        for (Resource resource : externalResources) {
             numResources++;
             downloadResource(resource, downloadPath);
         }
 
         logger.info("Transferred {} file(s) with the following statuses:", numResources);
-        for (ExternalResource resource : externalResources) {
+        for (Resource resource : externalResources) {
             logger.info("{}", resource.getStatus());
         }
 
     }
 
-    public static void downloadResource(ExternalResource externalResource, Path downloadPath) {
+    public static void downloadResource(Resource externalResource, Path downloadDir) {
     ResourceOperationStatus status;
         if (externalResource.getUrl().isEmpty()) {
             logger.info("Resource {} has no URL set - skipping resource.", externalResource.getName());
@@ -48,7 +48,7 @@ public class ResourceDownloadHandler {
 
             URL resourceUrl = new URL(externalResource.getUrl() + externalResource.getRemoteFileName());
             logger.info("Resource: {}: Getting {} from {}", externalResource.getName(), externalResource.getRemoteFileName(), resourceUrl);
-            status = FileDownloadUtils.fetchFile(resourceUrl, new File(String.format("%s/%s", downloadPath, externalResource.getRemoteFileName())));
+            status = FileDownloadUtils.fetchFile(resourceUrl, new File(String.format("%s/%s", downloadDir, externalResource.getRemoteFileName())));
             externalResource.setDownloadStatus(status);
             //if there is no version info for the resource, set a timestamp
             if (externalResource.getVersion().isEmpty()) {

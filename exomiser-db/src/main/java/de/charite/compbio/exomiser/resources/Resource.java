@@ -5,6 +5,8 @@
  */
 package de.charite.compbio.exomiser.resources;
 
+import de.charite.compbio.exomiser.parsers.ResourceGroupParser;
+import de.charite.compbio.exomiser.parsers.ResourceParser;
 import java.util.Objects;
 
 /**
@@ -13,7 +15,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExternalResource {
+public class Resource {
 
     private String name;
     private String url;
@@ -21,15 +23,16 @@ public class ExternalResource {
     private String version;
     private String extractedFileName;
     private String extractionScheme;
-    private String parser;
-    private String parserGroup;
+    private Class<? extends ResourceParser> parserClass;
     private String parsedFileName;
+    private String resourceGroupName;
+    private Class<? extends ResourceGroupParser> resourceGroupParserClass;
     
     private ResourceOperationStatus downloadStatus;
     private ResourceOperationStatus extractStatus;
     private ResourceOperationStatus parseStatus;
 
-    public ExternalResource() {
+    public Resource() {
         downloadStatus = ResourceOperationStatus.UNTRIED;
         extractStatus = ResourceOperationStatus.UNTRIED;
         parseStatus = ResourceOperationStatus.UNTRIED;
@@ -68,12 +71,12 @@ public class ExternalResource {
         this.version = version;
     }
 
-    public String getParser() {
-        return parser;
+    public Class<? extends ResourceParser> getParserClass() {
+        return parserClass;
     }
 
-    public void setParser(String parser) {
-        this.parser = parser;
+    public void setParserClass(Class<? extends ResourceParser> parserClass) {
+        this.parserClass = parserClass;
     }
 
     public String getExtractedFileName() {
@@ -104,20 +107,40 @@ public class ExternalResource {
         this.parseStatus = parseStatus;
     }
 
-    public String getParserGroup() {
-        return parserGroup;
-    }
-
-    public void setParserGroup(String parserGroup) {
-        this.parserGroup = parserGroup;
-    }
-
     public String getParsedFileName() {
         return parsedFileName;
     }
 
     public void setParsedFileName(String parsedFileName) {
         this.parsedFileName = parsedFileName;
+    }
+
+    public String getResourceGroupName() {
+        return resourceGroupName;
+    }
+
+    public void setResourceGroupName(String resourceGroupName) {
+        this.resourceGroupName = resourceGroupName;
+    }
+
+    public Class<? extends ResourceGroupParser> getResourceGroupParserClass() {
+        return resourceGroupParserClass;
+    }
+
+    public void setResourceGroupParserClass(Class<? extends ResourceGroupParser> resourceGroupParserClass) {
+        this.resourceGroupParserClass = resourceGroupParserClass;
+    }
+
+    public ResourceOperationStatus getDownloadStatus() {
+        return downloadStatus;
+    }
+
+    public ResourceOperationStatus getExtractStatus() {
+        return extractStatus;
+    }
+
+    public ResourceOperationStatus getParseStatus() {
+        return parseStatus;
     }
 
     @Override
@@ -129,7 +152,7 @@ public class ExternalResource {
         hash = 71 * hash + Objects.hashCode(this.version);
         hash = 71 * hash + Objects.hashCode(this.extractedFileName);
         hash = 71 * hash + Objects.hashCode(this.extractionScheme);
-        hash = 71 * hash + Objects.hashCode(this.parser);
+        hash = 71 * hash + Objects.hashCode(this.parserClass);
         hash = 71 * hash + Objects.hashCode(this.parsedFileName);
         return hash;
     }
@@ -142,7 +165,7 @@ public class ExternalResource {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final ExternalResource other = (ExternalResource) obj;
+        final Resource other = (Resource) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
@@ -161,7 +184,7 @@ public class ExternalResource {
         if (!Objects.equals(this.extractionScheme, other.extractionScheme)) {
             return false;
         }
-        if (!Objects.equals(this.parser, other.parser)) {
+        if (!Objects.equals(this.parserClass, other.parserClass)) {
             return false;
         }
         if (!Objects.equals(this.parsedFileName, other.parsedFileName)) {
@@ -176,6 +199,6 @@ public class ExternalResource {
     
     @Override
     public String toString() {
-        return "ExternalResource{" + "name=" + name + ", url=" + url + ", fileName=" + remoteFileName + ", version=" + version + ", parser=" + parser + ", parsedFileName=" + parsedFileName +'}';
+        return "Resource{" + "name=" + name + ", url=" + url + ", fileName=" + remoteFileName + ", version=" + version + ", parser=" + parserClass + ", parsedFileName=" + parsedFileName + ", resourceGroupName=" + resourceGroupName +'}';
     }
 }

@@ -6,23 +6,22 @@
 
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.resources.Resource;
+import de.charite.compbio.exomiser.resources.ResourceGroup;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Tests for the HPO ontology parser
+ * Integration test for OmimResourceGroupParser.
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class HPOOntologyFileParserTest {
+public class OmimResourceGroupParserIT {
     
-    public HPOOntologyFileParserTest() {
+    public OmimResourceGroupParserIT() {
     }
     
     @BeforeClass
@@ -42,17 +41,18 @@ public class HPOOntologyFileParserTest {
     }
 
     /**
-     * Test of parseHPO method, of class HPOOntologyFileParser.
+     * Test of parseResources method, of class OmimResourceGroupParser.
      */
     @Test
-    public void testParseHPO() {
-        System.out.println("parseHPO");
-        Resource testResource = new Resource();
-        testResource.setName("HPO");
-        testResource.setExtractedFileName("hp.obo");
-        testResource.setParsedFileName("hpoTestOut.pg");
-        HPOOntologyFileParser instance = new HPOOntologyFileParser();
-        instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
+    public void testParseResources() {
+        System.out.println("parseResources");
+        ResourceGroup resourceGroup = null;
+        Path inDir = null;
+        Path outDir = null;
+        OmimResourceGroupParser instance = new OmimResourceGroupParser();
+        instance.parseResources(resourceGroup, inDir, outDir);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
     }
     
 }
