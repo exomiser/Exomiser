@@ -78,7 +78,7 @@ public class ResourceParserHandler {
 
     public static void parseResource(Resource resource, Path inDir, Path outDir) {
         try {
-            logger.info("Parsing file: {} using parser: {}", resource.getExtractedFileName(), resource.getParserClass());
+            logger.info("Parsing resource: {} file: {} using parser: {}", resource.getName(), resource.getExtractedFileName(), resource.getParserClass());
             if (resource.getParserClass() == null) {
                 logger.error("No parser defined for resource: {}", resource.getExtractedFileName());
                 resource.setParseStatus(ResourceOperationStatus.PARSER_NOT_FOUND);
