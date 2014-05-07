@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -90,24 +89,32 @@ public class EspFrequencyParser implements ResourceParser {
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         //n.b. we ignore the ouputDir for the sake of consistency with the other
         //Frequency parser - the writing out of the file is handled elsewhere. 
-        ResourceOperationStatus status = ResourceOperationStatus.FAILURE;
-        if (frequencyList == null) {
-            logger.error("Require a frequency list to refer to.");
+        ResourceOperationStatus status;
+        if (frequencyList == null || frequencyList.isEmpty()) {
+            logger.error("Require a frequency list to refer to - this one is null");
+            status = ResourceOperationStatus.FAILURE;
+            resource.setParseStatus(status);
+            return;
+        }
+        if (frequencyList.isEmpty()) {
+            logger.error("Require a frequency list with frequencies to refer to - this one is empty.");
             status = ResourceOperationStatus.FAILURE;
             resource.setParseStatus(status);
             return;
         }
         try (DirectoryStream<Path> espFilePaths = Files.newDirectoryStream(inFile)) {
-        
-        for (Path espFile : espFilePaths) {
-            ResourceOperationStatus fileStatus = parseEspFile(espFile);
-            if (fileStatus != ResourceOperationStatus.SUCCESS) {
-                status = fileStatus;
+
+            for (Path espFile : espFilePaths) {
+                ResourceOperationStatus fileStatus = parseEspFile(espFile);
+                if (fileStatus != ResourceOperationStatus.SUCCESS) {
+                    status = fileStatus;
+                }
             }
-        }
-        //add all the new ESP frequencies into the original list supplied in the constructor
-        mergeAndSortFrequencyObjects();
-                    
+            //add all the new ESP frequencies into the original list supplied in the constructor
+            mergeAndSortFrequencyObjects();
+            //remember to set the status to success
+            status = ResourceOperationStatus.SUCCESS;
+            
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
             status = ResourceOperationStatus.FILE_NOT_FOUND;
@@ -131,7 +138,7 @@ public class EspFrequencyParser implements ResourceParser {
      * @param espFile Absolute path to the ESP VCF file for a chromosome.
      */
     private ResourceOperationStatus parseEspFile(Path espFile) {
-        logger.info("Parsing ESP File: " + espFile);
+        logger.info("Parsing ESP File: {}", espFile);
         try {
             BufferedReader br = Files.newBufferedReader(espFile, Charset.defaultCharset());
             String line;
@@ -144,10 +151,10 @@ public class EspFrequencyParser implements ResourceParser {
                 parseEspDataFromVCFInfoField(frequency);
             }
         } catch (IOException e) {
-            logger.error("Error parsing ESP file: {}", espFile, e.getMessage());
+            logger.error("{} - Error parsing ESP file: {}", ResourceOperationStatus.FAILURE, espFile, e.getMessage());
             return ResourceOperationStatus.FAILURE;
         }
-
+        logger.info("{}", ResourceOperationStatus.SUCCESS);        
         return ResourceOperationStatus.SUCCESS;
     }
 
