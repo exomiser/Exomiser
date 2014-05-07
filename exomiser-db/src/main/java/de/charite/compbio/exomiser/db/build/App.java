@@ -2,25 +2,25 @@ package de.charite.compbio.exomiser.db.build;
 
 import com.googlecode.flyway.core.Flyway;
 import de.charite.compbio.exomiser.config.AppConfig;
-import de.charite.compbio.exomiser.resources.ExternalResource;
+import de.charite.compbio.exomiser.config.DataSourceConfig;
+import de.charite.compbio.exomiser.config.ResourceConfig;
 import de.charite.compbio.exomiser.io.PhenodigmDataDumper;
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceDownloadHandler;
 import de.charite.compbio.exomiser.resources.ResourceExtractionHandler;
 import de.charite.compbio.exomiser.resources.ResourceParserHandler;
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * Hello world!
+ * Main class for building the exomiser database. This will attempt to download 
+ * and process the resources specified in {@code  de.charite.compbio.exomiser.config.ResourceConfig}.
  *
  */
 public class App {
@@ -29,17 +29,23 @@ public class App {
 
     public static void main(String[] args) {
         //Get Spring to sort it's shit out... 
-        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class, ResourceConfig.class, DataSourceConfig.class);
         //create variables which would otherwise be injected manually from the context
-        DataSource h2DataSource = (DataSource) context.getBean("exomiserH2DataSource");
-        DataSource postGresDataSource = (DataSource) context.getBean("exomiserPostgresDataSource");
-        Set<ExternalResource> externalResources = (Set<ExternalResource>) context.getBean("externalResources");
+        DataSourceConfig dataSourceConfig = context.getBean(DataSourceConfig.class);
+        
+        DataSource h2DataSource = dataSourceConfig.exomiserH2DataSource();
+        DataSource postGresDataSource = dataSourceConfig.exomiserPostgresDataSource();
+        
+        AppConfig appConfig = context.getBean(AppConfig.class);
+        //set the Paths
+        Path dataPath = appConfig.getDataPath();
+        Path downloadPath = appConfig.getDownloadPath();
 
-        Path dataPath = (Path) context.getBean("dataPath");
-
-        Path downloadPath = (Path) context.getBean("downloadPath");
-
-        //TODO: get from properties
+        //Get the Resources from the ResourceConfiguration 
+        ResourceConfig resourceConfig = context.getBean(ResourceConfig.class); 
+        Set<Resource> externalResources = resourceConfig.getResources();
+        
+        //Download the Resources
         boolean downloadExternalResources = true;
         if (downloadExternalResources) {
             //download and unzip the necessary input files
@@ -49,9 +55,9 @@ public class App {
             logger.info("Skipping download of external resource files.");
         }
         //Path for processing the downloaded files to prepare them for parsing (i.e. unzip, untar)
-        Path proccessPath = (Path) context.getBean("processPath");
+        Path proccessPath = appConfig.getProcessPath();
 
-        //TODO: get from properties
+        //Extract the Resources
         boolean extractExternalResources = true;
         if (extractExternalResources) {
             //process the downloaded files to prepare them for parsing (i.e. unzip, untar)
@@ -61,11 +67,11 @@ public class App {
             logger.info("Skipping extraction of external resource files.");
         }
 
-        //TODO: get from properties
+        //Parse the Resources
         boolean parseExternalResources = true;
         if (parseExternalResources) {
             //parse the file and output to the project output dir.
-            logger.info("Parsing files for db dump...");
+            logger.info("Parsing resource files...");
             ResourceParserHandler.parseResources(externalResources, proccessPath, dataPath);
 
         } else {
@@ -73,14 +79,15 @@ public class App {
         }
 
         logger.info("Statuses for external resources:");
-        for (ExternalResource resource : externalResources) {
+        for (Resource resource : externalResources) {
             logger.info(resource.getStatus());
         }
+        
         //dump Phenodigm data to flatfiles for import
-        //TODO: get from properties
-        boolean dumpPhenoDigmData = false;
+        boolean dumpPhenoDigmData = true;
         if (dumpPhenoDigmData) {
-            PhenodigmDataDumper.dumpPhenodigmData(dataPath);
+            PhenodigmDataDumper phenoDumper = context.getBean(PhenodigmDataDumper.class);
+            phenoDumper.dumpPhenodigmData(dataPath);
         } else {
             logger.info("Skipping making Phenodigm data dump files.");
         }

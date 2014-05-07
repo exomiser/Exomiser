@@ -19,6 +19,7 @@ import de.charite.compbio.exomiser.parsers.NSFP2SQLDumpParser;
 import de.charite.compbio.exomiser.parsers.Omim2GeneParser;
 import de.charite.compbio.exomiser.parsers.OmimResourceGroupParser;
 import de.charite.compbio.exomiser.parsers.PhenoSeriesParser;
+import de.charite.compbio.exomiser.parsers.ResourceGroupParser;
 import de.charite.compbio.exomiser.parsers.StringParser;
 import de.charite.compbio.exomiser.parsers.StringResourceGroupParser;
 import de.charite.compbio.exomiser.parsers.VariantFrequencyResourceGroupParser;
@@ -55,22 +56,28 @@ public class ResourceConfig {
         if (resources == null) {
             logger.info("Making new set of Resources");
             resources = new LinkedHashSet();
-            resources.add(getExampleResource());
+//            resources.add(getExampleResource());
             resources.add(getHpoResource());
+            //OMIM group
             resources.add(getOmimMimToGeneResource());
             resources.add(getOmimMorbidMapResource());
             resources.add(getHpoPhenotypeAnnotationsResource());
+            //StringDB group
             resources.add(getStringEntrezToSymResource());
             resources.add(getStringProteinLinksResource());
+            //Exome Walker
             resources.add(getExomeWalkerPhenotypicSeriesResource());
             resources.add(getExomeWalkerOmimToGeneResource());
+            
             resources.add(getClinVarResource());
             resources.add(getMetaDataResource());
+            
             //these ones are biggies:
-//            resources.add(getDbNsfpResource());
-//            resources.add(getDbSnpResource());
-//            resources.add(getEspResource());
-//            resources.add(getUcscHgResource());
+            resources.add(getDbNsfpResource());
+            //VariantFrequency group
+            resources.add(getDbSnpResource());
+            resources.add(getEspResource());
+            resources.add(ucscHgResource());
 
             //UCSC resource files for making the ucsc.ser file - 
             //these are download only
@@ -78,8 +85,7 @@ public class ResourceConfig {
             resources.add(getUcscKnownGeneXrefResource());
             resources.add(getUcscKnownGeneMrnaResource());
             resources.add(getUcscKnownToLocusLinkResource());
-        
-        
+       
         }
         
         return resources;
@@ -190,7 +196,7 @@ public class ResourceConfig {
     }
     
     @Bean
-    public Resource getUcscHgResource() {
+    public Resource ucscHgResource() {
         logger.info("Making UCSC_HG19 resource");
         Resource resource = new Resource();
         resource.setName("UCSC_HG19");
@@ -499,5 +505,5 @@ public class ResourceConfig {
         
         return resource;
     }
-    
+ 
 }
