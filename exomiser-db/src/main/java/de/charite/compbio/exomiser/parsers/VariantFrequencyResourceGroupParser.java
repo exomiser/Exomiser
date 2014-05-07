@@ -10,7 +10,6 @@ import de.charite.compbio.exomiser.reference.Frequency;
 import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceGroup;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -18,6 +17,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * This class wraps up the parsing of the resources required for creating the variant
@@ -25,13 +26,14 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class VariantFrequencyResourceGroupParser implements ResourceGroupParser {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFrequencyResourceGroupParser.class);
 
     Resource dbSnpResource;
     Resource espResource;
-    Resource ucscResource;
+    Resource ucscHgResource;
         
     @Override
     public void parseResources(ResourceGroup resourceGroup, Path inDir, Path outDir) {
@@ -40,16 +42,7 @@ public class VariantFrequencyResourceGroupParser implements ResourceGroupParser 
 
         dbSnpResource = resourceGroup.getResource(DbSnpFrequencyParser.class);
         espResource = resourceGroup.getResource(EspFrequencyParser.class);
-        ucscResource = resourceGroup.getResource("UCSC_HG19");
-
-        //first we need to prepare the serialized ucsc19 data file using Jannovar
-        //this is required for parsing the dbSNP data where it is used as a filter to 
-        // remove variants outside of exonic regions.
-        Path ucscSerializedData = inDir.resolve(ucscResource.getExtractedFileName());
-        if (!ucscSerializedData.isAbsolute()) {
-            logger.warn("UCSC serialized data file is not present in the process path. Please add it here: {}", ucscSerializedData);
-            //no useable API for Jannovar so we have to add it manually 
-        }
+        ucscHgResource = resourceGroup.getResource("UCSC_HG19");
 
         /*
          * First parseResource the dnSNP data.
@@ -58,13 +51,14 @@ public class VariantFrequencyResourceGroupParser implements ResourceGroupParser 
         //this is the Frequency List we're going to populate and the write out to file
         ArrayList<Frequency> frequencyList = new ArrayList<>();
         //provide it to the DbSnpFrequencyParser along with the UCSC data
-        DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(ucscSerializedData, frequencyList);
+        DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(ucscHgResource, inDir, frequencyList);
         dbSnpParser.parseResource(dbSnpResource, inDir, outDir);
 
         if (frequencyList.isEmpty()) {
             logger.error("DbSnpFrequencyParser returned no Frequency data.");
         }
-        // Now parseResource the ESP data.
+        // Now parseResource the ESP data using the frequency information generated
+        // from the dbSNP and UCSC known gene data.
         EspFrequencyParser espParser = new EspFrequencyParser(frequencyList);
         logger.info("Parsing the ESP data");
         espParser.parseResource(espResource, inDir, outDir);

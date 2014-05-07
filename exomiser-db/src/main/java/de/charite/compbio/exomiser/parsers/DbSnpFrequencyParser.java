@@ -8,14 +8,15 @@ import jannovar.exception.JannovarException;
 import jannovar.io.SerializationManager;
 import jannovar.reference.TranscriptModel;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class DbSnpFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DbSnpFrequencyParser.class);
-
+    
     /**
      * Total number of unique exons
      */
@@ -72,10 +73,15 @@ public class DbSnpFrequencyParser implements ResourceParser {
      */
     private final HashMap<Byte, ChromosomalExonLocations> chromosomeMap;
 
-    public DbSnpFrequencyParser(Path ucscSerializedData, List<Frequency> frequencyList) {
+    public DbSnpFrequencyParser(Resource ucscResource, Path ucscResourcePath, List<Frequency> frequencyList) {
         this.frequencyList = frequencyList;
         chromosomeMap = new HashMap<>();
-        deserializeUCSCdata(ucscSerializedData.toAbsolutePath().toString());
+        //TODO: hack to get the full file path into the resource... possibly this should happen from the start
+        ucscResource.setExtractedFileName(ucscResourcePath.resolve(ucscResource.getExtractedFileName()).toAbsolutePath().toString());
+        //first we need to prepare the serialized ucsc19 data file from Jannovar
+        //this is required for parsing the dbSNP data where it is used as a filter to 
+        // remove variants outside of exonic regions.
+        deserializeUCSCdata(ucscResource);
     }
 
     /**
@@ -83,14 +89,35 @@ public class DbSnpFrequencyParser implements ResourceParser {
      * serialized file was originally created by parsing the three UCSC known
      * gene files.
      */
-    private void deserializeUCSCdata(String serializedFile) {
+    private void deserializeUCSCdata(Resource ucscResource) {
+        Path ucscSerializedData = null;
+        ResourceOperationStatus status;
+        try {
+            ucscSerializedData = Paths.get(ucscResource.getExtractedFileName());
+            if ( !ucscSerializedData.toFile().exists()) {
+                status = ResourceOperationStatus.FILE_NOT_FOUND;
+                ucscResource.setParseStatus(status);
+                logger.error("{}: UCSC serialized data file is not present in the process path at {}", status, ucscSerializedData);
+                return;
+            } 
+        }
+        catch (IOError ex) {
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+            ucscResource.setParseStatus(status);
+            logger.error("{}: UCSC serialized data file is not present in the process path. Please add it to the data\\extracted dir.", status, ex);
+            //no useable API for Jannovar so we had to create this manually
+            return;
+        }
+        String serializedFile =  ucscSerializedData.toString();
         logger.info("De-serializing known Exon locations from UCSC data file: {}", serializedFile);
         SerializationManager manager = new SerializationManager();
         ArrayList<TranscriptModel> transcriptList = null;
         try {
             transcriptList = manager.deserializeKnownGeneList(serializedFile);
         } catch (JannovarException e) {
-            logger.error("Unable to deserialize the TranscriptModel serialized file.", e);
+            status = ResourceOperationStatus.FAILURE;
+            ucscResource.setParseStatus(status);
+            logger.error("{}: Unable to deserialize the TranscriptModel serialized file.", status, e);
         }
 
         for (TranscriptModel kgl : transcriptList) {
@@ -105,7 +132,9 @@ public class DbSnpFrequencyParser implements ResourceParser {
                 exonLocations.addGene(kgl);
             }
         }
-        logger.info("Parsed " + serializedFile + " and added " + n_exons + " exons");
+        status = ResourceOperationStatus.SUCCESS;
+        ucscResource.setParseStatus(status);
+        logger.info("{} Parsed {} and added {} exons", status, serializedFile, n_exons);
     }
 
     /**
