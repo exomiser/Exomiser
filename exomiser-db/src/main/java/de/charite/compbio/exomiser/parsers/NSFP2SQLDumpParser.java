@@ -319,7 +319,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
 
         return new VariantPathogenicity(c, pos, ref, alt, aaref, aaalt, aapos,
                 sift, polyphen2_HVAR, mut_taster,
-                phyloP,cadd_raw_rankscore,cadd_raw);
+                phyloP, cadd_raw_rankscore, cadd_raw);
     }
 
     /**
@@ -374,7 +374,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         try {
             ret_value = Float.parseFloat(s);
         } catch (NumberFormatException e) {
-            logger.error("Could not parse float value: '{}'", s);
+            logger.error("Could not parse phyloP float value: '{}'", s);
             return Constants.NOPARSE_FLOAT;
         }
         return ret_value;
@@ -396,7 +396,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         try {
             ret_value = Float.parseFloat(s);
         } catch (NumberFormatException e) {
-            logger.error("Could not parse float value: '{}'", s);
+            logger.error("Could not parse CaddRawRankScore float value: '{}'", s);
             return Constants.NOPARSE_FLOAT;
         }
         return ret_value;
@@ -418,7 +418,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         try {
             ret_value = Float.parseFloat(s);
         } catch (NumberFormatException e) {
-            logger.error("Could not parse float value: '{}'", s);
+            logger.error("Could not parse CaddRaw float value: '{}'", s);
             return Constants.NOPARSE_FLOAT;
         }
         return ret_value;
@@ -711,54 +711,77 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         for (int i = 0; i < fields.length; i++) {
             String field = fields[i];
 //            logger.info("Field {} = {}", i, field);
+            int prev = 0;
             switch (field){
                 case "chr":
+                    prev = CHR;
+                    logger.info("Setting CHR field '{}' from position {} to {}", field, prev, i);
                     CHR = i;
-                    logger.info("Setting CHR field from {} position to {}", field,  i);
                     break;
                 case "ref":
+                    prev = REF;
+                    logger.info("Setting REF field '{}' from position {} to {}", field, prev, i);
                     REF = i;
-                    logger.info("Setting REF field from {} position to {}", field,  i);
                     break;
                 case "alt":
+                    prev = ALT;
+                    logger.info("Setting ALT field '{}' from position {} to {}", field, prev, i);
                     ALT = i;
-                    logger.info("Setting ALT field from {} position to {}", field,  i);
                     break;
                 case "aaref":
+                    prev = AAREF;
+                    logger.info("Setting AAREF field '{}' from position {} to {}", field, prev, i);
                     AAREF = i;
-                    logger.info("Setting AAREF field from {} position to {}", field,  i);
                     break;
                 case "aaalt":
+                    prev = AAALT;
+                    logger.info("Setting AAALT field '{}' from position {} to {}", field, prev, i);
                     AAALT = i;
-                    logger.info("Setting AAALT field from {} position to {}", field,  i);
                     break;
                 case "genename":
+                    prev = GENENAME;
+                    logger.info("Setting GENENAME field '{}' from position {} to {}", field, prev, i);
                     GENENAME = i;
-                    logger.info("Setting GENENAME field from {} position to {}", field,  i);
                     break;
                 case "aapos":
+                    prev = AAPOS;
+                    logger.info("Setting AAPOS field field '{}' from position {} to {}", field, prev, i);
                     AAPOS = i;
-                    logger.info("Setting AAPOS field from {} position to {}", field,  i);
                     break;
                 case "SIFT_score":
+                    prev = SIFT_SCORE;
+                    logger.info("Setting SIFT_SCORE field '{}' from position {} to {}", field, prev, i);
                     SIFT_SCORE = i;
-                    logger.info("Setting SIFT_SCORE field from {} position to {}", field,  i);
                     break;
                 case "Polyphen2_HVAR_score":
+                    prev = POLYPHEN2_HVAR_SCORE;
+                    logger.info("Setting POLYPHEN2_HVAR_SCORE field '{}' from position {} to {}", field, prev, i);
                     POLYPHEN2_HVAR_SCORE = i;
-                    logger.info("Setting POLYPHEN2_HVAR_SCORE field from {} position to {}", field,  i);
                     break;
                 case "MutationTaster_score":
+                    prev = MUTATION_TASTER_SCORE;
+                    logger.info("Setting MUTATION_TASTER_SCORE field '{}' from position {} to {}", field, prev, i);
                     MUTATION_TASTER_SCORE = i;
-                    logger.info("Setting MUTATION_TASTER_SCORE field from {} position to {}", field,  i);
                     break;
                 case "MutationTaster_pred":
+                    prev = MUTATION_TASTER_PRED;
+                    logger.info("Setting MUTATION_TASTER_PRED field '{}' from position {} to {}", field, prev, i);
                     MUTATION_TASTER_PRED = i;
-                    logger.info("Setting MUTATION_TASTER_PRED field from {} position to {}", field,  i);
                     break;
                 case "phyloP":
+                    prev = PHYLO_P;
+                    logger.info("Setting PHYLO_P field '{}' from position {} to {}", field, prev, i);
                     PHYLO_P = i;
-                    logger.info("Setting PHYLO_P field from {} position to {}", field,  i);
+                    break;
+                case "CADD_raw":
+                    prev = CADD_raw;
+                    logger.info("Setting CADD_raw field '{}' from position {} to {}", field, prev, i);
+                    CADD_raw = i;
+                    break;
+                case "CADD_raw_rankscore":
+                    prev = CADD_raw_rankscore;
+                    logger.info("Setting CADD_raw_rankscore field '{}' from position {} to {}", field, prev, i);
+                    CADD_raw_rankscore = i;
                     break;
             }                    
         }
