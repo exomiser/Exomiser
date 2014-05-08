@@ -40,7 +40,7 @@ public class AppConfig {
     }
 
     @Bean
-    public Path getDataPath() {
+    public Path dataPath() {
         Path dataPath = Paths.get(env.getProperty("data.path"));
         logger.info("Root data working directory set to: {}", dataPath.toAbsolutePath());
         //this is needed for anything to work correctly, so make sure it exists.
@@ -51,8 +51,8 @@ public class AppConfig {
     }
 
     @Bean
-    public Path getDownloadPath() {
-        Path downloadPath = Paths.get(getDataPath().toString(), env.getProperty("download.path"));
+    public Path downloadPath() {
+        Path downloadPath = Paths.get(dataPath().toString(), env.getProperty("download.path"));
         logger.info("Data download directory set to: {}", downloadPath.toAbsolutePath());
         //this is needed for anything to work correctly, so make sure it exists.
         if (downloadPath.toFile().mkdir()) {
@@ -67,12 +67,11 @@ public class AppConfig {
      */
     @Bean
     public boolean copyPheno2GeneResource() {
-        Path downloadPath = getDownloadPath();
 
         String resource = "src/main/resources/data/pheno2gene.txt";
         try {
-            Files.copy(Paths.get(resource), Paths.get(downloadPath.toString(), "pheno2gene.txt"), StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Copied {} to {}", resource, downloadPath);
+            Files.copy(Paths.get(resource), downloadPath().resolve("pheno2gene.txt"), StandardCopyOption.REPLACE_EXISTING);
+            logger.info("Copied {} to {}", resource, downloadPath());
         } catch (IOException ex) {
             logger.error("Unable to copy resource {}", resource, ex);
         }
@@ -85,12 +84,11 @@ public class AppConfig {
      */
     @Bean
     public boolean copyUcscHg19Resource() {
-        Path downloadPath = getDownloadPath();
-
+        
         String resource = "src/main/resources/data/ucsc_hg19.ser.gz";
         try {
-            Files.copy(Paths.get(resource), Paths.get(downloadPath.toString(), "ucsc_hg19.ser.gz"), StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Copied {} to {}", resource, downloadPath);
+            Files.copy(Paths.get(resource), downloadPath().resolve("ucsc_hg19.ser.gz"), StandardCopyOption.REPLACE_EXISTING);
+            logger.info("Copied {} to {}", resource, downloadPath());
         } catch (IOException ex) {
             logger.error("Unable to copy resource {}", resource, ex);
         }
@@ -99,12 +97,47 @@ public class AppConfig {
 
     @Bean(name = "processPath")
     public Path getProcessPath() {
-        Path processPath = Paths.get(getDataPath().toString(), env.getProperty("process.path"));
+        Path processPath = dataPath().resolve(env.getProperty("process.path"));
         logger.info("Data process directory set to: {}", processPath.toAbsolutePath());
         //this is needed for anything to work correctly, so make sure it exists.
         if (processPath.toFile().mkdir()) {
             logger.info("Made new process directory: {}", processPath.toAbsolutePath());
         }
         return processPath;
+    }
+
+    @Bean
+    public boolean downloadResources() {
+        boolean download = Boolean.parseBoolean(env.getProperty("downloadResources")); 
+        logger.info("Setting application to download resources: {}", download);
+        return download;
+    }
+
+    @Bean
+    public boolean extractResources() {
+        boolean extract = Boolean.parseBoolean(env.getProperty("extractResources")); 
+        logger.info("Setting application to extract resources: {}", extract);
+        return extract;    
+    }
+
+    @Bean
+    public boolean parseResources() {
+        boolean parse = Boolean.parseBoolean(env.getProperty("parseResources")); 
+        logger.info("Setting application to parse resources: {}", parse);
+        return parse;    
+    }
+
+    @Bean
+    public boolean dumpPhenoDigmData() {
+        boolean dumpPhenoDigmData = Boolean.parseBoolean(env.getProperty("dumpPhenoDigmData")); 
+        logger.info("Setting application to dump PhenoDigm data: {}", dumpPhenoDigmData);
+        return dumpPhenoDigmData;    
+    }
+
+    @Bean
+    public boolean migrateDatabases() {
+        boolean migrateDatabases = Boolean.parseBoolean(env.getProperty("migrateDatabases")); 
+        logger.info("Setting application to migrate databases: {}", migrateDatabases);
+        return migrateDatabases;    
     }
 }

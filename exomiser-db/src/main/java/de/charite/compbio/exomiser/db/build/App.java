@@ -38,16 +38,16 @@ public class App {
         
         AppConfig appConfig = context.getBean(AppConfig.class);
         //set the Paths
-        Path dataPath = appConfig.getDataPath();
-        Path downloadPath = appConfig.getDownloadPath();
+        Path dataPath = appConfig.dataPath();
+        Path downloadPath = appConfig.downloadPath();
 
         //Get the Resources from the ResourceConfiguration 
         ResourceConfig resourceConfig = context.getBean(ResourceConfig.class); 
         Set<Resource> externalResources = resourceConfig.getResources();
         
         //Download the Resources
-        boolean downloadExternalResources = true;
-        if (downloadExternalResources) {
+        boolean downloadResources = appConfig.downloadResources();
+        if (downloadResources) {
             //download and unzip the necessary input files
             logger.info("Downloading required flatfiles...");
             ResourceDownloadHandler.downloadResources(externalResources, downloadPath);
@@ -58,8 +58,8 @@ public class App {
         Path proccessPath = appConfig.getProcessPath();
 
         //Extract the Resources
-        boolean extractExternalResources = true;
-        if (extractExternalResources) {
+        boolean extractResources = appConfig.extractResources();
+        if (extractResources) {
             //process the downloaded files to prepare them for parsing (i.e. unzip, untar)
             logger.info("Extracting required flatfiles...");
             ResourceExtractionHandler.extractResources(externalResources, downloadPath, proccessPath);
@@ -68,8 +68,8 @@ public class App {
         }
 
         //Parse the Resources
-        boolean parseExternalResources = true;
-        if (parseExternalResources) {
+        boolean parseResources = appConfig.parseResources();
+        if (parseResources) {
             //parse the file and output to the project output dir.
             logger.info("Parsing resource files...");
             ResourceParserHandler.parseResources(externalResources, proccessPath, dataPath);
@@ -84,7 +84,7 @@ public class App {
         }
         
         //dump Phenodigm data to flatfiles for import
-        boolean dumpPhenoDigmData = true;
+        boolean dumpPhenoDigmData = appConfig.dumpPhenoDigmData();
         if (dumpPhenoDigmData) {
             PhenodigmDataDumper phenoDumper = context.getBean(PhenodigmDataDumper.class);
             phenoDumper.dumpPhenodigmData(dataPath);
@@ -94,7 +94,7 @@ public class App {
 
         //now load the database using Flyway we're going to create an enbedded H2
         //and a PostgreSQL database. TODO: This should be parallelizable.
-        boolean migrateDatabases = false;
+        boolean migrateDatabases = appConfig.migrateDatabases();
         if (migrateDatabases) {
             logger.info("Migrating exomiser databases...");
             // Create the Flyway instance
