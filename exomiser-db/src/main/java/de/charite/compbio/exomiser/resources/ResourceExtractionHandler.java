@@ -42,9 +42,10 @@ public class ResourceExtractionHandler {
     }
 
     public static void extractResource(Resource externalResource, Path inDir, Path outDir) {
-        logger.info("Extracting resource {}...", externalResource.getRemoteFileName());
+        logger.info("Resource: {} Extracting resource file {}...", externalResource.getName(), externalResource.getRemoteFileName());
         //make sure there is something to transfer... like the Metadata resource for instance 
         if (externalResource.getRemoteFileName().isEmpty() || externalResource.getExtractedFileName().isEmpty()) {
+            logger.info("Nothing to extract for resource: {}", externalResource.getName());
             externalResource.setExtractStatus(ResourceOperationStatus.SUCCESS);
             return;
         }
@@ -53,10 +54,10 @@ public class ResourceExtractionHandler {
         outDir.toFile().mkdir();
         
         //expected types: .tar.gz, .gz, .zip, anything else
-        File inFile = new File(inDir.toFile(), externalResource.getRemoteFileName());
-        File outFile = new File(outDir.toFile(), externalResource.getExtractedFileName());
+        File inFile = inDir.resolve(externalResource.getRemoteFileName()).toFile();
+        File outFile = outDir.resolve(externalResource.getExtractedFileName()).toFile();
         
-        ResourceOperationStatus status = ResourceOperationStatus.FAILURE;
+        ResourceOperationStatus status;
         String scheme = externalResource.getExtractionScheme();
         logger.info("Using resource extractionScheme: {}", scheme);
         switch (scheme) {
@@ -80,6 +81,7 @@ public class ResourceExtractionHandler {
         }
 
         externalResource.setExtractStatus(status);
+        logger.info("{}", externalResource.getStatus());
     }
     
     private static ResourceOperationStatus gunZipFile(File inFile, File outFile) {
