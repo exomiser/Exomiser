@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.resources;
 
 import de.charite.compbio.exomiser.io.FileDownloadUtils;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -39,8 +38,9 @@ public class ResourceDownloadHandler {
     }
 
     public static void downloadResource(Resource externalResource, Path downloadDir) {
-    ResourceOperationStatus status;
-        if (externalResource.getUrl().isEmpty()) {
+        
+        ResourceOperationStatus status;
+        if (externalResource.getUrl() == null || externalResource.getUrl().isEmpty()) {
             logger.info("Resource {} has no URL set - skipping resource.", externalResource.getName());
             return;
         }
@@ -48,10 +48,11 @@ public class ResourceDownloadHandler {
 
             URL resourceUrl = new URL(externalResource.getUrl() + externalResource.getRemoteFileName());
             logger.info("Resource: {}: Getting {} from {}", externalResource.getName(), externalResource.getRemoteFileName(), resourceUrl);
-            status = FileDownloadUtils.fetchFile(resourceUrl, new File(String.format("%s/%s", downloadDir, externalResource.getRemoteFileName())));
+            Path downloadPath = downloadDir.resolve(externalResource.getRemoteFileName());
+            status = FileDownloadUtils.fetchFile(resourceUrl, downloadPath.toFile());
             externalResource.setDownloadStatus(status);
             //if there is no version info for the resource, set a timestamp
-            if (externalResource.getVersion().isEmpty()) {
+            if (externalResource.getVersion() == null || externalResource.getVersion().isEmpty()) {
                 externalResource.setVersion(Instant.now().toString());
             }
 
