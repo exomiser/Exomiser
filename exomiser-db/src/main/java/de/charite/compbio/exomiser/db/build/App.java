@@ -43,7 +43,8 @@ public class App {
 
         //Get the Resources from the ResourceConfiguration 
         ResourceConfig resourceConfig = context.getBean(ResourceConfig.class); 
-        Set<Resource> externalResources = resourceConfig.getResources();
+        
+        Set<Resource> externalResources = resourceConfig.resources();
         
         //Download the Resources
         boolean downloadResources = appConfig.downloadResources();

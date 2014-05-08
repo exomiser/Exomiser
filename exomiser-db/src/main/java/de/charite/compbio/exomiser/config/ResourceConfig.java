@@ -52,7 +52,7 @@ public class ResourceConfig {
     private Set<Resource> resources;
     
     @Bean
-    public Set<Resource> getResources() {
+    public Set<Resource> resources() {
         if (resources == null) {
             logger.info("Making new set of Resources");
             resources = new LinkedHashSet();
