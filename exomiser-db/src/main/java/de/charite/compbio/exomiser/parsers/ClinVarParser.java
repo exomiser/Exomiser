@@ -155,6 +155,7 @@ public class ClinVarParser implements ResourceParser {
             
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
+                    logger.info(line);
                     continue; // First line with column definitions.
                 }
                 String split[] = line.split("\t");
@@ -164,15 +165,17 @@ public class ClinVarParser implements ResourceParser {
                     logger.warn("Line has only {} fields. Expected at least %s fields", split.length, expectedFieldLength);
                     continue;
                 }
+                String type = split[1];
                 String build = split[12];
                 String RCV = split[8];
                 String chr = split[13];
                 String from = split[14];
                 String to = split[15];
                 String sign = split[5];
-                //System.out.println(sign);
+//                logger.info(line);
 
-                if (chr.equals("-") || from.equals("-")) {
+                if (chr.equals("-") || chr.isEmpty() || from.equals("-")) {
+                    logger.info("Skipping {} Chr='{}', from='{}' - No positional information defined on line: {}", type, chr, from, line);
                     noPositionInfoVariants++;
                     continue;
                 } else {
@@ -182,7 +185,7 @@ public class ClinVarParser implements ResourceParser {
                  change the entire database or modify the parseResource code. */
 
                 if (!build.startsWith(expectedBuild)) {
-                    logger.warn("Wrong chromosome build: {}. Expected build {}. Check file and revise!", build, expectedBuild);
+                    logger.info("Wrong assembly: {}. Expected assembly {}. Skipping {}.", build, expectedBuild, type);
                     wrongBuildVariants++;
                 }
                 //System.out.println(RCV + "-" + chr + "-" + to + "-" + from);
