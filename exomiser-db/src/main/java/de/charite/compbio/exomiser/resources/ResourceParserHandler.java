@@ -49,7 +49,7 @@ public class ResourceParserHandler {
                 logger.info("Resource {} has no declared resourceGroupParserClass. Attempting to parse as a single resource.", resource.getName());
                 parseResource(resource, inDir, outDir);
             } else {
-                logger.info("Resource {} is part of resourceGroup '{}' - this will be parsed by {}", resource.getName(), resource.getResourceGroupName(), resourceGroupParserClass);
+                logger.info("Resource {} is part of resourceGroup {} - this will be parsed by {}", resource.getName(), resource.getResourceGroupName(), resourceGroupParserClass);
                 //resource is part of a group - add this to a ResourceGroup
                 if (!resourceGroupMap.containsKey(resourceGroupParserClass)) {
                     ResourceGroup resourceGroup = new ResourceGroup(resource.getResourceGroupName(), resourceGroupParserClass);

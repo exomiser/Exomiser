@@ -73,7 +73,7 @@ public class ResourceConfig {
             resources.add(metaDataResource());
             
             //these ones are biggies:
-//            resources.add(dbNsfpResource());
+            resources.add(dbNsfpResource());
             //VariantFrequency group
             resources.add(dbSnpResource());
             resources.add(espResource());
@@ -84,8 +84,7 @@ public class ResourceConfig {
             resources.add(ucscKnownGeneResource());
             resources.add(ucscKnownGeneXrefResource());
             resources.add(ucscKnownGeneMrnaResource());
-            resources.add(ucscKnownToLocusLinkResource());
-       
+            resources.add(ucscKnownToLocusLinkResource());       
         }
         
         return resources;
@@ -165,7 +164,7 @@ public class ResourceConfig {
         resource.setParserClass(DbSnpFrequencyParser.class);
         resource.setParsedFileName("frequency.pg");
         //TODO: define groups seperately using DI
-        resource.setResourceGroupName("frequency");
+        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
         
         return resource;
@@ -184,7 +183,7 @@ public class ResourceConfig {
         resource.setParserClass(EspFrequencyParser.class);
         resource.setParsedFileName("frequency.pg");
         //TODO: define groups seperately using DI
-        resource.setResourceGroupName("frequency");
+        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
         
         return resource;
@@ -204,7 +203,7 @@ public class ResourceConfig {
         resource.setParserClass(null);
         resource.setParsedFileName(null);
         //
-        resource.setResourceGroupName("frequency");
+        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
         
         return resource;
@@ -222,8 +221,8 @@ public class ResourceConfig {
         //
         resource.setParserClass(MimToGeneParser.class);
         resource.setParsedFileName("omim.pg");
-        //
-        resource.setResourceGroupName("omim");
+        //part of the OMIM ResourceGroup
+        resource.setResourceGroupName(OmimResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
         
         return resource;
@@ -241,8 +240,8 @@ public class ResourceConfig {
         //
         resource.setParserClass(MorbidMapParser.class);
         resource.setParsedFileName("omim.pg");
-        //
-        resource.setResourceGroupName("omim");
+        //part of the OMIM ResourceGroup
+        resource.setResourceGroupName(OmimResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
         
         return resource;
@@ -260,8 +259,8 @@ public class ResourceConfig {
         //
         resource.setParserClass(DiseaseInheritanceCache.class);
         resource.setParsedFileName("omim.pg");
-        //
-        resource.setResourceGroupName("omim");
+        //part of the OMIM ResourceGroup
+        resource.setResourceGroupName(OmimResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
         
         return resource;
@@ -269,8 +268,8 @@ public class ResourceConfig {
     
     @Bean
     public Resource stringEntrezToSymResource() {
-        logger.info("Making String_entrez2sym resource");
-        Resource resource = new Resource("String_entrez2sym");
+        logger.info("Making STRING_entrez2sym resource");
+        Resource resource = new Resource("STRING_entrez2sym");
         resource.setUrl("http://www.ensembl.org/biomart/martservice?query=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%20%3C!DOCTYPE%20Query%3E%20%3CQuery%20%20virtualSchemaName%20=%20%22default%22%20formatter%20=%20%22TSV%22%20header%20=%20%220%22%20uniqueRows%20=%20%220%22%20count%20=%20%22%22%20datasetConfigVersion%20=%20%220.6%22%20%3E%20%20%3CDataset%20name%20=%20%22hsapiens_gene_ensembl%22%20interface%20=%20%22default%22%20%3E%20%3CAttribute%20name%20=%20%22ensembl_peptide_id%22%20/%3E%20%3CAttribute%20name%20=%20%22entrezgene%22%20/%3E%20%3CAttribute%20name%20=%20%22hgnc_symbol%22%20/%3E%20%3C/Dataset%3E%20%3C/");
         resource.setRemoteFileName("Query%3E");
         resource.setVersion(null);
@@ -280,7 +279,7 @@ public class ResourceConfig {
         resource.setParserClass(EntrezParser.class);
         resource.setParsedFileName("entrez2sym.pg");
         //
-        resource.setResourceGroupName("string");
+        resource.setResourceGroupName(StringResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(StringResourceGroupParser.class);
         
         return resource;
@@ -288,8 +287,8 @@ public class ResourceConfig {
     
     @Bean
     public Resource stringProteinLinksResource() {
-        logger.info("Making String_protein_links resource");
-        Resource resource = new Resource("String_protein_links");
+        logger.info("Making STRING_protein_links resource");
+        Resource resource = new Resource("STRING_protein_links");
         resource.setUrl("http://string-db.org/newstring_download/protein.links.v9.1/");
         resource.setRemoteFileName("9606.protein.links.v9.1.txt.gz");
         resource.setVersion("9.1");
@@ -299,7 +298,7 @@ public class ResourceConfig {
         resource.setParserClass(StringParser.class);
         resource.setParsedFileName("string.pg");
         //
-        resource.setResourceGroupName("string");
+        resource.setResourceGroupName(StringResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(StringResourceGroupParser.class);
         
         return resource;

@@ -10,7 +10,6 @@ import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceGroup;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,8 +20,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OmimResourceGroupParser implements ResourceGroupParser {
+public class OmimResourceGroupParser extends AbstractResourceGroupParser implements ResourceGroupParser {
 
+    public static final String NAME = "OMIM";
+    
     private static final Logger logger = LoggerFactory.getLogger(OmimResourceGroupParser.class);
     
     private Resource morbidMapResource;
@@ -34,10 +35,12 @@ public class OmimResourceGroupParser implements ResourceGroupParser {
         
         logger.info("Parsing {} resources. Writing out to: {}", resourceGroup.getName(), outDir);
         
-        morbidMapResource = resourceGroup.getResource(MorbidMapParser.class);
-        mim2geneResource = resourceGroup.getResource(MimToGeneParser.class);
-        hpoPhenotypeAnnotations = resourceGroup.getResource(DiseaseInheritanceCache.class);
-
+        //Check everything is present before trying to parse them
+        if (!requiredResourcesPresent(resourceGroup)) {
+            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup.getName());
+            return;
+        }
+        
         Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
         //first parseResource the mim2gene file
         MimToGeneParser mimParser = new MimToGeneParser(mim2geneMap);
@@ -52,5 +55,28 @@ public class OmimResourceGroupParser implements ResourceGroupParser {
         //make the MimList which morbid map will populate
         MorbidMapParser morbidParser = new MorbidMapParser(diseaseInheritanceCache, mim2geneMap);
         morbidParser.parseResource(morbidMapResource, inDir, outDir);
+    }
+
+    @Override
+    public boolean requiredResourcesPresent(ResourceGroup resourceGroup) {
+        morbidMapResource = resourceGroup.getResource(MorbidMapParser.class);
+        if (morbidMapResource == null) {
+            logResourceMissing(resourceGroup.getName(), MorbidMapParser.class);
+            return false;
+        }
+        
+        mim2geneResource = resourceGroup.getResource(MimToGeneParser.class);
+        if (mim2geneResource == null) {
+            logResourceMissing(resourceGroup.getName(), MimToGeneParser.class);
+            return false;
+       }
+        
+        hpoPhenotypeAnnotations = resourceGroup.getResource(DiseaseInheritanceCache.class);
+        if (hpoPhenotypeAnnotations == null) {
+            logResourceMissing(resourceGroup.getName(), DiseaseInheritanceCache.class);
+            return false;
+        }
+         
+        return true; 
     }
 }

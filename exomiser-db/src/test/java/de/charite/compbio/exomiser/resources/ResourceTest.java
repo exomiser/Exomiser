@@ -44,7 +44,7 @@ public class ResourceTest {
     @Test
     public void testGetStatus() {
         Resource instance = new Resource("test");
-        String expResult = "Status for: test     Download: UNTRIED, Extract: UNTRIED, Parse: UNTRIED";
+        String expResult = "Status for: test                    Download: UNTRIED, Extract: UNTRIED, Parse: UNTRIED";
         String result = instance.getStatus();
         assertEquals(expResult, result);
 

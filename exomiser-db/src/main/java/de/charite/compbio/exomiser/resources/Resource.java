@@ -10,14 +10,23 @@ import de.charite.compbio.exomiser.parsers.ResourceParser;
 import java.util.Objects;
 
 /**
- * Bean for storing information about an external resource required for building
- * the Exomiser database.
+ * This is the fundamental atomic unit of work for storing information about a 
+ * resource required for building the Exomiser database.
  *
+ * It specifies where a required resource (a file) is found, both on the web and 
+ * locally. How it should be downloaded and extracted, which class is required to
+ * parse the resource and whether this is also required by other resources in 
+ * order to parse them as part of a 
+ * {@code de.charite.compbio.exomiser.resources.ResourceGroup}.
+ * 
+ * It also tracks the download, extract and parse steps as 
+ * {@code de.charite.compbio.exomiser.resources.ResourceOperationStatus}s 
+ * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class Resource {
 
-    private String name;
+    private final String name;
     private String url;
     private String remoteFileName;
     private String version;
@@ -192,7 +201,7 @@ public class Resource {
     }
    
     public String getStatus() {
-        return String.format("Status for: %-8s Download: %s, Extract: %s, Parse: %s", name, downloadStatus, extractStatus, parseStatus);
+        return String.format("Status for: %-23s Download: %s, Extract: %s, Parse: %s", name, downloadStatus, extractStatus, parseStatus);
     }
     
     @Override

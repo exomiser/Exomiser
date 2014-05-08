@@ -30,4 +30,10 @@ public interface ResourceGroupParser {
      */
     public void parseResources(ResourceGroup resourceGroup, Path inDir, Path outDir);
     
+    /**
+     * Checks that all the required resources for the ResourceGroupParser are present. 
+     * @param resourceGroup
+     * @return false if any resource is missing.
+     */
+    public boolean requiredResourcesPresent(ResourceGroup resourceGroup);
 }

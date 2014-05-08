@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,23 +26,30 @@ import org.springframework.stereotype.Component;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
-public class VariantFrequencyResourceGroupParser implements ResourceGroupParser {
+public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupParser implements ResourceGroupParser {
+
+    public static final String NAME = "VARIANT";
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFrequencyResourceGroupParser.class);
 
     Resource dbSnpResource;
     Resource espResource;
     Resource ucscHgResource;
-        
+
+    public VariantFrequencyResourceGroupParser() {
+    }
+    
     @Override
     public void parseResources(ResourceGroup resourceGroup, Path inDir, Path outDir) {
 
         logger.info("Parsing {} resources. Writing out to: {}", resourceGroup.getName(), outDir);
 
-        dbSnpResource = resourceGroup.getResource(DbSnpFrequencyParser.class);
-        espResource = resourceGroup.getResource(EspFrequencyParser.class);
-        ucscHgResource = resourceGroup.getResource("UCSC_HG19");
-
+        //Check everything is present before trying to parse them
+        if (!requiredResourcesPresent(resourceGroup)) {
+            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup.getName());
+            return;
+        }
+        
         /*
          * First parseResource the dnSNP data.
          */
@@ -79,6 +85,30 @@ public class VariantFrequencyResourceGroupParser implements ResourceGroupParser 
         } catch (IOException e) {
             logger.error("Error writing out frequency files", e);
         }
+    }
+
+    @Override
+    public boolean requiredResourcesPresent(ResourceGroup resourceGroup) {
+        
+        dbSnpResource = resourceGroup.getResource(DbSnpFrequencyParser.class);
+        if (dbSnpResource == null) {
+            logResourceMissing(resourceGroup.getName(), DbSnpFrequencyParser.class);
+            return false;
+        }
+        
+        espResource = resourceGroup.getResource(EspFrequencyParser.class);
+        if (espResource == null) {
+            logResourceMissing(resourceGroup.getName(), EspFrequencyParser.class);
+            return false;
+        }
+        
+        ucscHgResource = resourceGroup.getResource("UCSC_HG19");
+        if (ucscHgResource == null) {
+            logger.error("MISSING RESOURCE for {} data required by {} - check this is defined in resource configuration class", NAME, "UCSC_HG19");
+            return false;
+        }
+        
+        return true; 
     }
     
 }

@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.resources.Resource;
@@ -15,48 +14,55 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class StringResourceGroupParser implements ResourceGroupParser {
+public class StringResourceGroupParser extends AbstractResourceGroupParser implements ResourceGroupParser {
+
+    public static final String NAME = "STRING";
 
     private static final Logger logger = LoggerFactory.getLogger(StringResourceGroupParser.class);
-    
+
     private Resource entrezResource;
     private Resource stringResource;
-    
+
     @Override
     public void parseResources(ResourceGroup resourceGroup, Path inDir, Path outDir) {
- 
+
         logger.info("Parsing {} resources. Writing out to: {}", resourceGroup.getName(), outDir);
-        
+
+        //Check everything is present before trying to parse them
+        if (!requiredResourcesPresent(resourceGroup)) {
+            logger.error("Not parsing {} ResourceGroup resources as not all required resources are present.", resourceGroup.getName());
+            return;
+        }
+
+        HashMap<String, List<Integer>> ensembl2EntrezGene = new HashMap<>();
+        //first parseResource the entrez gene to symbol and ensembl peptide biomart file
+        EntrezParser entrezParser = new EntrezParser(ensembl2EntrezGene);
+        entrezParser.parseResource(entrezResource, inDir, outDir);
+
+        //now parseResource the STRING DB file
+        StringParser stringParser = new StringParser(ensembl2EntrezGene);
+        stringParser.parseResource(stringResource, inDir, outDir);
+
+    }
+
+    @Override
+    public boolean requiredResourcesPresent(ResourceGroup resourceGroup) {
+
         entrezResource = resourceGroup.getResource(EntrezParser.class);
-        stringResource = resourceGroup.getResource(StringParser.class);
-
-        if (requiredResourcesValid()) {
-            HashMap<String, List<Integer>> ensembl2EntrezGene = new HashMap<>();
-            //first parseResource the entrez gene to symbol and ensembl peptide biomart file
-            EntrezParser entrezParser = new EntrezParser(ensembl2EntrezGene);
-            entrezParser.parseResource(entrezResource, inDir, outDir);
-
-            //now parseResource the STRING DB file
-            StringParser stringParser = new StringParser(ensembl2EntrezGene);
-            stringParser.parseResource(stringResource, inDir, outDir);
-        }
-    }
-
-    private boolean requiredResourcesValid() {
-        
         if (entrezResource == null) {
-            logger.info("Unable to parse STRING resources as the resource required by the {} is null", EntrezParser.class);
+            logResourceMissing(resourceGroup.getName(), EntrezParser.class);
+            return false;
         }
-        
-        if (stringResource == null) {
-            logger.info("Unable to parse STRING resources as the resource required by the {} is null", StringParser.class);
-        }
-        
-        return (entrezResource != null && stringResource != null);
-    }
 
-    
+        stringResource = resourceGroup.getResource(StringParser.class);
+        if (stringResource == null) {
+            logResourceMissing(resourceGroup.getName(), StringParser.class);
+            return false;
+        }
+
+        return true;
+    }
 }
