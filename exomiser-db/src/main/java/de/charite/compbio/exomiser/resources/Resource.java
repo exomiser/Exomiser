@@ -32,7 +32,9 @@ public class Resource {
     private ResourceOperationStatus extractStatus;
     private ResourceOperationStatus parseStatus;
 
-    public Resource() {
+    
+    public Resource(String name) {
+        this.name = name;
         downloadStatus = ResourceOperationStatus.UNTRIED;
         extractStatus = ResourceOperationStatus.UNTRIED;
         parseStatus = ResourceOperationStatus.UNTRIED;
@@ -41,10 +43,6 @@ public class Resource {
     
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getUrl() {

@@ -49,11 +49,11 @@ public class StringResourceGroupParserTest {
     public void testParseResources() {
         ResourceGroup resourceGroup = new ResourceGroup("wibble", StringResourceGroupParser.class);
         
-        Resource stringResource = new Resource();
+        Resource stringResource = new Resource("StringDb");
         stringResource.setParserClass(StringParser.class);
         resourceGroup.addResource(stringResource);
         
-        Resource entrezResource = new Resource();
+        Resource entrezResource = new Resource("Entrez");
         entrezResource.setParserClass(EntrezParser.class);
         resourceGroup.addResource(entrezResource);
         

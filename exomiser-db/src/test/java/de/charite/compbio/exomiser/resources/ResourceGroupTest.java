@@ -71,7 +71,7 @@ public class ResourceGroupTest {
     @Test
     public void testAddResource() {
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
-        Resource resource = new Resource();
+        Resource resource = new Resource("Clive");
         resource.setParserClass(ResourceParser.class);
         assertTrue(instance.addResource(resource));
     }
@@ -82,8 +82,7 @@ public class ResourceGroupTest {
     @Test
     public void testAddResource_NoParserClass() {
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
-        Resource resource = new Resource();
-        resource.setName("Dave");
+        Resource resource = new Resource("Dave");
         resource.setParserClass(null);
         assertTrue(instance.addResource(resource));
     }
@@ -95,7 +94,7 @@ public class ResourceGroupTest {
     public void testGetResource_Class() {
         Class clazz = ResourceParser.class;
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
-        Resource expResult = new Resource();
+        Resource expResult = new Resource("test");
         expResult.setParserClass(clazz);
         instance.addResource(expResult);
         Resource result = instance.getResource(clazz);
@@ -109,7 +108,7 @@ public class ResourceGroupTest {
     @Test
     public void testGetResource_IncorrectClassType() {
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
-        Resource resource = new Resource();
+        Resource resource = new Resource("test");
         //shouldn't happen as this is defined in the properties file
         resource.setParserClass(ResourceParser.class);
         instance.addResource(resource);
@@ -122,10 +121,9 @@ public class ResourceGroupTest {
      */
     @Test
     public void testGetResource_String() {
-        String resourceName = "david";
+        String resourceName = "David";
         ResourceGroup instance = new ResourceGroup("wibble", TestResourceGroupParser.class);
-        Resource expResult = new Resource();
-        expResult.setName(resourceName);
+        Resource expResult = new Resource(resourceName);
         instance.addResource(expResult);
         Resource result = instance.getResource(resourceName);
         assertEquals(expResult, result);

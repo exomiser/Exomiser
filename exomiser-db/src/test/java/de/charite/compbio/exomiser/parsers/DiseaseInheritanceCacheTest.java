@@ -29,8 +29,7 @@ public class DiseaseInheritanceCacheTest {
     
     @BeforeClass
     public static void setUpClass() {
-        Resource testResource = new Resource();
-        testResource.setName("test_hpo_annotation_resource");
+        Resource testResource = new Resource("test_hpo_annotation_resource");
         testResource.setExtractedFileName("phenotype_annotation_test.tab");
         instance = new DiseaseInheritanceCache();
         instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));

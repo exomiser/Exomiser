@@ -8,11 +8,9 @@ package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.After;
@@ -56,13 +54,11 @@ public class MorbidMapParserTest {
         Path testResourceDir = Paths.get("src/test/resources/data");
         Path testOutDir = Paths.get("target/test-data");
         
-        Resource testResource = new Resource();
-        testResource.setName("OMIM_morbidmap");
+        Resource testResource = new Resource("OMIM_morbidmap");
         testResource.setExtractedFileName("morbidmap");
         testResource.setParsedFileName("testMorbidMap.txt");
         
-        Resource diseaseInheritanceResource = new Resource();
-        diseaseInheritanceResource.setName("HPO_phenotype_annotation_test");
+        Resource diseaseInheritanceResource = new Resource("HPO_phenotype_annotation_test");
         diseaseInheritanceResource.setExtractedFileName("phenotype_annotation_test.tab");
         
         DiseaseInheritanceCache cache = new DiseaseInheritanceCache();

@@ -7,11 +7,9 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.resources.Resource;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,8 +45,7 @@ public class HPOOntologyFileParserTest {
     @Test
     public void testParseHPO() {
         System.out.println("parseHPO");
-        Resource testResource = new Resource();
-        testResource.setName("HPO");
+        Resource testResource = new Resource("HPO");
         testResource.setExtractedFileName("hp.obo");
         testResource.setParsedFileName("hpoTestOut.pg");
         HPOOntologyFileParser instance = new HPOOntologyFileParser();

@@ -90,8 +90,7 @@ public class NSFP2SQLDumpParserTest {
         Path testResourceDir = Paths.get("src/test/resources/data");
         Path testOutDir = Paths.get("target/test-data");
         
-        Resource testResource = new Resource();
-        testResource.setName("dbNSFP2.3");
+        Resource testResource = new Resource("dbNSFP2.3");
         testResource.setExtractedFileName("dbNSFP2.3_test.zip");
         testResource.setParsedFileName("testVariant.pg");
         

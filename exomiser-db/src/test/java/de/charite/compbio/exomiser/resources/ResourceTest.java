@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.resources;
 
-import de.charite.compbio.exomiser.resources.Resource;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,8 +43,7 @@ public class ResourceTest {
      */
     @Test
     public void testGetStatus() {
-        Resource instance = new Resource();
-        instance.setName("test");
+        Resource instance = new Resource("test");
         String expResult = "Status for: test     Download: UNTRIED, Extract: UNTRIED, Parse: UNTRIED";
         String result = instance.getStatus();
         assertEquals(expResult, result);
