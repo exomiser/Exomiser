@@ -4,7 +4,7 @@
         <Console name="CONSOLE" target="SYSTEM_OUT">
             <PatternLayout pattern="%d %-5p %c{2} [%t] - %m%n"/>
         </Console>
-        <File name="FILE" fileName="logs/exomiser.log" append="true">
+        <File name="FILE" fileName="logs/exomiser.log" append="true" bufferedIO="true">
             <PatternLayout pattern="%d %-5p %c{2} [%t] - %m%n"/>
         </File>
 <!--         Async Appender should be configured after the appenders it references. 
