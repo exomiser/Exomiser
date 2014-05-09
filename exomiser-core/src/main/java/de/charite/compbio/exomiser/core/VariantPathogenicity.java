@@ -32,6 +32,7 @@ public class VariantPathogenicity {
     private final float muttasterScore;
     private final float caddRawRankScore;
     private final float caddRawScore;
+    
     /**
      * This class encapsulates the information in a single dbNSFP line. In some
      * cases, there are multiple lines for the same chromosomal position. We
@@ -52,6 +53,8 @@ public class VariantPathogenicity {
      * @param polyphen2_HVAR Polyphen2 score for the variant
      * @param muttasterScore Mutation Taster score for the variant
      * @param phyloP phyloP conservation score for the variant
+     * @param caddRawRankScore
+     * @param caddRawScore
      */
     public VariantPathogenicity(int chromosome, int position, char ref, char alt,
             char aaref, char aaalt, int aapos,
@@ -147,7 +150,7 @@ public class VariantPathogenicity {
     public String toDumpLine() {
         return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
                 chromosome, position, ref, alt, aaref, aaalt, aapos,
-                siftScore, polyphenScore, muttasterScore, phylopScore,caddRawRankScore, caddRawScore);
+                siftScore, polyphenScore, muttasterScore, phylopScore, caddRawRankScore, caddRawScore);
     }
 
     @Override
@@ -156,6 +159,7 @@ public class VariantPathogenicity {
                 ", position=" + position + ", ref=" + ref + ", alt=" + alt + 
                 ", aaref=" + aaref + ", aaalt=" + aaalt + ", aapos=" + aapos + 
                 ", sift=" + siftScore + ", polyphen=" + polyphenScore + 
-                ", muttaster=" + muttasterScore + ", phyloP=" + phylopScore + '}';
+                ", muttaster=" + muttasterScore + ", phyloP=" + phylopScore + 
+                ", caddRawRank=" + caddRawRankScore + ", caddRaw=" + caddRawScore + '}';
     }
 }
