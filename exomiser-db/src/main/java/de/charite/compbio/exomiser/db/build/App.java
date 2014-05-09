@@ -87,6 +87,7 @@ public class App {
         //dump Phenodigm data to flatfiles for import
         boolean dumpPhenoDigmData = appConfig.dumpPhenoDigmData();
         if (dumpPhenoDigmData) {
+            logger.info("Making Phenodigm data dump files...");
             PhenodigmDataDumper phenoDumper = context.getBean(PhenodigmDataDumper.class);
             phenoDumper.dumpPhenodigmData(dataPath);
         } else {
@@ -98,19 +99,20 @@ public class App {
         boolean migrateDatabases = appConfig.migrateDatabases();
         if (migrateDatabases) {
             logger.info("Migrating exomiser databases...");
-            // Create the Flyway instance
+            //define where the data import path is otherwise everyrhing will fail
+            Map<String, String> propertyPlaceHolders = new HashMap<>();
+            propertyPlaceHolders.put("import.path", dataPath.toString());
+            
+            // Do the PostgreSQL migration            
             logger.info("Migrating exomiser PostgreSQL database...");
             Flyway postgresqlFlyway = new Flyway();
-            // Point it to the database
             postgresqlFlyway.setDataSource(postGresDataSource);
             postgresqlFlyway.setSchemas("EXOMISER");
             postgresqlFlyway.setLocations("db/migration/common", "db/migration/postgres");
-            Map<String, String> propertyPlaceHolders = new HashMap<>();
-            propertyPlaceHolders.put("import.path", dataPath.toString());
             postgresqlFlyway.setPlaceholders(propertyPlaceHolders);
-            // Start the migration (will import files from the data dir)
             postgresqlFlyway.clean();
             postgresqlFlyway.migrate();
+            
             //Do the H2 migration 
             logger.info("Migrating exomiser H2 database...");
             Flyway h2Flyway = new Flyway();
