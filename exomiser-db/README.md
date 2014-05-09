@@ -26,48 +26,59 @@ are correctly configured. These files and other configurations are injected into
 the application by the classes in the exomiser.config package:
 
 * de.charite.compbio.exomiser.config.AppConfig
-    Injects the data from the app.properties 
+    
+Injects the data from the app.properties 
 
 * de.charite.compbio.exomiser.config.DataSourceConfig
-    Injects the DataSources for the database connections
+    
+Injects the DataSources for the database connections
 
 * de.charite.compbio.exomiser.config.ResourceConfig
-    Injects the Resources - these specify where the data should be downloaded 
+    
+Injects the Resources - these specify where the data should be downloaded 
 from, how it should be handled in order that the parser can parse it, what parser 
 is needed to parse it, which other files should be parsed with it and what the 
 output file should be called.
-    Commenting out a resource means it won't be processed. If the resource was part 
+
+Commenting out a resource means it won't be processed. If the resource was part 
 of a parserGroup then that entire group will not be handled and ultimately the 
 database build will halt at the migration of the resource or group's parsedFileName.
     
 In general you shouldn't need to touch anything but, in case you do the resources
 are detailed below and check the log output:
 
-src/main/resources
+# src/main/resources
+
 * app.properties
-    This will provide the application with the location of where you want it to
+
+This will provide the application with the location of where you want it to
 run, download, unpack and process the resources. The resources are described in
 the exomiser.config.ResourceConfig class.  
     
 * jdbc.properties
-    Contains the database connection settings for jdbc used by Flyway when called
+    
+Contains the database connection settings for jdbc used by Flyway when called
 from App.main.
 
-src/main/resources/data
-    This is where some static data required by some parsers but which requires 
+# src/main/resources/data
+
+This is where some static data required by some parsers but which requires 
 manual processing to produce is stored. The resources are referred to in the 
 exomiser.config.ResourceConfig class but are moved into the process directory by 
 spring.
 
 * pheno2gene.txt
-    This requires extensive messing about with a one-off dump-file from OMIM, a 
+
+This requires extensive messing about with a one-off dump-file from OMIM, a 
 perl parser, data from Entrez Gene and some java parsing. Given this was a one-off
 it seemed best to just include the final processed file which can be updated 
 whenever appropriate. 
 
 * ucsc_hg19.ser.gz
-    Requires the following UCSC known genes files - these are defined and 
-    downloaded as resources:
+
+Requires the following UCSC known genes files - these are defined and downloaded as resources
+so they will be found, ready to use in data/extracted:
+
         http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/knownGene.txt.gz
         http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/kgXref.txt.gz
         http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/knownGeneMrna.txt.gz
@@ -75,21 +86,22 @@ whenever appropriate.
 
 then convert to ucsc.ser with jannovar:
 
-ant annotator
+    ant annotator
 
-java -Xmx2G -jar Annotator.jar -U knownGene.txt -M knownGeneMrna.txt -X kgXref.txt -L knownToLocusLink.txt -S ucsc.ser
+    java -Xmx2G -jar Annotator.jar -U knownGene.txt -M knownGeneMrna.txt -X kgXref.txt -L knownToLocusLink.txt -S ucsc.ser
 or...
-java -Xms1G -Xmx2G -jar Jannovar.jar --create-ucsc
+    java -Xms1G -Xmx2G -jar Jannovar.jar --create-ucsc
 
 
-src/main/resources/db/migration
-    Contains the database schema and the import sql files for the H2 database. The
+# src/main/resources/db/migration
+
+Contains the database schema and the import sql files for the H2 database. The
 PostgreSQL migrations are run by Flyway as java migrations. Consequently they are
 found in src/main/java/db/migration/postgres.
 
 
-Adding a Resource
-=================
+# Adding a Resource
+
 * Add a new Bean to de.charite.compbio.exomiser.config.ResourceConfig and ensure 
 this is loaded in the ResourceConfig.resources() method.
 
