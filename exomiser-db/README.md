@@ -8,12 +8,11 @@ It can build both a local H2 (http://h2database.com/html/main.html) and PostgreS
 The application requires configuration in a couple of places depending on how it
 is to be used.
 
-It functions by reading the external-resources.yml file and then will attempt to
-download, extract, parse and then import the parsed files into a freshly created
+It functions by loading in the Resources from ResourceConfig and then will attempt to
+download, extract, parse and then import the parsed resources into a freshly created
 database schema called EXOMISER. 
 
-
-Flyway (http://flywaydb.org/) maven migrations for importing date into the database
+Flyway (http://flywaydb.org/) maven migrations for importing data into the database
 can be performed from an IDE or the command-line using the appropriate maven
 profile, for example:
 
@@ -57,8 +56,8 @@ from App.main.
 src/main/resources/data
     This is where some static data required by some parsers but which requires 
 manual processing to produce is stored. The resources are referred to in the 
-exomiser.config.ResourceConfig class but are moved into the process directory by
- spring.
+exomiser.config.ResourceConfig class but are moved into the process directory by 
+spring.
 
 * pheno2gene.txt
     This requires extensive messing about with a one-off dump-file from OMIM, a 
@@ -87,3 +86,15 @@ src/main/resources/db/migration
     Contains the database schema and the import sql files for the H2 database. The
 PostgreSQL migrations are run by Flyway as java migrations. Consequently they are
 found in src/main/java/db/migration/postgres.
+
+
+Adding a Resource
+=================
+* Add a new Bean to de.charite.compbio.exomiser.config.ResourceConfig and ensure 
+this is loaded in the ResourceConfig.resources() method.
+
+* Add a new Parser and or ParserGroup if there are several parsers which need to 
+exchange data.
+
+* Add a new migration for the data which needs loading. These need to be 
+duplicated - one for the H2 database, the other for PostgreSQL.
