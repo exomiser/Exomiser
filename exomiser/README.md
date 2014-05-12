@@ -9,11 +9,11 @@ Unpack the exomiser-2.0.0.tar.gz or exomiser-2.0.0.zip and it's ready to go.
 
 If you want to run Exomiser from outside this install directory then replace the following line in jdbc.properties:
 
-    exomiser.url=jdbc:h2:data/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;
+    exomiser.url=jdbc:h2:file:data/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;
 
 with
 
-    exomiser.url=jdbc:h2:file:/my/full/path/to/my/exomiser/install/data/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;
+    exomiser.url=jdbc:h2:file:/my/full/path/to/my/exomiser/install/data/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;
 
 (optional) If you want to run from a Postgres database rather than the default H2 embedded database
   (a) download exomiser_dump.pg.gz
