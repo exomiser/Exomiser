@@ -8,7 +8,7 @@ import java.util.HashMap;
 import jannovar.exome.Variant;
 
 import de.charite.compbio.exomiser.common.FilterType;
-import de.charite.compbio.exomiser.filter.ITriage;
+import de.charite.compbio.exomiser.filter.Triage;
 
 /**
  * This class is a wrapper for the {@code Variant} class from the 
@@ -23,20 +23,20 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
      * An instance of this class encapsulates an object of the class
      * {@link jannovar.exome.Variant Variant} from the Jannovar library, and
      * basically combines this Variant with a list of variant evaluation objects
-     * ({@link exomizer.filter.ITriage ITriage}).
+     * ({@link exomizer.filter.ITriage Triage}).
      */
     private Variant var = null;
 
     /** A map of the results of filtering and prioritization. The key to the map is an 
 	integer constant as defined in {@link exomizer.common.FilterType FilterType}. */
-    private Map<FilterType,ITriage> triageMap=null;
+    private Map<FilterType,Triage> triageMap=null;
 
     private List<String> mutationRefList=null;
 
 
     public VariantEvaluation(Variant v) {
 	this.var = v;
-	this.triageMap = new HashMap<FilterType,ITriage>();
+	this.triageMap = new HashMap<FilterType,Triage>();
     }
 
     /**
@@ -208,13 +208,13 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
     
 
     /**
-     * This method is used to add an {@link exomizer.filter.ITriage ITriage} object to
+     * This method is used to add an {@link exomizer.filter.ITriage Triage} object to
      * this variant. Such objects represent the results of evaluation of this variant
      * and may be used for filtering or prioritization. The Integer is a constant from 
      * {@link exomizer.common.FilterType FilterType} that identifies the type of 
-     * {@link exomizer.filter.ITriage ITriage} object being added (e.g., pathogenicity,
+     * {@link exomizer.filter.ITriage Triage} object being added (e.g., pathogenicity,
      * frequency, etc). */
-    public void addFilterTriage(ITriage t, FilterType type){ 
+    public void addFilterTriage(Triage t, FilterType type){ 
 	this.triageMap.put(type,t); 
     }
 
@@ -248,7 +248,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
      * This method calculates a filter
      * score (prediction of the pathogenicity
      * and relevance of the Variant) by using data from
-     * the {@link exomizer.filter.ITriage ITriage} objects
+     * the {@link exomizer.filter.ITriage Triage} objects
      * associated with this Variant.
      * <P>
      * Note that we use results of filtering to remove Variants
@@ -260,7 +260,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
     public float getFilterScore() {
 	float score = 1f;
 	for (FilterType i : this.triageMap.keySet()) {
-	    ITriage itria = this.triageMap.get(i);
+	    Triage itria = this.triageMap.get(i);
 	    float x = itria.filterResult();
 	    score *= x;
 	}
@@ -268,9 +268,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
     }
 
      /** 
-     * @return the map of "ITriage objects that represent the result of filtering 
+     * @return the map of "Triage objects that represent the result of filtering 
      */
-    public Map<FilterType,ITriage> getTriageMap() { return this.triageMap; }
+    public Map<FilterType,Triage> getTriageMap() { return this.triageMap; }
 
     /**
      * @return the number of individuals with a genotype at this variant.

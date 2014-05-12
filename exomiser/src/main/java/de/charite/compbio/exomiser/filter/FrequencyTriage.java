@@ -21,7 +21,7 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @author Peter N Robinson
  * @version 0.05 (9 January,2013).
  */
-public class FrequencyTriage implements ITriage {
+public class FrequencyTriage implements Triage {
     /** Thousand Genomes allele count (all samples).*/
     private int dbSNPid;
     /** dbSNP GMAF (often from thousand genomes project).*/

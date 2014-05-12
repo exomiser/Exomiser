@@ -9,7 +9,7 @@ import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.BedFilter;
 import de.charite.compbio.exomiser.filter.FrequencyFilter;
-import de.charite.compbio.exomiser.filter.IFilter;
+import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.filter.IntervalFilter;
 import de.charite.compbio.exomiser.filter.PathogenicityFilter;
 import de.charite.compbio.exomiser.filter.QualityFilter;
@@ -103,11 +103,11 @@ public class Prioritiser {
     /** Database handle to the postgreSQL database used by this application. */
     private Connection connection = null;
     /**
-     * List of filters (see {@link exomizer.filter.IFilter IFilter}).
+     * List of filters (see {@link exomizer.filter.IFilter Filter}).
      */
-    private List<IFilter> filterList = null;
-    /** List of gene-prioritizers (see {@link exomizer.priority.IPriority IPriority}). */
-    private List<IPriority> priorityList = null;
+    private List<Filter> filterList = null;
+    /** *  List of gene-prioritizers (see {@link exomizer.priority.IPriority Priority}). */
+    private List<Priority> priorityList = null;
     /**
      * One of AD, AR, or XR (X chromosomal recessive). If uninitialized, this
      * prioritizer has no effect).
@@ -121,8 +121,8 @@ public class Prioritiser {
     
     public Prioritiser(Connection conn) {
 	this.connection = conn;
-	this.filterList = new ArrayList<IFilter>();
-	this.priorityList = new ArrayList<IPriority>();
+	this.filterList = new ArrayList<Filter>();
+	this.priorityList = new ArrayList<Priority>();
     }
 
 
@@ -177,7 +177,7 @@ public class Prioritiser {
 	}
 	/** Now create a list of Genes so we can sort them. */
 	this.geneList = new ArrayList<Gene>(gene_map.values());
-	for (IPriority priority : this.priorityList) {
+	for (Priority priority : this.priorityList) {
             logger.info("STARTING prioritiser: {}", priority.getPriorityName());
             priority.prioritize_list_of_genes(this.geneList);
 	}
@@ -197,7 +197,7 @@ public class Prioritiser {
      * @see exomizer.filter.IFilter
      */
     private void filterVariants(List<VariantEvaluation> variantList) {
-	for (IFilter f : this.filterList) {
+	for (Filter f : this.filterList) {
             logger.info("STARTING filter: {}", f.getFilterName());
 	    f.filter_list_of_variants(variantList);
 	}
@@ -321,13 +321,13 @@ public class Prioritiser {
 
 
 
-    public List<IFilter> getFilterList() { return this.filterList; }
+    public List<Filter> getFilterList() { return this.filterList; }
     
-    public List<IPriority> getPriorityList() { return this.priorityList; }
+    public List<Priority> getPriorityList() { return this.priorityList; }
 
 
     public void addOMIMPrioritizer() throws ExomizerInitializationException {
-	IPriority ip = new OMIMPriority();
+	Priority ip = new OMIMPriority();
 	this.priorityList.add(ip);
 	ip.setDatabaseConnection(this.connection);
     }
@@ -335,7 +335,7 @@ public class Prioritiser {
     public void addInheritancePrioritiser(String inheritance_filter_type) 
 	throws ExomizerInitializationException 
     {
-	IPriority inhp = new InheritancePriority();
+	Priority inhp = new InheritancePriority();
 	if (inheritance_filter_type != null) {
 	    inhp.setParameters(inheritance_filter_type);
 	    this.priorityList.add(inhp);
@@ -352,14 +352,14 @@ public class Prioritiser {
 	    hpoIDset.add(s.trim());
 	}
 	boolean symmetric = false;
-	IPriority ip = new PhenomizerPriority(phenomizerDataDirectory, hpoIDset, symmetric);
+	Priority ip = new PhenomizerPriority(phenomizerDataDirectory, hpoIDset, symmetric);
 	this.priorityList.add(ip);
     }
 
     public void addMGIPhenodigmPrioritiser(String disease) 
 	throws ExomizerInitializationException
     {
-	IPriority ip = new MGIPhenodigmPriority(disease);
+	Priority ip = new MGIPhenodigmPriority(disease);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -367,7 +367,7 @@ public class Prioritiser {
     public void addBOQAPrioritiser(String hpoOntologyFile, String hpoAnnotationFile,  String hpoTermList)
 	throws ExomizerInitializationException
     {
-	IPriority ip = new BoqaPriority(hpoOntologyFile, hpoAnnotationFile, hpoTermList);
+	Priority ip = new BoqaPriority(hpoOntologyFile, hpoAnnotationFile, hpoTermList);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -375,7 +375,7 @@ public class Prioritiser {
     public void addDynamicPhenodigmPrioritiser(String hpoTermList)
 	throws ExomizerInitializationException
     {
-	IPriority ip = new DynamicPhenodigmPriority(hpoTermList);
+	Priority ip = new DynamicPhenodigmPriority(hpoTermList);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -383,7 +383,7 @@ public class Prioritiser {
     public void addZFINPrioritiser(String disease)
 	throws ExomizerInitializationException
     {
-	IPriority ip = new ZFINPhenodigmPriority(disease);
+	Priority ip = new ZFINPhenodigmPriority(disease);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -391,7 +391,7 @@ public class Prioritiser {
     public void addExomeWalkerPrioritiser(String rwFilePath, String rwIndexPath, String entrezSeedGenes) 
 	throws ExomizerInitializationException
     {
-	IPriority ip = new GenewandererPriority(rwFilePath, rwIndexPath);
+	Priority ip = new GenewandererPriority(rwFilePath, rwIndexPath);
         ip.setParameters(entrezSeedGenes);
 	this.priorityList.add(ip);
     }
@@ -399,7 +399,7 @@ public class Prioritiser {
 //    public void addPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String disease, String candGene) 
 //	throws ExomizerInitializationException
 //    {
-//	IPriority ip = new PhenoWandererPriority(rwFilePath, rwIndexPath, disease, candGene);
+//	Priority ip = new PhenoWandererPriority(rwFilePath, rwIndexPath, disease, candGene);
 //        ip.setDatabaseConnection(this.connection);
 //	this.priorityList.add(ip);
 //    }
@@ -407,7 +407,7 @@ public class Prioritiser {
     public void addDynamicPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String hpoids, String candGene, String disease, DataMatrix rwMatrix) 
 	throws ExomizerInitializationException
     {
-        IPriority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene, disease, rwMatrix);
+        Priority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene, disease, rwMatrix);
         ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -417,14 +417,14 @@ public class Prioritiser {
     public void addTargetFilter() 
 	throws ExomizerInitializationException
     {
-	IFilter f = new TargetFilter();
+	Filter f = new TargetFilter();
 	this.filterList.add(f);
     }
 
 
      public void addBedFilter(Set<String> commalist)	throws ExomizerInitializationException
     {
-	IFilter f = new BedFilter(commalist);
+	Filter f = new BedFilter(commalist);
 	this.filterList.add(f);
     }
 
@@ -437,7 +437,7 @@ public class Prioritiser {
     public void addFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) 
      	throws ExomizerInitializationException
     {
-	IFilter f=null;
+	Filter f=null;
 	if (filterOutAllDbsnp) {
 	    f = new FrequencyFilter();
 	    f.setDatabaseConnection(this.connection);
@@ -462,7 +462,7 @@ public class Prioritiser {
      public void addQualityFilter(String quality_threshold)
 	 throws ExomizerInitializationException
     {
-	IFilter f=null;
+	Filter f=null;
 	if (quality_threshold != null) {
 	    f = new QualityFilter();
 	    f.set_parameters(quality_threshold);
@@ -486,15 +486,15 @@ public class Prioritiser {
     	throws ExomizerInitializationException
     {
 	if (interval != null) {
-	   IFilter f = new IntervalFilter();
+	   Filter f = new IntervalFilter();
 	   f.set_parameters(interval);
 	   this.filterList.add(f);
 	}
     }
     
-    public void setPrioritizer(IPriority ip) {
+    public void setPrioritizer(Priority ip) {
 	if (this.priorityList == null) {
-	    this.priorityList = new ArrayList<IPriority>();
+	    this.priorityList = new ArrayList<Priority>();
 	}
 	this.priorityList.add(ip);
     }

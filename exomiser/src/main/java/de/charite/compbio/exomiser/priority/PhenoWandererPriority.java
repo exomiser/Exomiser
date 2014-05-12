@@ -32,7 +32,7 @@ import java.util.*;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class PhenoWandererPriority implements IPriority {
+public class PhenoWandererPriority implements Priority {
 
     private Connection connection = null;
     /**

@@ -24,7 +24,7 @@ import de.charite.compbio.exomiser.priority.util.DataMatrix;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class GenewandererPriority implements IPriority {
+public class GenewandererPriority implements Priority {
 
 	/** A list of error-messages */
 	private List<String> error_record = null;

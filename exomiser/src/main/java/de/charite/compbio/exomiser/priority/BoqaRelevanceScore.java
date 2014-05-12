@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.priority;
  * @author Peter N Robinson
  * @version 0.03 (9 September,2013).
  */
-public class BoqaRelevanceScore  implements IRelevanceScore {
+public class BoqaRelevanceScore  implements RelevanceScore {
 
     
     /** Name of the disease that was associated with the best score for this gene. */

@@ -27,7 +27,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @author Peter N Robinson
  * @version 0.09 (April 28, 2013)
  */
-public class FrequencyFilter implements IFilter {
+public class FrequencyFilter implements Filter {
     /** Threshold for filtering. Retain only those variants whose frequency (expressed as
      * a percentage) is below this threshold. The default value is 100%, i.e., no filtering
      * out.

@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.priority;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class GenewandererRelevanceScore implements IRelevanceScore {
+public class GenewandererRelevanceScore implements RelevanceScore {
     /**
      * The Random walk similarity score.
      */

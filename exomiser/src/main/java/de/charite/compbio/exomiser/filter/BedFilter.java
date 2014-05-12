@@ -14,7 +14,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
 
 
 
-public class BedFilter implements IFilter {
+public class BedFilter implements Filter {
      /** Number of variants analyzed by filter */
     private int n_before;
     /** Number of variants passing filter */

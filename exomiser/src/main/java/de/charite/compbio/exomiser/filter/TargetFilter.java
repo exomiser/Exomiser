@@ -27,7 +27,7 @@ import java.sql.Connection;
  * @author Peter N Robinson
  * @version 0.16 (20 December, 2013)
  */
-public class TargetFilter implements IFilter {
+public class TargetFilter implements Filter {
      /** Number of variants analyzed by filter */
     private int n_before;
     /** Number of variants passing filter */

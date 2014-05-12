@@ -5,7 +5,7 @@ import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.IFilter;
+import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.filter.TargetFilter;
 import de.charite.compbio.exomiser.io.ExomiserDatabase;
 import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
@@ -13,7 +13,7 @@ import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.io.html.HTMLWriterBOQA;
 import de.charite.compbio.exomiser.io.html.HTMLWriterCRE;
 import de.charite.compbio.exomiser.io.html.HTMLWriterWalker;
-import de.charite.compbio.exomiser.priority.IPriority;
+import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.Prioritiser;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.reference.Network;
@@ -191,14 +191,14 @@ public class Exomizer {
     public boolean useVCFFile() {
         return this.useVCF;
     }
-    // The following are to be used for initializing the IFilter classes
+    // The following are to be used for initializing the Filter classes
     /**
      * Frequency threshold for variants. Only variants that are either not
-     * recorded in the thousand genomes/ESP data or that are rarer than this
-     * threshold will be retained. Note that the threshold is expected to be a
-     * value such as 0.01, but it is stored here as a String because the
-     * IFilter-derived classes have a standard function for initialization that
-     * will use this value.
+ recorded in the thousand genomes/ESP data or that are rarer than this
+ threshold will be retained. Note that the threshold is expected to be a
+ value such as 0.01, but it is stored here as a String because the
+ Filter-derived classes have a standard function for initialization that
+ will use this value.
      */
     private String frequency_threshold = null;
     /**
@@ -786,16 +786,16 @@ public class Exomizer {
 
     /**
      * This method can be used to add a {@link exomizer.priority.IPriority
-     * IPriority} object that has been constructed elsewhere. This is
+     * Priority} object that has been constructed elsewhere. This is
      * particularly useful for the ExomeWalker code base if it is started from
      * an apache tomcat Server, because we can construct the GeneWanderer object
      * once (it has ca. 1.5 Gb data) and keep it in memory as long as the
      * ExomeWalker servlet is in memory
      *
-     * @param ip the {@link exomizer.priority.IPriority IPriority} that will be
+     * @param ip the {@link exomizer.priority.IPriority Priority} that will be
      * added to the list of prioriitizers.
      */
-    public void setPrioritizer(IPriority ip) throws ExomizerInitializationException {
+    public void setPrioritizer(Priority ip) throws ExomizerInitializationException {
         if (ip == null) {
             String s = "Attempt to initialize Exomiser with NULL IPriority object";
             throw new ExomizerInitializationException(s);
@@ -879,14 +879,14 @@ public class Exomizer {
     /**
      * @return A list of all filters.
      */
-    public List<IFilter> getFilterList() {
+    public List<Filter> getFilterList() {
         return this.prioritiser.getFilterList();
     }
 
     /**
      * @return A list of all prioritisers.
      */
-    public List<IPriority> getPrioritisationList() {
+    public List<Priority> getPrioritisationList() {
         return this.prioritiser.getPriorityList();
     }
 
@@ -1051,7 +1051,7 @@ public class Exomizer {
      */
     public VariantTypeCounter getVariantTypeCounter() {
         VariantTypeCounter vtc = null;
-        for (IFilter f : this.prioritiser.getFilterList()) {
+        for (Filter f : this.prioritiser.getFilterList()) {
             if (f.getFilterTypeConstant() == FilterType.EXOME_TARGET_FILTER) {
                 TargetFilter tf = (TargetFilter) f;
                 vtc = tf.getVariantTypeCounter();

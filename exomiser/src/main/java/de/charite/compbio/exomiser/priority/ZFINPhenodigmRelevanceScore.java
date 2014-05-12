@@ -19,7 +19,7 @@ import jannovar.common.Constants;
  * @author Damian Smedley
  * @version 0.05 (April 2,2013).
  */
-public class ZFINPhenodigmRelevanceScore implements IRelevanceScore {
+public class ZFINPhenodigmRelevanceScore implements RelevanceScore {
     /** The phenodigm score as calculated by OWLsim. This score indicates the 
      * similarity between a humam disease and the phenotype of a genetically
      * modified fish model.*/

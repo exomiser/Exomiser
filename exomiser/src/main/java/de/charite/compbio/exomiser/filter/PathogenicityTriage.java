@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * @version 0.17 (3 February, 2014)
  
  */
-public class PathogenicityTriage implements ITriage  {
+public class PathogenicityTriage implements Triage  {
     
     private static final Logger logger = LoggerFactory.getLogger(PathogenicityTriage.class);
     

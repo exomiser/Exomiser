@@ -8,7 +8,7 @@ import jannovar.common.Constants;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class DynamicPhenoWandererRelevanceScore implements IRelevanceScore,Constants  {
+public class DynamicPhenoWandererRelevanceScore implements RelevanceScore  {
     /**
      * The Random walk similarity score.
      */

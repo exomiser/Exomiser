@@ -1,14 +1,12 @@
 package de.charite.compbio.exomiser.priority;
 
 
-
-import jannovar.common.Constants;
 /**
  * 
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class PhenoWandererRelevanceScore implements IRelevanceScore,Constants  {
+public class PhenoWandererRelevanceScore implements RelevanceScore {
     /**
      * The Random walk similarity score.
      */

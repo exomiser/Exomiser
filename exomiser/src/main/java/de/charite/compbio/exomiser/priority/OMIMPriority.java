@@ -35,7 +35,7 @@ import de.charite.compbio.exomiser.exception.ExomizerSQLException;
  * @author Peter N Robinson
  * @version 0.16 (28 January,2014)
  */
-public class OMIMPriority implements IPriority {
+public class OMIMPriority implements Priority {
 
      /** Database handle to the postgreSQL database used by this application. */
     private Connection connection=null;

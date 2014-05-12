@@ -10,8 +10,8 @@ import jannovar.pedigree.Pedigree;
 import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.ITriage;
-import de.charite.compbio.exomiser.priority.IRelevanceScore;
+import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.priority.RelevanceScore;
 
 
 /**
@@ -77,8 +77,8 @@ public class HTMLTableCRE extends HTMLTable {
      * gene on the ExomeWalker HTML page
      */
     private String getOmimText(Gene gene) {
-	Map<FilterType,IRelevanceScore> relevanceMap = gene.getRelevanceMap();
-	IRelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	Map<FilterType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
 	List<String> lst = mim.getFilterResultList();
 	if (mim == null) {
 	    return "No known human Mendelian disease";
@@ -107,10 +107,10 @@ public class HTMLTableCRE extends HTMLTable {
     protected void writeVariant(VariantEvaluation var,  Writer out) throws IOException {
 	String ucsc = getUCSCBrowswerURL(var);
 
-	// Each variant now has exactly the same number of ITriage objects with the results of filtering.
-	Map<FilterType,ITriage> triageMap = var.getTriageMap();
-	ITriage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	ITriage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	// Each variant now has exactly the same number of Triage objects with the results of filtering.
+	Map<FilterType,Triage> triageMap = var.getTriageMap();
+	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	out.write("<td>");  
 	/* Output the variant (chromosomal notation) */
 	String rep = getCRERepresentativeVariant(var);
@@ -127,7 +127,7 @@ public class HTMLTableCRE extends HTMLTable {
 	}
 	/* Output the UCSC URL */
 	out.write( ucsc + "<br/>\n" );
-	ITriage qual = var.getTriageMap().get(FilterType.QUALITY_FILTER);
+	Triage qual = var.getTriageMap().get(FilterType.QUALITY_FILTER);
 	if (qual!=null) {
 	    List<String> lst = qual.getFilterResultList();
 	    out.write("Phred variant quality: " + lst.get(0) + "<br/>\n");
@@ -167,7 +167,7 @@ public class HTMLTableCRE extends HTMLTable {
      * @param freq An object containing the frequency evaluation
      * @param out A file handle to the HTML file being written
      */
-    protected void writeVariantCREScoreCell(ITriage path,ITriage freq, VariantEvaluation var, Writer out) throws IOException
+    protected void writeVariantCREScoreCell(Triage path,Triage freq, VariantEvaluation var, Writer out) throws IOException
     {
 	out.write("<td>");
 	out.write("<i>Pathogenicity:</i><br/>\n");
@@ -235,17 +235,17 @@ public class HTMLTableCRE extends HTMLTable {
 	out.write(String.format("<tr>\n"));
 	writeVariant(ve,out);
 	
-	// Each variant now has exactly the same number of ITriage objects with the results of filtering.
-	//HashMap<FilterType,ITriage> triageMap = ve.getTriageMap();
+	// Each variant now has exactly the same number of Triage objects with the results of filtering.
+	//HashMap<FilterType,Triage> triageMap = ve.getTriageMap();
 	
 	//ITriage freq = triageMap.get(exomizer.common.FilterType.FREQUENCY_FILTER);
 	//ITriage path = triageMap.get(exomizer.common.FilterType.PATHOGENICITY_FILTER);
 	//writeVariantScoreCell(path,freq,out);
 	
 
-	Map<FilterType,IRelevanceScore> relevanceMap = gen.getRelevanceMap();
-	IRelevanceScore phenomizer = relevanceMap.get(FilterType.PHENOMIZER_FILTER);
-	IRelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
+	RelevanceScore phenomizer = relevanceMap.get(FilterType.PHENOMIZER_FILTER);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\" valign=\"top\">",n_variants)); 
 	if (phenomizer == null && mim == null) {

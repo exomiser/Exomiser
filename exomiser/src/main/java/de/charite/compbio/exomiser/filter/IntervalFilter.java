@@ -25,7 +25,7 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @author Peter N Robinson
  * @version 0.08 (April 28, 2013)
  */
-public class IntervalFilter implements IFilter {
+public class IntervalFilter implements Filter {
     /** The chromosome of the linkage interval */
     int chromosome;
     /** The 5' position of the linkage interval on the chromosome */

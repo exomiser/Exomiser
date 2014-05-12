@@ -4,14 +4,14 @@ import java.util.List;
 
 /**
  * This interface is implemented by classes that perform filtering of
- * the variants in the VCF file according to various criteria. An ITriage object
- * gets attached to each Variant object. The function passesFIlter can be used to 
- * find out the results of the filter and the variant can be deleted it it did not
- * pass the filter.
+ * the variants in the VCF file according to various criteria. An Triage object
+ gets attached to each Variant object. The function passesFIlter can be used to 
+ find out the results of the filter and the variant can be deleted it it did not
+ pass the filter.
  * @author Peter N Robinson
  * @version 0.02 (16 April, 2012)
  */
-public interface ITriage {
+public interface Triage {
     /** @return true if the variant being analyzed passes the filter (e.g., is rare, pathogenic, or has high quality reads) */
     public boolean passesFilter();
     /** @return return a float representation of the filter result [0..1]. 

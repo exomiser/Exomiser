@@ -17,7 +17,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @author Peter N Robinson
  * @version 0.11 (December 29, 2013)
  */
-public class QualityFilter implements IFilter {
+public class QualityFilter implements Filter {
     /** Threshold for filtering. Retain only those variants whose PHRED
 	variant call quality is at least as good. The default is 1. */
     private float quality_threshold = 1.0f;

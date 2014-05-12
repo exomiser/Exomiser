@@ -13,7 +13,7 @@ import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.priority.IRelevanceScore;
+import de.charite.compbio.exomiser.priority.RelevanceScore;
 import de.charite.compbio.exomiser.common.FilterType;
 
 /**
@@ -29,7 +29,7 @@ import de.charite.compbio.exomiser.common.FilterType;
  * list of Variant objects, one for each variant observed in the exome. Additionally,
  * the Gene objects get prioritized for their biomedical relevance to the disease
  * in question, and each such prioritization results in an 
- * {@link exomizer.priority.IRelevanceScore IRelevanceScore} object.
+ * {@link exomizer.priority.IRelevanceScore RelevanceScore} object.
  * <P>
  * There are additionally some prioritization procedures that only can be
  * performed on genes (and not on the individual variants). For instance, there
@@ -62,7 +62,7 @@ public class Gene implements Comparable<Gene>  {
 
     /** A map of the results of prioritization. The key to the map is 
 	from {@link exomizer.common.FilterType FilterType}. */
-    private Map<FilterType,IRelevanceScore> relevanceMap=null;
+    private Map<FilterType,RelevanceScore> relevanceMap=null;
 
     /**
      * A Reference to the {@link jannovar.pedigree.Pedigree Pedigree}
@@ -146,7 +146,7 @@ public class Gene implements Comparable<Gene>  {
     public Gene(VariantEvaluation var) {
 	variant_list = new ArrayList<VariantEvaluation>();
 	variant_list.add(var);
-	this.relevanceMap = new HashMap<FilterType,IRelevanceScore>();
+	this.relevanceMap = new HashMap<FilterType,RelevanceScore>();
     }
     
     /**
@@ -162,7 +162,7 @@ public class Gene implements Comparable<Gene>  {
      * @param rel Result of a prioritization algorithm
      * @param type an integer constant from {@link exomizer.common.FilterType FilterType} representing the filter type
      */
-    public void addRelevanceScore(IRelevanceScore rel, FilterType type) {
+    public void addRelevanceScore(RelevanceScore rel, FilterType type) {
 	this.relevanceMap.put(type,rel);
     }
 
@@ -171,7 +171,7 @@ public class Gene implements Comparable<Gene>  {
      * @return The IRelevance object corresponding to the filter type.
      */
     public float getRelevanceScore(FilterType type) {
-	IRelevanceScore ir = this.relevanceMap.get(type);
+	RelevanceScore ir = this.relevanceMap.get(type);
 	if (ir == null) {
 	    return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
 	}
@@ -179,7 +179,7 @@ public class Gene implements Comparable<Gene>  {
     }
 
     public void resetRelevanceScore(FilterType type, float newval) {
-	IRelevanceScore rel = this.relevanceMap.get(type);
+	RelevanceScore rel = this.relevanceMap.get(type);
 	if (rel == null) {
 	    return;/* This should never happen. */
 	}
@@ -204,10 +204,10 @@ public class Gene implements Comparable<Gene>  {
     }
 
     /** 
-     * @return the map of {@link exomizer.priority.IRelevanceScore  IRelevanceScore} 
+     * @return the map of {@link exomizer.priority.IRelevanceScore  RelevanceScore} 
      * objects that represent the result of filtering 
      */
-    public Map<FilterType,IRelevanceScore> getRelevanceMap() { return this.relevanceMap; }
+    public Map<FilterType,RelevanceScore> getRelevanceMap() { return this.relevanceMap; }
     
     /**
      * Note that currently, the gene symbols are associated with the Variants. Probably it would
@@ -285,7 +285,7 @@ public class Gene implements Comparable<Gene>  {
      public void calculatePriorityScore() {
 	 this.priorityScore  = 1f;
 	 for (FilterType i : this.relevanceMap.keySet()) {
-	    IRelevanceScore r = this.relevanceMap.get(i);
+	    RelevanceScore r = this.relevanceMap.get(i);
 	    float x = r.getRelevanceScore();
 	    priorityScore *= x;
 	 }

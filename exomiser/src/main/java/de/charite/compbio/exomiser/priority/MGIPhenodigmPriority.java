@@ -32,7 +32,7 @@ import de.charite.compbio.exomiser.exception.ExomizerException;
  * @author Damian Smedley
  * @version 0.06 (22 April, 2013)
  */
-public class MGIPhenodigmPriority implements IPriority {
+public class MGIPhenodigmPriority implements Priority {
     /** Threshold for filtering. Retain only those variants whose score is below this threshold. */
     private float score_threshold = 2.0f;
     private String disease = null;

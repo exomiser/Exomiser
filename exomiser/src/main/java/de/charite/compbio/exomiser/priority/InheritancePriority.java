@@ -28,7 +28,7 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @author Peter N Robinson
  * @version 0.13 (13 May, 2013)
  */
-public class InheritancePriority implements IPriority {
+public class InheritancePriority implements Priority {
     /** Number of variants before filtering */
     private int n_before;
     /** Number of variants after filtering */

@@ -18,7 +18,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @version 0.07 (April 28, 2013).
  * @see  exomizer.priority.IPriority
  */
-public interface IFilter {
+public interface Filter {
     
     /** Set some user supplied parameter for the filter to be used. */
     public void set_parameters(String par) throws ExomizerInitializationException;

@@ -42,7 +42,7 @@ import de.charite.compbio.exomiser.priority.util.ScoreDistributionContainer;
  * @author Sebastian Koehler
  * @version 0.06 (6 December, 2013)
  */
-public class PhenomizerPriority implements IPriority {
+public class PhenomizerPriority implements Priority {
 
     /** The HPO as Ontologizer-Ontology object */
     private Ontology hpo;

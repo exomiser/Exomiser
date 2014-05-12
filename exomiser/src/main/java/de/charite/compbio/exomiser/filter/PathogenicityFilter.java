@@ -35,7 +35,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @author Peter N Robinson
  * @version 0.09 (29 December, 2012).
  */
-public class PathogenicityFilter implements IFilter {
+public class PathogenicityFilter implements Filter {
   
     /** Database handle to the postgreSQL database used by this application. */
     private Connection connection=null;

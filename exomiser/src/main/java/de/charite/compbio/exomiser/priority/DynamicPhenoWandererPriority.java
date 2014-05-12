@@ -31,7 +31,7 @@ import java.util.*;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class DynamicPhenoWandererPriority implements IPriority, Constants {
+public class DynamicPhenoWandererPriority implements Priority {
 
     private Connection connection = null;
     /**

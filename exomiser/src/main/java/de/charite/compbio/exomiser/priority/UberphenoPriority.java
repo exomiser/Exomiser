@@ -37,7 +37,7 @@ import java.sql.Connection;
  * @author Sebastian Koehler
  * @version 0.05 (April 28, 2013)
  */
-public class UberphenoPriority implements IPriority {
+public class UberphenoPriority implements Priority {
 
 	/** The Uberpheno as Ontologizer-Ontology object */
 	private Ontology uberpheno;
@@ -140,7 +140,7 @@ public class UberphenoPriority implements IPriority {
 	}
 
     /* (non-Javadoc)
-     * @see exomizer.priority.IPriority#getPriorityName()
+     * @see exomizer.priority.Priority#getPriorityName()
      */
     @Override public String getPriorityName() { 
 	return "Uberpheno semantic similarity filter"; 
