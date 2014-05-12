@@ -23,7 +23,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
      * An instance of this class encapsulates an object of the class
      * {@link jannovar.exome.Variant Variant} from the Jannovar library, and
      * basically combines this Variant with a list of variant evaluation objects
-     * ({@link exomizer.filter.ITriage Triage}).
+     * ({@link exomizer.filter.Triage Triage}).
      */
     private Variant var = null;
 
@@ -208,11 +208,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
     
 
     /**
-     * This method is used to add an {@link exomizer.filter.ITriage Triage} object to
+     * This method is used to add an {@link exomizer.filter.Triage Triage} object to
      * this variant. Such objects represent the results of evaluation of this variant
      * and may be used for filtering or prioritization. The Integer is a constant from 
      * {@link exomizer.common.FilterType FilterType} that identifies the type of 
-     * {@link exomizer.filter.ITriage Triage} object being added (e.g., pathogenicity,
+     * {@link exomizer.filter.Triage Triage} object being added (e.g., pathogenicity,
      * frequency, etc). */
     public void addFilterTriage(Triage t, FilterType type){ 
 	this.triageMap.put(type,t); 
@@ -248,7 +248,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation> {
      * This method calculates a filter
      * score (prediction of the pathogenicity
      * and relevance of the Variant) by using data from
-     * the {@link exomizer.filter.ITriage Triage} objects
+     * the {@link exomizer.filter.Triage Triage} objects
      * associated with this Variant.
      * <P>
      * Note that we use results of filtering to remove Variants

@@ -46,7 +46,7 @@ public class GenewandererRelevanceScore implements RelevanceScore {
 
     /** 
      * @return An HTML list with an entry representing the GeneWanderer (Random walk) similarity score.
-     * @see exomizer.filter.ITriage#getHTMLCode()
+     * @see exomizer.filter.Triage#getHTMLCode()
      */
     @Override public String getHTMLCode() {
 	return String.format("<ul><li>Random walk similarity score: %.3f</li></ul>",this.genewandererScore);

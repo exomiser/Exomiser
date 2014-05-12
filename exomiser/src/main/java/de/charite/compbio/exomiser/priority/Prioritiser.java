@@ -18,10 +18,7 @@ import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.sql.Connection;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,19 +97,29 @@ public class Prioritiser {
     
     private static final Logger logger = LoggerFactory.getLogger(Prioritiser.class);
     
-    /** Database handle to the postgreSQL database used by this application. */
+    /** 
+     * Database handle to the postgreSQL database used by this application. 
+     */
+    //TODO: not actually needed by this class - this is required by the variant Filters
+    //and Gene Prioritizers replace with Spring component scanning
     private Connection connection = null;
+    
     /**
      * List of filters (see {@link exomizer.filter.Filter Filter}).
      */
-    private List<Filter> filterList = null;
-    /** *  List of gene-prioritizers (see {@link exomizer.priority.Priority Priority}). */
-    private List<Priority> priorityList = null;
+    private List<Filter> filterList;
+    
+    /** 
+     * List of gene-prioritizers (see {@link exomizer.priority.Priority Priority}).
+     */
+    private List<Priority> priorityList;
+    
     /**
      * One of AD, AR, or XR (X chromosomal recessive). If uninitialized, this
      * prioritizer has no effect).
      */
     private ModeOfInheritance inheritanceMode = ModeOfInheritance.UNINITIALIZED;
+    
     /**
      * List of all Genes that are to be prioritized. Note that the Genes will
      * contain the variants that have passed the filtering step.
@@ -125,67 +132,46 @@ public class Prioritiser {
 	this.priorityList = new ArrayList<Priority>();
     }
 
-
-    /**
-     * This function iterates over all of the Prioritization schemes chosen by
-     * the user and applies them the list of variants (a Java ArrayList). At
-     * present, the code is written such that there will be one prioritization
-     * filter applied per run, however, they could be combined with one another
-     * in the future.
-     * <P>
-     * Prioritization will look at all variants that have survived filtering and
-     * then use an appropriate algorithm to assign a score to each
-     * {@link exomizer.exome.Gene Gene} object. The function rank variants is
-     * then applied to rank the variants according to the combined
-     * filter/priority score.
-     * <P>
-     * This method first combines all the {@link jannovar.exome.Variant Variant}
-     * objects into the corresponing {@link exomizer.exome.Gene Gene} objects,
-     * and then it applies all active prioritization algorithms.
+     /**
+     * This method goes through VCF parsing, deserializing the UCSC data,
+     * annotating variants, filtering and prioritizing genes, and ranking the
+     * candidate genes. It is a convenience method that groups together most of
+     * the pipeline and can be used by the apache tomcat Webserver.
+     * <p>
+     * Note that we assume that the transcript definition data has been
+     * deserialized before this method is called.
+     * @param variantList A list of annotated variants from Jannovar, passed to us
+     * from the main exomizer program
+     * @param rankBasedScoring True if we should perform rank-based scoring rather than using the raw scores.
+     * @return 
+     * @throws ExomizerException
      */
-    private void prioritizeGenes(List<VariantEvaluation> variantList) {
-	/** Record list of genes we have seen before. */
-	Map<String, Gene> gene_map = new HashMap<String, Gene>();
-	Iterator<VariantEvaluation> it = variantList.iterator();
-	while (it.hasNext()) {
-	    VariantEvaluation ve = it.next();
-	    Variant v = ve.getVariant();
-	    /*
-	     * Jannovar  outputs multiple possible symbols for
-	     * a variant e.g. where a variant is an exon in one gene and intron
-	     * in another gene The order of these symbols can vary depending on
-	     * the variant although the first one always refers to the most
-	     * pathogenic. Therefore hash on this first symbol if multiple
-	     */
-	    if (v.getGeneSymbol() != null) {
-		// Off target variants do nothave gene-symbols.
-		// This if avoids null pointers
-		String name = v.getGeneSymbol();
-		if (name.contains(",")) {
-		    String nameParts[] = name.split(",");
-		    name = nameParts[0];
-		}
-		if (gene_map.containsKey(name)) {
-		    Gene g = gene_map.get(name);
-		    g.addVariant(ve);
-		}
-		else {
-		    Gene g = new Gene(ve);
-		    gene_map.put(name, g);
-		}
-	    }
+    public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) 
+	throws ExomizerException 
+    {
+	/**************************************************************/
+	/* 1) Filter the variants according to user-supplied params. */
+	/**************************************************************/
+        logger.info("FILTERING VARIANTS");
+	filterVariants(variantList);
+	/**************************************************************/
+	/* 2) Prioritize the variants according to phenotype, model */
+	/* organism data, protein protein interactions, whatever */
+	/**************************************************************/
+        geneList = makeGenesFromVariants(variantList);
+        logger.info("PRIORITISING GENES");
+	prioritizeGenes(geneList);
+	/**************************************************************/
+	/* 3) Rank all genes now according to combined score. */
+	/**************************************************************/
+        logger.info("RANKING GENES");
+        if (rankBasedScoring) {
+	    scoreCandidateGenesByRank();
+	} else {
+	    rankCandidateGenes();
 	}
-	/** Now create a list of Genes so we can sort them. */
-	this.geneList = new ArrayList<Gene>(gene_map.values());
-	for (Priority priority : this.priorityList) {
-            logger.info("STARTING prioritiser: {}", priority.getPriorityName());
-            priority.prioritizeGenes(this.geneList);
-	}
+	return geneList;
     }
-
-
-
-    
 
     /**
      * This function iterates over all of the Filters chosen by the user and
@@ -203,46 +189,70 @@ public class Prioritiser {
 	}
     }
 
-
-     /**
-     * This method goes through VCF parsing, deserializing the UCSC data,
-     * annotating variants, filtering and prioritizing genes, and ranking the
-     * candidate genes. It is a convenience method that groups together most of
-     * the pipeline and can be used by the apache tomcat Webserver.
-     * <p>
-     * Note that we assume that the transcript definition data has been
-     * deserialized before this method is called.
-     * @param variantList A list of annotated variants from Jannovar, passed to us
-     * from the main exomizer program
-     * @param rankBasedScoring True if we should perform rank-based scoring rather than using the raw scores.
-     * @throws ExomizerException
+    /**
+     * Converts a list of {@code de.charite.compbio.exomiser.exome.VariantEvaluation} to a 
+     * list of {@code de.charite.compbio.exomiser.exome.Gene}.
+     * 
+     * @param variantList
+     * @return 
      */
-    public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) 
-	throws ExomizerException 
-    {
-	/**************************************************************/
-	/* 1) Filter the variants according to user-supplied params. */
-	/**************************************************************/
-        logger.info("FILTERING VARIANTS");
-	filterVariants(variantList);
-	/**************************************************************/
-	/* 2) Prioritize the variants according to phenotype, model */
-	/* organism data, protein protein interactions, whatever */
-	/**************************************************************/
-        logger.info("PRIORITISING GENES");
-	prioritizeGenes(variantList);
-	/**************************************************************/
-	/* 3) Rank all genes now according to combined score. */
-	/**************************************************************/
-        logger.info("RANKING GENES");
-        if (rankBasedScoring) {
-	    scoreCandidateGenesByRank();
-	} else {
-	    rankCandidateGenes();
+    private List<Gene> makeGenesFromVariants(List<VariantEvaluation> variantList) {
+        /** Record list of genes we have seen before. */
+	Map<String, Gene> geneMap = new HashMap<>();
+        for (VariantEvaluation variantEvaluation : variantList) {
+	    Variant v = variantEvaluation.getVariant();
+	    /*
+	     * Jannovar  outputs multiple possible symbols for
+	     * a variant e.g. where a variant is an exon in one gene and intron
+	     * in another gene The order of these symbols can vary depending on
+	     * the variant although the first one always refers to the most
+	     * pathogenic. Therefore hash on this first symbol if multiple
+	     */
+	    if (v.getGeneSymbol() != null) {
+		// Off target variants do nothave gene-symbols.
+		// This if avoids null pointers
+		String name = v.getGeneSymbol();
+		if (name.contains(",")) {
+		    String nameParts[] = name.split(",");
+		    name = nameParts[0];
+		}
+		if (geneMap.containsKey(name)) {
+		    Gene g = geneMap.get(name);
+		    g.addVariant(variantEvaluation);
+		}
+		else {
+		    Gene g = new Gene(variantEvaluation);
+		    geneMap.put(name, g);
+		}
+	    }
 	}
-	return this.geneList;
+	/** Now create a list of Genes so we can sort them. */
+	return new ArrayList<>(geneMap.values());
     }
-
+    
+    /**
+     * This function iterates over all of the Prioritization schemes chosen by
+     * the user and applies them the list of variants (a Java ArrayList). At
+     * present, the code is written such that there will be one prioritization
+     * filter applied per run, however, they could be combined with one another
+     * in the future.
+     * <P>
+     * Prioritization will look at all variants that have survived filtering and
+     * then use an appropriate algorithm to assign a score to each
+     * {@link exomizer.exome.Gene Gene} object. The function rank variants is
+     * then applied to rank the variants according to the combined
+     * filter/priority score.
+     * <P>
+     * This method first combines all the {@link jannovar.exome.Variant Variant}
+     * objects into the corresponding {@link exomizer.exome.Gene Gene} objects,
+     * and then it applies all active prioritization algorithms.
+     */
+    private void prioritizeGenes(List<Gene> genes) {
+        for (Priority priority : priorityList) {
+            logger.info("STARTING prioritiser: {}", priority.getPriorityName());
+            priority.prioritizeGenes(genes);
+	}
+    }
 
 
     /** In the original implementation of the Exomiser, the genes were scored
@@ -318,14 +328,21 @@ public class Prioritiser {
     }
     
 
-
-
-
-    public List<Filter> getFilterList() { return this.filterList; }
+    public List<Filter> getFilterList() { 
+        return this.filterList;
+    }
     
-    public List<Priority> getPriorityList() { return this.priorityList; }
+    public List<Priority> getPriorityList() { 
+        return this.priorityList;
+    }
 
+    public void addPriority(Priority priority) {
+	priorityList.add(priority);
+    }
 
+    // all these addXXXXPrioritizer methods should be handled elsewhere as these
+    //violate the SRP
+    
     public void addOMIMPrioritizer() throws ExomizerInitializationException {
 	Priority ip = new OMIMPriority();
 	this.priorityList.add(ip);
@@ -437,26 +454,20 @@ public class Prioritiser {
     public void addFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) 
      	throws ExomizerInitializationException
     {
-	Filter f=null;
-	if (filterOutAllDbsnp) {
-	    f = new FrequencyFilter();
-	    f.setDatabaseConnection(this.connection);
-	    f.setParameters("RS");
-	    this.filterList.add(f);
+	Filter filter = new FrequencyFilter();
+        filter.setDatabaseConnection(this.connection);
+	
+        if (filterOutAllDbsnp) {
+	    filter.setParameters("RS");
 	} else if (frequency_threshold != null && 
 		   !frequency_threshold.equals("none")) {
-	    f = new FrequencyFilter();
-	    f.setDatabaseConnection(this.connection);
-	    f.setParameters(frequency_threshold);
-	    this.filterList.add(f);
+	    filter.setParameters(frequency_threshold);
 	} else {
 	    // default is freq filter at 100 i.e. keep everything so still
 	    // get freq data in output and inclusion in prioritization
-	    f = new FrequencyFilter();
-	    f.setDatabaseConnection(this.connection);
-	    f.setParameters("100");
-	    this.filterList.add(f);
+	    filter.setParameters("100");
 	}
+        this.filterList.add(filter);
     }
 
      public void addQualityFilter(String quality_threshold)
@@ -491,8 +502,5 @@ public class Prioritiser {
 	   this.filterList.add(f);
 	}
     }
-    
-    public void addPriority(Priority priority) {
-	priorityList.add(priority);
-    }
+   
 }

@@ -158,7 +158,7 @@ public class IntervalFilter implements Filter {
     }
 
     /** Should this Filter be shown in the HTML output? */
-    public boolean display_in_HTML() {return false; }
+    public boolean displayInHTML() {return false; }
     
     /**
      * Not needed in this class.

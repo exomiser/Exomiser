@@ -33,7 +33,7 @@ public class UberphenoRelevanceScore implements RelevanceScore {
 
 
 	/* (non-Javadoc)
-	 * @see exomizer.filter.ITriage#getHTMLCode()
+	 * @see exomizer.filter.Triage#getHTMLCode()
 	 */
 	@Override
 	public String getHTMLCode() {

@@ -55,7 +55,7 @@ public class DynamicPhenoWandererRelevanceScore implements RelevanceScore  {
 
     /** 
      * @return An HTML list with an entry representing the GeneWanderer (Random walk) similarity score.
-     * @see exomizer.filter.ITriage#getHTMLCode()
+     * @see exomizer.filter.Triage#getHTMLCode()
      */
     @Override public String getHTMLCode() {
         //return String.format("<ul><li>Similarity score: %.3f %s</li></ul>",this.genewandererScore,this.evidence);

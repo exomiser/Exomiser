@@ -576,7 +576,7 @@ public class HTMLTable {
 
     /**
      * This function gets a list of Strings representing information about a mutation derived from 
-     * a {@link  exomizer.filter.ITriage} object (passed into this function from {@link exomizer.Exomizer}).
+     * a {@link  exomizer.filter.Triage} object (passed into this function from {@link exomizer.Exomizer}).
      * @return HTML code for an unordered list representing information about a variant.
      */
     private String  format_triage_list(List<String> L) {

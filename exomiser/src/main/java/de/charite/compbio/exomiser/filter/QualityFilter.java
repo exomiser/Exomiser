@@ -89,7 +89,7 @@ public class QualityFilter implements Filter {
 	this.n_after =  variant_list.size();
     }
 
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
     /**
      * Not needed in this class.

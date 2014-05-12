@@ -57,15 +57,19 @@ public class PathogenicityFilter implements Filter {
 	this.messages.add("Synonymous and non-coding variants removed");
      }
 
-    @Override public String getFilterName() { return "Pathogenicity filter"; }
+    @Override 
+    public String getFilterName() { return "Pathogenicity filter"; }
+    
     /** Flag to output results of filtering against polyphen, SIFT, and mutation taster. */
-    @Override public FilterType getFilterTypeConstant() { return FilterType.PATHOGENICITY_FILTER; } 
+    @Override 
+    public FilterType getFilterTypeConstant() { return FilterType.PATHOGENICITY_FILTER; } 
 
  
 
      /** Sets the frequency threshold for variants.
       * @param par A frequency threshold, e.g., a string such as "0.02"
       */
+    @Override
      public void setParameters(String par) throws ExomizerInitializationException
      {
 	 // Set up the message
@@ -103,17 +107,20 @@ public class PathogenicityFilter implements Filter {
     /** Number of variants after filtering */
     private int n_after;
 
-      /** Get number of variants before filter was applied */
-    @Override public int getBefore() { return this.n_before; }
+    /** Get number of variants before filter was applied */
+    @Override 
+    public int getBefore() { return this.n_before; }
+    
     /** Get number of variants after filter was applied */
-    @Override public int getAfter() { return this.n_after; }
+    @Override 
+    public int getAfter() { return this.n_after; }
 
     /**
      * Remove variants that are deemed to be not-pathogenic, and provide a pathogenicity
-     * score for thos ehtat survive the filter.
+     * score for those that survive the filter.
      */
-    @Override public void filterVariants(List<VariantEvaluation> variant_list)
-    {
+    @Override 
+    public void filterVariants(List<VariantEvaluation> variant_list){
         Iterator<VariantEvaluation> it = variant_list.iterator();
 	
 	this.n_before = variant_list.size();
@@ -235,7 +242,7 @@ public class PathogenicityFilter implements Filter {
 	setUpSQLPreparedStatement();
     }
 
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
 
 

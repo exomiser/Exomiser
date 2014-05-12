@@ -4,9 +4,9 @@ import java.util.List;
 
 /**
  * This interface is implemented by classes that perform filtering of
- * the variants in the VCF file according to various criteria. An Triage object
+ * the variants in the VCF file according to various criteria. A Triage object
  gets attached to each Variant object. The function passesFIlter can be used to 
- find out the results of the filter and the variant can be deleted it it did not
+ find out the results of the filter and the variant can be deleted if it did not
  pass the filter.
  * @author Peter N Robinson
  * @version 0.02 (16 April, 2012)

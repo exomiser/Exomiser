@@ -268,7 +268,7 @@ public class FrequencyFilter implements Filter {
        	setUpSQLPreparedStatements();
     }
 
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
 
 }

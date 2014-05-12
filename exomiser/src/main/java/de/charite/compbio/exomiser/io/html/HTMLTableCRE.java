@@ -238,8 +238,8 @@ public class HTMLTableCRE extends HTMLTable {
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
 	//HashMap<FilterType,Triage> triageMap = ve.getTriageMap();
 	
-	//ITriage freq = triageMap.get(exomizer.common.FilterType.FREQUENCY_FILTER);
-	//ITriage path = triageMap.get(exomizer.common.FilterType.PATHOGENICITY_FILTER);
+	//Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	//Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	//writeVariantScoreCell(path,freq,out);
 	
 

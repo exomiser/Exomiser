@@ -14,7 +14,7 @@ import java.util.List;
  of a class that implements RelevanceScore
  * @author Peter N Robinson
  * @version 0.04 (6 January, 2014)
- * @see exomizer.filter.ITriage
+ * @see exomizer.filter.Triage
  */
 public interface RelevanceScore {
 

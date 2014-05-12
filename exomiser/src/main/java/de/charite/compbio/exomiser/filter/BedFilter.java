@@ -70,7 +70,7 @@ public class BedFilter implements Filter {
     @Override public int getAfter(){return this.n_after; }
 
     /** Should this Filter be shown in the HTML output? */
-    public boolean display_in_HTML() {
+    public boolean displayInHTML() {
 	return true;
     }
 

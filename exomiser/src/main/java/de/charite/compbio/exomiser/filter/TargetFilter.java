@@ -22,7 +22,7 @@ import java.sql.Connection;
  * The class uses the annotations made by classes from the
  * {@code jannovar.annotation} package etc.
  * <P>
- * Note that this class does not require a corresponding {@link exomizer.filter.ITriage ITriage}
+ * Note that this class does not require a corresponding {@link exomizer.filter.Triage Triage}
  * object, because variants that do not pass the filter are simply removed.
  * @author Peter N Robinson
  * @version 0.16 (20 December, 2013)
@@ -117,7 +117,7 @@ public class TargetFilter implements Filter {
     @Override public int getAfter(){return this.n_after; }
 
     /** Should this Filter be shown in the HTML output? */
-    public boolean display_in_HTML() {
+    public boolean displayInHTML() {
 	return true;
     }
     
