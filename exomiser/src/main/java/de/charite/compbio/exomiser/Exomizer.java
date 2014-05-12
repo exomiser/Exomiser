@@ -539,10 +539,8 @@ public class Exomizer {
     private boolean useRankBasedScoring() {
         if (this.useCRE) {
             return false;
-        } else if (this.useRandomWalk) {
-            return true;
         } else {
-            return false;
+            return this.useRandomWalk;
         }
     }
 
@@ -795,12 +793,12 @@ public class Exomizer {
      * @param ip the {@link exomizer.priority.IPriority Priority} that will be
      * added to the list of prioriitizers.
      */
-    public void setPrioritizer(Priority ip) throws ExomizerInitializationException {
+    public void addPriority(Priority ip) throws ExomizerInitializationException {
         if (ip == null) {
-            String s = "Attempt to initialize Exomiser with NULL IPriority object";
+            String s = "Attempt to initialize Exomiser with NULL Priority object";
             throw new ExomizerInitializationException(s);
         }
-        this.prioritiser.setPrioritizer(ip);
+        this.prioritiser.addPriority(ip);
     }
 
     /**

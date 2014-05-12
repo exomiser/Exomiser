@@ -492,10 +492,7 @@ public class Prioritiser {
 	}
     }
     
-    public void setPrioritizer(Priority ip) {
-	if (this.priorityList == null) {
-	    this.priorityList = new ArrayList<Priority>();
-	}
-	this.priorityList.add(ip);
+    public void addPriority(Priority priority) {
+	priorityList.add(priority);
     }
 }
