@@ -265,10 +265,10 @@ public class BoqaPriority implements Priority {
      *
      * @param gene_list List of candidate genes.
      *
-     * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
+     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override 
-    public void prioritize_list_of_genes(List<Gene> gene_list)
+    public void prioritizeGenes(List<Gene> gene_list)
     {
         ArrayList<BoqaRelevanceScore> scoreList = new ArrayList<BoqaRelevanceScore>(gene_list.size());
         KahanSummation sum = new KahanSummation(); 
@@ -422,7 +422,7 @@ public class BoqaPriority implements Priority {
     /**
      * To do
      */
-     @Override public boolean display_in_HTML() { return false; }
+     @Override public boolean displayInHTML() { return false; }
 
   
      @Override public String getHTMLCode() { return "To Do"; }

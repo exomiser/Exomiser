@@ -162,9 +162,9 @@ public class GenewandererPriority implements Priority {
      * You have to call {@link #setParameters} before running this function.
      * 
      * @param gene_list List of candidate genes.
-     * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
+     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
-    @Override public void prioritize_list_of_genes(List<Gene> gene_list){
+    @Override public void prioritizeGenes(List<Gene> gene_list){
 	if ( seedGenes==null || seedGenes.size()<1 ){
 	    throw new RuntimeException("Please specify a valid list of known genes!");
 	}
@@ -214,7 +214,7 @@ public class GenewandererPriority implements Priority {
     /**
      * This causes a summary of RW prioritization to appear in the HTML output of the exomizer
      */
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
     
     /**
      * @return HTML code for displaying the HTML output of the Exomizer.

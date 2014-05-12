@@ -103,10 +103,10 @@ public class Prioritiser {
     /** Database handle to the postgreSQL database used by this application. */
     private Connection connection = null;
     /**
-     * List of filters (see {@link exomizer.filter.IFilter Filter}).
+     * List of filters (see {@link exomizer.filter.Filter Filter}).
      */
     private List<Filter> filterList = null;
-    /** *  List of gene-prioritizers (see {@link exomizer.priority.IPriority Priority}). */
+    /** *  List of gene-prioritizers (see {@link exomizer.priority.Priority Priority}). */
     private List<Priority> priorityList = null;
     /**
      * One of AD, AR, or XR (X chromosomal recessive). If uninitialized, this
@@ -179,7 +179,7 @@ public class Prioritiser {
 	this.geneList = new ArrayList<Gene>(gene_map.values());
 	for (Priority priority : this.priorityList) {
             logger.info("STARTING prioritiser: {}", priority.getPriorityName());
-            priority.prioritize_list_of_genes(this.geneList);
+            priority.prioritizeGenes(this.geneList);
 	}
     }
 
@@ -194,12 +194,12 @@ public class Prioritiser {
      * after this method is called, the list of variants is usually much shorter
      * and should just contain the major candidates from Exome sequencing.
      * 
-     * @see exomizer.filter.IFilter
+     * @see exomizer.filter.Filter
      */
     private void filterVariants(List<VariantEvaluation> variantList) {
 	for (Filter f : this.filterList) {
             logger.info("STARTING filter: {}", f.getFilterName());
-	    f.filter_list_of_variants(variantList);
+	    f.filterVariants(variantList);
 	}
     }
 
@@ -441,20 +441,20 @@ public class Prioritiser {
 	if (filterOutAllDbsnp) {
 	    f = new FrequencyFilter();
 	    f.setDatabaseConnection(this.connection);
-	    f.set_parameters("RS");
+	    f.setParameters("RS");
 	    this.filterList.add(f);
 	} else if (frequency_threshold != null && 
 		   !frequency_threshold.equals("none")) {
 	    f = new FrequencyFilter();
 	    f.setDatabaseConnection(this.connection);
-	    f.set_parameters(frequency_threshold);
+	    f.setParameters(frequency_threshold);
 	    this.filterList.add(f);
 	} else {
 	    // default is freq filter at 100 i.e. keep everything so still
 	    // get freq data in output and inclusion in prioritization
 	    f = new FrequencyFilter();
 	    f.setDatabaseConnection(this.connection);
-	    f.set_parameters("100");
+	    f.setParameters("100");
 	    this.filterList.add(f);
 	}
     }
@@ -465,7 +465,7 @@ public class Prioritiser {
 	Filter f=null;
 	if (quality_threshold != null) {
 	    f = new QualityFilter();
-	    f.set_parameters(quality_threshold);
+	    f.setParameters(quality_threshold);
 	    this.filterList.add(f);
 	}
      }
@@ -476,7 +476,7 @@ public class Prioritiser {
 	PathogenicityFilter f = new PathogenicityFilter();
 	f.setDatabaseConnection(this.connection);
 	if (filterOutNonpathogenic) {
-	    f.set_parameters("filter");
+	    f.setParameters("filter");
 	}
         f.set_syn_filter_status(removeSyn);
 	this.filterList.add(f);
@@ -487,7 +487,7 @@ public class Prioritiser {
     {
 	if (interval != null) {
 	   Filter f = new IntervalFilter();
-	   f.set_parameters(interval);
+	   f.setParameters(interval);
 	   this.filterList.add(f);
 	}
     }

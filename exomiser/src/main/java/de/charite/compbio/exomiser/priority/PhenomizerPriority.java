@@ -303,10 +303,10 @@ public class PhenomizerPriority implements Priority {
      * (the candidate genes have rare, potentially pathogenic variants).
      * 
      * @param gene_list  List of candidate genes.
-     * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
+     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override 
-    public void prioritize_list_of_genes(List<Gene> gene_list) {
+    public void prioritizeGenes(List<Gene> gene_list) {
 	this.totalGenes = gene_list.size();
 
 	for (Gene gene : gene_list) {
@@ -425,7 +425,7 @@ public class PhenomizerPriority implements Priority {
     /**
      * Flag to show results of this analysis in the HTML page.
      */
-    public boolean display_in_HTML() {
+    public boolean displayInHTML() {
 	return true;
     }
     

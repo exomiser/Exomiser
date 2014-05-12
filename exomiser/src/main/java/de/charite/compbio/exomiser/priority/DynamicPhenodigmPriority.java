@@ -108,7 +108,7 @@ public class DynamicPhenodigmPriority implements Priority {
 
    
     
-    public void prioritize_list_of_genes(List<Gene> gene_list)
+    public void prioritizeGenes(List<Gene> gene_list)
     {
 	Iterator<Gene> it = gene_list.iterator();
 	this.found_data_for_mgi_phenodigm=0;
@@ -415,7 +415,7 @@ public class DynamicPhenodigmPriority implements Priority {
     /**
      * To do
      */
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
     /**
      * @return an HTML message for the table describing the action of filters

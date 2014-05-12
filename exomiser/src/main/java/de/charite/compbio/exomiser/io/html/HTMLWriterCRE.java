@@ -466,7 +466,7 @@ public class HTMLWriterCRE extends HTMLWriter {
 	    filtersum.addRow(name,descript,before,after);
 	}
 	for (Priority p : priorityList) {
-	    if (p.display_in_HTML()) {
+	    if (p.displayInHTML()) {
 		String name =  p.getPriorityName();
 		System.out.println("Calling for " + name);
 		List<String> descript = p.getMessages();

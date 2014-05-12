@@ -79,7 +79,7 @@ public class FrequencyFilter implements Filter {
      * a minor allele frequency of 1%.
      * @param par A frequency threshold, e.g., a string such as "2" for 2 percent, or RS
      */
-    @Override public void set_parameters(String par) throws ExomizerInitializationException
+    @Override public void setParameters(String par) throws ExomizerInitializationException
     {
 	if (par.equalsIgnoreCase("RS")) {
 	    this.strictFiltering = true;
@@ -124,7 +124,7 @@ public class FrequencyFilter implements Filter {
      * the variant from further consideration.
      * @param variant_list a list of Variants to be tested for rarity.
      */
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list)
+    @Override public void filterVariants(List<VariantEvaluation> variant_list)
     {
 	Iterator<VariantEvaluation> it = variant_list.iterator();
 	int n_dbSNP_frequency_data_found=0;

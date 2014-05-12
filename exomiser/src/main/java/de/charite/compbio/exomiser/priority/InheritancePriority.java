@@ -102,7 +102,7 @@ public class InheritancePriority implements Priority {
      * is compatible with the indicated inheritance pattern, it is 
      * completely removed.
      */
-    @Override public void prioritize_list_of_genes(List<Gene> gene_list)
+    @Override public void prioritizeGenes(List<Gene> gene_list)
     {	  
 	Iterator<Gene> it = gene_list.iterator();	  
 	this.n_before = gene_list.size();
@@ -153,7 +153,7 @@ public class InheritancePriority implements Priority {
     /**
      * If this filter was applied, then show a brief summary of the results in the HTML output
      */
-    @Override public boolean display_in_HTML() { 
+    @Override public boolean displayInHTML() { 
 	return true;
     }
 

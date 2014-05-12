@@ -39,7 +39,7 @@ public class QualityFilter implements Filter {
     /**
      * @param par A String containing the PHRED quality threshold (e.g., 30).
      */
-     public void set_parameters(String par) throws ExomizerInitializationException
+     public void setParameters(String par) throws ExomizerInitializationException
      {
 	 try {
 	     this.quality_threshold  = Float.parseFloat(par);
@@ -69,7 +69,7 @@ public class QualityFilter implements Filter {
     public int getAfter() { return this.n_after; }
 
     
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list)
+    @Override public void filterVariants(List<VariantEvaluation> variant_list)
     {
 	Iterator<VariantEvaluation> it = variant_list.iterator();
 	

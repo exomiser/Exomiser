@@ -49,7 +49,7 @@ public class IntervalFilter implements Filter {
       
     /** This method sets the interval based on a String such as
      chr2:12345-67890. */
-    public void set_parameters(String par) throws ExomizerInitializationException
+    public void setParameters(String par) throws ExomizerInitializationException
     {
 	String chr,x,y,tmp;
 	this.successfully_initialized=true;
@@ -105,7 +105,7 @@ public class IntervalFilter implements Filter {
      * pass the filter, remove it. Note that we use an explicit for loop to avoid a
      * java.util.ConcurrentModificationException that occurs with an Iterator implementation.
     */
-    public void filter_list_of_variants(List<VariantEvaluation> variant_list)
+    public void filterVariants(List<VariantEvaluation> variant_list)
     {
 	this.n_before = variant_list.size();
 	Iterator<VariantEvaluation> it = variant_list.iterator();

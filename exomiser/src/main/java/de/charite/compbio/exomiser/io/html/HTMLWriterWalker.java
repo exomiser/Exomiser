@@ -440,7 +440,7 @@ public class HTMLWriterWalker extends HTMLWriter {
 	
 	/* Similar as above, but for the prioritizers. */
 	for (Priority p : priorityList) {
-	    if (p.display_in_HTML()) {
+	    if (p.displayInHTML()) {
 		String name =  p.getPriorityName();
 		String h = p.getHTMLCode();
 		int before = p.getBefore();

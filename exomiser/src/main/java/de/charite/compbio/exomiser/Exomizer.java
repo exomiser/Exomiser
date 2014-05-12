@@ -1060,7 +1060,7 @@ public class Exomizer {
         }
         if (vtc == null) {
             TargetFilter tf = new TargetFilter();
-            tf.filter_list_of_variants(this.variantList);
+            tf.filterVariants(this.variantList);
             vtc = tf.getVariantTypeCounter();
         }
         return vtc;

@@ -66,7 +66,7 @@ public class PathogenicityFilter implements Filter {
      /** Sets the frequency threshold for variants.
       * @param par A frequency threshold, e.g., a string such as "0.02"
       */
-     public void set_parameters(String par) throws ExomizerInitializationException
+     public void setParameters(String par) throws ExomizerInitializationException
      {
 	 // Set up the message
 	 messages.add("Pathogenicity predictions are based on the dbNSFP-normalized values");
@@ -112,7 +112,7 @@ public class PathogenicityFilter implements Filter {
      * Remove variants that are deemed to be not-pathogenic, and provide a pathogenicity
      * score for thos ehtat survive the filter.
      */
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list)
+    @Override public void filterVariants(List<VariantEvaluation> variant_list)
     {
         Iterator<VariantEvaluation> it = variant_list.iterator();
 	

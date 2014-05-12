@@ -43,7 +43,7 @@ public class BedFilter implements Filter {
 
 
      /** This method is required by the interface but not needed by this class. */
-    @Override public void set_parameters(String par) throws ExomizerInitializationException{
+    @Override public void setParameters(String par) throws ExomizerInitializationException{
 	/* nothing to do here */
     }
 
@@ -76,7 +76,7 @@ public class BedFilter implements Filter {
 
      /** Take a list of variants and apply the filter to each variant. If a variant does not
 	pass the filter, remove it. */
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list) {
+    @Override public void filterVariants(List<VariantEvaluation> variant_list) {
 	if (variant_list.size()==0) {
 	    System.err.println("[Error: TargetFilter.java] Size of variant list is zero");
 	    return;
