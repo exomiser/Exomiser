@@ -595,12 +595,17 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
             String mousePhenotypeEvidence = "";
             String fishPhenotypeEvidence = "";
             double val = 0f;
+            double humanScore = 0f;
+            double mouseScore = 0f;
+            double fishScore = 0f;
+            double walkerScore = 0f;
             // DIRECT PHENO HIT
             int entrezGeneID = gene.getEntrezGeneID();
             if (scores.get(entrezGeneID) != null) {
                 val = scores.get(entrezGeneID);
                 // HUMAN
                 if (humanScores.get(entrezGeneID) != null) {
+                    humanScore = humanScores.get(entrezGeneID);
                     String diseaseId = humanDiseases.get(entrezGeneID);
                     String diseaseLink = diseaseTerms.get(diseaseId);
                     if (diseaseId.split(":")[0].equals("OMIM")) {
@@ -630,6 +635,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 }
                 // MOUSE
                 if (mouseScores.get(gene.getEntrezGeneID()) != null) {
+                    mouseScore = mouseScores.get(entrezGeneID);
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>. <a class=\"op2\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", mouseScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     if (hpMpMatches.get(gene.getEntrezGeneID()) != null) {
                         String[] hps_initial = hpo_ids.split(",");
@@ -650,6 +656,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 }
                 // FISH
                 if (fishScores.get(gene.getEntrezGeneID()) != null) {
+                    fishScore = fishScores.get(entrezGeneID);
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>. <a class=\"op3\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", fishScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     //evidence = evidence + "<br>Best phenotype matches: ";
                     if (hpZpMatches.get(gene.getEntrezGeneID()) != null) {
@@ -675,6 +682,7 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
                 int col_idx = computeSimStartNodesToNode(gene);
                 int row_idx = randomWalkMatrix.objectid2idx.get(gene.getEntrezGeneID());
                 val = combinedProximityVector.get(row_idx, col_idx);
+                walkerScore = val;
                 String closestGene = phenoGeneSymbols.get(col_idx);
                 String thisGene = gene.getGeneSymbol();
                 //String stringDbImageLink = "http://string-db.org/api/image/networkList?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
@@ -759,7 +767,8 @@ public class DynamicPhenoWandererPriority implements IPriority, Constants {
             else {
                 evidence = "<ul><li>No phenotype or PPI evidence</li></ul>";
             }
-            DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, fishPhenotypeEvidence);
+            DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, 
+                    fishPhenotypeEvidence, humanScore, mouseScore, fishScore, walkerScore);
             gene.addRelevanceScore(relScore, FilterType.DYNAMIC_PHENOWANDERER_FILTER);
         }
 
