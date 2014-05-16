@@ -114,8 +114,8 @@ public class FrequencyTriage implements ITriage {
      * @return true if the variant being analyzed is rarer than the threshold
      */
     public boolean passesFilter() {
-    if (dbSNPmaf > FrequencyTriage.threshold) return false;
-	else if (espAllmaf > FrequencyTriage.threshold) return false;
+        if (dbSNPmaf > FrequencyTriage.threshold) return false;
+        else if (espAllmaf > FrequencyTriage.threshold) return false;
 	else if (espEAmaf > FrequencyTriage.threshold) return false;
 	else if (espAAmaf > FrequencyTriage.threshold) return false;
 	else return true;
@@ -143,7 +143,8 @@ public class FrequencyTriage implements ITriage {
 	else return 0.1f;
 	*/
 	float max = Math.max(Math.max(this.dbSNPmaf,this.espAllmaf),Math.max(this.espEAmaf,this.espAAmaf));
-	double maf = max;
+	//float max = Math.max(this.espAllmaf,Math.max(this.espEAmaf,this.espAAmaf));
+        double maf = max;
         if (max <= 0) {
 	    return 1f;
 	}
@@ -153,6 +154,12 @@ public class FrequencyTriage implements ITriage {
 	else{
 	    return 1f - (0.13533f * (float) Math.exp(maf));
 	}
+    }
+    
+    public float getMaxFreq(){
+        float maxFreq = Math.max(this.espAllmaf,Math.max(this.espEAmaf,this.espAAmaf));
+        if (maxFreq < 0) maxFreq = 0; 
+        return maxFreq;
     }
     
     /** @return A string with a summary of the filtering results (intended for HTML).*/
