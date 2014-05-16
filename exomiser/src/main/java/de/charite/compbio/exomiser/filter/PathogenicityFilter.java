@@ -145,14 +145,15 @@ public class PathogenicityFilter implements IFilter {
 	/** The following classifies variants based upon their variant class (MISSENSE, NONSENSE, INTRONIC).
 	 * The actual logic for assigning pathogenicity scores is in the PathogenicityTriage class.
 	 */
-	if (! v.is_missense_variant () ) {
-	    return PathogenicityTriage.evaluateVariantClass(v); 
-	}
+//	if (! v.is_missense_variant () ) {
+//	    return PathogenicityTriage.evaluateVariantClass(v); 
+//	}
 	
 	
 	float polyphen = Constants.UNINITIALIZED_FLOAT;
 	float mutation_taster = Constants.UNINITIALIZED_FLOAT;
 	float sift = Constants.UNINITIALIZED_FLOAT;
+        float cadd_raw = Constants.UNINITIALIZED_FLOAT;
 	
 	int chrom = v.get_chromosome();
 	int position = v.get_position();
@@ -178,6 +179,8 @@ public class PathogenicityFilter implements IFilter {
 	      if (sift == Constants.UNINITIALIZED_FLOAT || rs.getFloat(1) < sift) {sift = rs.getFloat(1);}
 	      if (polyphen == Constants.UNINITIALIZED_FLOAT || rs.getFloat(2) > polyphen) {polyphen = rs.getFloat(2);}
               if (mutation_taster == Constants.UNINITIALIZED_FLOAT || rs.getFloat(3) > mutation_taster) {mutation_taster = rs.getFloat(3);}
+              if (cadd_raw == Constants.UNINITIALIZED_FLOAT || rs.getFloat(4) > cadd_raw) {cadd_raw = rs.getFloat(4);}
+              
 	  }
 //            
 //            if ( rs.next() ) { /* The way the db was constructed, there is just one line for each such query. */
@@ -189,8 +192,13 @@ public class PathogenicityFilter implements IFilter {
 	} catch(SQLException e) {
 	    throw new ExomizerSQLException("Error executing pathogenicity query: " + e);
 	}
-	PathogenicityTriage pt = new PathogenicityTriage(polyphen,mutation_taster, sift);
-	return pt;
+        if (! v.is_missense_variant () ) {
+	    return PathogenicityTriage.evaluateVariantClass(v,cadd_raw); 
+	}
+        else{
+            PathogenicityTriage pt = new PathogenicityTriage(polyphen,mutation_taster, sift, cadd_raw);
+            return pt;
+        }
     }
 
 
@@ -207,7 +215,7 @@ public class PathogenicityFilter implements IFilter {
     private void setUpSQLPreparedStatement() throws ExomizerInitializationException
     {	
 	String query = String.format("SELECT sift,"+
-				     "polyphen,mut_taster,phyloP " +
+				     "polyphen,mut_taster,cadd_raw,phyloP " +
 				     "FROM variant " +
 				     "WHERE chromosome = ? "+
 				     "AND position = ? " +
