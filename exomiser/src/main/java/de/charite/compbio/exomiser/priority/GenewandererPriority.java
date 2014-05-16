@@ -188,15 +188,17 @@ public class GenewandererPriority implements IPriority {
 	}
 	
 	float factor = 1f / (float)max;
+        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
 	
 	for (Gene gene : gene_list){
 	    float scr = gene.getRelevanceScore(FilterType.GENEWANDERER_FILTER);
-	    
 	    float newscore = factor * (scr - (float)min);
 	    gene.resetRelevanceScore(FilterType.GENEWANDERER_FILTER, newscore);
+            newscore = factorMaxPossible * (scr - (float)min);
+            gene.resetRelevanceScore(FilterType.GENEWANDERER_FILTER, newscore);
 	}
-	
-	
+        
+        
 	String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
 				 PPIdataAvailable, totalGenes, 100f*((float)PPIdataAvailable/(float)totalGenes));
 	this.n_before = totalGenes;

@@ -12,12 +12,15 @@ public class GenewandererRelevanceScore implements IRelevanceScore {
      * The Random walk similarity score.
      */
     private double genewandererScore;
+    private double rawScore;
+    private double scaledByMaxScore = -10;
 
     /**
      * @param score The similarity score assigned by the random walk.
      */
     public GenewandererRelevanceScore(double score) {
 	this.genewandererScore = score;
+        this.rawScore = score;
     }
 
 
@@ -52,7 +55,13 @@ public class GenewandererRelevanceScore implements IRelevanceScore {
 	return String.format("<ul><li>Random walk similarity score: %.3f</li></ul>",this.genewandererScore);
     }
 
+    public double getRawScore() {
+        return this.rawScore;
+    }
     
+    public double getScaledScore() {
+        return this.scaledByMaxScore;
+    }
     
     /**
      * Resets the value of the relevance score to a number between 0 and 1
@@ -63,6 +72,9 @@ public class GenewandererRelevanceScore implements IRelevanceScore {
      */
     public void resetRelevanceScore(float newscore){
 	this.genewandererScore = newscore;
+        if (this.scaledByMaxScore == -10){
+            this.scaledByMaxScore = newscore;
+        }
     }
 
 
