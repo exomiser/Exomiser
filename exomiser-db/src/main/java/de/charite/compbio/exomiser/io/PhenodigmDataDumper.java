@@ -207,7 +207,10 @@ public class PhenodigmDataDumper {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm diseaseHp data to file: {}", outfile);
 
-        String sql = "select distinct disease_id , group_concat(hp_id) as hpids from disease_hp group by disease_id";
+        //String sql = "select distinct disease_id , group_concat(hp_id) as hpids from disease_hp group by disease_id";
+        
+        String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d, hp_hp_mapping h where d.hp_id=h.hp_id group by disease_id";
+        
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmConnection.getConnection();
