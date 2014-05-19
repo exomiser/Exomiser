@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.resources;
 
 import de.charite.compbio.exomiser.io.FileDownloadUtils;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -23,24 +22,25 @@ public class ResourceDownloadHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceDownloadHandler.class);
 
-    public static void downloadResources(Iterable<ExternalResource> externalResources, Path downloadPath) {
+    public static void downloadResources(Iterable<Resource> externalResources, Path downloadPath) {
 
         int numResources = 0;
-        for (ExternalResource resource : externalResources) {
+        for (Resource resource : externalResources) {
             numResources++;
             downloadResource(resource, downloadPath);
         }
 
         logger.info("Transferred {} file(s) with the following statuses:", numResources);
-        for (ExternalResource resource : externalResources) {
+        for (Resource resource : externalResources) {
             logger.info("{}", resource.getStatus());
         }
 
     }
 
-    public static void downloadResource(ExternalResource externalResource, Path downloadPath) {
-    ResourceOperationStatus status;
-        if (externalResource.getUrl().isEmpty()) {
+    public static void downloadResource(Resource externalResource, Path downloadDir) {
+        
+        ResourceOperationStatus status;
+        if (externalResource.getUrl() == null || externalResource.getUrl().isEmpty()) {
             logger.info("Resource {} has no URL set - skipping resource.", externalResource.getName());
             return;
         }
@@ -48,10 +48,11 @@ public class ResourceDownloadHandler {
 
             URL resourceUrl = new URL(externalResource.getUrl() + externalResource.getRemoteFileName());
             logger.info("Resource: {}: Getting {} from {}", externalResource.getName(), externalResource.getRemoteFileName(), resourceUrl);
-            status = FileDownloadUtils.fetchFile(resourceUrl, new File(String.format("%s/%s", downloadPath, externalResource.getRemoteFileName())));
+            Path downloadPath = downloadDir.resolve(externalResource.getRemoteFileName());
+            status = FileDownloadUtils.fetchFile(resourceUrl, downloadPath.toFile());
             externalResource.setDownloadStatus(status);
             //if there is no version info for the resource, set a timestamp
-            if (externalResource.getVersion().isEmpty()) {
+            if (externalResource.getVersion() == null || externalResource.getVersion().isEmpty()) {
                 externalResource.setVersion(Instant.now().toString());
             }
 

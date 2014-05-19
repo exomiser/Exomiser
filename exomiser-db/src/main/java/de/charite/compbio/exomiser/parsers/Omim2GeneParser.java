@@ -5,21 +5,23 @@
  */
 package de.charite.compbio.exomiser.parsers;
 
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Parser for the pheno2gene.txt file which produces the omim2gene.pg dump file,
- * assuming you want to call them that.
+ * ResourceParser for the pheno2gene.txt file which produces the omim2gene.pg dump file,
+ assuming you want to call them that.
  *
  * The parser expects a file of the format:
  * <pre>
@@ -49,23 +51,30 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Omim2GeneParser implements Parser {
+public class Omim2GeneParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(Omim2GeneParser.class);
     
     
     @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
-        logger.info("Parsing {}", inPath);
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
         //you might notice that the code here is pretty similar to that in the 
         //PhenoSeriesParser because it is parsing the same file, but handling the data slightly differently.
         //Sorry. This is clunky and a cardinal sin in direct violation of DRY. 
-        //But done to fit the parse() paradigm. Peter did it better before-hand 
+        //But done to fit the parseResource() paradigm. Peter did it better before-hand 
         //(i.e. one class only), but it produced two different tables. Given this is static data we're parsing
         //and it's likely to be depricated at some point this is hopefully not too evil.
-        try (BufferedReader reader = new BufferedReader(new FileReader(inPath));
-                BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
+        
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
 
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
+
+        ResourceOperationStatus status;
+        
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
+                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+                
             Set<String> uniqueSeriesIds = new HashSet<>();
             
             String line;
@@ -100,16 +109,18 @@ public class Omim2GeneParser implements Parser {
                     writer.write(String.format("%s|%s|%s|%s|%s|%s|%s%n", mimDiseaseId , mimDiseaseName, cytoBand, mimGeneId, entrezGeneId, geneSymbol, seriesId));
                 }
             }
+            status = ResourceOperationStatus.SUCCESS;
+
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
-            return ResourceOperationStatus.FAILURE;
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
         } catch (IOException ex) {
             logger.error(null, ex);
-            return ResourceOperationStatus.FAILURE;
+            status = ResourceOperationStatus.FAILURE;
         }
         
-        logger.info("Done parsing {}", inPath);
-        return ResourceOperationStatus.SUCCESS;
+        logger.info("{}", status);
+        resource.setParseStatus(status);
     }
 
 }

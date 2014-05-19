@@ -12,7 +12,7 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @author Peter N Robinson
  * @version 0.09 (18 December, 2013).
  */
-public class QualityTriage implements ITriage {
+public class QualityTriage implements Triage {
     /** The PHRED quality value for the current variant call. */
     private float quality;
     /** A threshold for the quality filter. It can be set by the QualityFilter class before

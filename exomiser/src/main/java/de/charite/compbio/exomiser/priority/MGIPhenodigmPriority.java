@@ -32,7 +32,7 @@ import de.charite.compbio.exomiser.exception.ExomizerException;
  * @author Damian Smedley
  * @version 0.06 (22 April, 2013)
  */
-public class MGIPhenodigmPriority implements IPriority {
+public class MGIPhenodigmPriority implements Priority {
     /** Threshold for filtering. Retain only those variants whose score is below this threshold. */
     private float score_threshold = 2.0f;
     private String disease = null;
@@ -114,7 +114,7 @@ public class MGIPhenodigmPriority implements IPriority {
 
    
     
-    public void prioritize_list_of_genes(List<Gene> gene_list)
+    public void prioritizeGenes(List<Gene> gene_list)
     {
 	Iterator<Gene> it = gene_list.iterator();
 	this.found_data_for_mgi_phenodigm=0;
@@ -269,7 +269,7 @@ public class MGIPhenodigmPriority implements IPriority {
     /**
      * To do
      */
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
     /**
      * @return an HTML message for the table describing the action of filters

@@ -8,7 +8,7 @@ package de.charite.compbio.exomiser.priority;
  * @author Sebastian Koehler
  * @version 0.02 (April 2, 2013).
  */
-public class UberphenoRelevanceScore implements IRelevanceScore {
+public class UberphenoRelevanceScore implements RelevanceScore {
 
 	private double uberphenoScore;
 
@@ -33,7 +33,7 @@ public class UberphenoRelevanceScore implements IRelevanceScore {
 
 
 	/* (non-Javadoc)
-	 * @see exomizer.filter.ITriage#getHTMLCode()
+	 * @see exomizer.filter.Triage#getHTMLCode()
 	 */
 	@Override
 	public String getHTMLCode() {

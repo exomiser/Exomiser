@@ -33,7 +33,7 @@ import java.util.List;
  * @author Damian Smedley
  * @version 0.05 (April 6, 2013)
  */
-public class DynamicPhenodigmPriority implements IPriority,Constants {
+public class DynamicPhenodigmPriority implements Priority {
 	/** Threshold for filtering. Retain only those variants whose score is below this threshold. */
     private float score_threshold = 2.0f;
     private String hpo_ids = null;
@@ -108,7 +108,7 @@ public class DynamicPhenodigmPriority implements IPriority,Constants {
 
    
     
-    public void prioritize_list_of_genes(List<Gene> gene_list)
+    public void prioritizeGenes(List<Gene> gene_list)
     {
 	Iterator<Gene> it = gene_list.iterator();
 	this.found_data_for_mgi_phenodigm=0;
@@ -134,7 +134,7 @@ public class DynamicPhenodigmPriority implements IPriority,Constants {
      * @return result of prioritization (represents a non-negative score)
      */
   private MGIPhenodigmRelevanceScore retrieve_score_data(Gene g) throws ExomizerSQLException {
-      float MGI_SCORE = UNINITIALIZED_FLOAT;
+      float MGI_SCORE = Constants.UNINITIALIZED_FLOAT;
       String MGI_GENE_ID = null;
       String MGI_GENE=null;
 	  
@@ -334,7 +334,7 @@ public class DynamicPhenodigmPriority implements IPriority,Constants {
     		  */
     	  }
     	  else {
-	      MGI_SCORE = NOPARSE_FLOAT;//use to indicate there is no phenotyped mouse model in MGI
+	      MGI_SCORE = Constants.NOPARSE_FLOAT;//use to indicate there is no phenotyped mouse model in MGI
     	  }
     	  rs2.close();
       }
@@ -415,7 +415,7 @@ public class DynamicPhenodigmPriority implements IPriority,Constants {
     /**
      * To do
      */
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
     /**
      * @return an HTML message for the table describing the action of filters

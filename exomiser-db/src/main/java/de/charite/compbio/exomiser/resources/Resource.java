@@ -5,31 +5,45 @@
  */
 package de.charite.compbio.exomiser.resources;
 
+import de.charite.compbio.exomiser.parsers.ResourceGroupParser;
+import de.charite.compbio.exomiser.parsers.ResourceParser;
 import java.util.Objects;
 
 /**
- * Bean for storing information about an external resource required for building
- * the Exomiser database.
+ * This is the fundamental atomic unit of work for storing information about a 
+ * resource required for building the Exomiser database.
  *
+ * It specifies where a required resource (a file) is found, both on the web and 
+ * locally. How it should be downloaded and extracted, which class is required to
+ * parse the resource and whether this is also required by other resources in 
+ * order to parse them as part of a 
+ * {@code de.charite.compbio.exomiser.resources.ResourceGroup}.
+ * 
+ * It also tracks the download, extract and parse steps as 
+ * {@code de.charite.compbio.exomiser.resources.ResourceOperationStatus}s 
+ * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExternalResource {
+public class Resource {
 
-    private String name;
+    private final String name;
     private String url;
     private String remoteFileName;
     private String version;
     private String extractedFileName;
     private String extractionScheme;
-    private String parser;
-    private String parserGroup;
+    private Class<? extends ResourceParser> parserClass;
     private String parsedFileName;
+    private String resourceGroupName;
+    private Class<? extends ResourceGroupParser> resourceGroupParserClass;
     
     private ResourceOperationStatus downloadStatus;
     private ResourceOperationStatus extractStatus;
     private ResourceOperationStatus parseStatus;
 
-    public ExternalResource() {
+    
+    public Resource(String name) {
+        this.name = name;
         downloadStatus = ResourceOperationStatus.UNTRIED;
         extractStatus = ResourceOperationStatus.UNTRIED;
         parseStatus = ResourceOperationStatus.UNTRIED;
@@ -38,10 +52,6 @@ public class ExternalResource {
     
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getUrl() {
@@ -68,12 +78,12 @@ public class ExternalResource {
         this.version = version;
     }
 
-    public String getParser() {
-        return parser;
+    public Class<? extends ResourceParser> getParserClass() {
+        return parserClass;
     }
 
-    public void setParser(String parser) {
-        this.parser = parser;
+    public void setParserClass(Class<? extends ResourceParser> parserClass) {
+        this.parserClass = parserClass;
     }
 
     public String getExtractedFileName() {
@@ -104,20 +114,40 @@ public class ExternalResource {
         this.parseStatus = parseStatus;
     }
 
-    public String getParserGroup() {
-        return parserGroup;
-    }
-
-    public void setParserGroup(String parserGroup) {
-        this.parserGroup = parserGroup;
-    }
-
     public String getParsedFileName() {
         return parsedFileName;
     }
 
     public void setParsedFileName(String parsedFileName) {
         this.parsedFileName = parsedFileName;
+    }
+
+    public String getResourceGroupName() {
+        return resourceGroupName;
+    }
+
+    public void setResourceGroupName(String resourceGroupName) {
+        this.resourceGroupName = resourceGroupName;
+    }
+
+    public Class<? extends ResourceGroupParser> getResourceGroupParserClass() {
+        return resourceGroupParserClass;
+    }
+
+    public void setResourceGroupParserClass(Class<? extends ResourceGroupParser> resourceGroupParserClass) {
+        this.resourceGroupParserClass = resourceGroupParserClass;
+    }
+
+    public ResourceOperationStatus getDownloadStatus() {
+        return downloadStatus;
+    }
+
+    public ResourceOperationStatus getExtractStatus() {
+        return extractStatus;
+    }
+
+    public ResourceOperationStatus getParseStatus() {
+        return parseStatus;
     }
 
     @Override
@@ -129,7 +159,7 @@ public class ExternalResource {
         hash = 71 * hash + Objects.hashCode(this.version);
         hash = 71 * hash + Objects.hashCode(this.extractedFileName);
         hash = 71 * hash + Objects.hashCode(this.extractionScheme);
-        hash = 71 * hash + Objects.hashCode(this.parser);
+        hash = 71 * hash + Objects.hashCode(this.parserClass);
         hash = 71 * hash + Objects.hashCode(this.parsedFileName);
         return hash;
     }
@@ -142,7 +172,7 @@ public class ExternalResource {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final ExternalResource other = (ExternalResource) obj;
+        final Resource other = (Resource) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
@@ -161,7 +191,7 @@ public class ExternalResource {
         if (!Objects.equals(this.extractionScheme, other.extractionScheme)) {
             return false;
         }
-        if (!Objects.equals(this.parser, other.parser)) {
+        if (!Objects.equals(this.parserClass, other.parserClass)) {
             return false;
         }
         if (!Objects.equals(this.parsedFileName, other.parsedFileName)) {
@@ -171,11 +201,11 @@ public class ExternalResource {
     }
    
     public String getStatus() {
-        return String.format("Status for: %-8s Download: %s, Extract: %s, Parse: %s", name, downloadStatus, extractStatus, parseStatus);
+        return String.format("Status for: %-23s Download: %s, Extract: %s, Parse: %s", name, downloadStatus, extractStatus, parseStatus);
     }
     
     @Override
     public String toString() {
-        return "ExternalResource{" + "name=" + name + ", url=" + url + ", fileName=" + remoteFileName + ", version=" + version + ", parser=" + parser + ", parsedFileName=" + parsedFileName +'}';
+        return "Resource{" + "name=" + name + ", url=" + url + ", fileName=" + remoteFileName + ", version=" + version + ", parser=" + parserClass + ", parsedFileName=" + parsedFileName + ", resourceGroupName=" + resourceGroupName +'}';
     }
 }

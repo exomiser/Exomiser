@@ -17,6 +17,8 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Connects to Phenodigm and dumps out data in pipe delimited format to the
@@ -24,20 +26,22 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class PhenodigmDataDumper {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenodigmDataDumper.class);
-    private static DataSource phenodigmConnection;
+    
+    @Autowired
+    private DataSource phenodigmDataSource;
 
-    public PhenodigmDataDumper(DataSource dataSource) {
-        phenodigmConnection = dataSource;
+    public PhenodigmDataDumper() {
     }
 
     /**
      *
      * @param outputPath
      */
-    public static void dumpPhenodigmData(Path outputPath) {
+    public void dumpPhenodigmData(Path outputPath) {
         logger.info("Starting to dump files");
         if (outputPath.toFile().mkdir()) {
             logger.info("Created new directory {} for Phenodigm datadumps.", outputPath);
@@ -59,7 +63,7 @@ public class PhenodigmDataDumper {
         
     }
 
-    protected static File dumpOrphanet(Path outputPath, String outName) {
+    protected File dumpOrphanet(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Orphanet data to file: {}", outfile);
 
@@ -69,7 +73,7 @@ public class PhenodigmDataDumper {
                 + "human_curated = 1 and d.disease_id like '%ORPHA%' and entrezgene is not null";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -90,14 +94,14 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpMp(Path outputPath, String outName) {
+    protected File dumpMp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm MP data to file: {}", outfile);
 
         String sql = "select mp_id, term from mp";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -117,14 +121,14 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-        protected static File dumpZp(Path outputPath, String outName) {
+    protected File dumpZp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm ZP data to file: {}", outfile);
 
         String sql = "select zp_id, term from zp";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -145,14 +149,14 @@ public class PhenodigmDataDumper {
     }
 
     
-    protected static File dumpMouseGeneOrthologs(Path outputPath, String outName) {
+    protected  File dumpMouseGeneOrthologs(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm MouseGeneOrtholog data to file: {}", outfile);
 
         String sql = "select model_gene_id, model_gene_symbol, hgnc_gene_symbol, entrezgene from mouse_gene_ortholog where entrezgene is not NULL";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -174,14 +178,14 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpFishGeneOrthologs(Path outputPath, String outName) {
+    protected File dumpFishGeneOrthologs(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm FishGeneOrtholog data to file: {}", outfile);
 
         String sql = "select model_gene_id, model_gene_symbol, hgnc_id, entrezgene from fish_gene_ortholog";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -203,17 +207,14 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpDiseaseHp(Path outputPath, String outName) {
+    protected File dumpDiseaseHp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm diseaseHp data to file: {}", outfile);
 
-        //String sql = "select distinct disease_id , group_concat(hp_id) as hpids from disease_hp group by disease_id";
-        
-        String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d, hp_hp_mapping h where d.hp_id=h.hp_id group by disease_id";
-        
+        String sql = "select distinct disease_id , group_concat(hp_id) as hpids from disease_hp group by disease_id";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -233,7 +234,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpMouseMp(Path outputPath, String outName) {
+    protected File dumpMouseMp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm mouseMp data to file: {}", outfile);
 
@@ -242,7 +243,7 @@ public class PhenodigmDataDumper {
                 + "where mgo.model_gene_id = mmgo.model_gene_id and mmgo.model_id = mmm.model_id group by mmm.model_id";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -264,7 +265,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-        protected static File dumpFishZp(Path outputPath, String outName) {
+    protected File dumpFishZp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm fishZp data to file: {}", outfile);
 
@@ -273,7 +274,7 @@ public class PhenodigmDataDumper {
                 + "where mgo.model_gene_id = mmgo.model_gene_id and mmgo.model_id = mmm.model_id group by mmm.model_id";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -296,7 +297,7 @@ public class PhenodigmDataDumper {
     }
 
     
-//    protected static File dumpDiseaseDiseaseSummary(Path outputPath, String outName) {
+//    protected File dumpDiseaseDiseaseSummary(Path outputPath, String outName) {
 //        File outfile = new File(outputPath.toFile(), outName);
 //        logger.info("Dumping Phenodigm diseaseDiseaseSummary data to file: {}", outfile);
 //
@@ -323,14 +324,14 @@ public class PhenodigmDataDumper {
 //        }
 //        return outfile;
 //    }
-    protected static File dumpOmimTerms(Path outputPath, String outName) {
+    protected File dumpOmimTerms(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm omimTerms data to file: {}", outfile);
 
         String sql = "select disease_id, disease_term from disease";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -350,7 +351,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpHpMpMapping(Path outputPath, String outName) {
+    protected File dumpHpMpMapping(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm hpMpMapping data to file: {}", outfile);
         //hp_mp_mapping has a mapping_id column 
@@ -359,7 +360,7 @@ public class PhenodigmDataDumper {
         String sql = "select hp_id, mp_id, sqrt(ic*simJ) as score from hp_mp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -381,7 +382,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpHpZpMapping(Path outputPath, String outName) {
+    protected File dumpHpZpMapping(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm hpZpMapping data to file: {}", outfile);
         //hp_mp_mapping has a mapping_id column 
@@ -390,7 +391,7 @@ public class PhenodigmDataDumper {
         String sql = "select hp_id, zp_id, sqrt(ic*simJ) as score from hp_zp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -412,7 +413,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
     
-    protected static File dumpHpHpMapping(Path outputPath, String outName) {
+    protected File dumpHpHpMapping(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm hpHpMapping data to file: {}", outfile);
 
@@ -422,7 +423,7 @@ public class PhenodigmDataDumper {
         String sql = "select hp_id, hp_id_hit, sqrt(ic*simJ) as score from hp_hp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
             ps.setFetchSize(Integer.MIN_VALUE);
 
@@ -444,7 +445,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpMouseGeneLevelSummary(Path outputPath, String outName) {
+    protected File dumpMouseGeneLevelSummary(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm MouseGeneLevelSummary data to file: {}", outfile);
 
@@ -456,7 +457,7 @@ public class PhenodigmDataDumper {
 
         //no need to close  things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
 
             ps.setFetchSize(Integer.MIN_VALUE);
@@ -479,7 +480,7 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected static File dumpFishGeneLevelSummary(Path outputPath, String outName) {
+    protected File dumpFishGeneLevelSummary(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm FishGeneLevelSummary data to file: {}", outfile);
 
@@ -491,7 +492,7 @@ public class PhenodigmDataDumper {
 
         //no need to close  things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmConnection.getConnection();
+                Connection connection = phenodigmDataSource.getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
 
             ps.setFetchSize(Integer.MIN_VALUE);

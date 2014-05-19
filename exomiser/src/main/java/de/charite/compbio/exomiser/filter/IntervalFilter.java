@@ -25,7 +25,7 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @author Peter N Robinson
  * @version 0.08 (April 28, 2013)
  */
-public class IntervalFilter implements IFilter {
+public class IntervalFilter implements Filter {
     /** The chromosome of the linkage interval */
     int chromosome;
     /** The 5' position of the linkage interval on the chromosome */
@@ -49,7 +49,7 @@ public class IntervalFilter implements IFilter {
       
     /** This method sets the interval based on a String such as
      chr2:12345-67890. */
-    public void set_parameters(String par) throws ExomizerInitializationException
+    public void setParameters(String par) throws ExomizerInitializationException
     {
 	String chr,x,y,tmp;
 	this.successfully_initialized=true;
@@ -105,7 +105,7 @@ public class IntervalFilter implements IFilter {
      * pass the filter, remove it. Note that we use an explicit for loop to avoid a
      * java.util.ConcurrentModificationException that occurs with an Iterator implementation.
     */
-    public void filter_list_of_variants(List<VariantEvaluation> variant_list)
+    public void filterVariants(List<VariantEvaluation> variant_list)
     {
 	this.n_before = variant_list.size();
 	Iterator<VariantEvaluation> it = variant_list.iterator();
@@ -158,7 +158,7 @@ public class IntervalFilter implements IFilter {
     }
 
     /** Should this Filter be shown in the HTML output? */
-    public boolean display_in_HTML() {return false; }
+    public boolean displayInHTML() {return false; }
     
     /**
      * Not needed in this class.

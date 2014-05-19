@@ -27,7 +27,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @author Peter N Robinson
  * @version 0.09 (April 28, 2013)
  */
-public class FrequencyFilter implements IFilter {
+public class FrequencyFilter implements Filter {
     /** Threshold for filtering. Retain only those variants whose frequency (expressed as
      * a percentage) is below this threshold. The default value is 100%, i.e., no filtering
      * out.
@@ -79,7 +79,7 @@ public class FrequencyFilter implements IFilter {
      * a minor allele frequency of 1%.
      * @param par A frequency threshold, e.g., a string such as "2" for 2 percent, or RS
      */
-    @Override public void set_parameters(String par) throws ExomizerInitializationException
+    @Override public void setParameters(String par) throws ExomizerInitializationException
     {
 	if (par.equalsIgnoreCase("RS")) {
 	    this.strictFiltering = true;
@@ -124,7 +124,7 @@ public class FrequencyFilter implements IFilter {
      * the variant from further consideration.
      * @param variant_list a list of Variants to be tested for rarity.
      */
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list)
+    @Override public void filterVariants(List<VariantEvaluation> variant_list)
     {
 	Iterator<VariantEvaluation> it = variant_list.iterator();
 	int n_dbSNP_frequency_data_found=0;
@@ -268,7 +268,7 @@ public class FrequencyFilter implements IFilter {
        	setUpSQLPreparedStatements();
     }
 
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
 
 }

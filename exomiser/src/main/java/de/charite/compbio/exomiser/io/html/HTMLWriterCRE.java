@@ -10,8 +10,8 @@ import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.filter.IFilter;
-import de.charite.compbio.exomiser.priority.IPriority;
+import de.charite.compbio.exomiser.filter.Filter;
+import de.charite.compbio.exomiser.priority.Priority;
 
 import jannovar.common.VariantType;
 import jannovar.exome.VariantTypeCounter;
@@ -449,14 +449,14 @@ public class HTMLWriterCRE extends HTMLWriter {
      * @param filterList List of the filters chosen by the user.
      * @param priorityList List of prioritizers chosen by the user.
      */
-    @Override public void writeHTMLFilterSummary(List<IFilter> filterList, 
-				       List<IPriority> priorityList) 
+    @Override public void writeHTMLFilterSummary(List<Filter> filterList, 
+				       List<Priority> priorityList) 
 	throws IOException
     {
 	// The following code gets information on the filters chosen by the use
 	// and prints out a summary of the filtering results.
 	HTMLFilterSummary filtersum = new HTMLFilterSummary();
-	for (IFilter f : filterList) {
+	for (Filter f : filterList) {
 	    FilterType fl = f.getFilterTypeConstant();
 	    // Get data for row in the filter table.
 	    String name =  f.getFilterName();
@@ -465,8 +465,8 @@ public class HTMLWriterCRE extends HTMLWriter {
 	    int after  = f.getAfter();
 	    filtersum.addRow(name,descript,before,after);
 	}
-	for (IPriority p : priorityList) {
-	    if (p.display_in_HTML()) {
+	for (Priority p : priorityList) {
+	    if (p.displayInHTML()) {
 		String name =  p.getPriorityName();
 		System.out.println("Calling for " + name);
 		List<String> descript = p.getMessages();

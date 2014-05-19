@@ -9,7 +9,7 @@ import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.BedFilter;
 import de.charite.compbio.exomiser.filter.FrequencyFilter;
-import de.charite.compbio.exomiser.filter.IFilter;
+import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.filter.IntervalFilter;
 import de.charite.compbio.exomiser.filter.PathogenicityFilter;
 import de.charite.compbio.exomiser.filter.QualityFilter;
@@ -18,10 +18,7 @@ import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.sql.Connection;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,19 +97,29 @@ public class Prioritiser {
     
     private static final Logger logger = LoggerFactory.getLogger(Prioritiser.class);
     
-    /** Database handle to the postgreSQL database used by this application. */
-    private Connection connection = null;
-    /**
-     * List of filters (see {@link exomizer.filter.IFilter IFilter}).
+    /** 
+     * Database handle to the postgreSQL database used by this application. 
      */
-    private List<IFilter> filterList = null;
-    /** List of gene-prioritizers (see {@link exomizer.priority.IPriority IPriority}). */
-    private List<IPriority> priorityList = null;
+    //TODO: not actually needed by this class - this is required by the variant Filters
+    //and Gene Prioritizers replace with Spring component scanning
+    private Connection connection = null;
+    
+    /**
+     * List of filters (see {@link exomizer.filter.Filter Filter}).
+     */
+    private List<Filter> filterList;
+    
+    /** 
+     * List of gene-prioritizers (see {@link exomizer.priority.Priority Priority}).
+     */
+    private List<Priority> priorityList;
+    
     /**
      * One of AD, AR, or XR (X chromosomal recessive). If uninitialized, this
      * prioritizer has no effect).
      */
     private ModeOfInheritance inheritanceMode = ModeOfInheritance.UNINITIALIZED;
+    
     /**
      * List of all Genes that are to be prioritized. Note that the Genes will
      * contain the variants that have passed the filtering step.
@@ -121,35 +128,79 @@ public class Prioritiser {
     
     public Prioritiser(Connection conn) {
 	this.connection = conn;
-	this.filterList = new ArrayList<IFilter>();
-	this.priorityList = new ArrayList<IPriority>();
+	this.filterList = new ArrayList<Filter>();
+	this.priorityList = new ArrayList<Priority>();
     }
 
+     /**
+     * This method goes through VCF parsing, deserializing the UCSC data,
+     * annotating variants, filtering and prioritizing genes, and ranking the
+     * candidate genes. It is a convenience method that groups together most of
+     * the pipeline and can be used by the apache tomcat Webserver.
+     * <p>
+     * Note that we assume that the transcript definition data has been
+     * deserialized before this method is called.
+     * @param variantList A list of annotated variants from Jannovar, passed to us
+     * from the main exomizer program
+     * @param rankBasedScoring True if we should perform rank-based scoring rather than using the raw scores.
+     * @return 
+     * @throws ExomizerException
+     */
+    public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) 
+	throws ExomizerException 
+    {
+	/**************************************************************/
+	/* 1) Filter the variants according to user-supplied params. */
+	/**************************************************************/
+        logger.info("FILTERING VARIANTS");
+	filterVariants(variantList);
+	/**************************************************************/
+	/* 2) Prioritize the variants according to phenotype, model */
+	/* organism data, protein protein interactions, whatever */
+	/**************************************************************/
+        geneList = makeGenesFromVariants(variantList);
+        logger.info("PRIORITISING GENES");
+	prioritizeGenes(geneList);
+	/**************************************************************/
+	/* 3) Rank all genes now according to combined score. */
+	/**************************************************************/
+        logger.info("RANKING GENES");
+        if (rankBasedScoring) {
+	    scoreCandidateGenesByRank();
+	} else {
+	    rankCandidateGenes();
+	}
+	return geneList;
+    }
 
     /**
-     * This function iterates over all of the Prioritization schemes chosen by
-     * the user and applies them the list of variants (a Java ArrayList). At
-     * present, the code is written such that there will be one prioritization
-     * filter applied per run, however, they could be combined with one another
-     * in the future.
-     * <P>
-     * Prioritization will look at all variants that have survived filtering and
-     * then use an appropriate algorithm to assign a score to each
-     * {@link exomizer.exome.Gene Gene} object. The function rank variants is
-     * then applied to rank the variants according to the combined
-     * filter/priority score.
-     * <P>
-     * This method first combines all the {@link jannovar.exome.Variant Variant}
-     * objects into the corresponing {@link exomizer.exome.Gene Gene} objects,
-     * and then it applies all active prioritization algorithms.
+     * This function iterates over all of the Filters chosen by the user and
+     * applies each filter to the list of variants (a Java ArrayList). If a
+     * variant does not pass the filter, it is removed from the list. Thus,
+     * after this method is called, the list of variants is usually much shorter
+     * and should just contain the major candidates from Exome sequencing.
+     * 
+     * @see exomizer.filter.Filter
      */
-    private void prioritizeGenes(List<VariantEvaluation> variantList) {
-	/** Record list of genes we have seen before. */
-	Map<String, Gene> gene_map = new HashMap<String, Gene>();
-	Iterator<VariantEvaluation> it = variantList.iterator();
-	while (it.hasNext()) {
-	    VariantEvaluation ve = it.next();
-	    Variant v = ve.getVariant();
+    private void filterVariants(List<VariantEvaluation> variantList) {
+	for (Filter f : this.filterList) {
+            logger.info("STARTING filter: {}", f.getFilterName());
+	    f.filterVariants(variantList);
+	}
+    }
+
+    /**
+     * Converts a list of {@code de.charite.compbio.exomiser.exome.VariantEvaluation} to a 
+     * list of {@code de.charite.compbio.exomiser.exome.Gene}.
+     * 
+     * @param variantList
+     * @return 
+     */
+    private List<Gene> makeGenesFromVariants(List<VariantEvaluation> variantList) {
+        /** Record list of genes we have seen before. */
+	Map<String, Gene> geneMap = new HashMap<>();
+        for (VariantEvaluation variantEvaluation : variantList) {
+	    Variant v = variantEvaluation.getVariant();
 	    /*
 	     * Jannovar  outputs multiple possible symbols for
 	     * a variant e.g. where a variant is an exon in one gene and intron
@@ -165,84 +216,43 @@ public class Prioritiser {
 		    String nameParts[] = name.split(",");
 		    name = nameParts[0];
 		}
-		if (gene_map.containsKey(name)) {
-		    Gene g = gene_map.get(name);
-		    g.addVariant(ve);
+		if (geneMap.containsKey(name)) {
+		    Gene g = geneMap.get(name);
+		    g.addVariant(variantEvaluation);
 		}
 		else {
-		    Gene g = new Gene(ve);
-		    gene_map.put(name, g);
+		    Gene g = new Gene(variantEvaluation);
+		    geneMap.put(name, g);
 		}
 	    }
 	}
 	/** Now create a list of Genes so we can sort them. */
-	this.geneList = new ArrayList<Gene>(gene_map.values());
-	for (IPriority priority : this.priorityList) {
-            logger.info("STARTING prioritiser: {}", priority.getPriorityName());
-            priority.prioritize_list_of_genes(this.geneList);
-	}
+	return new ArrayList<>(geneMap.values());
     }
-
-
-
     
-
     /**
-     * This function iterates over all of the Filters chosen by the user and
-     * applies each filter to the list of variants (a Java ArrayList). If a
-     * variant does not pass the filter, it is removed from the list. Thus,
-     * after this method is called, the list of variants is usually much shorter
-     * and should just contain the major candidates from Exome sequencing.
-     * 
-     * @see exomizer.filter.IFilter
+     * This function iterates over all of the Prioritization schemes chosen by
+     * the user and applies them the list of variants (a Java ArrayList). At
+     * present, the code is written such that there will be one prioritization
+     * filter applied per run, however, they could be combined with one another
+     * in the future.
+     * <P>
+     * Prioritization will look at all variants that have survived filtering and
+     * then use an appropriate algorithm to assign a score to each
+     * {@link exomizer.exome.Gene Gene} object. The function rank variants is
+     * then applied to rank the variants according to the combined
+     * filter/priority score.
+     * <P>
+     * This method first combines all the {@link jannovar.exome.Variant Variant}
+     * objects into the corresponding {@link exomizer.exome.Gene Gene} objects,
+     * and then it applies all active prioritization algorithms.
      */
-    private void filterVariants(List<VariantEvaluation> variantList) {
-	for (IFilter f : this.filterList) {
-            logger.info("STARTING filter: {}", f.getFilterName());
-	    f.filter_list_of_variants(variantList);
+    private void prioritizeGenes(List<Gene> genes) {
+        for (Priority priority : priorityList) {
+            logger.info("STARTING prioritiser: {}", priority.getPriorityName());
+            priority.prioritizeGenes(genes);
 	}
     }
-
-
-     /**
-     * This method goes through VCF parsing, deserializing the UCSC data,
-     * annotating variants, filtering and prioritizing genes, and ranking the
-     * candidate genes. It is a convenience method that groups together most of
-     * the pipeline and can be used by the apache tomcat Webserver.
-     * <p>
-     * Note that we assume that the transcript definition data has been
-     * deserialized before this method is called.
-     * @param variantList A list of annotated variants from Jannovar, passed to us
-     * from the main exomizer program
-     * @param rankBasedScoring True if we should perform rank-based scoring rather than using the raw scores.
-     * @throws ExomizerException
-     */
-    public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) 
-	throws ExomizerException 
-    {
-	/**************************************************************/
-	/* 1) Filter the variants according to user-supplied params. */
-	/**************************************************************/
-        logger.info("FILTERING VARIANTS");
-	filterVariants(variantList);
-	/**************************************************************/
-	/* 2) Prioritize the variants according to phenotype, model */
-	/* organism data, protein protein interactions, whatever */
-	/**************************************************************/
-        logger.info("PRIORITISING GENES");
-	prioritizeGenes(variantList);
-	/**************************************************************/
-	/* 3) Rank all genes now according to combined score. */
-	/**************************************************************/
-        logger.info("RANKING GENES");
-        if (rankBasedScoring) {
-	    scoreCandidateGenesByRank();
-	} else {
-	    rankCandidateGenes();
-	}
-	return this.geneList;
-    }
-
 
 
     /** In the original implementation of the Exomiser, the genes were scored
@@ -318,16 +328,23 @@ public class Prioritiser {
     }
     
 
-
-
-
-    public List<IFilter> getFilterList() { return this.filterList; }
+    public List<Filter> getFilterList() { 
+        return this.filterList;
+    }
     
-    public List<IPriority> getPriorityList() { return this.priorityList; }
+    public List<Priority> getPriorityList() { 
+        return this.priorityList;
+    }
 
+    public void addPriority(Priority priority) {
+	priorityList.add(priority);
+    }
 
+    // all these addXXXXPrioritizer methods should be handled elsewhere as these
+    //violate the SRP
+    
     public void addOMIMPrioritizer() throws ExomizerInitializationException {
-	IPriority ip = new OMIMPriority();
+	Priority ip = new OMIMPriority();
 	this.priorityList.add(ip);
 	ip.setDatabaseConnection(this.connection);
     }
@@ -335,7 +352,7 @@ public class Prioritiser {
     public void addInheritancePrioritiser(String inheritance_filter_type) 
 	throws ExomizerInitializationException 
     {
-	IPriority inhp = new InheritancePriority();
+	Priority inhp = new InheritancePriority();
 	if (inheritance_filter_type != null) {
 	    inhp.setParameters(inheritance_filter_type);
 	    this.priorityList.add(inhp);
@@ -352,14 +369,14 @@ public class Prioritiser {
 	    hpoIDset.add(s.trim());
 	}
 	boolean symmetric = false;
-	IPriority ip = new PhenomizerPriority(phenomizerDataDirectory, hpoIDset, symmetric);
+	Priority ip = new PhenomizerPriority(phenomizerDataDirectory, hpoIDset, symmetric);
 	this.priorityList.add(ip);
     }
 
     public void addMGIPhenodigmPrioritiser(String disease) 
 	throws ExomizerInitializationException
     {
-	IPriority ip = new MGIPhenodigmPriority(disease);
+	Priority ip = new MGIPhenodigmPriority(disease);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -367,7 +384,7 @@ public class Prioritiser {
     public void addBOQAPrioritiser(String hpoOntologyFile, String hpoAnnotationFile,  String hpoTermList)
 	throws ExomizerInitializationException
     {
-	IPriority ip = new BoqaPriority(hpoOntologyFile, hpoAnnotationFile, hpoTermList);
+	Priority ip = new BoqaPriority(hpoOntologyFile, hpoAnnotationFile, hpoTermList);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -375,7 +392,7 @@ public class Prioritiser {
     public void addDynamicPhenodigmPrioritiser(String hpoTermList)
 	throws ExomizerInitializationException
     {
-	IPriority ip = new DynamicPhenodigmPriority(hpoTermList);
+	Priority ip = new DynamicPhenodigmPriority(hpoTermList);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -383,7 +400,7 @@ public class Prioritiser {
     public void addZFINPrioritiser(String disease)
 	throws ExomizerInitializationException
     {
-	IPriority ip = new ZFINPhenodigmPriority(disease);
+	Priority ip = new ZFINPhenodigmPriority(disease);
 	ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -391,7 +408,7 @@ public class Prioritiser {
     public void addExomeWalkerPrioritiser(String rwFilePath, String rwIndexPath, String entrezSeedGenes) 
 	throws ExomizerInitializationException
     {
-	IPriority ip = new GenewandererPriority(rwFilePath, rwIndexPath);
+	Priority ip = new GenewandererPriority(rwFilePath, rwIndexPath);
         ip.setParameters(entrezSeedGenes);
 	this.priorityList.add(ip);
     }
@@ -399,7 +416,7 @@ public class Prioritiser {
 //    public void addPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String disease, String candGene) 
 //	throws ExomizerInitializationException
 //    {
-//	IPriority ip = new PhenoWandererPriority(rwFilePath, rwIndexPath, disease, candGene);
+//	Priority ip = new PhenoWandererPriority(rwFilePath, rwIndexPath, disease, candGene);
 //        ip.setDatabaseConnection(this.connection);
 //	this.priorityList.add(ip);
 //    }
@@ -407,7 +424,7 @@ public class Prioritiser {
     public void addDynamicPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String hpoids, String candGene, String disease, DataMatrix rwMatrix) 
 	throws ExomizerInitializationException
     {
-        IPriority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene, disease, rwMatrix);
+        Priority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene, disease, rwMatrix);
         ip.setDatabaseConnection(this.connection);
 	this.priorityList.add(ip);
     }
@@ -417,14 +434,14 @@ public class Prioritiser {
     public void addTargetFilter() 
 	throws ExomizerInitializationException
     {
-	IFilter f = new TargetFilter();
+	Filter f = new TargetFilter();
 	this.filterList.add(f);
     }
 
 
      public void addBedFilter(Set<String> commalist)	throws ExomizerInitializationException
     {
-	IFilter f = new BedFilter(commalist);
+	Filter f = new BedFilter(commalist);
 	this.filterList.add(f);
     }
 
@@ -437,35 +454,29 @@ public class Prioritiser {
     public void addFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) 
      	throws ExomizerInitializationException
     {
-	IFilter f=null;
-	if (filterOutAllDbsnp) {
-	    f = new FrequencyFilter();
-	    f.setDatabaseConnection(this.connection);
-	    f.set_parameters("RS");
-	    this.filterList.add(f);
+	Filter filter = new FrequencyFilter();
+        filter.setDatabaseConnection(this.connection);
+	
+        if (filterOutAllDbsnp) {
+	    filter.setParameters("RS");
 	} else if (frequency_threshold != null && 
 		   !frequency_threshold.equals("none")) {
-	    f = new FrequencyFilter();
-	    f.setDatabaseConnection(this.connection);
-	    f.set_parameters(frequency_threshold);
-	    this.filterList.add(f);
+	    filter.setParameters(frequency_threshold);
 	} else {
 	    // default is freq filter at 100 i.e. keep everything so still
 	    // get freq data in output and inclusion in prioritization
-	    f = new FrequencyFilter();
-	    f.setDatabaseConnection(this.connection);
-	    f.set_parameters("100");
-	    this.filterList.add(f);
+	    filter.setParameters("100");
 	}
+        this.filterList.add(filter);
     }
 
      public void addQualityFilter(String quality_threshold)
 	 throws ExomizerInitializationException
     {
-	IFilter f=null;
+	Filter f=null;
 	if (quality_threshold != null) {
 	    f = new QualityFilter();
-	    f.set_parameters(quality_threshold);
+	    f.setParameters(quality_threshold);
 	    this.filterList.add(f);
 	}
      }
@@ -476,7 +487,7 @@ public class Prioritiser {
 	PathogenicityFilter f = new PathogenicityFilter();
 	f.setDatabaseConnection(this.connection);
 	if (filterOutNonpathogenic) {
-	    f.set_parameters("filter");
+	    f.setParameters("filter");
 	}
         f.set_syn_filter_status(removeSyn);
 	this.filterList.add(f);
@@ -486,16 +497,10 @@ public class Prioritiser {
     	throws ExomizerInitializationException
     {
 	if (interval != null) {
-	   IFilter f = new IntervalFilter();
-	   f.set_parameters(interval);
+	   Filter f = new IntervalFilter();
+	   f.setParameters(interval);
 	   this.filterList.add(f);
 	}
     }
-    
-    public void setPrioritizer(IPriority ip) {
-	if (this.priorityList == null) {
-	    this.priorityList = new ArrayList<IPriority>();
-	}
-	this.priorityList.add(ip);
-    }
+   
 }

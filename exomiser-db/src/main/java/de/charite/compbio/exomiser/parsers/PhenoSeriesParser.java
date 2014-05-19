@@ -3,13 +3,15 @@ package de.charite.compbio.exomiser.parsers;
 /**
  * Command line functions from apache
  */
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,15 +20,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is intended to parse the information about the OMIM phenotypic
- * series and to enter it into the SQL database exomizer that will be used for
- * the larger exomizer project. Note that this program parses the output of the
- * perl scripts that are located in the "extraStuff" folder of the ExomeWalker
- * project; see the README file there for information on how to get all of that
- * parsed. These scripts are currently not very pretty, since the phenoseries
- * information is delivered as an HTML page with subtly inconsistent formatting,
- * it requires some "hacks" to parse with a perl script.
- * <P>
+ * This class is intended to parseResource the information about the OMIM phenotypic
+ series and to enter it into the SQL database exomizer that will be used for
+ the larger exomizer project. Note that this program parses the output of the
+ perl scripts that are located in the "extraStuff" folder of the ExomeWalker
+ project; see the README file there for information on how to get all of that
+ parsed. These scripts are currently not very pretty, since the phenoseries
+ information is delivered as an HTML page with subtly inconsistent formatting,
+ it requires some "hacks" to parseResource with a perl script.
+ <P>
  * This program is thus part of the ExomeWalker subproject of the Exomizer.
  * <P>
  * The format of the pheno2gene.txt file is as follows:
@@ -53,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * @version 0.06 (2 January, 2014)
  *
  */
-public class PhenoSeriesParser implements Parser {
+public class PhenoSeriesParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenoSeriesParser.class);
 
@@ -62,8 +64,8 @@ public class PhenoSeriesParser implements Parser {
     }
 
     /**
-     * Parser for the pheno2gene.txt file which produces the phenoseries.pg dump file,
-     * assuming you want to call them that.
+     * ResourceParser for the pheno2gene.txt file which produces the phenoseries.pg dump file,
+ assuming you want to call them that.
      * 
      * Note that OMIM has some entries such as 61206
      * <ul>
@@ -79,22 +81,28 @@ public class PhenoSeriesParser implements Parser {
      * and are in a sense duplicates, more or less two versions of the same
      * disease. To keep things simple, we take only one of these entries, and we
      * discard the rest.
-     * @param inPath
-     * @param outPath
-     * @return 
+     * @param resource
+     * @param inDir
+     * @param outDir
      */
     @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
-        logger.info("Parsing {}", inPath);
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
         //you might notice that the code here is pretty similar to that in the 
         //Omim2GeneParser because it is parsing the same file, but handling the data slightly differently.
         //Sorry. This is clunky and a cardinal sin in direct violation of DRY. 
-        //But done to fit the parse() paradigm. Peter did it better before-hand 
+        //But done to fit the parseResource() paradigm. Peter did it better before-hand 
         //(i.e. one class only), but it produced two different tables. Given this is static data we're parsing
         //and it's likely to be depricated at some point this is hopefully not too evil.
-        try (BufferedReader reader = new BufferedReader(new FileReader(inPath));
-                BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
+        
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
 
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
+        ResourceOperationStatus status;
+        
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
+                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+        
             Set<String> uniqueSeriesIds = new HashSet<>();
             Map<String, Phenoseries> phenoseriesMap = new HashMap<>();
 
@@ -145,17 +153,16 @@ public class PhenoSeriesParser implements Parser {
                 logger.debug("Writing series: {} {} {}", phenoseries.getSeriesID(), phenoseries.getSeriesName(), phenoseries.getGeneCount());
                 writer.write(String.format("%s|%s|%s%n", phenoseries.getSeriesID(), phenoseries.getSeriesName(), phenoseries.getGeneCount()));
             }
-
-        } catch (FileNotFoundException ex) {
-            logger.error(null, ex);
-            return ResourceOperationStatus.FILE_NOT_FOUND;
+            status = ResourceOperationStatus.SUCCESS;
+        }  catch (FileNotFoundException ex) {
+            logger.error("{}", ex);
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
         } catch (IOException ex) {
-            logger.error(null, ex);
-            return ResourceOperationStatus.FAILURE;
+            logger.error("{}", ex);
+            status = ResourceOperationStatus.FAILURE;
         }
-        
-        logger.info("Done parsing {}", inPath);
-        return ResourceOperationStatus.SUCCESS;
+        resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 
 

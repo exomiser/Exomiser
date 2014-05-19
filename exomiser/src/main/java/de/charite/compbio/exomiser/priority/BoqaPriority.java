@@ -48,7 +48,7 @@ import de.charite.compbio.exomiser.exome.Gene;
  * @author Peter Robinson
  * @version 0.03 (9 September, 2013)
  */
-public class BoqaPriority implements IPriority {
+public class BoqaPriority implements Priority {
 
     /** This is core class implementing BOQA */
     private BOQA boqa = null;
@@ -265,10 +265,10 @@ public class BoqaPriority implements IPriority {
      *
      * @param gene_list List of candidate genes.
      *
-     * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
+     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override 
-    public void prioritize_list_of_genes(List<Gene> gene_list)
+    public void prioritizeGenes(List<Gene> gene_list)
     {
         ArrayList<BoqaRelevanceScore> scoreList = new ArrayList<BoqaRelevanceScore>(gene_list.size());
         KahanSummation sum = new KahanSummation(); 
@@ -352,7 +352,7 @@ public class BoqaPriority implements IPriority {
      * This is call for genes with no PPI data; they are assigned a score of zero.
      * They will be assigned a score equivalent to the median of all genes by
      * the function {@code prioritize_listofgenes} in 
-     * {@link exomizer.priority.IPriority IPriority}.
+     * {@link exomizer.priority.IPriority Priority}.
      * basically as a kind of uniform prior.
      */
     public static BoqaRelevanceScore noDataScore() {
@@ -365,7 +365,7 @@ public class BoqaPriority implements IPriority {
 
 
  /* (non-Javadoc)
-     * @see exomizer.priority.IPriority#getPriorityName()
+     * @see exomizer.priority.Priority#getPriorityName()
      */
     @Override public String getPriorityName() { 
 	return "Uberpheno semantic similarity filter"; 
@@ -422,7 +422,7 @@ public class BoqaPriority implements IPriority {
     /**
      * To do
      */
-     @Override public boolean display_in_HTML() { return false; }
+     @Override public boolean displayInHTML() { return false; }
 
   
      @Override public String getHTMLCode() { return "To Do"; }

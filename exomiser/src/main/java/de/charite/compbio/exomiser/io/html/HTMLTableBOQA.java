@@ -9,8 +9,8 @@ import jannovar.pedigree.Pedigree;
 import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.ITriage;
-import de.charite.compbio.exomiser.priority.IRelevanceScore;
+import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.priority.RelevanceScore;
 
 
 
@@ -91,15 +91,15 @@ public class HTMLTableBOQA extends HTMLTable {
 	//The following function outputs the left-most table of transcript-based variants etc.
 	VariantEvaluation ve = gen.getNthVariant(0); /* Get the first (zero-th) variant associated with this gene */
 	outputVariant(ve,out);
-	// Each variant now has exactly the same number of ITriage objects with the results of filtering.
-	Map<FilterType,ITriage> triageMap = ve.getTriageMap();
-	Map<FilterType,IRelevanceScore> relevanceMap = gen.getRelevanceMap();
-	ITriage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	ITriage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	// Each variant now has exactly the same number of Triage objects with the results of filtering.
+	Map<FilterType,Triage> triageMap = ve.getTriageMap();
+	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
+	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	// Write the variant score associated with the first (zero-th) variant
 	writeVariantScoreCell(path,freq,out);
-	IRelevanceScore boqa = relevanceMap.get(FilterType.BOQA_FILTER);
-	IRelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	RelevanceScore boqa = relevanceMap.get(FilterType.BOQA_FILTER);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
 	if (boqa == null && mim == null) {
@@ -118,10 +118,10 @@ public class HTMLTableBOQA extends HTMLTable {
 	    VariantEvaluation vev = gen.getNthVariant(i);
 	    out.write("<tr>\n");
 	    outputVariant(vev,out);
-	    // Each variant now has exactly the same number of ITriage objects with the results of filtering.
-	    Map<FilterType,ITriage> triageMp = vev.getTriageMap();
-	    ITriage frq = triageMp.get(FilterType.FREQUENCY_FILTER);
-	    ITriage pth = triageMp.get(FilterType.PATHOGENICITY_FILTER);
+	    // Each variant now has exactly the same number of Triage objects with the results of filtering.
+	    Map<FilterType,Triage> triageMp = vev.getTriageMap();
+	    Triage frq = triageMp.get(FilterType.FREQUENCY_FILTER);
+	    Triage pth = triageMp.get(FilterType.PATHOGENICITY_FILTER);
 	    writeVariantScoreCell(pth,frq,out);
 	    out.write("</tr>\n");
 	}

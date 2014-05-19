@@ -6,10 +6,10 @@
 
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.config.AppConfig;
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
+import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -48,24 +48,25 @@ public class MimToGeneParserTest {
     }
 
     /**
-     * Test of parse method, of class MimToGeneParser.
+     * Test of parseResource method, of class MimToGeneParser.
      */
     @Test
     public void testParse() {
-        String mim2geneTestFile = "src/test/resources/data/mim2gene.txt";
-        String outPath = "target/test-data/testMim2Gene.out";
         Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
-
+        Resource testResource = new Resource("MIM2GENE");
+        testResource.setExtractedFileName("mim2gene.txt");
+        testResource.setParsedFileName("testMim2Gene.out");
+        
         MimToGeneParser instance = new MimToGeneParser(mim2geneMap);
         ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
-        ResourceOperationStatus result = instance.parse(mim2geneTestFile, outPath);
+        instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
         assertFalse(mim2geneMap.isEmpty());
         for (Entry<Integer, Set<Integer>> entry : mim2geneMap.entrySet()) {
             if (entry.getValue().size() > 1) {
                 System.out.println(entry);            
             }
         }
-        assertEquals(expResult, result);
+        assertEquals(expResult, testResource.getParseStatus());
 
     }
     

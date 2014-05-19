@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.priority;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class GenewandererRelevanceScore implements IRelevanceScore {
+public class GenewandererRelevanceScore implements RelevanceScore {
     /**
      * The Random walk similarity score.
      */
@@ -49,7 +49,7 @@ public class GenewandererRelevanceScore implements IRelevanceScore {
 
     /** 
      * @return An HTML list with an entry representing the GeneWanderer (Random walk) similarity score.
-     * @see exomizer.filter.ITriage#getHTMLCode()
+     * @see exomizer.filter.Triage#getHTMLCode()
      */
     @Override public String getHTMLCode() {
 	return String.format("<ul><li>Random walk similarity score: %.3f</li></ul>",this.genewandererScore);

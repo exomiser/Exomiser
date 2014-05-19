@@ -42,7 +42,7 @@ import de.charite.compbio.exomiser.priority.util.ScoreDistributionContainer;
  * @author Sebastian Koehler
  * @version 0.06 (6 December, 2013)
  */
-public class PhenomizerPriority implements IPriority {
+public class PhenomizerPriority implements Priority {
 
     /** The HPO as Ontologizer-Ontology object */
     private Ontology hpo;
@@ -303,10 +303,10 @@ public class PhenomizerPriority implements IPriority {
      * (the candidate genes have rare, potentially pathogenic variants).
      * 
      * @param gene_list  List of candidate genes.
-     * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
+     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override 
-    public void prioritize_list_of_genes(List<Gene> gene_list) {
+    public void prioritizeGenes(List<Gene> gene_list) {
 	this.totalGenes = gene_list.size();
 
 	for (Gene gene : gene_list) {
@@ -425,7 +425,7 @@ public class PhenomizerPriority implements IPriority {
     /**
      * Flag to show results of this analysis in the HTML page.
      */
-    public boolean display_in_HTML() {
+    public boolean displayInHTML() {
 	return true;
     }
     

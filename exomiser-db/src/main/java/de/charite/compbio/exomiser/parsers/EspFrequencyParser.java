@@ -1,18 +1,17 @@
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.reference.Frequency;
+import de.charite.compbio.exomiser.resources.Resource;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import jannovar.common.Constants;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -33,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter N. Robinson
  * @version 0.04 (28.07.2013)
  */
-public class EspFrequencyParser implements Parser {
+public class EspFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(EspFrequencyParser.class);
 
@@ -77,30 +76,56 @@ public class EspFrequencyParser implements Parser {
     /**
      * Parses all 24 of the ESP VCF files (one per chromosome).
      *
-     * @param inputDir Path to the inputDir containing the ESP VCF files.
-     * @param outputDir
-     * @return
+     * @param resource
+     * @param inDir Path to the inputDir containing the ESP VCF files.
+     * @param outDir
      */
     @Override
-    public ResourceOperationStatus parse(String inputDir, String outputDir) {
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
+
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         //n.b. we ignore the ouputDir for the sake of consistency with the other
         //Frequency parser - the writing out of the file is handled elsewhere. 
-        ResourceOperationStatus status = ResourceOperationStatus.SUCCESS;
-        if (frequencyList == null) {
-            logger.error("Require a frequency list to refer to.");
-            return ResourceOperationStatus.FAILURE;
+        ResourceOperationStatus status;
+        if (frequencyList == null || frequencyList.isEmpty()) {
+            logger.error("Require a frequency list to refer to - this one is null");
+            status = ResourceOperationStatus.FAILURE;
+            resource.setParseStatus(status);
+            return;
         }
-        File[] espFilePaths = new File(inputDir).listFiles();
-        for (File espFile : espFilePaths) {
-            ResourceOperationStatus fileStatus = parseEspFile(espFile.getAbsolutePath());
-            if (fileStatus != ResourceOperationStatus.SUCCESS) {
-                status = fileStatus;
-            }
+        if (frequencyList.isEmpty()) {
+            logger.error("Require a frequency list with frequencies to refer to - this one is empty.");
+            status = ResourceOperationStatus.FAILURE;
+            resource.setParseStatus(status);
+            return;
         }
-        //add all the new ESP frequencies into the original list supplied in the constructor
-        mergeAndSortFrequencyObjects();
-        return status;
+        try (DirectoryStream<Path> espFilePaths = Files.newDirectoryStream(inFile)) {
 
+            for (Path espFile : espFilePaths) {
+                ResourceOperationStatus fileStatus = parseEspFile(espFile);
+                if (fileStatus != ResourceOperationStatus.SUCCESS) {
+                    status = fileStatus;
+                }
+            }
+            //add all the new ESP frequencies into the original list supplied in the constructor
+            mergeAndSortFrequencyObjects();
+            //remember to set the status to success
+            status = ResourceOperationStatus.SUCCESS;
+            
+        } catch (FileNotFoundException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FAILURE;
+        }
+
+        resource.setParseStatus(status);
+        logger.info("{}", status);
+        
     }
 
     /**
@@ -110,14 +135,12 @@ public class EspFrequencyParser implements Parser {
      * every string (position on chromosome) into an Integer, but this can be
      * tested later.
      *
-     * @param path Absolute path to the ESP VCF file for a chromosome.
+     * @param espFile Absolute path to the ESP VCF file for a chromosome.
      */
-    private ResourceOperationStatus parseEspFile(String path) {
-        logger.info("Parsing ESP File: " + path);
+    private ResourceOperationStatus parseEspFile(Path espFile) {
+        logger.info("Parsing ESP File: {}", espFile);
         try {
-//            FileReader fstream = new FileInputStream(path);
-//            DataInputStream in = new DataInputStream(fstream);
-            BufferedReader br = new BufferedReader(new FileReader(path));
+            BufferedReader br = Files.newBufferedReader(espFile, Charset.defaultCharset());
             String line;
 
             while ((line = br.readLine()) != null) {
@@ -128,10 +151,10 @@ public class EspFrequencyParser implements Parser {
                 parseEspDataFromVCFInfoField(frequency);
             }
         } catch (IOException e) {
-            logger.error("Error parsing ESP file: {}", path, e.getMessage());
+            logger.error("{} - Error parsing ESP file: {}", ResourceOperationStatus.FAILURE, espFile, e.getMessage());
             return ResourceOperationStatus.FAILURE;
         }
-
+        logger.info("{}", ResourceOperationStatus.SUCCESS);        
         return ResourceOperationStatus.SUCCESS;
     }
 
@@ -162,7 +185,7 @@ public class EspFrequencyParser implements Parser {
 
                 }
                 /* If minorAlleleFreqs does not have three fields, something went wrong with the
-                 parse and we leave the three variables EA, AA, all uninitialized. */
+                 parseResource and we leave the three variables EA, AA, all uninitialized. */
                 break;
             }
         }

@@ -22,12 +22,12 @@ import java.sql.Connection;
  * The class uses the annotations made by classes from the
  * {@code jannovar.annotation} package etc.
  * <P>
- * Note that this class does not require a corresponding {@link exomizer.filter.ITriage ITriage}
+ * Note that this class does not require a corresponding {@link exomizer.filter.Triage Triage}
  * object, because variants that do not pass the filter are simply removed.
  * @author Peter N Robinson
  * @version 0.16 (20 December, 2013)
  */
-public class TargetFilter implements IFilter {
+public class TargetFilter implements Filter {
      /** Number of variants analyzed by filter */
     private int n_before;
     /** Number of variants passing filter */
@@ -62,12 +62,12 @@ public class TargetFilter implements IFilter {
     }
   
     /** This method is required by the interface but not needed by this class. */
-    @Override public void set_parameters(String par) throws ExomizerInitializationException{
+    @Override public void setParameters(String par) throws ExomizerInitializationException{
 	/* nothing to do here */
     }
     /** Take a list of variants and apply the filter to each variant. If a variant does not
 	pass the filter, remove it. */
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list) {
+    @Override public void filterVariants(List<VariantEvaluation> variant_list) {
 	if (variant_list.size()==0) {
 	    System.err.println("[Error: TargetFilter.java] Size of variant list is zero");
 	    return;
@@ -117,7 +117,7 @@ public class TargetFilter implements IFilter {
     @Override public int getAfter(){return this.n_after; }
 
     /** Should this Filter be shown in the HTML output? */
-    public boolean display_in_HTML() {
+    public boolean displayInHTML() {
 	return true;
     }
     

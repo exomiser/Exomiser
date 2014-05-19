@@ -13,19 +13,19 @@ import java.sql.Connection;
 /**
  * This interface is implemented by classes that perform prioritization of
  * genes (i.e., {@link exomizer.exome.Gene Gene} objects). In contrast to the
- * classes that implement {@link exomizer.filter.IFilter IFilter}, which remove variants
- * from further consideration (e.g., because they are not predicted to be at all
- * pathogenic), IPriority is inteded to work on genes (predict the relevance of the 
- * gene to the disease, without taking the nature or pathogenicity of any variant into account).
- * <P>
- * It is expected that the Exomizer will combine the evaluations of the IFilter and the IPriority
- * evaluations in order to reach a final ranking of the genes and variants into candidate
- * disease-causing mutations.  
+ * classes that implement {@code exomizer.filter.Filter}, which remove variants
+ from further consideration (e.g., because they are not predicted to be at all
+ pathogenic), Priority is inteded to work on genes (predict the relevance of the 
+ gene to the disease, without taking the nature or pathogenicity of any variant into account).
+ <P>
+ It is expected that the Exomizer will combine the evaluations of the Filter and the Priority
+ evaluations in order to reach a final ranking of the genes and variants into candidate
+ disease-causing mutations.  
  * @author Peter N Robinson
  * @version 0.13 (13 May, 2013).
- * @see  exomizer.filter.IFilter
+ * @see  exomizer.filter.Filter
  */
-public interface IPriority {
+public interface Priority {
 
     /** 
      * Apply a prioritization algorithm to a list of {@link exomizer.exome.Gene Gene} objects.
@@ -37,7 +37,7 @@ public interface IPriority {
      * Note that this may result in the removal of
      * {@link exomizer.exome.Gene Gene} objects if they do not conform to the Prioritizer.
     */ 
-    void prioritize_list_of_genes(List<Gene> gene_list);
+    void prioritizeGenes(List<Gene> geneList);
 
     /**
      * @return an enum constant representing the type of the implementing class.
@@ -58,7 +58,7 @@ public interface IPriority {
     /**
      * Should this prioritizer be displayed in the HTML page? 
      */
-    public boolean display_in_HTML();
+    public boolean displayInHTML();
     /** 
      * @return HTML code for display in box "Summary of Exome Filtering"
      */

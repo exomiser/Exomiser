@@ -2,19 +2,22 @@ package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.reference.Frequency;
+import de.charite.compbio.exomiser.resources.Resource;
 import jannovar.common.Constants;
 import jannovar.exception.JannovarException;
 import jannovar.io.SerializationManager;
 import jannovar.reference.TranscriptModel;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is designed to parse the dbSNP file {@code 00-All.vcf} which is
+ * This class is designed to parseResource the dbSNP file {@code 00-All.vcf} which is
  * available in gzipped form at the dbSNP FTP site. We use a collection of
  * {@link jannovar.reference.TranscriptModel} objects in order to filter the
  * dbSNP variants to those that are located either within an exon or close to an
@@ -35,10 +38,10 @@ import org.slf4j.LoggerFactory;
  * @see <a
  * href="ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/">ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/</a>
  */
-public class DbSnpFrequencyParser implements Parser {
+public class DbSnpFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DbSnpFrequencyParser.class);
-
+    
     /**
      * Total number of unique exons
      */
@@ -70,10 +73,15 @@ public class DbSnpFrequencyParser implements Parser {
      */
     private final HashMap<Byte, ChromosomalExonLocations> chromosomeMap;
 
-    public DbSnpFrequencyParser(File ucscSerializedData, List<Frequency> frequencyList) {
+    public DbSnpFrequencyParser(Resource ucscResource, Path ucscResourcePath, List<Frequency> frequencyList) {
         this.frequencyList = frequencyList;
         chromosomeMap = new HashMap<>();
-        deserializeUCSCdata(ucscSerializedData.getAbsolutePath());
+        //TODO: hack to get the full file path into the resource... possibly this should happen from the start
+        ucscResource.setExtractedFileName(ucscResourcePath.resolve(ucscResource.getExtractedFileName()).toAbsolutePath().toString());
+        //first we need to prepare the serialized ucsc19 data file from Jannovar
+        //this is required for parsing the dbSNP data where it is used as a filter to 
+        // remove variants outside of exonic regions.
+        deserializeUCSCdata(ucscResource);
     }
 
     /**
@@ -81,14 +89,35 @@ public class DbSnpFrequencyParser implements Parser {
      * serialized file was originally created by parsing the three UCSC known
      * gene files.
      */
-    private void deserializeUCSCdata(String serializedFile) {
+    private void deserializeUCSCdata(Resource ucscResource) {
+        Path ucscSerializedData = null;
+        ResourceOperationStatus status;
+        try {
+            ucscSerializedData = Paths.get(ucscResource.getExtractedFileName());
+            if ( !ucscSerializedData.toFile().exists()) {
+                status = ResourceOperationStatus.FILE_NOT_FOUND;
+                ucscResource.setParseStatus(status);
+                logger.error("{}: UCSC serialized data file is not present in the process path at {}", status, ucscSerializedData);
+                return;
+            } 
+        }
+        catch (IOError ex) {
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+            ucscResource.setParseStatus(status);
+            logger.error("{}: UCSC serialized data file is not present in the process path. Please add it to the data\\extracted dir.", status, ex);
+            //no useable API for Jannovar so we had to create this manually
+            return;
+        }
+        String serializedFile =  ucscSerializedData.toString();
         logger.info("De-serializing known Exon locations from UCSC data file: {}", serializedFile);
         SerializationManager manager = new SerializationManager();
         ArrayList<TranscriptModel> transcriptList = null;
         try {
             transcriptList = manager.deserializeKnownGeneList(serializedFile);
         } catch (JannovarException e) {
-            logger.error("Unable to deserialize the TranscriptModel serialized file.", e);
+            status = ResourceOperationStatus.FAILURE;
+            ucscResource.setParseStatus(status);
+            logger.error("{}: Unable to deserialize the TranscriptModel serialized file.", status, e);
         }
 
         for (TranscriptModel kgl : transcriptList) {
@@ -103,30 +132,39 @@ public class DbSnpFrequencyParser implements Parser {
                 exonLocations.addGene(kgl);
             }
         }
-        logger.info("Parsed " + serializedFile + " and added " + n_exons + " exons");
+        status = ResourceOperationStatus.SUCCESS;
+        ucscResource.setParseStatus(status);
+        logger.info("{} Parsed {} and added {} exons", status, serializedFile, n_exons);
     }
 
     /**
      * Parse the main dbSNP file
      *
-     * @param inPath Complete path to the dbSNPfile {@code 00-All.vcf}
-     * @param outPath
-     * @return
+     * @param resource
+     * @param inDir
+     * @param outDir
      */
     @Override
-    public ResourceOperationStatus parse(String inPath, String outPath) {
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
+
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
 
         long startTime = System.currentTimeMillis();
 
-        logger.info("Parsing file: {}", inPath);
-
+        ResourceOperationStatus status;
+        
         if (chromosomeMap.isEmpty()) {
-            logger.error("Unable to parse file: {} as the chromosomeMap is empty", inPath);
-            return ResourceOperationStatus.FAILURE;
+            logger.error("Unable to parse file: {} as the chromosomeMap is empty", inFile);
+            status = ResourceOperationStatus.FAILURE;
+            resource.setParseStatus(status);
+            return;
         }
 
         try {
-            FileInputStream fis = new FileInputStream(inPath);
+            FileInputStream fis = new FileInputStream(inFile.toString());
             InputStream is;
 
             /* First, attempt to use a gzip input stream, if this doesn't work, open it as usual */
@@ -134,7 +172,7 @@ public class DbSnpFrequencyParser implements Parser {
                 is = new GZIPInputStream(fis);
             } catch (IOException exp) {
                 fis.close();
-                is = fis = new FileInputStream(inPath);
+                is = fis = new FileInputStream(inFile.toString());
             }
 
             FileChannel fc = fis.getChannel();
@@ -161,14 +199,21 @@ public class DbSnpFrequencyParser implements Parser {
                     startTime = now;
                 }
             }
-        } catch (IOException e) {
-            logger.error("Error parsing dbSNP file: ", e);
-            return ResourceOperationStatus.FAILURE;
+            logger.info("Found " + n_exonic_vars + " exonic vars and " + n_non_exonic_vars + " non-exonics");
+            logger.info("Got " + n_duplicates + " duplicates");
+            
+            status = ResourceOperationStatus.SUCCESS;
+            
+        } catch (FileNotFoundException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FAILURE;
         }
 
-        logger.info("Found " + n_exonic_vars + " exonic vars and " + n_non_exonic_vars + " non-exonics");
-        logger.info("Got " + n_duplicates + " duplicates");
-        return ResourceOperationStatus.SUCCESS;
+        resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 
     /**

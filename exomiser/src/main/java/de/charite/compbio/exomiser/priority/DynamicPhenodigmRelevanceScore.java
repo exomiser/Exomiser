@@ -20,7 +20,7 @@ import java.util.List;
  * @author Damian Smedley
  * @version 0.06 (April 22, 2013).
  */
-public class DynamicPhenodigmRelevanceScore implements IRelevanceScore {
+public class DynamicPhenodigmRelevanceScore implements RelevanceScore {
     /** The phenodigm score as calculated by OWLsim. This score indicates the 
      * similarity between a humam disease and the phenotype of a genetically
      * modified mouse model.*/

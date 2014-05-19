@@ -1,14 +1,12 @@
 package de.charite.compbio.exomiser.priority;
 
 
-
-import jannovar.common.Constants;
 /**
  * 
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class PhenoWandererRelevanceScore implements IRelevanceScore,Constants  {
+public class PhenoWandererRelevanceScore implements RelevanceScore {
     /**
      * The Random walk similarity score.
      */
@@ -49,7 +47,7 @@ public class PhenoWandererRelevanceScore implements IRelevanceScore,Constants  {
 
     /** 
      * @return An HTML list with an entry representing the GeneWanderer (Random walk) similarity score.
-     * @see exomizer.filter.ITriage#getHTMLCode()
+     * @see exomizer.filter.Triage#getHTMLCode()
      */
     @Override public String getHTMLCode() {
 	return String.format("<ul><li>Uberiser similarity score: %.3f %s</li></ul>",this.genewandererScore,this.evidence);

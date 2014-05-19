@@ -37,7 +37,7 @@ import java.sql.Connection;
  * @author Sebastian Koehler
  * @version 0.05 (April 28, 2013)
  */
-public class UberphenoPriority implements IPriority {
+public class UberphenoPriority implements Priority {
 
 	/** The Uberpheno as Ontologizer-Ontology object */
 	private Ontology uberpheno;
@@ -140,7 +140,7 @@ public class UberphenoPriority implements IPriority {
 	}
 
     /* (non-Javadoc)
-     * @see exomizer.priority.IPriority#getPriorityName()
+     * @see exomizer.priority.Priority#getPriorityName()
      */
     @Override public String getPriorityName() { 
 	return "Uberpheno semantic similarity filter"; 
@@ -171,10 +171,10 @@ public class UberphenoPriority implements IPriority {
      * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects (the candidate
      * genes have rare, potentially pathogenic variants).
      * @param gene_list List of candidate genes.
-     * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
+     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
-	public void prioritize_list_of_genes(List<Gene> gene_list)
+	public void prioritizeGenes(List<Gene> gene_list)
     {
 	this.found_annotation_in_uberpheno	= 0;
 	
@@ -215,7 +215,7 @@ public class UberphenoPriority implements IPriority {
  /**
      * To do
      */
-    public boolean display_in_HTML() { return false; }
+    public boolean displayInHTML() { return false; }
 
   
     public String getHTMLCode() { return "To Do"; }

@@ -18,7 +18,7 @@ import jannovar.common.Constants;
  * @author Damian Smedley
  * @version 0.05 (April 2, 2013).
  */
-public class MGIPhenodigmRelevanceScore implements IRelevanceScore,Constants  {
+public class MGIPhenodigmRelevanceScore implements RelevanceScore {
     /** The phenodigm score as calculated by OWLsim. This score indicates the 
      * similarity between a humam disease and the phenotype of a genetically
      * modified mouse model.*/
@@ -57,7 +57,7 @@ public class MGIPhenodigmRelevanceScore implements IRelevanceScore,Constants  {
     */
    public static MGIPhenodigmRelevanceScore createNoDataRelevanceObject()
     {
-	MGIPhenodigmRelevanceScore rscore = new MGIPhenodigmRelevanceScore(null,null,UNINITIALIZED_FLOAT);
+	MGIPhenodigmRelevanceScore rscore = new MGIPhenodigmRelevanceScore(null,null,Constants.UNINITIALIZED_FLOAT);
 	return rscore;
     }
     
@@ -65,10 +65,10 @@ public class MGIPhenodigmRelevanceScore implements IRelevanceScore,Constants  {
      * @return Relevance score for the current Gene
      */
     @Override public float getRelevanceScore(){
-    	if (MGI_Phenodigm == UNINITIALIZED_FLOAT){
+    	if (MGI_Phenodigm == Constants.UNINITIALIZED_FLOAT){
 	    return 0.1f;// mouse model exists but no hit to this disease
     	}
-    	else if (MGI_Phenodigm == NOPARSE_FLOAT){
+    	else if (MGI_Phenodigm == Constants.NOPARSE_FLOAT){
 	    return 0.60f;// no mouse model exists in MGI
     	}
     	else{
@@ -83,9 +83,9 @@ public class MGIPhenodigmRelevanceScore implements IRelevanceScore,Constants  {
     /** @return A list with detailed results of filtering. The list is intended to be displayed as an HTML list if desired. */
     public java.util.ArrayList<String> getFilterResultList() {
 	ArrayList<String> L = new ArrayList<String>();
-	if (MGI_Phenodigm == UNINITIALIZED_FLOAT) {
+	if (MGI_Phenodigm == Constants.UNINITIALIZED_FLOAT) {
 	    L.add("MGI Phenodigm: no hit for this disease");
-	} else if (MGI_Phenodigm == NOPARSE_FLOAT){
+	} else if (MGI_Phenodigm == Constants.NOPARSE_FLOAT){
 	    L.add("MGI Phenodigm: no mouse model for this gene");
 	} else  {
 	    String s1 = String.format("MGI Phenodigm: (%.3f%%)",100*MGI_Phenodigm);
@@ -101,7 +101,7 @@ public class MGIPhenodigmRelevanceScore implements IRelevanceScore,Constants  {
     @Override  public String getHTMLCode() {
 	//if (MGI_Phenodigm == UNINITIALIZED_FLOAT) {
 	  //  return "<ul><li>MGI Phenodigm: no hit for this disease</li></ul>";
-	if (MGI_Phenodigm == NOPARSE_FLOAT){
+	if (MGI_Phenodigm == Constants.NOPARSE_FLOAT){
 	    return "<ul><li>No mouse model for this gene</li></ul>";
     } else  {
 	    String link = getHTMLLink();

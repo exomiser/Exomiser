@@ -9,7 +9,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.05 (6 January, 2014).
  */
-public class PhenomizerRelevanceScore implements IRelevanceScore {
+public class PhenomizerRelevanceScore implements RelevanceScore {
     /** The semantic similarity score as implemented in Phenomizer. Note that this is not the 
      * p-value methodology in that paper, but merely the simple semantic similarity score.
      */
@@ -55,7 +55,7 @@ public class PhenomizerRelevanceScore implements IRelevanceScore {
     }
     
     /** 
-     * @see exomizer.filter.ITriage#getHTMLCode()
+     * @see exomizer.filter.Triage#getHTMLCode()
      */
     @Override public String getHTMLCode() {
 	return String.format("<ul><li>Phenomizer: Semantic similarity score: %.2f (p-value: %f)</li></ul>",

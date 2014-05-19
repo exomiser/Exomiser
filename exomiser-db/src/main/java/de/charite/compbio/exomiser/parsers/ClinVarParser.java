@@ -1,19 +1,16 @@
 package de.charite.compbio.exomiser.parsers;
 
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,15 +46,15 @@ import org.slf4j.LoggerFactory;
  * <li>OtherIDs OMIM Allelic Variant:136352.0009
  * </ol>
  * <P>
- * For now, we will parse the Chromosome, start, stop and RCVaccession (Note
- * there may be multiple of these, separated by a semicolon. The application
- * will show any mutation start starts at the same nucleotide in the gene, on
- * the assumption that this may be clinically useful.
+ For now, we will parseResource the Chromosome, start, stop and RCVaccession (Note
+ there may be multiple of these, separated by a semicolon. The application
+ will show any mutation start starts at the same nucleotide in the gene, on
+ the assumption that this may be clinically useful.
  *
  * @version 0.02 (25 January, 2014)
  * @author Peter Robinson
  */
-public class ClinVarParser implements Parser {
+public class ClinVarParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinVarParser.class);
 
@@ -139,20 +136,26 @@ public class ClinVarParser implements Parser {
     }
 
     @Override
-    public ResourceOperationStatus parse(String path, String outPath) {
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
+
+        Path inFile = inDir.resolve(resource.getExtractedFileName());
+        Path outFile = outDir.resolve(resource.getParsedFileName());
+
+        logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
 
         int noPositionInfoVariants = 0;
         int wrongBuildVariants = 0;
         int goodVariants = 0;
-
-        try (
-                BufferedReader reader = new BufferedReader(new FileReader(path));
-                BufferedWriter writer = new BufferedWriter(new FileWriter(outPath))) {
-
+        ResourceOperationStatus status;
+        
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
+                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+        
             String line;
             
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
+                    logger.info(line);
                     continue; // First line with column definitions.
                 }
                 String split[] = line.split("\t");
@@ -160,27 +163,29 @@ public class ClinVarParser implements Parser {
                 if (split.length < expectedFieldLength) {
                     logger.warn("Malformed line: {}", line);
                     logger.warn("Line has only {} fields. Expected at least %s fields", split.length, expectedFieldLength);
-                    return ResourceOperationStatus.FAILURE;
+                    continue;
                 }
+                String type = split[1];
                 String build = split[12];
                 String RCV = split[8];
                 String chr = split[13];
                 String from = split[14];
                 String to = split[15];
                 String sign = split[5];
-                //System.out.println(sign);
+//                logger.info(line);
 
-                if (chr.equals("-") || from.equals("-")) {
+                if (chr.equals("-") || chr.isEmpty() || from.equals("-")) {
+                    logger.info("Skipping {} Chr='{}', from='{}' - No positional information defined on line: {}", type, chr, from, line);
                     noPositionInfoVariants++;
                     continue;
                 } else {
                     goodVariants++;
                 }
                 /* If we get here, the genome build should be GRCh37(=hg19), otherwise we will need to
-                 change the entire database or modify the parse code. */
+                 change the entire database or modify the parseResource code. */
 
                 if (!build.startsWith(expectedBuild)) {
-                    logger.warn("Wrong chromosome build: {}. Expected build {}. Check file and revise!", build, expectedBuild);
+                    logger.info("Wrong assembly: {}. Expected assembly {}. Skipping {}.", build, expectedBuild, type);
                     wrongBuildVariants++;
                 }
                 //System.out.println(RCV + "-" + chr + "-" + to + "-" + from);
@@ -210,13 +215,21 @@ public class ClinVarParser implements Parser {
                     this.clinvarLst.add(clinVar);
                 }
             }
-        } catch (IOException e) {
-            logger.error("Could not parse clinvar file: ", e);
-            return ResourceOperationStatus.FAILURE;
+            status = ResourceOperationStatus.SUCCESS;
+
+        } catch (FileNotFoundException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error(null, ex);
+            status = ResourceOperationStatus.FAILURE;
         }
+        
         logger.info("No position information for {} variants", noPositionInfoVariants);
         logger.info("Found information for {} variants", goodVariants);
         logger.info("{} variants were skipped because they are not from build {}", wrongBuildVariants, expectedBuild);
-        return ResourceOperationStatus.SUCCESS;
+        
+        resource.setParseStatus(status);
+        logger.info("{}", status);
     }
 }

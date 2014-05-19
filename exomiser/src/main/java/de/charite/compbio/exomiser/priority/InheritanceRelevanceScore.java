@@ -14,7 +14,7 @@ import java.util.List;
  * @author Peter N Robinson
  * @version 0.04 (April 6, 2013).
  */
-public class InheritanceRelevanceScore implements IRelevanceScore {
+public class InheritanceRelevanceScore implements RelevanceScore {
     /** This is set to true of the variant, possibly together with other variants of this gene, matches the
      * inheritance pattern (AR,AD,X). Note that because of the difficulty in calling hemizygous vs. homozygous
      * calls on the X chromosome, we do not distinguish between X recessive/dominant inheritance. */

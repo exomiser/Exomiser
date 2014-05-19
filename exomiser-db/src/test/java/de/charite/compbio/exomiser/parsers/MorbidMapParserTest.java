@@ -6,9 +6,11 @@
 
 package de.charite.compbio.exomiser.parsers;
 
+import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.After;
@@ -44,20 +46,30 @@ public class MorbidMapParserTest {
     }
 
     /**
-     * Test of parse method, of class MorbidMapParser.
+     * Test of parseResource method, of class MorbidMapParser.
      */
     @Test
     public void testParse() {
         System.out.println("parse");
-        String inPath = "src/test/resources/data/morbidmap";
-        String outPath = "target/test-data/testMorbidMap.out";
-        DiseaseInheritanceCache cache = new DiseaseInheritanceCache("src/test/resources/data/phenotype_annotation_test.tab");
+        Path testResourceDir = Paths.get("src/test/resources/data");
+        Path testOutDir = Paths.get("target/test-data");
+        
+        Resource testResource = new Resource("OMIM_morbidmap");
+        testResource.setExtractedFileName("morbidmap");
+        testResource.setParsedFileName("testMorbidMap.txt");
+        
+        Resource diseaseInheritanceResource = new Resource("HPO_phenotype_annotation_test");
+        diseaseInheritanceResource.setExtractedFileName("phenotype_annotation_test.tab");
+        
+        DiseaseInheritanceCache cache = new DiseaseInheritanceCache();
+        cache.parseResource(diseaseInheritanceResource, testResourceDir, testOutDir);
         Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
+        //todo: add some stub data to stop the test failing...
         
         MorbidMapParser instance = new MorbidMapParser(cache, mim2geneMap);
         ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
-        ResourceOperationStatus result = instance.parse(inPath, outPath);
-        assertEquals(expResult, result); 
+        instance.parseResource(testResource, testResourceDir, testOutDir);
+        assertEquals(expResult, testResource.getParseStatus());  
         
     }
     

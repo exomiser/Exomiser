@@ -6,12 +6,13 @@
 
 package de.charite.compbio.exomiser.parsers;
 
+import de.charite.compbio.exomiser.resources.Resource;
+import java.nio.file.Paths;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Tests for the HPO ontology parser
@@ -44,12 +45,11 @@ public class HPOOntologyFileParserTest {
     @Test
     public void testParseHPO() {
         System.out.println("parseHPO");
-        String inpath = "";
-        String outpath = "";
+        Resource testResource = new Resource("HPO");
+        testResource.setExtractedFileName("hp.obo");
+        testResource.setParsedFileName("hpoTestOut.pg");
         HPOOntologyFileParser instance = new HPOOntologyFileParser();
-        instance.parse(inpath, outpath);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
     }
     
 }

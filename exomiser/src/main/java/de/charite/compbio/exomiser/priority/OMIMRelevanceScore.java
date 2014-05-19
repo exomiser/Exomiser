@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * @author Peter N Robinson
  * @version 0.08 (9 February, 2014).
  */
-public class OMIMRelevanceScore implements IRelevanceScore {
+public class OMIMRelevanceScore implements RelevanceScore {
     /** A list of all diseases in OMIM that are associated with the gene affected by the variant. */
     private final List<String> mimEntryList;
     /** This score will be set to 1 if the variant distribution in the gene matches the

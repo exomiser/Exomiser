@@ -35,7 +35,7 @@ import de.charite.compbio.exomiser.exception.ExomizerSQLException;
  * @author Peter N Robinson
  * @version 0.16 (28 January,2014)
  */
-public class OMIMPriority implements IPriority {
+public class OMIMPriority implements Priority {
 
      /** Database handle to the postgreSQL database used by this application. */
     private Connection connection=null;
@@ -77,7 +77,7 @@ public class OMIMPriority implements IPriority {
      * that have suvived the filtering (i.e., have rare, potentially pathogenic variants).
      */
     @Override 
-    public void prioritize_list_of_genes(List<Gene> gene_list)
+    public void prioritizeGenes(List<Gene> gene_list)
     {
 	Iterator<Gene> it = gene_list.iterator();
 	while (it.hasNext()) {
@@ -233,7 +233,7 @@ public class OMIMPriority implements IPriority {
      * Since no filtering of prioritizing is done with the OMIM data
      * for now, it does not make sense to display this in the HTML 
      * table. */
-    public boolean display_in_HTML() { return false; }
+    public boolean displayInHTML() { return false; }
 
   
     public String getHTMLCode() { return "To Do"; }

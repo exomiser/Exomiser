@@ -32,7 +32,7 @@ import java.util.*;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class PhenoWandererPriority implements IPriority {
+public class PhenoWandererPriority implements Priority {
 
     private Connection connection = null;
     /**
@@ -258,10 +258,10 @@ public class PhenoWandererPriority implements IPriority {
      * have to call {@link #setParameters} before running this function.
      *
      * @param gene_list List of candidate genes.
-     * @see exomizer.filter.IFilter#filter_list_of_variants(java.util.ArrayList)
+     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
-    public void prioritize_list_of_genes(List<Gene> gene_list) {
+    public void prioritizeGenes(List<Gene> gene_list) {
         try {
             computeDistanceAllNodesFromStartNodes();
         } catch (ExomizerInitializationException e) {
@@ -358,7 +358,7 @@ public class PhenoWandererPriority implements IPriority {
      * This causes a summary of RW prioritization to appear in the HTML output
      * of the exomizer
      */
-    public boolean display_in_HTML() {
+    public boolean displayInHTML() {
         return true;
     }
 

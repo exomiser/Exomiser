@@ -35,7 +35,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @author Peter N Robinson
  * @version 0.09 (29 December, 2012).
  */
-public class PathogenicityFilter implements IFilter {
+public class PathogenicityFilter implements Filter {
   
     /** Database handle to the postgreSQL database used by this application. */
     private Connection connection=null;
@@ -57,16 +57,20 @@ public class PathogenicityFilter implements IFilter {
 	this.messages.add("Synonymous and non-coding variants removed");
      }
 
-    @Override public String getFilterName() { return "Pathogenicity filter"; }
+    @Override 
+    public String getFilterName() { return "Pathogenicity filter"; }
+    
     /** Flag to output results of filtering against polyphen, SIFT, and mutation taster. */
-    @Override public FilterType getFilterTypeConstant() { return FilterType.PATHOGENICITY_FILTER; } 
+    @Override 
+    public FilterType getFilterTypeConstant() { return FilterType.PATHOGENICITY_FILTER; } 
 
  
 
      /** Sets the frequency threshold for variants.
       * @param par A frequency threshold, e.g., a string such as "0.02"
       */
-     public void set_parameters(String par) throws ExomizerInitializationException
+    @Override
+     public void setParameters(String par) throws ExomizerInitializationException
      {
 	 // Set up the message
 	 messages.add("Pathogenicity predictions are based on the dbNSFP-normalized values");
@@ -103,17 +107,20 @@ public class PathogenicityFilter implements IFilter {
     /** Number of variants after filtering */
     private int n_after;
 
-      /** Get number of variants before filter was applied */
-    @Override public int getBefore() { return this.n_before; }
+    /** Get number of variants before filter was applied */
+    @Override 
+    public int getBefore() { return this.n_before; }
+    
     /** Get number of variants after filter was applied */
-    @Override public int getAfter() { return this.n_after; }
+    @Override 
+    public int getAfter() { return this.n_after; }
 
     /**
      * Remove variants that are deemed to be not-pathogenic, and provide a pathogenicity
-     * score for thos ehtat survive the filter.
+     * score for those that survive the filter.
      */
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list)
-    {
+    @Override 
+    public void filterVariants(List<VariantEvaluation> variant_list){
         Iterator<VariantEvaluation> it = variant_list.iterator();
 	
 	this.n_before = variant_list.size();
@@ -145,15 +152,14 @@ public class PathogenicityFilter implements IFilter {
 	/** The following classifies variants based upon their variant class (MISSENSE, NONSENSE, INTRONIC).
 	 * The actual logic for assigning pathogenicity scores is in the PathogenicityTriage class.
 	 */
-//	if (! v.is_missense_variant () ) {
-//	    return PathogenicityTriage.evaluateVariantClass(v); 
-//	}
+	if (! v.is_missense_variant () ) {
+	    return PathogenicityTriage.evaluateVariantClass(v); 
+	}
 	
 	
 	float polyphen = Constants.UNINITIALIZED_FLOAT;
 	float mutation_taster = Constants.UNINITIALIZED_FLOAT;
 	float sift = Constants.UNINITIALIZED_FLOAT;
-        float cadd_raw = Constants.UNINITIALIZED_FLOAT;
 	
 	int chrom = v.get_chromosome();
 	int position = v.get_position();
@@ -179,8 +185,6 @@ public class PathogenicityFilter implements IFilter {
 	      if (sift == Constants.UNINITIALIZED_FLOAT || rs.getFloat(1) < sift) {sift = rs.getFloat(1);}
 	      if (polyphen == Constants.UNINITIALIZED_FLOAT || rs.getFloat(2) > polyphen) {polyphen = rs.getFloat(2);}
               if (mutation_taster == Constants.UNINITIALIZED_FLOAT || rs.getFloat(3) > mutation_taster) {mutation_taster = rs.getFloat(3);}
-              if (cadd_raw == Constants.UNINITIALIZED_FLOAT || rs.getFloat(4) > cadd_raw) {cadd_raw = rs.getFloat(4);}
-              
 	  }
 //            
 //            if ( rs.next() ) { /* The way the db was constructed, there is just one line for each such query. */
@@ -192,13 +196,8 @@ public class PathogenicityFilter implements IFilter {
 	} catch(SQLException e) {
 	    throw new ExomizerSQLException("Error executing pathogenicity query: " + e);
 	}
-        if (! v.is_missense_variant () ) {
-	    return PathogenicityTriage.evaluateVariantClass(v,cadd_raw); 
-	}
-        else{
-            PathogenicityTriage pt = new PathogenicityTriage(polyphen,mutation_taster, sift, cadd_raw);
-            return pt;
-        }
+	PathogenicityTriage pt = new PathogenicityTriage(polyphen,mutation_taster, sift);
+	return pt;
     }
 
 
@@ -215,7 +214,7 @@ public class PathogenicityFilter implements IFilter {
     private void setUpSQLPreparedStatement() throws ExomizerInitializationException
     {	
 	String query = String.format("SELECT sift,"+
-				     "polyphen,mut_taster,cadd_raw,phyloP " +
+				     "polyphen,mut_taster,phyloP " +
 				     "FROM variant " +
 				     "WHERE chromosome = ? "+
 				     "AND position = ? " +
@@ -243,7 +242,7 @@ public class PathogenicityFilter implements IFilter {
 	setUpSQLPreparedStatement();
     }
 
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
 
 

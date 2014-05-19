@@ -17,7 +17,7 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @author Peter N Robinson
  * @version 0.11 (December 29, 2013)
  */
-public class QualityFilter implements IFilter {
+public class QualityFilter implements Filter {
     /** Threshold for filtering. Retain only those variants whose PHRED
 	variant call quality is at least as good. The default is 1. */
     private float quality_threshold = 1.0f;
@@ -39,7 +39,7 @@ public class QualityFilter implements IFilter {
     /**
      * @param par A String containing the PHRED quality threshold (e.g., 30).
      */
-     public void set_parameters(String par) throws ExomizerInitializationException
+     public void setParameters(String par) throws ExomizerInitializationException
      {
 	 try {
 	     this.quality_threshold  = Float.parseFloat(par);
@@ -69,7 +69,7 @@ public class QualityFilter implements IFilter {
     public int getAfter() { return this.n_after; }
 
     
-    @Override public void filter_list_of_variants(List<VariantEvaluation> variant_list)
+    @Override public void filterVariants(List<VariantEvaluation> variant_list)
     {
 	Iterator<VariantEvaluation> it = variant_list.iterator();
 	
@@ -89,7 +89,7 @@ public class QualityFilter implements IFilter {
 	this.n_after =  variant_list.size();
     }
 
-    public boolean display_in_HTML() { return true; }
+    public boolean displayInHTML() { return true; }
 
     /**
      * Not needed in this class.

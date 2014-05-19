@@ -13,7 +13,7 @@ import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.priority.IRelevanceScore;
+import de.charite.compbio.exomiser.priority.RelevanceScore;
 import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.filter.FrequencyTriage;
 import de.charite.compbio.exomiser.filter.ITriage;
@@ -33,20 +33,21 @@ import de.charite.compbio.exomiser.priority.GenewandererRelevanceScore;
  * variants found by exome sequencing, and stores the results of that annotation
  * in
  * {@link jannovar.exome.Variant Variant} objects. Objects of this class have a
- * list of Variant objects, one for each variant observed in the exome.
- * Additionally, the Gene objects get prioritized for their biomedical relevance
- * to the disease in question, and each such prioritization results in an
- * {@link exomizer.priority.IRelevanceScore IRelevanceScore} object. <P> There
- * are additionally some prioritization procedures that only can be performed on
- * genes (and not on the individual variants). For instance, there are certain
- * genes such as the Mucins or the Olfactory receptor genes that are often found
- * to have variants in WES data but are known not to be the relevant disease
- * genes. Additionally, filtering for autosomal recessive or dominant patterns
- * in the data is done with this class. This kind of prioritization is done by
- * classes that implement
- * {@link exomizer.priority.IPriority IPriority}. Recently, the ability to
- * downweight genes with too many variants (now hardcoded to 5) was added).
- *
+ * list of Variant objects, one for each variant observed in the exome. Additionally,
+ * the Gene objects get prioritized for their biomedical relevance to the disease
+ * in question, and each such prioritization results in an 
+ * {@link exomizer.priority.IRelevanceScore RelevanceScore} object.
+ * <P>
+ * There are additionally some prioritization procedures that only can be
+ * performed on genes (and not on the individual variants). For instance, there
+ * are certain genes such as the Mucins or the Olfactory receptor genes that are
+ * often found to have variants in WES data but are known not to be the
+ * relevant disease genes. Additionally, filtering for autosomal recessive or 
+ * dominant patterns in the data is done with this class. This kind of
+ * prioritization is done by classes that implement 
+ * {@link exomizer.priority.IPriority IPriority}.
+ * Recently, the ability to downweight genes with too many variants (now hardcoded to 5)
+ * was added).
  * @author Peter Robinson
  * @version 0.21 (16 January, 2013)
  */
@@ -67,6 +68,11 @@ public class Gene implements Comparable<Gene> {
      * {@link jannovar.exome.Variant Variant} objects associated with this gene.
      */
     private float filterScore = Constants.UNINITIALIZED_FLOAT;
+
+    /** A map of the results of prioritization. The key to the map is 
+	from {@link exomizer.common.FilterType FilterType}. */
+    private Map<FilterType,RelevanceScore> relevanceMap=null;
+
     /**
      * A map of the results of prioritization. The key to the map is from {@link exomizer.common.FilterType FilterType}.
      */
@@ -165,9 +171,9 @@ public class Gene implements Comparable<Gene> {
      * @param var A variant located in this gene.
      */
     public Gene(VariantEvaluation var) {
-        variant_list = new ArrayList<VariantEvaluation>();
-        variant_list.add(var);
-        this.relevanceMap = new HashMap<FilterType, IRelevanceScore>();
+	variant_list = new ArrayList<VariantEvaluation>();
+	variant_list.add(var);
+	this.relevanceMap = new HashMap<FilterType,RelevanceScore>();
     }
 
     /**
@@ -185,8 +191,8 @@ public class Gene implements Comparable<Gene> {
      * @param type an integer constant from {@link exomizer.common.FilterType FilterType}
      * representing the filter type
      */
-    public void addRelevanceScore(IRelevanceScore rel, FilterType type) {
-        this.relevanceMap.put(type, rel);
+    public void addRelevanceScore(RelevanceScore rel, FilterType type) {
+	this.relevanceMap.put(type,rel);
     }
 
     /**
@@ -195,24 +201,19 @@ public class Gene implements Comparable<Gene> {
      * @return The IRelevance object corresponding to the filter type.
      */
     public float getRelevanceScore(FilterType type) {
-        IRelevanceScore ir = this.relevanceMap.get(type);
-        if (ir == null) {
-            return 0f; /*
-             * This should never happen, but if there is no relevance score,
-             * just return 0.
-             */
-        }
-        return ir.getRelevanceScore();
+	RelevanceScore ir = this.relevanceMap.get(type);
+	if (ir == null) {
+	    return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
+	}
+	return ir.getRelevanceScore();
     }
 
     public void resetRelevanceScore(FilterType type, float newval) {
-        IRelevanceScore rel = this.relevanceMap.get(type);
-        if (rel == null) {
-            return;/*
-             * This should never happen.
-             */
-        }
-        rel.resetRelevanceScore(newval);
+	RelevanceScore rel = this.relevanceMap.get(type);
+	if (rel == null) {
+	    return;/* This should never happen. */
+	}
+	rel.resetRelevanceScore(newval);
     }
 
     /**
@@ -233,14 +234,12 @@ public class Gene implements Comparable<Gene> {
         }
     }
 
-    /**
-     * @return the map of {@link exomizer.priority.IRelevanceScore  IRelevanceScore}
-     * objects that represent the result of filtering
+    /** 
+     * @return the map of {@link exomizer.priority.IRelevanceScore  RelevanceScore} 
+     * objects that represent the result of filtering 
      */
-    public Map<FilterType, IRelevanceScore> getRelevanceMap() {
-        return this.relevanceMap;
-    }
-
+    public Map<FilterType,RelevanceScore> getRelevanceMap() { return this.relevanceMap; }
+    
     /**
      * Note that currently, the gene symbols are associated with the Variants.
      * Probably it would be more natural to associate that with a field of this
@@ -327,14 +326,15 @@ public class Gene implements Comparable<Gene> {
      * {@link exomizer.exome.Gene#priorityScore}, which is used to help sort the
      * gene.
      */
-    public void calculatePriorityScore() {
-        this.priorityScore = 1f;
-        for (FilterType i : this.relevanceMap.keySet()) {
-            IRelevanceScore r = this.relevanceMap.get(i);
-            float x = r.getRelevanceScore();
-            priorityScore *= x;
-        }
-    }
+     public void calculatePriorityScore() {
+	 this.priorityScore  = 1f;
+	 for (FilterType i : this.relevanceMap.keySet()) {
+	    RelevanceScore r = this.relevanceMap.get(i);
+	    float x = r.getRelevanceScore();
+	    priorityScore *= x;
+	 }
+     }
+
 
     /**
      * @return A list of all variants in the VCF file that affect this gene.

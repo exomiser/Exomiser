@@ -1,12 +1,14 @@
 package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.core.InheritanceMode;
+import de.charite.compbio.exomiser.resources.Resource;
+import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen
  * @version 0.01 (9 February 2014)
  */
-public class DiseaseInheritanceCache {
+public class DiseaseInheritanceCache implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DiseaseInheritanceCache.class);
 
@@ -32,15 +34,29 @@ public class DiseaseInheritanceCache {
      */
     private Map<Integer, InheritanceMode> diseaseInheritanceModeMap;
 
-    public DiseaseInheritanceCache(String phenotypeAnnotationFile) {
-        diseaseInheritanceModeMap = new HashMap<>();
-        setUpCache(phenotypeAnnotationFile);
+    public DiseaseInheritanceCache() {
+        
     }
 
+    @Override
+    public void parseResource(Resource resource, Path inDir, Path outDir) {
+        
+        Path phenotypeAnnotationFile = inDir.resolve(resource.getExtractedFileName());
+        
+        ResourceOperationStatus status = setUpCache(phenotypeAnnotationFile);
+        
+        resource.setParseStatus(status);
+        logger.info("{}", status);
+    }
+
+    
     /**
      * Get an appropriate inheritance code for the disease represented by
      * phenID. Note that we return the code for somatic mutation only if AR and
      * AD and X are not true. The same is for polygenic.
+     * 
+     * Ensure that the parseResource() method has been successfully called before
+     * trying to 
      *
      * @param diseaseId
      * @return
@@ -56,7 +72,7 @@ public class DiseaseInheritanceCache {
     }
 
     public boolean isEmpty() {
-        return diseaseInheritanceModeMap.isEmpty();
+        return diseaseInheritanceModeMap == null || diseaseInheritanceModeMap.isEmpty();
     }
     /**
      * Parse the file "phenotype_annotation.tab" in order to get the modes of
@@ -66,13 +82,18 @@ public class DiseaseInheritanceCache {
      * time and look for annotations to modes of inheritance. The function will
      * die if used with a parameter other than OMIM or Orphanet
      *
-     * @param inPath String path to the file phenotype_annotation.tab
+     * @param inFile String path to the file phenotype_annotation.tab
      */
-    private void setUpCache(String inPath) {
-        logger.info("Parsing inheritance modes from {} ", inPath);
-
-        try (FileReader fileReader = new FileReader(inPath);
-                BufferedReader br = new BufferedReader(fileReader)) {
+    private ResourceOperationStatus setUpCache(Path inFile) {
+        logger.info("Parsing inheritance modes from {} ", inFile);
+        //initialise this here to avoid the ability to get false negatives if 
+        //getInheritanceMode is called before the cache is initialised. 
+        //In which case a nullPointer will be thrown.
+        diseaseInheritanceModeMap = new HashMap<>();
+        
+        Charset charSet = Charset.forName("UTF-8");
+        try (
+                BufferedReader br = Files.newBufferedReader(inFile, charSet)) {
 
             String line;
             Integer diseaseId = null;
@@ -117,11 +138,17 @@ public class DiseaseInheritanceCache {
             //now we have the map of all diseases and theirt annotations we're going to extract the 
             //relevant inheritance modes and store these in the cache.
             diseaseInheritanceModeMap = finaliseInheritanceModes(intermadiateDiseaseInheritanceMap);
-        } catch (IOException e) {
-            logger.error("Could not read phenotype_annotation.tab file from {}", inPath, e);
-        }
-        logger.info("Extracted inheritance modes for {} diseases", diseaseInheritanceModeMap.size());
+        } catch (FileNotFoundException ex) {
+            logger.error("Could not find phenotype_annotation.tab file at location {}", inFile, ex);
+            return ResourceOperationStatus.FILE_NOT_FOUND;
+        } catch (IOException ex) {
+            logger.error("Tried using Charset: {}", charSet);
+            logger.error("Could not read phenotype_annotation.tab file from {}", inFile, ex);
+            return ResourceOperationStatus.FAILURE;
+        } 
+        
         logger.debug(diseaseInheritanceModeMap.toString());
+        return ResourceOperationStatus.SUCCESS;
     }
 
     private Map<Integer, InheritanceMode> finaliseInheritanceModes(Map<Integer, List<InheritanceMode>> diseaseInheritanceMap) {
