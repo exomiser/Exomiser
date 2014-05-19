@@ -13,6 +13,7 @@ import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.io.html.HTMLWriterBOQA;
 import de.charite.compbio.exomiser.io.html.HTMLWriterCRE;
 import de.charite.compbio.exomiser.io.html.HTMLWriterWalker;
+import de.charite.compbio.exomiser.io.tsv.TSVWriter;
 import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.Prioritiser;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
@@ -307,6 +308,7 @@ public class Exomizer {
      * small class hierarchy for different kinds of output.
      */
     private HTMLWriter htmlWriter = null;
+    private TSVWriter tsvWriter = null;
     private Prioritiser prioritiser = null;
     /**
      * Name of the disease gene family (an OMIM phenotypic series) that is being
@@ -421,7 +423,12 @@ public class Exomizer {
          * ***********************************************************
          */
         if (exomizer.useTSVFile()) {
-            exomizer.outputTSV();
+            try {
+                exomizer.outputTSV();
+            } catch (ExomizerException e) {
+                logger.error("Error writing output: ", e);
+                System.exit(1);
+            }
         } else if (exomizer.useVCFFile()) {
             exomizer.outputVCF();
         } else {
@@ -940,37 +947,15 @@ public class Exomizer {
      * used to calculate ROC or precision recall. TODO. Adapt the logic of this
      * function to the evaluation pipeline.
      */
-    public void outputTSV() {
+    public void outputTSV() throws ExomizerException {
         String fname = vcf_file + ".results.tsv";
         logger.info("Writing TSV file to: {}", fname);
         try {
-            FileWriter fstream = new FileWriter(fname);
-            BufferedWriter out = new BufferedWriter(fstream);
-            if (this.variantList == null) {
-                out.write("<P>Error: Variant list not initialized correctly!</P>");
-                out.close();
-                return;
-            }
-            for (Gene g : geneList) {
-                out.write(g.getTSVRow());
-                if (candidateGene == null) {
-                    out.write("\n");
-                } else {
-                    if (candidateGene.equals(g.getGeneSymbol())) {
-                        out.write("\t1\n");
-                    } else if (g.getGeneSymbol().startsWith(candidateGene + ",")) {
-                        // bug fix for new Jannovar labelling where can have
-                        // multiple genes per var
-                        // but first one is most pathogenic
-                        out.write("\t1\n");
-                    } else {
-                        out.write("\t0\n");
-                    }
-                }
-            }
-            out.close();
+            tsvWriter = new TSVWriter(fname);
+            tsvWriter.writeTSV(geneList,candidateGene);
         } catch (IOException e) {
-            logger.error("Error writing TSV file:", e);
+            String s = String.format("Error : %s", e.getMessage());
+            throw new ExomizerException(s);
         }
     }
 

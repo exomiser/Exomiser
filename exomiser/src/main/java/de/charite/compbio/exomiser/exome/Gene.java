@@ -56,7 +56,7 @@ public class Gene implements Comparable<Gene> {
     /**
      * A list of all of the variants that affect this gene.
      */
-    private List<VariantEvaluation> variant_list = null;
+    public List<VariantEvaluation> variant_list = null;
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
      * prediction for a disease gene) reflecting the predicted relevance of this
@@ -72,7 +72,7 @@ public class Gene implements Comparable<Gene> {
     /**
      * A map of the results of prioritization. The key to the map is from {@link exomizer.common.FilterType FilterType}.
      */
-    private Map<FilterType, RelevanceScore> relevanceMap = null;
+    public Map<FilterType, RelevanceScore> relevanceMap = null;
     /**
      * A Reference to the {@link jannovar.pedigree.Pedigree Pedigree} object for
      * the current VCF file. This object allows us to do segregation analysis
@@ -443,85 +443,85 @@ public class Gene implements Comparable<Gene> {
         //return priorityScore * pathogenicityFilterScore;
     }
 
-    /**
-     * @return a row for tab-separated value file.
-     */
-    public String getTSVRow() {
-        float humanPhenScore = 0f;
-        float mousePhenScore = 0f;
-        float fishPhenScore = 0f;
-        float rawWalkerScore = 0f;
-        float scaledMaxScore = 0f;
-        float walkerScore = 0f;
-        float exomiser2Score = 0f;
-        float omimScore = 0f;
-        float maxFreq = 0f;
-        float pathogenicityScore = 0f;
-        float polyphen = 0f;
-        float sift = 0f;
-        float mutTaster = 0f;
-        float caddRaw = 0f;
-        String variantType = "";
-        // priority score calculation
-        for (FilterType i : this.relevanceMap.keySet()) {
-            RelevanceScore r = this.relevanceMap.get(i);
-            float x = r.getRelevanceScore();
-            if (i == FilterType.DYNAMIC_PHENOWANDERER_FILTER) {
-                exomiser2Score = x;
-                humanPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getHumanScore();
-                mousePhenScore = ((DynamicPhenoWandererRelevanceScore) r).getMouseScore();
-                fishPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getFishScore();
-                walkerScore = ((DynamicPhenoWandererRelevanceScore) r).getWalkerScore();
-            } else if (i == FilterType.OMIM_FILTER) {
-                omimScore = x;
-            } else if (i == FilterType.GENEWANDERER_FILTER) {
-                walkerScore = x;
-                rawWalkerScore = (float) ((GenewandererRelevanceScore) r).getRawScore();
-                scaledMaxScore = (float) ((GenewandererRelevanceScore) r).getScaledScore();
-            }
-        }
-        for (VariantEvaluation ve : this.variant_list) {
-            float x = ve.getFilterScore();
-            for (FilterType i : ve.getTriageMap().keySet()) {
-                Triage itria = ve.getTriageMap().get(i);
-                if (itria instanceof PathogenicityTriage){
-                    if (((PathogenicityTriage) itria).filterResult() > pathogenicityScore){
-                        variantType = ve.getVariantType();
-                        pathogenicityScore = ((PathogenicityTriage) itria).filterResult();
-                        polyphen = ((PathogenicityTriage) itria).getPolyphen();
-                        sift = ((PathogenicityTriage) itria).getSift();
-                        mutTaster = ((PathogenicityTriage) itria).getMutTaster();
-                        caddRaw = ((PathogenicityTriage) itria).getCADDRaw();
-                        FrequencyTriage ft = (FrequencyTriage) ve.getTriageMap().get(FilterType.FREQUENCY_FILTER);
-                        maxFreq = ft.getMaxFreq();
-                    }
-                }
-            }
-        }
-        
-        String s = String.format("%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%s",
-                getGeneSymbol(),
-                getEntrezGeneID(),
-                getPriorityScore(),
-                getFilterScore(),
-                getCombinedScore(),
-                humanPhenScore,
-                mousePhenScore,
-                fishPhenScore,
-                rawWalkerScore,
-                scaledMaxScore,
-                walkerScore,
-                exomiser2Score,
-                omimScore,
-                maxFreq,
-                pathogenicityScore,
-                polyphen,
-                sift,
-                mutTaster,
-                caddRaw,
-                variantType);
-        return s;
-    }
+//    /**
+//     * @return a row for tab-separated value file.
+//     */
+//    public String getTSVRow() {
+//        float humanPhenScore = 0f;
+//        float mousePhenScore = 0f;
+//        float fishPhenScore = 0f;
+//        float rawWalkerScore = 0f;
+//        float scaledMaxScore = 0f;
+//        float walkerScore = 0f;
+//        float exomiser2Score = 0f;
+//        float omimScore = 0f;
+//        float maxFreq = 0f;
+//        float pathogenicityScore = 0f;
+//        float polyphen = 0f;
+//        float sift = 0f;
+//        float mutTaster = 0f;
+//        float caddRaw = 0f;
+//        String variantType = "";
+//        // priority score calculation
+//        for (FilterType i : this.relevanceMap.keySet()) {
+//            RelevanceScore r = this.relevanceMap.get(i);
+//            float x = r.getRelevanceScore();
+//            if (i == FilterType.DYNAMIC_PHENOWANDERER_FILTER) {
+//                exomiser2Score = x;
+//                humanPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getHumanScore();
+//                mousePhenScore = ((DynamicPhenoWandererRelevanceScore) r).getMouseScore();
+//                fishPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getFishScore();
+//                walkerScore = ((DynamicPhenoWandererRelevanceScore) r).getWalkerScore();
+//            } else if (i == FilterType.OMIM_FILTER) {
+//                omimScore = x;
+//            } else if (i == FilterType.GENEWANDERER_FILTER) {
+//                walkerScore = x;
+//                rawWalkerScore = (float) ((GenewandererRelevanceScore) r).getRawScore();
+//                scaledMaxScore = (float) ((GenewandererRelevanceScore) r).getScaledScore();
+//            }
+//        }
+//        for (VariantEvaluation ve : this.variant_list) {
+//            float x = ve.getFilterScore();
+//            for (FilterType i : ve.getTriageMap().keySet()) {
+//                Triage itria = ve.getTriageMap().get(i);
+//                if (itria instanceof PathogenicityTriage){
+//                    if (((PathogenicityTriage) itria).filterResult() > pathogenicityScore){
+//                        variantType = ve.getVariantType();
+//                        pathogenicityScore = ((PathogenicityTriage) itria).filterResult();
+//                        polyphen = ((PathogenicityTriage) itria).getPolyphen();
+//                        sift = ((PathogenicityTriage) itria).getSift();
+//                        mutTaster = ((PathogenicityTriage) itria).getMutTaster();
+//                        caddRaw = ((PathogenicityTriage) itria).getCADDRaw();
+//                        FrequencyTriage ft = (FrequencyTriage) ve.getTriageMap().get(FilterType.FREQUENCY_FILTER);
+//                        maxFreq = ft.getMaxFreq();
+//                    }
+//                }
+//            }
+//        }
+//        
+//        String s = String.format("%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%s",
+//                getGeneSymbol(),
+//                getEntrezGeneID(),
+//                getPriorityScore(),
+//                getFilterScore(),
+//                getCombinedScore(),
+//                humanPhenScore,
+//                mousePhenScore,
+//                fishPhenScore,
+//                rawWalkerScore,
+//                scaledMaxScore,
+//                walkerScore,
+//                exomiser2Score,
+//                omimScore,
+//                maxFreq,
+//                pathogenicityScore,
+//                polyphen,
+//                sift,
+//                mutTaster,
+//                caddRaw,
+//                variantType);
+//        return s;
+//    }
 
     /**
      * Calculate the priority score of this gene based on the relevance of the
