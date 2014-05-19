@@ -16,7 +16,7 @@ import jannovar.pedigree.Pedigree;
 import de.charite.compbio.exomiser.priority.RelevanceScore;
 import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.filter.FrequencyTriage;
-import de.charite.compbio.exomiser.filter.ITriage;
+import de.charite.compbio.exomiser.filter.Triage;
 import de.charite.compbio.exomiser.filter.PathogenicityTriage;
 import de.charite.compbio.exomiser.priority.DynamicPhenoWandererRelevanceScore;
 import de.charite.compbio.exomiser.priority.GenewandererRelevanceScore;
@@ -69,14 +69,10 @@ public class Gene implements Comparable<Gene> {
      */
     private float filterScore = Constants.UNINITIALIZED_FLOAT;
 
-    /** A map of the results of prioritization. The key to the map is 
-	from {@link exomizer.common.FilterType FilterType}. */
-    private Map<FilterType,RelevanceScore> relevanceMap=null;
-
     /**
      * A map of the results of prioritization. The key to the map is from {@link exomizer.common.FilterType FilterType}.
      */
-    private Map<FilterType, IRelevanceScore> relevanceMap = null;
+    private Map<FilterType, RelevanceScore> relevanceMap = null;
     /**
      * A Reference to the {@link jannovar.pedigree.Pedigree Pedigree} object for
      * the current VCF file. This object allows us to do segregation analysis
@@ -468,7 +464,7 @@ public class Gene implements Comparable<Gene> {
         String variantType = "";
         // priority score calculation
         for (FilterType i : this.relevanceMap.keySet()) {
-            IRelevanceScore r = this.relevanceMap.get(i);
+            RelevanceScore r = this.relevanceMap.get(i);
             float x = r.getRelevanceScore();
             if (i == FilterType.DYNAMIC_PHENOWANDERER_FILTER) {
                 exomiser2Score = x;
@@ -487,7 +483,7 @@ public class Gene implements Comparable<Gene> {
         for (VariantEvaluation ve : this.variant_list) {
             float x = ve.getFilterScore();
             for (FilterType i : ve.getTriageMap().keySet()) {
-                ITriage itria = ve.getTriageMap().get(i);
+                Triage itria = ve.getTriageMap().get(i);
                 if (itria instanceof PathogenicityTriage){
                     if (((PathogenicityTriage) itria).filterResult() > pathogenicityScore){
                         variantType = ve.getVariantType();
