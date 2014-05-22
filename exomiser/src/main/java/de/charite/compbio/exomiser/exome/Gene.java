@@ -1,17 +1,19 @@
 package de.charite.compbio.exomiser.exome;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-
+import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.priority.RelevanceScore;
 import jannovar.common.Constants;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;
 import jannovar.pedigree.Pedigree;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import de.charite.compbio.exomiser.priority.RelevanceScore;
 import de.charite.compbio.exomiser.common.FilterType;
@@ -324,8 +326,8 @@ public class Gene implements Comparable<Gene> {
      */
      public void calculatePriorityScore() {
 	 this.priorityScore  = 1f;
-	 for (FilterType i : this.relevanceMap.keySet()) {
-	    RelevanceScore r = this.relevanceMap.get(i);
+         for (Entry<FilterType, RelevanceScore> entry : relevanceMap.entrySet()) {
+	    RelevanceScore r = entry.getValue();
 	    float x = r.getRelevanceScore();
 	    priorityScore *= x;
 	 }

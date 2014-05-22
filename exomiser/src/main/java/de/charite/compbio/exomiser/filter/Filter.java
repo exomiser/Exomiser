@@ -48,14 +48,14 @@ public interface Filter {
      * that will act as a flag to generate the output HTML dynamically depending
      * on the filters that the user has chosen.
      */
-    public FilterType getFilterTypeConstant();
+    public FilterType getFilterType();
 
-    /**
-     * @param connection An SQL (postgres) connection that was initialized elsewhere.
-     * @throws de.charite.compbio.exomiser.exception.ExomizerInitializationException
-     */
-    //TODO: remove and use DI framework
-    public void setDatabaseConnection(Connection connection) throws ExomizerInitializationException;
+//    /**
+//     * @param connection An SQL (postgres) connection that was initialized elsewhere.
+//     * @throws de.charite.compbio.exomiser.exception.ExomizerInitializationException
+//     */
+//    //TODO: remove and use DI framework
+//    public void setDatabaseConnection(Connection connection) throws ExomizerInitializationException;
 
     /**
      * Get number of variants before filter was applied

@@ -121,6 +121,7 @@ public class PathogenicityTriage implements Triage  {
      * @param poly Polyphen2 score
      * @param mt MutationTaster score
      * @param SIFT SIFT score
+     * @param CADD CADD_RAW score
      */
     public PathogenicityTriage(float poly, float mt, float SIFT, float CADD) {
         this.polyphen = poly;
@@ -128,13 +129,9 @@ public class PathogenicityTriage implements Triage  {
         this.sift = SIFT;
         this.cadd_raw = CADD;
         this.variantType = VariantType.MISSENSE;
-        /*
-         * now get the worstest pathogenicity score!
-         */
+        //now get the worstest pathogenicity score!
         if (poly < 0 && mt < 0 && SIFT < 0) {
-            /*
-             * i.e., all three pathogenicity scores are not available
-             */
+            //i.e., all three pathogenicity scores are not available
             this.pathogenicityScore = DEFAULT_MISSENSE_SCORE;
         } else {
             float m = Math.max(poly, mt);
@@ -178,7 +175,7 @@ public class PathogenicityTriage implements Triage  {
         PathogenicityTriage.missense_filtering = par;
     }
 
-    public static void keepSynVariants() throws ExomizerInitializationException {
+    public static void keepSynonymousVariants() throws ExomizerInitializationException {
         logger.info("SETTING PATHOGENICITY_SCORE_THRESHOLD TO 0");
         PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0;
     }
@@ -226,11 +223,11 @@ public class PathogenicityTriage implements Triage  {
      * that the variant type is one of the registered types. TODO
      */
     public static PathogenicityTriage evaluateVariantClass(Variant v, float CADD) {
-        VariantType cls = v.getVariantTypeConstant();
-        if (!cls.isTopPriorityVariant()) {
-            return createNonPathogenicTriageObject(cls,CADD);
+        VariantType variantType = v.getVariantTypeConstant();
+        if (!variantType.isTopPriorityVariant()) {
+            return createNonPathogenicTriageObject(variantType, CADD);
         }
-        switch (cls) {
+        switch (variantType) {
 
             case FS_DELETION:
                 return createPathogenicTriageObjectByType(VariantType.FS_DELETION, FRAMESHIFT_SCORE, CADD);
@@ -250,20 +247,17 @@ public class PathogenicityTriage implements Triage  {
                 return createPathogenicTriageObjectByType(VariantType.STOPGAIN, NONSENSE_SCORE, CADD);
             case STOPLOSS:
                 return createPathogenicTriageObjectByType(VariantType.STOPLOSS, STOPLOSS_SCORE, CADD);
-            /*
-             * Note, the frameshift duplication get the FRAMESHIFT default score
-             */
+            //Note, the frameshift duplication get the FRAMESHIFT default score
             case FS_DUPLICATION:
                 return createPathogenicTriageObjectByType(VariantType.FS_DUPLICATION, FRAMESHIFT_SCORE, CADD);
             case NON_FS_DUPLICATION:
                 return createPathogenicTriageObjectByType(VariantType.NON_FS_DUPLICATION, NONFRAMESHIFT_INDEL_SCORE, CADD);
             case START_LOSS:
                 return createPathogenicTriageObjectByType(VariantType.START_LOSS, STARTLOSS_SCORE, CADD);
+            default:
+                //(we should actually never get here).
+                return createNonPathogenicTriageObject(VariantType.ERROR, CADD);
         }
-        /*
-         * Default (we should actually never get here).
-         */
-        return createNonPathogenicTriageObject(VariantType.ERROR, CADD);
     }
 
     /**
@@ -301,9 +295,8 @@ public class PathogenicityTriage implements Triage  {
         if (this.variantType != VariantType.MISSENSE) {
             sb.append(String.format("Path score: %.3f<br/>\n", this.pathogenicityScore));
         } else {
-            int c = 0; /*
-             * how many precitions do we have?
-             */
+             //how many precitions do we have?
+            int c = 0;
             String s = null;
             if (mutation_taster_is_initialized()) {
                 if (this.mutation_taster > MTASTER_THRESHOLD) {
@@ -344,7 +337,7 @@ public class PathogenicityTriage implements Triage  {
     /**
      * This function returns a list with a summary of the pathogenicity
      * analysis. It first enters the variant type (see {@link jannovar.common.VariantType VariantType}),
-     * and then either shopws the overall pathogenicity score (defined in
+     * and then either shows the overall pathogenicity score (defined in
      * several constants in this class such as
      * {@link #FRAMESHIFT_SCORE}), or additionally shows the results of analysis
      * by polyphen2, MutationTaster, and SIFT. This list can be displayed as an
@@ -462,8 +455,8 @@ public class PathogenicityTriage implements Triage  {
      * This method creates a PathogenicityTriage object for a variant that we
      * have judged to be non-pathogenic.
      */
-    public static PathogenicityTriage createNonPathogenicTriageObject(VariantType type,float CADD) {
-        PathogenicityTriage pt = new PathogenicityTriage(type, NON_PATHOGENIC,CADD);
+    public static PathogenicityTriage createNonPathogenicTriageObject(VariantType type, float CADD) {
+        PathogenicityTriage pt = new PathogenicityTriage(type, NON_PATHOGENIC, CADD);
         return pt;
     }
 
@@ -473,7 +466,7 @@ public class PathogenicityTriage implements Triage  {
      * variants such as NONSENSE, FRAMESHIFT, etc.
      */
     public static PathogenicityTriage createPathogenicTriageObjectByType(VariantType type, float score, float CADD) {
-        PathogenicityTriage pt = new PathogenicityTriage(type, score,CADD);
+        PathogenicityTriage pt = new PathogenicityTriage(type, score, CADD);
         return pt;
     }
 }

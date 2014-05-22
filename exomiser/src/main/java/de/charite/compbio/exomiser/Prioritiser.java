@@ -1,27 +1,17 @@
-package de.charite.compbio.exomiser.priority;
+package de.charite.compbio.exomiser;
 
 
 
 
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.BedFilter;
-import de.charite.compbio.exomiser.filter.FrequencyFilter;
 import de.charite.compbio.exomiser.filter.Filter;
-import de.charite.compbio.exomiser.filter.IntervalFilter;
-import de.charite.compbio.exomiser.filter.PathogenicityFilter;
-import de.charite.compbio.exomiser.filter.QualityFilter;
-import de.charite.compbio.exomiser.filter.TargetFilter;
-import de.charite.compbio.exomiser.priority.util.DataMatrix;
+import de.charite.compbio.exomiser.priority.Priority;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +76,7 @@ import org.slf4j.LoggerFactory;
  * that need to connect to the database,
  * {@link exomizer.priority.OMIMPriority OMIMPriority},
  * {@link exomizer.priority.MGIPhenodigmPriority MGIPhenodigmPriority},
- * {@link exomizer.priority.DynamicPhenodigmPriority
+ * {@link exomizer.priority.DynamicPheknodigmPriority
  * DynamicPhenodigmPriority}, and
  * {@link exomizer.priority.ZFINPhenodigmPriority ZFINPhenodigmPriority}.
  * The other prioritizers do not need a database connection.
@@ -102,7 +92,7 @@ public class Prioritiser {
      */
     //TODO: not actually needed by this class - this is required by the variant Filters
     //and Gene Prioritizers replace with Spring component scanning
-    private Connection connection = null;
+//    private Connection connection = null;
     
     /**
      * List of filters (see {@link exomizer.filter.Filter Filter}).
@@ -118,7 +108,7 @@ public class Prioritiser {
      * One of AD, AR, or XR (X chromosomal recessive). If uninitialized, this
      * prioritizer has no effect).
      */
-    private ModeOfInheritance inheritanceMode = ModeOfInheritance.UNINITIALIZED;
+    private ModeOfInheritance inheritanceMode;
     
     /**
      * List of all Genes that are to be prioritized. Note that the Genes will
@@ -126,10 +116,11 @@ public class Prioritiser {
      */
     private List<Gene> geneList=null;
     
-    public Prioritiser(Connection conn) {
-	this.connection = conn;
-	this.filterList = new ArrayList<Filter>();
-	this.priorityList = new ArrayList<Priority>();
+    public Prioritiser() {
+//	this.connection = conn;
+	this.filterList = new ArrayList<>();
+	this.priorityList = new ArrayList<>();
+        inheritanceMode = ModeOfInheritance.UNINITIALIZED;
     }
 
      /**
@@ -144,11 +135,8 @@ public class Prioritiser {
      * from the main exomizer program
      * @param rankBasedScoring True if we should perform rank-based scoring rather than using the raw scores.
      * @return 
-     * @throws ExomizerException
      */
-    public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) 
-	throws ExomizerException 
-    {
+    public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) {
 	/**************************************************************/
 	/* 1) Filter the variants according to user-supplied params. */
 	/**************************************************************/
@@ -263,15 +251,13 @@ public class Prioritiser {
      * according to a uniform distribution based on the ranks of the genes.
      */
     private void scoreCandidateGenesByRank() {
-	for (Gene g : this.geneList) {
-	    g.calculateGeneAndVariantScores(this.inheritanceMode);
-	}
 	// Store all gene and variant scores in sortable map
 	// The key is a Float representing the raw score.
 	// The value is a list of one or more genes with this score.
 	TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
 	for (Gene g : this.geneList) {
-	    float geneScore = g.getPriorityScore();
+	    g.calculateGeneAndVariantScores(this.inheritanceMode);
+            float geneScore = g.getPriorityScore();
 	    //System.out.println("scoreCandidateGenesByRank, " + g.getGeneSymbol() + ": " + geneScore);
 	    if (geneScoreMap.containsKey(geneScore)) {
 		List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
@@ -326,92 +312,115 @@ public class Prioritiser {
 	}
 	Collections.sort(this.geneList);
     }
-    
 
     public List<Filter> getFilterList() { 
         return this.filterList;
     }
     
+    public void setFilterList(List<Filter> filterList) {
+        this.filterList = filterList;
+    }
+
     public List<Priority> getPriorityList() { 
         return this.priorityList;
     }
 
+    public void setPriorityList(List<Priority> priorityList) {
+        this.priorityList = priorityList;
+    }
+    
     public void addPriority(Priority priority) {
 	priorityList.add(priority);
+    }
+
+    public ModeOfInheritance getInheritanceMode() {
+        return inheritanceMode;
+    }
+
+    public void setInheritanceMode(ModeOfInheritance inheritanceMode) {
+        this.inheritanceMode = inheritanceMode;
     }
 
     // all these addXXXXPrioritizer methods should be handled elsewhere as these
     //violate the SRP
     
-    public void addOMIMPrioritizer() throws ExomizerInitializationException {
-	Priority ip = new OMIMPriority();
-	this.priorityList.add(ip);
-	ip.setDatabaseConnection(this.connection);
-    }
-
-    public void addInheritancePrioritiser(String inheritance_filter_type) 
-	throws ExomizerInitializationException 
-    {
-	Priority inhp = new InheritancePriority();
-	if (inheritance_filter_type != null) {
-	    inhp.setParameters(inheritance_filter_type);
-	    this.priorityList.add(inhp);
-	    this.inheritanceMode = InheritancePriority.getModeOfInheritance(inheritance_filter_type);
-	}
-    }
-
-    public void addPhenomizerPrioritiser(String phenomizerDataDirectory, String hpoTermList) 
-	throws ExomizerInitializationException
-    {
-	Set<String> hpoIDset = new HashSet<String>();
-	String A[] = hpoTermList.split(",");
-	for (String s : A) {
-	    hpoIDset.add(s.trim());
-	}
-	boolean symmetric = false;
-	Priority ip = new PhenomizerPriority(phenomizerDataDirectory, hpoIDset, symmetric);
-	this.priorityList.add(ip);
-    }
-
-    public void addMGIPhenodigmPrioritiser(String disease) 
-	throws ExomizerInitializationException
-    {
-	Priority ip = new MGIPhenodigmPriority(disease);
-	ip.setDatabaseConnection(this.connection);
-	this.priorityList.add(ip);
-    }
-	    
-    public void addBOQAPrioritiser(String hpoOntologyFile, String hpoAnnotationFile,  String hpoTermList)
-	throws ExomizerInitializationException
-    {
-	Priority ip = new BoqaPriority(hpoOntologyFile, hpoAnnotationFile, hpoTermList);
-	ip.setDatabaseConnection(this.connection);
-	this.priorityList.add(ip);
-    }
-
-    public void addDynamicPhenodigmPrioritiser(String hpoTermList)
-	throws ExomizerInitializationException
-    {
-	Priority ip = new DynamicPhenodigmPriority(hpoTermList);
-	ip.setDatabaseConnection(this.connection);
-	this.priorityList.add(ip);
-    }
-
-    public void addZFINPrioritiser(String disease)
-	throws ExomizerInitializationException
-    {
-	Priority ip = new ZFINPhenodigmPriority(disease);
-	ip.setDatabaseConnection(this.connection);
-	this.priorityList.add(ip);
-    }
-
-    public void addExomeWalkerPrioritiser(String rwFilePath, String rwIndexPath, String entrezSeedGenes) 
-	throws ExomizerInitializationException
-    {
-	Priority ip = new GenewandererPriority(rwFilePath, rwIndexPath);
-        ip.setParameters(entrezSeedGenes);
-	this.priorityList.add(ip);
-    }
+//    public void addOMIMPrioritizer() throws ExomizerInitializationException {
+//	Priority ip = new OMIMPriority();
+//	this.priorityList.add(ip);
+//	ip.setDatabaseConnection(this.connection);
+//    }
+//
+//    public void addInheritancePrioritiser(String inheritance_filter_type) 
+//	throws ExomizerInitializationException 
+//    {
+//	Priority inhp = new InheritancePriority();
+//	if (inheritance_filter_type != null) {
+//	    inhp.setParameters(inheritance_filter_type);
+//	    this.priorityList.add(inhp);
+//	    this.inheritanceMode = InheritancePriority.getModeOfInheritance(inheritance_filter_type);
+//	}
+//    }
+//
+//    public void addPhenomizerPrioritiser(String phenomizerDataDirectory, String hpoTermList) 
+//	throws ExomizerInitializationException
+//    {
+//	Set<String> hpoIDset = new HashSet<String>();
+//	String A[] = hpoTermList.split(",");
+//	for (String s : A) {
+//	    hpoIDset.add(s.trim());
+//	}
+//	boolean symmetric = false;
+//	Priority ip = new PhenomizerPriority(phenomizerDataDirectory, hpoIDset, symmetric);
+//	this.priorityList.add(ip);
+//    }
+//
+//    public void addMGIPhenodigmPrioritiser(String disease) 
+//	throws ExomizerInitializationException
+//    {
+//	Priority ip = new MGIPhenodigmPriority(disease);
+//	ip.setDatabaseConnection(this.connection);
+//	this.priorityList.add(ip);
+//    }
+//	    
+//    public void addBOQAPrioritiser(String hpoOntologyFile, String hpoAnnotationFile,  String hpoTermList)
+//	throws ExomizerInitializationException
+//    {
+//	Priority ip = new BoqaPriority(hpoOntologyFile, hpoAnnotationFile, hpoTermList);
+//	ip.setDatabaseConnection(this.connection);
+//	this.priorityList.add(ip);
+//    }
+//
+//    public void addDynamicPhenodigmPrioritiser(String hpoTermList)
+//	throws ExomizerInitializationException
+//    {
+//	Priority ip = new DynamicPhenodigmPriority(hpoTermList);
+//	ip.setDatabaseConnection(this.connection);
+//	this.priorityList.add(ip);
+//    }
+//
+//    public void addZFINPrioritiser(String disease)
+//	throws ExomizerInitializationException
+//    {
+//	Priority ip = new ZFINPhenodigmPriority(disease);
+//	ip.setDatabaseConnection(this.connection);
+//	this.priorityList.add(ip);
+//    }
+//
+//    public void addExomeWalkerPrioritiser(String rwFilePath, String rwIndexPath, String entrezSeedGenes) 
+//	throws ExomizerInitializationException
+//    {
+//	Priority ip = new GenewandererPriority(rwFilePath, rwIndexPath);
+//        ip.setParameters(entrezSeedGenes);
+//	this.priorityList.add(ip);
+//    }
+//    
+//    public void addDynamicPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String hpoids, String candGene, String disease, DataMatrix rwMatrix) 
+//	throws ExomizerInitializationException
+//    {
+//        Priority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene, disease, rwMatrix);
+//        ip.setDatabaseConnection(this.connection);
+//	this.priorityList.add(ip);
+//    }
     
 //    public void addPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String disease, String candGene) 
 //	throws ExomizerInitializationException
@@ -421,86 +430,79 @@ public class Prioritiser {
 //	this.priorityList.add(ip);
 //    }
 //    
-    public void addDynamicPhenoWandererPrioritiser(String rwFilePath, String rwIndexPath, String hpoids, String candGene, String disease, DataMatrix rwMatrix) 
-	throws ExomizerInitializationException
-    {
-        Priority ip = new DynamicPhenoWandererPriority(rwFilePath, rwIndexPath, hpoids, candGene, disease, rwMatrix);
-        ip.setDatabaseConnection(this.connection);
-	this.priorityList.add(ip);
-    }
 
     /** Filter on variant type that is expected potential pathogenic (Missense, Intergenic etc
      * and not off target (INTERGENIC, UPSTREAM, DOWNSTREAM). */
-    public void addTargetFilter() 
-	throws ExomizerInitializationException
-    {
-	Filter f = new TargetFilter();
-	this.filterList.add(f);
-    }
+//    public void addTargetFilter() 
+//	throws ExomizerInitializationException
+//    {
+//	Filter f = new TargetFilter();
+//	this.filterList.add(f);
+//    }
 
 
-     public void addBedFilter(Set<String> commalist)	throws ExomizerInitializationException
-    {
-	Filter f = new BedFilter(commalist);
-	this.filterList.add(f);
-    }
+//     public void addBedFilter(Set<String> commalist)	throws ExomizerInitializationException
+//    {
+//	Filter f = new BedFilter(commalist);
+//	this.filterList.add(f);
+//    }
 
 
-    /** Add a frequency filter. There are several options. If the argument
-     * filterOutAllDbsnp is true, then all dbSNP entries are removed (dangerous).
-     * Else if the freuqency is set to some value, we set this is the maximum MAF.
-     * else we set the frequency filter to 100%, i.e., no filtering.
-     */
-    public void addFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) 
-     	throws ExomizerInitializationException
-    {
-	Filter filter = new FrequencyFilter();
-        filter.setDatabaseConnection(this.connection);
-	
-        if (filterOutAllDbsnp) {
-	    filter.setParameters("RS");
-	} else if (frequency_threshold != null && 
-		   !frequency_threshold.equals("none")) {
-	    filter.setParameters(frequency_threshold);
-	} else {
-	    // default is freq filter at 100 i.e. keep everything so still
-	    // get freq data in output and inclusion in prioritization
-	    filter.setParameters("100");
-	}
-        this.filterList.add(filter);
-    }
+//    /** Add a frequency filter. There are several options. If the argument
+//     * filterOutAllDbsnp is true, then all dbSNP entries are removed (dangerous).
+//     * Else if the freuqency is set to some value, we set this is the maximum MAF.
+//     * else we set the frequency filter to 100%, i.e., no filtering.
+//     */
+//    public void addFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) 
+//     	throws ExomizerInitializationException
+//    {
+//	Filter filter = new FrequencyFilter();
+//        filter.setDatabaseConnection(this.connection);
+//	
+//        if (filterOutAllDbsnp) {
+//	    filter.setParameters("RS");
+//	} else if (frequency_threshold != null && 
+//		   !frequency_threshold.equals("none")) {
+//	    filter.setParameters(frequency_threshold);
+//	} else {
+//	    // default is freq filter at 100 i.e. keep everything so still
+//	    // get freq data in output and inclusion in prioritization
+//	    filter.setParameters("100");
+//	}
+//        this.filterList.add(filter);
+//    }
 
-     public void addQualityFilter(String quality_threshold)
-	 throws ExomizerInitializationException
-    {
-	Filter f=null;
-	if (quality_threshold != null) {
-	    f = new QualityFilter();
-	    f.setParameters(quality_threshold);
-	    this.filterList.add(f);
-	}
-     }
+//     public void addQualityFilter(String quality_threshold)
+//	 throws ExomizerInitializationException
+//    {
+//	Filter f=null;
+//	if (quality_threshold != null) {
+//	    f = new QualityFilter();
+//	    f.setParameters(quality_threshold);
+//	    this.filterList.add(f);
+//	}
+//     }
 
-    public void addPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSyn) 
-    	throws ExomizerInitializationException
-    {
-	PathogenicityFilter f = new PathogenicityFilter();
-	f.setDatabaseConnection(this.connection);
-	if (filterOutNonpathogenic) {
-	    f.setParameters("filter");
-	}
-        f.set_syn_filter_status(removeSyn);
-	this.filterList.add(f);
-    }
+//    public void addPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSyn) 
+//    	throws ExomizerInitializationException
+//    {
+//	PathogenicityFilter f = new PathogenicityFilter();
+//	f.setDatabaseConnection(this.connection);
+//	if (filterOutNonpathogenic) {
+//	    f.setParameters("filter");
+//	}
+//        f.set_syn_filter_status(removeSyn);
+//	this.filterList.add(f);
+//    }
 
-    public void addLinkageFilter(String interval)
-    	throws ExomizerInitializationException
-    {
-	if (interval != null) {
-	   Filter f = new IntervalFilter();
-	   f.setParameters(interval);
-	   this.filterList.add(f);
-	}
-    }
+//    public void addLinkageFilter(String interval)
+//    	throws ExomizerInitializationException
+//    {
+//	if (interval != null) {
+//	   Filter f = new IntervalFilter();
+//	   f.setParameters(interval);
+//	   this.filterList.add(f);
+//	}
+//    }
    
 }

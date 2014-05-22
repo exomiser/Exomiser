@@ -28,7 +28,10 @@ import java.sql.Connection;
  * @version 0.16 (20 December, 2013)
  */
 public class TargetFilter implements Filter {
-     /** Number of variants analyzed by filter */
+
+    private final FilterType filterType = FilterType.EXOME_TARGET_FILTER;
+
+    /** Number of variants analyzed by filter */
     private int n_before;
     /** Number of variants passing filter */
     private int n_after;
@@ -97,34 +100,58 @@ public class TargetFilter implements Filter {
     /** get a list of messages that represent the process and result of applying the filter. This
 	list can be used to make an HTML list for explaining the result to users (for instance).
     */
-    @Override public List<String> getMessages() {
+    @Override
+    public List<String> getMessages() {
 
-	return this.messages;
+        return this.messages;
     }
 
-    @Override public String getFilterName() {
-	return "Exome target region";
+    @Override
+    public String getFilterName() {
+        return "Exome target region";
     }
-    /** @return an integer constant (as defined in exomizer.common.Constants) that will act
-     * as a flag to generate the output HTML dynamically depending on the filters that the 
-     * user has chosen.
+
+    /**
+     * @return an integer constant (as defined in exomizer.common.Constants)
+     * that will act as a flag to generate the output HTML dynamically depending
+     * on the filters that the user has chosen.
      */
-    @Override public FilterType getFilterTypeConstant() { return FilterType.EXOME_TARGET_FILTER; }
+    @Override
+    public FilterType getFilterType() {
+        return filterType;
+    }
 
-    /** Get number of variants before filter was applied */
-    @Override public int getBefore() {return this.n_before; }
-    /** Get number of variants after filter was applied */
-    @Override public int getAfter(){return this.n_after; }
+    /**
+     * Get number of variants before filter was applied
+     */
+    @Override
+    public int getBefore() {
+        return this.n_before;
+    }
+
+    /**
+     * Get number of variants after filter was applied
+     */
+    @Override
+    public int getAfter() {
+        return this.n_after;
+    }
 
     /** Should this Filter be shown in the HTML output? */
     public boolean displayInHTML() {
 	return true;
     }
     
-    /**
-     * Not needed in this class.
-     * @param connection An SQL (postgres) connection that was initialized elsewhere.
-     */
-    @Override public void setDatabaseConnection(Connection connection) { /* no-op. */ }
+    
+//    /**
+//     * Not needed in this class.
+//     * @param connection An SQL (postgres) connection that was initialized elsewhere.
+//     */
+//    @Override public void setDatabaseConnection(Connection connection) { /* no-op. */ }
+
+    @Override
+    public String toString() {
+        return "TargetFilter{" + "filterType=" + filterType + ", offTarget=" + offTarget + '}';
+    }
 
 }

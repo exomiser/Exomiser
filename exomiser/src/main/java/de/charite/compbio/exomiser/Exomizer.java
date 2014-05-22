@@ -1,11 +1,17 @@
 package de.charite.compbio.exomiser;
 
 import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.config.DataSourceConfig;
+import de.charite.compbio.exomiser.config.MainConfig;
+import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
+import de.charite.compbio.exomiser.filter.FilterFactory;
+import de.charite.compbio.exomiser.filter.FrequencyFilter;
+import de.charite.compbio.exomiser.filter.QualityFilter;
 import de.charite.compbio.exomiser.filter.TargetFilter;
 import de.charite.compbio.exomiser.io.ExomiserDatabase;
 import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
@@ -13,8 +19,9 @@ import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.io.html.HTMLWriterBOQA;
 import de.charite.compbio.exomiser.io.html.HTMLWriterCRE;
 import de.charite.compbio.exomiser.io.html.HTMLWriterWalker;
+import de.charite.compbio.exomiser.priority.InheritancePriority;
 import de.charite.compbio.exomiser.priority.Priority;
-import de.charite.compbio.exomiser.priority.Prioritiser;
+import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.reference.Network;
 import de.charite.compbio.exomiser.reference.STRINGNetwork;
@@ -37,12 +44,15 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -57,17 +67,21 @@ import org.slf4j.LoggerFactory;
  * This is the main driver class for analyzing VCF files. It uses the
  * io.VCFReader and other classes to input the VCF data and to create a list of
  * Variant objects that are then filtered according to data in the postgreSQL
- * database created by the {@link exomizer.PopulateExomiserDatabase PopulateExomiserDatabase},
- * program, as well as data about gene models from the UCSC database (See {@link jannovar.reference.TranscriptModel TranscriptModel}).
- * The candidate genes are then filtered and prioritized according to flexible
- * criteria. files with the results of filtering. <P> The Exomizer can be
- * started via the command line, in which case the main function will use the {@link #Exomizer(String[])}
- * constructor. Alternatively, the Exomizer can be started from the Apacha
- * tomcat framework (ExomeWalker code). In this case, the {@link #Exomizer()}
- * constructor should be used, and the various setter functions should be used
- * to set the parameters. <P> When started from the command line, the Exomizer
- * will output a single self-contained HTML file that also includes CSS style
- * information.
+ * database created by the
+ * {@link exomizer.PopulateExomiserDatabase PopulateExomiserDatabase}, program,
+ * as well as data about gene models from the UCSC database (See
+ * {@link jannovar.reference.TranscriptModel TranscriptModel}). The candidate
+ * genes are then filtered and prioritized according to flexible criteria. files
+ * with the results of filtering.
+ * <P>
+ * The Exomizer can be started via the command line, in which case the main
+ * function will use the {@link #Exomizer(String[])} constructor. Alternatively,
+ * the Exomizer can be started from the Apacha tomcat framework (ExomeWalker
+ * code). In this case, the {@link #Exomizer()} constructor should be used, and
+ * the various setter functions should be used to set the parameters.
+ * <P>
+ * When started from the command line, the Exomizer will output a single
+ * self-contained HTML file that also includes CSS style information.
  *
  * @author Peter N Robinson
  * @version 0.65 (9 February, 2014)
@@ -75,14 +89,9 @@ import org.slf4j.LoggerFactory;
 public class Exomizer {
 
     private static final Logger logger = LoggerFactory.getLogger(Exomizer.class);
-    /**
-     * Name of the VCF file used for input.
-     */
-    private String vcf_file = null;
-    /**
-     * Base name of the VCF file used for input (without path)
-     */
-    private String vcf_file_basename = null;
+
+    private DataSource dataSource;
+
     /**
      * This flag indicates that we are running on our internal server, i.e.,
      * within the hospital firewall, meaning that we are allowed to show all
@@ -112,45 +121,28 @@ public class Exomizer {
      */
     private String entrezSeedGenes = null;
     /**
-     * Store lines of header of VCF file, in case we want to print them out
-     * again.
-     */
-    private List<String> header = null;
-    /**
      * File to which we will write results, name can be changed via command
      * line.
      */
     private String outfile = "exomizer.html";
-    /**
-     * List of Variants parsed from VCF file that have passed user-indicated
-     * filter
-     */
-    private List<VariantEvaluation> variantList = null;
-    /**
-     * List of all Genes that are to be prioritized. Note that the Genes will
-     * contain the variants that have passed the filtering step.
-     */
-    private List<Gene> geneList = null;
+
     /**
      * List of all transcripts used for annotation the variants (For instance,
      * from the knownGene.txt file from UCSC). See the Jannovar package for
      * details.
      */
     private List<TranscriptModel> knownGenesList = null;
-    /**
-     * List of all sample names of VCF file
-     */
-    private ArrayList<String> sampleNames = null;
-    /**
-     * Map of Chromosomes
-     */
-    private HashMap<Byte, Chromosome> chromosomeMap = null;
-    /**
-     * Name of file with serialized UCSC data. This needs to be created from
-     * several UCSC KnownGene files by the Annotator code in this package (see
-     * the {@code Jannovar} program).
-     */
-    private String UCSCserializedFile = null;
+
+//    /**
+//     * Map of Chromosomes
+//     */
+//    private HashMap<Byte, Chromosome> chromosomeMap = null;
+//    /**
+//     * Name of file with serialized UCSC data. This needs to be created from
+//     * several UCSC KnownGene files by the Annotator code in this package (see
+//     * the {@code Jannovar} program).
+//     */
+//    private String UCSCserializedFile = null;
     /**
      * Flag as to whether a TSV file should be output instead of HTML. Not that
      * this flag can be used in combination with the command line flag -o to set
@@ -194,11 +186,11 @@ public class Exomizer {
     // The following are to be used for initializing the Filter classes
     /**
      * Frequency threshold for variants. Only variants that are either not
- recorded in the thousand genomes/ESP data or that are rarer than this
- threshold will be retained. Note that the threshold is expected to be a
- value such as 0.01, but it is stored here as a String because the
- Filter-derived classes have a standard function for initialization that
- will use this value.
+     * recorded in the thousand genomes/ESP data or that are rarer than this
+     * threshold will be retained. Note that the threshold is expected to be a
+     * value such as 0.01, but it is stored here as a String because the
+     * Filter-derived classes have a standard function for initialization that
+     * will use this value.
      */
     private String frequency_threshold = null;
     /**
@@ -256,36 +248,6 @@ public class Exomizer {
      */
     private ArrayList<String> status_message = null;
     /**
-     * Total number of variants in original VCF file.
-     */
-    private int before_NS_SS_I;
-    /**
-     * Total number of NS/SS/I variants in original VCF file (nonsynonymous,
-     * splicing, indel).
-     */
-    private int after_NS_SS_I;
-    /**
-     * Total number of samples (sequenced persons) in the input VCF file.
-     */
-    private int n_samples = 0;
-    /**
-     * Pedigree of the persons whose samples were sequenced. Created on the
-     * basis of a PED file for multisample VCF files, or as a default
-     * single-sample Pedigree for single-sample VCF files.
-     */
-    private Pedigree pedigree = null;
-    /**
-     * Path to the pedigree (ped) file for multisample VCF files.
-     */
-    private String pedFilePath = null;
-    /**
-     * BufferedReader to a StringReader that contains the contents of an
-     * uploaded PED file. This variable is provided so that tomcat servers can
-     * pass in a handle to a file without needing to first write this file to
-     * disk.
-     */
-    private BufferedReader pedBufferedReader = null;
-    /**
      * Path to the human-phenotype-ontology.obo file (Needed for Phenomizer and
      * BOQA)
      */
@@ -318,155 +280,153 @@ public class Exomizer {
      */
     private DataMatrix randomWalkMatrix = null;
 
-    public static void main(String argv[]) {
-        /**
-         * ***********************************************************
-         */
-        /*
-         * 1) Open the connection to database.
-         */
-        /**
-         * ***********************************************************
-         */
-        Exomizer exomizer = new Exomizer(argv);
-        try {
-            exomizer.openNewDatabaseConnection();
-        } catch (ExomizerInitializationException ex) {
-            logger.error("Could not open SQL connection. Terminating program...", ex);
-            System.exit(1);
-        }
-        /**
-         * ***********************************************************
-         */
-        /*
-         * 2) Input the transcript definition file from Jannovar that
-         */
-        /*
-         * is used to annotate the variants.
-         */
-        /**
-         * ***********************************************************
-         */
-        try {
-            exomizer.deserializeUCSCdata();
-        } catch (ExomizerException e) {
-            logger.error("Error with deserialization:", e);
-            System.exit(1);
-        }
-        /**
-         * ***********************************************************
-         */
-        /*
-         * 3) Read a VCF file (this creates an ArrayList of Variants)
-         */
-        /**
-         * ***********************************************************
-         */
-        try {
-            exomizer.parseVCFFile();
-        } catch (ExomizerException e) {
-            logger.error("Error with VCF input:", e);
-            System.exit(1);
-        }
-        /**
-         * ***********************************************************
-         */
-        /*
-         * 4) Read a PED file if the VCF file has multiple samples
-         */
-        /**
-         * ***********************************************************
-         */
-        try {
-            exomizer.processPedigreeData();
-            /*
-             * Note: for single sample VCF files, this method will construct a
-             * "dummy" pedigree object.
-             */
-        } catch (ExomizerException e) {
-            logger.error("Error with pedigree data input:", e);
-            System.exit(1);
-        }
-        /**
-         * ***********************************************************
-         */
-        /*
-         * 5) This function takes care of most of the analysis.
-         */
-        /**
-         * ***********************************************************
-         */
-        try {
-            logger.info("INIT FILTERS AND PRIORITISERS");
-            exomizer.initializeFiltersAndPrioritizers();
-            logger.info("ANNOTATING VARIANTS");
-            exomizer.annotateVariants();
-            logger.info("FILTERING AND PRIORITISING");
-            exomizer.executePrioritization();
-        } catch (ExomizerException e) {
-            logger.error("Error while prioritizing VCF data: ", e);
-            System.exit(1);
-        }
-        logger.info("OUTPUTTING RESULTS");
-        /**
-         * ***********************************************************
-         */
-        /*
-         * 6) Output to HTML (default) or TSV (needs to be set via
-         */
-        /*
-         * the --tsv flag on the command line)
-         */
-        /**
-         * ***********************************************************
-         */
-        if (exomizer.useTSVFile()) {
-            exomizer.outputTSV();
-        } else if (exomizer.useVCFFile()) {
-            exomizer.outputVCF();
-        } else {
-            /*
-             * The following function decides based on the flag useCRE, useBOQA,
-             * or useRandomWalk what kind of HTML to produce.
-             */
-            try {
-                exomizer.outputHTML();
-            } catch (ExomizerException e) {
-                logger.error("Error writing output: ", e);
-                System.exit(1);
-            }
-        }
-        logger.info("FINISHED EXOMISER");
-
-    }
-
-    /**
-     * This function is intended to let webservers know that we still need to
-     * initialize the Pedigree object for VCF files with only one sample. There
-     * are probably more elegant ways of doing this, consider refactoring.
-     */
-    public boolean singleSamplePedigreeNeedsInitialization() {
-        if (this.pedigree == null && this.getNumberOfSamples() == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
+//    public static void main(String argv[]) {
+//        /**
+//         * ***********************************************************
+//         */
+//        /*
+//         * 1) Open the connection to database.
+//         */
+//        /**
+//         * ***********************************************************
+//         */
+//        Exomizer exomizer = new Exomizer();
+//        logger.info("STARTING EXOMISER");
+//        exomizer.parseCommandLineArguments(argv);
+//        
+//        if (exomizer.outfile == null) {
+//            logger.error("Outfile not indicated, terminating program execution...");
+//            System.exit(1);
+//        }
+//        try {
+//            exomizer.openNewDatabaseConnection();
+//        } catch (ExomizerInitializationException ex) {
+//            logger.error("Could not open SQL connection. Terminating program...", ex);
+//            System.exit(1);
+//        }
+//        /**
+//         * ***********************************************************
+//         */
+//        /*
+//         * 2) Input the transcript definition file from Jannovar that
+//         */
+//        /*
+//         * is used to annotate the variants.
+//         */
+//        /**
+//         * ***********************************************************
+//         */
+//        try {
+//            exomizer.deserializeUCSCdata();
+//        } catch (ExomizerException e) {
+//            logger.error("Error with deserialization:", e);
+//            System.exit(1);
+//        }
+//        /**
+//         * ***********************************************************
+//         */
+//        /*
+//         * 3) Read a VCF file (this creates an ArrayList of Variants)
+//         */
+//        /**
+//         * ***********************************************************
+//         */
+//        try {
+//            exomizer.parseVCFFile();
+//        } catch (ExomizerException e) {
+//            logger.error("Error with VCF input:", e);
+//            System.exit(1);
+//        }
+//        /**
+//         * ***********************************************************
+//         */
+//        /*
+//         * 4) Read a PED file if the VCF file has multiple samples
+//         */
+//        /**
+//         * ***********************************************************
+//         */
+//        try {
+//            exomizer.processPedigreeData();
+//            /*
+//             * Note: for single sample VCF files, this method will construct a
+//             * "dummy" pedigree object.
+//             */
+//        } catch (ExomizerException e) {
+//            logger.error("Error with pedigree data input:", e);
+//            System.exit(1);
+//        }
+//        /**
+//         * ***********************************************************
+//         */
+//        /*
+//         * 5) This function takes care of most of the analysis.
+//         */
+//        /**
+//         * ***********************************************************
+//         */
+//        try {
+//            logger.info("INIT FILTERS AND PRIORITISERS");
+//            exomizer.initializeFiltersAndPrioritizers();
+//            logger.info("ANNOTATING VARIANTS");
+//            exomizer.annotateVariants();
+//            logger.info("FILTERING AND PRIORITISING");
+//            exomizer.executePrioritization();
+//        } catch (ExomizerException e) {
+//            logger.error("Error while prioritizing VCF data: ", e);
+//            System.exit(1);
+//        }
+//        logger.info("OUTPUTTING RESULTS");
+//        /**
+//         * ***********************************************************
+//         */
+//        /*
+//         * 6) Output to HTML (default) or TSV (needs to be set via
+//         */
+//        /*
+//         * the --tsv flag on the command line)
+//         */
+//        /**
+//         * ***********************************************************
+//         */
+//        if (exomizer.useTSVFile()) {
+//            exomizer.outputTSV();
+//        } else if (exomizer.useVCFFile()) {
+//            exomizer.outputVCF();
+//        } else {
+//            /*
+//             * The following function decides based on the flag useCRE, useBOQA,
+//             * or useRandomWalk what kind of HTML to produce.
+//             */
+//            try {
+//                exomizer.outputHTML();
+//            } catch (ExomizerException e) {
+//                logger.error("Error writing output: ", e);
+//                System.exit(1);
+//            }
+//        }
+//        logger.info("FINISHED EXOMISER");
+//
+//    }
     /**
      * The constructor sets a few class variables based on command line
      * arguments.
      *
      * @param argv an array with the command line arguments
      */
-    public Exomizer(String argv[]) {
+//    public Exomizer(String argv[]) {
+//        logger.info("STARTING EXOMISER");
+//        parseCommandLineArguments(argv);
+//        this.status_message = new ArrayList<String>();
+//        if (outfile == null) {
+//            logger.error("Outfile not indicated, terminating program execution...");
+//            System.exit(1);
+//        }
+//    }
+    public Exomizer(DataSource dataSource) {
         logger.info("STARTING EXOMISER");
-        parseCommandLineArguments(argv);
+        this.dataSource = dataSource;
         this.status_message = new ArrayList<String>();
-        if (outfile == null) {
-            logger.error("Outfile not indicated, terminating program execution...");
-            System.exit(1);
-        }
     }
 
     /**
@@ -484,51 +444,78 @@ public class Exomizer {
      * @param ucsc_file A serialized file with the UCSC knownGene objects use
      * for annotating variants.
      */
-    public Exomizer(String ucsc_file) {
-        this.UCSCserializedFile = ucsc_file;
-        try {
-            deserializeUCSCdata();
-        } catch (ExomizerException e) {
-            logger.error("Error trying to de-serialise UCSC HG data: ", e);
-            System.exit(1);
-        }
-    }
-
+//    public Exomizer(String ucsc_file) {
+//        this.UCSCserializedFile = ucsc_file;
+//        try {
+//            deserializeUCSCdata();
+//        } catch (ExomizerException e) {
+//            logger.error("Error trying to de-serialise UCSC HG data: ", e);
+//            System.exit(1);
+//        }
+//    }
+//    /**
+//     * Constructor for Sanger web app
+//     */
+//    public Exomizer(HashMap<Byte, Chromosome> cMap) {
+//        this.chromosomeMap = cMap;
+//    }
+//    /**
+//     * @return the number of samples represented in the VCF file.
+//     */
+//    public int getNumberOfSamples() {
+//        return this.n_samples;
+//    }
+//    /**
+//     * @return List of Strings representing the sample names in the VCF file.
+//     */
+//    public List<String> getVCFSampleNames() {
+//        return this.sampleNames;
+//    }
     /**
-     * Constructor for Sanger web app
+     * Use the logic in the Prioritiser class to perform filtering and
+     * prioritizing genes, and ranking the candidate genes. (see
+     * {@link exomizer.priority.Prioritiser Prioritiser}).
+     * <p>
+     * Note that we assume that the transcript definition data has been
+     * deserialized before this method is called. Also, the annotation of the
+     * variants must have been performed.
+     * <P>
+     * Note that we now are downweighting genes that have a lot of variants This
+     * will give genes such as the HLA genes lower scores (they tend to have
+     * some many rare variants, that at least one has a good pathogenicity
+     * score).
+     *
+     * This method is deprecated - use the
+     * executePrioritization(List<VariantEvaluation> variantList) method
+     * instead.
+     *
+     * @throws Exception if something goes wrong with processing the VCF file.
      */
-    public Exomizer(HashMap<Byte, Chromosome> cMap) {
-        this.chromosomeMap = cMap;
-    }
-
-    /**
-     * @return the number of samples represented in the VCF file.
-     */
-    public int getNumberOfSamples() {
-        return this.n_samples;
-    }
-
-    /**
-     * @return List of Strings representing the sample names in the VCF file.
-     */
-    public List<String> getVCFSampleNames() {
-        return this.sampleNames;
+    @Deprecated
+    public void executePrioritization() throws ExomizerException {
+        this.geneList = this.prioritiser.executePrioritization(this.variantList, this.useRankBasedScoring());
     }
 
     /**
      * Use the logic in the Prioritiser class to perform filtering and
-     * prioritizing genes, and ranking the candidate genes. (see {@link exomizer.priority.Prioritiser Prioritiser}).
-     * <p> Note that we assume that the transcript definition data has been
+     * prioritizing genes, and ranking the candidate genes. (see
+     * {@link exomizer.priority.Prioritiser Prioritiser}).
+     * <p>
+     * Note that we assume that the transcript definition data has been
      * deserialized before this method is called. Also, the annotation of the
-     * variants must have been performed. <P> Note that we now are downweighting
-     * genes that have a lot of variants This will give genes such as the HLA
-     * genes lower scores (they tend to have some many rare variants, that at
-     * least one has a good pathogenicity score).
+     * variants must have been performed.
+     * <P>
+     * Note that we now are downweighting genes that have a lot of variants This
+     * will give genes such as the HLA genes lower scores (they tend to have
+     * some many rare variants, that at least one has a good pathogenicity
+     * score).
      *
-     * @throws Exception if something goes wrong with processing the VCF file.
+     * @param variantList
+     * @return a list of prioritised genes
      */
-    public void executePrioritization() throws ExomizerException {
-        this.geneList = this.prioritiser.executePrioritization(this.variantList, this.useRankBasedScoring());
+    public List<Gene> executePrioritization(List<VariantEvaluation> variantList) {
+        List<Gene> prioritisedGenes = this.prioritiser.executePrioritization(variantList, this.useRankBasedScoring());
+        return prioritisedGenes;
     }
 
     /**
@@ -544,203 +531,170 @@ public class Exomizer {
         }
     }
 
-    /**
-     * This function intends to check that PED file data is compatible to VCF
-     * sample names. That is, are the names in the PED file identical with the
-     * names in the VCF file? If there is a discrepancy, this function will
-     * throw an exception. If everything is OK there, this function will
-     * additional rearrange the order of the persons represented in the PED file
-     * so that it is identical to the order in the VCF file. This will make
-     * Pedigree analysis more efficient and the code more straightforward.
-     */
-    public void consolidateVCFandPedFileSamples() throws ExomizerException {
-        if (this.pedigree == null) {
-            String e = "[consolidateVCFandPedFileSamples] Error: PED file null";
-            throw new ExomizerException(e);
-        }
-        try {
-            /*
-             * this is the function that does all of the work.
-             */
-            this.pedigree.adjustSampleOrderInPedFile(this.sampleNames);
-        } catch (PedParseException ppe) {
-            String e = String.format("[consolidateVCFandPedFileSamples]"
-                    + " Error incurred while reordering ped file: %s", ppe.toString());
-            throw new ExomizerException(e);
-        }
-    }
-
-    /**
-     * The Exomiser can perform filtering of VCF data according to pedigree
-     * data. If the VCF file contains multiple samples, then the Exomiser
-     * requires a corresponding PED file to be able to analyze the inheritance
-     * pattern of the variants. The PED file is parsed by the PEDFileParser
-     * class in jannovar. This results in a Pedigree object that is used to do
-     * the pedigree analysis. The VCF Parser from Jannovar creates Genotype
-     * objects for each variant in the VCF file, and these can be compared to
-     * the pedigree information. The {@link exomizer.exome.Gene Gene} class
-     * coordinates this analysis. <P> Note that for single-sample VCF files, a
-     * Pedigree object is still constructed, and we assume that the sample is
-     * from an affected person.
-     */
-    public void processPedigreeData() throws ExomizerException {
-        logger.info("PROCESSING PEDIGREE DATA");
-        if (this.n_samples == 1) {
-            String sample = "single sample";
-            if (this.sampleNames.size() > 0) {
-                sample = this.sampleNames.get(0);
-            }
-            this.pedigree = Pedigree.constructSingleSamplePedigree(sample);
-        } else {
-            PedFileParser parser = new PedFileParser();
-            if (this.pedFilePath == null && this.pedBufferedReader == null) {
-                String s1 = String.format("[Exomiser] VCF file has %d samples but no PED file available.", this.n_samples);
-                String s2 = String.format("%s\n[Exomiser] PED file must be be provided for multi-sample VCF files, terminating program.", s1);
-                throw new ExomizerException(s2);
-            }
-            try {
-                if (this.pedFilePath != null) {
-                    this.pedigree = parser.parseFile(this.pedFilePath);
-                    consolidateVCFandPedFileSamples();
-                } else { /*
-                     * If we get here, then pedBufferedReader is initialized
-                     */
-                    this.pedigree = parser.parseStream(this.pedBufferedReader);
-                }
-            } catch (PedParseException e) {
-                String s1 = null;
-                if (this.pedFilePath != null) {
-                    s1 = this.pedFilePath;
-                } else {
-                    s1 = "PED file from input stream";
-                }
-                String s2 = String.format("Error while parsing PED file: \"%s\": %s", this.pedFilePath, e.getMessage());
-                throw new ExomizerException(s2);
-            }
-        }
-        /**
-         * **********************************************************
-         */
-        /*
-         * The Gene class uses the pedigree for segregation
-         */
-        /*
-         * analysis, and thus gets a static reference to the
-         */
-        /*
-         * Pedigree object.
-         */
-        /**
-         * **********************************************************
-         */
-        Gene.setPedigree(this.pedigree);
-    }
-
-    /**
-     * <P> Jannovar makes a serialized file that represents a
-     * HashMap<String,TranscriptModel> containing each and every
-     * {@link jannovar.reference.TranscriptModel TranscriptModel} object. This
-     * method both deserializes this file and also adds each TranscriptModel to
-     * the corresponding IntervalTree of the
-     * {@link jannovar.reference.Chromosome Chromosome} object. When we are
-     * done, the {@link exomizer.Exomizer#chromosomeMap} contains Chromosome
-     * objects for chromosomes 1-22,X,Y, and M, each of which contains the
-     * TranscriptModel objects for each of the genes located on those
-     * chromosomes.
-     */
-    public void deserializeUCSCdata() throws ExomizerException {
-        logger.info("DESERIALISING UCSC...");
-        ArrayList<TranscriptModel> kgList = null;
-        SerializationManager manager = new SerializationManager();
-        try {
-            kgList = manager.deserializeKnownGeneList(this.UCSCserializedFile);
-        } catch (JannovarException je) {
-            String s = String.format("Unable to deserialize the UCSC gene definition file: %s", je.toString());
-            throw new ExomizerException(s);
-        }
-        this.chromosomeMap = Chromosome.constructChromosomeMapWithIntervalTree(kgList);
-        logger.info("DONE DESERIALISING UCSC");
-    }
-
-    /**
-     * Iterates over all the variants parsed from the VCF file and provides each
-     * one with an annovar-style annotation.
-     */
-    public void annotateVariants() {
-        Chromosome c = null;
-        for (VariantEvaluation ve : this.variantList) {
-            Variant v = ve.getVariant();
-            // System.out.println(v);
-            byte chr = v.getChromosomeAsByte();
-            int pos = v.get_position();
-            String ref = v.get_ref();
-            String alt = v.get_alt();
-            c = chromosomeMap.get(chr);
-            if (c == null) {
-                logger.error("Could not identify chromosome {}", chr);
-            } else {
-                try {
-                    AnnotationList anno = c.getAnnotationList(pos, ref, alt);
-                    if (anno == null) {
-                        logger.info("No annotations found for variant {}", v);
-                        continue;
-                    }
-                    v.setAnnotation(anno);
-                } catch (AnnotationException ae) {
-                    String s = String.format("Annotation exception for variant %s (%s)", v.getChromosomalVariant(), ae.toString());
-                    this.status_message.add(s);
-                } catch (Exception e) {
-                    String s = String.format("Format/parse exception for variant %s (%s)", v.getChromosomalVariant(), e.toString());
-                    this.status_message.add(s);
-                }
-            }
-        }
-    }
-
+//    /**
+//     * <P> Jannovar makes a serialized file that represents a
+//     * HashMap<String,TranscriptModel> containing each and every
+//     * {@link jannovar.reference.TranscriptModel TranscriptModel} object. This
+//     * method both deserializes this file and also adds each TranscriptModel to
+//     * the corresponding IntervalTree of the
+//     * {@link jannovar.reference.Chromosome Chromosome} object. When we are
+//     * done, the {@link exomizer.Exomizer#chromosomeMap} contains Chromosome
+//     * objects for chromosomes 1-22,X,Y, and M, each of which contains the
+//     * TranscriptModel objects for each of the genes located on those
+//     * chromosomes.
+//     */
+//    public void deserializeUCSCdata() throws ExomizerException {
+//        logger.info("DESERIALISING UCSC...");
+//        ArrayList<TranscriptModel> kgList = null;
+//        SerializationManager manager = new SerializationManager();
+//        try {
+//            kgList = manager.deserializeKnownGeneList(this.UCSCserializedFile);
+//        } catch (JannovarException je) {
+//            String s = String.format("Unable to deserialize the UCSC gene definition file: %s", je.toString());
+//            throw new ExomizerException(s);
+//        }
+//        this.chromosomeMap = Chromosome.constructChromosomeMapWithIntervalTree(kgList);
+//        logger.info("DONE DESERIALISING UCSC");
+//    }
+//    /**
+//     * Iterates over all the variants parsed from the VCF file and provides each
+//     * one with an annovar-style annotation.
+//     */
+//    public void annotateVariants() {
+//        Chromosome c = null;
+//        for (VariantEvaluation ve : this.variantList) {
+//            Variant v = ve.getVariant();
+//            // System.out.println(v);
+//            byte chr = v.getChromosomeAsByte();
+//            int pos = v.get_position();
+//            String ref = v.get_ref();
+//            String alt = v.get_alt();
+//            c = chromosomeMap.get(chr);
+//            if (c == null) {
+//                logger.error("Could not identify chromosome {}", chr);
+//            } else {
+//                try {
+//                    AnnotationList anno = c.getAnnotationList(pos, ref, alt);
+//                    if (anno == null) {
+//                        logger.info("No annotations found for variant {}", v);
+//                        continue;
+//                    }
+//                    v.setAnnotation(anno);
+//                } catch (AnnotationException ae) {
+//                    String s = String.format("Annotation exception for variant %s (%s)", v.getChromosomalVariant(), ae.toString());
+//                    this.status_message.add(s);
+//                } catch (Exception e) {
+//                    String s = String.format("Format/parse exception for variant %s (%s)", v.getChromosomalVariant(), e.toString());
+//                    this.status_message.add(s);
+//                }
+//            }
+//        }
+//    }
     /**
      * This method initializes the variant-level and gene-level filtering and
-     * prioritization. Most of the action takes place in the class {@link exomizer.priority.Prioritiser Prioritiser}.
+     * prioritization. Most of the action takes place in the class
+     * {@link exomizer.priority.Prioritiser Prioritiser}.
      */
     public void initializeFiltersAndPrioritizers() throws ExomizerInitializationException {
-        this.prioritiser = new Prioritiser(this.connection);
-        if (this.use_target_filter){
-            this.prioritiser.addTargetFilter();
+        //Make a new Prioritizer - this calss is the one which co-ordinates the actual guts of the process
+        prioritiser = new Prioritiser();
+        //set the inheritance mode
+        prioritiser.setInheritanceMode(InheritancePriority.getModeOfInheritance(inheritance_filter_type));
+
+        //add variant filters to the prioritizer 
+        List<Filter> variantFilterList = makeFilters();
+        prioritiser.setFilterList(variantFilterList);
+
+        //Now add the Gene Prioritisers    
+        List<Priority> genePriorityList = makePrioritizers();
+        prioritiser.setPriorityList(genePriorityList);
+
+    }
+
+    /**
+     * Utility method for wrapping-up how the
+     * {@code de.charite.compbio.exomiser.filter.Filter} classes are created.
+     *
+     * @return
+     * @throws ExomizerInitializationException
+     */
+    private List<Filter> makeFilters() throws ExomizerInitializationException {
+        List<Filter> variantFilterList = new ArrayList<>();
+        //
+        FilterFactory filterFactory = new FilterFactory(dataSource);
+
+        if (this.use_target_filter) {
+            variantFilterList.add(filterFactory.getTargetFilter());
         }
-        this.prioritiser.addFrequencyFilter(this.frequency_threshold, this.filterOutAlldbSNP);
+        variantFilterList.add(filterFactory.getFrequencyFilter(frequency_threshold, filterOutAlldbSNP));
+
         if (this.quality_threshold != null) {
-            this.prioritiser.addQualityFilter(this.quality_threshold);
+            variantFilterList.add(filterFactory.getQualityFilter(quality_threshold));
         }
         /*
          * the following shows P for everything and filters out if
          * use_pathogenicity_filter==true.
          */
-        this.prioritiser.addPathogenicityFilter(this.use_pathogenicity_filter, this.use_target_filter);
+        variantFilterList.add(filterFactory.getPathogenicityFilter(use_pathogenicity_filter, use_target_filter));
         if (this.interval != null) {
-            this.prioritiser.addLinkageFilter(this.interval);
+            variantFilterList.add(filterFactory.getLinkageFilter(interval));
         }
-        this.prioritiser.addOMIMPrioritizer();
+
+        return variantFilterList;
+    }
+
+    /**
+     * Utility method for wrapping-up how the
+     * {@code de.charite.compbio.exomiser.priority.Priority} classes are
+     * created.
+     *
+     * @return
+     * @throws ExomizerInitializationException
+     */
+    private List<Priority> makePrioritizers() throws ExomizerInitializationException {
+        //
+        List<Priority> genePriorityList = new ArrayList<>();
+        PriorityFactory priorityFactory = new PriorityFactory(dataSource);
+
+//        this.prioritiser.addOMIMPrioritizer();
+        genePriorityList.add(priorityFactory.getOmimPrioritizer());
+        //is order *really* an issue here? If not these could be specified using inheritance? 
+        //inheritance_mode, disease, hpo_ids, candidateGene are actual input variables, the rest is configuration data
         if (this.inheritance_filter_type != null) {
-            this.prioritiser.addInheritancePrioritiser(this.inheritance_filter_type);
+//            this.prioritiser.addInheritancePrioritiser(this.inheritance_filter_type);
+            genePriorityList.add(priorityFactory.getInheritancePrioritiser(inheritance_filter_type));
         }
-        if (doPhenomizerPrioritization()) {
-            this.prioritiser.addPhenomizerPrioritiser(this.phenomizerDataDirectory, this.hpo_ids);
-        } else if (doMGIPhenodigmPrioritization()) {
-            this.prioritiser.addMGIPhenodigmPrioritiser(this.disease);
+        if (doMGIPhenodigmPrioritization()) {
+//            this.prioritiser.addMGIPhenodigmPrioritiser(this.disease);
+            genePriorityList.add(priorityFactory.getMGIPhenodigmPrioritiser(disease));
         } else if (hpo_ids != null) {
-            if (doBOQAPrioritization()) {
-                this.prioritiser.addBOQAPrioritiser(this.hpoOntologyFile, this.hpoAnnotationFile, this.hpo_ids);
+            if (doPhenomizerPrioritization()) {
+                //this doesn't check whether hpo_ids is not null! should be part of that block? Are Phenomizer and BOQA exclusive?
+//            this.prioritiser.addPhenomizerPrioritiser(this.phenomizerDataDirectory, this.hpo_ids);
+                genePriorityList.add(priorityFactory.getPhenomizerPrioritiser(phenomizerDataDirectory, hpo_ids));
+            } else if (doBOQAPrioritization()) {
+//                this.prioritiser.addBOQAPrioritiser(this.hpoOntologyFile, this.hpoAnnotationFile, this.hpo_ids);
+                genePriorityList.add(priorityFactory.getBOQAPrioritiser(hpoOntologyFile, hpoAnnotationFile, hpo_ids));
             } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null) {
-                this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.hpo_ids, this.candidateGene, this.disease, this.randomWalkMatrix);
+//                this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.hpo_ids, this.candidateGene, this.disease, this.randomWalkMatrix);
+                genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, hpo_ids, candidateGene, disease, randomWalkMatrix));
             } else {
-                this.prioritiser.addDynamicPhenodigmPrioritiser(this.hpo_ids);
+//                this.prioritiser.addDynamicPhenodigmPrioritiser(this.hpo_ids);
+                genePriorityList.add(priorityFactory.getDynamicPhenodigmPrioritiser(hpo_ids));
             }
         } else if (doZFINPhenodigm()) {
-            this.prioritiser.addZFINPrioritiser(this.disease);
+//            this.prioritiser.addZFINPrioritiser(this.disease);
+            genePriorityList.add(priorityFactory.getZFINPrioritiser(disease));
         } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.disease != null) {
-            this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.disease, this.candidateGene, this.disease, this.randomWalkMatrix);
+//            this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.disease, this.candidateGene, this.disease, this.randomWalkMatrix);
+            //TODO: CHECK!! should the first disease in this constructor actually be the hpo_ids? Could do with some type-safety in this constructor.
+            genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, disease, candidateGene, disease, randomWalkMatrix));
         } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.entrezSeedGenes != null) {
-            this.prioritiser.addExomeWalkerPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.entrezSeedGenes);
+//            this.prioritiser.addExomeWalkerPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.entrezSeedGenes);
+            genePriorityList.add(priorityFactory.getExomeWalkerPrioritiser(randomWalkFilePath, randomWalkIndexPath, entrezSeedGenes));
         }
+
+        return genePriorityList;
     }
 
     /**
@@ -783,12 +737,13 @@ public class Exomizer {
     }
 
     /**
-     * This method can be used to add a {@link exomizer.priority.IPriority
-     * Priority} object that has been constructed elsewhere. This is
-     * particularly useful for the ExomeWalker code base if it is started from
-     * an apache tomcat Server, because we can construct the GeneWanderer object
-     * once (it has ca. 1.5 Gb data) and keep it in memory as long as the
-     * ExomeWalker servlet is in memory
+     * This method can be used to add a
+     * {@code de.charite.compbio.exomizer.priority.Priority} object that has
+     * been constructed elsewhere. This is particularly useful for the
+     * ExomeWalker code base if it is started from an apache tomcat Server,
+     * because we can construct the GeneWanderer object once (it has ca. 1.5 Gb
+     * data) and keep it in memory as long as the ExomeWalker servlet is in
+     * memory
      *
      * @param ip the {@link exomizer.priority.IPriority Priority} that will be
      * added to the list of prioriitizers.
@@ -799,79 +754,6 @@ public class Exomizer {
             throw new ExomizerInitializationException(s);
         }
         this.prioritiser.addPriority(ip);
-    }
-
-    /**
-     * Input the VCF file using the VCFReader class. The method will initialize
-     * the snv_list, which contains one item for each variant in the VCF file,
-     * as well as the header, which contains a list of the header lines of the
-     * VCF file that will be used for printing the output filtered VCF. Note
-     * that the {@code VCFReader} class is from the jannovar library. <P> The {@code Variant}
-     * class is also from the Jannovar library, and it contains all of the
-     * relevant information about variants that can be obtained from the VCF
-     * file. The exomizer package has a class called
-     * {@link exomizer.exome.VariantEvaluation VariantEvaluation}, which is used
-     * to capture all of the evaluations (pathogenicity, frequency) etc., that
-     * are not represented in the VCF file itself.
-     *
-     * @throws ExomizerException
-     */
-    public void parseVCFFile() throws ExomizerException {
-        logger.info("READING VCF");
-        /**
-         * ***********************************************************
-         */
-        /*
-         * 1) Input the VCF file from filepath or stream
-         */
-        /**
-         * ***********************************************************
-         */
-        VCFReader parser = null;
-        /*
-         * Now decide whether the user has passed a file path or a
-         * BufferedReader handle (the latter is likely to happen if the Exomizer
-         * is being used by a tomcat server).
-         */
-        try {
-            if (this.vcf_file != null) {
-                parser = new VCFReader(this.vcf_file);
-            } else if (this.vcfBufferedReader != null) {
-                parser = new VCFReader(this.vcfBufferedReader);
-            } else {
-                String s = "Error, no VCF file found. Need to pass the path to a VCF file or an opened file handle";
-                throw new ExomizerException(s);
-            }
-            parser.parseFile();
-        } catch (VCFParseException ve) {
-            String message = "Could not parse the VCF file: " + ve.toString();
-            logger.error(message);
-            throw new ExomizerException(message);
-        }
-        ArrayList<Variant> vlist = parser.getVariantList();
-        this.variantList = new ArrayList<VariantEvaluation>();
-        for (Variant v : vlist) {
-            this.variantList.add(new VariantEvaluation(v));
-        }
-        this.header = parser.get_vcf_header();
-        this.status_message = parser.get_html_message();
-        this.before_NS_SS_I = parser.get_total_number_of_variants();
-        this.sampleNames = parser.getSampleNames();
-        this.n_samples = parser.getNumberOfSamples();
-    }
-
-    /**
-     * @return A list of all genes.
-     */
-    public List<Gene> getGeneList() {
-        return geneList;
-    }
-
-    public int getNumberOfGenes() {
-        if (geneList == null) {
-            return 0;
-        }
-        return geneList.size();
     }
 
     /**
@@ -891,20 +773,18 @@ public class Exomizer {
     /**
      * Connect to database and store connection in handle this.connect.
      */
-    public void openNewDatabaseConnection() throws ExomizerInitializationException {
-        logger.info("GETTING DATABASE CONNECTION");
-        this.connection = ExomiserDatabase.openNewDatabaseConnection();
-    }
-
+//    public void openNewDatabaseConnection() throws ExomizerInitializationException {
+//        logger.info("GETTING DATABASE CONNECTION");
+//        this.connection = ExomiserDatabase.openNewDatabaseConnection();
+//    }
     /**
      * Close database connection - required to stop Sanger server building up
      * stale connections
      */
-    public void closeDatabaseConnection() throws ExomizerInitializationException {
-        logger.info("CLOSING DATABASE CONNECTION");
-        ExomiserDatabase.closeDatabaseConnection(this.connection);
-    }
-
+//    public void closeDatabaseConnection() throws ExomizerInitializationException {
+//        logger.info("CLOSING DATABASE CONNECTION");
+//        ExomiserDatabase.closeDatabaseConnection(this.connection);
+//    }
     /**
      * This function is intended to be used by external (webserver) code that is
      * running the exomizer and displaying the results on a website. The
@@ -1050,7 +930,7 @@ public class Exomizer {
     public VariantTypeCounter getVariantTypeCounter() {
         VariantTypeCounter vtc = null;
         for (Filter f : this.prioritiser.getFilterList()) {
-            if (f.getFilterTypeConstant() == FilterType.EXOME_TARGET_FILTER) {
+            if (f.getFilterType() == FilterType.EXOME_TARGET_FILTER) {
                 TargetFilter tf = (TargetFilter) f;
                 vtc = tf.getVariantTypeCounter();
                 break;
@@ -1104,6 +984,7 @@ public class Exomizer {
      *
      * @param out A Writer object (e.g., StringWriter) for output
      */
+    @Deprecated
     public void initializeCREWriter(Writer out) {
         this.htmlWriter = new HTMLWriterCRE(out, this.vcf_file_basename);
     }
@@ -1131,7 +1012,7 @@ public class Exomizer {
 
     /**
      * This function adds annotations about published mutations from HGMD and
-     * ClinVar to the top piroritized genes.
+     * ClinVar to the top prioritized genes.
      */
     private void addMutationHitsToTopVariants() {
         int N;
@@ -1235,9 +1116,9 @@ public class Exomizer {
         }
         try {
             //default file name
-            String fname = "exomizer.html";            
-            logger.info("Writing HTML file to: {}", fname);            
-            
+            String fname = "exomizer.html";
+            logger.info("Writing HTML file to: {}", fname);
+
             if (this.outfile != null) {
                 fname = this.outfile;
             }
@@ -1254,6 +1135,7 @@ public class Exomizer {
             } else { /*
                  * default
                  */
+
                 this.htmlWriter = new HTMLWriter(fname);
             }
             this.htmlWriter.writeHTMLHeaderAndCSS();
@@ -1301,7 +1183,7 @@ public class Exomizer {
             options.addOption(new Option("X", "RWindex", true, "Random walk index file"));
             options.addOption(new Option("Z", "zfin_phenotypes", false, "Filter variants for ZFIN phenodigm score"));
             options.addOption(new Option("T", "keep_off_target_syn", false, "Leave in off-target, intronic and synonymous variants"));
-            
+
             // Annotations that do not filter
             options.addOption(new Option(null, "interval", true, "Restrict to interval (e.g., chr2:12345-67890)"));
             options.addOption(new Option(null, "tsv", false, "Output tab-separated value (TSV) file instead of HTML"));
@@ -1315,8 +1197,6 @@ public class Exomizer {
             options.addOption(new Option(null, "ngenes", true, "Number of genes to show in output"));
             options.addOption(new Option(null, "withinFirewall", false, "Set flag that we are running on private server"));
             options.addOption(new Option(null, "phenomizerData", true, "Phenomizer data directory"));
-
-
 
             Parser parser = new GnuParser();
             CommandLine cmd = parser.parse(options, args);
@@ -1339,9 +1219,9 @@ public class Exomizer {
                 setBOQA_TermList(cmd.getOptionValue("B"));
                 setUseBoqa();
             }
-            if (cmd.hasOption("D")) {
-                setUCSCserializedFile(cmd.getOptionValue("D"));
-            }
+//            if (cmd.hasOption("D")) {
+//                setUCSCserializedFile(cmd.getOptionValue("D"));
+//            }
             if (cmd.hasOption("F")) {
                 setFrequencyThreshold(cmd.getOptionValue("F"));
             }
@@ -1519,10 +1399,9 @@ public class Exomizer {
         this.useBOQA = false;
     }
 
-    public void setUCSCserializedFile(String ucscFile) {
-        this.UCSCserializedFile = ucscFile;
-    }
-
+//    public void setUCSCserializedFile(String ucscFile) {
+//        this.UCSCserializedFile = ucscFile;
+//    }
     public void setFrequencyThreshold(String F) {
         this.frequency_threshold = F;
     }
@@ -1581,37 +1460,9 @@ public class Exomizer {
     public void setUsePathogenicityFilter(boolean use_filter) {
         this.use_pathogenicity_filter = use_filter;
     }
-    
+
     public void setOutfile(String fname) {
         this.outfile = fname;
-    }
-
-    /**
-     * Set the VCF path ({@link #vcf_file}) as well as the base name of the VCF
-     * file ({@link #vcf_file_basename}).
-     */
-    public void setVCFfile(String fname) {
-        this.vcf_file = fname;
-        int sep = fname.lastIndexOf("/");
-        int wsep = fname.lastIndexOf("\\");
-        sep = Math.max(sep, wsep);
-        this.vcf_file_basename = fname.substring(sep + 1);
-    }
-
-    /**
-     * This method is intended to be used by a tomcat server (e.g., ExomeWalker)
-     * to pass in a file handle to a VCF file that has been uploaded and read
-     * into a StringReader that in turn has been used to construct a
-     * BufferedReader.
-     *
-     * @param br A file handle to a VCF file.
-     */
-    public void setVCFbufferedReader(BufferedReader br) {
-        this.vcfBufferedReader = br;
-    }
-
-    public String getVCFfile() {
-        return this.vcf_file;
     }
 
     public void setInterval(String interv) {
@@ -1673,10 +1524,6 @@ public class Exomizer {
         this.hpo_ids = list;
     }
 
-    public void setPedFile(String path) {
-        this.pedFilePath = path;
-    }
-
     /**
      * This method is intended to be used by a tomcat server (e.g., ExomeWalker)
      * to pass in a file handle to a PED file that has been uploaded and read
@@ -1687,14 +1534,6 @@ public class Exomizer {
      */
     public void setPedBufferedReader(BufferedReader br) {
         this.pedBufferedReader = br;
-    }
-
-    public String getPedFile() {
-        return this.pedFilePath;
-    }
-
-    public Pedigree getPedigree() {
-        return this.pedigree;
     }
 
     public void setHPOontologyFile(String file) {
@@ -1720,4 +1559,197 @@ public class Exomizer {
     public void setDiseaseGeneFamilyName(String name) {
         this.diseaseGeneFamilyName = name;
     }
+
+/////////////////////////////////////////////////////////////////////////////////
+     /**
+     * The methods/variables in this section all deal with the parsing/storing
+     * of sample data and will be moved out into the SampleData
+     * SampleDataFactory classes or simply removed if no longer used. Hence they
+     * are all deprecated.
+     */
+    
+    
+    /**
+     * List of Variants parsed from VCF file that have passed user-indicated
+     * filter
+     */
+    //TODO: this will be provided from outside the class
+    @Deprecated
+    private List<VariantEvaluation> variantList = null;
+    
+    @Deprecated
+    public void setVariantList(List<VariantEvaluation> variantList) {
+        this.variantList = variantList;
+    }
+    
+    
+    /**
+     * List of all Genes that are to be prioritized. Note that the Genes will
+     * contain the variants that have passed the filtering step.
+     */
+    @Deprecated
+    private List<Gene> geneList = null;
+
+    /**
+     * @return A list of all genes.
+     */
+    @Deprecated
+    public List<Gene> getGeneList() {
+        return geneList;
+    }
+
+    @Deprecated
+    public void setGeneList(List<Gene> geneList) {
+        this.geneList = geneList;
+    }
+
+    @Deprecated
+    public int getNumberOfGenes() {
+        if (geneList == null) {
+            return 0;
+        }
+        return geneList.size();
+    }
+    /**
+     * List of all sample names of VCF file
+     */
+    @Deprecated
+    private ArrayList<String> sampleNames = null;
+    /**
+     * Name of the VCF file used for input.
+     */
+    @Deprecated
+    private String vcf_file = null;
+    /**
+     * Base name of the VCF file used for input (without path)
+     */
+    @Deprecated
+    private String vcf_file_basename = null;
+//    /**
+//     * Store lines of header of VCF file, in case we want to print them out
+//     * again.
+//     */
+//    private List<String> header = null;
+
+    /**
+     * Temporary method for setting the sampleNames needed by the HTMLWriters
+     * until they are split out of this class.
+     *
+     * @param sampleNames
+     * @deprecated
+     */
+    @Deprecated
+    public void setSampleNames(ArrayList<String> sampleNames) {
+        this.sampleNames = sampleNames;
+    }
+    
+//    /**
+//     * Total number of variants in original VCF file.
+//     */
+//    private int before_NS_SS_I;
+//    /**
+//     * Total number of NS/SS/I variants in original VCF file (nonsynonymous,
+//     * splicing, indel).
+//     */
+//    private int after_NS_SS_I;
+//    /**
+//     * Total number of samples (sequenced persons) in the input VCF file.
+//     */
+//    private int n_samples = 0;
+    /**
+     * Pedigree of the persons whose samples were sequenced. Created on the
+     * basis of a PED file for multisample VCF files, or as a default
+     * single-sample Pedigree for single-sample VCF files.
+     */
+    @Deprecated
+    private Pedigree pedigree = null;
+    /**
+     * Path to the pedigree (ped) file for multisample VCF files.
+     */
+    @Deprecated
+    private String pedFilePath = null;
+    /**
+     * BufferedReader to a StringReader that contains the contents of an
+     * uploaded PED file. This variable is provided so that tomcat servers can
+     * pass in a handle to a file without needing to first write this file to
+     * disk.
+     */
+    @Deprecated
+    private BufferedReader pedBufferedReader = null;
+
+    //TODO: REMOVE used by  parseCommandLineArguments
+    @Deprecated
+    public void setPedFile(String path) {
+        this.pedFilePath = path;
+    }
+
+    //TODO: REMOVE used by  parseCommandLineArguments
+    @Deprecated
+    public String getPedFile() {
+        return this.pedFilePath;
+    }
+
+    /**
+     * Set the VCF path ({@link #vcf_file}) as well as the base name of the VCF
+     * file ({@link #vcf_file_basename}).
+     */
+    @Deprecated
+    public void setVCFfile(String fname) {
+        this.vcf_file = fname;
+        int sep = fname.lastIndexOf("/");
+        int wsep = fname.lastIndexOf("\\");
+        sep = Math.max(sep, wsep);
+        this.vcf_file_basename = fname.substring(sep + 1);
+    }
+
+//    /**
+//     * This method is intended to be used by a tomcat server (e.g., ExomeWalker)
+//     * to pass in a file handle to a VCF file that has been uploaded and read
+//     * into a StringReader that in turn has been used to construct a
+//     * BufferedReader.
+//     *
+//     * @param br A file handle to a VCF file.
+//     */
+//    public void setVCFbufferedReader(BufferedReader br) {
+//        this.vcfBufferedReader = br;
+//    }
+//
+    //TODO: REMOVE used by  parseCommandLineArguments
+    @Deprecated
+    public String getVCFfile() {
+        return this.vcf_file;
+    }
+
+    //TODO: REMOVE
+    @Deprecated
+    public Pedigree getPedigree() {
+        return this.pedigree;
+    }
+
+    /**
+     * Temporary method for providing a means of setting the pedigree
+     *
+     * @param pedigree
+     * @deprecated
+     */
+    //TODO: REMOVE
+    @Deprecated
+    public void setPedigree(Pedigree pedigree) {
+        this.pedigree = pedigree;
+    }
+
+//should be redundant - this is handled by the SampleDataFactory
+//    /**
+//     * This function is intended to let webservers know that we still need to
+//     * initialize the Pedigree object for VCF files with only one sample. There
+//     * are probably more elegant ways of doing this, consider refactoring.
+//     */
+//    @Deprecated
+//    public boolean singleSamplePedigreeNeedsInitialization() {
+//        if (this.pedigree == null && this.getNumberOfSamples() == 1) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 }

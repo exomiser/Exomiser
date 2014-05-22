@@ -457,7 +457,7 @@ public class HTMLWriterCRE extends HTMLWriter {
 	// and prints out a summary of the filtering results.
 	HTMLFilterSummary filtersum = new HTMLFilterSummary();
 	for (Filter f : filterList) {
-	    FilterType fl = f.getFilterTypeConstant();
+	    FilterType fl = f.getFilterType();
 	    // Get data for row in the filter table.
 	    String name =  f.getFilterName();
 	    List<String> descript = f.getMessages();

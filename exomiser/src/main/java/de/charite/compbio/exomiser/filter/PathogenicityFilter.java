@@ -1,22 +1,17 @@
 package de.charite.compbio.exomiser.filter;
 
+import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.dao.TriageDAO;
+import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import de.charite.compbio.exomiser.exome.VariantEvaluation;
+import jannovar.exome.Variant;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import jannovar.common.Constants;
-import jannovar.exome.Variant;
-
-import de.charite.compbio.exomiser.common.FilterType;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exome.VariantEvaluation;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Filter variants according to their predicted pathogenicity. There are two
@@ -36,10 +31,20 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  */
 public class PathogenicityFilter implements Filter {
 
+    private final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
+
     /**
      * Database handle to the postgreSQL database used by this application.
      */
-    private Connection connection = null;
+    private Connection connection;
+
+    /**
+     * DAO for retrieving Triage data from the database 
+     */
+    private final TriageDAO triageDao;
+
+    private final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
+
     /**
      * A prepared SQL statement for thousand genomes frequency.
      */
@@ -61,9 +66,12 @@ public class PathogenicityFilter implements Filter {
      */
     private List<String> messages = null;
 
-    public PathogenicityFilter() throws ExomizerInitializationException {
-        this.error_record = new ArrayList<String>();
-        this.messages = new ArrayList<String>();
+    public PathogenicityFilter(TriageDAO triageDao) {
+
+        this.triageDao = triageDao;
+
+        this.error_record = new ArrayList<>();
+        this.messages = new ArrayList<>();
         this.messages.add("Synonymous and non-coding variants removed");
     }
 
@@ -77,8 +85,8 @@ public class PathogenicityFilter implements Filter {
      * taster.
      */
     @Override
-    public FilterType getFilterTypeConstant() {
-        return FilterType.PATHOGENICITY_FILTER;
+    public FilterType getFilterType() {
+        return filterType;
     }
 
     /**
@@ -98,9 +106,10 @@ public class PathogenicityFilter implements Filter {
         return; // note there are no parameters for this filter.
     }
 
-    public void set_syn_filter_status(boolean flag) throws ExomizerInitializationException {
+    public void setSynonymousFilterStatus(boolean flag) throws ExomizerInitializationException {
         if (!flag) {
-            PathogenicityTriage.keepSynVariants();
+            PathogenicityTriage.keepSynonymousVariants();
+            //sets the 
             //PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0;
         }
     }
@@ -146,17 +155,17 @@ public class PathogenicityFilter implements Filter {
     /**
      * Remove variants that are deemed to be not-pathogenic, and provide a
      * pathogenicity score for those that survive the filter.
+     * @param variantList
      */
     @Override
-    public void filterVariants(List<VariantEvaluation> variant_list) {
-        Iterator<VariantEvaluation> it = variant_list.iterator();
+    public void filterVariants(List<VariantEvaluation> variantList) {
+        Iterator<VariantEvaluation> it = variantList.iterator();
 
-        this.n_before = variant_list.size();
+        this.n_before = variantList.size();
         while (it.hasNext()) {
             VariantEvaluation ve = it.next();
             Variant v = ve.getVariant();
-            try {
-                PathogenicityTriage pt = retrieve_pathogenicity_data(v);
+            Triage pt = triageDao.getTriageData(v);
                 if (!pt.passesFilter()) {
                     // Variant is not predicted pathogenic, discard it.
                     it.remove();
@@ -164,129 +173,13 @@ public class PathogenicityFilter implements Filter {
                     // We passed the filter (Variant is predicted pathogenic).
                     ve.addFilterTriage(pt, FilterType.PATHOGENICITY_FILTER);
                 }
-            } catch (ExomizerException e) {
-                error_record.add(e.toString());
             }
+        this.n_after = variantList.size();
         }
-        this.n_after = variant_list.size();
-    }
+    //Deleted methods from here down
+    //moved to {@code de.charite.compbio.exomiser.dao.PathogenicityTriageDAO}
 
-    /**
-     * Note that current, ESP only holds frequency data for nucleotide
-     * substitutions. Therefore, just skip this step for other kinds of
-     * variants. Use the flag NO_ESP_DATA to indicate this.
-     *
-     * @param v A Variant whose frequency is to be retrieved from the SQL
-     * database by this function.
-     */
-    private PathogenicityTriage retrieve_pathogenicity_data(Variant v) throws ExomizerSQLException {
-        /**
-         * The following classifies variants based upon their variant class
-         * (MISSENSE, NONSENSE, INTRONIC). The actual logic for assigning
-         * pathogenicity scores is in the PathogenicityTriage class.
-         */
-//	if (! v.is_missense_variant () ) {
-//	    return PathogenicityTriage.evaluateVariantClass(v); 
-//	}
-
-
-        float polyphen = Constants.UNINITIALIZED_FLOAT;
-        float mutation_taster = Constants.UNINITIALIZED_FLOAT;
-        float sift = Constants.UNINITIALIZED_FLOAT;
-        float cadd_raw = Constants.UNINITIALIZED_FLOAT;
-
-        int chrom = v.get_chromosome();
-        int position = v.get_position();
-        /*
-         * Note: when we get here, we have tested above that we have a
-         * nonsynonymous substitution
-         */
-        char ref = v.get_ref().charAt(0);
-        char alt = v.get_alt().charAt(0);
-        ResultSet rs = null;
-        try {
-            this.getPathogenicityDataStatement.setInt(1, chrom);
-            this.getPathogenicityDataStatement.setInt(2, position);
-            this.getPathogenicityDataStatement.setString(3, Character.toString(ref));
-            this.getPathogenicityDataStatement.setString(4, Character.toString(alt));
-
-            rs = getPathogenicityDataStatement.executeQuery();
-
-            /*
-             * Switched db back to potentially having multiple rows per variant
-             * if alt transcripts leads to diff aa changes and pathogenicities.
-             * In future if know which transcript is more likely in the disease
-             * tissue can use the most appropriate row but for now take max
-             */
-            while (rs.next()) {
-                if (sift == Constants.UNINITIALIZED_FLOAT || rs.getFloat(1) < sift) {
-                    sift = rs.getFloat(1);
-                }
-                if (polyphen == Constants.UNINITIALIZED_FLOAT || rs.getFloat(2) > polyphen) {
-                    polyphen = rs.getFloat(2);
-                }
-                if (mutation_taster == Constants.UNINITIALIZED_FLOAT || rs.getFloat(3) > mutation_taster) {
-                    mutation_taster = rs.getFloat(3);
-                }
-                if (cadd_raw == Constants.UNINITIALIZED_FLOAT || rs.getFloat(4) > cadd_raw) {
-                    cadd_raw = rs.getFloat(4);
-                }
-
-            }
-//            
-//            if ( rs.next() ) { /* The way the db was constructed, there is just one line for each such query. */
-//		sift = rs.getFloat(1);
-//		polyphen  = rs.getFloat(2);
-//		mutation_taster  = rs.getFloat(3);
-//	    }
-            rs.close();
-        } catch (SQLException e) {
-            throw new ExomizerSQLException("Error executing pathogenicity query: " + e);
-        }
-        if (!v.is_missense_variant()) {
-            return PathogenicityTriage.evaluateVariantClass(v, cadd_raw);
-        } else {
-            PathogenicityTriage pt = new PathogenicityTriage(polyphen, mutation_taster, sift, cadd_raw);
-            return pt;
-        }
-    }
-
-    /**
-     * Prepare the SQL query statements required for this filter. <p> SELECT
-     * sift,polyphen,mut_taster,phyloP</br> FROM variant</br> WHERE chromosome =
-     * ? </br> AND position = ? </br> AND ref = ? </br> AND alt = ?</br>
-     */
-    private void setUpSQLPreparedStatement() throws ExomizerInitializationException {
-        String query = String.format("SELECT sift,"
-                + "polyphen, mut_taster, cadd_raw, phyloP "
-                + "FROM variant "
-                + "WHERE chromosome = ? "
-                + "AND position = ? "
-                + "AND ref = ? "
-                + "AND alt = ? ");
-
-        try {
-            this.getPathogenicityDataStatement = connection.prepareStatement(query);
-
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + query;
-            throw new ExomizerInitializationException(error);
-        }
-    }
-
-    /**
-     * Get the postgreSQL connection from calling code and set up a prepared
-     * statement by calling the function {@link #setUpSQLPreparedStatement}.
-     *
-     * @param connection An SQL (postgres) connection that was initialized
-     * elsewhere.
-     */
     @Override
-    public void setDatabaseConnection(java.sql.Connection connection) throws ExomizerInitializationException {
-        this.connection = connection;
-        setUpSQLPreparedStatement();
-    }
-
     public boolean displayInHTML() {
         return true;
     }

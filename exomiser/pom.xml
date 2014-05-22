@@ -4,7 +4,7 @@
 
     <groupId>de.charite.compbio</groupId>
     <artifactId>exomiser</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
     <packaging>jar</packaging>
 
     <name>exomiser</name>
@@ -80,7 +80,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>de.charite.compbio.exomiser.Exomizer</mainClass>
+                            <mainClass>de.charite.compbio.exomiser.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -122,6 +122,7 @@
                             <resources>          
                                 <resource>
                                     <directory>src/main/resources</directory>
+                                    <include>settings.properties</include>
                                     <include>jdbc.properties</include>
                                     <include>log4j2.xml</include>
                                 </resource>
@@ -129,10 +130,10 @@
                                     <directory>src/test/resources</directory>
                                     <include>Pfeiffer.vcf</include>
                                 </resource>
-                                <resource>
+<!--                                <resource>
                                     <directory>${project.build.directory}/../../exomiser-db/data/extracted</directory>
                                     <include>ucsc_hg19.ser</include>
-                                </resource>
+                                </resource>-->
                                 <!-- This is about 22GB so only enable it when you *really* want to build this automatically -->
 <!--                                <resource>
                                     <directory>${project.build.directory}/../../exomiser-db/data</directory>

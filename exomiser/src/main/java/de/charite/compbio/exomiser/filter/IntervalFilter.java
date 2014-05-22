@@ -26,6 +26,9 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @version 0.08 (April 28, 2013)
  */
 public class IntervalFilter implements Filter {
+    
+    private final FilterType filterType = FilterType.INTERVAL_FILTER;
+            
     /** The chromosome of the linkage interval */
     int chromosome;
     /** The 5' position of the linkage interval on the chromosome */
@@ -104,12 +107,14 @@ public class IntervalFilter implements Filter {
     /** Take a list of variants and apply the filter to each variant. If a variant does not
      * pass the filter, remove it. Note that we use an explicit for loop to avoid a
      * java.util.ConcurrentModificationException that occurs with an Iterator implementation.
+     * @param variantList
     */
-    public void filterVariants(List<VariantEvaluation> variant_list)
+    @Override
+    public void filterVariants(List<VariantEvaluation> variantList)
     {
-	this.n_before = variant_list.size();
-	Iterator<VariantEvaluation> it = variant_list.iterator();
-	this.n_before = variant_list.size();
+	this.n_before = variantList.size();
+	Iterator<VariantEvaluation> it = variantList.iterator();
+	this.n_before = variantList.size();
 	while (it.hasNext()) {
 	    VariantEvaluation ve = it.next();
 	    Variant v = ve.getVariant();
@@ -128,7 +133,7 @@ public class IntervalFilter implements Filter {
 		}
 	    }
 	}
-	this.n_after = variant_list.size();
+	this.n_after = variantList.size();
     }
     /** get a list of messages that represent the process and result of applying the filter. This
 	list can be used to make an HTML list for explaining the result to users (for instance).
@@ -138,13 +143,19 @@ public class IntervalFilter implements Filter {
 
     }
 
-    public String getFilterName() { return "Interval filter"; }
+    public String getFilterName() {
+        return "Interval filter";
+    }
 
-    /** @return an integer constant (as defined in exomizer.common.Constants) that will act
-     * as a flag to generate the output HTML dynamically depending on the filters that the 
-     * user has chosen.
+    /**
+     * @return an integer constant (as defined in exomizer.common.Constants)
+     * that will act as a flag to generate the output HTML dynamically depending
+     * on the filters that the user has chosen.
      */
-    @Override public FilterType getFilterTypeConstant() { return FilterType.INTERVAL_FILTER; }
+    @Override
+    public FilterType getFilterType() {
+        return filterType;
+    }
 
     /** Get number of variants before filter was applied */
     public int getBefore()
@@ -164,7 +175,7 @@ public class IntervalFilter implements Filter {
      * Not needed in this class.
      * @param connection An SQL (postgres) connection that was initialized elsewhere.
      */
-    @Override public void setDatabaseConnection(java.sql.Connection connection) 
-	throws ExomizerInitializationException  { /* no-op. */ }
+//    @Override public void setDatabaseConnection(java.sql.Connection connection) 
+//	throws ExomizerInitializationException  { /* no-op. */ }
 
 }

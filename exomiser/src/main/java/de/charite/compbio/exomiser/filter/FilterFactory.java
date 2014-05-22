@@ -6,7 +6,10 @@
 package de.charite.compbio.exomiser.filter;
 
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
+import de.charite.compbio.exomiser.dao.PathogenicityTriageDAO;
 import java.util.Set;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,49 +19,57 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FilterFactory {
-
+    
     private static final Logger logger = LoggerFactory.getLogger(FilterFactory.class);
+
+    private final DataSource dataSource;
+    
+    public FilterFactory(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     /**
      * Filter on variant type that is expected potential pathogenic (Missense,
      * Intergenic etc and not off target (INTERGENIC, UPSTREAM, DOWNSTREAM).
      * @return 
      */
-    public static Filter getTargetFilter() {
+    public Filter getTargetFilter() {
         Filter targetFilter = new TargetFilter();
-        logger.info("Made new TargetFilter: {}" + targetFilter);
+        logger.info("Made new Filter: {}", targetFilter);
         return targetFilter;
     }
 
     /**
      * Add a frequency filter. There are several options. If the argument
      * filterOutAllDbsnp is true, then all dbSNP entries are removed
-     * (dangerous). Else if the freuqency is set to some value, we set this is
+     * (dangerous). Else if the frequency is set to some value, we set this as
      * the maximum MAF. else we set the frequency filter to 100%, i.e., no
      * filtering.
+     * @param dataSource
      * @param frequency_threshold
      * @param filterOutAllDbsnp
      * @return 
      * @throws de.charite.compbio.exomiser.exception.ExomizerInitializationException
      */
-    public static Filter getFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) throws ExomizerInitializationException {
-        Filter filter = new FrequencyFilter();
+    public Filter getFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) throws ExomizerInitializationException {
+        
+        FrequencyTriageDAO variantTriageDAO = new FrequencyTriageDAO(dataSource);
+        Filter frequencyFilter = new FrequencyFilter(variantTriageDAO);
 
         if (filterOutAllDbsnp) {
-            filter.setParameters("RS");
-        } else if (frequency_threshold != null
-                && !frequency_threshold.equals("none")) {
-            filter.setParameters(frequency_threshold);
+            frequencyFilter.setParameters("RS");
+        } else if (frequency_threshold != null && !frequency_threshold.equals("none")) {
+            frequencyFilter.setParameters(frequency_threshold);
         } else {
             // default is freq filter at 100 i.e. keep everything so still
             // get freq data in output and inclusion in prioritization
-            filter.setParameters("100");
+            frequencyFilter.setParameters("100");
         }
-        logger.info("Made new Frequency Filter: {}", filter);
-        return filter;
+        logger.info("Made new Filter: {}", frequencyFilter);
+        return frequencyFilter;
     }
 
-    public static Filter getQualityFilter(String quality_threshold) throws ExomizerInitializationException {
+    public Filter getQualityFilter(String quality_threshold) throws ExomizerInitializationException {
         Filter filter = new QualityFilter();
         filter.setParameters(quality_threshold);
 
@@ -66,28 +77,30 @@ public class FilterFactory {
         return filter;
     }
 
-    public static Filter getPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSyn) throws ExomizerInitializationException {
-        PathogenicityFilter filter = new PathogenicityFilter();
+    public Filter getPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSynonomousVariants) throws ExomizerInitializationException {
+        
+        PathogenicityTriageDAO pathogenicityTriageDao = new PathogenicityTriageDAO(dataSource);
+        PathogenicityFilter filter = new PathogenicityFilter(pathogenicityTriageDao);
         if (filterOutNonpathogenic) {
             filter.setParameters("filter");
         }
-        filter.set_syn_filter_status(removeSyn);
-        logger.info("Made new Pathogenicity Filter: {}", filter);
+        filter.setSynonymousFilterStatus(removeSynonomousVariants);
+        logger.info("Made new Filter: {}", filter);
         return filter;
     }
 
-    public static Filter getLinkageFilter(String interval) throws ExomizerInitializationException {
+    public Filter getLinkageFilter(String interval) throws ExomizerInitializationException {
 
         Filter filter = new IntervalFilter();
         filter.setParameters(interval);
         
-        logger.info("Made new Linkage Filter: {}", filter);
+        logger.info("Made new Filter: {}", filter);
         return filter;
     }
     
-    public static Filter getBedFilter(Set<String> commalist) throws ExomizerInitializationException {
+    public Filter getBedFilter(Set<String> commalist) throws ExomizerInitializationException {
 	Filter filter = new BedFilter(commalist);
-	logger.info("Made new Bed Filter: {}", filter);
+	logger.info("Made new Filter: {}", filter);
         return filter;
     }
 

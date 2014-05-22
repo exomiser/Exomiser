@@ -20,8 +20,8 @@ public class BedFilter implements Filter {
     /** Number of variants passing filter */
     private int n_after;
 
+    private final FilterType filterType = FilterType.BED_FILTER;
    
-
     private List<String> messages = null;
 
     /**
@@ -62,7 +62,7 @@ public class BedFilter implements Filter {
      * as a flag to generate the output HTML dynamically depending on the filters that the 
      * user has chosen.
      */
-    @Override public FilterType getFilterTypeConstant() { return FilterType.BED_FILTER; }
+    @Override public FilterType getFilterType() { return filterType; }
 
     /** Get number of variants before filter was applied */
     @Override public int getBefore() {return this.n_before; }
@@ -130,7 +130,7 @@ public class BedFilter implements Filter {
      * Not needed in this class.
      * @param connection An SQL (postgres) connection that was initialized elsewhere.
      */
-    @Override public void setDatabaseConnection(java.sql.Connection connection) { /* no-op. */ }
+//    @Override public void setDatabaseConnection(java.sql.Connection connection) { /* no-op. */ }
 
 
 }

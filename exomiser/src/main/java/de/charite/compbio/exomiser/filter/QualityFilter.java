@@ -18,6 +18,9 @@ import de.charite.compbio.exomiser.exome.VariantEvaluation;
  * @version 0.11 (December 29, 2013)
  */
 public class QualityFilter implements Filter {
+    
+    private final FilterType filterType = FilterType.QUALITY_FILTER;
+    
     /** Threshold for filtering. Retain only those variants whose PHRED
 	variant call quality is at least as good. The default is 1. */
     private float quality_threshold = 1.0f;
@@ -51,10 +54,18 @@ public class QualityFilter implements Filter {
 	 }
      }
 
-    @Override public String getFilterName() { return "Quality filter"; }
+    @Override
+    public String getFilterName() {
+        return "Quality filter";
+    }
 
-    /**  Flag for output field representing the QUAL column of the VCF file. */
-    @Override public FilterType getFilterTypeConstant() { return FilterType.QUALITY_FILTER; } 
+    /**
+     * Flag for output field representing the QUAL column of the VCF file.
+     */
+    @Override
+    public FilterType getFilterType() {
+        return filterType;
+    }
 
     /**
      * @return list of messages representing process, result, and if any, errors of frequency filtering. 
@@ -95,6 +106,6 @@ public class QualityFilter implements Filter {
      * Not needed in this class.
      * @param connection An SQL (postgres) connection that was initialized elsewhere.
      */
-    @Override public void setDatabaseConnection(java.sql.Connection connection) { /* no-op. */ }
+//    @Override public void setDatabaseConnection(java.sql.Connection connection) { /* no-op. */ }
 
 }
