@@ -77,6 +77,16 @@ public class Exomizer {
     private DataSource dataSource;
 
     /**
+     * Temporary setter for use until this can be removed.
+     * @param dataSource
+     * @deprecated
+     */
+    @Deprecated
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    /**
      * This flag indicates that we are running on our internal server, i.e.,
      * within the hospital firewall, meaning that we are allowed to show all
      * HGMD data.
@@ -407,11 +417,10 @@ public class Exomizer {
 //            System.exit(1);
 //        }
 //    }
-    public Exomizer(DataSource dataSource) {
-        logger.info("STARTING EXOMISER");
-        this.dataSource = dataSource;
-        this.status_message = new ArrayList<String>();
-    }
+//    public Exomizer(DataSource dataSource) {
+//        this.dataSource = dataSource;
+//        this.status_message = new ArrayList<String>();
+//    }
 
     /**
      * This constructor, without arguments, is intended to be used by the Tomcat
@@ -419,6 +428,7 @@ public class Exomizer {
      * than via the command line.
      */
     public Exomizer() {
+        logger.info("STARTING EXOMISER");
         this.status_message = new ArrayList<String>();
     }
 
@@ -1133,8 +1143,8 @@ public class Exomizer {
             options.addOption(new Option("A", "omim_disease", true, "OMIM ID for disease being sequenced"));
             options.addOption(new Option("B", "boqa", true, "comma-separated list of HPO terms for BOQA"));
             options.addOption(new Option("D", "file_for_deserialising", true, "De-serialise"));
-            options.addOption(new Option("F", "freq_threshold", true, "Frequency threshold for variants"));
-            options.addOption(new Option("I", "inheritance", true, "Filter variants for inheritance pattern (AR,AD,X)"));
+            options.addOption(new Option("F", "freq_threshold", true, "Frequency threshold for variants")); 
+            options.addOption(new Option("I", "inheritance", true, "Filter variants for inheritance pattern (AR,AD,X)")); 
             options.addOption(new Option("M", "mgi_phenotypes", false, "Filter variants for MGI phenodigm score"));
 
             options.addOption(new Option("P", "path", false, "Filter variants for predicted pathogenicity"));
@@ -1177,7 +1187,7 @@ public class Exomizer {
             this.hpo_ids = null;
 
             if (cmd.hasOption("B")) {
-                setBOQA_TermList(cmd.getOptionValue("B"));
+                setHPOids(cmd.getOptionValue("B"));
                 setUseBoqa();
             }
 //            if (cmd.hasOption("D")) {
@@ -1310,6 +1320,7 @@ public class Exomizer {
      * @param name Name of the argument that must be present
      * @return Value of the required option as a String.
      */
+    @Deprecated
     private static String getRequiredOptionValue(CommandLine cmd, char name) {
         String val = cmd.getOptionValue(name);
         if (val == null) {
@@ -1337,6 +1348,12 @@ public class Exomizer {
         this.useCRE = false;
     }
 
+    public void setDoClinicallyRelevantExomeServer() {
+        this.useCRE = true;
+        this.useRandomWalk = false;
+        this.useBOQA = false;
+    }
+
 //    /**
 //     * Set the flag to perform Random Walk (GeneWanderer) analysis.
 //     */
@@ -1354,11 +1371,6 @@ public class Exomizer {
 //        this.useBOQA = false;
 //        this.useCRE = false;
 //    }
-    public void setDoClinicallyRelevantExomeServer() {
-        this.useCRE = true;
-        this.useRandomWalk = false;
-        this.useBOQA = false;
-    }
 
 //    public void setUCSCserializedFile(String ucscFile) {
 //        this.UCSCserializedFile = ucscFile;
@@ -1480,7 +1492,9 @@ public class Exomizer {
 
     /**
      * @param list A comma-separated list of HPO terms.
+     * @deprecated Duplicates {@link Exomiser#setHPOids}
      */
+    @Deprecated
     public void setBOQA_TermList(String list) {
         this.hpo_ids = list;
     }

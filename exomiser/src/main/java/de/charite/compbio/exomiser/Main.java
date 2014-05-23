@@ -11,16 +11,12 @@ import de.charite.compbio.exomiser.config.MainConfig;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.util.ChromosomeMapFactory;
+import de.charite.compbio.exomiser.util.CommandLineOptionsParser;
 import de.charite.compbio.exomiser.util.VariantAnnotator;
-import jannovar.pedigree.Pedigree;
-import jannovar.reference.Chromosome;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +37,10 @@ public class Main {
         DataSource dataSource = applicationContext.getBean(DataSource.class);
 //        logger.info(dataSource.toString());
         // 1) Open the connection to database.
-        //this was a Priority...
         //Exomiser shouldn't need a datasource directly - this is only needed by some filters and prioritisers
         //and is supplied to them by the PriorityFactory or FilterFactory
-        Exomizer exomizer = new Exomizer(dataSource);
-//        exomizer.setDataSource(dataSource);
+        Exomizer exomizer = new Exomizer();
+        exomizer.setDataSource(dataSource);
 
         //This is going to be a pretty crucial bit for passing in the relevant 
         //settings to the exomiser class
@@ -53,6 +48,9 @@ public class Main {
 //        exomizer.parseOptions(options);
         //alternative:
 //         Exomizer exomizer = new Exomizer(options, dataSource);
+
+//        CommandLineOptionsParser cliParser = new CommandLineOptionsParser(argv);
+
         exomizer.parseCommandLineArguments(argv);
 //        inheritance_mode, disease, hpo_ids, candidateGene are actual input variables
 
@@ -83,7 +81,7 @@ public class Main {
         SampleData sampleData = SampleDataFactory.createSampleData(vcfFile, pedigreeFile);
         if (sampleData.getPedigree() == null) {
             logger.error("CRITICAL! Sample data has no pedigree - unable to continue analysis.");
-            logger.error("Check pedigree file was specified and the file is available.");
+            logger.error("Check pedigree file was specified if you are using a family VCF file and the file is available.");
             logger.error("PROGRAM WILL NOW EXIT. BYE!");
             try {
                 //give the application a second to finish the logging then die.
@@ -119,6 +117,8 @@ public class Main {
         logger.info("FILTERING VARIANTS AND PRIORITISING GENES");
         //for Exomiser in ExomiserList, Exomiser.execute()
         List<Gene> prioritisedGenes = exomizer.executePrioritization(variantList);
+        sampleData.setGeneList(prioritisedGenes);
+        
 //            exomizer.executePrioritization(filterList);
             
             //currently this lot is part of Prioritiser, but it might fit better in 
@@ -151,8 +151,8 @@ public class Main {
         exomizer.setSampleNames((ArrayList<String>) sampleData.getSampleNames());
         exomizer.setPedigree(sampleData.getPedigree());        
         //tempory setting of genes and variants so that the HTMLWriters work
-        exomizer.setGeneList(prioritisedGenes);
-        exomizer.setVariantList(variantList);
+        exomizer.setGeneList(sampleData.getGeneList());
+        exomizer.setVariantList(sampleData.getVariantEvaluations());
             
         //6) Output to HTML (default) or TSV (needs to be set via the --tsv flag on the command line)
         if (exomizer.useTSVFile()) {

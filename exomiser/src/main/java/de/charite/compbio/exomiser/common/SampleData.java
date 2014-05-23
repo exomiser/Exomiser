@@ -6,6 +6,7 @@
 
 package de.charite.compbio.exomiser.common;
 
+import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
@@ -55,6 +56,10 @@ public class SampleData {
 
     private List<VariantEvaluation> variantList;
 
+    private List<Gene> geneList;
+    
+    
+    
     public SampleData() {
     
     }
@@ -133,6 +138,14 @@ public class SampleData {
 
     public void setPedigree(Pedigree pedigree) {
         this.pedigree = pedigree;
+    }
+
+    public List<Gene> getGeneList() {
+        return geneList;
+    }
+
+    public void setGeneList(List<Gene> geneList) {
+        this.geneList = geneList;
     }
 
 }
