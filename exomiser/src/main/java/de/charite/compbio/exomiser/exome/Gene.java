@@ -58,7 +58,8 @@ public class Gene implements Comparable<Gene> {
     /**
      * A list of all of the variants that affect this gene.
      */
-    private List<VariantEvaluation> variant_list = null;
+    private List<VariantEvaluation> variantList = null;
+
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
      * prediction for a disease gene) reflecting the predicted relevance of this
@@ -98,7 +99,7 @@ public class Gene implements Comparable<Gene> {
     }
 
     public void downrankGeneIfMoreVariantsThanThreshold(int threshold) {
-        int n = variant_list.size();
+        int n = variantList.size();
         if (threshold <= n) {
             return;
         }
@@ -112,7 +113,7 @@ public class Gene implements Comparable<Gene> {
      * this gene.
      */
     public int getNumberOfVariants() {
-        return this.variant_list.size();
+        return this.variantList.size();
     }
 
     /**
@@ -126,12 +127,12 @@ public class Gene implements Comparable<Gene> {
      * or more variants.
      */
     public void downWeightGeneWithManyVariants(int threshold) {
-        if (this.variant_list.size() < threshold) {
+        if (this.variantList.size() < threshold) {
             return;
         }
         // Start with downweighting factor of 5%
         // For every additional variant, add half again to the factor
-        int s = this.variant_list.size();
+        int s = this.variantList.size();
         float factor = 0.05f;
         float downweight = 0f;
         while (s > threshold) {
@@ -154,10 +155,10 @@ public class Gene implements Comparable<Gene> {
      * gene.
      */
     public VariantEvaluation getNthVariant(int n) {
-        if (n >= this.variant_list.size()) {
+        if (n >= this.variantList.size()) {
             return null;
         } else {
-            return this.variant_list.get(n);
+            return this.variantList.get(n);
         }
     }
 
@@ -169,8 +170,8 @@ public class Gene implements Comparable<Gene> {
      * @param var A variant located in this gene.
      */
     public Gene(VariantEvaluation var) {
-	variant_list = new ArrayList<VariantEvaluation>();
-	variant_list.add(var);
+	variantList = new ArrayList<VariantEvaluation>();
+	variantList.add(var);
 	this.relevanceMap = new HashMap<FilterType,RelevanceScore>();
     }
 
@@ -181,7 +182,7 @@ public class Gene implements Comparable<Gene> {
      * @param var A Variant affecting the current gene.
      */
     public void addVariant(VariantEvaluation var) {
-        this.variant_list.add(var);
+        this.variantList.add(var);
     }
 
     /**
@@ -206,6 +207,10 @@ public class Gene implements Comparable<Gene> {
 	return ir.getRelevanceScore();
     }
 
+    public List<VariantEvaluation> getVariantList() {
+        return variantList;
+    }
+    
     public void resetRelevanceScore(FilterType type, float newval) {
 	RelevanceScore rel = this.relevanceMap.get(type);
 	if (rel == null) {
@@ -224,10 +229,10 @@ public class Gene implements Comparable<Gene> {
      * one of the Variant objects)
      */
     public int getEntrezGeneID() {
-        if (this.variant_list.isEmpty()) {
+        if (this.variantList.isEmpty()) {
             return Constants.UNINITIALIZED_INT;
         } else {
-            VariantEvaluation ve = this.variant_list.get(0);
+            VariantEvaluation ve = this.variantList.get(0);
             return ve.getVariant().getEntrezGeneID();
         }
     }
@@ -248,10 +253,10 @@ public class Gene implements Comparable<Gene> {
      * Variant objects)
      */
     public String getGeneSymbol() {
-        if (this.variant_list.isEmpty()) {
+        if (this.variantList.isEmpty()) {
             return "-";
         } else {
-            VariantEvaluation ve = this.variant_list.get(0);
+            VariantEvaluation ve = this.variantList.get(0);
             return ve.getVariant().getGeneSymbol();
         }
     }
@@ -273,12 +278,12 @@ public class Gene implements Comparable<Gene> {
      */
     public void calculateFilteringScore(ModeOfInheritance mode) {
         this.filterScore = 0f;
-        if (variant_list.size() == 0) {
+        if (variantList.size() == 0) {
             return;
         }
         List<Float> vals = new ArrayList<Float>();
         if (mode == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            for (VariantEvaluation ve : this.variant_list) {
+            for (VariantEvaluation ve : this.variantList) {
                 float x = ve.getFilterScore();
                 vals.add(x);
                 GenotypeCall gc = ve.getVariant().getGenotype();
@@ -291,7 +296,7 @@ public class Gene implements Comparable<Gene> {
         } else { /*
              * not autosomal recessive
              */
-            for (VariantEvaluation ve : this.variant_list) {
+            for (VariantEvaluation ve : this.variantList) {
                 float x = ve.getFilterScore();
                 vals.add(x);
             }
@@ -338,7 +343,7 @@ public class Gene implements Comparable<Gene> {
      * @return A list of all variants in the VCF file that affect this gene.
      */
     public List<VariantEvaluation> get_variant_list() {
-        return this.variant_list;
+        return this.variantList;
     }
 
     /**
@@ -346,7 +351,7 @@ public class Gene implements Comparable<Gene> {
      */
     public List<VariantEvaluation> get_ordered_variant_list() {
         List<Float> vals = new ArrayList<Float>();
-        for (VariantEvaluation ve : this.variant_list) {
+        for (VariantEvaluation ve : this.variantList) {
             Variant v = ve.getVariant();
             float x = ve.getFilterScore();
             vals.add(x);
@@ -357,7 +362,7 @@ public class Gene implements Comparable<Gene> {
 
         List<VariantEvaluation> new_variant_list = new ArrayList<VariantEvaluation>();
         for (float val : vals) {
-            for (VariantEvaluation ve : this.variant_list) {
+            for (VariantEvaluation ve : this.variantList) {
                 Variant v = ve.getVariant();
                 float x = ve.getFilterScore();
                 if (x == val && !new_variant_list.contains(ve)) {
@@ -375,7 +380,7 @@ public class Gene implements Comparable<Gene> {
      */
     public boolean is_consistent_with_recessive() {
         ArrayList<Variant> varList = new ArrayList<Variant>();
-        for (VariantEvaluation ve : this.variant_list) {
+        for (VariantEvaluation ve : this.variantList) {
             Variant v = ve.getVariant();
             varList.add(v);
         }
@@ -388,7 +393,7 @@ public class Gene implements Comparable<Gene> {
      */
     public boolean is_consistent_with_dominant() {
         ArrayList<Variant> varList = new ArrayList<Variant>();
-        for (VariantEvaluation ve : this.variant_list) {
+        for (VariantEvaluation ve : this.variantList) {
             Variant v = ve.getVariant();
             varList.add(v);
         }
@@ -401,7 +406,7 @@ public class Gene implements Comparable<Gene> {
      */
     public boolean is_consistent_with_X() {
         ArrayList<Variant> varList = new ArrayList<Variant>();
-        for (VariantEvaluation ve : this.variant_list) {
+        for (VariantEvaluation ve : this.variantList) {
             Variant v = ve.getVariant();
             varList.add(v);
         }
@@ -412,19 +417,19 @@ public class Gene implements Comparable<Gene> {
      * @return true if the gene is X chromosomal, otherwise false.
      */
     public boolean is_X_chromosomal() {
-        if (this.variant_list.size() < 1) {
+        if (this.variantList.size() < 1) {
             return false;
         }
-        VariantEvaluation ve = this.variant_list.get(0);
+        VariantEvaluation ve = this.variantList.get(0);
         Variant v = ve.getVariant();
         return v.is_X_chromosomal();
     }
 
     public boolean is_Y_chromosomal() {
-        if (this.variant_list.size() < 1) {
+        if (this.variantList.size() < 1) {
             return false;
         }
-        VariantEvaluation ve = this.variant_list.get(0);
+        VariantEvaluation ve = this.variantList.get(0);
         Variant v = ve.getVariant();
         return v.is_Y_chromosomal();
     }
@@ -443,86 +448,6 @@ public class Gene implements Comparable<Gene> {
         return (priorityScore + filterScore) / 2f;
         //return priorityScore;
         //return priorityScore * pathogenicityFilterScore;
-    }
-
-    /**
-     * @return a row for tab-separated value file.
-     */
-    public String getTSVRow() {
-        float humanPhenScore = 0f;
-        float mousePhenScore = 0f;
-        float fishPhenScore = 0f;
-        float rawWalkerScore = 0f;
-        float scaledMaxScore = 0f;
-        float walkerScore = 0f;
-        float exomiser2Score = 0f;
-        float omimScore = 0f;
-        float maxFreq = 0f;
-        float pathogenicityScore = 0f;
-        float polyphen = 0f;
-        float sift = 0f;
-        float mutTaster = 0f;
-        float caddRaw = 0f;
-        String variantType = "";
-        // priority score calculation
-        for (FilterType i : this.relevanceMap.keySet()) {
-            RelevanceScore r = this.relevanceMap.get(i);
-            float x = r.getRelevanceScore();
-            if (i == FilterType.DYNAMIC_PHENOWANDERER_FILTER) {
-                exomiser2Score = x;
-                humanPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getHumanScore();
-                mousePhenScore = ((DynamicPhenoWandererRelevanceScore) r).getMouseScore();
-                fishPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getFishScore();
-                walkerScore = ((DynamicPhenoWandererRelevanceScore) r).getWalkerScore();
-            } else if (i == FilterType.OMIM_FILTER) {
-                omimScore = x;
-            } else if (i == FilterType.GENEWANDERER_FILTER) {
-                walkerScore = x;
-                rawWalkerScore = (float) ((GenewandererRelevanceScore) r).getRawScore();
-                scaledMaxScore = (float) ((GenewandererRelevanceScore) r).getScaledScore();
-            }
-        }
-        for (VariantEvaluation ve : this.variant_list) {
-            float x = ve.getFilterScore();
-            for (FilterType i : ve.getTriageMap().keySet()) {
-                Triage itria = ve.getTriageMap().get(i);
-                if (itria instanceof PathogenicityTriage){
-                    if (((PathogenicityTriage) itria).filterResult() > pathogenicityScore){
-                        variantType = ve.getVariantType();
-                        pathogenicityScore = ((PathogenicityTriage) itria).filterResult();
-                        polyphen = ((PathogenicityTriage) itria).getPolyphen();
-                        sift = ((PathogenicityTriage) itria).getSift();
-                        mutTaster = ((PathogenicityTriage) itria).getMutTaster();
-                        caddRaw = ((PathogenicityTriage) itria).getCADDRaw();
-                        FrequencyTriage ft = (FrequencyTriage) ve.getTriageMap().get(FilterType.FREQUENCY_FILTER);
-                        maxFreq = ft.getMaxFreq();
-                    }
-                }
-            }
-        }
-        
-        String s = String.format("%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%s",
-                getGeneSymbol(),
-                getEntrezGeneID(),
-                getPriorityScore(),
-                getFilterScore(),
-                getCombinedScore(),
-                humanPhenScore,
-                mousePhenScore,
-                fishPhenScore,
-                rawWalkerScore,
-                scaledMaxScore,
-                walkerScore,
-                exomiser2Score,
-                omimScore,
-                maxFreq,
-                pathogenicityScore,
-                polyphen,
-                sift,
-                mutTaster,
-                caddRaw,
-                variantType);
-        return s;
     }
 
     /**
@@ -588,7 +513,7 @@ public class Gene implements Comparable<Gene> {
     }
 
     public Iterator<VariantEvaluation> getVariantEvaluationIterator() {
-        Collections.sort(this.variant_list);
-        return this.variant_list.iterator();
+        Collections.sort(this.variantList);
+        return this.variantList.iterator();
     }
 }

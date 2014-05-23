@@ -1,17 +1,12 @@
 package de.charite.compbio.exomiser;
 
 import de.charite.compbio.exomiser.common.FilterType;
-import de.charite.compbio.exomiser.config.DataSourceConfig;
-import de.charite.compbio.exomiser.config.MainConfig;
-import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.filter.FilterFactory;
-import de.charite.compbio.exomiser.filter.FrequencyFilter;
-import de.charite.compbio.exomiser.filter.QualityFilter;
 import de.charite.compbio.exomiser.filter.TargetFilter;
 import de.charite.compbio.exomiser.io.ExomiserDatabase;
 import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
@@ -19,37 +14,26 @@ import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.io.html.HTMLWriterBOQA;
 import de.charite.compbio.exomiser.io.html.HTMLWriterCRE;
 import de.charite.compbio.exomiser.io.html.HTMLWriterWalker;
+import de.charite.compbio.exomiser.io.tsv.TSVWriter;
 import de.charite.compbio.exomiser.priority.InheritancePriority;
 import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.reference.Network;
 import de.charite.compbio.exomiser.reference.STRINGNetwork;
-import jannovar.annotation.AnnotationList;
 import jannovar.common.ModeOfInheritance;
-import jannovar.exception.AnnotationException;
-import jannovar.exception.JannovarException;
-import jannovar.exception.PedParseException;
-import jannovar.exception.VCFParseException;
 import jannovar.exome.Variant;
 import jannovar.exome.VariantTypeCounter;
-import jannovar.io.PedFileParser;
-import jannovar.io.SerializationManager;
-import jannovar.io.VCFReader;
 import jannovar.pedigree.Pedigree;
-import jannovar.reference.Chromosome;
 import jannovar.reference.TranscriptModel;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -824,36 +808,13 @@ public class Exomizer {
         String fname = vcf_file + ".results.tsv";
         logger.info("Writing TSV file to: {}", fname);
         try {
-            FileWriter fstream = new FileWriter(fname);
-            BufferedWriter out = new BufferedWriter(fstream);
-            if (this.variantList == null) {
-                out.write("<P>Error: Variant list not initialized correctly!</P>");
-                out.close();
-                return;
-            }
-            for (Gene g : geneList) {
-                out.write(g.getTSVRow());
-                if (candidateGene == null) {
-                    out.write("\n");
-                } else {
-                    if (candidateGene.equals(g.getGeneSymbol())) {
-                        out.write("\t1\n");
-                    } else if (g.getGeneSymbol().startsWith(candidateGene + ",")) {
-                        // bug fix for new Jannovar labelling where can have
-                        // multiple genes per var
-                        // but first one is most pathogenic
-                        out.write("\t1\n");
-                    } else {
-                        out.write("\t0\n");
-                    }
-                }
-            }
-            out.close();
+            TSVWriter tsvWriter = new TSVWriter(fname);
+            tsvWriter.writeTSV(geneList,candidateGene);
         } catch (IOException e) {
-            logger.error("Error writing TSV file:", e);
+            logger.error("TSV file opening error ",e);
         }
     }
-
+    
     /**
      * This function, which will be called if the --vcf flag is used on the
      * command line, can be used to output VCF data which is useful for
