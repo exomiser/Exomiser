@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.config;
 
-import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
+import de.charite.compbio.exomiser.filter.FilterFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.util.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.util.VariantAnnotator;
@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
@@ -33,7 +32,7 @@ import org.springframework.core.env.Environment;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@Import(DataSourceConfig.class)
+@Import({DataSourceConfig.class, CommandLineOptionsConfig.class})
 @PropertySource({"classpath:settings.properties"})
 public class MainConfig {
 
@@ -50,6 +49,13 @@ public class MainConfig {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
+    /**
+     * This is critical for the application to run as it points to the data 
+     * directory where all the required resources are found. Without this being 
+     * correctly set, the application will fail.
+     * 
+     * @return 
+     */
     @Bean
     public Path dataPath() {
         Path dataPath = Paths.get(dataDir);
@@ -59,17 +65,27 @@ public class MainConfig {
     }
 
     @Bean
-    public Path ucscDataPath() {
+    public Path ucscFilePath() {
         return dataPath().resolve(env.getProperty("ucscFileName"));
     }
 
+    /**
+     * This takes a few seconds to de-serealise. Would be better to be eager in a web-app, 
+     * but lazy on the command-line as then the input parameters can be checked before doing this. 
+     * @return 
+     */
     @Bean
+    @Lazy
     public VariantAnnotator variantAnnotator() {
-        Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscDataPath());
+        Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
         return new VariantAnnotator(chromosomeMap);
     }
 
-//    This needs a lot of RAM so it's disabled for the time being... 
+//    
+    /**
+     * This needs a lot of RAM and is slow to create from the randomWalkFile, so it's set as lazy use on the command-line.
+     * @return 
+     */
     @Bean
     @Lazy
     public DataMatrix randomWalkMatrix() {
@@ -77,5 +93,10 @@ public class MainConfig {
         Path randomWalkIndexFilePath = dataPath().resolve(env.getProperty("randomWalkIndexFileName"));
 
         return new DataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
+    }
+    
+    @Bean
+    public FilterFactory filterFactory() {
+        return new FilterFactory();
     }
 }
