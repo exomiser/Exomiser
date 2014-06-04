@@ -282,7 +282,7 @@ public class PhenomizerPriority implements Priority {
     /** Flag to output results of filtering against Uberpheno data. */
     @Override
 	public FilterType getPriorityTypeConstant() {
-	return FilterType.PHENOMIZER_FILTER;
+	return FilterType.PHENOMIZER_PRIORITY;
     }
 
     /**
@@ -312,7 +312,7 @@ public class PhenomizerPriority implements Priority {
 	for (Gene gene : gene_list) {
 	    try {
 		PhenomizerRelevanceScore phenomizerRelScore = scoreVariantHPO(gene);
-		gene.addRelevanceScore(phenomizerRelScore, FilterType.PHENOMIZER_FILTER);
+		gene.addRelevanceScore(phenomizerRelScore, FilterType.PHENOMIZER_PRIORITY);
 		//System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getRelevanceScore());
 	    } catch (ExomizerException e) {
 		error_record.add(e.toString());
@@ -337,9 +337,9 @@ public class PhenomizerPriority implements Priority {
 	if ( maxSemSim < 1) return;
 	PhenomizerRelevanceScore.setNormalizationFactor(1d/maxSemSim);
 	/*for (Gene g : gene_list) {
-	    float score = g.getRelevanceScore(FilterType.PHENOMIZER_FILTER);
+	    float score = g.getRelevanceScore(FilterType.PHENOMIZER_PRIORITY);
 	    score /= this.maxSemSim;
-	    g.resetRelevanceScore(FilterType.PHENOMIZER_FILTER, score);
+	    g.resetRelevanceScore(FilterType.PHENOMIZER_PRIORITY, score);
 	    }*/
     }
 

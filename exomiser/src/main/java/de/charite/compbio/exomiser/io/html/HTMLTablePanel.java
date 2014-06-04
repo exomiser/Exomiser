@@ -71,7 +71,7 @@ public class HTMLTablePanel extends HTMLTable {
      */
     private String getOmimText(Gene gene) {
 	Map<FilterType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
 	List<String> lst = mim.getFilterResultList();
 	if (mim == null) {
 	    return "No known human Mendelian disease";

@@ -293,7 +293,7 @@ public class BoqaPriority implements Priority {
             BoqaRelevanceScore bqrel = scoreList.get(i);
             Gene g = gene_list.get(i);
             bqrel.setPosteriorProbability(bqrel.getPosteriorProbability() / totalSum);
-            g.addRelevanceScore(bqrel,FilterType.BOQA_FILTER);
+            g.addRelevanceScore(bqrel,FilterType.BOQA_PRIORITY);
 
             System.err.println("Gene " + g.getGeneSymbol() + " has an relevance score of " + bqrel.getRelevanceScore());
         }
@@ -352,7 +352,7 @@ public class BoqaPriority implements Priority {
      * This is call for genes with no PPI data; they are assigned a score of zero.
      * They will be assigned a score equivalent to the median of all genes by
      * the function {@code prioritize_listofgenes} in 
-     * {@link exomizer.priority.IPriority Priority}.
+     * {@link exomizer.priority.IPriority FilterType}.
      * basically as a kind of uniform prior.
      */
     public static BoqaRelevanceScore noDataScore() {
@@ -365,7 +365,7 @@ public class BoqaPriority implements Priority {
 
 
  /* (non-Javadoc)
-     * @see exomizer.priority.Priority#getPriorityName()
+     * @see exomizer.priority.FilterType#getPriorityName()
      */
     @Override public String getPriorityName() { 
 	return "Uberpheno semantic similarity filter"; 
@@ -373,7 +373,7 @@ public class BoqaPriority implements Priority {
     
     /** Flag to output results of filtering against Uberpheno data. */
     @Override public FilterType getPriorityTypeConstant() { 
-	return FilterType.BOQA_FILTER; 
+	return FilterType.BOQA_PRIORITY; 
     } 
 
     @Override  public ArrayList<String> getMessages() {

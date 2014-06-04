@@ -95,7 +95,7 @@ public class GenewandererPriority implements Priority {
     /** Flag to output results of filtering against Genewanderer. */
     @Override
 	public FilterType getPriorityTypeConstant() {
-	return FilterType.GENEWANDERER_FILTER;
+	return FilterType.GENEWANDERER_PRIORITY;
     }
     
    
@@ -184,18 +184,18 @@ public class GenewandererPriority implements Priority {
 	    } else {
 		relScore = GenewandererRelevanceScore.noPPIDataScore();
 	    }
-	    gene.addRelevanceScore(relScore,FilterType.GENEWANDERER_FILTER);
+	    gene.addRelevanceScore(relScore,FilterType.GENEWANDERER_PRIORITY);
 	}
 	
 	float factor = 1f / (float)max;
         float factorMaxPossible = 1f / (float) combinedProximityVector.max();
 	
 	for (Gene gene : gene_list){
-	    float scr = gene.getRelevanceScore(FilterType.GENEWANDERER_FILTER);
+	    float scr = gene.getRelevanceScore(FilterType.GENEWANDERER_PRIORITY);
 	    float newscore = factor * (scr - (float)min);
-	    gene.resetRelevanceScore(FilterType.GENEWANDERER_FILTER, newscore);
+	    gene.resetRelevanceScore(FilterType.GENEWANDERER_PRIORITY, newscore);
             newscore = factorMaxPossible * (scr - (float)min);
-            gene.resetRelevanceScore(FilterType.GENEWANDERER_FILTER, newscore);
+            gene.resetRelevanceScore(FilterType.GENEWANDERER_PRIORITY, newscore);
 	}
         
         

@@ -42,14 +42,17 @@ public class InheritancePriority implements Priority {
     private List<String> messages = null;
 
 
-   
-
-    public InheritancePriority() throws ExomizerInitializationException  {
+    public InheritancePriority() {
 	this.messages = new ArrayList<String>();
      }
 
-   @Override public void setParameters(String par) throws ExomizerInitializationException
-    {
+    public InheritancePriority(ModeOfInheritance modeOfInheritance) {
+        this.inheritanceMode = modeOfInheritance;
+        this.messages = new ArrayList();
+    }
+   
+   @Override 
+   public void setParameters(String par) throws ExomizerInitializationException {
 	this.inheritanceMode = InheritancePriority.getModeOfInheritance(par);
 	if (this.inheritanceMode ==  ModeOfInheritance.UNINITIALIZED)
 	    messages.add("Could not initialize the Inheritance Filter for parameter: \"" + par + "\"");
@@ -74,7 +77,7 @@ public class InheritancePriority implements Priority {
     @Override public String getPriorityName() { return "Mode of Inheritance"; }
 
     /**  Flag for output field representing the Inheritance pattern filter. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.INHERITANCE_PATTERN_FILTER; } 
+    @Override public FilterType getPriorityTypeConstant() { return FilterType.INHERITANCE_MODE_PRIORITY; } 
     
     /**
      * @return list of messages representing process, result, and if any, errors of frequency filtering. 

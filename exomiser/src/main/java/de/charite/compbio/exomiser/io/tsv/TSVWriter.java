@@ -72,15 +72,15 @@ public class TSVWriter {
             for (FilterType i : g.getRelevanceMap().keySet()) {
                 RelevanceScore r = g.getRelevanceMap().get(i);
                 float x = r.getRelevanceScore();
-                if (i == FilterType.DYNAMIC_PHENOWANDERER_FILTER) {
+                if (i == FilterType.DYNAMIC_PHENOWANDERER_PRIORITY) {
                     exomiser2Score = x;
                     humanPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getHumanScore();
                     mousePhenScore = ((DynamicPhenoWandererRelevanceScore) r).getMouseScore();
                     fishPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getFishScore();
                     walkerScore = ((DynamicPhenoWandererRelevanceScore) r).getWalkerScore();
-                } else if (i == FilterType.OMIM_FILTER) {
+                } else if (i == FilterType.OMIM_PRIORITY) {
                     omimScore = x;
-                } else if (i == FilterType.GENEWANDERER_FILTER) {
+                } else if (i == FilterType.GENEWANDERER_PRIORITY) {
                     walkerScore = x;
                     rawWalkerScore = (float) ((GenewandererRelevanceScore) r).getRawScore();
                     scaledMaxScore = (float) ((GenewandererRelevanceScore) r).getScaledScore();

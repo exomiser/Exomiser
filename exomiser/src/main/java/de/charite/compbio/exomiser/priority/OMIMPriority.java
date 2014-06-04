@@ -53,7 +53,7 @@ public class OMIMPriority implements Priority {
      */
     private List<String> messages = null;
 
-    public OMIMPriority() throws ExomizerInitializationException {
+    public OMIMPriority() {
         this.messages = new ArrayList<String>();
     }
 
@@ -67,7 +67,7 @@ public class OMIMPriority implements Priority {
      */
     @Override
     public FilterType getPriorityTypeConstant() {
-        return FilterType.OMIM_FILTER;
+        return FilterType.OMIM_PRIORITY;
     }
 
     /**
@@ -95,7 +95,7 @@ public class OMIMPriority implements Priority {
             Gene g = it.next();
             try {
                 OMIMRelevanceScore mimrel = retrieve_omim_data(g);
-                g.addRelevanceScore(mimrel, FilterType.OMIM_FILTER);
+                g.addRelevanceScore(mimrel, FilterType.OMIM_PRIORITY);
             } catch (ExomizerSQLException e) {
                 this.messages.add(e.toString());
             }
@@ -235,7 +235,7 @@ public class OMIMPriority implements Priority {
      * or tomcat.
      */
     @Override
-    public void setDatabaseConnection(java.sql.Connection connection)
+    public void setDatabaseConnection(Connection connection)
             throws ExomizerInitializationException {
         this.connection = connection;
         setUpSQLPreparedStatement();

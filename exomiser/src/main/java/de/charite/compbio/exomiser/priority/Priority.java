@@ -15,10 +15,10 @@ import java.sql.Connection;
  * genes (i.e., {@link exomizer.exome.Gene Gene} objects). In contrast to the
  * classes that implement {@code exomizer.filter.Filter}, which remove variants
  from further consideration (e.g., because they are not predicted to be at all
- pathogenic), Priority is inteded to work on genes (predict the relevance of the 
+ pathogenic), FilterType is inteded to work on genes (predict the relevance of the 
  gene to the disease, without taking the nature or pathogenicity of any variant into account).
  <P>
- It is expected that the Exomizer will combine the evaluations of the Filter and the Priority
+ It is expected that the Exomizer will combine the evaluations of the Filter and the FilterType
  evaluations in order to reach a final ranking of the genes and variants into candidate
  disease-causing mutations.  
  * @author Peter N Robinson
@@ -36,8 +36,9 @@ public interface Priority {
      * <p>
      * Note that this may result in the removal of
      * {@link exomizer.exome.Gene Gene} objects if they do not conform to the Prioritizer.
+     * @param geneList
     */ 
-    void prioritizeGenes(List<Gene> geneList);
+    public void prioritizeGenes(List<Gene> geneList);
 
     /**
      * @return an enum constant representing the type of the implementing class.
@@ -72,7 +73,7 @@ public interface Priority {
     public int getAfter();
 
     /**
-     * @param connection An SQL (postgres) connection that was initialized elsewhere.
+     * @param connection An SQL connection that was initialized elsewhere.
      */
     public void setDatabaseConnection(Connection connection) throws ExomizerInitializationException;
 

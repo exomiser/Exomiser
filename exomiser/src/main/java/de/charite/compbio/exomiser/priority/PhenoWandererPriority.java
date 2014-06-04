@@ -121,7 +121,7 @@ public class PhenoWandererPriority implements Priority {
      */
     @Override
     public FilterType getPriorityTypeConstant() {
-        return FilterType.PHENOWANDERER_FILTER;
+        return FilterType.PHENOWANDERER_PRIORITY;
     }
 
     /**
@@ -302,7 +302,7 @@ public class PhenoWandererPriority implements Priority {
                 evidence = "as no phenotype or PPI evidence";
             }
             PhenoWandererRelevanceScore relScore = new PhenoWandererRelevanceScore(val, evidence);
-            gene.addRelevanceScore(relScore, FilterType.PHENOWANDERER_FILTER);
+            gene.addRelevanceScore(relScore, FilterType.PHENOWANDERER_PRIORITY);
         }
 
         /*
@@ -312,7 +312,7 @@ public class PhenoWandererPriority implements Priority {
         TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
         for (Gene g : gene_list) {
             if (scores.get(g.getEntrezGeneID()) == null && randomWalkMatrix.objectid2idx.containsKey(g.getEntrezGeneID())) {// Only do for non-pheno direct hits
-                float geneScore = g.getRelevanceScore(FilterType.PHENOWANDERER_FILTER);
+                float geneScore = g.getRelevanceScore(FilterType.PHENOWANDERER_PRIORITY);
                 if (geneScoreMap.containsKey(geneScore)) {
                     List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
                     geneScoreGeneList.add(g);
@@ -338,7 +338,7 @@ public class PhenoWandererPriority implements Priority {
             float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
-                g.resetRelevanceScore(FilterType.PHENOWANDERER_FILTER, newScore);
+                g.resetRelevanceScore(FilterType.PHENOWANDERER_PRIORITY, newScore);
             }
         }
         String s = String.format("Phenotype and Protein-Protein Interaction evidence was available for %d of %d genes (%.1f%%)",

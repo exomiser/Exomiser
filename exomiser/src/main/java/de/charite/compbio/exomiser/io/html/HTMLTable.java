@@ -245,13 +245,13 @@ public class HTMLTable {
 	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	// Write the variant score associated with the first (zero-th) variant
 	writeVariantScoreCell(path,freq,out);
-	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_FILTER);
-	RelevanceScore gwanderer = relevanceMap.get(FilterType.GENEWANDERER_FILTER);
-        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_FILTER);
-        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_MGI_PRIORITY);
+	RelevanceScore gwanderer = relevanceMap.get(FilterType.GENEWANDERER_PRIORITY);
+        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_PRIORITY);
+        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
 	RelevanceScore resnik = relevanceMap.get(FilterType.HPO_FILTER);
-	RelevanceScore phmizer = relevanceMap.get(FilterType.PHENOMIZER_FILTER);
+	RelevanceScore phmizer = relevanceMap.get(FilterType.PHENOMIZER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
         System.out.println("OMIM:"+mim+",PWANDERER:"+pwanderer);
@@ -329,11 +329,11 @@ public class HTMLTable {
 	
 
 
-	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_FILTER);
-	RelevanceScore zfin_phenodigm = relevanceMap.get(FilterType.ZFIN_PHENODIGM_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
-        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_FILTER);
-        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_FILTER);
+	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_MGI_PRIORITY);
+	RelevanceScore zfin_phenodigm = relevanceMap.get(FilterType.PHENODIGM_ZFIN_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
+        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_PRIORITY);
+        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
 	if (phenodigm == null && mim == null && zfin_phenodigm == null && pwanderer == null) {

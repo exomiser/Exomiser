@@ -78,7 +78,7 @@ public class HTMLTableCRE extends HTMLTable {
      */
     private String getOmimText(Gene gene) {
 	Map<FilterType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
 	List<String> lst = mim.getFilterResultList();
 	if (mim == null) {
 	    return "No known human Mendelian disease";
@@ -244,8 +244,8 @@ public class HTMLTableCRE extends HTMLTable {
 	
 
 	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
-	RelevanceScore phenomizer = relevanceMap.get(FilterType.PHENOMIZER_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	RelevanceScore phenomizer = relevanceMap.get(FilterType.PHENOMIZER_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\" valign=\"top\">",n_variants)); 
 	if (phenomizer == null && mim == null) {

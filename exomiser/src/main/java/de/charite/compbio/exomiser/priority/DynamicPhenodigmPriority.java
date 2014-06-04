@@ -117,7 +117,7 @@ public class DynamicPhenodigmPriority implements Priority {
 	    Gene g = it.next();
 	    try {
 		MGIPhenodigmRelevanceScore rscore = retrieve_score_data(g);
-		g.addRelevanceScore(rscore, FilterType.PHENODIGM_FILTER);
+		g.addRelevanceScore(rscore, FilterType.PHENODIGM_MGI_PRIORITY);
 	    } catch (ExomizerException e) {
 		this.messages.add("Error: " + e.toString());
 	    }

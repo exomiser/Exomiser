@@ -85,7 +85,7 @@ public class MGIPhenodigmPriority implements Priority {
     @Override public String getPriorityName() { return "MGI PhenoDigm"; }
 
     /** Flag to output results of filtering against PhenoDigm data. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.PHENODIGM_FILTER; } 
+    @Override public FilterType getPriorityTypeConstant() { return FilterType.PHENODIGM_MGI_PRIORITY; } 
 
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need
@@ -123,7 +123,7 @@ public class MGIPhenodigmPriority implements Priority {
 	    Gene g = it.next();
 	    try {
 		MGIPhenodigmRelevanceScore rscore = retrieve_score_data(g);
-		g.addRelevanceScore(rscore, FilterType.PHENODIGM_FILTER);
+		g.addRelevanceScore(rscore, FilterType.PHENODIGM_MGI_PRIORITY);
 	    } catch (ExomizerException e) {
 		this.messages.add("Error: " + e.toString());
 	    }

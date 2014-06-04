@@ -140,7 +140,7 @@ public class UberphenoPriority implements Priority {
 	}
 
     /* (non-Javadoc)
-     * @see exomizer.priority.Priority#getPriorityName()
+     * @see exomizer.priority.FilterType#getPriorityName()
      */
     @Override public String getPriorityName() { 
 	return "Uberpheno semantic similarity filter"; 
@@ -148,7 +148,7 @@ public class UberphenoPriority implements Priority {
     
     /** Flag to output results of filtering against Uberpheno data. */
     @Override public FilterType getPriorityTypeConstant() { 
-	return FilterType.UBERPHENO_FILTER; 
+	return FilterType.UBERPHENO_PRIORITY; 
     } 
 
 
@@ -182,7 +182,7 @@ public class UberphenoPriority implements Priority {
 	for (Gene gene : gene_list){
 	    try {
 		UberphenoRelevanceScore uberphenoRelScore = scoreVariantUberpheno(gene);
-		gene.addRelevanceScore(uberphenoRelScore, FilterType.UBERPHENO_FILTER);
+		gene.addRelevanceScore(uberphenoRelScore, FilterType.UBERPHENO_PRIORITY);
 	    } catch (ExomizerException e) {
 		error_record.add(e.toString());
 	    }

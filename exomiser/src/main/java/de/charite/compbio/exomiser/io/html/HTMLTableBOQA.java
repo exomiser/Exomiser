@@ -98,8 +98,8 @@ public class HTMLTableBOQA extends HTMLTable {
 	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	// Write the variant score associated with the first (zero-th) variant
 	writeVariantScoreCell(path,freq,out);
-	RelevanceScore boqa = relevanceMap.get(FilterType.BOQA_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	RelevanceScore boqa = relevanceMap.get(FilterType.BOQA_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
 	if (boqa == null && mim == null) {
