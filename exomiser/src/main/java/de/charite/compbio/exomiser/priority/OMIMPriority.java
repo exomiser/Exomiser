@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
@@ -66,8 +65,8 @@ public class OMIMPriority implements Priority {
      * Flag for output field representing OMIM.
      */
     @Override
-    public FilterType getPriorityTypeConstant() {
-        return FilterType.OMIM_PRIORITY;
+    public PriorityType getPriorityTypeConstant() {
+        return PriorityType.OMIM_PRIORITY;
     }
 
     /**
@@ -95,7 +94,7 @@ public class OMIMPriority implements Priority {
             Gene g = it.next();
             try {
                 OMIMRelevanceScore mimrel = retrieve_omim_data(g);
-                g.addRelevanceScore(mimrel, FilterType.OMIM_PRIORITY);
+                g.addRelevanceScore(mimrel, PriorityType.OMIM_PRIORITY);
             } catch (ExomizerSQLException e) {
                 this.messages.add(e.toString());
             }

@@ -23,7 +23,6 @@ import similarity.SimilarityUtilities;
 import similarity.concepts.ResnikSimilarity;
 import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
@@ -281,8 +280,8 @@ public class PhenomizerPriority implements Priority {
 
     /** Flag to output results of filtering against Uberpheno data. */
     @Override
-	public FilterType getPriorityTypeConstant() {
-	return FilterType.PHENOMIZER_PRIORITY;
+	public PriorityType getPriorityTypeConstant() {
+	return PriorityType.PHENOMIZER_PRIORITY;
     }
 
     /**
@@ -312,7 +311,7 @@ public class PhenomizerPriority implements Priority {
 	for (Gene gene : gene_list) {
 	    try {
 		PhenomizerRelevanceScore phenomizerRelScore = scoreVariantHPO(gene);
-		gene.addRelevanceScore(phenomizerRelScore, FilterType.PHENOMIZER_PRIORITY);
+		gene.addRelevanceScore(phenomizerRelScore, PriorityType.PHENOMIZER_PRIORITY);
 		//System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getRelevanceScore());
 	    } catch (ExomizerException e) {
 		error_record.add(e.toString());

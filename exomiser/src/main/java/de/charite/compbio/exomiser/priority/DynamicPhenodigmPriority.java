@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 import jannovar.common.Constants;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
@@ -34,7 +33,11 @@ import java.util.List;
  * @version 0.05 (April 6, 2013)
  */
 public class DynamicPhenodigmPriority implements Priority {
-	/** Threshold for filtering. Retain only those variants whose score is below this threshold. */
+
+    private static final PriorityType PHENODIGM_MGI_PRIORITY = PriorityType.PHENODIGM_MGI_PRIORITY;
+
+    
+    /** Threshold for filtering. Retain only those variants whose score is below this threshold. */
     private float score_threshold = 2.0f;
     private String hpo_ids = null;
     /** Database handle to the postgreSQL database used by this application. */
@@ -80,7 +83,7 @@ public class DynamicPhenodigmPriority implements Priority {
     @Override public String getPriorityName() { return "MGI PhenoDigm"; }
 
     /** Flag to output results of filtering against PhenoDigm data. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.DYNAMIC_PHENODIGM_FILTER; } 
+    @Override public PriorityType getPriorityTypeConstant() { return PriorityType.DYNAMIC_PHENODIGM_FILTER; } 
 
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need
@@ -117,7 +120,7 @@ public class DynamicPhenodigmPriority implements Priority {
 	    Gene g = it.next();
 	    try {
 		MGIPhenodigmRelevanceScore rscore = retrieve_score_data(g);
-		g.addRelevanceScore(rscore, FilterType.PHENODIGM_MGI_PRIORITY);
+		g.addRelevanceScore(rscore, PHENODIGM_MGI_PRIORITY);
 	    } catch (ExomizerException e) {
 		this.messages.add("Error: " + e.toString());
 	    }

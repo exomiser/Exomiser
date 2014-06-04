@@ -9,7 +9,6 @@ import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import jannovar.exome.VariantTypeCounter;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import java.sql.Connection;
@@ -29,7 +28,7 @@ import java.sql.Connection;
  */
 public class TargetFilter implements Filter {
 
-    private final FilterType filterType = FilterType.EXOME_TARGET_FILTER;
+    private final FilterType filterType = FilterType.TARGET_FILTER;
 
     /** Number of variants analyzed by filter */
     private int n_before;

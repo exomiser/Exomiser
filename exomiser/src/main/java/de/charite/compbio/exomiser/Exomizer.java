@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
@@ -590,9 +590,10 @@ public class Exomizer {
      * {@link exomizer.priority.Prioritiser Prioritiser}.
      */
     public void initializeFiltersAndPrioritizers() throws ExomizerInitializationException {
-        //Make a new Prioritizer - this calss is the one which co-ordinates the actual guts of the process
+        //Make a new Prioritizer - this class is the one which co-ordinates the actual guts of the process
+        //TODO: Shouldn't this actually be here in the Exomizer?
         prioritiser = new Prioritiser();
-        //set the inheritance mode
+        //set the inheritance mode (required for scoring genes)
         prioritiser.setInheritanceMode(InheritancePriority.getModeOfInheritance(inheritance_filter_type));
 
         //add variant filters to the prioritizer 
@@ -612,6 +613,7 @@ public class Exomizer {
      * @return
      * @throws ExomizerInitializationException
      */
+    @Deprecated
     private List<Filter> makeFilters() throws ExomizerInitializationException {
         List<Filter> variantFilterList = new ArrayList<>();
         //
@@ -630,6 +632,7 @@ public class Exomizer {
          * use_pathogenicity_filter==true.
          */
         variantFilterList.add(filterFactory.getPathogenicityFilter(use_pathogenicity_filter, use_target_filter));
+        
         if (this.interval != null) {
             variantFilterList.add(filterFactory.getLinkageFilter(interval));
         }
@@ -645,6 +648,7 @@ public class Exomizer {
      * @return
      * @throws ExomizerInitializationException
      */
+    @Deprecated
     private List<Priority> makePrioritizers() throws ExomizerInitializationException {
         //
         List<Priority> genePriorityList = new ArrayList<>();
@@ -732,14 +736,14 @@ public class Exomizer {
 
     /**
      * This method can be used to add a
-     * {@code de.charite.compbio.exomizer.priority.Priority} object that has
+     * {@code de.charite.compbio.exomizer.priority.FilterType} object that has
      * been constructed elsewhere. This is particularly useful for the
      * ExomeWalker code base if it is started from an apache tomcat Server,
      * because we can construct the GeneWanderer object once (it has ca. 1.5 Gb
      * data) and keep it in memory as long as the ExomeWalker servlet is in
      * memory
      *
-     * @param ip the {@link exomizer.priority.IPriority Priority} that will be
+     * @param ip the {@link exomizer.priority.IPriority FilterType} that will be
      * added to the list of prioriitizers.
      */
     public void addPriority(Priority ip) throws ExomizerInitializationException {
@@ -901,7 +905,7 @@ public class Exomizer {
     public VariantTypeCounter getVariantTypeCounter() {
         VariantTypeCounter vtc = null;
         for (Filter f : this.prioritiser.getFilterList()) {
-            if (f.getFilterType() == FilterType.EXOME_TARGET_FILTER) {
+            if (f.getFilterType() == FilterType.TARGET_FILTER) {
                 TargetFilter tf = (TargetFilter) f;
                 vtc = tf.getVariantTypeCounter();
                 break;
@@ -1130,6 +1134,7 @@ public class Exomizer {
      *
      * @param args Copy of the command line parameters.
      */
+    @Deprecated
     public void parseCommandLineArguments(String[] args) {
         try {
             Options options = new Options();
@@ -1507,6 +1512,7 @@ public class Exomizer {
      *
      * @param br A file handle to a PED file.
      */
+    @Deprecated
     public void setPedBufferedReader(BufferedReader br) {
         this.pedBufferedReader = br;
     }

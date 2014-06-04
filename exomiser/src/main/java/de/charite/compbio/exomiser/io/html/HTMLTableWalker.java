@@ -9,10 +9,11 @@ import java.util.Iterator;
 
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.RelevanceScore;
 
 
@@ -72,8 +73,8 @@ public class HTMLTableWalker extends HTMLTable {
      * gene on the ExomeWalker HTML page
      */
     private String getOmimText(Gene gene) {
-	Map<FilterType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
+	Map<PriorityType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
+	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	if (mim == null) {
 	    return "No known human Mendelian disease";
 	} else {

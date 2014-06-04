@@ -8,7 +8,6 @@ import java.util.Iterator;
 import jannovar.common.Constants;
 import jannovar.exome.Variant;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;

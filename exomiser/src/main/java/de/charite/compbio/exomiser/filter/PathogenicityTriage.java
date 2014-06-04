@@ -198,6 +198,7 @@ public class PathogenicityTriage implements Triage  {
             if (no_prediction_initialized()) {
                 return true;
             }
+            //TODO: This is a little bit mental - perhaps a boolean would be more appropriate?
             if (missense_filtering.equals("no")) {
                 return true;//no SIFT, PolyPhen, MT filtering
             } else {

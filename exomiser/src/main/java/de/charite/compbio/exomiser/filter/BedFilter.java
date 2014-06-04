@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.HashSet;
 
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 

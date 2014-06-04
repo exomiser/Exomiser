@@ -1,8 +1,6 @@
 package de.charite.compbio.exomiser.filter;
 
 import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
-import de.charite.compbio.exomiser.common.FilterType;
-import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
@@ -18,9 +16,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 /**
  * Filter variants according to their frequency. The Frequency is retrieved from
@@ -50,6 +46,7 @@ public class FrequencyFilter implements Filter {
 
     private final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
 
+    @Autowired
     private final FrequencyTriageDAO triageDao;
 
 //    /** A prepared SQL statement for querying from the frequency table. */

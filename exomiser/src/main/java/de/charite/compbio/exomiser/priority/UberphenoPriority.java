@@ -16,7 +16,6 @@ import sonumina.math.graph.SlimDirectedGraphView;
 
 import jannovar.common.Constants;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
@@ -147,8 +146,8 @@ public class UberphenoPriority implements Priority {
     }
     
     /** Flag to output results of filtering against Uberpheno data. */
-    @Override public FilterType getPriorityTypeConstant() { 
-	return FilterType.UBERPHENO_PRIORITY; 
+    @Override public PriorityType getPriorityTypeConstant() { 
+	return PriorityType.UBERPHENO_PRIORITY; 
     } 
 
 
@@ -182,7 +181,7 @@ public class UberphenoPriority implements Priority {
 	for (Gene gene : gene_list){
 	    try {
 		UberphenoRelevanceScore uberphenoRelScore = scoreVariantUberpheno(gene);
-		gene.addRelevanceScore(uberphenoRelScore, FilterType.UBERPHENO_PRIORITY);
+		gene.addRelevanceScore(uberphenoRelScore, PriorityType.UBERPHENO_PRIORITY);
 	    } catch (ExomizerException e) {
 		error_record.add(e.toString());
 	    }

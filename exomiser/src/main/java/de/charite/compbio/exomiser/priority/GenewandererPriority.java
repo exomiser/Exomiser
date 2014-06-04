@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.jblas.DoubleMatrix;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
@@ -25,6 +24,8 @@ import de.charite.compbio.exomiser.priority.util.DataMatrix;
  * @version 0.09 (3 November, 2013)
  */
 public class GenewandererPriority implements Priority {
+
+        private final PriorityType GENEWANDERER_PRIORITY = PriorityType.GENEWANDERER_PRIORITY;
 
 	/** A list of error-messages */
 	private List<String> error_record = null;
@@ -94,8 +95,8 @@ public class GenewandererPriority implements Priority {
     
     /** Flag to output results of filtering against Genewanderer. */
     @Override
-	public FilterType getPriorityTypeConstant() {
-	return FilterType.GENEWANDERER_PRIORITY;
+	public PriorityType getPriorityTypeConstant() {
+	return PriorityType.GENEWANDERER_PRIORITY;
     }
     
    
@@ -184,18 +185,18 @@ public class GenewandererPriority implements Priority {
 	    } else {
 		relScore = GenewandererRelevanceScore.noPPIDataScore();
 	    }
-	    gene.addRelevanceScore(relScore,FilterType.GENEWANDERER_PRIORITY);
+	    gene.addRelevanceScore(relScore, GENEWANDERER_PRIORITY);
 	}
 	
 	float factor = 1f / (float)max;
         float factorMaxPossible = 1f / (float) combinedProximityVector.max();
 	
 	for (Gene gene : gene_list){
-	    float scr = gene.getRelevanceScore(FilterType.GENEWANDERER_PRIORITY);
+	    float scr = gene.getRelevanceScore(GENEWANDERER_PRIORITY);
 	    float newscore = factor * (scr - (float)min);
-	    gene.resetRelevanceScore(FilterType.GENEWANDERER_PRIORITY, newscore);
+	    gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
             newscore = factorMaxPossible * (scr - (float)min);
-            gene.resetRelevanceScore(FilterType.GENEWANDERER_PRIORITY, newscore);
+            gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
 	}
         
         

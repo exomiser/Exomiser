@@ -1,6 +1,5 @@
 package de.charite.compbio.exomiser.filter;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.dao.TriageDAO;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;

@@ -24,7 +24,6 @@ import ontologizer.go.TermContainer;
 import ontologizer.types.ByteString;
 import sonumina.boqa.calculation.BOQA;
 import sonumina.boqa.calculation.Observations;
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
@@ -293,7 +292,7 @@ public class BoqaPriority implements Priority {
             BoqaRelevanceScore bqrel = scoreList.get(i);
             Gene g = gene_list.get(i);
             bqrel.setPosteriorProbability(bqrel.getPosteriorProbability() / totalSum);
-            g.addRelevanceScore(bqrel,FilterType.BOQA_PRIORITY);
+            g.addRelevanceScore(bqrel,PriorityType.BOQA_PRIORITY);
 
             System.err.println("Gene " + g.getGeneSymbol() + " has an relevance score of " + bqrel.getRelevanceScore());
         }
@@ -372,8 +371,8 @@ public class BoqaPriority implements Priority {
     }
     
     /** Flag to output results of filtering against Uberpheno data. */
-    @Override public FilterType getPriorityTypeConstant() { 
-	return FilterType.BOQA_PRIORITY; 
+    @Override public PriorityType getPriorityTypeConstant() { 
+	return PriorityType.BOQA_PRIORITY; 
     } 
 
     @Override  public ArrayList<String> getMessages() {

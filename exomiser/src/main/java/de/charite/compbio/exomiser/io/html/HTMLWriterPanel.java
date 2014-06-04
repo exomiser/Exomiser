@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Iterator;
 
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;

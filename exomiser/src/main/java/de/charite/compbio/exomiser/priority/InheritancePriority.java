@@ -9,7 +9,6 @@ import java.util.Iterator;
 
 import jannovar.common.ModeOfInheritance;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 
@@ -77,7 +76,7 @@ public class InheritancePriority implements Priority {
     @Override public String getPriorityName() { return "Mode of Inheritance"; }
 
     /**  Flag for output field representing the Inheritance pattern filter. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.INHERITANCE_MODE_PRIORITY; } 
+    @Override public PriorityType getPriorityTypeConstant() { return PriorityType.INHERITANCE_MODE_PRIORITY; } 
     
     /**
      * @return list of messages representing process, result, and if any, errors of frequency filtering. 

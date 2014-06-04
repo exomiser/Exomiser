@@ -14,7 +14,6 @@ import java.util.Iterator;
 import jannovar.common.Constants;
 
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
@@ -66,7 +65,7 @@ public class ZFINPhenodigmPriority implements Priority {
     @Override public String getPriorityName() { return "ZFIN PhenoDigm"; }
 
     /** Flag to output results of filtering against PhenoDigm data. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.PHENODIGM_ZFIN_PRIORITY; } 
+    @Override public PriorityType getPriorityTypeConstant() { return PriorityType.PHENODIGM_ZFIN_PRIORITY; } 
 
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need
@@ -108,7 +107,7 @@ public class ZFINPhenodigmPriority implements Priority {
 	    Gene g = it.next();
 	    try {
 		ZFINPhenodigmRelevanceScore rscore = retrieve_score_data(g);
-		g.addRelevanceScore(rscore, FilterType.PHENODIGM_ZFIN_PRIORITY);
+		g.addRelevanceScore(rscore, PriorityType.PHENODIGM_ZFIN_PRIORITY);
 	    } catch (ExomizerSQLException e) {
 		this.messages.add("Error: " + e.toString());
 	    }

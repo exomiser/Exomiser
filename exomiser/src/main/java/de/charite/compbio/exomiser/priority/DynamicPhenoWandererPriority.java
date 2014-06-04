@@ -1,12 +1,10 @@
 package de.charite.compbio.exomiser.priority;
 
-import jannovar.common.Constants;
 
 import java.util.ArrayList;
 
 import org.jblas.DoubleMatrix;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
@@ -133,8 +131,8 @@ public class DynamicPhenoWandererPriority implements Priority {
      * Flag to output results of filtering against Genewanderer.
      */
     @Override
-    public FilterType getPriorityTypeConstant() {
-        return FilterType.DYNAMIC_PHENOWANDERER_PRIORITY;
+    public PriorityType getPriorityTypeConstant() {
+        return PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY;
     }
 
     /**
@@ -769,7 +767,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             }
             DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, 
                     fishPhenotypeEvidence, humanScore, mouseScore, fishScore, walkerScore);
-            gene.addRelevanceScore(relScore, FilterType.DYNAMIC_PHENOWANDERER_PRIORITY);
+            gene.addRelevanceScore(relScore, PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
         }
 
         /*
@@ -779,7 +777,7 @@ public class DynamicPhenoWandererPriority implements Priority {
         TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
         for (Gene g : gene_list) {
             if (scores.get(g.getEntrezGeneID()) == null && randomWalkMatrix.objectid2idx.containsKey(g.getEntrezGeneID())) {// Only do for non-pheno direct hits
-                float geneScore = g.getRelevanceScore(FilterType.DYNAMIC_PHENOWANDERER_PRIORITY);
+                float geneScore = g.getRelevanceScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
                 if (geneScoreMap.containsKey(geneScore)) {
                     List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
                     geneScoreGeneList.add(g);
@@ -804,7 +802,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
-                g.resetRelevanceScore(FilterType.DYNAMIC_PHENOWANDERER_PRIORITY, newScore);
+                g.resetRelevanceScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY, newScore);
             }
         }
         String s = String.format("Phenotype and Protein-Protein Interaction evidence was available for %d of %d genes (%.1f%%)",

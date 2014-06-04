@@ -8,10 +8,11 @@ import java.util.Map;
 import jannovar.common.Constants;
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.RelevanceScore;
 
 
@@ -240,18 +241,18 @@ public class HTMLTable {
 	outputVariant(ve,out);
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
 	Map<FilterType,Triage> triageMap = ve.getTriageMap();
-	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
+	Map<PriorityType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
 	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
 	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	// Write the variant score associated with the first (zero-th) variant
 	writeVariantScoreCell(path,freq,out);
-	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_MGI_PRIORITY);
-	RelevanceScore gwanderer = relevanceMap.get(FilterType.GENEWANDERER_PRIORITY);
-        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_PRIORITY);
-        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_PRIORITY);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
+	RelevanceScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
+	RelevanceScore gwanderer = relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY);
+        RelevanceScore pwanderer = relevanceMap.get(PriorityType.PHENOWANDERER_PRIORITY);
+        RelevanceScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	RelevanceScore resnik = relevanceMap.get(FilterType.HPO_FILTER);
-	RelevanceScore phmizer = relevanceMap.get(FilterType.PHENOMIZER_PRIORITY);
+	RelevanceScore phmizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
         System.out.println("OMIM:"+mim+",PWANDERER:"+pwanderer);
@@ -321,19 +322,19 @@ public class HTMLTable {
 	outputVariant(ve,out);
 	
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
-	Map<FilterType,Triage> triageMap = ve.getTriageMap();
-	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
+	Map<FilterType, Triage> triageMap = ve.getTriageMap();
 	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
 	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	writeVariantScoreCell(path,freq,out);
 	
 
 
-	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_MGI_PRIORITY);
-	RelevanceScore zfin_phenodigm = relevanceMap.get(FilterType.PHENODIGM_ZFIN_PRIORITY);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_PRIORITY);
-        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_PRIORITY);
-        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_PRIORITY);
+        Map<PriorityType, RelevanceScore> relevanceMap = gen.getRelevanceMap();
+        RelevanceScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
+	RelevanceScore zfin_phenodigm = relevanceMap.get(PriorityType.PHENODIGM_ZFIN_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+        RelevanceScore pwanderer = relevanceMap.get(PriorityType.PHENOWANDERER_PRIORITY);
+        RelevanceScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
 	if (phenodigm == null && mim == null && zfin_phenodigm == null && pwanderer == null) {

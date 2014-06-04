@@ -5,7 +5,7 @@ package de.charite.compbio.exomiser.priority;
 
 import java.util.List;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import java.sql.Connection;
@@ -43,7 +43,7 @@ public interface Priority {
     /**
      * @return an enum constant representing the type of the implementing class.
      */
-    public FilterType getPriorityTypeConstant();
+    public PriorityType getPriorityTypeConstant();
 
     /**
      * @return name of the prioritization method used by the implementing class, e.g., "OMIM"

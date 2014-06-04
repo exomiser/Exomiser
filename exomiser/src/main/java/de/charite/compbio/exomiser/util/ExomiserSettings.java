@@ -5,22 +5,12 @@
  */
 package de.charite.compbio.exomiser.util;
 
-import de.charite.compbio.exomiser.priority.BoqaPriority;
-import de.charite.compbio.exomiser.priority.DynamicPhenoWandererPriority;
-import de.charite.compbio.exomiser.priority.GenewandererPriority;
-import de.charite.compbio.exomiser.priority.MGIPhenodigmPriority;
-import de.charite.compbio.exomiser.priority.PhenoWandererPriority;
-import de.charite.compbio.exomiser.priority.PhenomizerPriority;
-import de.charite.compbio.exomiser.priority.Priority;
-import de.charite.compbio.exomiser.priority.UberphenoPriority;
-import de.charite.compbio.exomiser.priority.ZFINPhenodigmPriority;
+import de.charite.compbio.exomiser.filter.FilterType;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +28,7 @@ public class ExomiserSettings {
     private final Path pedFilePath;
 
     //Priority
-    private final Priority prioritiser;  //required, no default
-    private final Class<? extends Priority> prioritiserClass; //don't like this - would rather set the Priotity ready to go.
+    private final PriorityType prioritiserType;  //required, no default
 
     //FILTER options
     //max-freq (command-line was: freq_threshold, refered to variable: frequency_threshold)
@@ -97,8 +86,7 @@ public class ExomiserSettings {
         private Path pedFilePath = null;
 
         //PRIORITISER
-        private String prioritiser;  //required, no default
-        private Class<? extends Priority> prioritiserClass; //don't like this - would rather set the Priotity ready to go.
+        private PriorityType prioritiserType;  //required, no default
 
         //FILTER options
         private float maximumFrequency = 100.00f;
@@ -132,8 +120,8 @@ public class ExomiserSettings {
             return this;
         }
 
-        public ExomiserOptionsBuilder usePrioritiser(String prioritiser) {
-            this.prioritiser = prioritiser;
+        public ExomiserOptionsBuilder usePrioritiser(PriorityType prioritiserType) {
+            this.prioritiserType = prioritiserType;
             return this;
         }
 
@@ -219,31 +207,11 @@ public class ExomiserSettings {
 
     private ExomiserSettings(ExomiserOptionsBuilder builder) {
 
-        Map<String, Class<? extends Priority>> commandLineToPriorityMap = new HashMap();;
-        //this feels wrong... ought to use an EnumMap with types?
-        commandLineToPriorityMap.put("boqa", BoqaPriority.class);
-        commandLineToPriorityMap.put("dynamic-pheno-wanderer", DynamicPhenoWandererPriority.class);
-        commandLineToPriorityMap.put("gene-wanderer", GenewandererPriority.class);
-        commandLineToPriorityMap.put("mgi-phenodigm", MGIPhenodigmPriority.class);
-        commandLineToPriorityMap.put("pheno-wanderer", PhenoWandererPriority.class);
-        commandLineToPriorityMap.put("phenomizer", PhenomizerPriority.class);
-        commandLineToPriorityMap.put("uber-pheno", UberphenoPriority.class);
-        commandLineToPriorityMap.put("zfin-phenodigm", ZFINPhenodigmPriority.class);
-
-        //TODO: these chaps are usually specified implicitly - perhaps they should be different types of ExomiserSettings?
-        //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. These might be badly named as the OMIM proritiser is currently the default.
-        //InheritancePriority ALWAYS runs but uses a default InheritanceMode.UNSPECIFIED
-//        commandLineToPriorityMap.put(vcfFilePath, InheritancePriority.class);
-        //TODO: check how this works - I think it is always included.
-//        commandLineToPriorityMap.put(vcfFilePath, OMIMPriority.class);
-        //not sure if this is actually used at all....
-//        commandLineToPriorityMap.put(vcfFilePath, DynamicPhenodigmPriority.class);
         vcfFilePath = builder.vcfFilePath; //required, no default
         pedFilePath = builder.pedFilePath;
 
         //Priority
-        prioritiser = null; //builder.prioritiser;  //required, no default
-        prioritiserClass = commandLineToPriorityMap.get(builder.prioritiser); //don't like this - would rather set the Priotity ready to go.
+        prioritiserType = builder.prioritiserType;  //required, no default
 
         //FILTER options
         maximumFrequency = builder.maximumFrequency;
@@ -276,12 +244,8 @@ public class ExomiserSettings {
         return pedFilePath;
     }
 
-    public Priority getPrioritiser() {
-        return prioritiser;
-    }
-
-    public Class<? extends Priority> getPrioritiserClass() {
-        return prioritiserClass;
+    public PriorityType getPrioritiserType() {
+        return prioritiserType;
     }
 
     public float getMaximumFrequency() {
@@ -342,7 +306,7 @@ public class ExomiserSettings {
 
     @Override
     public String toString() {
-        return "ExomiserOptions{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiser + ", prioritiserClass=" + prioritiserClass + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", includePathogenic=" + includePathogenic + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outFileName + ", outputFormat=" + outputFormat + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + '}';
+        return "ExomiserOptions{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", includePathogenic=" + includePathogenic + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outFileName + ", outputFormat=" + outputFormat + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + '}';
     }
 
     

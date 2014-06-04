@@ -5,12 +5,16 @@
  */
 package de.charite.compbio.exomiser.util;
 
+import de.charite.compbio.exomiser.filter.FilterType;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.util.ExomiserSettings.ExomiserOptionsBuilder;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -73,7 +77,7 @@ public class ExomiserOptionsCommandLineParser {
                     optionsBuilder.pedFilePath(Paths.get(option.getValue()));
                     break;
                 case "prioritiser":
-                    optionsBuilder.usePrioritiser(option.getValue());
+                    optionsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(option.getValue()));
                     break;
 
                 //FILTER OPTIONS
