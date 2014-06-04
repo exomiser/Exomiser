@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.charite.compbio.exomiser.common;
+package de.charite.compbio.exomiser.filter;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -23,8 +23,8 @@ public class FilterTypeTest {
      */
     @Test
     public void testValueOf() {
-        String name = "PHENODIGM_MGI_PRIORITY";
-        FilterType expResult = FilterType.PHENODIGM_MGI_PRIORITY;
+        String name = "FREQUENCY_FILTER";
+        FilterType expResult = FilterType.FREQUENCY_FILTER;
         FilterType result = FilterType.valueOf(name);
         assertEquals(expResult, result);
 
@@ -35,8 +35,8 @@ public class FilterTypeTest {
      */
     @Test
     public void testGetCommandLineValue() {
-        FilterType instance = FilterType.BED_FILTER;
-        String expResult = "bed";
+        FilterType instance = FilterType.FREQUENCY_FILTER;
+        String expResult = "max-freq";
         String result = instance.getCommandLineValue();
         assertEquals(expResult, result);
     }
@@ -47,7 +47,7 @@ public class FilterTypeTest {
     @Test
     public void testValueOfCommandLineUnrecognisedDefault() {
         String value = "pweep!";
-        FilterType expResult = FilterType.PHENODIGM_MGI_PRIORITY;
+        FilterType expResult = FilterType.FREQUENCY_FILTER;
         FilterType result = FilterType.valueOfCommandLine(value);
         assertEquals(expResult, result);
     }
@@ -58,8 +58,8 @@ public class FilterTypeTest {
      */
     @Test
     public void testValueOfCommandLine() {
-        String value = "boqa";
-        FilterType expResult = FilterType.BOQA_PRIORITY;
+        String value = "restrict-interval";
+        FilterType expResult = FilterType.INTERVAL_FILTER;
         FilterType result = FilterType.valueOfCommandLine(value);
         assertEquals(expResult, result);
     }
