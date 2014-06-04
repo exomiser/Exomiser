@@ -10,7 +10,6 @@ import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

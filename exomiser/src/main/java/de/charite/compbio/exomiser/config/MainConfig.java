@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.config;
 
 import de.charite.compbio.exomiser.filter.FilterFactory;
+import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.util.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.util.VariantAnnotator;
@@ -98,5 +99,10 @@ public class MainConfig {
     @Bean
     public FilterFactory filterFactory() {
         return new FilterFactory();
+    }
+    
+    @Bean
+    public PriorityFactory priorityFactory() {
+        return new PriorityFactory();
     }
 }
