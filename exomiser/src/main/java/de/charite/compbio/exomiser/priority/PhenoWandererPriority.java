@@ -119,7 +119,7 @@ public class PhenoWandererPriority implements Priority {
      * Flag to output results of filtering against Genewanderer.
      */
     @Override
-    public PriorityType getPriorityTypeConstant() {
+    public PriorityType getPriorityType() {
         return PriorityType.PHENOWANDERER_PRIORITY;
     }
 

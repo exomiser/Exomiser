@@ -371,7 +371,7 @@ public class BoqaPriority implements Priority {
     }
     
     /** Flag to output results of filtering against Uberpheno data. */
-    @Override public PriorityType getPriorityTypeConstant() { 
+    @Override public PriorityType getPriorityType() { 
 	return PriorityType.BOQA_PRIORITY; 
     } 
 

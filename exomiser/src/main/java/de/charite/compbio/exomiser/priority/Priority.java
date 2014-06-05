@@ -43,7 +43,7 @@ public interface Priority {
     /**
      * @return an enum constant representing the type of the implementing class.
      */
-    public PriorityType getPriorityTypeConstant();
+    public PriorityType getPriorityType();
 
     /**
      * @return name of the prioritization method used by the implementing class, e.g., "OMIM"

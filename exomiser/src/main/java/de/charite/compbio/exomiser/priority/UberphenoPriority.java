@@ -146,7 +146,7 @@ public class UberphenoPriority implements Priority {
     }
     
     /** Flag to output results of filtering against Uberpheno data. */
-    @Override public PriorityType getPriorityTypeConstant() { 
+    @Override public PriorityType getPriorityType() { 
 	return PriorityType.UBERPHENO_PRIORITY; 
     } 
 

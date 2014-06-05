@@ -280,7 +280,7 @@ public class PhenomizerPriority implements Priority {
 
     /** Flag to output results of filtering against Uberpheno data. */
     @Override
-	public PriorityType getPriorityTypeConstant() {
+	public PriorityType getPriorityType() {
 	return PriorityType.PHENOMIZER_PRIORITY;
     }
 

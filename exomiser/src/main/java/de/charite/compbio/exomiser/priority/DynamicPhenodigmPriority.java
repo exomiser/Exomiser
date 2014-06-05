@@ -83,7 +83,7 @@ public class DynamicPhenodigmPriority implements Priority {
     @Override public String getPriorityName() { return "MGI PhenoDigm"; }
 
     /** Flag to output results of filtering against PhenoDigm data. */
-    @Override public PriorityType getPriorityTypeConstant() { return PriorityType.DYNAMIC_PHENODIGM_FILTER; } 
+    @Override public PriorityType getPriorityType() { return PriorityType.DYNAMIC_PHENODIGM_FILTER; } 
 
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need

@@ -131,7 +131,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * Flag to output results of filtering against Genewanderer.
      */
     @Override
-    public PriorityType getPriorityTypeConstant() {
+    public PriorityType getPriorityType() {
         return PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY;
     }
 

@@ -65,7 +65,7 @@ public class ZFINPhenodigmPriority implements Priority {
     @Override public String getPriorityName() { return "ZFIN PhenoDigm"; }
 
     /** Flag to output results of filtering against PhenoDigm data. */
-    @Override public PriorityType getPriorityTypeConstant() { return PriorityType.PHENODIGM_ZFIN_PRIORITY; } 
+    @Override public PriorityType getPriorityType() { return PriorityType.PHENODIGM_ZFIN_PRIORITY; } 
 
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need

@@ -76,7 +76,7 @@ public class InheritancePriority implements Priority {
     @Override public String getPriorityName() { return "Mode of Inheritance"; }
 
     /**  Flag for output field representing the Inheritance pattern filter. */
-    @Override public PriorityType getPriorityTypeConstant() { return PriorityType.INHERITANCE_MODE_PRIORITY; } 
+    @Override public PriorityType getPriorityType() { return PriorityType.INHERITANCE_MODE_PRIORITY; } 
     
     /**
      * @return list of messages representing process, result, and if any, errors of frequency filtering. 

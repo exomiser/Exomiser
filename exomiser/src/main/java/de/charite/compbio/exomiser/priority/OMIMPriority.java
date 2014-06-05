@@ -65,7 +65,7 @@ public class OMIMPriority implements Priority {
      * Flag for output field representing OMIM.
      */
     @Override
-    public PriorityType getPriorityTypeConstant() {
+    public PriorityType getPriorityType() {
         return PriorityType.OMIM_PRIORITY;
     }
 
