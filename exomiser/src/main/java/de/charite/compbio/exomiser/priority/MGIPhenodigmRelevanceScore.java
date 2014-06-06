@@ -98,17 +98,18 @@ public class MGIPhenodigmRelevanceScore implements RelevanceScore {
     /**
      * @return HTML code with score the Phenodigm score for the current gene or a message if no MGI data was found.
      */
-    @Override  public String getHTMLCode() {
+    @Override  
+    public String getHTMLCode() {
 	//if (MGI_Phenodigm == UNINITIALIZED_FLOAT) {
 	  //  return "<ul><li>MGI Phenodigm: no hit for this disease</li></ul>";
 	if (MGI_Phenodigm == Constants.NOPARSE_FLOAT){
 	    return "<ul><li>No mouse model for this gene</li></ul>";
-    } else  {
-	    String link = getHTMLLink();
-	    //String s1 = String.format("<ul><li>MGI: %s: Phenodigm score: %.3f%%</li></ul>",link,100*MGI_Phenodigm);
-	    String s1 = String.format("<ul><li>Mouse phenotype data for %s</li></ul>",link);
-	    return s1;
-    }
+        } else  {
+                String link = getHTMLLink();
+                //String s1 = String.format("<ul><li>MGI: %s: Phenodigm score: %.3f%%</li></ul>",link,100*MGI_Phenodigm);
+                String s1 = String.format("<ul><li>Mouse phenotype data for %s</li></ul>",link);
+                return s1;
+        }
     }
 
     /**

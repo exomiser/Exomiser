@@ -30,10 +30,6 @@ public enum FilterType {
      */
     FREQUENCY_FILTER("max-freq"),
     /**
-     * Flag to represent results of filtering against phenotype data (HPO)
-     */
-    HPO_FILTER("hpo"),
-    /**
      * Flag to represent target filter
      */
     TARGET_FILTER("remove-off-target-syn"),

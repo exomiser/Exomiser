@@ -7,16 +7,14 @@ package de.charite.compbio.exomiser.priority;
 public enum PriorityType {
     /**
      * Flag to represent results of filtering against an inheritance pattern.
+     *//**
+     * Flag to represent results of filtering against an inheritance pattern.
      */
     INHERITANCE_MODE_PRIORITY("inheritance-mode"),
     /**
      * Flag to represent results of filtering against MGI phenotype data (Phenodigm)
      */
     PHENODIGM_MGI_PRIORITY("phenodigm-mgi"),
-    /**
-     * Flag to represent results of filtering against ZFIN phenotype data (Phenodigm)
-     */
-    PHENODIGM_ZFIN_PRIORITY("phenodigm-zfin"),
     /**
      * Flag to represent results of filtering against phenotype data (Uberpheno)
      */
@@ -25,11 +23,6 @@ public enum PriorityType {
      * Flag to represent results of filtering against PPI-RandomWalk-proximity
      */
     GENEWANDERER_PRIORITY("gene-wanderer"),
-    /**
-     * Flag to represent results of filtering against PPI-RandomWalk-proximity
-     * and human and mouse phenotypes
-     */
-    PHENOWANDERER_PRIORITY("pheno-wanderer"),
     /**
      * Flag to represent results of filtering against PPI-RandomWalk-proximity
      * and dynamic human and mouse phenotypes
@@ -50,7 +43,7 @@ public enum PriorityType {
     /**
      * Flag for dynamic phenodigm filter.
      */
-    DYNAMIC_PHENODIGM_FILTER("dynamic-phenodigm");
+    DYNAMIC_PHENODIGM_PRIORITY("dynamic-phenodigm");
 
     /**
      * The string representation of the FilterType as used when specifying the type on the command-line.

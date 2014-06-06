@@ -28,7 +28,7 @@ public class CommandLineOptionsConfig {
     }
                       
     @Bean
-    public Options options() {
+    protected Options options() {
         Options options = new Options();
 
         addHelpOptions(options);

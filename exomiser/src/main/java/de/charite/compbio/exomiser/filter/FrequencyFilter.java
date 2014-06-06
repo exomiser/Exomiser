@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Filter variants according to their frequency. The Frequency is retrieved from
- * our postgreSQL database and comes from dbSNP (see
+ * our database and comes from dbSNP (see
  * {@link exomizer.io.dbSNP2FrequencyParser dbSNP2FrequencyParser} and
  * {@link exomizer.io.ESP2FrequencyParser ESP2FrequencyParser}), and the
  * frequency data are expressed as percentages.
@@ -38,10 +38,6 @@ public class FrequencyFilter implements Filter {
      */
     private float frequency_threshold = 100.0f;
 
-    /**
-     * Database handle to the postgreSQL database used by this application.
-     */
-//    
     private Connection connection;
 
     private final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
@@ -66,12 +62,12 @@ public class FrequencyFilter implements Filter {
      * data, expressed as a percentage.
      */
     private float ESP_freq;
-    private List<String> errorRecord = null;
+    private List<String> errorRecord = new ArrayList<>();
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = null;
+    private List<String> messages = new ArrayList<>();
     /**
      * Number of variants analyzed by filter
      */
@@ -86,11 +82,12 @@ public class FrequencyFilter implements Filter {
      */
     private boolean strictFiltering = false;
 
-    public FrequencyFilter(FrequencyTriageDAO triageDao) {
+    public FrequencyFilter(FrequencyTriageDAO triageDao, float maxFreq, boolean filterOutAllDbsnp) {
         this.triageDao = triageDao;
-
-        this.errorRecord = new ArrayList<>();
-        this.messages = new ArrayList<>();
+        
+        setMaxFrequency(maxFreq);
+        this.strictFiltering = filterOutAllDbsnp;
+        
     }
 
     /**
@@ -121,7 +118,7 @@ public class FrequencyFilter implements Filter {
      * percent, or RS
      */
     @Override
-    public void setParameters(String par) throws ExomizerInitializationException {
+    public void setParameters(String par) {
         if (par.equalsIgnoreCase("RS")) {
             this.strictFiltering = true;
             return;
@@ -133,11 +130,21 @@ public class FrequencyFilter implements Filter {
             this.messages.add(String.format("Allele frequency &lt; %.2f %%",
                     frequency_threshold));
         } catch (NumberFormatException e) {
-            String msg = "Could not parse frequency parameter for Frequency filter: \"" + par + "\"";
-            throw new ExomizerInitializationException(msg);
+            logger.error("Could not parse frequency parameter for Frequency filter: {}", par, e);
+        } catch (ExomizerInitializationException e) {
+            logger.error(null, e);
         }
     }
 
+    private void setMaxFrequency(float maxFreq) {
+        frequency_threshold = maxFreq;
+        try {
+            FrequencyTriage.set_frequency_threshold(frequency_threshold);
+        } catch (ExomizerInitializationException e) {
+            logger.error(null, e);
+        }
+        this.messages.add(String.format("Allele frequency &lt; %.2f %%", frequency_threshold));
+    }
     /**
      * @return list of messages representing process, result, and if any, errors
      * of frequency filtering.

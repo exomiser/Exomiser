@@ -1,17 +1,17 @@
 package de.charite.compbio.exomiser.priority;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-
+import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import de.charite.compbio.exomiser.exception.ExomizerSQLException;
+import de.charite.compbio.exomiser.exome.Gene;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is designed to do two things. First, it will add annotations to
@@ -33,6 +33,7 @@ import de.charite.compbio.exomiser.exception.ExomizerSQLException;
  */
 public class OMIMPriority implements Priority {
 
+    private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
     /**
      * Database handle to the postgreSQL database used by this application.
      */
@@ -92,12 +93,10 @@ public class OMIMPriority implements Priority {
         Iterator<Gene> it = gene_list.iterator();
         while (it.hasNext()) {
             Gene g = it.next();
-            try {
+            
                 OMIMRelevanceScore mimrel = retrieve_omim_data(g);
                 g.addRelevanceScore(mimrel, PriorityType.OMIM_PRIORITY);
-            } catch (ExomizerSQLException e) {
-                this.messages.add(e.toString());
-            }
+            
         }
     }
 
@@ -109,7 +108,7 @@ public class OMIMPriority implements Priority {
      *
      * @param g The gene which is being evaluated.
      */
-    private OMIMRelevanceScore retrieve_omim_data(Gene g) throws ExomizerSQLException {
+    private OMIMRelevanceScore retrieve_omim_data(Gene g) {
         OMIMRelevanceScore rel = new OMIMRelevanceScore();
         int entrez = g.getEntrezGeneID();
         if (entrez < 0) {
@@ -136,7 +135,7 @@ public class OMIMPriority implements Priority {
             rs.close();
             rs = null;
         } catch (SQLException e) {
-            throw new ExomizerSQLException("Error executing OMIM query: " + e);
+            logger.error("Error executing OMIM query", e);
         }
         // Now try to get the Orphanet data 
         try {
@@ -150,8 +149,7 @@ public class OMIMPriority implements Priority {
             }
 
         } catch (SQLException e) {
-            System.out.println("Exception caused by Orphanet query!" + e);
-            throw new ExomizerSQLException("Error executing OMIM query: " + e);
+            logger.error("Exception caused by Orphanet query!", e);
         }
 
         return rel;
@@ -204,15 +202,14 @@ public class OMIMPriority implements Priority {
      * FROM omim</br>
      * WHERE gene_id = ? </br>
      */
-    private void setUpSQLPreparedStatement() throws ExomizerInitializationException {
+    private void setUpSQLPreparedStatement() {
         String query = "SELECT disease_id,omim_gene_id,diseasename,type,inheritance "
                 + "FROM disease "
                 + "WHERE disease_id LIKE '%OMIM%' AND gene_id = ?";
         try {
             this.omimQuery = connection.prepareStatement(query);
         } catch (SQLException e) {
-            String error = "Problem setting up OMIM SQL query:" + query + e.toString();
-            throw new ExomizerInitializationException(error);
+            logger.error("Problem setting up OMIM SQL query: {}", query, e);
         }
         /* Now the same for Orphanet. */
         query = "SELECT disease_id,diseasename "
@@ -221,8 +218,7 @@ public class OMIMPriority implements Priority {
         try {
             this.orphanetQuery = connection.prepareStatement(query);
         } catch (SQLException e) {
-            String error = "Problem setting up Orphanet SQL query:" + query + e.toString();
-            throw new ExomizerInitializationException(error);
+            logger.error("Problem setting up Orphanet SQL query: {}", query, e);
         }
     }
 
@@ -234,8 +230,7 @@ public class OMIMPriority implements Priority {
      * or tomcat.
      */
     @Override
-    public void setDatabaseConnection(Connection connection)
-            throws ExomizerInitializationException {
+    public void setDatabaseConnection(Connection connection) {
         this.connection = connection;
         setUpSQLPreparedStatement();
     }
@@ -243,13 +238,16 @@ public class OMIMPriority implements Priority {
     /**
      * Since no filtering of prioritizing is done with the OMIM data for now, it
      * does not make sense to display this in the HTML table.
+     * @return 
      */
+    @Override
     public boolean displayInHTML() {
         return false;
     }
 
+    @Override
     public String getHTMLCode() {
-        return "To Do";
+        return "";
     }
 
     /**

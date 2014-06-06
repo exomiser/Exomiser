@@ -61,7 +61,7 @@ public class ExomiserSettings {
     //hpo-ids (command-line was: hpo_ids, refered to variable: hpo_ids)
     private final List<String> hpoIds;
     //seed-genes (command-line was: SeedGenes, refered to variable: entrezSeedGenes)
-    private final List<String> seedGeneList;
+    private final List<Integer> seedGeneList;
 
     //OUTPUT options
     //num-genes (command-line was: ngenes, refered to variable: numberOfGenesToShow)
@@ -101,7 +101,7 @@ public class ExomiserSettings {
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
         private String diseaseId = "";
         private List<String> hpoIds = new ArrayList();
-        private List<String> seedGeneList = new ArrayList();
+        private List<Integer> seedGeneList = new ArrayList();
 
         //OUTPUT options
         private int numberOfGenesToShow = 0;
@@ -175,7 +175,7 @@ public class ExomiserSettings {
             return this;
         }
 
-        public ExomiserOptionsBuilder seedGeneList(List<String> value) {
+        public ExomiserOptionsBuilder seedGeneList(List<Integer> value) {
             seedGeneList = value;
             return this;
         }
@@ -288,7 +288,7 @@ public class ExomiserSettings {
         return hpoIds;
     }
 
-    public List<String> getSeedGeneList() {
+    public List<Integer> getSeedGeneList() {
         return seedGeneList;
     }
 

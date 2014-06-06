@@ -53,12 +53,9 @@ public class FilterFactory {
         if (settings.removeOffTargetVariants()) {
             variantFilterList.add(getTargetFilter());
         }
-        try {
-            //TODO: REMOVE THE CONVERSION STRING -> FLOAT -> STRING -> FLOAT
-            variantFilterList.add(getFrequencyFilter(String.valueOf(settings.getMaximumFrequency()), settings.removeDbSnp()));
-        } catch (ExomizerInitializationException ex) {
-            logger.error(null, ex);
-        }
+        //TODO: REMOVE THE CONVERSION STRING -> FLOAT -> STRING -> FLOAT
+        variantFilterList.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeDbSnp()));
+        
 
         if (settings.getMinimumQuality() != 0) {
             try {
@@ -109,26 +106,26 @@ public class FilterFactory {
      * filtering.
      *
      * @param dataSource
-     * @param frequency_threshold
+     * @param maxFrequency
      * @param filterOutAllDbsnp
      * @return
      * @throws
      * de.charite.compbio.exomiser.exception.ExomizerInitializationException
      */
-    public Filter getFrequencyFilter(String frequency_threshold, boolean filterOutAllDbsnp) throws ExomizerInitializationException {
+    public Filter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
 
         FrequencyTriageDAO variantTriageDAO = new FrequencyTriageDAO(dataSource);
-        Filter frequencyFilter = new FrequencyFilter(variantTriageDAO);
+        Filter frequencyFilter = new FrequencyFilter(variantTriageDAO, maxFrequency, filterOutAllDbsnp);
 
-        if (filterOutAllDbsnp) {
-            frequencyFilter.setParameters("RS");
-        } else if (frequency_threshold != null && !frequency_threshold.equals("none")) {
-            frequencyFilter.setParameters(frequency_threshold);
-        } else {
-            // default is freq filter at 100 i.e. keep everything so still
-            // get freq data in output and inclusion in prioritization
-            frequencyFilter.setParameters("100");
-        }
+//        if (filterOutAllDbsnp) {
+//            frequencyFilter.setParameters("RS");
+//        } else if (maxFrequency != null && !maxFrequency.equals("none")) {
+//            frequencyFilter.(maxFrequency);
+//        } else {
+//            // default is freq filter at 100 i.e. keep everything so still
+//            // get freq data in output and inclusion in prioritization
+//            frequencyFilter.setParameters("100");
+//        }
         logger.info("Made new Filter: {}", frequencyFilter);
         return frequencyFilter;
     }

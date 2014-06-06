@@ -57,7 +57,8 @@ public class PhenomizerRelevanceScore implements RelevanceScore {
     /** 
      * @see exomizer.filter.Triage#getHTMLCode()
      */
-    @Override public String getHTMLCode() {
+    @Override 
+    public String getHTMLCode() {
 	return String.format("<ul><li>Phenomizer: Semantic similarity score: %.2f (p-value: %f)</li></ul>",
 			     this.hpoSemSimScore,Math.exp(-1*this.negativeLogPval));
     }

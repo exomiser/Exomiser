@@ -23,6 +23,8 @@ import de.charite.compbio.exomiser.exception.ExomizerSQLException;
 import de.charite.compbio.exomiser.io.UberphenoIO;
 import de.charite.compbio.exomiser.priority.util.UberphenoAnnotationContainer;
 import java.sql.Connection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified disease to mouse models disrupting 
@@ -37,6 +39,8 @@ import java.sql.Connection;
  * @version 0.05 (April 28, 2013)
  */
 public class UberphenoPriority implements Priority {
+    
+    private static final Logger logger = LoggerFactory.getLogger(UberphenoPriority.class);
 
 	/** The Uberpheno as Ontologizer-Ontology object */
 	private Ontology uberpheno;
@@ -83,8 +87,7 @@ public class UberphenoPriority implements Priority {
 	 * @throws ExomizerInitializationException
 	 * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno Hudson page</a>
 	 */
-	public UberphenoPriority(String uberphenoOboFile, String uberphenoAnnotationFile, String disease) 
-	    throws ExomizerInitializationException  {
+	public UberphenoPriority(String uberphenoOboFile, String uberphenoAnnotationFile, String disease) {
 		
 		/* IO responsible for Uberpheno files */
 		UberphenoIO uphenoIO = new UberphenoIO();
@@ -121,12 +124,12 @@ public class UberphenoPriority implements Priority {
 		 * Take the given disease ID and find the associated HPO-terms for that disease
 		 * by converting it to an OMIM-ID-Integer
 		 */
-		int omimId;
+		int omimId = 0;
 		try {
 			omimId = Integer.parseInt(disease);
 		} 
 		catch (NumberFormatException e) {
-			throw new ExomizerInitializationException("UberphenoFilter: Could not parse OMIM-id (int) from "+disease);
+			logger.error("UberphenoFilter: Could not parse OMIM-id (int) from {}", disease);
 		}
 		
 		/* Store the annotations of the given disease. This is used as query */
@@ -211,19 +214,37 @@ public class UberphenoPriority implements Priority {
     
    
 
- /**
+    /**
      * To do
+     *
+     * @return
      */
-    public boolean displayInHTML() { return false; }
+    @Override
+    public boolean displayInHTML() {
+        return false;
+    }
 
-  
-    public String getHTMLCode() { return "To Do"; }
+    @Override
+    public String getHTMLCode() {
+        return "";
+    }
 
-     /** Get number of variants before filter was applied TODO */
-     @Override  public int getBefore() {return 0; }
-    /** Get number of variants after filter was applied TODO */
-     @Override  public int getAfter() {return 0; }
-    
+    /**
+     * Get number of variants before filter was applied TODO
+     */
+    @Override
+    public int getBefore() {
+        return 0;
+    }
+
+    /**
+     * Get number of variants after filter was applied TODO
+     */
+    @Override
+    public int getAfter() {
+        return 0;
+    }
+
     
     /**
      * Set parameters of prioritizer if needed.
@@ -237,7 +258,6 @@ public class UberphenoPriority implements Priority {
       * This class does not need a database connection, this function only there to satisfy the interface.
      * @param connection An SQL (postgres) connection that was initialized elsewhere.
      */
-    @Override  public void setDatabaseConnection(Connection connection) 
-	throws ExomizerInitializationException  { /* no-op */ }
+    @Override  public void setDatabaseConnection(Connection connection) { /* no-op */ }
 	
 }

@@ -115,6 +115,12 @@ public class Prioritiser {
      * contain the variants that have passed the filtering step.
      */
     private List<Gene> geneList=null;
+
+    public Prioritiser(ModeOfInheritance modeOfInheritance, List<Filter> filterList, List<Priority> priorityList) {
+	this.filterList = filterList;
+	this.priorityList = priorityList;
+        inheritanceMode = modeOfInheritance;
+    }
     
     public Prioritiser() {
 //	this.connection = conn;

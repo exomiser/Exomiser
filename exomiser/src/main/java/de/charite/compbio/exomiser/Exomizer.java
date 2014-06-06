@@ -1,12 +1,13 @@
 package de.charite.compbio.exomiser;
 
-import de.charite.compbio.exomiser.filter.FilterType;
+import de.charite.compbio.exomiser.common.SampleData;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.filter.FilterFactory;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.filter.TargetFilter;
 import de.charite.compbio.exomiser.io.ExomiserDatabase;
 import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
@@ -21,6 +22,7 @@ import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.reference.Network;
 import de.charite.compbio.exomiser.reference.STRINGNetwork;
+import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import jannovar.exome.VariantTypeCounter;
@@ -622,7 +624,7 @@ public class Exomizer {
         if (this.use_target_filter) {
             variantFilterList.add(filterFactory.getTargetFilter());
         }
-        variantFilterList.add(filterFactory.getFrequencyFilter(frequency_threshold, filterOutAlldbSNP));
+        variantFilterList.add(filterFactory.getFrequencyFilter(Float.valueOf(frequency_threshold), filterOutAlldbSNP));
 
         if (this.quality_threshold != null) {
             variantFilterList.add(filterFactory.getQualityFilter(quality_threshold));
@@ -654,43 +656,43 @@ public class Exomizer {
         List<Priority> genePriorityList = new ArrayList<>();
         PriorityFactory priorityFactory = new PriorityFactory(dataSource);
 
-//        this.prioritiser.addOMIMPrioritizer();
-        genePriorityList.add(priorityFactory.getOmimPrioritizer());
-        //is order *really* an issue here? If not these could be specified using inheritance? 
-        //inheritance_mode, disease, hpo_ids, candidateGene are actual input variables, the rest is configuration data
-        if (this.inheritance_filter_type != null) {
-//            this.prioritiser.addInheritancePrioritiser(this.inheritance_filter_type);
-            genePriorityList.add(priorityFactory.getInheritancePrioritiser(inheritance_filter_type));
-        }
-        if (doMGIPhenodigmPrioritization()) {
-//            this.prioritiser.addMGIPhenodigmPrioritiser(this.disease);
-            genePriorityList.add(priorityFactory.getMGIPhenodigmPrioritiser(disease));
-        } else if (hpo_ids != null) {
-            if (doPhenomizerPrioritization()) {
-                //this doesn't check whether hpo_ids is not null! should be part of that block? Are Phenomizer and BOQA exclusive?
-//            this.prioritiser.addPhenomizerPrioritiser(this.phenomizerDataDirectory, this.hpo_ids);
-                genePriorityList.add(priorityFactory.getPhenomizerPrioritiser(phenomizerDataDirectory, hpo_ids));
-            } else if (doBOQAPrioritization()) {
-//                this.prioritiser.addBOQAPrioritiser(this.hpoOntologyFile, this.hpoAnnotationFile, this.hpo_ids);
-                genePriorityList.add(priorityFactory.getBOQAPrioritiser(hpoOntologyFile, hpoAnnotationFile, hpo_ids));
-            } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null) {
-//                this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.hpo_ids, this.candidateGene, this.disease, this.randomWalkMatrix);
-                genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, hpo_ids, candidateGene, disease, randomWalkMatrix));
-            } else {
-//                this.prioritiser.addDynamicPhenodigmPrioritiser(this.hpo_ids);
-                genePriorityList.add(priorityFactory.getDynamicPhenodigmPrioritiser(hpo_ids));
-            }
-        } else if (doZFINPhenodigm()) {
-//            this.prioritiser.addZFINPrioritiser(this.disease);
-            genePriorityList.add(priorityFactory.getZFINPrioritiser(disease));
-        } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.disease != null) {
-//            this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.disease, this.candidateGene, this.disease, this.randomWalkMatrix);
-            //TODO: CHECK!! should the first disease in this constructor actually be the hpo_ids? Could do with some type-safety in this constructor.
-            genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, disease, candidateGene, disease, randomWalkMatrix));
-        } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.entrezSeedGenes != null) {
-//            this.prioritiser.addExomeWalkerPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.entrezSeedGenes);
-            genePriorityList.add(priorityFactory.getExomeWalkerPrioritiser(randomWalkFilePath, randomWalkIndexPath, entrezSeedGenes));
-        }
+////        this.prioritiser.addOMIMPrioritizer();
+//        genePriorityList.add(priorityFactory.getOmimPrioritizer());
+//        //is order *really* an issue here? If not these could be specified using inheritance? 
+//        //inheritance_mode, disease, hpo_ids, candidateGene are actual input variables, the rest is configuration data
+//        if (this.inheritance_filter_type != null) {
+////            this.prioritiser.addInheritancePrioritiser(this.inheritance_filter_type);
+//            genePriorityList.add(priorityFactory.getInheritancePrioritiser(inheritance_filter_type));
+//        }
+//        if (doMGIPhenodigmPrioritization()) {
+////            this.prioritiser.addMGIPhenodigmPrioritiser(this.disease);
+//            genePriorityList.add(priorityFactory.getMGIPhenodigmPrioritiser(disease));
+//        } else if (hpo_ids != null) {
+//            if (doPhenomizerPrioritization()) {
+//                //this doesn't check whether hpo_ids is not null! should be part of that block? Are Phenomizer and BOQA exclusive?
+////            this.prioritiser.addPhenomizerPrioritiser(this.phenomizerDataDirectory, this.hpo_ids);
+//                genePriorityList.add(priorityFactory.getPhenomizerPrioritiser(phenomizerDataDirectory, hpo_ids));
+//            } else if (doBOQAPrioritization()) {
+////                this.prioritiser.addBOQAPrioritiser(this.hpoOntologyFile, this.hpoAnnotationFile, this.hpo_ids);
+//                genePriorityList.add(priorityFactory.getBOQAPrioritiser(hpoOntologyFile, hpoAnnotationFile, hpo_ids));
+//            } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null) {
+////                this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.hpo_ids, this.candidateGene, this.disease, this.randomWalkMatrix);
+//                genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, hpo_ids, candidateGene, disease, randomWalkMatrix));
+//            } else {
+////                this.prioritiser.addDynamicPhenodigmPrioritiser(this.hpo_ids);
+//                genePriorityList.add(priorityFactory.getDynamicPhenodigmPrioritiser(hpo_ids));
+//            }
+//        } else if (doZFINPhenodigm()) {
+////            this.prioritiser.addZFINPrioritiser(this.disease);
+//            genePriorityList.add(priorityFactory.getZFINPrioritiser(disease));
+//        } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.disease != null) {
+////            this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.disease, this.candidateGene, this.disease, this.randomWalkMatrix);
+//            //TODO: CHECK!! should the first disease in this constructor actually be the hpo_ids? Could do with some type-safety in this constructor.
+//            genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, disease, candidateGene, disease, randomWalkMatrix));
+//        } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.entrezSeedGenes != null) {
+////            this.prioritiser.addExomeWalkerPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.entrezSeedGenes);
+//            genePriorityList.add(priorityFactory.getExomeWalkerPrioritiser(randomWalkFilePath, randomWalkIndexPath, entrezSeedGenes));
+//        }
 
         return genePriorityList;
     }
@@ -901,7 +903,9 @@ public class Exomizer {
      * We are able to initilialize a VariantTypeCounter object either with a
      * list of Variant objects or to extract one from the TargetFilter object.
      * We use this object to print out a table of variant class distribution.
+     * @deprecated Use the method with a typed parameter
      */
+    @Deprecated
     public VariantTypeCounter getVariantTypeCounter() {
         VariantTypeCounter vtc = null;
         for (Filter f : this.prioritiser.getFilterList()) {
@@ -1080,7 +1084,10 @@ public class Exomizer {
      * Outputs an HTML page with the results of Exomizer prioritization. This
      * function creates a file called {@code exomizer.html} (unless the name of
      * the out file has been changed via the command line).
+     * @throws de.charite.compbio.exomiser.exception.ExomizerException
+     * @deprecated Use the method with typed parameters. 
      */
+    @Deprecated
     public void outputHTML() throws ExomizerException {
         if (this.variantList == null) {
             /*
@@ -1127,6 +1134,72 @@ public class Exomizer {
             String s = String.format("Error : %s", e.getMessage());
             throw new ExomizerException(s);
         }
+    }
+    
+    /**
+     * Outputs an HTML page with the results of Exomizer prioritization. This
+     * function creates a file called {@code exomizer.html} (unless the name of
+     * the out file has been changed via the command line).
+     */
+    public void outputHTML(SampleData sampleData, List<Filter> filterList, List<Priority> priorityList, OutputFormat outputFormat, String outFileName) {
+        if (sampleData.getVariantEvaluations().isEmpty()) {
+            logger.error("Cannot wite out a results file with no variant data.");
+        }
+        try {
+            logger.info("Writing HTML file to: {}", outFileName);
+
+//            if (this.useRandomWalk) {
+//                this.htmlWriter = new HTMLWriterWalker(outFileName);
+//                outputWalker();
+//                return;
+//            } else if (this.useBOQA) {
+//                this.htmlWriter = new HTMLWriterBOQA(outFileName);
+//            } else if (this.useCRE) {
+//                this.htmlWriter = new HTMLWriterCRE(outFileName, sampleData.getVcfFilePath().toString());
+//                outputCRE();
+//                return;
+//            } else { /*
+//                 * default
+//                 */
+
+                this.htmlWriter = new HTMLWriter(outFileName);
+//            }
+            this.htmlWriter.writeHTMLHeaderAndCSS();
+            this.htmlWriter.writeHTMLFilterSummary(filterList, priorityList);
+            VariantTypeCounter vtc = getVariantTypeCounter(filterList, sampleData.getVariantEvaluations());
+            this.htmlWriter.writeVariantDistributionTable(vtc, sampleData.getSampleNames());
+            logger.info("Writing HTML body with {} gene results", sampleData.getGeneList().size());
+            this.htmlWriter.writeHTMLBody(sampleData.getPedigree(), sampleData.getGeneList());
+            this.htmlWriter.writeAbout();
+            this.htmlWriter.writeHTMLFooter();
+            this.htmlWriter.finish();
+        } catch (IOException e) {
+            logger.error("Unable to write HTML file.",e);
+        } catch (ExomizerException e) {
+            logger.error("Unable to write HTML file.",e);
+        }
+    }
+
+    /**
+     * We are able to initilialize a VariantTypeCounter object either with a
+     * list of Variant objects or to extract one from the TargetFilter object.
+     * We use this object to print out a table of variant class distribution.
+     */
+    protected VariantTypeCounter getVariantTypeCounter(List<Filter> filterList, List<VariantEvaluation> variantList) {
+        VariantTypeCounter vtc = null;
+        for (Filter f : filterList) {
+            if (f.getFilterType() == FilterType.TARGET_FILTER) {
+                TargetFilter tf = (TargetFilter) f;
+                vtc = tf.getVariantTypeCounter();
+                break;
+            }
+        }
+        if (vtc == null) {
+            TargetFilter tf = new TargetFilter();
+            tf.filterVariants(variantList);
+            vtc = tf.getVariantTypeCounter();
+        }
+        return vtc;
     }
 
     /**

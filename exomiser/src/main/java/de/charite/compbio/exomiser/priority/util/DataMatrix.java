@@ -48,8 +48,8 @@ public class DataMatrix{
 			BufferedReader in		= null;
 			// if the gz-file exists we try to create a BufferedReader for this file
 			if (file.exists()){
-				InputStream is 		= new GZIPInputStream(new FileInputStream(file));
-				in					= new BufferedReader(new InputStreamReader(is));
+				InputStream is = new GZIPInputStream(new FileInputStream(file));
+				in = new BufferedReader(new InputStreamReader(is));
 			}
 			else{
 				throw new RuntimeException("FATAL: file not found "+object2idxFileZip);

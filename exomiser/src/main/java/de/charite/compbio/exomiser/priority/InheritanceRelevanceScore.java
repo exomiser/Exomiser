@@ -30,9 +30,9 @@ public class InheritanceRelevanceScore implements RelevanceScore {
     public List<String> getFilterResultList()
 	{ return null; }
 
-     @Override
+    @Override
     public String getHTMLCode() {
-	return "TODO";
+	return "";
     }
 
      @Override public void resetRelevanceScore(float newscore){ /* not implemented */ }

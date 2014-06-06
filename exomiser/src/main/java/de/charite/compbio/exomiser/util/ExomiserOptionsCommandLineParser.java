@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -52,16 +53,21 @@ public class ExomiserOptionsCommandLineParser {
      * @return an ExomiserSettings object built from the command line.
      * @throws org.apache.commons.cli.ParseException
      */
-    public ExomiserSettings parseCommandLineArguments(String[] args) throws ParseException {
+    public ExomiserSettings parseCommandLineArguments(String[] args) {
 
         Parser parser = new GnuParser();
-        CommandLine cmd = parser.parse(options, args);
+        CommandLine cmd;
+        try {
+            cmd = parser.parse(options, args);
+            return parseCommandLine(cmd);
+        } catch (ParseException ex) {
+            logger.error("Unable to parse command line argumnets. Please check you have typed the parameters correctly.", ex);
+        }
 
-        return parseCommandLine(cmd);
-
+        return null;
     }
 
-    private ExomiserSettings parseCommandLine(CommandLine commandLine) throws ParseException {
+    private ExomiserSettings parseCommandLine(CommandLine commandLine) {
 
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
 
@@ -108,10 +114,10 @@ public class ExomiserOptionsCommandLineParser {
                     optionsBuilder.candidateGene(option.getValue());
                     break;
                 case "hpo-ids":
-                    optionsBuilder.hpoIdList(makeList(option.getLongOpt(), option.getValue()));
+                    optionsBuilder.hpoIdList(parseHpoStringList(option.getLongOpt(), option.getValue()));
                     break;
                 case "seed-genes":
-                    optionsBuilder.seedGeneList(makeList(option.getLongOpt(), option.getValue()));
+                    optionsBuilder.seedGeneList(makeIntegerList(option.getLongOpt(), option.getValue()));
                     break;
                 case "disease-id":
                     optionsBuilder.diseaseId(option.getValue());
@@ -263,15 +269,32 @@ public class ExomiserOptionsCommandLineParser {
         return "ExomiserCommandLineOptionsParser{" + options + '}';
     }
 
-    private List<String> makeList(String option, String value) {
+    private List<String> parseHpoStringList(String longOpt, String value) {
         String delimiter = ",";
+        logger.info("Parsing list from: ", value);
         
         if (!value.contains(delimiter)) {
-            logger.error("Unable to parse {} value - please specify a list of comma-separated strings with no white space separator. e.g. OMIM:12345,OMIM:23456,OMIM:98765", option);
+            logger.error("Unable to parse {} value: {} - please specify a list of comma-separated strings with no white space separator. e.g. HPO:123456,HPO:234567,HPO:987653", longOpt, value);
             return new ArrayList();
         }
+        String values[] = value.split(",");
+        if (values.length < 1) {
+            logger.error("Could not parse any HPO terms from the input string \"{}\"", value);
+            return new ArrayList();
+        }
+        List<String> hpoList = new ArrayList<>();
+        for (String string : values) {
+            string = string.trim();
+            if (string.startsWith("HP:") && string.length() == 10) { /* A well formed HPO term starts with "HP:" and has ten characters. */
+                //ideally we need an HPO class as the second half of the ID is an integer.
+                //TODO: add Hpo class to exomiser.core - Phenodigm.core already has one.
+                hpoList.add(string); 
+            } else {
+                logger.error("Malformed HPO input string \"{}\". Could not parse term \"{}\"", value, string);
+            }
+        }
 
-        return Arrays.asList(value.split(delimiter));
+        return hpoList;
     }
 
     private ModeOfInheritance parseInheritanceMode(String value) {
@@ -301,6 +324,24 @@ public class ExomiserOptionsCommandLineParser {
             default:
                 return OutputFormat.HTML;
         }
+    }
+
+    private List<Integer> makeIntegerList(String longOpt, String value) {
+        String delimiter = ",";
+        
+        List<Integer> returnList = new ArrayList<>();
+        
+        if (!value.contains(delimiter)) {
+            logger.error("Unable to parse {} value: {} - please specify a list of comma-separated integers with no white space separator. e.g. 12345,23456,98765", longOpt, value);
+            return returnList;
+        }
+        
+        for (String string : value.split(delimiter)) {
+            Integer integer = Integer.parseInt(string.trim());
+            returnList.add(integer);
+        }
+
+        return returnList;    
     }
 
 }

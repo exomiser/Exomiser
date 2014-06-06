@@ -67,7 +67,30 @@ public class MainConfig {
 
     @Bean
     public Path ucscFilePath() {
-        return dataPath().resolve(env.getProperty("ucscFileName"));
+        Path ucscFilePath = dataPath().resolve(env.getProperty("ucscFileName"));
+        logger.info("UCSC data file: {}", ucscFilePath.toAbsolutePath());
+        return ucscFilePath;
+    }
+    
+    @Bean
+    public Path phenomizerDataDirectory() {
+        Path phenomizerDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
+        logger.info("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
+        return phenomizerDataDirectory;
+    }
+    
+    @Bean
+    public Path hpoOntologyFilePath() {
+        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
+        logger.info("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
+        return hpoOntologyFilePath;
+    }
+    
+    @Bean
+    public Path hpoAnnotationFilePath() {
+        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
+        logger.info("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
+        return hpoAnnotationFilePath;
     }
 
     /**
