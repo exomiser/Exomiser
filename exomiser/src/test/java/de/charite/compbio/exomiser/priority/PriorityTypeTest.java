@@ -58,7 +58,7 @@ public class PriorityTypeTest {
     @Test
     public void testValueOfCommandLineUnrecognisedDefault() {
         String value = "wibble";
-        PriorityType expResult = PriorityType.PHENODIGM_MGI_PRIORITY;
+        PriorityType expResult = PriorityType.NOT_SET;
         PriorityType result = PriorityType.valueOfCommandLine(value);
         assertEquals(expResult, result);
     }
