@@ -73,7 +73,7 @@ public class CommandLineOptionsConfig {
         options.addOption(new Option("Q", "min-qual", true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
         //no extra args required - these are Booleans 
         options.addOption(new Option("P", "include-pathogenic", false, "Filter variants to include those with predicted pathogenicity. Default: false"));//PathogenicityFilter 
-        options.addOption(new Option(null, "remove-dbsnp", false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: true"));
+        options.addOption(new Option(null, "remove-dbsnp", false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false"));
         //TODO: WTF is going on with PathogenicityFilter? It actualy needs boolean filterOutNonpathogenic, boolean removeSynonomousVariants
         //but these set (or don't set) things in the PathogenicityTriage - maybe we could have a MissensePathogenicityFilter too? 
         options.addOption(new Option("O", "exclude-pathogenic-missense", false, "Filter variants to include those with predicted pathogenicity - MISSENSE MUTATIONS ONLY"));//PathogenicityFilter 

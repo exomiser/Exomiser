@@ -79,7 +79,7 @@ public class ExomiserSettings {
     //(command-line was: ?, refered to variable: ?)
     private final String diseaseGeneFamilyName;
 
-    public static class ExomiserOptionsBuilder {
+    public static class Builder {
 
         //INPUT file options
         private Path vcfFilePath; //required, no default
@@ -93,7 +93,7 @@ public class ExomiserSettings {
         private float minimumQuality = 0;
         private String geneticInterval = "";
         private boolean includePathogenic = false;
-        private boolean removeDbSnp = true;
+        private boolean removeDbSnp = false;
         private boolean removeOffTargetVariants = true;
 
         //PRIORITISER options
@@ -110,92 +110,92 @@ public class ExomiserSettings {
 
         private String diseaseGeneFamilyName = "";
 
-        public ExomiserOptionsBuilder vcfFilePath(Path vcfFilePath) {
+        public Builder vcfFilePath(Path vcfFilePath) {
             this.vcfFilePath = vcfFilePath;
             return this;
         }
 
-        public ExomiserOptionsBuilder pedFilePath(Path pedFilePath) {
+        public Builder pedFilePath(Path pedFilePath) {
             this.pedFilePath = pedFilePath;
             return this;
         }
 
-        public ExomiserOptionsBuilder usePrioritiser(PriorityType prioritiserType) {
+        public Builder usePrioritiser(PriorityType prioritiserType) {
             this.prioritiserType = prioritiserType;
             return this;
         }
 
-        public ExomiserOptionsBuilder maximumFrequency(float value) {
+        public Builder maximumFrequency(float value) {
             maximumFrequency = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder minimumQuality(float value) {
+        public Builder minimumQuality(float value) {
             minimumQuality = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder geneticInterval(String value) {
+        public Builder geneticInterval(String value) {
             geneticInterval = value;
             return this;
         }
         
-        public ExomiserOptionsBuilder includePathogenic(boolean value) {
+        public Builder includePathogenic(boolean value) {
             includePathogenic = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder removeDbSnp(boolean value) {
+        public Builder removeDbSnp(boolean value) {
             removeDbSnp = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder removeOffTargetVariants(boolean value) {
+        public Builder removeOffTargetVariants(boolean value) {
             removeOffTargetVariants = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder candidateGene(String value) {
+        public Builder candidateGene(String value) {
             candidateGene = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder modeOfInheritance(ModeOfInheritance value) {
+        public Builder modeOfInheritance(ModeOfInheritance value) {
             modeOfInheritance = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder diseaseId(String value) {
+        public Builder diseaseId(String value) {
             diseaseId = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder hpoIdList(List<String> value) {
+        public Builder hpoIdList(List<String> value) {
             hpoIds = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder seedGeneList(List<Integer> value) {
+        public Builder seedGeneList(List<Integer> value) {
             seedGeneList = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder numberOfGenesToShow(int value) {
+        public Builder numberOfGenesToShow(int value) {
             numberOfGenesToShow = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder outFileName(String value) {
+        public Builder outFileName(String value) {
             outFileName = value;
             return this;
         }
         
-        public ExomiserOptionsBuilder outputFormat(OutputFormat value) {
+        public Builder outputFormat(OutputFormat value) {
             outputFormat = value;
             return this;
         }
 
-        public ExomiserOptionsBuilder diseaseGeneFamilyName(String value) {
+        public Builder diseaseGeneFamilyName(String value) {
             diseaseGeneFamilyName = value;
             return this;
         }
@@ -205,7 +205,7 @@ public class ExomiserSettings {
         }
     }
 
-    private ExomiserSettings(ExomiserOptionsBuilder builder) {
+    private ExomiserSettings(Builder builder) {
 
         vcfFilePath = builder.vcfFilePath; //required, no default
         pedFilePath = builder.pedFilePath;

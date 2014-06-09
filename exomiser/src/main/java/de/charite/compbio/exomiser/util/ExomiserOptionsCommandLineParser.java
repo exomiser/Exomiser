@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.util;
 
 import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.util.ExomiserSettings.ExomiserOptionsBuilder;
+import de.charite.compbio.exomiser.util.ExomiserSettings.Builder;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class ExomiserOptionsCommandLineParser {
 
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
 
-        ExomiserOptionsBuilder optionsBuilder = new ExomiserSettings.ExomiserOptionsBuilder();
+        Builder optionsBuilder = new ExomiserSettings.Builder();
         for (Option option : commandLine.getOptions()) {
             logger.info("-{} --{} : {}", option.getOpt(), option.getLongOpt(), option.getValues());
             switch (option.getLongOpt()) {
@@ -102,7 +102,7 @@ public class ExomiserOptionsCommandLineParser {
                     break;
                 case "remove-dbsnp":
                     //default is true
-                    optionsBuilder.removeDbSnp(false);
+                    optionsBuilder.removeDbSnp(true);
                     break;
                 case "remove-off-target-syn":
                     //default is true
@@ -140,7 +140,7 @@ public class ExomiserOptionsCommandLineParser {
         }
 
         //TODO: 
-        //Alternatively a ExomiserOptionsBuilder pattern on the ExomiserSettings which would validate them when build() is called?
+        //Alternatively a Builder pattern on the ExomiserSettings which would validate them when build() is called?
         return optionsBuilder.build();
 
         //        TODO: figure this lot out

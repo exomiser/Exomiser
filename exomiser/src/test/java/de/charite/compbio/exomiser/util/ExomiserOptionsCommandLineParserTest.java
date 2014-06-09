@@ -199,7 +199,7 @@ public class ExomiserOptionsCommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
         
-        assertThat(exomiserSettings.removeDbSnp(), is(false)); 
+        assertThat(exomiserSettings.removeDbSnp(), is(true)); 
     }
     
     @Test
@@ -210,7 +210,7 @@ public class ExomiserOptionsCommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
         
-        assertThat(exomiserSettings.removeDbSnp(), is(true)); 
+        assertThat(exomiserSettings.removeDbSnp(), is(false)); 
     }
     
     @Test
