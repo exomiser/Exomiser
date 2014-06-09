@@ -101,7 +101,7 @@ public class ExomiserOptionsCommandLineParser {
                     optionsBuilder.includePathogenic(true);
                     break;
                 case "remove-dbsnp":
-                    //default is true
+                    //default is false
                     optionsBuilder.removeDbSnp(true);
                     break;
                 case "remove-off-target-syn":

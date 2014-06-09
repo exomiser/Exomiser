@@ -5,6 +5,7 @@ package de.charite.compbio.exomiser.priority;
  * @author Jules Jacobse <jules.jacobsen@sanger.ac.uk>
  */
 public enum PriorityType {
+   
     /**
      * Flag to represent results of filtering against an inheritance pattern.
      *//**
@@ -43,8 +44,13 @@ public enum PriorityType {
     /**
      * Flag for dynamic phenodigm filter.
      */
-    DYNAMIC_PHENODIGM_PRIORITY("dynamic-phenodigm");
+    DYNAMIC_PHENODIGM_PRIORITY("dynamic-phenodigm"),
 
+    /**
+     * Not set type - default for when things go wrong.
+     */
+    NOT_SET("");
+    
     /**
      * The string representation of the FilterType as used when specifying the type on the command-line.
      */
@@ -68,6 +74,6 @@ public enum PriorityType {
                 return priorityType;
             }
         }
-        return PriorityType.PHENODIGM_MGI_PRIORITY;
+        return PriorityType.NOT_SET;
     }
 }

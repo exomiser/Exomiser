@@ -86,8 +86,7 @@ public class ExomiserSettings {
         private Path pedFilePath = null;
 
         //PRIORITISER
-        private PriorityType prioritiserType;  //required, no default
-
+        private PriorityType prioritiserType = PriorityType.NOT_SET;  
         //FILTER options
         private float maximumFrequency = 100.00f;
         private float minimumQuality = 0;
