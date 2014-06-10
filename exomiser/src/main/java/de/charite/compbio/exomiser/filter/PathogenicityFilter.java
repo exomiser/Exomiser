@@ -1,11 +1,8 @@
 package de.charite.compbio.exomiser.filter;
 
 import de.charite.compbio.exomiser.dao.TriageDAO;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import jannovar.exome.Variant;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,21 +30,12 @@ public class PathogenicityFilter implements Filter {
     private final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
 
     /**
-     * Database handle to the postgreSQL database used by this application.
-     */
-    private Connection connection;
-
-    /**
      * DAO for retrieving Triage data from the database 
      */
     private final TriageDAO triageDao;
 
     private final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
-    /**
-     * A prepared SQL statement for thousand genomes frequency.
-     */
-    private PreparedStatement getPathogenicityDataStatement = null;
     /**
      * A flag to indicate we could not retrieve data from the database for some
      * variant. Using the value 200% means that the variant will not fail the
@@ -65,13 +53,23 @@ public class PathogenicityFilter implements Filter {
      */
     private List<String> messages = null;
 
-    public PathogenicityFilter(TriageDAO triageDao) {
+    public PathogenicityFilter(TriageDAO triageDao, boolean useMisSenseFiltering) {
 
         this.triageDao = triageDao;
 
         this.error_record = new ArrayList<>();
         this.messages = new ArrayList<>();
         this.messages.add("Synonymous and non-coding variants removed");
+        
+        if (useMisSenseFiltering) {
+            // Set up the message
+            messages.add("Pathogenicity predictions are based on the dbNSFP-normalized values");
+            messages.add("Mutation Taster: &gt;0.95 assumed pathogenic, prediction categories not shown");
+            messages.add("Polyphen2 (HVAR): \"D\" (&gt; 0.956,probably damaging), \"P\": [0.447-0.955], "
+                    + "possibly damaging, and \"B\", &lt;0.447, benign.");
+            messages.add("SIFT: \"D\"&lt;0.05, damaging and \"T\"&ge;0.05, tolerated</LI>");
+            PathogenicityTriage.setUseMisSenseFiltering(useMisSenseFiltering);
+        }
     }
 
     @Override
@@ -92,21 +90,23 @@ public class PathogenicityFilter implements Filter {
      * Sets the frequency threshold for variants.
      *
      * @param par A frequency threshold, e.g., a string such as "0.02"
+     * @deprecated Use constructor arguments
      */
-    @Override
-    public void setParameters(String par) throws ExomizerInitializationException {
-        // Set up the message
-        messages.add("Pathogenicity predictions are based on the dbNSFP-normalized values");
-        messages.add("Mutation Taster: &gt;0.95 assumed pathogenic, prediction categories not shown");
-        messages.add("Polyphen2 (HVAR): \"D\" (&gt; 0.956,probably damaging), \"P\": [0.447-0.955], "
-                + "possibly damaging, and \"B\", &lt;0.447, benign.");
-        messages.add("SIFT: \"D\"&lt;0.05, damaging and \"T\"&ge;0.05, tolerated</LI>");
-        PathogenicityTriage.set_missense_filtering(par);
-        return; // note there are no parameters for this filter.
-    }
+//    @Override
+//    @Deprecated
+//    public void setParameters(String par) {
+//        // Set up the message
+//        messages.add("Pathogenicity predictions are based on the dbNSFP-normalized values");
+//        messages.add("Mutation Taster: &gt;0.95 assumed pathogenic, prediction categories not shown");
+//        messages.add("Polyphen2 (HVAR): \"D\" (&gt; 0.956,probably damaging), \"P\": [0.447-0.955], "
+//                + "possibly damaging, and \"B\", &lt;0.447, benign.");
+//        messages.add("SIFT: \"D\"&lt;0.05, damaging and \"T\"&ge;0.05, tolerated</LI>");
+////        PathogenicityTriage.setUseMisSenseFiltering(par);
+//    }
 
-    public void setSynonymousFilterStatus(boolean flag) throws ExomizerInitializationException {
-        if (!flag) {
+    public void setRemoveSynonomousVariants(boolean removeSynonomousVariants) {
+        if (!removeSynonomousVariants) {
+            //yeah, not a great name for any of these variables. 
             PathogenicityTriage.keepSynonymousVariants();
             //sets the 
             //PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0;
@@ -164,6 +164,9 @@ public class PathogenicityFilter implements Filter {
         while (it.hasNext()) {
             VariantEvaluation ve = it.next();
             Variant v = ve.getVariant();
+            //TODO: move the filtering logic into the filter and leave the pathogenicity data in the triage object.
+            //Triage is then better named as FilterScore, or perhaps simply Score. 
+            //Similarly in the priority package RelevanceScore might be better names PriorityScore or simply Score.
             Triage pt = triageDao.getTriageData(v);
                 if (!pt.passesFilter()) {
                     // Variant is not predicted pathogenic, discard it.
@@ -181,5 +184,10 @@ public class PathogenicityFilter implements Filter {
     @Override
     public boolean displayInHTML() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: ", filterType);
     }
 }

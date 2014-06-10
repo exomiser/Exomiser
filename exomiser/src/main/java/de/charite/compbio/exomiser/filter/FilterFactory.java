@@ -37,50 +37,37 @@ public class FilterFactory {
 
     public FilterFactory() {
     }
-    
+
     /**
      * Utility method for wrapping-up how the
      * {@code de.charite.compbio.exomiser.filter.Filter} classes are created
      * using an ExomiserSettings.
      *
-     * @return
-     * @throws ExomizerInitializationException
+     * @param settings
+     * @return A list of Filter objects 
      */
     public List<Filter> makeFilters(ExomiserSettings settings) {
         List<Filter> variantFilterList = new ArrayList<>();
-        //
 
         if (settings.removeOffTargetVariants()) {
             variantFilterList.add(getTargetFilter());
         }
-        //TODO: REMOVE THE CONVERSION STRING -> FLOAT -> STRING -> FLOAT
         variantFilterList.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeDbSnp()));
-        
 
         if (settings.getMinimumQuality() != 0) {
-            try {
-                //TODO: REMOVE THE CONVERSION STRING -> FLOAT -> STRING -> FLOAT
-                variantFilterList.add(getQualityFilter(String.valueOf(settings.getMinimumQuality())));
-            } catch (ExomizerInitializationException ex) {
-                logger.error(null, ex);
-            }
+            variantFilterList.add(getQualityFilter(settings.getMinimumQuality()));
         }
-        try {
-            /*
-             * the following shows P for everything and filters out if
-             * use_pathogenicity_filter==true.
-             */
-            variantFilterList.add(getPathogenicityFilter(settings.includePathogenic(), settings.removeOffTargetVariants()));
-        } catch (ExomizerInitializationException ex) {
-            logger.error(null, ex);
-        }
+        /*
+         * the following shows P for everything and filters out if
+         * use_pathogenicity_filter==true.
+         */
+        
+//        TODO: is removeOffTargetVariants the correct switch for this? CHECK ORIGINAL CODE!!!!
+        //also if we 
+        variantFilterList.add(getPathogenicityFilter(settings.includePathogenic(), settings.removeOffTargetVariants()));
 
         if (!settings.getGeneticInterval().isEmpty()) {
-            try {
-                variantFilterList.add(getLinkageFilter(settings.getGeneticInterval()));
-            } catch (ExomizerInitializationException ex) {
-                logger.error(null, ex);
-            }
+            variantFilterList.add(getIntervalFilter(settings.getGeneticInterval()));
         }
 
         return variantFilterList;
@@ -94,7 +81,7 @@ public class FilterFactory {
      */
     public Filter getTargetFilter() {
         Filter targetFilter = new TargetFilter();
-        logger.info("Made new Filter: {}", targetFilter);
+        logger.info("Made new: {}", targetFilter);
         return targetFilter;
     }
 
@@ -109,8 +96,6 @@ public class FilterFactory {
      * @param maxFrequency
      * @param filterOutAllDbsnp
      * @return
-     * @throws
-     * de.charite.compbio.exomiser.exception.ExomizerInitializationException
      */
     public Filter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
 
@@ -126,42 +111,41 @@ public class FilterFactory {
 //            // get freq data in output and inclusion in prioritization
 //            frequencyFilter.setParameters("100");
 //        }
-        logger.info("Made new Filter: {}", frequencyFilter);
+        logger.info("Made new: {}", frequencyFilter);
         return frequencyFilter;
     }
 
-    public Filter getQualityFilter(String quality_threshold) throws ExomizerInitializationException {
-        Filter filter = new QualityFilter();
-        filter.setParameters(quality_threshold);
+    public Filter getQualityFilter(float quality_threshold) {
+        Filter filter = new QualityFilter(quality_threshold);
 
         logger.info("Made new Quality Filter: {}", filter);
         return filter;
     }
 
-    public Filter getPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSynonomousVariants) throws ExomizerInitializationException {
-
+    public Filter getPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSynonomousVariants) {
+//        //TODO: This needs to be linked to the ExomiserSettings 
+        logger.info("Making pathogenicity filter - filterOutNonpathogenic: {} removeSynonomousVariants: {}", filterOutNonpathogenic, removeSynonomousVariants);
         PathogenicityTriageDAO pathogenicityTriageDao = new PathogenicityTriageDAO(dataSource);
-        PathogenicityFilter filter = new PathogenicityFilter(pathogenicityTriageDao);
-        if (filterOutNonpathogenic) {
-            filter.setParameters("filter");
-        }
-        filter.setSynonymousFilterStatus(removeSynonomousVariants);
-        logger.info("Made new Filter: {}", filter);
+        PathogenicityFilter filter = new PathogenicityFilter(pathogenicityTriageDao, filterOutNonpathogenic);
+//        if (filterOutNonpathogenic) {
+//            filter.setParameters("filter");
+//        }
+        filter.setRemoveSynonomousVariants(removeSynonomousVariants);
+        logger.info("Made new: {}", filter);
         return filter;
     }
 
-    public Filter getLinkageFilter(String interval) throws ExomizerInitializationException {
+    public Filter getIntervalFilter(String interval) {
 
-        Filter filter = new IntervalFilter();
-        filter.setParameters(interval);
+        Filter filter = new IntervalFilter(interval);
 
-        logger.info("Made new Filter: {}", filter);
+        logger.info("Made new: {}", filter);
         return filter;
     }
 
-    public Filter getBedFilter(Set<String> commalist) throws ExomizerInitializationException {
+    public Filter getBedFilter(Set<String> commalist) {
         Filter filter = new BedFilter(commalist);
-        logger.info("Made new Filter: {}", filter);
+        logger.info("Made new: {}", filter);
         return filter;
     }
 

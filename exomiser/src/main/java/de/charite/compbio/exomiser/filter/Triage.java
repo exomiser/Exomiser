@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface Triage {
     /** @return true if the variant being analyzed passes the filter (e.g., is rare, pathogenic, or has high quality reads) */
-    public boolean passesFilter();
+    public boolean passesFilter();    
     /** @return return a float representation of the filter result [0..1]. 
      * If the result is boolean, return 0.0 for false and 1.0 for true */
     public float filterResult();

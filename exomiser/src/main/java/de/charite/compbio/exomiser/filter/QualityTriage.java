@@ -1,9 +1,11 @@
 package de.charite.compbio.exomiser.filter;
 
-import java.util.List;
-import java.util.ArrayList;
 
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -13,6 +15,9 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @version 0.09 (18 December, 2013).
  */
 public class QualityTriage implements Triage {
+   
+    private static final Logger logger = LoggerFactory.getLogger(QualityTriage.class);
+    
     /** The PHRED quality value for the current variant call. */
     private float quality;
     /** A threshold for the quality filter. It can be set by the QualityFilter class before
@@ -25,9 +30,9 @@ public class QualityTriage implements Triage {
      */
     private static int minReadThreshold = 0;
 
-    public static void set_frequency_threshold(float t) throws ExomizerInitializationException { 
+    public static void set_frequency_threshold(float t) { 
 	if (t<0f ) {
-	    throw new ExomizerInitializationException("Illegal value for quality threshold:" + t);
+	    logger.error("Illegal value for quality threshold: {}", t);
 	}
 	QualityTriage.threshold = t; 
     }

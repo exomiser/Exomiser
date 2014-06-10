@@ -40,12 +40,6 @@ public class BedFilter implements Filter {
 	this.messages = new ArrayList<String>();
     }
 
-
-     /** This method is required by the interface but not needed by this class. */
-    @Override public void setParameters(String par) throws ExomizerInitializationException{
-	/* nothing to do here */
-    }
-
     /** get a list of messages that represent the process and result of applying the filter. This
 	list can be used to make an HTML list for explaining the result to users (for instance).
     */

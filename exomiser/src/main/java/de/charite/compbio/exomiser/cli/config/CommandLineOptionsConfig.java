@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.config;
+package de.charite.compbio.exomiser.cli.config;
 
-import de.charite.compbio.exomiser.util.ExomiserOptionsCommandLineParser;
+import de.charite.compbio.exomiser.cli.ExomiserOptionsCommandLineParser;
 import de.charite.compbio.exomiser.util.OutputFormat;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;

@@ -4,8 +4,9 @@
  * and open the template in the editor.
  */
 
-package de.charite.compbio.exomiser.config;
+package de.charite.compbio.exomiser.cli.config;
 
+import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
 import org.apache.commons.cli.Options;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;

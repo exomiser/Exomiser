@@ -1,4 +1,4 @@
-package de.charite.compbio.exomiser;
+package de.charite.compbio.exomiser.util;
 
 
 

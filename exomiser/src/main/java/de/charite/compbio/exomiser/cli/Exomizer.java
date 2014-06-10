@@ -1,5 +1,6 @@
-package de.charite.compbio.exomiser;
+package de.charite.compbio.exomiser.cli;
 
+import de.charite.compbio.exomiser.util.Prioritiser;
 import de.charite.compbio.exomiser.common.SampleData;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
@@ -619,25 +620,25 @@ public class Exomizer {
     private List<Filter> makeFilters() throws ExomizerInitializationException {
         List<Filter> variantFilterList = new ArrayList<>();
         //
-        FilterFactory filterFactory = new FilterFactory(dataSource);
-
-        if (this.use_target_filter) {
-            variantFilterList.add(filterFactory.getTargetFilter());
-        }
-        variantFilterList.add(filterFactory.getFrequencyFilter(Float.valueOf(frequency_threshold), filterOutAlldbSNP));
-
-        if (this.quality_threshold != null) {
-            variantFilterList.add(filterFactory.getQualityFilter(quality_threshold));
-        }
-        /*
-         * the following shows P for everything and filters out if
-         * use_pathogenicity_filter==true.
-         */
-        variantFilterList.add(filterFactory.getPathogenicityFilter(use_pathogenicity_filter, use_target_filter));
-        
-        if (this.interval != null) {
-            variantFilterList.add(filterFactory.getLinkageFilter(interval));
-        }
+//        FilterFactory filterFactory = new FilterFactory(dataSource);
+//
+//        if (this.use_target_filter) {
+//            variantFilterList.add(filterFactory.getTargetFilter());
+//        }
+//        variantFilterList.add(filterFactory.getFrequencyFilter(Float.valueOf(frequency_threshold), filterOutAlldbSNP));
+//
+//        if (this.quality_threshold != null) {
+//            variantFilterList.add(filterFactory.getQualityFilter(quality_threshold));
+//        }
+//        /*
+//         * the following shows P for everything and filters out if
+//         * use_pathogenicity_filter==true.
+//         */
+//        variantFilterList.add(filterFactory.getPathogenicityFilter(use_pathogenicity_filter, use_target_filter));
+//        
+//        if (this.interval != null) {
+//            variantFilterList.add(filterFactory.getIntervalFilter(interval));
+//        }
 
         return variantFilterList;
     }

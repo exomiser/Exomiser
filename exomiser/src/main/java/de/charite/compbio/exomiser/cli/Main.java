@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser;
+package de.charite.compbio.exomiser.cli;
 
+import de.charite.compbio.exomiser.util.Prioritiser;
 import de.charite.compbio.exomiser.common.SampleData;
 import de.charite.compbio.exomiser.common.SampleDataFactory;
-import de.charite.compbio.exomiser.config.MainConfig;
+import de.charite.compbio.exomiser.cli.config.MainConfig;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
@@ -15,7 +16,6 @@ import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.filter.FilterFactory;
 import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
-import de.charite.compbio.exomiser.util.ExomiserOptionsCommandLineParser;
 import de.charite.compbio.exomiser.util.ExomiserSettings;
 import de.charite.compbio.exomiser.util.OutputFormat;
 import de.charite.compbio.exomiser.util.VariantAnnotator;

@@ -3,10 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.util;
+package de.charite.compbio.exomiser.cli;
 
-import de.charite.compbio.exomiser.config.CommandLineOptionsConfig;
+import de.charite.compbio.exomiser.cli.ExomiserOptionsCommandLineParser;
+import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
 import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.util.ExomiserSettings;
+import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;

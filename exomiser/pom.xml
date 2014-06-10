@@ -80,7 +80,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>de.charite.compbio.exomiser.Main</mainClass>
+                            <mainClass>de.charite.compbio.exomiser.cli.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

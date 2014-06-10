@@ -1,6 +1,5 @@
 package de.charite.compbio.exomiser.filter;
 
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import jannovar.common.Constants;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
@@ -18,8 +17,8 @@ import org.slf4j.LoggerFactory;
  * @version 0.17 (3 February, 2014)
  *
  */
-public class PathogenicityTriage implements Triage  {
-    
+public class PathogenicityTriage implements Triage {
+
     private static final Logger logger = LoggerFactory.getLogger(PathogenicityTriage.class);
     /**
      * Pathogenicity score according to POLYPHEN2
@@ -33,9 +32,9 @@ public class PathogenicityTriage implements Triage  {
      * Pathogenicity score according to SIFT.
      */
     private float sift = Constants.UNINITIALIZED_FLOAT;
-    
+
     private float cadd_raw = Constants.UNINITIALIZED_FLOAT;
-    
+
     /**
      * Category of current variant, e.g., MISSENSE, SLICE...
      */
@@ -109,7 +108,7 @@ public class PathogenicityTriage implements Triage  {
      * normalized version of mutation taster?
      */
     private static final float MTASTER_THRESHOLD = 0.94f;
-    private static String missense_filtering = "no";
+    private static boolean useMisSenseFiltering = false;
 
     /**
      * This constructor is intended to be used for MISSENSE mutations, and the
@@ -169,13 +168,14 @@ public class PathogenicityTriage implements Triage  {
     }
 
     /**
-     *
+     * Defaults to false. Set to true if you wish to 
+     * @param useMisSenseFiltering
      */
-    public static void set_missense_filtering(String par) throws ExomizerInitializationException {
-        PathogenicityTriage.missense_filtering = par;
+    public static void setUseMisSenseFiltering(boolean useMisSenseFiltering) {
+        PathogenicityTriage.useMisSenseFiltering = useMisSenseFiltering;
     }
 
-    public static void keepSynonymousVariants() throws ExomizerInitializationException {
+    public static void keepSynonymousVariants() {
         logger.info("SETTING PATHOGENICITY_SCORE_THRESHOLD TO 0");
         PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0;
     }
@@ -198,18 +198,14 @@ public class PathogenicityTriage implements Triage  {
             if (no_prediction_initialized()) {
                 return true;
             }
-            //TODO: This is a little bit mental - perhaps a boolean would be more appropriate?
-            if (missense_filtering.equals("no")) {
+            if (!useMisSenseFiltering) {
+                //TODO: I'm not sure what this is trying to achieve - the MISSENSE variants have already been evaluated by this point.
                 return true;//no SIFT, PolyPhen, MT filtering
-            } else {
+            } else { //redundant else 
                 return false;// user-specified filtering implemented 
             }
         } else {
-            if (this.pathogenicityScore >= PATHOGENICITY_SCORE_THRESHOLD) {
-                return true;
-            } else {
-                return false;
-            }
+            return this.pathogenicityScore >= PATHOGENICITY_SCORE_THRESHOLD;
         }
     }
 
@@ -288,7 +284,8 @@ public class PathogenicityTriage implements Triage  {
     }
 
     /**
-     * @return A string with a summary of the filtering results for HTML display.
+     * @return A string with a summary of the filtering results for HTML
+     * display.
      */
     public String getFilterResultSummary() {
         StringBuilder sb = new StringBuilder();
@@ -296,7 +293,7 @@ public class PathogenicityTriage implements Triage  {
         if (this.variantType != VariantType.MISSENSE) {
             sb.append(String.format("Path score: %.3f<br/>\n", this.pathogenicityScore));
         } else {
-             //how many precitions do we have?
+            //how many precitions do we have?
             int c = 0;
             String s = null;
             if (mutation_taster_is_initialized()) {
@@ -337,12 +334,12 @@ public class PathogenicityTriage implements Triage  {
 
     /**
      * This function returns a list with a summary of the pathogenicity
-     * analysis. It first enters the variant type (see {@link jannovar.common.VariantType VariantType}),
-     * and then either shows the overall pathogenicity score (defined in
-     * several constants in this class such as
-     * {@link #FRAMESHIFT_SCORE}), or additionally shows the results of analysis
-     * by polyphen2, MutationTaster, and SIFT. This list can be displayed as an
-     * HTML list if desired (see
+     * analysis. It first enters the variant type (see
+     * {@link jannovar.common.VariantType VariantType}), and then either shows
+     * the overall pathogenicity score (defined in several constants in this
+     * class such as {@link #FRAMESHIFT_SCORE}), or additionally shows the
+     * results of analysis by polyphen2, MutationTaster, and SIFT. This list can
+     * be displayed as an HTML list if desired (see
      * {@link exomizer.io.html.HTMLTable HTMLTable}).
      *
      * @return A list with detailed results of filtering.

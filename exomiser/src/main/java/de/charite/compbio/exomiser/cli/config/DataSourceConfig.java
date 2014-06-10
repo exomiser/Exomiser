@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.charite.compbio.exomiser.config;
+package de.charite.compbio.exomiser.cli.config;
 
 import java.sql.Connection;
 import java.sql.SQLException;
