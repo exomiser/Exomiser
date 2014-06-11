@@ -9,7 +9,6 @@ import de.charite.compbio.exomiser.util.Prioritiser;
 import de.charite.compbio.exomiser.common.SampleData;
 import de.charite.compbio.exomiser.common.SampleDataFactory;
 import de.charite.compbio.exomiser.cli.config.MainConfig;
-import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
@@ -22,10 +21,8 @@ import de.charite.compbio.exomiser.util.VariantAnnotator;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import javax.sql.DataSource;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -59,7 +56,7 @@ public class Main {
         //4) Read a PED file if the VCF file has multiple samples
         //this can be null or refer to an actual file
         Path pedigreeFile = exomiserSettings.getPedPath();
-        //now we have the sample dat read in we can create a SampleDat object to hold on to all the relvant information
+        //now we have the sample data read in we can create a SampleData object to hold on to all the relvant information
         SampleData sampleData = SampleDataFactory.createSampleData(vcfFile, pedigreeFile);
         if (sampleData.getPedigree() == null) {
             logger.error("CRITICAL! Sample data has no pedigree - unable to continue analysis.");
@@ -86,17 +83,19 @@ public class Main {
         List<VariantEvaluation> variantList = sampleData.getVariantEvaluations();
         
         logger.info("ANNOTATING VARIANTS");
-        //annotation is independent of the filtering and exomising
-//            exomizer.annotateVariants();
+        //annotation is independent of the filtering and exomising.
         VariantAnnotator variantAnnotator = applicationContext.getBean(VariantAnnotator.class);
+        //Variants are annotated with KnownGene data from UCSC (see the application context)
         variantAnnotator.annotateVariants(variantList);
 
-        //split out filtering and prioritising?
-        //this is currently handled by Prioritiser but should probably be part of Main / Exomiser
+        //split out filtering and prioritising? e.g.
+//        List<VariantEvaluation> filteredVariants = VariantFilterer.filter(variantList, filterList);
+        //this is currently handled by Prioritiser but should probably be part of an Exomiser
         Prioritiser prioritiser = new Prioritiser(exomiserSettings.getModeOfInheritance(), filterList, priorityList);
 
         logger.info("FILTERING VARIANTS AND PRIORITISING GENES");
-        List<Gene> prioritisedGenes = prioritiser.executePrioritization(variantList, true);
+        boolean useRankBasedScoring = true;
+        List<Gene> prioritisedGenes = prioritiser.executePrioritization(variantList, useRankBasedScoring);
 //        List<Gene> prioritisedGenes = exomizer.executePrioritization(variantList);
         sampleData.setGeneList(prioritisedGenes);
         
@@ -128,10 +127,6 @@ public class Main {
         logger.info("OUTPUTTING RESULTS");
 
         Exomizer exomizer = new Exomizer();
-        //Exomiser shouldn't need a datasource directly - this is only needed by some filters and prioritisers
-        //and is supplied to them by the PriorityFactory or FilterFactory
-//        DataSource dataSource = applicationContext.getBean(DataSource.class);
-//        exomizer.setDataSource(dataSource);
 
         //tempory setting of names and pedigree so that the HTMLWriters work
         exomizer.setSampleNames((ArrayList<String>) sampleData.getSampleNames());
