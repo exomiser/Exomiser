@@ -114,12 +114,12 @@ public class Prioritiser {
      * List of all Genes that are to be prioritized. Note that the Genes will
      * contain the variants that have passed the filtering step.
      */
-    private List<Gene> geneList=null;
+    private List<Gene> geneList;
 
     public Prioritiser(ModeOfInheritance modeOfInheritance, List<Filter> filterList, List<Priority> priorityList) {
+        inheritanceMode = modeOfInheritance;
 	this.filterList = filterList;
 	this.priorityList = priorityList;
-        inheritanceMode = modeOfInheritance;
     }
     
     public Prioritiser() {
