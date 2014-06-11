@@ -171,7 +171,7 @@ public class PathogenicityTriage implements Triage {
      * Defaults to false. Set to true if you wish to 
      * @param useMisSenseFiltering
      */
-    public static void setUseMisSenseFiltering(boolean useMisSenseFiltering) {
+    public static void setUseMissenseFiltering(boolean useMisSenseFiltering) {
         PathogenicityTriage.useMisSenseFiltering = useMisSenseFiltering;
     }
 

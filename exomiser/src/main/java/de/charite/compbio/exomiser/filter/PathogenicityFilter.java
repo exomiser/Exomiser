@@ -52,8 +52,10 @@ public class PathogenicityFilter implements Filter {
      * elsewhere.
      */
     private List<String> messages = null;
+    
+    private boolean useMissenseFiltering;
 
-    public PathogenicityFilter(TriageDAO triageDao, boolean useMisSenseFiltering) {
+    public PathogenicityFilter(TriageDAO triageDao, boolean useMissenseFiltering) {
 
         this.triageDao = triageDao;
 
@@ -61,14 +63,14 @@ public class PathogenicityFilter implements Filter {
         this.messages = new ArrayList<>();
         this.messages.add("Synonymous and non-coding variants removed");
         
-        if (useMisSenseFiltering) {
+        if (useMissenseFiltering) {
             // Set up the message
             messages.add("Pathogenicity predictions are based on the dbNSFP-normalized values");
             messages.add("Mutation Taster: &gt;0.95 assumed pathogenic, prediction categories not shown");
             messages.add("Polyphen2 (HVAR): \"D\" (&gt; 0.956,probably damaging), \"P\": [0.447-0.955], "
                     + "possibly damaging, and \"B\", &lt;0.447, benign.");
             messages.add("SIFT: \"D\"&lt;0.05, damaging and \"T\"&ge;0.05, tolerated</LI>");
-            PathogenicityTriage.setUseMisSenseFiltering(useMisSenseFiltering);
+            PathogenicityTriage.setUseMissenseFiltering(useMissenseFiltering);
         }
     }
 
@@ -101,9 +103,13 @@ public class PathogenicityFilter implements Filter {
 //        messages.add("Polyphen2 (HVAR): \"D\" (&gt; 0.956,probably damaging), \"P\": [0.447-0.955], "
 //                + "possibly damaging, and \"B\", &lt;0.447, benign.");
 //        messages.add("SIFT: \"D\"&lt;0.05, damaging and \"T\"&ge;0.05, tolerated</LI>");
-////        PathogenicityTriage.setUseMisSenseFiltering(par);
+////        PathogenicityTriage.setUseMissenseFiltering(par);
 //    }
 
+    /**
+     * 
+     * @param removeSynonomousVariants 
+     */
     public void setRemoveSynonomousVariants(boolean removeSynonomousVariants) {
         if (!removeSynonomousVariants) {
             //yeah, not a great name for any of these variables. 
@@ -188,6 +194,6 @@ public class PathogenicityFilter implements Filter {
 
     @Override
     public String toString() {
-        return String.format("%s: ", filterType);
+        return String.format("%s: useMissenseFiltering=%s", filterType, useMissenseFiltering);
     }
 }

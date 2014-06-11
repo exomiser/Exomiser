@@ -120,7 +120,8 @@ public class FrequencyFilter implements Filter {
     private void setMaxFrequency(float maxFreq) {
         this.maxFreq = maxFreq;
         try {
-            FrequencyTriage.set_frequency_threshold(this.maxFreq);
+            //why not just do this here?
+            FrequencyTriage.setMaxFreqThreshold(this.maxFreq);
         } catch (ExomizerInitializationException e) {
             logger.error(null, e);
         }

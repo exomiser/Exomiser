@@ -24,12 +24,6 @@ public class QualityTriage implements Triage {
 	filtering individual variants.*/
     private static float threshold = 1f;
 
-    /**
-     * Minimum number of reads supporting the ALT call. There must be at least this number of
-     * reads in each direction. 
-     */
-    private static int minReadThreshold = 0;
-
     public static void set_frequency_threshold(float t) { 
 	if (t<0f ) {
 	    logger.error("Illegal value for quality threshold: {}", t);
