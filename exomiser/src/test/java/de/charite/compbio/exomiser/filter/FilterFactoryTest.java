@@ -7,14 +7,15 @@
 //package de.charite.compbio.exomiser.filter;
 //
 //import de.charite.compbio.exomiser.util.ExomiserSettings;
+//import java.util.ArrayList;
 //import java.util.List;
 //import java.util.Set;
-//import org.junit.Test;
 //import static org.junit.Assert.*;
+//import org.junit.Test;
 //
 ///**
-// *
-// * @author jj8
+// * Tests for FilterFactory
+// * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
 // */
 //public class FilterFactoryTest {
 //    
@@ -24,9 +25,11 @@
 //    @Test
 //    public void testMakeFilters() {
 //        System.out.println("makeFilters");
-//        ExomiserSettings settings = null;
+//        //make a new Settings object specifying a PathogenicityFilter and a FrequencyFilter
+//        ExomiserSettings settings = new ExomiserSettings.Builder().includePathogenic(true).maximumFrequency(0.25f).build();
 //        FilterFactory instance = new FilterFactory();
-//        List<Filter> expResult = null;
+//        List<Filter> expResult = new ArrayList<>();
+//        
 //        List<Filter> result = instance.makeFilters(settings);
 //        assertEquals(expResult, result);
 //    }
