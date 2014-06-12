@@ -7,10 +7,11 @@ import java.util.Map;
 import java.util.HashMap;
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.RelevanceScore;
 
 
@@ -77,8 +78,8 @@ public class HTMLTableCRE extends HTMLTable {
      * gene on the ExomeWalker HTML page
      */
     private String getOmimText(Gene gene) {
-	Map<FilterType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	Map<PriorityType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
+	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	List<String> lst = mim.getFilterResultList();
 	if (mim == null) {
 	    return "No known human Mendelian disease";
@@ -243,9 +244,9 @@ public class HTMLTableCRE extends HTMLTable {
 	//writeVariantScoreCell(path,freq,out);
 	
 
-	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
-	RelevanceScore phenomizer = relevanceMap.get(FilterType.PHENOMIZER_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	Map<PriorityType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
+	RelevanceScore phenomizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\" valign=\"top\">",n_variants)); 
 	if (phenomizer == null && mim == null) {

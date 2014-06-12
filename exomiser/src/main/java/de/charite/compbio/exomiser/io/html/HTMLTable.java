@@ -1,18 +1,18 @@
 package de.charite.compbio.exomiser.io.html;
 
-import java.io.Writer;
-import java.io.IOException; 
-import java.util.List;
-import java.util.Map;
-
-import jannovar.common.Constants;
-import jannovar.pedigree.Pedigree;
-
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.RelevanceScore;
+import jannovar.common.Constants;
+import jannovar.pedigree.Pedigree;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 
 
@@ -240,40 +240,41 @@ public class HTMLTable {
 	outputVariant(ve,out);
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
 	Map<FilterType,Triage> triageMap = ve.getTriageMap();
-	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
 	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
 	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	// Write the variant score associated with the first (zero-th) variant
 	writeVariantScoreCell(path,freq,out);
-	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_FILTER);
-	RelevanceScore gwanderer = relevanceMap.get(FilterType.GENEWANDERER_FILTER);
-        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_FILTER);
-        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
-	RelevanceScore resnik = relevanceMap.get(FilterType.HPO_FILTER);
-	RelevanceScore phmizer = relevanceMap.get(FilterType.PHENOMIZER_FILTER);
+	Map<PriorityType, RelevanceScore> relevanceMap = gen.getRelevanceMap();
+//	RelevanceScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
+//	RelevanceScore gwanderer = relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY);
+//        RelevanceScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
+//	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+//	RelevanceScore resnik = relevanceMap.get(PriorityType.UBERPHENO_PRIORITY);
+//	RelevanceScore phmizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
-	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
-        System.out.println("OMIM:"+mim+",PWANDERER:"+pwanderer);
-	if (phenodigm == null && mim == null && gwanderer == null && phmizer==null) {
-	    out.write(".");
-	}
-	if (phmizer != null) 
-	    out.write(phmizer.getHTMLCode());
-	if  (phenodigm != null)
-	    out.write(phenodigm.getHTMLCode());
-	if  (gwanderer != null)
-	    out.write(gwanderer.getHTMLCode());
-        if  (pwanderer != null)
-	    out.write(pwanderer.getHTMLCode());
-        if  (dpwanderer != null)
-	    out.write(dpwanderer.getHTMLCode());
-	if (mim != null)
-	    out.write(mim.getHTMLCode());
-	if (resnik != null)
-	    out.write(resnik.getHTMLCode());
+	out.write(String.format("<td rowspan=\"%d\">",n_variants));
+        
+        for (Entry<PriorityType, RelevanceScore> entry : relevanceMap.entrySet()) {
+            out.write(entry.getValue().getHTMLCode());
+        }
+        
+//	if (phenodigm == null && mim == null && gwanderer == null && phmizer==null) {
+//	    out.write(".");
+//	}
+//	if (phmizer != null) 
+//	    out.write(phmizer.getHTMLCode());
+//	if  (phenodigm != null)
+//	    out.write(phenodigm.getHTMLCode());
+//	if  (gwanderer != null)
+//	    out.write(gwanderer.getHTMLCode());
+//        if  (dpwanderer != null)
+//	    out.write(dpwanderer.getHTMLCode());
+//	if (mim != null)
+//	    out.write(mim.getHTMLCode());
+//	if (resnik != null)
+//	    out.write(resnik.getHTMLCode());
     	out.write("</td></tr>\n");
-	/* WHen we get here, we have finished writing the row for the first (zero-th) variant associated
+	/* When we get here, we have finished writing the row for the first (zero-th) variant associated
 	   with this gene. Now we will write the remaining lines. Remember that since the first row has
 	   as its last column a multi-row column that spans all of the other rows, the remaining rows do
 	   not need to write information for the last column. */
@@ -321,31 +322,26 @@ public class HTMLTable {
 	outputVariant(ve,out);
 	
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
-	Map<FilterType,Triage> triageMap = ve.getTriageMap();
-	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
+	Map<FilterType, Triage> triageMap = ve.getTriageMap();
 	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
 	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	writeVariantScoreCell(path,freq,out);
 	
 
 
-	RelevanceScore phenodigm = relevanceMap.get(FilterType.PHENODIGM_FILTER);
-	RelevanceScore zfin_phenodigm = relevanceMap.get(FilterType.ZFIN_PHENODIGM_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
-        RelevanceScore pwanderer = relevanceMap.get(FilterType.PHENOWANDERER_FILTER);
-        RelevanceScore dpwanderer = relevanceMap.get(FilterType.DYNAMIC_PHENOWANDERER_FILTER);
+        Map<PriorityType, RelevanceScore> relevanceMap = gen.getRelevanceMap();
+        
+        RelevanceScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+        RelevanceScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
-	if (phenodigm == null && mim == null && zfin_phenodigm == null && pwanderer == null) {
+	if (phenodigm == null && mim == null) {
 	    out.write(".");
 	}
 	if  (phenodigm != null)
 	    out.write(phenodigm.getHTMLCode() );
-	if  (zfin_phenodigm != null)
-	    out.write(zfin_phenodigm.getHTMLCode() );
-        if (pwanderer != null)
-	    out.write(pwanderer.getHTMLCode());
-        if (dpwanderer != null)
+	if (dpwanderer != null)
 	    out.write(dpwanderer.getHTMLCode());
 	if (mim != null)
 	    out.write(mim.getHTMLCode());

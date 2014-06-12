@@ -2,33 +2,34 @@ package de.charite.compbio.exomiser.priority;
 
 
 
-import hpo.HPOutils;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-
-import ontologizer.go.OBOParser;
-import ontologizer.go.OBOParserException;
-import ontologizer.go.Ontology;
-import ontologizer.go.Term;
-import ontologizer.go.TermContainer;
-import similarity.SimilarityUtilities;
-import similarity.concepts.ResnikSimilarity;
-import similarity.objects.InformationContentObjectSimilarity;
-import sonumina.math.graph.SlimDirectedGraphView;
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.priority.util.ScoreDistribution;
 import de.charite.compbio.exomiser.priority.util.ScoreDistributionContainer;
+import hpo.HPOutils;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import ontologizer.go.OBOParser;
+import ontologizer.go.OBOParserException;
+import ontologizer.go.Ontology;
+import ontologizer.go.Term;
+import ontologizer.go.TermContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import similarity.SimilarityUtilities;
+import similarity.concepts.ResnikSimilarity;
+import similarity.objects.InformationContentObjectSimilarity;
+import sonumina.math.graph.SlimDirectedGraphView;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified
@@ -43,6 +44,8 @@ import de.charite.compbio.exomiser.priority.util.ScoreDistributionContainer;
  * @version 0.06 (6 December, 2013)
  */
 public class PhenomizerPriority implements Priority {
+
+    private static final Logger logger = LoggerFactory.getLogger(PhenomizerPriority.class);
 
     /** The HPO as Ontologizer-Ontology object */
     private Ontology hpo;
@@ -106,34 +109,24 @@ public class PhenomizerPriority implements Priority {
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      *      Hudson page</a>
      */
-    public PhenomizerPriority(String scoreDistributionFolder, Set<String> hpoQueryTermIds,
-			      boolean symmetric) throws ExomizerInitializationException {
+    public PhenomizerPriority(String scoreDistributionFolder, Set<String> hpoQueryTermIds, boolean symmetric) {
 	
-	if (!scoreDistributionFolder.endsWith(File.separatorChar + ""))
+	if (!scoreDistributionFolder.endsWith(File.separatorChar + "")) {
 	    scoreDistributionFolder += File.separatorChar;
+        }
 	this.scoredistributionFolder = scoreDistributionFolder;
 	String hpoOboFile = String.format("%s%s",scoreDistributionFolder,"hp.obo");
 	String hpoAnnotationFile =  String.format("%s%s",scoreDistributionFolder,"ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt");
-	try {
-	    parseData(hpoOboFile, hpoAnnotationFile, scoreDistributionFolder);
-	} catch (ExomizerInitializationException e) {
-	    String s = String.format("Error parsing Phenomizer input files. The phenomizerData directory must "+
-		"contain the files \"hp.obo\", \"ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt\" as " +
-		" well as the score distribution files \"*.out\", all of which can be downloaded from the "+
-				     " HPO hudson server. The ScoreDistribution Folder path was:\"%s\"",
-				     scoreDistributionFolder);  
-	    s = String.format("%s\n%s", s, e.getMessage());
-	    throw new ExomizerInitializationException(s);
-
-	} 
+        parseData(hpoOboFile, hpoAnnotationFile);
 	
 	HashSet<Term> hpoQueryTermsHS = new HashSet<Term>();
 	for (String termIdString : hpoQueryTermIds) {
 	    Term t = hpo.getTermIncludingAlternatives(termIdString);
-	    if (t == null) {
-		throw new ExomizerInitializationException("invalid term-id given: " + termIdString);
-	    }
-	    hpoQueryTermsHS.add(t);
+	    if (t != null) {
+                hpoQueryTermsHS.add(t);
+	    } else {
+                logger.error("invalid term-id given: " + termIdString);
+            }
 	}
 	hpoQueryTerms = new ArrayList<Term>();
 	hpoQueryTerms.addAll(hpoQueryTermsHS);
@@ -152,23 +145,20 @@ public class PhenomizerPriority implements Priority {
 	this.messages = new ArrayList<String>();
     }
     
-    private void parseData(String hpoOboFile, String hpoAnnotationFile, String scoreDistributionFolder) 
-	throws ExomizerInitializationException
-    {
+    private void parseData(String hpoOboFile, String hpoAnnotationFile) {
+        //The phenomizerData directory must contain the files "hp.obo", "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt" 
+        //as well as the score distribution files "*.out", all of which can be downloaded from the HPO hudson server.
 	try {
 	    parseOntology(hpoOboFile);
 	} catch (OBOParserException e) {
-	    String s = String.format("Error parsing ontology file (%s): %s",hpoOboFile,e.getMessage());
-	    throw new ExomizerInitializationException(s);
+	    logger.error("Error parsing ontology file {}", hpoOboFile, e);
 	} catch (IOException ioe) {
-	    String s = String.format("I/O Error with ontology file (%s): %s",hpoOboFile,ioe.getMessage());
-	    throw new ExomizerInitializationException(s);
+	    logger.error("I/O Error with ontology file{}", hpoOboFile, ioe);
 	}
 	try {
 	    parseAnnotations(hpoAnnotationFile);
 	} catch (IOException e) {
-	    String s = String.format("Error parsing annotation file (%s): %s",hpoAnnotationFile,e.getMessage());
-	    throw new ExomizerInitializationException(s);
+	    logger.error("Error parsing annotation file {}", hpoAnnotationFile, e);
 	}
     }
 
@@ -281,8 +271,8 @@ public class PhenomizerPriority implements Priority {
 
     /** Flag to output results of filtering against Uberpheno data. */
     @Override
-	public FilterType getPriorityTypeConstant() {
-	return FilterType.PHENOMIZER_FILTER;
+	public PriorityType getPriorityType() {
+	return PriorityType.PHENOMIZER_PRIORITY;
     }
 
     /**
@@ -312,7 +302,7 @@ public class PhenomizerPriority implements Priority {
 	for (Gene gene : gene_list) {
 	    try {
 		PhenomizerRelevanceScore phenomizerRelScore = scoreVariantHPO(gene);
-		gene.addRelevanceScore(phenomizerRelScore, FilterType.PHENOMIZER_FILTER);
+		gene.addRelevanceScore(phenomizerRelScore, PriorityType.PHENOMIZER_PRIORITY);
 		//System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getRelevanceScore());
 	    } catch (ExomizerException e) {
 		error_record.add(e.toString());
@@ -337,9 +327,9 @@ public class PhenomizerPriority implements Priority {
 	if ( maxSemSim < 1) return;
 	PhenomizerRelevanceScore.setNormalizationFactor(1d/maxSemSim);
 	/*for (Gene g : gene_list) {
-	    float score = g.getRelevanceScore(FilterType.PHENOMIZER_FILTER);
+	    float score = g.getRelevanceScore(FilterType.PHENOMIZER_PRIORITY);
 	    score /= this.maxSemSim;
-	    g.resetRelevanceScore(FilterType.PHENOMIZER_FILTER, score);
+	    g.resetRelevanceScore(FilterType.PHENOMIZER_PRIORITY, score);
 	    }*/
     }
 
@@ -424,7 +414,9 @@ public class PhenomizerPriority implements Priority {
     
     /**
      * Flag to show results of this analysis in the HTML page.
+     * @return 
      */
+    @Override
     public boolean displayInHTML() {
 	return true;
     }
@@ -432,6 +424,7 @@ public class PhenomizerPriority implements Priority {
     /**
      * @return an ul list with summary of phenomizer prioritization.
      */
+    @Override
     public String getHTMLCode() {
 	String s = String.format("Phenomizer: %d genes were evaluated; no phenotype data available for %d of them",
 				 this.totalGenes, this.offTargetGenes);
@@ -477,7 +470,7 @@ public class PhenomizerPriority implements Priority {
      *            An SQL (postgres) connection that was initialized elsewhere.
      */
     @Override
-	public void setDatabaseConnection(java.sql.Connection connection) throws ExomizerInitializationException { 
+    public void setDatabaseConnection(Connection connection) { 
 	/** no - op */
     }
 
@@ -508,4 +501,3 @@ public class PhenomizerPriority implements Priority {
     }
     
 }
-/* eof */

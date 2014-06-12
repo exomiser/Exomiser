@@ -120,10 +120,10 @@ public class ResourceConfig {
         resource.setVersion("");
         resource.setExtractedFileName("hpo.obo");
         resource.setExtractionScheme("copy");
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(HPOOntologyFileParser.class);
         resource.setParsedFileName("hpo.pg");
-        //
+        //resource groups
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
         
@@ -141,7 +141,7 @@ public class ResourceConfig {
         resource.setVersion("2.4");
         resource.setExtractedFileName("dbNSFPv2.4.zip");
         resource.setExtractionScheme("copy");
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(NSFP2SQLDumpParser.class);
         resource.setParsedFileName("variant.pg");
         //
@@ -160,10 +160,10 @@ public class ResourceConfig {
         resource.setVersion("00");
         resource.setExtractedFileName("dbSNP_00-All.vcf");
         resource.setExtractionScheme("copy"); //can also do a gz 
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(DbSnpFrequencyParser.class);
         resource.setParsedFileName("frequency.pg");
-        //TODO: define groups seperately using DI
+        //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
         
@@ -179,10 +179,10 @@ public class ResourceConfig {
         resource.setVersion("");
         resource.setExtractedFileName("ESP_snps_indels");
         resource.setExtractionScheme("tgz");
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(EspFrequencyParser.class);
         resource.setParsedFileName("frequency.pg");
-        //TODO: define groups seperately using DI
+        //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
         

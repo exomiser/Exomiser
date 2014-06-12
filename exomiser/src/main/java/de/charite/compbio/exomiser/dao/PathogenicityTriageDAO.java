@@ -15,6 +15,8 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 /**
  * DAO class for retrieving
@@ -23,11 +25,16 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Repository
 public class PathogenicityTriageDAO implements TriageDAO {
 
     private final Logger logger = LoggerFactory.getLogger(PathogenicityTriageDAO.class);
 
-    private final DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
+
+    public PathogenicityTriageDAO() {
+    }
 
     public PathogenicityTriageDAO(DataSource dataSource) {
         this.dataSource = dataSource;

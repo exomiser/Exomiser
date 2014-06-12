@@ -6,10 +6,11 @@ import java.util.Map;
 
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.RelevanceScore;
 
 
@@ -93,13 +94,13 @@ public class HTMLTableBOQA extends HTMLTable {
 	outputVariant(ve,out);
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
 	Map<FilterType,Triage> triageMap = ve.getTriageMap();
-	Map<FilterType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
+	Map<PriorityType, RelevanceScore> relevanceMap = gen.getRelevanceMap();
 	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
 	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	// Write the variant score associated with the first (zero-th) variant
 	writeVariantScoreCell(path,freq,out);
-	RelevanceScore boqa = relevanceMap.get(FilterType.BOQA_FILTER);
-	RelevanceScore mim = relevanceMap.get(FilterType.OMIM_FILTER);
+	RelevanceScore boqa = relevanceMap.get(PriorityType.BOQA_PRIORITY);
+	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
 	if (boqa == null && mim == null) {

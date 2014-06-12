@@ -2,22 +2,20 @@ package de.charite.compbio.exomiser.priority;
 
 
 
+import de.charite.compbio.exomiser.exception.ExomizerException;
+import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import de.charite.compbio.exomiser.exception.ExomizerSQLException;
+import de.charite.compbio.exomiser.exome.Gene;
+import jannovar.common.Constants;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import jannovar.common.Constants;
-
-import de.charite.compbio.exomiser.common.FilterType;
-import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
-import de.charite.compbio.exomiser.exception.ExomizerException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -33,6 +31,9 @@ import de.charite.compbio.exomiser.exception.ExomizerException;
  * @version 0.06 (22 April, 2013)
  */
 public class MGIPhenodigmPriority implements Priority {
+    
+    private static final Logger logger = LoggerFactory.getLogger(MGIPhenodigmPriority.class);
+    
     /** Threshold for filtering. Retain only those variants whose score is below this threshold. */
     private float score_threshold = 2.0f;
     private String disease = null;
@@ -68,7 +69,7 @@ public class MGIPhenodigmPriority implements Priority {
      * After constructing this object, use the method {@link #setDatabaseConnection}
      * to initialize the database connection.
      */
-    public MGIPhenodigmPriority(String disease) throws ExomizerInitializationException  {
+    public MGIPhenodigmPriority(String disease) {
     	this.disease = disease;
     	this.messages = new ArrayList<String>();
 	String url = String.format("http://omim.org/%s",disease);
@@ -85,7 +86,7 @@ public class MGIPhenodigmPriority implements Priority {
     @Override public String getPriorityName() { return "MGI PhenoDigm"; }
 
     /** Flag to output results of filtering against PhenoDigm data. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.PHENODIGM_FILTER; } 
+    @Override public PriorityType getPriorityType() { return PriorityType.PHENODIGM_MGI_PRIORITY; } 
 
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need
@@ -93,13 +94,12 @@ public class MGIPhenodigmPriority implements Priority {
       * @param par A score threshold, e.g., a string such as "0.02"
       * @throws exomizer.exception.ExomizerInitializationException
       */
-     @Override public void setParameters(String par) throws ExomizerInitializationException
-     {
+     @Override 
+    public void setParameters(String par) {
 	 try {
 	     this.score_threshold  = Float.parseFloat(par);
 	 } catch (NumberFormatException e) {
-	     String  msg = "Could not parse score parameter for MGI PhenoDigm filter: \"" + par + "\"";
-	     throw new ExomizerInitializationException(msg);
+	     logger.error("Could not parse score parameter for MGI PhenoDigm filter: \"{}\"", par);
 	 }
      }
  
@@ -121,12 +121,9 @@ public class MGIPhenodigmPriority implements Priority {
 	this.n_before = gene_list.size();
 	while (it.hasNext()) {
 	    Gene g = it.next();
-	    try {
-		MGIPhenodigmRelevanceScore rscore = retrieve_score_data(g);
-		g.addRelevanceScore(rscore, FilterType.PHENODIGM_FILTER);
-	    } catch (ExomizerException e) {
-		this.messages.add("Error: " + e.toString());
-	    }
+		MGIPhenodigmRelevanceScore rscore = retrieveScoreData(g);
+		g.addRelevanceScore(rscore, PriorityType.PHENODIGM_MGI_PRIORITY);
+	    
 	}
 	this.n_after = gene_list.size();
 	String s = 
@@ -139,7 +136,7 @@ public class MGIPhenodigmPriority implements Priority {
      * @param g A gene whose relevance score is to be retrieved from the SQL database by this function.
      * @return result of prioritization (represents a non-negative score)
      */
-  private MGIPhenodigmRelevanceScore retrieve_score_data(Gene g) throws ExomizerSQLException {
+  private MGIPhenodigmRelevanceScore retrieveScoreData(Gene g) {
       float MGI_SCORE = 0;
       String MGI_GENE_ID = null;
       String MGI_GENE=null;
@@ -168,7 +165,7 @@ public class MGIPhenodigmPriority implements Priority {
 		  }
 		  rs.close();
 	      } catch(SQLException e) {
-		  throw new ExomizerSQLException("Error executing Phenodigm query: " + e);
+		  logger.error("Error executing Phenodigm query: ", e);
 	      } 
   	  }
     	  else {
@@ -177,7 +174,7 @@ public class MGIPhenodigmPriority implements Priority {
     	  rs2.close();
       }
       catch(SQLException e) {
-	  throw new ExomizerSQLException("Error executing Phenodigm query: " + e);
+	  logger.error("Error executing Phenodigm query: ", e);
       }
       MGIPhenodigmRelevanceScore rscore = new MGIPhenodigmRelevanceScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
       return rscore;
@@ -195,8 +192,7 @@ public class MGIPhenodigmPriority implements Priority {
      * gene symbol and the phenodigm score. There is currently one score for
      * each pair of OMIM diseases and MGI genes. 
      */
-    private void setUpSQLPreparedStatements() throws ExomizerInitializationException
-    {
+    private void setUpSQLPreparedStatements() {
 	String score_query = String.format("SELECT mouse_gene_level_summary.mgi_gene_id, "+
 					   "mouse_gene_level_summary.mgi_gene_symbol, max_combined_perc/100 " +
 					   "FROM mouse_gene_level_summary, human2mouse_orthologs"+
@@ -225,8 +221,7 @@ public class MGIPhenodigmPriority implements Priority {
 	    this.findScoreStatement  = connection.prepareStatement(score_query);
 	  
         } catch (SQLException e) {
-	    String error = "Problem setting up SQL query:" +score_query + e.toString();
-	    throw new ExomizerInitializationException(error);
+	    logger.error("Problem setting up SQL query for phenodigm score: {}", score_query, e);
         }
 
 //	String test_gene_query = String.format("SELECT human_gene_symbol, hm.mgi_gene_id, hm.mgi_gene_symbol " +
@@ -243,8 +238,7 @@ public class MGIPhenodigmPriority implements Priority {
 	    this.testGeneStatement  = connection.prepareStatement(test_gene_query);
 	  
         } catch (SQLException e) {
-	    String error = "Problem setting up SQL query:" +score_query + e.toString();
-	    throw new ExomizerInitializationException(error);
+	    logger.error("Problem setting up SQL query for phenodigm gene: {}", test_gene_query, e);
         }
 	
     }
@@ -256,9 +250,8 @@ public class MGIPhenodigmPriority implements Priority {
      * Initialize the database connection and call {@link #setUpSQLPreparedStatements}
      * @param connection A connection to a postgreSQL database from the exomizer or tomcat.
      */
-    public void setDatabaseConnection(java.sql.Connection connection) 
-	throws ExomizerInitializationException
-    {
+    @Override
+    public void setDatabaseConnection(Connection connection) {
 	this.connection = connection;
 	setUpSQLPreparedStatements();
     }
@@ -268,12 +261,17 @@ public class MGIPhenodigmPriority implements Priority {
     
     /**
      * To do
+     * @return 
      */
-    public boolean displayInHTML() { return true; }
+    @Override
+    public boolean displayInHTML() {
+        return true;
+    }
 
     /**
      * @return an HTML message for the table describing the action of filters
      */
+    @Override
     public String getHTMLCode() { 
 	StringBuilder sb = new StringBuilder();
 	sb.append("<ul>\n");

@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.io;
 
-import de.charite.compbio.exomiser.Exomizer;
+import de.charite.compbio.exomiser.cli.Exomizer;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import java.io.File;
 import java.io.FileInputStream;

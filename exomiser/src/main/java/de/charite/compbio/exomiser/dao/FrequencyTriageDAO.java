@@ -15,6 +15,8 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 /**
  * DAO class for retrieving {@code de.charite.compbio.exomiser.filter.FrequencyTriage}
@@ -22,17 +24,22 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Repository
 public class FrequencyTriageDAO implements TriageDAO {
 
     private final Logger logger = LoggerFactory.getLogger(FrequencyTriageDAO.class);
 
-    private final DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
 
+    public FrequencyTriageDAO() {
+        
+    }
+    
     public FrequencyTriageDAO(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    
     @Override
     public FrequencyTriage getTriageData(Variant variant) {
 

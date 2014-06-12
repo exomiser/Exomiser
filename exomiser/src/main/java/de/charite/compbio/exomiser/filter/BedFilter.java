@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.HashSet;
 
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 
@@ -39,12 +38,6 @@ public class BedFilter implements Filter {
 	this.targetGenes = genes;
 	
 	this.messages = new ArrayList<String>();
-    }
-
-
-     /** This method is required by the interface but not needed by this class. */
-    @Override public void setParameters(String par) throws ExomizerInitializationException{
-	/* nothing to do here */
     }
 
     /** get a list of messages that represent the process and result of applying the filter. This

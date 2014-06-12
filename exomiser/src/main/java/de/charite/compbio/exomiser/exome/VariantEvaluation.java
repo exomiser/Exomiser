@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 import jannovar.exome.Variant;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.filter.Triage;
 
 /**

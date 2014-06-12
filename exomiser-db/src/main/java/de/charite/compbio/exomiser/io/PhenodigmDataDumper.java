@@ -450,7 +450,7 @@ public class PhenodigmDataDumper {
         logger.info("Dumping Phenodigm MouseGeneLevelSummary data to file: {}", outfile);
 
         String sql = "select disease_id , mdm.model_gene_id , model_gene_symbol, "
-                + "IF((max_mod_disease_to_model_perc_score is not null && max_htpc_disease_to_model_perc_score is null) || max_mod_disease_to_model_perc_score > max_htpc_disease_to_model_perc_score, max_mod_disease_to_model_perc_score, max_htpc_disease_to_model_perc_score ) as score "
+                + "if ((max_mod_disease_to_model_perc_score is not null && max_htpc_disease_to_model_perc_score is null) || max_mod_disease_to_model_perc_score > max_htpc_disease_to_model_perc_score, max_mod_disease_to_model_perc_score, max_htpc_disease_to_model_perc_score ) as score "
                 + "from mouse_disease_gene_summary mdm, mouse_gene_ortholog mgo "
                 + "where mdm.model_gene_id = mgo.model_gene_id and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";
 //                + "and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";
@@ -485,7 +485,7 @@ public class PhenodigmDataDumper {
         logger.info("Dumping Phenodigm FishGeneLevelSummary data to file: {}", outfile);
 
         String sql = "select distinct disease_id , mdm.model_gene_id , model_gene_symbol, "
-                + "IF((max_mod_disease_to_model_perc_score is not null && max_htpc_disease_to_model_perc_score is null) || max_mod_disease_to_model_perc_score > max_htpc_disease_to_model_perc_score, max_mod_disease_to_model_perc_score, max_htpc_disease_to_model_perc_score ) as score "
+                + "if ((max_mod_disease_to_model_perc_score is not null && max_htpc_disease_to_model_perc_score is null) || max_mod_disease_to_model_perc_score > max_htpc_disease_to_model_perc_score, max_mod_disease_to_model_perc_score, max_htpc_disease_to_model_perc_score ) as score "
                 + "from fish_disease_gene_summary mdm, fish_gene_ortholog mgo "
                 + "where mdm.model_gene_id = mgo.model_gene_id and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";
 //                + "and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";

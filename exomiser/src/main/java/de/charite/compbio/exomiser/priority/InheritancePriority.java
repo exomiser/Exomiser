@@ -3,15 +3,15 @@ package de.charite.compbio.exomiser.priority;
 
 
 
-import java.util.List;
+import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import de.charite.compbio.exomiser.exome.Gene;
+import jannovar.common.ModeOfInheritance;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import jannovar.common.ModeOfInheritance;
-
-import de.charite.compbio.exomiser.common.FilterType;
-import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -29,6 +29,9 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
  * @version 0.13 (13 May, 2013)
  */
 public class InheritancePriority implements Priority {
+    
+    private static final Logger logger = LoggerFactory.getLogger(InheritancePriority.class);
+
     /** Number of variants before filtering */
     private int n_before;
     /** Number of variants after filtering */
@@ -42,14 +45,17 @@ public class InheritancePriority implements Priority {
     private List<String> messages = null;
 
 
-   
-
-    public InheritancePriority() throws ExomizerInitializationException  {
+    public InheritancePriority() {
 	this.messages = new ArrayList<String>();
      }
 
-   @Override public void setParameters(String par) throws ExomizerInitializationException
-    {
+    public InheritancePriority(ModeOfInheritance modeOfInheritance) {
+        this.inheritanceMode = modeOfInheritance;
+        this.messages = new ArrayList();
+    }
+   
+   @Override 
+   public void setParameters(String par) {
 	this.inheritanceMode = InheritancePriority.getModeOfInheritance(par);
 	if (this.inheritanceMode ==  ModeOfInheritance.UNINITIALIZED)
 	    messages.add("Could not initialize the Inheritance Filter for parameter: \"" + par + "\"");
@@ -74,7 +80,7 @@ public class InheritancePriority implements Priority {
     @Override public String getPriorityName() { return "Mode of Inheritance"; }
 
     /**  Flag for output field representing the Inheritance pattern filter. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.INHERITANCE_PATTERN_FILTER; } 
+    @Override public PriorityType getPriorityType() { return PriorityType.INHERITANCE_MODE_PRIORITY; } 
     
     /**
      * @return list of messages representing process, result, and if any, errors of frequency filtering. 
@@ -151,15 +157,18 @@ public class InheritancePriority implements Priority {
 
 
     /**
-     * If this filter was applied, then show a brief summary of the results in the HTML output
+     * If this filter was applied, then show a brief summary of the results in
+     * the HTML output
      */
-    @Override public boolean displayInHTML() { 
-	return true;
+    @Override
+    public boolean displayInHTML() {
+        return true;
     }
 
     /**
      * @return HTML code to display an unordered list with inheritance results.
      */
+    @Override
     public String getHTMLCode() {
 	StringBuilder sb = new StringBuilder();
 	sb.append("<ul>\n");
@@ -174,8 +183,8 @@ public class InheritancePriority implements Priority {
      * This class does not need a database connection, this function only there to satisfy the interface.
      * @param connection An SQL (postgres) connection that was initialized elsewhere.
      */
-    @Override  public void setDatabaseConnection(java.sql.Connection connection) 
-	throws ExomizerInitializationException  { /* no-op */ }
+    @Override  
+    public void setDatabaseConnection(Connection connection) { /* no-op */ }
     
 
 }

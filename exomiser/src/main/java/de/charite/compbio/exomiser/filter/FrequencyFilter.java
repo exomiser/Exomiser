@@ -1,8 +1,6 @@
 package de.charite.compbio.exomiser.filter;
 
 import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
-import de.charite.compbio.exomiser.common.FilterType;
-import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
@@ -18,13 +16,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 /**
  * Filter variants according to their frequency. The Frequency is retrieved from
- * our postgreSQL database and comes from dbSNP (see
+ * our database and comes from dbSNP (see
  * {@link exomizer.io.dbSNP2FrequencyParser dbSNP2FrequencyParser} and
  * {@link exomizer.io.ESP2FrequencyParser ESP2FrequencyParser}), and the
  * frequency data are expressed as percentages.
@@ -40,16 +36,13 @@ public class FrequencyFilter implements Filter {
      * (expressed as a percentage) is below this threshold. The default value is
      * 100%, i.e., no filtering out.
      */
-    private float frequency_threshold = 100.0f;
+    private float maxFreq = 100.0f;
 
-    /**
-     * Database handle to the postgreSQL database used by this application.
-     */
-//    
     private Connection connection;
 
     private final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
 
+    @Autowired
     private final FrequencyTriageDAO triageDao;
 
 //    /** A prepared SQL statement for querying from the frequency table. */
@@ -69,12 +62,12 @@ public class FrequencyFilter implements Filter {
      * data, expressed as a percentage.
      */
     private float ESP_freq;
-    private List<String> errorRecord = null;
+    private List<String> errorRecord = new ArrayList<>();
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = null;
+    private List<String> messages = new ArrayList<>();
     /**
      * Number of variants analyzed by filter
      */
@@ -89,11 +82,22 @@ public class FrequencyFilter implements Filter {
      */
     private boolean strictFiltering = false;
 
-    public FrequencyFilter(FrequencyTriageDAO triageDao) {
+    /**
+     * Creates a filter with a maximum frequency threshold for variants.
+     *
+     * @param maxFreq sets the maximum frequency threshold (percent value) of
+     * the minor allele required to pass the filer. For example a value of 1
+     * will set the threshold of the minor allele frequency to under 1%.
+     * @param filterOutAllDbsnp removes all variants found in the dbSNP or in
+     * the ESP database regardless of their frequency.
+     *
+     */
+    public FrequencyFilter(FrequencyTriageDAO triageDao, float maxFreq, boolean filterOutAllDbsnp) {
         this.triageDao = triageDao;
 
-        this.errorRecord = new ArrayList<>();
-        this.messages = new ArrayList<>();
+        setMaxFrequency(maxFreq);
+        this.strictFiltering = filterOutAllDbsnp;
+
     }
 
     /**
@@ -113,32 +117,15 @@ public class FrequencyFilter implements Filter {
         return filterType;
     }
 
-    /**
-     * Sets the frequency threshold for variants. The argument can be either
-     * "RS", meaning that we will remove all variants that are entered in the
-     * dbSNP or in the ESP database regardless of their frequency, or be a
-     * String such as 1, meaning to set the threshold at a minor allele
-     * frequency of 1%.
-     *
-     * @param par A frequency threshold, e.g., a string such as "2" for 2
-     * percent, or RS
-     */
-    @Override
-    public void setParameters(String par) throws ExomizerInitializationException {
-        if (par.equalsIgnoreCase("RS")) {
-            this.strictFiltering = true;
-            return;
-        }
-
+    private void setMaxFrequency(float maxFreq) {
+        this.maxFreq = maxFreq;
         try {
-            this.frequency_threshold = Float.parseFloat(par);
-            FrequencyTriage.set_frequency_threshold(frequency_threshold);
-            this.messages.add(String.format("Allele frequency &lt; %.2f %%",
-                    frequency_threshold));
-        } catch (NumberFormatException e) {
-            String msg = "Could not parse frequency parameter for Frequency filter: \"" + par + "\"";
-            throw new ExomizerInitializationException(msg);
+            //why not just do this here?
+            FrequencyTriage.setMaxFreqThreshold(this.maxFreq);
+        } catch (ExomizerInitializationException e) {
+            logger.error(null, e);
         }
+        this.messages.add(String.format("Allele frequency &lt; %.2f %%", this.maxFreq));
     }
 
     /**
@@ -256,7 +243,7 @@ public class FrequencyFilter implements Filter {
         String ref = v.get_ref();
         String alt = v.get_alt();
 
-      // Added order by clause as sometimes have multiple rows for the same position, ref and alt and first row may have no freq data
+        // Added order by clause as sometimes have multiple rows for the same position, ref and alt and first row may have no freq data
         // Can remove if future versions of database remove these duplicated rows
         String frequencyQuery = "SELECT rsid,dbSNPmaf,espEAmaf,espAAmaf,espAllmaf "
                 + "FROM frequency "
@@ -340,4 +327,8 @@ public class FrequencyFilter implements Filter {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s: maximum frequency threshold=%s filter out dbSNP and ESP=%s", filterType, maxFreq, strictFiltering);
+    }
 }

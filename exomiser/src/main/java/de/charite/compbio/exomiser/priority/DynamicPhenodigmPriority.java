@@ -13,12 +13,13 @@ import java.util.HashMap;
 
 import jannovar.common.Constants;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified clinical phenotypes to mouse models disrupting 
@@ -34,9 +35,18 @@ import java.util.List;
  * @version 0.05 (April 6, 2013)
  */
 public class DynamicPhenodigmPriority implements Priority {
-	/** Threshold for filtering. Retain only those variants whose score is below this threshold. */
+
+    private static final Logger logger = LoggerFactory.getLogger(DynamicPhenodigmPriority.class);
+
+    private static final PriorityType PHENODIGM_MGI_PRIORITY = PriorityType.PHENODIGM_MGI_PRIORITY;
+
+    
+    /** Threshold for filtering. Retain only those variants whose score is below this threshold. */
     private float score_threshold = 2.0f;
     private String hpo_ids = null;
+    
+    private List<String> hpoIds;
+    
     /** Database handle to the postgreSQL database used by this application. */
     private Connection connection=null;
     /** A prepared SQL statement for mgi phenodigm score. */
@@ -62,41 +72,63 @@ public class DynamicPhenodigmPriority implements Priority {
     private int n_after=0;
    
     /** A list of messages that can be used to create a display in a HTML page or elsewhere. */
-    private ArrayList<String> messages = null;
+    private ArrayList<String> messages = new ArrayList<String>();
+    
     /** Keeps track of the number of variants for which data was available in Phenodigm. */
     private int found_data_for_mgi_phenodigm;
     
-    public DynamicPhenodigmPriority(String hpo_ids) throws ExomizerInitializationException  {
+    public DynamicPhenodigmPriority(String hpo_ids) {
     	this.hpo_ids = hpo_ids;
-    	this.messages = new ArrayList<String>();
 	//String url = String.format("http://omim.org/%s",disease);
-	String anchor = String.format("Mouse phenotypes for candidate genes were compared to " +
-			"user-supplied clinical phenotypes");
-	this.messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
+	messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
+	String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
 	messages.add(anchor);
      }
 
+    public DynamicPhenodigmPriority(List<String> hpoIds) {
+        this.hpoIds = hpoIds;
+        messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
+	String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
+	messages.add(anchor);
+    }
+    
     /** Get the name of this prioritization algorithm. */
-    @Override public String getPriorityName() { return "MGI PhenoDigm"; }
+    @Override 
+    public String getPriorityName() { 
+        return "MGI PhenoDigm"; 
+    }
 
     /** Flag to output results of filtering against PhenoDigm data. */
-    @Override public FilterType getPriorityTypeConstant() { return FilterType.DYNAMIC_PHENODIGM_FILTER; } 
+    @Override 
+    public PriorityType getPriorityType() { 
+        return PriorityType.DYNAMIC_PHENODIGM_PRIORITY;
+    } 
 
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need
       * parameters for Phenodigm prioritization?
       * @param par A score threshold, e.g., a string such as "0.02"
+      * @deprecated use the setScoreThreshold method for setting the scoreThreshold
       */
-     @Override public void setParameters(String par) throws ExomizerInitializationException
-     {
+     @Override
+     @Deprecated
+     public void setParameters(String par) {
 	 try {
 	     this.score_threshold  = Float.parseFloat(par);
 	 } catch (NumberFormatException e) {
-	     String  msg = "Could not parse score parameter for MGI PhenoDigm filter: \"" + par + "\"";
-	     throw new ExomizerInitializationException(msg);
+	     logger.error("Could not parse score parameter for MGI PhenoDigm filter: \"{}\"", par);
 	 }
      }
  
+     /** Sets the score threshold for variants.
+      * Note: Keeping this method for now, but I do not think we need
+      * parameters for Phenodigm prioritization?
+      * @param score A score threshold, e.g., a float such as "0.02"
+      */
+     public void setScoreThreshold(float score) {
+         score_threshold = score;
+     }
+     
     /**
      * @return list of messages representing process, result, and if any, errors of score filtering. 
      */
@@ -115,12 +147,9 @@ public class DynamicPhenodigmPriority implements Priority {
 	this.n_before = gene_list.size();
 	while (it.hasNext()) {
 	    Gene g = it.next();
-	    try {
 		MGIPhenodigmRelevanceScore rscore = retrieve_score_data(g);
-		g.addRelevanceScore(rscore, FilterType.PHENODIGM_FILTER);
-	    } catch (ExomizerException e) {
-		this.messages.add("Error: " + e.toString());
-	    }
+		g.addRelevanceScore(rscore, PHENODIGM_MGI_PRIORITY);
+	   
 	}
 	this.n_after = gene_list.size();
 	String s = 
@@ -133,7 +162,7 @@ public class DynamicPhenodigmPriority implements Priority {
      * @param g A gene whose relevance score is to be retrieved from the SQL database by this function.
      * @return result of prioritization (represents a non-negative score)
      */
-  private MGIPhenodigmRelevanceScore retrieve_score_data(Gene g) throws ExomizerSQLException {
+  private MGIPhenodigmRelevanceScore retrieve_score_data(Gene g) {
       float MGI_SCORE = Constants.UNINITIALIZED_FLOAT;
       String MGI_GENE_ID = null;
       String MGI_GENE=null;
@@ -148,13 +177,12 @@ public class DynamicPhenodigmPriority implements Priority {
         	   * perfect mouse scores from user-defined HPO terms
         	   * Once working move the HP-MP mapping part to a cache in the constructor
         	   */
-    		  String[] hps_initial = hpo_ids.split(",");
-    		  ArrayList<String> hp_list  = new ArrayList<String>();
-    		  HashMap<String,Float> mapped_terms = new HashMap<String,Float>();
-    		  HashMap<String,Float> best_mapped_term_score = new HashMap<String,Float>();
-    		  HashMap<String,String> best_mapped_term_mpid = new HashMap<String,String>();
-    		  HashMap<String,Integer> knownMps = new HashMap<String,Integer>();
-    		  for (String hpid : hps_initial){
+    		  HashMap<String,Float> mapped_terms = new HashMap<>();
+    		  HashMap<String,Float> best_mapped_term_score = new HashMap<>();
+    		  HashMap<String,String> best_mapped_term_mpid = new HashMap<>();
+    		  HashMap<String,Integer> knownMps = new HashMap<>();
+    		  List<String> hpList  = new ArrayList<>();
+    		  for (String hpid : hpoIds){
 		      this.findMappingStatement.setString(1,hpid);	  
 		      ResultSet rs = findMappingStatement.executeQuery();
 		      int found = 0;
@@ -179,18 +207,16 @@ public class DynamicPhenodigmPriority implements Priority {
 			  }
 		      }
 		      if (found == 1){
-			  hp_list.add(hpid);
+			  hpList.add(hpid);
 		      }
 		  }
-		  String []hps = new String[hp_list.size()];
-		  hp_list.toArray(hps);
-		  
+                  
 		  // calculate perfect mouse model scores
 		  float sum_best_score = 0f;
 		  float best_max_score = 0f;
 		  int best_hit_counter = 0;
 		  // loop over each hp id should start herre
-		  for (String hpid : hps){
+		  for (String hpid : hpList){
 		      if (best_mapped_term_score.get(hpid) != null){
 			  float hp_score = best_mapped_term_score.get(hpid);
 			  // add in scores for best match for the HP term                                                                                                                                                
@@ -202,7 +228,7 @@ public class DynamicPhenodigmPriority implements Priority {
 			  // add in MP-HP hits                                                                                                                                                                           
 			  String mpid = best_mapped_term_mpid.get(hpid);
 			  float best_score = 0f;
-			  for (String hpid2 : hps){
+			  for (String hpid2 : hpList){
 			      StringBuffer hashKey = new StringBuffer();
 			      hashKey.append(hpid2);
 			      hashKey.append(mpid);
@@ -232,24 +258,24 @@ public class DynamicPhenodigmPriority implements Priority {
 		      MGI_GENE_ID = rs.getString(3);
 		      MGI_GENE = rs.getString(4);
 		      String[] mp_initial = mp_ids.split(",");
-		      ArrayList<String> mp_list  = new ArrayList<String>();
+		      List<String> mpList  = new ArrayList<>();
 		      for (String mpid : mp_initial){
 			  if (knownMps.get(mpid) != null){
-			      mp_list.add(mpid);
+			      mpList.add(mpid);
 			  }
 		      }
-		      String[] mps = new String[mp_list.size()];
-		      mp_list.toArray(mps);
+//		      String[] mps = new String[mpList.size()];
+//		      mpList.toArray(mps);
 		      
-		      int row_column_count = hps.length + mps.length;
+		      int row_column_count = hpList.size() + mpList.size();
 		      float max_score = 0f;
 		      float sum_best_hit_rows_columns_score = 0f;
 		      
-		      for (String hpid : hps){
+		      for (String hpid : hpList){
 			  float best_score = 0f;
 			  String best_mpid = "";
 			  String best_hpid = "";
-			  for (String mpid : mps){
+			  for (String mpid : mpList){
 			      StringBuffer hashKey = new StringBuffer();
 			      hashKey.append(hpid);
 			      hashKey.append(mpid);
@@ -272,19 +298,19 @@ public class DynamicPhenodigmPriority implements Priority {
 			  }
 		      }
 		      // Reciprocal hits                                                                                                                                                                                 
-		      for (String mpid : mps){
+		      for (String mpid : mpList){
 			  float best_score = 0f;
 			  String best_mpid = "";
 			  String best_hpid = "";
-			  for (String hpid : hps){
-			      StringBuffer hashKey = new StringBuffer();
+			  for (String hpid : hpList){
+			      StringBuilder hashKey = new StringBuilder();
 			      hashKey.append(hpid);
 			      hashKey.append(mpid);
 			      if (mapped_terms.get(hashKey.toString()) != null){
 				  float score = mapped_terms.get(hashKey.toString());
 				  // identify best match                                                                                                                                                                 
 				  if (score > best_score){
-				      best_mpid =mpid;
+				      best_mpid = mpid;
 				      best_hpid = hpid;
 				      best_score = score;
 				  }
@@ -315,23 +341,6 @@ public class DynamicPhenodigmPriority implements Priority {
 		  rs.close();
 		  MGI_SCORE = best_combined_score/100;
 		  if (! (MGI_SCORE <= 0 )) found_data_for_mgi_phenodigm++;
-    		  /* 
-		     ResultSet rs = null;
-    		  try {
-    			  this.findScoreStatement.setString(1,this.hpo_ids);	  
-    			  this.findScoreStatement.setString(2,genesymbol);
-    			  rs = findScoreStatement.executeQuery();
-    			  if ( rs.next() ) { 
-    				  MGI_GENE_ID = rs.getString(1); 
-    				  MGI_GENE    = rs.getString(2);
-    				  MGI_SCORE   = rs.getFloat(3);
-    			  }
-    			  if (! (MGI_SCORE < 0 )) found_data_for_mgi_phenodigm++;
-    			  rs.close();
-    		  } catch(SQLException e) {
-    			  throw new ExomizerSQLException("Error executing Phenodigm query: " + e);
-    		  } 
-    		  */
     	  }
     	  else {
 	      MGI_SCORE = Constants.NOPARSE_FLOAT;//use to indicate there is no phenotyped mouse model in MGI
@@ -339,7 +348,7 @@ public class DynamicPhenodigmPriority implements Priority {
     	  rs2.close();
       }
       catch(SQLException e) {
-	  throw new ExomizerSQLException("Error executing Phenodigm query: " + e);
+	logger.error("Error executing Phenodigm query: ", e);
       }
       MGIPhenodigmRelevanceScore rscore = new MGIPhenodigmRelevanceScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
       return rscore;
@@ -357,8 +366,7 @@ public class DynamicPhenodigmPriority implements Priority {
      * gene symbol and the phenodigm score. There is currently one score for
      * each pair of OMIM diseases and MGI genes. 
      */
-    private void setUpSQLPreparedStatements() throws ExomizerInitializationException
-    {
+    private void setUpSQLPreparedStatements() {
 	String mapping_query = String.format("SELECT mp_id, score "+
 	    "FROM hp_mp_mappings M "+
 	    "WHERE M.hp_id = ?");
@@ -367,8 +375,7 @@ public class DynamicPhenodigmPriority implements Priority {
 	    this.findMappingStatement  = connection.prepareStatement(mapping_query);
 	  
         } catch (SQLException e) {
-	    String error = "Problem setting up SQL query:" +mapping_query;
-	    throw new ExomizerInitializationException(error);
+	    logger.error("Problem setting up SQL query: {}", mapping_query, e);
         }
 
 	String mouse_annotation = String.format("SELECT mouse_model_id, mp_id, M.mgi_gene_id, M.mgi_gene_symbol " +
@@ -379,8 +386,7 @@ public class DynamicPhenodigmPriority implements Priority {
 	    this.findMouseAnnotationStatement  = connection.prepareStatement(mouse_annotation);
 	  
         } catch (SQLException e) {
-	    String error = "Problem setting up SQL query:" +mouse_annotation;
-	    throw new ExomizerInitializationException(error);
+	    logger.error("Problem setting up SQL query: {}", mouse_annotation, e);
         }
     
 	String test_gene_query = String.format("SELECT human_gene_symbol " +
@@ -392,8 +398,7 @@ public class DynamicPhenodigmPriority implements Priority {
 	    this.testGeneStatement  = connection.prepareStatement(test_gene_query);
 	  
         } catch (SQLException e) {
-	    String error = "Problem setting up SQL query:" +test_gene_query;
-	    throw new ExomizerInitializationException(error);
+	    logger.error("Problem setting up SQL query: {}", test_gene_query, e);
         }
 	
     }
@@ -404,9 +409,8 @@ public class DynamicPhenodigmPriority implements Priority {
      * Initialize the database connection and call {@link #setUpSQLPreparedStatements}
      * @param connection A connection to a postgreSQL database from the exomizer or tomcat.
      */
-     public void setDatabaseConnection(java.sql.Connection connection) 
-	 throws ExomizerInitializationException
-    {
+    @Override
+     public void setDatabaseConnection(Connection connection) {
 	this.connection = connection;
 	setUpSQLPreparedStatements();
     }
@@ -414,12 +418,17 @@ public class DynamicPhenodigmPriority implements Priority {
     
     /**
      * To do
+     * @return 
      */
-    public boolean displayInHTML() { return true; }
+    @Override
+    public boolean displayInHTML() {
+        return true;
+    }
 
     /**
      * @return an HTML message for the table describing the action of filters
      */
+    @Override
     public String getHTMLCode() { 
 	StringBuilder sb = new StringBuilder();
 	sb.append("<ul>\n");
@@ -432,9 +441,18 @@ public class DynamicPhenodigmPriority implements Priority {
 	return sb.toString();
     }
 
-     /** Get number of variants before filter was applied */
-    public int getBefore() {return this.n_before; }
-    /** Get number of variants after filter was applied */
-    public int getAfter() {return this.n_after; }
+    /**
+     * Get number of variants before filter was applied
+     */
+    public int getBefore() {
+        return this.n_before;
+    }
+
+    /**
+     * Get number of variants after filter was applied
+     */
+    public int getAfter() {
+        return this.n_after;
+    }
 
 }

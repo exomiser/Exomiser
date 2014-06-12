@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.io.tsv;
 
-import de.charite.compbio.exomiser.common.FilterType;
+import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
@@ -10,6 +10,7 @@ import de.charite.compbio.exomiser.filter.Triage;
 import de.charite.compbio.exomiser.io.html.HTMLTable;
 import de.charite.compbio.exomiser.priority.DynamicPhenoWandererRelevanceScore;
 import de.charite.compbio.exomiser.priority.GenewandererRelevanceScore;
+import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.RelevanceScore;
 import jannovar.pedigree.Pedigree;
 import java.io.BufferedWriter;
@@ -69,18 +70,18 @@ public class TSVWriter {
             float caddRaw = 0f;
             String variantType = "";
             // priority score calculation
-            for (FilterType i : g.getRelevanceMap().keySet()) {
+            for (PriorityType i : g.getRelevanceMap().keySet()) {
                 RelevanceScore r = g.getRelevanceMap().get(i);
                 float x = r.getRelevanceScore();
-                if (i == FilterType.DYNAMIC_PHENOWANDERER_FILTER) {
+                if (i == PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY) {
                     exomiser2Score = x;
                     humanPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getHumanScore();
                     mousePhenScore = ((DynamicPhenoWandererRelevanceScore) r).getMouseScore();
                     fishPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getFishScore();
                     walkerScore = ((DynamicPhenoWandererRelevanceScore) r).getWalkerScore();
-                } else if (i == FilterType.OMIM_FILTER) {
+                } else if (i == PriorityType.OMIM_PRIORITY) {
                     omimScore = x;
-                } else if (i == FilterType.GENEWANDERER_FILTER) {
+                } else if (i == PriorityType.GENEWANDERER_PRIORITY) {
                     walkerScore = x;
                     rawWalkerScore = (float) ((GenewandererRelevanceScore) r).getRawScore();
                     scaledMaxScore = (float) ((GenewandererRelevanceScore) r).getScaledScore();

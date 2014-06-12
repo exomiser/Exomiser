@@ -1,12 +1,10 @@
 package de.charite.compbio.exomiser.priority;
 
-import jannovar.common.Constants;
 
 import java.util.ArrayList;
 
 import org.jblas.DoubleMatrix;
 
-import de.charite.compbio.exomiser.common.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
@@ -15,6 +13,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Filter genes according to the random walk proximity in the protein-protein
@@ -33,16 +33,19 @@ import java.util.*;
  */
 public class DynamicPhenoWandererPriority implements Priority {
 
+    private static final Logger logger = LoggerFactory.getLogger(DynamicPhenoWandererPriority.class);
+
     private Connection connection = null;
     /**
      * A list of error-messages
      */
-    private ArrayList<String> error_record = null;
+    private ArrayList<String> error_record = new ArrayList<String>();
+        
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private ArrayList<String> messages = null;
+    private ArrayList<String> messages = new ArrayList<String>();
     /**
      * Number of variants considered by this filter
      */
@@ -57,7 +60,7 @@ public class DynamicPhenoWandererPriority implements Priority {
     private DataMatrix randomWalkMatrix = null;
     private ArrayList<Integer> phenoGenes = new ArrayList<Integer>();
     private ArrayList<String> phenoGeneSymbols = new ArrayList<String>();
-    private String hpo_ids;
+    private List<String> hpoIds;
     private String candGene;
     private String disease;
     private Map<Integer, Double> scores = new HashMap<Integer, Double>();
@@ -88,32 +91,51 @@ public class DynamicPhenoWandererPriority implements Priority {
      * @param randomWalkMatrixFileZip The zipped(!) RandomWalk matrix file.
      * @param randomWalkGeneId2IndexFileZip The zipped(!) file with the mapping
      * between Entrez-Ids and Matrix-Indices.
-     * @throws ExomizerInitializationException
      * @see <a
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
      */
-    public DynamicPhenoWandererPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip, String hpo_ids, String candGene, String disease, DataMatrix rwMatrix)
-            throws ExomizerInitializationException {
-        this.hpo_ids = hpo_ids;
+    public DynamicPhenoWandererPriority(List<String> hpoIds, String candidateGene, String disease, DataMatrix rwMatrix) {
+        this.hpoIds = hpoIds;
+        candGene = candidateGene;
+        disease = disease;
+
+        randomWalkMatrix = rwMatrix;
+    }
+    
+    /**
+     * Create a new instance of the {@link GenewandererPriority}.
+     *
+     * Assumes the list of seed genes (Entrez gene IDs) has been set!! This
+     * happens with the method
+     *  {@link #setParameters}.
+     *
+     * @param randomWalkMatrixFileZip The zipped(!) RandomWalk matrix file.
+     * @param randomWalkGeneId2IndexFileZip The zipped(!) file with the mapping
+     * between Entrez-Ids and Matrix-Indices.
+     * @param hpo_ids
+     * @param candGene
+     * @param disease
+     * @see <a
+     * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
+     * Hudson page</a>
+     */
+    public DynamicPhenoWandererPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip, String hpo_ids, String candGene, String disease) {
+        this.hpoIds = parseHpoIdListFromString(hpo_ids);
         this.candGene = candGene;
         this.disease = disease;
 
-        if (rwMatrix == null) {
-            try {
-                randomWalkMatrix = new DataMatrix(randomWalkMatrixFileZip, randomWalkGeneId2IndexFileZip, true);
-            } catch (Exception e) {
-                /*
-                 * This exception is thrown if the files for the random walk
-                 * cannot be found.
-                 */
-                String rwe = String.format("Unable to initialize the random walk matrix: %s", e.toString());
-                throw new ExomizerInitializationException(rwe);
-            }
-        } else {
-            System.out.println("USING bootstrapped matrix");
-            randomWalkMatrix = rwMatrix;
+        
+        try {
+            randomWalkMatrix = new DataMatrix(randomWalkMatrixFileZip, randomWalkGeneId2IndexFileZip, true);
+        } catch (Exception e) {
+            /*
+             * This exception is thrown if the files for the random walk
+             * cannot be found.
+             */
+            logger.error("Unable to initialize the random walk matrix", e);
         }
+        
         /*
          * some logging stuff
          */
@@ -121,6 +143,16 @@ public class DynamicPhenoWandererPriority implements Priority {
         this.messages = new ArrayList<String>();
     }
 
+    private List<String> parseHpoIdListFromString(String hpoIdsString) {
+        logger.info("Attempting to create HPO ID list from string: {} ", hpoIdsString);
+        String[] hpoArray = hpoIdsString.split(",");
+        List<String> hpoIdList = new ArrayList<>(); 
+        for (String string : hpoArray) {
+            hpoIdList.add(string.trim());
+        }
+        logger.info("Made list: {}", hpoIdList);
+        return hpoIdList;
+    }
     /**
      * @see exomizer.priority.IPriority#getPriorityName()
      */
@@ -133,8 +165,8 @@ public class DynamicPhenoWandererPriority implements Priority {
      * Flag to output results of filtering against Genewanderer.
      */
     @Override
-    public FilterType getPriorityTypeConstant() {
-        return FilterType.DYNAMIC_PHENOWANDERER_FILTER;
+    public PriorityType getPriorityType() {
+        return PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY;
     }
 
     /**
@@ -143,19 +175,21 @@ public class DynamicPhenoWandererPriority implements Priority {
     private void setHPOfromDisease(String disease) throws ExomizerInitializationException {
         String hpo_query = String.format("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
         PreparedStatement hpoIdsStatement = null;
+        String hpoListString= "";
         try {
             hpoIdsStatement = connection.prepareStatement(hpo_query);
             hpoIdsStatement.setString(1, disease);
             ResultSet rs = hpoIdsStatement.executeQuery();
             rs.next();
-            hpo_ids = rs.getString(1);
+            hpoListString = rs.getString(1);
         } catch (SQLException e) {
             String error = "Problem setting up SQL query:" + hpo_query;
             throw new ExomizerInitializationException(error);
         }
+        hpoIds = parseHpoIdListFromString(hpoListString);
     }
 
-    private HashMap<Integer, HashMap<String, HashMap<Float, String>>> runDynamicQuery(PreparedStatement findMappingStatement, PreparedStatement findAnnotationStatement, String[] hps_initial, String species) throws ExomizerInitializationException {
+    private HashMap<Integer, HashMap<String, HashMap<Float, String>>> runDynamicQuery(PreparedStatement findMappingStatement, PreparedStatement findAnnotationStatement, List<String> hps_initial, String species) throws ExomizerInitializationException {
 
         ArrayList<String> hp_list = new ArrayList<String>();
         HashMap<String, Float> mapped_terms = new HashMap<String, Float>();
@@ -404,7 +438,8 @@ public class DynamicPhenoWandererPriority implements Priority {
      * seed genes given by the user.
      */
     private void computeDistanceAllNodesFromStartNodes() throws ExomizerInitializationException {
-        if (disease != null) {
+        if (disease != null |! disease.isEmpty()) {
+            logger.info("Setting HPO IDs using disease annoataions for {}", disease);
             setHPOfromDisease(disease);
         }
         // retrieve disease id to term mappings
@@ -491,8 +526,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             String error = "Problem setting up SQL query:" + annotation;
             throw new ExomizerInitializationException(error);
         }
-        String[] hps_initial = hpo_ids.split(",");
-        hpMpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hps_initial, "mouse");
+        hpMpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "mouse");
 
 
         // Human
@@ -511,7 +545,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             String error = "Problem setting up SQL query:" + annotation;
             throw new ExomizerInitializationException(error);
         }
-        hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hps_initial, "human");
+        hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "human");
 
         // Fish
         mapping_query = String.format("SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?");
@@ -528,8 +562,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             String error = "Problem setting up SQL query:" + annotation;
             throw new ExomizerInitializationException(error);
         }
-        hps_initial = hpo_ids.split(",");
-        hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hps_initial, "fish");
+        hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "fish");
 
         int rows = randomWalkMatrix.data.getColumn(0).getRows();
         int cols = phenoGenes.size();
@@ -560,11 +593,11 @@ public class DynamicPhenoWandererPriority implements Priority {
      * of score filtering.
      */
     public ArrayList<String> getMessages() {
-        if (this.error_record.size() > 0) {
-            for (String s : error_record) {
-                this.messages.add("Error: " + s);
-            }
+        
+        for (String s : error_record) {
+            this.messages.add("Error: " + s);
         }
+
         return this.messages;
     }
 
@@ -617,8 +650,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     }
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to %s associated with %s. <a class=\"op1\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", humanScores.get(gene.getEntrezGeneID()), diseaseLink, gene.getGeneSymbol());
                     if (hpHpMatches.get(entrezGeneID) != null) {
-                        String[] hps_initial = hpo_ids.split(",");
-                        for (String hpId : hps_initial) {
+                        for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
                             if (hpHpMatches.get(entrezGeneID).get(hpId) != null) {
                                 Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(hpId).keySet();
@@ -638,8 +670,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     mouseScore = mouseScores.get(entrezGeneID);
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>. <a class=\"op2\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", mouseScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     if (hpMpMatches.get(gene.getEntrezGeneID()) != null) {
-                        String[] hps_initial = hpo_ids.split(",");
-                        for (String hpId : hps_initial) {
+                        for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
                             if (hpMpMatches.get(entrezGeneID).get(hpId) != null) {
                                 Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(hpId).keySet();
@@ -660,8 +691,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>. <a class=\"op3\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", fishScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     //evidence = evidence + "<br>Best phenotype matches: ";
                     if (hpZpMatches.get(gene.getEntrezGeneID()) != null) {
-                        String[] hps_initial = hpo_ids.split(",");
-                        for (String hpId : hps_initial) {
+                        for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
                             if (hpZpMatches.get(entrezGeneID).get(hpId) != null) {
                                 Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(hpId).keySet();
@@ -703,8 +733,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, diseaseLink, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches";
                     if (hpHpMatches.get(phenoGenes.get(col_idx)) != null) {
-                        String[] hps_initial = hpo_ids.split(",");
-                        for (String hpId : hps_initial) {
+                        for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
                             if (hpHpMatches.get(entrezGeneID).get(hpId) != null) {
                                 Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(hpId).keySet();
@@ -724,8 +753,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to mouse mutant of %s. <a class=\"op2\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches: ";
                     if (hpMpMatches.get(phenoGenes.get(col_idx)) != null) {
-                        String[] hps_initial = hpo_ids.split(",");
-                        for (String hpId : hps_initial) {
+                        for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
                             if (hpMpMatches.get(entrezGeneID).get(hpId) != null) {
                                 Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(hpId).keySet();
@@ -746,8 +774,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.  <a class=\"op3\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches: ";
                     if (hpZpMatches.get(phenoGenes.get(col_idx)) != null) {
-                        String[] hps_initial = hpo_ids.split(",");
-                        for (String hpId : hps_initial) {
+                        for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
                             if (hpZpMatches.get(entrezGeneID).get(hpId) != null) {
                                 Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(hpId).keySet();
@@ -769,7 +796,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             }
             DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, 
                     fishPhenotypeEvidence, humanScore, mouseScore, fishScore, walkerScore);
-            gene.addRelevanceScore(relScore, FilterType.DYNAMIC_PHENOWANDERER_FILTER);
+            gene.addRelevanceScore(relScore, PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
         }
 
         /*
@@ -779,7 +806,7 @@ public class DynamicPhenoWandererPriority implements Priority {
         TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
         for (Gene g : gene_list) {
             if (scores.get(g.getEntrezGeneID()) == null && randomWalkMatrix.objectid2idx.containsKey(g.getEntrezGeneID())) {// Only do for non-pheno direct hits
-                float geneScore = g.getRelevanceScore(FilterType.DYNAMIC_PHENOWANDERER_FILTER);
+                float geneScore = g.getRelevanceScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
                 if (geneScoreMap.containsKey(geneScore)) {
                     List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
                     geneScoreGeneList.add(g);
@@ -804,15 +831,14 @@ public class DynamicPhenoWandererPriority implements Priority {
             float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
-                g.resetRelevanceScore(FilterType.DYNAMIC_PHENOWANDERER_FILTER, newScore);
+                g.resetRelevanceScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY, newScore);
             }
         }
         String s = String.format("Phenotype and Protein-Protein Interaction evidence was available for %d of %d genes (%.1f%%)",
                 PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
         this.messages.add(s);
-        String[] hps_initial = hpo_ids.split(",");
         String hpInput = "";
-        for (String hp : hps_initial) {
+        for (String hp : hpoIds) {
             String hpTerm = hpoTerms.get(hp);
             hpInput = hpInput + (String.format("%s (%s), ", hpTerm, hp));
         }
@@ -824,7 +850,9 @@ public class DynamicPhenoWandererPriority implements Priority {
     /**
      * This causes a summary of RW prioritization to appear in the HTML output
      * of the exomizer
+     * @return 
      */
+    @Override
     public boolean displayInHTML() {
         return true;
     }
@@ -832,13 +860,14 @@ public class DynamicPhenoWandererPriority implements Priority {
     /**
      * @return HTML code for displaying the HTML output of the Exomizer.
      */
+    @Override
     public String getHTMLCode() {
         if (messages == null) {
             return "Error initializing Random Walk matrix";
         } else if (messages.size() == 1) {
             return String.format("<ul><li>%s</li></ul>", messages.get(0));
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("<ul>\n");
             for (String m : messages) {
                 sb.append(String.format("<li>%s</li>\n", m));
@@ -889,7 +918,7 @@ public class DynamicPhenoWandererPriority implements Priority {
     }
 
     @Override
-    public void setParameters(String par) throws ExomizerInitializationException {
+    public void setParameters(String par) {
     }
 
     /**
@@ -898,8 +927,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * @param connection A connection to a postgreSQL database from the exomizer
      * or tomcat.
      */
-    public void setDatabaseConnection(java.sql.Connection connection)
-            throws ExomizerInitializationException {
+    public void setDatabaseConnection(Connection connection) {
         this.connection = connection;
     }
 }
