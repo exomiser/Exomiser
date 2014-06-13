@@ -98,7 +98,7 @@ public class DynamicPhenoWandererPriority implements Priority {
     public DynamicPhenoWandererPriority(List<String> hpoIds, String candidateGene, String disease, DataMatrix rwMatrix) {
         this.hpoIds = hpoIds;
         candGene = candidateGene;
-        disease = disease;
+        this.disease = disease;
 
         randomWalkMatrix = rwMatrix;
     }
