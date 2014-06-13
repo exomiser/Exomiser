@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
+import org.postgresql.ds.PGPoolingDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,11 +78,24 @@ public class DataSourceConfig {
         logger.info("DataSource url set to: {}", url);
         String user = env.getProperty("exomiser.username");
         String password = env.getProperty("exomiser.password");
-        
-        JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
-
-        logger.info("Returning a new DataSource to URL {} user: {}", url, user);
-        return dataSource;
+        if (env.getProperty("exomiser.driverClassName").equals("org.postgresql.Driver")){
+            PGPoolingDataSource dataSource = new PGPoolingDataSource();
+            String server = env.getProperty("exomiser.server");
+            String db = env.getProperty("exomiser.database");
+            int port = Integer.parseInt(env.getProperty("exomiser.port"));
+            dataSource.setServerName(server);
+            dataSource.setDatabaseName(db);
+            dataSource.setPortNumber(port);
+            dataSource.setUser(user);
+            dataSource.setPassword(password);
+            logger.info("Returning a new DataSource to URL {} user: {}", url, user);
+            return dataSource;
+        }
+        else{
+            JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
+            logger.info("Returning a new DataSource to URL {} user: {}", url, user);
+            return dataSource;
+        }
     }
 
     @Bean
