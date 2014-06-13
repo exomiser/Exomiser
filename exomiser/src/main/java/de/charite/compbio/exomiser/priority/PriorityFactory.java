@@ -34,6 +34,7 @@ public class PriorityFactory {
     @Autowired
     private DataSource dataSource;
     @Autowired
+    @Lazy
     private DataMatrix randomWalkMatrix;
     @Autowired
     private Path phenomizerDataDirectory;

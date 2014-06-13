@@ -102,6 +102,7 @@ public class DynamicPhenoWandererPriority implements Priority {
         this.disease = disease;
 
         randomWalkMatrix = rwMatrix;
+        logger.info("Using randomWalkMatrix: {}", randomWalkMatrix);
     }
     
     /**
@@ -565,18 +566,18 @@ public class DynamicPhenoWandererPriority implements Priority {
         }
         hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "fish");
 
-        int rows = randomWalkMatrix.data.getColumn(0).getRows();
+        int rows = randomWalkMatrix.getData().getColumn(0).getRows();
         int cols = phenoGenes.size();
         DoubleMatrix combinedProximityVector = DoubleMatrix.zeros(rows, cols);
         int c = 0;
         DoubleMatrix column = null;
         for (Integer seedGeneEntrezId : phenoGenes) {
-            if (!randomWalkMatrix.objectid2idx.containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.getObjectid2idx().containsKey(seedGeneEntrezId)) {
                 c++;
                 continue;
             } else {
-                int indexOfGene = randomWalkMatrix.objectid2idx.get(seedGeneEntrezId);
-                column = randomWalkMatrix.data.getColumn(indexOfGene);
+                int indexOfGene = randomWalkMatrix.getObjectid2idx().get(seedGeneEntrezId);
+                column = randomWalkMatrix.getData().getColumn(indexOfGene);
                 // weight column by phenoScore 
                 double score = scores.get(seedGeneEntrezId);
                 column = column.mul(score);
@@ -709,9 +710,9 @@ public class DynamicPhenoWandererPriority implements Priority {
                 }
                 ++PPIdataAvailable;
             } //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
-            else if (randomWalkMatrix.objectid2idx.containsKey(gene.getEntrezGeneID())) {
+            else if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
                 int col_idx = computeSimStartNodesToNode(gene);
-                int row_idx = randomWalkMatrix.objectid2idx.get(gene.getEntrezGeneID());
+                int row_idx = randomWalkMatrix.getObjectid2idx().get(gene.getEntrezGeneID());
                 val = combinedProximityVector.get(row_idx, col_idx);
                 walkerScore = val;
                 String closestGene = phenoGeneSymbols.get(col_idx);
@@ -806,7 +807,7 @@ public class DynamicPhenoWandererPriority implements Priority {
          */
         TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
         for (Gene g : gene_list) {
-            if (scores.get(g.getEntrezGeneID()) == null && randomWalkMatrix.objectid2idx.containsKey(g.getEntrezGeneID())) {// Only do for non-pheno direct hits
+            if (scores.get(g.getEntrezGeneID()) == null && randomWalkMatrix.getObjectid2idx().containsKey(g.getEntrezGeneID())) {// Only do for non-pheno direct hits
                 float geneScore = g.getRelevanceScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
                 if (geneScoreMap.containsKey(geneScore)) {
                     List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
@@ -898,12 +899,12 @@ public class DynamicPhenoWandererPriority implements Priority {
      * @param nodeToCompute Gene for which the RW score is to bee retrieved
      */
     private int computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.objectid2idx.get(nodeToCompute.getEntrezGeneID());
+        int idx = randomWalkMatrix.getObjectid2idx().get(nodeToCompute.getEntrezGeneID());
         int c = 0;
         double val = 0;
         int bestHitIndex = 0;
         for (Integer seedGeneEntrezId : phenoGenes) {
-            if (!randomWalkMatrix.objectid2idx.containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.getObjectid2idx().containsKey(seedGeneEntrezId)) {
                 c++;
                 continue;
             } else {

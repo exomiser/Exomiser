@@ -120,7 +120,7 @@ public class GenewandererPriority implements Priority {
     private void addMatchedGenesToSeedGeneList(List<Integer> entrezSeedGenes) {
         for (Integer entrezId : entrezSeedGenes) {
             
-            if (randomWalkMatrix.objectid2idx.containsKey(entrezId)) {
+            if (randomWalkMatrix.getObjectid2idx().containsKey(entrezId)) {
                 seedGenes.add(entrezId);
             } else {
                 logger.warn("Cannot use entrez-id {} as seed gene as it is not present in the DataMatrix provided.", entrezId);
@@ -165,7 +165,7 @@ public class GenewandererPriority implements Priority {
 //		String e = "[GeneWanderer.java] Error: randomWalkMatrix.object2idx is null";
 //		throw new ExomizerInitializationException(e);
 //	    }
-            if (!randomWalkMatrix.objectid2idx.containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.getObjectid2idx().containsKey(seedGeneEntrezId)) {
                 /* Note that the RW matrix does not have an entry for every
                  Entrez Gene. If the gene is not contained in the matrix, we
                  skip it. The gene will be given a (low) default score in 
@@ -173,10 +173,10 @@ public class GenewandererPriority implements Priority {
                  */
                 continue;
             }
-            int indexOfGene = randomWalkMatrix.objectid2idx.get(seedGeneEntrezId);
+            int indexOfGene = randomWalkMatrix.getObjectid2idx().get(seedGeneEntrezId);
 
             //    means the column we need, which has the distances of ALL genes to the current gene
-            DoubleMatrix column = randomWalkMatrix.data.getColumn(indexOfGene);
+            DoubleMatrix column = randomWalkMatrix.getData().getColumn(indexOfGene);
 
             // for the first column/known gene we have to init the resulting vector
             if (first) {
@@ -222,7 +222,7 @@ public class GenewandererPriority implements Priority {
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
             GenewandererRelevanceScore relScore = null;;
-            if (randomWalkMatrix.objectid2idx.containsKey(gene.getEntrezGeneID())) {
+            if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
                 double val = computeSimStartNodesToNode(gene);
                 if (val > max) {
                     max = val;
@@ -338,7 +338,7 @@ public class GenewandererPriority implements Priority {
      * @param nodeToCompute Gene for which the RW score is to bee retrieved
      */
     private double computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.objectid2idx.get(nodeToCompute.getEntrezGeneID());
+        int idx = randomWalkMatrix.getObjectid2idx().get(nodeToCompute.getEntrezGeneID());
         double val = combinedProximityVector.get(idx, 0);
         return val;
     }
