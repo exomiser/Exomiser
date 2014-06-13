@@ -95,7 +95,7 @@ public class CommandLineOptionsConfig {
                 .hasArg()
                 .withArgName("name")
                 .withValueSeparator()
-                .withDescription("Name of the prioritiser used to score the genes. Can be one of: boqua, dynamic-pheno-wanderer, gene-wanderer, pheno-wanderer, phenomizer, uber-pheno, mgi-phenodigm or zfin-phenodigm. e.g. --prioritiser=mgi-phenodigm")
+                .withDescription("Name of the prioritiser used to score the genes. Can be one of: boqua, dynamic-pheno-wanderer, gene-wanderer, phenomizer, uber-pheno, dynamic-phenodigm or mgi-phenodigm. e.g. --prioritiser=mgi-phenodigm")
                 .withLongOpt("prioritiser")
                 .create();
         options.addOption(priorityOption);

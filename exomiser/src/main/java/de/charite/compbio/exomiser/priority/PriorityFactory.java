@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.priority;
 
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.util.ExomiserSettings;
 import jannovar.common.ModeOfInheritance;
@@ -35,7 +34,6 @@ public class PriorityFactory {
     @Autowired
     private DataSource dataSource;
     @Autowired
-    @Lazy
     private DataMatrix randomWalkMatrix;
     @Autowired
     private Path phenomizerDataDirectory;
