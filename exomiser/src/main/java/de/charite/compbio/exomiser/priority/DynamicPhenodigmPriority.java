@@ -14,9 +14,6 @@ import java.util.HashMap;
 import jannovar.common.Constants;
 
 import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
-import de.charite.compbio.exomiser.exception.ExomizerException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +92,7 @@ public class DynamicPhenodigmPriority implements Priority {
     /** Get the name of this prioritization algorithm. */
     @Override 
     public String getPriorityName() { 
-        return "MGI PhenoDigm"; 
+        return "Dynamic PhenoDigm"; 
     }
 
     /** Flag to output results of filtering against PhenoDigm data. */

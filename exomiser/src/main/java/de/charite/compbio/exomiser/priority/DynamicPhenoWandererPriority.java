@@ -88,9 +88,10 @@ public class DynamicPhenoWandererPriority implements Priority {
      * happens with the method
      *  {@link #setParameters}.
      *
-     * @param randomWalkMatrixFileZip The zipped(!) RandomWalk matrix file.
-     * @param randomWalkGeneId2IndexFileZip The zipped(!) file with the mapping
-     * between Entrez-Ids and Matrix-Indices.
+     * @param hpoIds
+     * @param candidateGene
+     * @param disease
+     * @param rwMatrix
      * @see <a
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
