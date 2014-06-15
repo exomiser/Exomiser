@@ -440,7 +440,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * seed genes given by the user.
      */
     private void computeDistanceAllNodesFromStartNodes() throws ExomizerInitializationException {
-        if (disease != null |! disease.isEmpty()) {
+        if (disease != null && !disease.isEmpty()) {
             logger.info("Setting HPO IDs using disease annoataions for {}", disease);
             setHPOfromDisease(disease);
         }
