@@ -46,20 +46,20 @@ public class PhenodigmDataDumper {
         if (outputPath.toFile().mkdir()) {
             logger.info("Created new directory {} for Phenodigm datadumps.", outputPath);
         }
-        dumpMp(outputPath, "mp.pg");
-        dumpMouseGeneOrthologs(outputPath, "human2mouseOrthologs.pg");
+//        dumpMp(outputPath, "mp.pg");
+//        dumpMouseGeneOrthologs(outputPath, "human2mouseOrthologs.pg");
         dumpDiseaseHp(outputPath, "diseaseHp.pg");
-        dumpMouseMp(outputPath, "mouseMp.pg");
-        dumpOmimTerms(outputPath, "omimTerms.pg");
-        dumpHpMpMapping(outputPath, "hpMpMapping.pg");
-        dumpHpHpMapping(outputPath, "hpHpMapping.pg");
-        dumpMouseGeneLevelSummary(outputPath, "mouseGeneLevelSummary.pg");
-        dumpFishGeneLevelSummary(outputPath, "fishGeneLevelSummary.pg");
-        dumpFishGeneOrthologs(outputPath, "human2fishOrthologs.pg");
-        dumpOrphanet(outputPath, "orphanet.pg");
-        dumpZp(outputPath, "zp.pg");
-        dumpFishZp(outputPath, "zfin_zp.pg");
-        dumpHpZpMapping(outputPath, "hpZpMapping.pg");
+//        dumpMouseMp(outputPath, "mouseMp.pg");
+//        dumpOmimTerms(outputPath, "omimTerms.pg");
+//        dumpHpMpMapping(outputPath, "hpMpMapping.pg");
+//        dumpHpHpMapping(outputPath, "hpHpMapping.pg");
+//        dumpMouseGeneLevelSummary(outputPath, "mouseGeneLevelSummary.pg");
+//        dumpFishGeneLevelSummary(outputPath, "fishGeneLevelSummary.pg");
+//        dumpFishGeneOrthologs(outputPath, "human2fishOrthologs.pg");
+//        dumpOrphanet(outputPath, "orphanet.pg");
+//        dumpZp(outputPath, "zp.pg");
+//        dumpFishZp(outputPath, "zfin_zp.pg");
+//        dumpHpZpMapping(outputPath, "hpZpMapping.pg");
         
     }
 
@@ -210,8 +210,10 @@ public class PhenodigmDataDumper {
     protected File dumpDiseaseHp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm diseaseHp data to file: {}", outfile);
-
-        String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d, hp_hp_mapping h where d.hp_id=h.hp_id group by disease_id";
+        // ? why I added the join to hp_hp_mapping - results in scores < 1 when run an Exomiser query with full set of HPO IDs defined in the HPO annotation file
+        // Going to try reverting and check nothing breaks 
+        //String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d, hp_hp_mapping h where d.hp_id=h.hp_id group by disease_id";
+        String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d group by disease_id";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
