@@ -14,7 +14,6 @@ import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
 import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.io.html.HTMLWriterCRE;
 import de.charite.compbio.exomiser.io.html.HTMLWriterWalker;
-import de.charite.compbio.exomiser.io.tsv.TSVWriter;
 import de.charite.compbio.exomiser.priority.InheritancePriority;
 import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
@@ -22,6 +21,9 @@ import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import de.charite.compbio.exomiser.reference.Network;
 import de.charite.compbio.exomiser.reference.STRINGNetwork;
 import de.charite.compbio.exomiser.util.OutputFormat;
+import de.charite.compbio.exomiser.writer.ResultsWriter;
+import de.charite.compbio.exomiser.writer.ResultsWriterFactory;
+import de.charite.compbio.exomiser.writer.TsvResultsWriter;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import jannovar.exome.VariantTypeCounter;
@@ -427,7 +429,9 @@ public class Exomizer {
      * This constructor, without arguments, is intended to be used by the Tomcat
      * framework. Client code will need to set parameters using setters rather
      * than via the command line.
+     * @deprecated 
      */
+    @Deprecated
     public Exomizer() {
         logger.info("STARTING EXOMISER");
         this.status_message = new ArrayList<String>();
@@ -818,23 +822,22 @@ public class Exomizer {
      * command line, can be used to output tabular data in a form that can be
      * used to calculate ROC or precision recall. TODO. Adapt the logic of this
      * function to the evaluation pipeline.
+     * @deprecated THIS IS NOW NON-FUNCTIONAL Use the ResultWriter functionality.
      */
+    @Deprecated
     public void outputTSV() {
         String fname = vcf_file + ".results.tsv";
-        logger.info("Writing TSV file to: {}", fname);
-        try {
-            TSVWriter tsvWriter = new TSVWriter(fname);
-            tsvWriter.writeTSV(geneList,candidateGene);
-        } catch (IOException e) {
-            logger.error("TSV file opening error ",e);
-        }
+        logger.error("FILE {} NOT WRITTEN - use non-deprecated API.", fname);
+        
     }
     
     /**
      * This function, which will be called if the --vcf flag is used on the
      * command line, can be used to output VCF data which is useful for
      * downstream analysis using other software such as VarSIFTER
+     * @deprecated Use the {@code VcfResultsWriter} in the writer package 
      */
+    @Deprecated
     public void outputVCF() {
         String fname = vcf_file + ".results.vcf";
         logger.info("Writing VCF file to: {}", fname);
@@ -1134,7 +1137,9 @@ public class Exomizer {
      * Outputs an HTML page with the results of Exomizer prioritization. This
      * function creates a file called {@code exomizer.html} (unless the name of
      * the out file has been changed via the command line).
+     * @deprecated Use the {@code HtmlResultsWriter} in the writer package 
      */
+    @Deprecated
     public void outputHTML(SampleData sampleData, List<Filter> filterList, List<Priority> priorityList, OutputFormat outputFormat, String outFileName) {
         if (sampleData.getVariantEvaluations().isEmpty()) {
             logger.error("Cannot wite out a results file with no variant data.");
