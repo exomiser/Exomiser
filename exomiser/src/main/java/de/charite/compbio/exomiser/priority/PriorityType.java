@@ -29,6 +29,8 @@ public enum PriorityType {
      * and dynamic human and mouse phenotypes
      */
     DYNAMIC_PHENOWANDERER_PRIORITY("dynamic-pheno-wanderer"),
+    DYNAMIC_PHENOWANDERER_PRIORITY_MONARCH_TABLES("dynamic-pheno-wanderer-monarch-tables"),
+    DYNAMIC_PHENOWANDERER_PRIORITY_MONARCH_SERVICES("dynamic-pheno-wanderer-monarch-services"),
     /**
      * Flag to represent results of annotating against OMIM data
      */
@@ -45,7 +47,7 @@ public enum PriorityType {
      * Flag for dynamic phenodigm filter.
      */
     DYNAMIC_PHENODIGM_PRIORITY("dynamic-phenodigm"),
-
+    
     /**
      * Not set type - default for when things go wrong.
      */

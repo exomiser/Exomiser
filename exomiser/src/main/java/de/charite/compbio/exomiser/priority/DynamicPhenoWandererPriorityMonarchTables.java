@@ -31,9 +31,9 @@ import org.slf4j.LoggerFactory;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class DynamicPhenoWandererPriority implements Priority {
+public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
 
-    private static final Logger logger = LoggerFactory.getLogger(DynamicPhenoWandererPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(DynamicPhenoWandererPriorityMonarchTables.class);
 
     private Connection connection = null;
     /**
@@ -96,7 +96,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
      */
-    public DynamicPhenoWandererPriority(List<String> hpoIds, String candidateGene, String disease, DataMatrix rwMatrix) {
+    public DynamicPhenoWandererPriorityMonarchTables(List<String> hpoIds, String candidateGene, String disease, DataMatrix rwMatrix) {
         this.hpoIds = hpoIds;
         candGene = candidateGene;
         this.disease = disease;
@@ -122,7 +122,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
      */
-    public DynamicPhenoWandererPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip, String hpo_ids, String candGene, String disease) {
+    public DynamicPhenoWandererPriorityMonarchTables(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip, String hpo_ids, String candGene, String disease) {
         this.hpoIds = parseHpoIdListFromString(hpo_ids);
         this.candGene = candGene;
         this.disease = disease;
@@ -380,7 +380,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                      * Adjust human score as a hit that is 60% of the perfect
                      * (identical) HPO match is a much better match than
                      * something that is 60% of the perfect mouse match -
-                     * imperfect HP-MP mapping. SHOULD PROB REMOVE AND DO PROPERLY WITH LOGISTIC
+                     * imperfect HP-MP mapping
                      */
 //                    if (species.equals("human")) {
 //                        score = score + ((1 - score) / 2);
@@ -512,7 +512,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             throw new ExomizerInitializationException(error);
         }
         // Mouse
-        String mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?");
+        String mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
         PreparedStatement findMappingStatement = null;
         try {
             findMappingStatement = connection.prepareStatement(mapping_query);
@@ -532,7 +532,7 @@ public class DynamicPhenoWandererPriority implements Priority {
 
 
         // Human
-        mapping_query = String.format("SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?");
+        mapping_query = String.format("SELECT hp_id_hit, score FROM hp_hp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
         findMappingStatement = null;
         try {
             findMappingStatement = connection.prepareStatement(mapping_query);
@@ -550,7 +550,7 @@ public class DynamicPhenoWandererPriority implements Priority {
         hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "human");
 
         // Fish
-        mapping_query = String.format("SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?");
+        mapping_query = String.format("SELECT zp_id, score FROM hp_zp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
         try {
             findMappingStatement = connection.prepareStatement(mapping_query);
         } catch (SQLException e) {
