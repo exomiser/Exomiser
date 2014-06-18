@@ -3,9 +3,9 @@ package de.charite.compbio.exomiser.io.html;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.FilterType;
-import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.filter.VariantScore;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.RelevanceScore;
+import de.charite.compbio.exomiser.priority.GeneScore;
 import jannovar.common.Constants;
 import jannovar.pedigree.Pedigree;
 import java.io.IOException;
@@ -239,22 +239,22 @@ public class HTMLTable {
 	VariantEvaluation ve = gen.getNthVariant(0); /* Get the first (zero-th) variant associated with this gene */
 	outputVariant(ve,out);
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
-	Map<FilterType,Triage> triageMap = ve.getTriageMap();
-	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	Map<FilterType, VariantScore> triageMap = ve.getVariantScoreMap();
+	VariantScore freq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	VariantScore path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	// Write the variant score associated with the first (zero-th) variant
 	writeVariantScoreCell(path,freq,out);
-	Map<PriorityType, RelevanceScore> relevanceMap = gen.getRelevanceMap();
-//	RelevanceScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
-//	RelevanceScore gwanderer = relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY);
-//        RelevanceScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
-//	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
-//	RelevanceScore resnik = relevanceMap.get(PriorityType.UBERPHENO_PRIORITY);
-//	RelevanceScore phmizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
+	Map<PriorityType, GeneScore> relevanceMap = gen.getRelevanceMap();
+//	GeneScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
+//	GeneScore gwanderer = relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY);
+//        GeneScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
+//	GeneScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+//	GeneScore resnik = relevanceMap.get(PriorityType.UBERPHENO_PRIORITY);
+//	GeneScore phmizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants));
         
-        for (Entry<PriorityType, RelevanceScore> entry : relevanceMap.entrySet()) {
+        for (Entry<PriorityType, GeneScore> entry : relevanceMap.entrySet()) {
             out.write(entry.getValue().getHTMLCode());
         }
         
@@ -283,9 +283,9 @@ public class HTMLTable {
 	    out.write("<tr>\n");
 	    outputVariant(vev,out);
 	    // Each variant now has exactly the same number of Triage objects with the results of filtering.
-	    Map<FilterType,Triage> triageMp = vev.getTriageMap();
-	    Triage frq = triageMp.get(FilterType.FREQUENCY_FILTER);
-	    Triage pth = triageMp.get(FilterType.PATHOGENICITY_FILTER);
+	    Map<FilterType, VariantScore> triageMp = vev.getVariantScoreMap();
+	    VariantScore frq = triageMp.get(FilterType.FREQUENCY_FILTER);
+	    VariantScore pth = triageMp.get(FilterType.PATHOGENICITY_FILTER);
 	    writeVariantScoreCell(pth,frq,out);
 	    out.write("</tr>\n");
 	}
@@ -322,18 +322,18 @@ public class HTMLTable {
 	outputVariant(ve,out);
 	
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
-	Map<FilterType, Triage> triageMap = ve.getTriageMap();
-	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	Map<FilterType, VariantScore> triageMap = ve.getVariantScoreMap();
+	VariantScore freq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	VariantScore path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	writeVariantScoreCell(path,freq,out);
 	
 
 
-        Map<PriorityType, RelevanceScore> relevanceMap = gen.getRelevanceMap();
+        Map<PriorityType, GeneScore> relevanceMap = gen.getRelevanceMap();
         
-        RelevanceScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
-	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
-        RelevanceScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
+        GeneScore phenodigm = relevanceMap.get(PriorityType.PHENODIGM_MGI_PRIORITY);
+	GeneScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+        GeneScore dpwanderer = relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\">",n_variants)); 
 	if (phenodigm == null && mim == null) {
@@ -361,9 +361,9 @@ public class HTMLTable {
 	out.write(String.format("<tr class=\"%s\">\n",css));
 	outputVariant(var,out);
 	// Each variant now has exactly the same number of Triage objects with the results of filtering.
-	Map<FilterType,Triage> triageMap = var.getTriageMap();
-	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	Map<FilterType, VariantScore> triageMap = var.getVariantScoreMap();
+	VariantScore freq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	VariantScore path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	writeVariantScoreCell(path,freq,out);
 	out.write("</tr>\n");
     }
@@ -390,9 +390,9 @@ public class HTMLTable {
      * Write the entire contents of the cell containing the variant score.
      * @param path An object containing the pathogenicity predictions
      * @param freq An object containing the frequency evaluation
-     * @param out A file handle to the HTML file being written
+     * @paVariantScoreVariantScorele handle to the HTML file being written
      */
-    protected void writeVariantScoreCell(Triage path,Triage freq, Writer out) throws IOException
+    protected void writeVariantScoreCell(VariantScore path, VariantScore freq, Writer out) throws IOException
     {
 	out.write("<td>");
 	out.write("<i>Pathogenicity:</i>\n");
@@ -440,10 +440,10 @@ public class HTMLTable {
 	}
 	/* Output the UCSC URL */
 	out.write( ucsc + "<br/>\n" ); 
-	/* Output the various transcript annotations */
+	/* OuVariantScorehe various transcript annotations */
 	formatMultipleTranscripts(ve,out);
 	/* Output the variant quality */
-	Triage qual = ve.getTriageMap().get(FilterType.QUALITY_FILTER);
+	VariantScore qual = ve.getVariantScoreMap().get(FilterType.QUALITY_FILTER);
 	if (qual!=null)
 	    out.write(qual.getHTMLCode() + "\n");
 	out.write("</td>\n");

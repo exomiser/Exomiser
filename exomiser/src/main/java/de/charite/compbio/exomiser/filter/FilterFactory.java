@@ -5,9 +5,8 @@
  */
 package de.charite.compbio.exomiser.filter;
 
-import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
-import de.charite.compbio.exomiser.dao.PathogenicityTriageDAO;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
+import de.charite.compbio.exomiser.dao.FrequencyVariantScoreDao;
+import de.charite.compbio.exomiser.dao.PathogenicityVariantScoreDao;
 import de.charite.compbio.exomiser.util.ExomiserSettings;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +98,7 @@ public class FilterFactory {
      */
     public Filter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
 
-        FrequencyTriageDAO variantTriageDAO = new FrequencyTriageDAO(dataSource);
+        FrequencyVariantScoreDao variantTriageDAO = new FrequencyVariantScoreDao(dataSource);
         Filter frequencyFilter = new FrequencyFilter(variantTriageDAO, maxFrequency, filterOutAllDbsnp);
 
 //        if (filterOutAllDbsnp) {
@@ -125,7 +124,7 @@ public class FilterFactory {
     public Filter getPathogenicityFilter(boolean filterOutNonpathogenic, boolean removeSynonomousVariants) {
 //        //TODO: This needs to be linked to the ExomiserSettings 
         logger.info("Making pathogenicity filter - filterOutNonpathogenic: {} removeSynonomousVariants: {}", filterOutNonpathogenic, removeSynonomousVariants);
-        PathogenicityTriageDAO pathogenicityTriageDao = new PathogenicityTriageDAO(dataSource);
+        PathogenicityVariantScoreDao pathogenicityTriageDao = new PathogenicityVariantScoreDao(dataSource);
         PathogenicityFilter filter = new PathogenicityFilter(pathogenicityTriageDao, filterOutNonpathogenic);
 //        if (filterOutNonpathogenic) {
 //            filter.setParameters("filter");

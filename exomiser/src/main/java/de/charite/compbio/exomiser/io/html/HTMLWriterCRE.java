@@ -16,6 +16,8 @@ import de.charite.compbio.exomiser.priority.Priority;
 import jannovar.common.VariantType;
 import jannovar.exome.VariantTypeCounter;
 import jannovar.pedigree.Pedigree;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for creating the framework of the
@@ -34,6 +36,9 @@ import jannovar.pedigree.Pedigree;
  * @version 0.36 (25 January, 2014)
  */
 public class HTMLWriterCRE extends HTMLWriter {
+        
+    private final Logger logger = LoggerFactory.getLogger(HTMLWriterCRE.class);
+
     /** List of HPO URLs in form of an HTML anchor. */
     private List<String> hpoLst=null;
    
@@ -496,9 +501,8 @@ public class HTMLWriterCRE extends HTMLWriter {
      * @param vtc An object from the Jannovar library with counts of all variant types
      * @param sampleNames Names of the (multiple) samples in the VCF file
      */
-     @Override  public void writeVariantDistributionTable(VariantTypeCounter vtc, List<String> sampleNames)
-	throws ExomizerException 
-    {
+     @Override  
+     public void writeVariantDistributionTable(VariantTypeCounter vtc, List<String> sampleNames){
 	try {
 	    out.write("<div class=\"boxcontainer\">\n"+
 		      "<article class=\"box\">\n"+
@@ -529,9 +533,8 @@ public class HTMLWriterCRE extends HTMLWriter {
 	    out.write("</tbody>\n</table><p>&nbsp;</p>\n");
 	    out.write("</article>\n"+
 		      "</div>\n");
-	} catch (Exception e) {
-	    String s = String.format("Error writing variant distribtion table: %s",e.getMessage());
-	    throw new ExomizerException(s);
+	} catch (IOException e) {
+	    logger.error("Error writing variant distribtion table", e);
 	}
     }
 

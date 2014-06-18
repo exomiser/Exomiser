@@ -303,7 +303,7 @@ public class PhenomizerPriority implements Priority {
 	    try {
 		PhenomizerRelevanceScore phenomizerRelScore = scoreVariantHPO(gene);
 		gene.addRelevanceScore(phenomizerRelScore, PriorityType.PHENOMIZER_PRIORITY);
-		//System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getRelevanceScore());
+		//System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getScore());
 	    } catch (ExomizerException e) {
 		error_record.add(e.toString());
 	    }
@@ -327,9 +327,9 @@ public class PhenomizerPriority implements Priority {
 	if ( maxSemSim < 1) return;
 	PhenomizerRelevanceScore.setNormalizationFactor(1d/maxSemSim);
 	/*for (Gene g : gene_list) {
-	    float score = g.getRelevanceScore(FilterType.PHENOMIZER_PRIORITY);
+	    float score = g.getRelevagetScorepe.PHENOMIZER_PRIORITY);
 	    score /= this.maxSemSim;
-	    g.resetRelevanceScore(FilterType.PHENOMIZER_PRIORITY, score);
+	    g.resetScore(FilterType.PHENOMIZER_PRIORITY, score);
 	    }*/
     }
 

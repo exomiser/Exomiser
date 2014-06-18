@@ -10,9 +10,9 @@ import jannovar.pedigree.Pedigree;
 import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.filter.VariantScore;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.RelevanceScore;
+import de.charite.compbio.exomiser.priority.GeneScore;
 
 
 /**
@@ -78,8 +78,8 @@ public class HTMLTableCRE extends HTMLTable {
      * gene on the ExomeWalker HTML page
      */
     private String getOmimText(Gene gene) {
-	Map<PriorityType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
-	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+	Map<PriorityType, GeneScore> relevanceScoreMap = gene.getRelevanceMap();
+	GeneScore mim = relevanceScoreMap.get(PriorityType.OMIM_PRIORITY);
 	List<String> lst = mim.getFilterResultList();
 	if (mim == null) {
 	    return "No known human Mendelian disease";
@@ -108,10 +108,10 @@ public class HTMLTableCRE extends HTMLTable {
     protected void writeVariant(VariantEvaluation var,  Writer out) throws IOException {
 	String ucsc = getUCSCBrowswerURL(var);
 
-	// Each variant now has exactly the same number of Triage objects with the results of filtering.
-	Map<FilterType,Triage> triageMap = var.getTriageMap();
-	Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	// Each variant now has exactly the same number of VariantScore objects with the results of filtering.
+	Map<FilterType,VariantScore> triageMap = var.getVariantScoreMap();
+	VariantScore freq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	VariantScore path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	out.write("<td>");  
 	/* Output the variant (chromosomal notation) */
 	String rep = getCRERepresentativeVariant(var);
@@ -128,7 +128,7 @@ public class HTMLTableCRE extends HTMLTable {
 	}
 	/* Output the UCSC URL */
 	out.write( ucsc + "<br/>\n" );
-	Triage qual = var.getTriageMap().get(FilterType.QUALITY_FILTER);
+	VariantScore qual = var.getVariantScoreMap().get(FilterType.QUALITY_FILTER);
 	if (qual!=null) {
 	    List<String> lst = qual.getFilterResultList();
 	    out.write("Phred variant quality: " + lst.get(0) + "<br/>\n");
@@ -168,7 +168,7 @@ public class HTMLTableCRE extends HTMLTable {
      * @param freq An object containing the frequency evaluation
      * @param out A file handle to the HTML file being written
      */
-    protected void writeVariantCREScoreCell(Triage path,Triage freq, VariantEvaluation var, Writer out) throws IOException
+    protected void writeVariantCREScoreCell(VariantScore path,VariantScore freq, VariantEvaluation var, Writer out) throws IOException
     {
 	out.write("<td>");
 	out.write("<i>Pathogenicity:</i><br/>\n");
@@ -236,17 +236,17 @@ public class HTMLTableCRE extends HTMLTable {
 	out.write(String.format("<tr>\n"));
 	writeVariant(ve,out);
 	
-	// Each variant now has exactly the same number of Triage objects with the results of filtering.
-	//HashMap<FilterType,Triage> triageMap = ve.getTriageMap();
+	// Each variant now has exactly the same number of VariantScore objects with the results of filtering.
+	//HashMap<FilterType,VariantScore> triageMap = ve.getTriageMap();
 	
 	//Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
 	//Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	//writeVariantScoreCell(path,freq,out);
 	
 
-	Map<PriorityType,RelevanceScore> relevanceMap = gen.getRelevanceMap();
-	RelevanceScore phenomizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
-	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+	Map<PriorityType, GeneScore> relevanceMap= gen.getRelevanceMap();
+	GeneScore phenomizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
+	GeneScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\" valign=\"top\">",n_variants)); 
 	if (phenomizer == null && mim == null) {

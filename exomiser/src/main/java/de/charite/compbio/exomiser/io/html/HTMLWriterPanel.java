@@ -17,6 +17,8 @@ import de.charite.compbio.exomiser.priority.Priority;
 import jannovar.pedigree.Pedigree;
 import jannovar.exome.VariantTypeCounter;
 import jannovar.common.VariantType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for creating the 
@@ -36,6 +38,8 @@ import jannovar.common.VariantType;
  * @version 0.26 (4 January, 2014)
  */
 public class HTMLWriterPanel extends HTMLWriter {
+    
+    private final Logger logger = LoggerFactory.getLogger(HTMLWriterPanel.class);
 
     private List<String> hgmdLst=null;
 
@@ -472,9 +476,8 @@ public class HTMLWriterPanel extends HTMLWriter {
      * @param vtc An object from the Jannovar library with counts of all variant types
      * @param sampleNames Names of the (multiple) samples in the VCF file
      */
-     @Override  public void writeVariantDistributionTable(VariantTypeCounter vtc, List<String> sampleNames)
-	throws ExomizerException 
-    {
+     @Override  
+     public void writeVariantDistributionTable(VariantTypeCounter vtc, List<String> sampleNames) {
 	try {
 	    out.write("<div class=\"boxcontainer\">\n"+
 		      "<article class=\"box\">\n"+
@@ -505,8 +508,7 @@ public class HTMLWriterPanel extends HTMLWriter {
 	    out.write("</article>\n"+
 		      "</div>\n");
 	} catch (Exception e) {
-	    String s = String.format("Error writing variant distribtion table: %s",e.getMessage());
-	    throw new ExomizerException(s);
+	    logger.error("Error writing variant distribution table", e);
 	}
     }
 

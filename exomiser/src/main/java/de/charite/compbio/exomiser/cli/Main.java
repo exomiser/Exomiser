@@ -5,19 +5,23 @@
  */
 package de.charite.compbio.exomiser.cli;
 
-import de.charite.compbio.exomiser.util.Prioritiser;
+import de.charite.compbio.exomiser.cli.config.MainConfig;
 import de.charite.compbio.exomiser.common.SampleData;
 import de.charite.compbio.exomiser.common.SampleDataFactory;
-import de.charite.compbio.exomiser.cli.config.MainConfig;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.filter.FilterFactory;
 import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
+import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.priority.ScoringMode;
 import de.charite.compbio.exomiser.util.ExomiserSettings;
 import de.charite.compbio.exomiser.util.OutputFormat;
+import de.charite.compbio.exomiser.util.Prioritiser;
 import de.charite.compbio.exomiser.util.VariantAnnotator;
+import de.charite.compbio.exomiser.writer.ResultsWriter;
+import de.charite.compbio.exomiser.writer.ResultsWriterFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +46,7 @@ public class Main {
 
         Options options = applicationContext.getBean(Options.class);
         ExomiserOptionsCommandLineParser commandLineOptionsParser = applicationContext.getBean(ExomiserOptionsCommandLineParser.class);
-        
+        //There is no other input other than this settings object so most of what comes next could be wrapped back up into an exomiser class 
         ExomiserSettings exomiserSettings = commandLineOptionsParser.parseCommandLineArguments(args);
         //
         if (exomiserSettings == null) {
@@ -89,13 +93,17 @@ public class Main {
         variantAnnotator.annotateVariants(variantList);
 
         //split out filtering and prioritising? e.g.
-//        List<VariantEvaluation> filteredVariants = VariantFilterer.filter(variantList, filterList);
-        //this is currently handled by Prioritiser but should probably be part of an Exomiser
+        //List<VariantEvaluation> filteredVariants = VariantFilterer.filter(variantList, filterList);
+        //this is currently handled by Prioritiser but should probably be part of an Exomiser - 
+        //e.g. RareDiseaseExomiser would OMIMPriority by default (the current situation)
         Prioritiser prioritiser = new Prioritiser(exomiserSettings.getModeOfInheritance(), filterList, priorityList);
-
+        
         logger.info("FILTERING VARIANTS AND PRIORITISING GENES");
-        boolean useRankBasedScoring = true;
-        List<Gene> prioritisedGenes = prioritiser.executePrioritization(variantList, useRankBasedScoring);
+        //prioritser needs to provide the mode of scoring it requires. Mostly it is RAW_SCORE.
+        //Either RANK_BASED or RAW_SCORE
+        ScoringMode scoreMode = exomiserSettings.getPrioritiserType().getScoringMode();
+        logger.info("Using {} scoring mode: {}", exomiserSettings.getPrioritiserType(), scoreMode);
+        List<Gene> prioritisedGenes = prioritiser.executePrioritization(variantList, scoreMode);
 //        List<Gene> prioritisedGenes = exomizer.executePrioritization(variantList);
         sampleData.setGeneList(prioritisedGenes);
         
@@ -126,16 +134,8 @@ public class Main {
         
         logger.info("OUTPUTTING RESULTS");
 
-        Exomizer exomizer = new Exomizer();
-
-        //tempory setting of names and pedigree so that the HTMLWriters work
-        exomizer.setSampleNames((ArrayList<String>) sampleData.getSampleNames());
-        exomizer.setPedigree(sampleData.getPedigree());        
-        //tempory setting of genes and variants so that the HTMLWriters work
-        exomizer.setGeneList(sampleData.getGeneList());
-        exomizer.setVariantList(sampleData.getVariantEvaluations());
-            
-        exomizer.outputHTML(sampleData, filterList, priorityList, OutputFormat.HTML, exomiserSettings.getOutFileName());
+        ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(exomiserSettings.getOutputFormat());
+        resultsWriter.write(sampleData, exomiserSettings, filterList, priorityList);
         
         logger.info("FINISHED EXOMISER");
 

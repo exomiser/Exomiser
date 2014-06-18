@@ -7,6 +7,7 @@ import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.priority.Priority;
+import de.charite.compbio.exomiser.priority.ScoringMode;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
@@ -129,7 +130,7 @@ public class Prioritiser {
         inheritanceMode = ModeOfInheritance.UNINITIALIZED;
     }
 
-     /**
+    /**
      * This method goes through VCF parsing, deserializing the UCSC data,
      * annotating variants, filtering and prioritizing genes, and ranking the
      * candidate genes. It is a convenience method that groups together most of
@@ -140,9 +141,32 @@ public class Prioritiser {
      * @param variantList A list of annotated variants from Jannovar, passed to us
      * from the main exomizer program
      * @param rankBasedScoring True if we should perform rank-based scoring rather than using the raw scores.
-     * @return 
+     * @return a list of genes ranked according to the specified method
+     * @deprecated Use the method signature which requires an unambiguous ScoringMode in place of the boolean 
      */
+    @Deprecated
     public List<Gene> executePrioritization(List<VariantEvaluation> variantList, boolean rankBasedScoring) {
+        ScoringMode scoringMode = ScoringMode.RAW_SCORE;
+        if (rankBasedScoring) {
+	    scoringMode = ScoringMode.RANK_BASED;
+	}
+        return executePrioritization(variantList, scoringMode);
+    }
+    
+     /**
+     * This method goes through VCF parsing, deserializing the UCSC data,
+     * annotating variants, filtering and prioritizing genes, and ranking the
+     * candidate genes. It is a convenience method that groups together most of
+     * the pipeline and can be used by the apache tomcat Webserver.
+     * <p>
+     * Note that we assume that the transcript definition data has been
+     * deserialized before this method is called.
+     * @param variantList A list of annotated variants from Jannovar, passed to us
+     * from the main exomizer program
+     * @param scoringMode RANK_BASED if we should perform rank-based scoring rather than using the raw scores. Defaults to RAW_SCORE
+     * @return a list of genes ranked according to the specified method
+     */
+    public List<Gene> executePrioritization(List<VariantEvaluation> variantList, ScoringMode scoringMode) {
 	/**************************************************************/
 	/* 1) Filter the variants according to user-supplied params. */
 	/**************************************************************/
@@ -158,12 +182,17 @@ public class Prioritiser {
 	/**************************************************************/
 	/* 3) Rank all genes now according to combined score. */
 	/**************************************************************/
-        logger.info("RANKING GENES");
-        if (rankBasedScoring) {
-	    scoreCandidateGenesByRank();
-	} else {
-	    rankCandidateGenes();
-	}
+        logger.info("RANKING GENES USING MODE {}", scoringMode);
+        switch (scoringMode) {
+            case RANK_BASED:
+                scoreCandidateGenesByRank();
+                break;
+            case RAW_SCORE:
+                rankCandidateGenes();
+                break;
+            default:
+                rankCandidateGenes();
+        }   
 	return geneList;
     }
 
@@ -257,10 +286,11 @@ public class Prioritiser {
      * according to a uniform distribution based on the ranks of the genes.
      */
     private void scoreCandidateGenesByRank() {
+        logger.info("Scoring genes by RANK.");
 	// Store all gene and variant scores in sortable map
 	// The key is a Float representing the raw score.
 	// The value is a list of one or more genes with this score.
-	TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
+	TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<>();
 	for (Gene g : this.geneList) {
 	    g.calculateGeneAndVariantScores(this.inheritanceMode);
             float geneScore = g.getPriorityScore();
@@ -269,7 +299,7 @@ public class Prioritiser {
 		List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
 		geneScoreGeneList.add(g);
 	    } else {
-		List<Gene> geneScoreGeneList = new ArrayList<Gene>();
+		List<Gene> geneScoreGeneList = new ArrayList<>();
 		geneScoreGeneList.add(g);
 		geneScoreMap.put(geneScore, geneScoreGeneList);
 	    }
@@ -313,6 +343,7 @@ public class Prioritiser {
      * filter/priority score.
      */
     private void rankCandidateGenes() {
+        logger.info("Scoring genes by RAW score.");
 	for (Gene g : this.geneList) {
 	    g.calculateGeneAndVariantScores(this.inheritanceMode);
 	}

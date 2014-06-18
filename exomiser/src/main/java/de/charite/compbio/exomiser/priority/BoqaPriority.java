@@ -327,7 +327,7 @@ public class BoqaPriority implements Priority {
             bqrel.setPosteriorProbability(bqrel.getPosteriorProbability() / totalSum);
             g.addRelevanceScore(bqrel, PriorityType.BOQA_PRIORITY);
 
-            System.err.println("Gene " + g.getGeneSymbol() + " has an relevance score of " + bqrel.getRelevanceScore());
+            System.err.println("Gene " + g.getGeneSymbol() + " has an relevance score of " + bqrel.getScore());
         }
     }
 

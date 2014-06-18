@@ -313,9 +313,9 @@ public class ExomiserOptionsCommandLineParser {
             case "HTML":
                 return OutputFormat.HTML;
             case "TAB":
-                return OutputFormat.TAB;
+                return OutputFormat.TSV;
             case "TSV":
-                return OutputFormat.TAB;
+                return OutputFormat.TSV;
             case "VCF":
                 return OutputFormat.VCF;
             default:

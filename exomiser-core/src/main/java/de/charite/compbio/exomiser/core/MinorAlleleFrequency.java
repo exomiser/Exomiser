@@ -11,14 +11,14 @@ package de.charite.compbio.exomiser.core;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class MinorAlleleFrequency {
-    
-    private final int frequency;
 
-    public MinorAlleleFrequency(int frequency) {
+    private final float frequency;
+
+    public MinorAlleleFrequency(float frequency) {
         this.frequency = frequency;
     }
 
-    public int getFrequency() {
+    public float getFrequency() {
         return frequency;
     }
 

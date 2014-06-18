@@ -1,17 +1,15 @@
 package de.charite.compbio.exomiser.filter;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.EnumSet;
-
+import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import jannovar.exome.VariantTypeCounter;
-
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Filter variants according to whether they are on target (i.e., located within
@@ -27,6 +25,8 @@ import java.sql.Connection;
  * @version 0.16 (20 December, 2013)
  */
 public class TargetFilter implements Filter {
+    
+    private final Logger logger = LoggerFactory.getLogger(TargetFilter.class);
 
     private final FilterType filterType = FilterType.TARGET_FILTER;
 
@@ -71,16 +71,16 @@ public class TargetFilter implements Filter {
      * variant does not pass the filter, remove it.
      */
     @Override
-    public void filterVariants(List<VariantEvaluation> variant_list) {
-        if (variant_list.size() == 0) {
-            System.err.println("[Error: TargetFilter.java] Size of variant list is zero");
+    public void filterVariants(List<VariantEvaluation> variantEvaluationtList) {
+        if (variantEvaluationtList.isEmpty()) {
+            logger.error("Size of variant list is zero - no variants to filter.");
             return;
         }
-        int M = variant_list.get(0).getNumberOfIndividuals();
+        int M = variantEvaluationtList.get(0).getNumberOfIndividuals();
         this.vtypeCounter = new VariantTypeCounter(M);
 
-        Iterator<VariantEvaluation> it = variant_list.iterator();
-        this.n_before = variant_list.size();
+        Iterator<VariantEvaluation> it = variantEvaluationtList.iterator();
+        this.n_before = variantEvaluationtList.size();
         while (it.hasNext()) {
             VariantEvaluation ve = it.next();
             Variant v = ve.getVariant();
@@ -90,7 +90,7 @@ public class TargetFilter implements Filter {
                 it.remove();
             }
         }
-        this.n_after = variant_list.size();
+        this.n_after = variantEvaluationtList.size();
         int removed = n_before - n_after;
         String s = String.format("Removed a total of %d off-target variants from further consideration", removed);
         this.messages.add(s);
@@ -148,11 +148,6 @@ public class TargetFilter implements Filter {
         return true;
     }
 
-//    /**
-//     * Not needed in this class.
-//     * @param connection An SQL (postgres) connection that was initialized elsewhere.
-//     */
-//    @Override public void setDatabaseConnection(Connection connection) { /* no-op. */ }
     @Override
     public String toString() {
         return "TargetFilter{" + "filterType=" + filterType + ", offTarget=" + offTarget + '}';

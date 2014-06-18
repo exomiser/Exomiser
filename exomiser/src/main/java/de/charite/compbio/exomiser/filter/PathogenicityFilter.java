@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.filter;
 
-import de.charite.compbio.exomiser.dao.TriageDAO;
+import de.charite.compbio.exomiser.dao.VariantScoreDao;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
@@ -30,9 +30,9 @@ public class PathogenicityFilter implements Filter {
     private final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
 
     /**
-     * DAO for retrieving Triage data from the database 
+     * DAO for retrieving VariantScore data from the database 
      */
-    private final TriageDAO triageDao;
+    private final VariantScoreDao triageDao;
 
     private final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
@@ -55,7 +55,7 @@ public class PathogenicityFilter implements Filter {
     
     private boolean useMissenseFiltering;
 
-    public PathogenicityFilter(TriageDAO triageDao, boolean useMissenseFiltering) {
+    public PathogenicityFilter(VariantScoreDao triageDao, boolean useMissenseFiltering) {
 
         this.triageDao = triageDao;
 
@@ -70,7 +70,7 @@ public class PathogenicityFilter implements Filter {
             messages.add("Polyphen2 (HVAR): \"D\" (&gt; 0.956,probably damaging), \"P\": [0.447-0.955], "
                     + "possibly damaging, and \"B\", &lt;0.447, benign.");
             messages.add("SIFT: \"D\"&lt;0.05, damaging and \"T\"&ge;0.05, tolerated</LI>");
-            PathogenicityTriage.setUseMissenseFiltering(useMissenseFiltering);
+            PathogenicityVariantScore.setUseMissenseFiltering(useMissenseFiltering);
         }
     }
 
@@ -103,7 +103,7 @@ public class PathogenicityFilter implements Filter {
 //        messages.add("Polyphen2 (HVAR): \"D\" (&gt; 0.956,probably damaging), \"P\": [0.447-0.955], "
 //                + "possibly damaging, and \"B\", &lt;0.447, benign.");
 //        messages.add("SIFT: \"D\"&lt;0.05, damaging and \"T\"&ge;0.05, tolerated</LI>");
-////        PathogenicityTriage.setUseMissenseFiltering(par);
+////        PathogenicityVariantScore.setUseMissenseFiltering(par);
 //    }
 
     /**
@@ -113,7 +113,7 @@ public class PathogenicityFilter implements Filter {
     public void setRemoveSynonomousVariants(boolean removeSynonomousVariants) {
         if (!removeSynonomousVariants) {
             //yeah, not a great name for any of these variables. 
-            PathogenicityTriage.keepSynonymousVariants();
+            PathogenicityVariantScore.keepSynonymousVariants();
             //sets the 
             //PathogenicityTriage.PATHOGENICITY_SCORE_THRESHOLD = 0;
         }
@@ -173,7 +173,7 @@ public class PathogenicityFilter implements Filter {
             //TODO: move the filtering logic into the filter and leave the pathogenicity data in the triage object.
             //Triage is then better named as FilterScore, or perhaps simply Score. 
             //Similarly in the priority package RelevanceScore might be better names PriorityScore or simply Score.
-            Triage pt = triageDao.getTriageData(v);
+            VariantScore pt = triageDao.getVariantScore(v);
                 if (!pt.passesFilter()) {
                     // Variant is not predicted pathogenic, discard it.
                     it.remove();

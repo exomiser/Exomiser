@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.priority;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class GenewandererRelevanceScore implements RelevanceScore {
+public class GenewandererRelevanceScore implements GeneScore {
     /**
      * The Random walk similarity score.
      */
@@ -28,7 +28,7 @@ public class GenewandererRelevanceScore implements RelevanceScore {
     /** 
      * @see exomizer.priority.IRelevanceScore#getRelevanceScore
      */
-    @Override public float getRelevanceScore() {
+    @Override public float getScore() {
 	return (float)genewandererScore;
     }
 
@@ -70,7 +70,7 @@ public class GenewandererRelevanceScore implements RelevanceScore {
      * performed by {@link exomizer.priority.GenewandererPriority GenewandererPriority}
      * @param newscore new value for relevance score
      */
-    public void resetRelevanceScore(float newscore){
+    public void resetScore(float newscore){
 	this.genewandererScore = newscore;
         if (this.scaledByMaxScore == -10){
             this.scaledByMaxScore = newscore;

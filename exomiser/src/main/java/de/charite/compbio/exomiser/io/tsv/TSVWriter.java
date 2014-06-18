@@ -1,23 +1,19 @@
 package de.charite.compbio.exomiser.io.tsv;
 
-import de.charite.compbio.exomiser.filter.FilterType;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.FrequencyTriage;
-import de.charite.compbio.exomiser.filter.PathogenicityTriage;
-import de.charite.compbio.exomiser.filter.Triage;
-import de.charite.compbio.exomiser.io.html.HTMLTable;
+import de.charite.compbio.exomiser.filter.FilterType;
+import de.charite.compbio.exomiser.filter.FrequencyVariantScore;
+import de.charite.compbio.exomiser.filter.PathogenicityVariantScore;
+import de.charite.compbio.exomiser.filter.VariantScore;
 import de.charite.compbio.exomiser.priority.DynamicPhenoWandererRelevanceScore;
+import de.charite.compbio.exomiser.priority.GeneScore;
 import de.charite.compbio.exomiser.priority.GenewandererRelevanceScore;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.RelevanceScore;
-import jannovar.pedigree.Pedigree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -29,7 +25,7 @@ public class TSVWriter {
     /**
      * File handle to write output.
      */
-    protected Writer out = null;
+    private Writer out;
 
     /**
      * This constructor opens a new file handle for writing.
@@ -71,8 +67,8 @@ public class TSVWriter {
             String variantType = "";
             // priority score calculation
             for (PriorityType i : g.getRelevanceMap().keySet()) {
-                RelevanceScore r = g.getRelevanceMap().get(i);
-                float x = r.getRelevanceScore();
+                GeneScore r = g.getRelevanceMap().get(i);
+                float x = r.getScore();
                 if (i == PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY) {
                     exomiser2Score = x;
                     humanPhenScore = ((DynamicPhenoWandererRelevanceScore) r).getHumanScore();
@@ -89,17 +85,17 @@ public class TSVWriter {
             }
             for (VariantEvaluation ve : g.getVariantList()) {
                 float x = ve.getFilterScore();
-                for (FilterType i : ve.getTriageMap().keySet()) {
-                    Triage itria = ve.getTriageMap().get(i);
-                    if (itria instanceof PathogenicityTriage) {
-                        if (((PathogenicityTriage) itria).filterResult() > pathogenicityScore) {
+                for (FilterType i : ve.getVariantScoreMap().keySet()) {
+                    VariantScore itria = ve.getVariantScoreMap().get(i);
+                    if (itria instanceof PathogenicityVariantScore) {
+                        if (((PathogenicityVariantScore) itria).filterResult() > pathogenicityScore) {
                             variantType = ve.getVariantType();
-                            pathogenicityScore = ((PathogenicityTriage) itria).filterResult();
-                            polyphen = ((PathogenicityTriage) itria).getPolyphen();
-                            sift = ((PathogenicityTriage) itria).getSift();
-                            mutTaster = ((PathogenicityTriage) itria).getMutTaster();
-                            caddRaw = ((PathogenicityTriage) itria).getCADDRaw();
-                            FrequencyTriage ft = (FrequencyTriage) ve.getTriageMap().get(FilterType.FREQUENCY_FILTER);
+                            pathogenicityScore = ((PathogenicityVariantScore) itria).filterResult();
+                            polyphen = ((PathogenicityVariantScore) itria).getPolyphen();
+                            sift = ((PathogenicityVariantScore) itria).getSift();
+                            mutTaster = ((PathogenicityVariantScore) itria).getMutTaster();
+                            caddRaw = ((PathogenicityVariantScore) itria).getCADDRaw();
+                            FrequencyVariantScore ft = (FrequencyVariantScore) ve.getVariantScoreMap().get(FilterType.FREQUENCY_FILTER);
                             maxFreq = ft.getMaxFreq();
                         }
                     }

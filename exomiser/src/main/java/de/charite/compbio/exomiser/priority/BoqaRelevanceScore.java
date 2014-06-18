@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.priority;
  * @author Peter N Robinson
  * @version 0.03 (9 September,2013).
  */
-public class BoqaRelevanceScore  implements RelevanceScore {
+public class BoqaRelevanceScore  implements GeneScore {
 
     
     /** Name of the disease that was associated with the best score for this gene. */
@@ -31,7 +31,7 @@ public class BoqaRelevanceScore  implements RelevanceScore {
      *
      * @return the relevance score.
      */
-    @Override public float getRelevanceScore(){
+    @Override public float getScore(){
 	return getPosteriorProbability();
     }
 
@@ -80,7 +80,7 @@ public class BoqaRelevanceScore  implements RelevanceScore {
 			     this.posteriorProbability, url);
     }
 
-    @Override public void resetRelevanceScore(float newscore){ /* not implemented */ }
+    @Override public void resetScore(float newscore){ /* not implemented */ }
 
 
 

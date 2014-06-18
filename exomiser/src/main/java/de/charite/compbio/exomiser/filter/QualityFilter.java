@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import jannovar.exome.Variant;
 
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 
 /**
@@ -54,7 +53,7 @@ public class QualityFilter implements Filter {
      */
     public QualityFilter(float mimimumQualityThreshold) {
         this.mimimumQualityThreshold = mimimumQualityThreshold;
-        QualityTriage.set_frequency_threshold(mimimumQualityThreshold);
+        QualityVariantScore.set_frequency_threshold(mimimumQualityThreshold);
         this.messages.add(String.format("PHRED quality &ge;%.1f", mimimumQualityThreshold));
     }
 
@@ -102,7 +101,7 @@ public class QualityFilter implements Filter {
         while (it.hasNext()) {
             VariantEvaluation ve = it.next();
             Variant v = ve.getVariant();
-            QualityTriage qt = new QualityTriage(v.getVariantPhredScore());
+            QualityVariantScore qt = new QualityVariantScore(v.getVariantPhredScore());
             if (!qt.passesFilter()) {
                 // Variant is not of good quality, discard it.
                 it.remove();

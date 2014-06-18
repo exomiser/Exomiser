@@ -62,7 +62,7 @@ public class ExomiserSettingsTest {
     private static final String OUT_FILE_NAME_DEFAULT = "exomiser.html";
     private static final String OUT_FILE_NAME = "wibbler.tab";
     private static final OutputFormat OUTPUT_FORMAT_DEFAULT = OutputFormat.HTML;
-    private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TAB;
+    private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV;
 
     public ExomiserSettingsTest() {
     }

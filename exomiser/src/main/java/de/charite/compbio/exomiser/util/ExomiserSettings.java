@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.util;
 
-import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
