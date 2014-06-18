@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * @author Peter N Robinson
  * @version 0.08 (9 February, 2014).
  */
-public class OMIMRelevanceScore implements RelevanceScore {
+public class OMIMRelevanceScore implements GeneScore {
     /** A list of all diseases in OMIM that are associated with the gene affected by the variant. */
     private final List<String> mimEntryList;
     /** This score will be set to 1 if the variant distribution in the gene matches the
@@ -38,7 +38,7 @@ public class OMIMRelevanceScore implements RelevanceScore {
     /**
      * @return 1 if the inheritance pattern of the diseases associated with the gene match the variants, otherwise 0.5
      */
-    @Override public float getRelevanceScore(){
+    @Override public float getScore(){
 	if (this.score==DEFAULT_SCORE) 
 	    return 1f;
 	else
@@ -135,6 +135,6 @@ public class OMIMRelevanceScore implements RelevanceScore {
 	 return sb.toString();
     }
 
-     @Override public void resetRelevanceScore(float newscore){ /* not implemented */ }
+     @Override public void resetScore(float newscore){ /* not implemented */ }
 
 }

@@ -1,7 +1,7 @@
 package de.charite.compbio.exomiser.exome;
 
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.RelevanceScore;
+import de.charite.compbio.exomiser.priority.GeneScore;
 import jannovar.common.Constants;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
@@ -30,7 +30,7 @@ import java.util.Map.Entry;
  * list of Variant objects, one for each variant observed in the exome. Additionally,
  * the Gene objects get prioritized for their biomedical relevance to the disease
  * in question, and each such prioritization results in an 
- * {@link exomizer.priority.IRelevanceScore RelevanceScore} object.
+ * {@link exomizer.priority.IRelevanceScore GeneScore} object.
  * <P>
  * There are additionally some prioritization procedures that only can be
  * performed on genes (and not on the individual variants). For instance, there
@@ -67,7 +67,7 @@ public class Gene implements Comparable<Gene> {
     /**
      * A map of the results of prioritization. The key to the map is from {@link exomizer.common.FilterType FilterType}.
      */
-    private Map<PriorityType, RelevanceScore> relevanceMap = null;
+    private Map<PriorityType, GeneScore> relevanceMap = null;
     /**
      * A Reference to the {@link jannovar.pedigree.Pedigree Pedigree} object for
      * the current VCF file. This object allows us to do segregation analysis
@@ -182,7 +182,7 @@ public class Gene implements Comparable<Gene> {
      * @param type an integer constant from {@link exomizer.common.FilterType FilterType}
      * representing the filter type
      */
-    public void addRelevanceScore(RelevanceScore rel, PriorityType type) {
+    public void addRelevanceScore(GeneScore rel, PriorityType type) {
 	this.relevanceMap.put(type,rel);
     }
 
@@ -192,23 +192,26 @@ public class Gene implements Comparable<Gene> {
      * @return The IRelevance object corresponding to the filter type.
      */
     public float getRelevanceScore(PriorityType type) {
-	RelevanceScore ir = this.relevanceMap.get(type);
+	GeneScore ir = this.relevanceMap.get(type);
 	if (ir == null) {
 	    return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
 	}
-	return ir.getRelevanceScore();
+	return ir.getScore();
     }
 
+    /**
+     * @return A list of all variants in the VCF file that affect this gene.
+     */
     public List<VariantEvaluation> getVariantList() {
         return variantList;
     }
     
     public void resetRelevanceScore(PriorityType type, float newval) {
-	RelevanceScore rel = this.relevanceMap.get(type);
+	GeneScore rel = this.relevanceMap.get(type);
 	if (rel == null) {
 	    return;/* This should never happen. */
 	}
-	rel.resetRelevanceScore(newval);
+	rel.resetScore(newval);
     }
 
     /**
@@ -230,10 +233,10 @@ public class Gene implements Comparable<Gene> {
     }
 
     /** 
-     * @return the map of {@link exomizer.priority.IRelevanceScore  RelevanceScore} 
+     * @return the map of {@link exomizer.priority.IRelevanceScore  GeneScore} 
      * objects that represent the result of filtering 
      */
-    public Map<PriorityType,RelevanceScore> getRelevanceMap() { return this.relevanceMap; }
+    public Map<PriorityType,GeneScore> getRelevanceMap() { return this.relevanceMap; }
     
     /**
      * Note that currently, the gene symbols are associated with the Variants.
@@ -323,20 +326,12 @@ public class Gene implements Comparable<Gene> {
      */
      public void calculatePriorityScore() {
 	 this.priorityScore  = 1f;
-         for (Entry<PriorityType, RelevanceScore> entry : relevanceMap.entrySet()) {
-	    RelevanceScore r = entry.getValue();
-	    float x = r.getRelevanceScore();
+         for (Entry<PriorityType, GeneScore> entry : relevanceMap.entrySet()) {
+	    GeneScore r = entry.getValue();
+	    float x = r.getScore();
 	    priorityScore *= x;
 	 }
      }
-
-
-    /**
-     * @return A list of all variants in the VCF file that affect this gene.
-     */
-    public List<VariantEvaluation> get_variant_list() {
-        return this.variantList;
-    }
 
     /**
      * @return A list order by descending variant score .

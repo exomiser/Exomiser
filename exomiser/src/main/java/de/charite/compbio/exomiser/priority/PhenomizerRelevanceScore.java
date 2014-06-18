@@ -9,7 +9,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.05 (6 January, 2014).
  */
-public class PhenomizerRelevanceScore implements RelevanceScore {
+public class PhenomizerRelevanceScore implements GeneScore {
     /** The semantic similarity score as implemented in Phenomizer. Note that this is not the 
      * p-value methodology in that paper, but merely the simple semantic similarity score.
      */
@@ -50,7 +50,7 @@ public class PhenomizerRelevanceScore implements RelevanceScore {
      * @see exomizer.priority.IRelevanceScore#getRelevanceScore
      * @return the HPO semantic similarity score calculated via Phenomizer.
      */
-    @Override public float getRelevanceScore() {
+    @Override public float getScore() {
 	return (float)(hpoSemSimScore*NORMALIZATION_FACTOR);
     }
     
@@ -64,7 +64,7 @@ public class PhenomizerRelevanceScore implements RelevanceScore {
     }
     
     /** This method not needed for this derived class. */
-    @Override public void resetRelevanceScore(float newscore){ /* not implemented */ }
+    @Override public void resetScore(float newscore){ /* not implemented */ }
 
 
     @Override public String getFilterResultSummary() {

@@ -12,6 +12,6 @@ package de.charite.compbio.exomiser.util;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum OutputFormat {
-        HTML, VCF, TAB;
+        HTML, VCF, TSV;
         
 }

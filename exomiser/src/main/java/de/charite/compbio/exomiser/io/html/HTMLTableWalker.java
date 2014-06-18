@@ -12,9 +12,9 @@ import jannovar.pedigree.Pedigree;
 import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.Triage;
+import de.charite.compbio.exomiser.filter.VariantScore;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.RelevanceScore;
+import de.charite.compbio.exomiser.priority.GeneScore;
 
 
 
@@ -73,8 +73,8 @@ public class HTMLTableWalker extends HTMLTable {
      * gene on the ExomeWalker HTML page
      */
     private String getOmimText(Gene gene) {
-	Map<PriorityType,RelevanceScore> relevanceMap = gene.getRelevanceMap();
-	RelevanceScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+	Map<PriorityType,GeneScore> relevanceMap = gene.getRelevanceMap();
+	GeneScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	if (mim == null) {
 	    return "No known human Mendelian disease";
 	} else {
@@ -197,9 +197,9 @@ public class HTMLTableWalker extends HTMLTable {
 
 
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
-	Map<FilterType,Triage> triageMap = varev.getTriageMap();
-	Triage frq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	Triage pth = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	Map<FilterType, VariantScore> triageMap = varev.getVariantScoreMap();
+	VariantScore frq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	VariantScore pth = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	float score = varev.getFilterScore();
 	StringBuilder sb = new StringBuilder();
 	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<span>",score)); 

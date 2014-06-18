@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title>The Exomizer - A Tool to Annotate and Prioritize Whole-Exome Sequencing Data</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <!--links with relative href paths are not processable outside of a web context. Given this is for local output we're hard-coding the css in the html-->
+        <!--<link rel="stylesheet" type="text/css" media="all" th:href="@{/html/resources/css/exomiser.css}"/>-->
+        <style>
+            body {font-family: sans-serif;   
+                  color: #000000;    
+                  background-color: #FFFFFF;  
+                  margin: 0; 
+                  padding: 0; 
+            } 
+            h1 {  
+                color: #336699; 
+            } 
+            h2,h3,h4 {  
+                text-align: left; 
+            }
+            h2 { 
+                color: #336699;
+            }
+            a {
+                color: #336699;
+            }
+            p { 
+                text-align: justify;
+                line-height: 120%;
+                padding-left: 2em;
+            }
+            p.small { 
+                font-size: 80%;
+            }
+            table.summary { margin-left: auto;margin-right: auto;width: 80%;text-align:left;}
+            .summary th {text-align: center; background-color: #336699;color: #FFFFFF;padding: 0.4em;font-size: 100%}
+            .summary td{ text-align: left;background-color: #DDDDDD;color: #000000;padding: 0.4em;font-size: 75%}
+            table.priority {margin-left: auto;margin-right: auto;width: 90%;text-align:left; border-collapse: collapse; border-width: 2px; border-spacing: 2px; border-style: solid;border-color: black; background-color: white}
+            .priority th {padding: 0.4em; border-width: 1px;padding: 1px;border-style: inset;border-color: gray;background-color: white;}
+            .priority td {color:black;background-color:#FFFFFF; border-width: 1px;word-break:break-all;padding: 1px;border-style: inset;border-color: gray;}
+            .priority td.g {border:2px dotted #0070C0; padding: 10px;}
+            .priority tr.d0 td { background-color: #FFFFFF; color: black;}
+            .priority tr.d1 td {	background-color: #DDDDDD; color: black;}
+            table#qy {margin-left: auto;margin-right: auto;text-align:left; font-size:75%;border-collapse: collapse; border-width: 1px; border-spacing: 1px; border-style: solid;border-color: black; background-color: white}
+            table.ztable {border: 1px solid #DFDFDF;margin-left: auto;margin-right: auto;width: 80%;text-align: left;-moz-border-radius: 3px;-webkit-border-radius: 3px;border-radius: 3px;font-family: Arial,"Bitstream Vera Sans",Helvetica,Verdana,sans-serif;color: #333;}
+            table.ztable td,  th {border-top-color: white;border-bottom: 1px solid #DFDFDF;color: #555;}
+            table.ztable th {text-shadow: rgba(255, 255, 255, 0.796875) 0px 1px 0px;font-family: Georgia,"Times New Roman","Bitstream Charter",Times,serif;font-weight: bold;padding: 7px 7px 8px;text-align: left;line-height: 1.3em;font-size: 14px;}
+            table.ztable td {font-size: 12px;padding: 4px 7px 2px;vertical-align: top;}
+            td.w { background-color: #FFFFFF; }
+            td.lb { background-color: #A9F5F2; }
+            td.b { background-color: #424242; color: red; }
+            div.w { background-color: #FFFFFF; display: inline-block; }
+            div.lb { background-color: #A9F5F2;display: inline-block; }
+            div.b { background-color: #424242; color: red;display: inline-block; }
+            #header { 
+                border-bottom: 1px;
+                margin-bottom: 0;
+                height: 100px;
+                padding: 0;
+                margin-top: 0;
+                background-color: #336699;
+                color: #FFFFFF;
+                width: 100%;
+                font-size: 250%;
+                text-align: center;
+                padding: 0.3em;
+            }
+            #topmenu { 
+                margin-left: auto;
+                margin-right: auto;
+                background-color: #DDDDDD;
+                color: #336699;
+                width: 100%;
+                font-size: 120%;
+                text-align: center;
+                padding: 0.3em;
+            }
+            #topmenu a { 
+                text-decoration: none;
+                padding: 0.3em;
+            }
+            #topmenu a:hover { 
+                background-color: #336699;
+                color: #DDDDDD;
+            }
+            #main { 
+                padding: 0px; 
+                margin-left: 20px; 
+                border-left: 1px; 
+                margin-right: 20px; 
+                border-bottom: 10px; 
+            } 
+            hr {border: 0;width: 80%;color: #f00;background-color: #ADD8E6;height: 5px;}
+            #footer { 
+                border-bottom: 1px;
+                border-top: 1px; 
+                margin-bottom: 0;
+                height: 20px;
+                padding: 0;
+                margin-top: 0;
+                background-color: #336699;
+                color: #FFFFFF;
+                width: 100%;
+                font-size: 100%;
+                text-align: center;
+                padding: 0.3em;
+            } 
+            #footer p { 
+                color: white; 
+                font-size: 85%; 
+                border: 0; 
+                margin: 0; 
+                padding: 0.2em; 
+                padding-left: 2em; 
+            } 
+            #footer a {  
+                color: white; 
+            }
+        </style>
+
+    </head>
+    <body>
+        <div id="header">
+            The Exomizer: Annotate and Filter Variants
+        </div>
+        <div id="topmenu">
+            <a href="#Filtering">Filtering summary</a> |
+            <a href="#Distribution">Variant type distribution</a> |
+            <a href="#Prioritization">Prioritized Variant List</a> |
+            <a href="#About">About</a>
+        </div>
+        <div id="main">
+            <h2>
+                <a name="Filtering">Filtering Summary</a>
+            </h2>
+            <table class="summary">
+                <thead>
+                    <tr>
+                        <th>Filter</th>
+                        <th>Parameters</th>
+                        <th>Variants before filtering</th>
+                        <th>Variants after filtering</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="filter : ${filters}">
+                        <td th:text="${filter.filterName}"></td>
+                        <td>
+                            <ul th:each="message : ${filter.messages}" th:if="${not #lists.isEmpty(filter.messages)}" th:text="${message}"></ul>
+                        </td>
+                            <td th:text="${filter.before}"></td>
+                        <td th:text="${filter.after}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br/>
+                
+            <h2>
+                <a name="Distribution">Variant type distribution</a>
+            </h2>
+            <table>
+                <thead>
+                    <tr align="left">
+                        <th>Variant Type</th>    
+                        <th>Sample name 1</th>
+                        <th>Sample name 2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td ></td>
+                        <td > </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            
+            <h2>Analyzed samples</h2>
+<!--            //if there is a multi-sample pedigree we want to see the analysis:
+            //HTMLTable.writePedigreeTable()-->
+            <p>affected: red, parent of affected: light blue, unaffected: white</p>
+            <table class="pedigree">
+                <tr>
+                    <td id="r">Sample name: manuel</td>
+                </tr>
+                <tr>
+                    <td>fam</td>
+<!--                    if (this.pedigree.isNthPersonAffected(i)) {
+                        <td id="g">id</td>
+                    } else if (this.pedigree.isNthPersonParentOfAffected(i)) {
+                         <td id="b">id</td>
+                    } else {
+                        <td id="w">id</td>
+                    }-->
+                    <td>fathID</td>
+                    <td>mothID</td>
+                    <td>sex</td>
+                    <td>disease</td>
+                </tr>
+            </table>
+            <br/>
+            <hr/>
+            
+            <a name="Prioritization">
+                <h2>Prioritized Variant List</h2>
+            </a>            
+            <table class="priority">
+                <tr>
+                    <th style="width:50%">Variant</th>
+                    <th style="width:20%">Variant analysis</th>
+                    <th style="width:30%">Phenotypic analysis</th>
+                </tr>
+            </table>
+            <h2><a name="About">About</a></h2>
+            <p>
+                The Exomizer is a Java program that functionally annotates variants from whole-exome 
+                sequencing data starting from a VCF file (version 4). The functional annotation code is 
+                based on <a href="https://github.com/charite/jannovar/">Jannovar</a> and uses 
+                <a href="http://genome.ucsc.edu/">UCSC</a> KnownGene transcript definitions and 
+                hg19 genomic coordinates
+            </p>
+            <p>
+                Variants are prioritized according to user-defined criteria on variant frequency, pathogenicity, 
+                quality, inheritance pattern, and model organism phenotype data. Predicted pathogenicity data 
+                was extracted from the <a href="http://www.ncbi.nlm.nih.gov/pubmed/21520341">dbNSFP</a> resource.
+            </p>
+            <p>
+                Developed by the Computational Biology and Bioinformatics group at the 
+                <a href="http://genetik.charite.de/">Institute for Medical Genetics and Human Genetics</a> of the 
+                <a href="http://www.charite.de">Charit&eacute; - Universit&auml;tsmedizin Berlin</a> and the Mouse 
+                Informatics Group at the <a href="http://www.sanger.ac.uk/">Sanger Institute</a>.  
+            </p>
+        </div>
+
+        <div id="footer">
+            <p>Problems, suggestions, or comments? Please <a href="mailto:peter.robinson@charite.de">let us know</a></p>
+        </div>
+
+    </body>
+</html>

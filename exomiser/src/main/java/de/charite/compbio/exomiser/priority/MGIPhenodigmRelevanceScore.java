@@ -18,7 +18,7 @@ import jannovar.common.Constants;
  * @author Damian Smedley
  * @version 0.05 (April 2, 2013).
  */
-public class MGIPhenodigmRelevanceScore implements RelevanceScore {
+public class MGIPhenodigmRelevanceScore implements GeneScore {
     /** The phenodigm score as calculated by OWLsim. This score indicates the 
      * similarity between a humam disease and the phenotype of a genetically
      * modified mouse model.*/
@@ -64,7 +64,7 @@ public class MGIPhenodigmRelevanceScore implements RelevanceScore {
     /**
      * @return Relevance score for the current Gene
      */
-    @Override public float getRelevanceScore(){
+    @Override public float getScore(){
     	if (MGI_Phenodigm == Constants.UNINITIALIZED_FLOAT){
 	    return 0.1f;// mouse model exists but no hit to this disease
     	}
@@ -124,5 +124,5 @@ public class MGIPhenodigmRelevanceScore implements RelevanceScore {
 	return anchor;
     }
 
-     @Override public void resetRelevanceScore(float newscore){ /* not implemented */ }
+     @Override public void resetScore(float newscore){ /* not implemented */ }
 }

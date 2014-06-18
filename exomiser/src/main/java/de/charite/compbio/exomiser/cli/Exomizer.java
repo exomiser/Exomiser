@@ -7,13 +7,11 @@ import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
-import de.charite.compbio.exomiser.filter.FilterFactory;
 import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.filter.TargetFilter;
 import de.charite.compbio.exomiser.io.ExomiserDatabase;
 import de.charite.compbio.exomiser.io.PublishedMutationSearcher;
 import de.charite.compbio.exomiser.io.html.HTMLWriter;
-import de.charite.compbio.exomiser.io.html.HTMLWriterBOQA;
 import de.charite.compbio.exomiser.io.html.HTMLWriterCRE;
 import de.charite.compbio.exomiser.io.html.HTMLWriterWalker;
 import de.charite.compbio.exomiser.io.tsv.TSVWriter;
@@ -887,11 +885,7 @@ public class Exomizer {
         this.htmlWriter.writeHTMLFilterSummary(this.prioritiser.getFilterList(),
                 this.prioritiser.getPriorityList());
         VariantTypeCounter vtc = getVariantTypeCounter();
-        try {
-            htmlWriter.writeVariantDistributionTable(vtc, this.sampleNames);
-        } catch (ExomizerException e) {
-            logger.error("Exception while output variant distribution: {}", e);
-        }
+        htmlWriter.writeVariantDistributionTable(vtc, this.sampleNames);
         out.write("<hr/>\n");
         this.htmlWriter.writeHTMLBody(this.pedigree, this.geneList);
         if (this.status_message != null) {
@@ -1004,7 +998,7 @@ public class Exomizer {
         PublishedMutationSearcher searcher = new PublishedMutationSearcher(this.connection);
         for (int i = 0; i < N; ++i) {
             Gene g = this.geneList.get(i);
-            List<VariantEvaluation> varList = g.get_variant_list();
+            List<VariantEvaluation> varList = g.getVariantList();
             searcher.addPublishedMutationsToVariants(varList);
         }
     }
@@ -1109,9 +1103,8 @@ public class Exomizer {
                 this.htmlWriter = new HTMLWriterWalker(fname);
                 outputWalker();
                 return;
-            } else if (this.useBOQA) {
-                this.htmlWriter = new HTMLWriterBOQA(fname);
-            } else if (this.useCRE) {
+            } 
+            else if (this.useCRE) {
                 this.htmlWriter = new HTMLWriterCRE(fname, this.vcf_file_basename);
                 outputCRE();
                 return;

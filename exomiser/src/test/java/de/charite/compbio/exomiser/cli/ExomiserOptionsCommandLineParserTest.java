@@ -132,7 +132,8 @@ public class ExomiserOptionsCommandLineParserTest {
     @Test
     public void command_line_parser_should_produce_options_with_maximumFrequency_when_set() {
         float frequency = 25.23f;
-        String input = String.format("-v 123.vcf -F %.2f --prioritiser=phenodigm-mgi", frequency);
+        //use the actual value in the string here otherwise it will do weird localisation things.
+        String input = String.format("-v 123.vcf -F 25.23 --prioritiser=phenodigm-mgi", frequency);
         
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
@@ -144,7 +145,8 @@ public class ExomiserOptionsCommandLineParserTest {
     @Test
     public void command_line_parser_should_produce_options_with_minimumQuality_when_set() {
         float frequency = 73.12f;
-        String input = String.format("-v 123.vcf -Q %.2f --prioritiser=phenodigm-mgi", frequency);
+        //use the actual value in the string here otherwise it will do weird localisation things.
+        String input = String.format("-v 123.vcf -Q 73.12 --prioritiser=phenodigm-mgi", frequency);
         
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
@@ -443,7 +445,7 @@ public class ExomiserOptionsCommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
         
-        assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.TAB)); 
+        assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.TSV)); 
     }
     
     @Test

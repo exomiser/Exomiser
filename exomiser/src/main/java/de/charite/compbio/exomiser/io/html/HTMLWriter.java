@@ -1,25 +1,25 @@
 package de.charite.compbio.exomiser.io.html;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.Writer;
-import java.io.IOException; 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Iterator;
-
-import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.filter.Filter;
-import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.filter.Filter; 
+import de.charite.compbio.exomiser.filter.FilterType;
+import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.reference.Network;
-
 import jannovar.common.VariantType;
 import jannovar.exome.VariantTypeCounter;
 import jannovar.pedigree.Pedigree;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for creating the framework of the
@@ -35,6 +35,9 @@ import jannovar.pedigree.Pedigree;
  * @version 0.37 (18 February, 2014)
  */
 public class HTMLWriter {
+    
+    private final Logger logger = LoggerFactory.getLogger(HTMLWriter.class);
+    
     /** File handle to write output. */
     protected Writer out=null;
     /** maximum number of genes that will be shown (default 100). This parameter can be set to 10,20,50,All on
@@ -138,9 +141,7 @@ public class HTMLWriter {
      * @param vtc An object from the Jannovar library with counts of all variant types
      * @param sampleNames Names of the (multiple) samples in the VCF file
      */
-    public void writeVariantDistributionTable(VariantTypeCounter vtc, List<String> sampleNames)
-	throws ExomizerException 
-    {
+    public void writeVariantDistributionTable(VariantTypeCounter vtc, List<String> sampleNames) {
 	try {
 	    out.write("<table>\n");
 	    out.write("<thead><tr align=\"left\">\n");
@@ -164,9 +165,8 @@ public class HTMLWriter {
 		out.write("</tr>\n");
 	    }
 	    out.write("</tbody>\n</table><p>&nbsp;</p>\n");
-	} catch (Exception e) {
-	    String s = String.format("Error writing variant distribtion table: %s",e.getMessage());
-	    throw new ExomizerException(s);
+	} catch (IOException e) {
+	    logger.error("Error writing variant distribtion table", e);
 	}
     }
 

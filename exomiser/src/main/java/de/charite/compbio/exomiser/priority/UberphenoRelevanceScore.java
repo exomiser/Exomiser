@@ -11,7 +11,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.02 (April 2, 2013).
  */
-public class UberphenoRelevanceScore implements RelevanceScore {
+public class UberphenoRelevanceScore implements GeneScore {
 
     private double uberphenoScore;
 
@@ -23,10 +23,10 @@ public class UberphenoRelevanceScore implements RelevanceScore {
     }
 
     /* (non-Javadoc)
-     * @see exomizer.priority.IPriority#getRelevanceScore
+     * @see exomizer.priority.Priority#getScore
      */
     @Override
-    public float getRelevanceScore() {
+    public float getScore() {
         return (float) uberphenoScore;
     }
 
@@ -39,7 +39,7 @@ public class UberphenoRelevanceScore implements RelevanceScore {
     }
 
     @Override
-    public void resetRelevanceScore(float newscore) { /* not implemented */ }
+    public void resetScore(float newscore) { /* not implemented */ }
 
     @Override
     public String getFilterResultSummary() {

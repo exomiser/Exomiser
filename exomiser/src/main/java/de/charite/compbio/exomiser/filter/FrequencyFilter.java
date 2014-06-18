@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.filter;
 
-import de.charite.compbio.exomiser.dao.FrequencyTriageDAO;
+import de.charite.compbio.exomiser.dao.FrequencyVariantScoreDao;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exception.ExomizerSQLException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
@@ -43,7 +43,7 @@ public class FrequencyFilter implements Filter {
     private final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
 
     @Autowired
-    private final FrequencyTriageDAO triageDao;
+    private final FrequencyVariantScoreDao triageDao;
 
 //    /** A prepared SQL statement for querying from the frequency table. */
 //    private PreparedStatement preparedFrequencyQuery = null;
@@ -92,7 +92,7 @@ public class FrequencyFilter implements Filter {
      * the ESP database regardless of their frequency.
      *
      */
-    public FrequencyFilter(FrequencyTriageDAO triageDao, float maxFreq, boolean filterOutAllDbsnp) {
+    public FrequencyFilter(FrequencyVariantScoreDao triageDao, float maxFreq, boolean filterOutAllDbsnp) {
         this.triageDao = triageDao;
 
         setMaxFrequency(maxFreq);
@@ -121,7 +121,7 @@ public class FrequencyFilter implements Filter {
         this.maxFreq = maxFreq;
         try {
             //why not just do this here?
-            FrequencyTriage.setMaxFreqThreshold(this.maxFreq);
+            FrequencyVariantScore.setMaxFreqThreshold(this.maxFreq);
         } catch (ExomizerInitializationException e) {
             logger.error(null, e);
         }
@@ -178,8 +178,8 @@ public class FrequencyFilter implements Filter {
             VariantEvaluation ve = it.next();
             Variant v = ve.getVariant();
 //	    try {
-//		FrequencyTriage ft = retrieve_frequency_data(v);
-            FrequencyTriage ft = triageDao.getTriageData(v);
+//		FrequencyVariantScore ft = retrieve_frequency_data(v);
+            FrequencyVariantScore ft = triageDao.getVariantScore(v);
             if (ft.hasFrequencyDataFrom_dbSNP()) {
                 n_dbSNP_frequency_data_found++;
             }
@@ -231,7 +231,7 @@ public class FrequencyFilter implements Filter {
      * @param v A Variant whose frequency is to be retrieved from the SQL
      * database by this function.
      */
-    private FrequencyTriage retrieve_frequency_data(Variant v) throws ExomizerSQLException {
+    private FrequencyVariantScore retrieve_frequency_data(Variant v) throws ExomizerSQLException {
         int dbSNPid = Constants.UNINITIALIZED_INT;
         float espEAmaf = Constants.UNINITIALIZED_FLOAT;
         float espAAmaf = Constants.UNINITIALIZED_FLOAT;
@@ -275,7 +275,7 @@ public class FrequencyFilter implements Filter {
             throw new ExomizerSQLException("Error executing ESP query: " + e);
         }
 
-        FrequencyTriage ft = new FrequencyTriage(dbSNPid, dbSNPmaf, espEAmaf, espAAmaf, espAllmaf);
+        FrequencyVariantScore ft = new FrequencyVariantScore(dbSNPid, dbSNPmaf, espEAmaf, espAAmaf, espAllmaf);
         return ft;
     }
 

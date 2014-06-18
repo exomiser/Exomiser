@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
  * @author Peter N Robinson
  * @version 0.09 (18 December, 2013).
  */
-public class QualityTriage implements Triage {
+public class QualityVariantScore implements VariantScore {
    
-    private static final Logger logger = LoggerFactory.getLogger(QualityTriage.class);
+    private static final Logger logger = LoggerFactory.getLogger(QualityVariantScore.class);
     
     /** The PHRED quality value for the current variant call. */
     private float quality;
@@ -28,13 +28,13 @@ public class QualityTriage implements Triage {
 	if (t<0f ) {
 	    logger.error("Illegal value for quality threshold: {}", t);
 	}
-	QualityTriage.threshold = t; 
+	QualityVariantScore.threshold = t; 
     }
 
     /**
      * @param qual a PHRED variant-call quality score.
      */
-    public QualityTriage(float qual) {
+    public QualityVariantScore(float qual) {
 	this.quality = qual;
     }
 
@@ -45,7 +45,7 @@ public class QualityTriage implements Triage {
      * @return true if the variant being analyzed passes the filter (e.g., has high quality ). 
      */
     public boolean passesFilter() {
-	return this.quality >= QualityTriage.threshold; 
+	return this.quality >= QualityVariantScore.threshold; 
     }
 
     /** 
