@@ -46,20 +46,20 @@ public class PhenodigmDataDumper {
         if (outputPath.toFile().mkdir()) {
             logger.info("Created new directory {} for Phenodigm datadumps.", outputPath);
         }
-//        dumpMp(outputPath, "mp.pg");
-//        dumpMouseGeneOrthologs(outputPath, "human2mouseOrthologs.pg");
+        dumpMp(outputPath, "mp.pg");
+        dumpMouseGeneOrthologs(outputPath, "human2mouseOrthologs.pg");
         dumpDiseaseHp(outputPath, "diseaseHp.pg");
-//        dumpMouseMp(outputPath, "mouseMp.pg");
-//        dumpOmimTerms(outputPath, "omimTerms.pg");
-//        dumpHpMpMapping(outputPath, "hpMpMapping.pg");
-//        dumpHpHpMapping(outputPath, "hpHpMapping.pg");
-//        dumpMouseGeneLevelSummary(outputPath, "mouseGeneLevelSummary.pg");
-//        dumpFishGeneLevelSummary(outputPath, "fishGeneLevelSummary.pg");
-//        dumpFishGeneOrthologs(outputPath, "human2fishOrthologs.pg");
-//        dumpOrphanet(outputPath, "orphanet.pg");
-//        dumpZp(outputPath, "zp.pg");
-//        dumpFishZp(outputPath, "zfin_zp.pg");
-//        dumpHpZpMapping(outputPath, "hpZpMapping.pg");
+        dumpMouseMp(outputPath, "mouseMp.pg");
+        dumpOmimTerms(outputPath, "omimTerms.pg");
+        dumpHpMpMapping(outputPath, "hpMpMapping.pg");
+        dumpHpHpMapping(outputPath, "hpHpMapping.pg");
+        dumpMouseGeneLevelSummary(outputPath, "mouseGeneLevelSummary.pg");
+        dumpFishGeneLevelSummary(outputPath, "fishGeneLevelSummary.pg");
+        dumpFishGeneOrthologs(outputPath, "human2fishOrthologs.pg");
+        dumpOrphanet(outputPath, "orphanet.pg");
+        dumpZp(outputPath, "zp.pg");
+        dumpFishZp(outputPath, "zfin_zp.pg");
+        dumpHpZpMapping(outputPath, "hpZpMapping.pg");
         
     }
 
