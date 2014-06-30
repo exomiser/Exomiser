@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli;
 
-import de.charite.compbio.exomiser.cli.ExomiserOptionsCommandLineParser;
 import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.util.ExomiserSettings;
@@ -270,6 +269,35 @@ public class ExomiserOptionsCommandLineParserTest {
     }
     
     @Test
+    public void command_line_parser_should_produce_options_with_single_hpo_id_when_set() {
+        String option = "--hpo-ids";
+        String value =  "HP:0000407";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
+        
+        String[] args = input.split(" ");
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        
+        List<String> expectedList = new ArrayList();
+        expectedList.add("HP:0000407");
+
+        assertThat(exomiserSettings.getHpoIds(), equalTo(expectedList)); 
+    }
+    
+    @Test
+    public void command_line_parser_should_produce_options_with_empty_list_when_invalid_hpo_id_given() {
+        String option = "--hpo-ids";
+        String value =  "HP:000040";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
+        
+        String[] args = input.split(" ");
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        
+        List<String> expectedList = new ArrayList();
+
+        assertThat(exomiserSettings.getHpoIds(), equalTo(expectedList)); 
+    }
+    
+    @Test
     public void command_line_parser_should_produce_options_with_only_hpo_ids_when_set_with_invalid_value() {
         String option = "--hpo-ids";
         //OMIM:100100 is not a valid HPO ID
@@ -303,8 +331,23 @@ public class ExomiserOptionsCommandLineParserTest {
         assertThat(exomiserSettings.getSeedGeneList(), equalTo(expectedList)); 
     }
     
-    @Test(expected = NumberFormatException.class)
-    public void command_line_parser_should_throw_parse_error_when_seed_genes_incorrectly_specified_and_return_an_empty_list() {
+    @Test
+    public void command_line_parser_should_produce_options_with_single_seed_gene_when_set() {
+        String option = "--seed-genes";
+        String value =  "123";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
+        
+        String[] args = input.split(" ");
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        
+        List<Integer> expectedList = new ArrayList();
+        expectedList.add(123);
+
+        assertThat(exomiserSettings.getSeedGeneList(), equalTo(expectedList)); 
+    }
+    
+    @Test
+    public void command_line_parser_should_return_empty_list_when_seed_genes_incorrectly_specified() {
         String option = "--seed-genes";
         String value =  "gene1:gene2,gene3";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
@@ -328,7 +371,19 @@ public class ExomiserOptionsCommandLineParserTest {
         
         assertThat(exomiserSettings.getDiseaseId(), equalTo(value)); 
     }
-                    
+
+    @Test
+    public void command_line_parser_should_produce_options_with_no_disease_id_when_set_with_empty_value() {
+        String option = "--disease-id";
+        String value =  "";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
+        
+        String[] args = input.split(" ");
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        
+        assertThat(exomiserSettings.getDiseaseId(), equalTo(value)); 
+    }
+    
     @Test
     public void command_line_parser_should_produce_options_with_DOMINANT_inheritance_mode_when_set() {
         String option = "--inheritance-mode";

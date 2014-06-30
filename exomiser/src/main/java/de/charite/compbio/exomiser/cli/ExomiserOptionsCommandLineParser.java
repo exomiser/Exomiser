@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli;
 
+import com.sun.org.apache.xerces.internal.impl.xs.identity.Selector;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.util.ExomiserSettings;
 import de.charite.compbio.exomiser.util.ExomiserSettings.Builder;
@@ -13,6 +14,8 @@ import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -24,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.misc.Regexp;
 
 /**
  * Handles parsing of the commandline input to provide properly typed data to
@@ -270,24 +274,22 @@ public class ExomiserOptionsCommandLineParser {
         String delimiter = ",";
         logger.info("Parsing list from: ", value);
         
-        if (!value.contains(delimiter)) {
-            logger.error("Unable to parse {} value: {} - please specify a list of comma-separated strings with no white space separator. e.g. HPO:123456,HPO:234567,HPO:987653", longOpt, value);
-            return new ArrayList();
-        }
-        String values[] = value.split(",");
-        if (values.length < 1) {
-            logger.error("Could not parse any HPO terms from the input string \"{}\"", value);
-            return new ArrayList();
-        }
+        String values[] = value.split(delimiter);
+        
         List<String> hpoList = new ArrayList<>();
-        for (String string : values) {
-            string = string.trim();
-            if (string.startsWith("HP:") && string.length() == 10) { /* A well formed HPO term starts with "HP:" and has ten characters. */
+        Pattern hpoPattern = Pattern.compile("HP:[0-9]{7}");
+        //I've gone for a more verbose splitting and individual token parsing 
+        //instead of doing while hpoMatcher.matches(); hpoList.add(hpoMatcher.group()) 
+        //on the whole input string so tha the user has a warning about any invalid HPO ids
+        for (String token : values) {
+            token = token.trim();
+            Matcher hpoMatcher = hpoPattern.matcher(token);
+            if (hpoMatcher.matches()) { /* A well formed HPO term starts with "HP:" and has ten characters. */
                 //ideally we need an HPO class as the second half of the ID is an integer.
                 //TODO: add Hpo class to exomiser.core - Phenodigm.core already has one.
-                hpoList.add(string); 
+                hpoList.add(token); 
             } else {
-                logger.error("Malformed HPO input string \"{}\". Could not parse term \"{}\"", value, string);
+                logger.error("Malformed HPO input string \"{}\". Term \"{}\" does not match the HPO identifier pattern: {}", value, token, hpoPattern);
             }
         }
 
@@ -328,14 +330,16 @@ public class ExomiserOptionsCommandLineParser {
         
         List<Integer> returnList = new ArrayList<>();
         
-        if (!value.contains(delimiter)) {
-            logger.error("Unable to parse {} value: {} - please specify a list of comma-separated integers with no white space separator. e.g. 12345,23456,98765", longOpt, value);
-            return returnList;
-        }
+        Pattern mgiGeneIdPattern = Pattern.compile("[0-9]+");
         
         for (String string : value.split(delimiter)) {
-            Integer integer = Integer.parseInt(string.trim());
-            returnList.add(integer);
+            Matcher mgiGeneIdPatternMatcher = mgiGeneIdPattern.matcher(string);
+            if (mgiGeneIdPatternMatcher.matches()){ 
+                Integer integer = Integer.parseInt(string.trim());
+                returnList.add(integer);
+            } else {
+                logger.error("Malformed MGI gene ID input string \"{}\". Term \"{}\" does not match the MGI gene ID identifier pattern: {}", value, string, mgiGeneIdPattern);
+            }
         }
 
         return returnList;    
