@@ -382,13 +382,13 @@ public class DynamicPhenoWandererPriority implements Priority {
                      * something that is 60% of the perfect mouse match -
                      * imperfect HP-MP mapping. SHOULD PROB REMOVE AND DO PROPERLY WITH LOGISTIC
                      */
-//                    if (species.equals("human")) {
-//                        score = score + ((1 - score) / 2);
-//                    }
-//                    // adjust fish score - over-scoring at moment as even a perfect fish match is much worse than the mouse and human hits
-//                    if (species.equals("fish")) {
-//                        score = score - ((score) / 2);
-//                    }
+                    if (species.equals("human")) {
+                        score = score + ((1 - score) / 2);
+                    }
+                    // adjust fish score - over-scoring at moment as even a perfect fish match is much worse than the mouse and human hits
+                    if (species.equals("fish")) {
+                        score = score - ((score) / 2);
+                    }
                     // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
                     if ((hit == null ? disease == null : hit.equals(disease))
                             && (humanGene == null ? candGene == null : humanGene.equals(candGene))) {
@@ -440,7 +440,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * seed genes given by the user.
      */
     private void computeDistanceAllNodesFromStartNodes() throws ExomizerInitializationException {
-        if (disease != null && !disease.isEmpty()) {
+        if (disease != null && !disease.isEmpty() && hpoIds.isEmpty()) {
             logger.info("Setting HPO IDs using disease annoataions for {}", disease);
             setHPOfromDisease(disease);
         }
@@ -937,5 +937,6 @@ public class DynamicPhenoWandererPriority implements Priority {
      */
     public void setDatabaseConnection(Connection connection) {
         this.connection = connection;
+        logger.info("Connection is " + connection);
     }
 }
