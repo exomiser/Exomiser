@@ -75,10 +75,13 @@ public class DataSourceConfig {
         //of ${h2Path} 
         String url = env.getProperty("exomiser.url").replace("$h2Path", h2Path());
         logger.info("DataSource url set to: {}", url);
+        int maxConnections = 10; //maybe get this to be user accessible 
+        logger.info("DataSource using maximum of {} database connections", maxConnections);        
         String user = env.getProperty("exomiser.username");
         String password = env.getProperty("exomiser.password");
         if (env.getProperty("exomiser.driverClassName").equals("org.postgresql.Driver")){
             PGPoolingDataSource dataSource = new PGPoolingDataSource();
+            dataSource.setMaxConnections(maxConnections);
             String server = env.getProperty("exomiser.server");
             String db = env.getProperty("exomiser.database");
             int port = Integer.parseInt(env.getProperty("exomiser.port"));
@@ -92,6 +95,7 @@ public class DataSourceConfig {
         }
         else{
             JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
+            dataSource.setMaxConnections(maxConnections);
             logger.info("Returning a new DataSource to URL {} user: {}", url, user);
             return dataSource;
         }
