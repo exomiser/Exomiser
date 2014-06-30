@@ -71,7 +71,7 @@ public class ExomiserOptionsCommandLineParser {
 
         Builder optionsBuilder = new ExomiserSettings.Builder();
         for (Option option : commandLine.getOptions()) {
-            logger.info("-{} --{} : {}", option.getOpt(), option.getLongOpt(), option.getValues());
+            logger.info("--{} : {}", option.getLongOpt(), option.getValues());
             switch (option.getLongOpt()) {
                 //REQUIRED
                 case "vcf":
