@@ -28,7 +28,11 @@ public enum PriorityType {
      * Flag to represent results of filtering against PPI-RandomWalk-proximity
      * and dynamic human and mouse phenotypes
      */
+
     DYNAMIC_PHENOWANDERER_PRIORITY("dynamic-pheno-wanderer", ScoringMode.RAW_SCORE),
+    DYNAMIC_PHENOWANDERER_PRIORITY_MONARCH_TABLES("dynamic-pheno-wanderer-monarch-tables", ScoringMode.RAW_SCORE),
+    DYNAMIC_PHENOWANDERER_PRIORITY_MONARCH_SERVICES("dynamic-pheno-wanderer-monarch-services", ScoringMode.RAW_SCORE),
+
     /**
      * Flag to represent results of annotating against OMIM data
      */
@@ -45,7 +49,7 @@ public enum PriorityType {
      * Flag for dynamic phenodigm filter.
      */
     DYNAMIC_PHENODIGM_PRIORITY("dynamic-phenodigm", ScoringMode.RAW_SCORE),
-
+    
     /**
      * Not set type - default for when things go wrong.
      */

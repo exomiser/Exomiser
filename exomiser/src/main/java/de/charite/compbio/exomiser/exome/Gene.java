@@ -431,10 +431,18 @@ public class Gene implements Comparable<Gene> {
      * @return a combined score that will be used to rank the gene.
      */
     public float getCombinedScore() {
-        //return priorityScore * filterScore;
-        return (priorityScore + filterScore) / 2f;
-        //return priorityScore;
-        //return priorityScore * pathogenicityFilterScore;
+        if (relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY) != null){
+            double logitScore = 1/(1 + Math.exp(-(-14.7538 + 12.0024*priorityScore + 8.2712*filterScore)));//logit model for Exomiser 2
+            return (float) logitScore;
+        }
+        else if (relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY) != null){
+            //NB this is based on raw walker score
+            double logitScore = 1/(1 + Math.exp(-(-8.67972 + 219.40082*priorityScore + 8.54374*filterScore)));//logit model for Exomiser 2
+            return (float) logitScore;
+        }
+        else{
+            return (priorityScore + filterScore) / 2f;
+        }
     }
 
     /**

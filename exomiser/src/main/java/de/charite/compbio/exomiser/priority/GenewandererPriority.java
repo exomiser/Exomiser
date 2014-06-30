@@ -106,7 +106,7 @@ public class GenewandererPriority implements Priority {
     public GenewandererPriority(DataMatrix randomWalkMatrix, List<Integer> entrezSeedGenes) {
         
         this.randomWalkMatrix = randomWalkMatrix;
-        
+        seedGenes = new ArrayList<>();
         addMatchedGenesToSeedGeneList(entrezSeedGenes);
         computeDistanceAllNodesFromStartNodes();
     }
@@ -238,16 +238,16 @@ public class GenewandererPriority implements Priority {
             gene.addRelevanceScore(relScore, GENEWANDERER_PRIORITY);
         }
 
-        float factor = 1f / (float) max;
-        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
-
-        for (Gene gene : geneList) {
-            float scr = gene.getRelevanceScore(GENEWANDERER_PRIORITY);
-            float newscore = factor * (scr - (float) min);
-            gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
-            newscore = factorMaxPossible * (scr - (float) min);
-            gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
-        }
+//        float factor = 1f / (float) max;
+//        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
+//
+//        for (Gene gene : geneList) {
+//            float scr = gene.getRelevanceScore(GENEWANDERER_PRIORITY);
+//            float newscore = factor * (scr - (float) min);
+//            gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
+//            newscore = factorMaxPossible * (scr - (float) min);
+//            gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
+//        }
 
         String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
                 PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
