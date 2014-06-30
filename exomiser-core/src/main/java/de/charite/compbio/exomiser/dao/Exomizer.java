@@ -1,4 +1,4 @@
-package de.charite.compbio.exomiser.cli;
+package de.charite.compbio.exomiser.dao;
 
 import de.charite.compbio.exomiser.util.Prioritiser;
 import de.charite.compbio.exomiser.common.SampleData;
