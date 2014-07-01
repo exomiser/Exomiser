@@ -128,6 +128,7 @@
                                     <directory>src/main/resources</directory>
                                     <include>application.properties</include>
                                     <include>jdbc.properties</include>
+                                    <include>example_settings.properties</include>
                                     <include>log4j2.xml</include>
                                 </resource>
                                 <resource>
