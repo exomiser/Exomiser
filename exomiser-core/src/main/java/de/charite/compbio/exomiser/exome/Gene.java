@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 /**
  * This class represents a Gene in which {@link jannovar.exome.Variant Variant}
@@ -431,13 +432,17 @@ public class Gene implements Comparable<Gene> {
      * @return a combined score that will be used to rank the gene.
      */
     public float getCombinedScore() {
-        if (relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY) != null){
-            double logitScore = 1/(1 + Math.exp(-(-14.7538 + 12.0024*priorityScore + 8.2712*filterScore)));//logit model for Exomiser 2
+        if (relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY) != null){           
+            double logitScore = 1/(1 + Math.exp(-(-13.96442 + 11.60897*priorityScore + 8.02343*filterScore)));
             return (float) logitScore;
         }
         else if (relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY) != null){
             //NB this is based on raw walker score
-            double logitScore = 1/(1 + Math.exp(-(-8.67972 + 219.40082*priorityScore + 8.54374*filterScore)));//logit model for Exomiser 2
+            double logitScore = 1/(1 + Math.exp(-(-8.67972 + 219.40082*priorityScore + 8.54374*filterScore)));
+            return (float) logitScore;
+        }
+        else if (relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY) != null){
+            double logitScore = 1/(1 + Math.exp(-(-11.15659 + 13.21835*priorityScore + 4.08667*filterScore)));
             return (float) logitScore;
         }
         else{
