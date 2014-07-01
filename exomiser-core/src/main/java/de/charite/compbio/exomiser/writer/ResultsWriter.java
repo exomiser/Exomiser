@@ -6,10 +6,10 @@
 
 package de.charite.compbio.exomiser.writer;
 
-import de.charite.compbio.exomiser.common.SampleData;
+import de.charite.compbio.exomiser.core.SampleData;
 import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.priority.Priority;
-import de.charite.compbio.exomiser.util.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import java.util.List;
 
 /**

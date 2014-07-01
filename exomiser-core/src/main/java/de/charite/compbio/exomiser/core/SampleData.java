@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.charite.compbio.exomiser.common;
+package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;

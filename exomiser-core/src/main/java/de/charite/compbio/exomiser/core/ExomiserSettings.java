@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.util;
+package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,11 +105,11 @@ public class ExomiserSettings {
 
         //OUTPUT options
         private int numberOfGenesToShow = 0;
-        private String outFileName = "exomiser.html";
+        private String outFileName = "";
         private OutputFormat outputFormat = OutputFormat.HTML;
 
         private String diseaseGeneFamilyName = "";
-
+      
         public Builder vcfFilePath(Path vcfFilePath) {
             this.vcfFilePath = vcfFilePath;
             return this;
@@ -232,6 +234,18 @@ public class ExomiserSettings {
         outputFormat = builder.outputFormat;
 
         diseaseGeneFamilyName = builder.diseaseGeneFamilyName;
+    }
+
+    public boolean areValid() {
+        if (vcfFilePath == null) {
+            logger.error("VCF file path has not been set - settings are INVALID!");
+            return false;
+        }
+        if (prioritiserType == PriorityType.NOT_SET) {
+            logger.error("Prioritiser has not been set - settings are INVALID!");
+            return false;
+        }
+        return true;
     }
 
     public Path getVcfPath() {

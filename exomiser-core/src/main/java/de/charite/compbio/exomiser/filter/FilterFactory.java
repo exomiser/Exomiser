@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.filter;
 
 import de.charite.compbio.exomiser.dao.FrequencyVariantScoreDao;
 import de.charite.compbio.exomiser.dao.PathogenicityVariantScoreDao;
-import de.charite.compbio.exomiser.util.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.common;
+package de.charite.compbio.exomiser.core;
 
-import static de.charite.compbio.exomiser.common.SampleDataFactory.createPedigreeData;
+import static de.charite.compbio.exomiser.core.SampleDataFactory.createPedigreeData;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import jannovar.exception.PedParseException;

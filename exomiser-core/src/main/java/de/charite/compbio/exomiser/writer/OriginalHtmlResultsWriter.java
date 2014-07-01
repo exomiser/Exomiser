@@ -6,7 +6,7 @@
 
 package de.charite.compbio.exomiser.writer;
 
-import de.charite.compbio.exomiser.common.SampleData;
+import de.charite.compbio.exomiser.core.SampleData;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
@@ -14,7 +14,7 @@ import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.filter.TargetFilter;
 import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.priority.Priority;
-import de.charite.compbio.exomiser.util.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import jannovar.exome.VariantTypeCounter;
 import java.io.BufferedWriter;
 import java.io.IOException;

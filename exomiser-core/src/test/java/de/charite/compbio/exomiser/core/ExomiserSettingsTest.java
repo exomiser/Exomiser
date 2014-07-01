@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.util;
+package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.util.ExomiserSettings.Builder;
+import de.charite.compbio.exomiser.core.ExomiserSettings.Builder;
+import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,7 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests for {@code de.charite.compbio.exomiser.util.ExomiserSettings}.
+ * Tests for {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -59,7 +60,7 @@ public class ExomiserSettingsTest {
     private static final List<Integer> SEED_GENE_LIST = new ArrayList<>(Arrays.asList(1, 23, 56));
     private static final int NUMBER_OF_GENES_TO_SHOW_DEFAULT = 0;
     private static final int NUMBER_OF_GENES_TO_SHOW = 12438803;
-    private static final String OUT_FILE_NAME_DEFAULT = "exomiser.html";
+    private static final String OUT_FILE_NAME_DEFAULT = "";
     private static final String OUT_FILE_NAME = "wibbler.tab";
     private static final OutputFormat OUTPUT_FORMAT_DEFAULT = OutputFormat.HTML;
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV;

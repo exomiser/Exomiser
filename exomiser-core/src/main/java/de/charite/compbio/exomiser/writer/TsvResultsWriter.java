@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.writer;
 
-import de.charite.compbio.exomiser.common.SampleData;
+import de.charite.compbio.exomiser.core.SampleData;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
@@ -17,7 +17,7 @@ import de.charite.compbio.exomiser.priority.GeneScore;
 import de.charite.compbio.exomiser.priority.GenewandererRelevanceScore;
 import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.util.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;

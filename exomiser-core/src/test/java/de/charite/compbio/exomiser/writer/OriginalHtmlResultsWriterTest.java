@@ -5,12 +5,12 @@
  */
 package de.charite.compbio.exomiser.writer;
 
-import de.charite.compbio.exomiser.common.SampleData;
+import de.charite.compbio.exomiser.core.SampleData;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
 import de.charite.compbio.exomiser.filter.Filter;
 import de.charite.compbio.exomiser.priority.Priority;
-import de.charite.compbio.exomiser.util.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import jannovar.exome.VariantTypeCounter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
