@@ -87,67 +87,68 @@ public class CommandLineParser {
         }
         for (Option option : commandLine.getOptions()) {
             logger.info("--{} : {}", option.getLongOpt(), option.getValues());
-            switch (option.getLongOpt()) {
+            CommandLineOption commandLineOption = CommandLineOption.valueOfLongOption(option.getLongOpt());
+            switch (commandLineOption) {
                 //REQUIRED
-                case "vcf":
+                case VCF_OPTION:
                     settingsBuilder.vcfFilePath(Paths.get(option.getValue()));
                     break;
-                case "ped":
+                case PED_OPTION:
                     settingsBuilder.pedFilePath(Paths.get(option.getValue()));
                     break;
-                case "prioritiser":
+                case PRIORITISER_OPTION:
                     settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(option.getValue()));
                     break;
 
                 //FILTER OPTIONS
-                case "max-freq":
+                case MAX_FREQ_OPTION:
                     settingsBuilder.maximumFrequency(Float.parseFloat(option.getValue()));
                     break;
-                case "restrict-interval":
+                case INTERVAL_OPTION:
                     settingsBuilder.geneticInterval(option.getValue());
                     break;
-                case "min-qual":
+                case MIN_QUAL_OPTION:
                     settingsBuilder.minimumQuality(Float.parseFloat(option.getValue()));
                     break;
-                case "include-pathogenic":
+                case INCLUDE_PATHOGENIC_OPTION:
                     //default is false
                     settingsBuilder.includePathogenic(true);
                     break;
-                case "remove-dbsnp":
+                case REMOVE_DBSNP_OPTION:
                     //default is false
                     settingsBuilder.removeDbSnp(true);
                     break;
-                case "remove-off-target-syn":
+                case REMOVE_OFF_TARGET_OPTION:
                     //default is true
                     settingsBuilder.removeOffTargetVariants(false);
                     break;
 
                 //PRIORITISER OPTIONS
-                case "candidate-gene":
+                case CANDIDATE_GENE_OPTION:
                     settingsBuilder.candidateGene(option.getValue());
                     break;
-                case "hpo-ids":
+                case HPO_IDS_OPTION:
                     settingsBuilder.hpoIdList(parseHpoStringList(option.getValue()));
                     break;
-                case "seed-genes":
+                case SEED_GENES_OPTION:
                     settingsBuilder.seedGeneList(makeIntegerList(option.getValue()));
                     break;
-                case "disease-id":
+                case DISEASE_ID_OPTION:
                     settingsBuilder.diseaseId(option.getValue());
                     break;
-                case "inheritance-mode":
+                case INHERITANCE_MODE_OPTION:
                     settingsBuilder.modeOfInheritance(parseInheritanceMode(option.getValue()));
                     break;
 
                 //OUTPUT OPTIONS
-                case "num-genes":
+                case NUM_GENES_OPTION:
                     settingsBuilder.numberOfGenesToShow(Integer.parseInt(option.getValue()));
                     break;
-                case "out-file":
+                case OUT_FILE_OPTION:
                     //TODO: out-file and out-format are now somewhat inter-dependent
                     settingsBuilder.outFileName(option.getValue());
                     break;
-                case "out-format":
+                case OUT_FORMAT_OPTION:
                     settingsBuilder.outputFormat(parseOutputFormat(option.getValue()));
                     break;
             }
