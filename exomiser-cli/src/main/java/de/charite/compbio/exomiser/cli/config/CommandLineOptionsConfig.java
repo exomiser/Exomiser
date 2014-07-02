@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.cli.config;
 
 import static de.charite.compbio.exomiser.cli.CommandLineOption.*;
 import de.charite.compbio.exomiser.cli.CommandLineParser;
-import static de.charite.compbio.exomiser.filter.FilterType.*;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.util.OutputFormat;
 import java.util.ArrayList;

@@ -34,9 +34,7 @@ public class ExomiserSettings {
     //FILTER options
     //max-freq (command-line was: freq_threshold, refered to variable: frequency_threshold)
     private final float maximumFrequency;
-    /**
-     * Quality threshold for variants. Corresponds to QUAL column in VCF file.
-     */
+    //Quality threshold for variants. Corresponds to QUAL column in VCF file.
     //min-qual (command-line was: qual, refered to variable: quality_threshold)
     private final float minimumQuality;
     //restrict-interval (command-line was: interval, refered to variable: )
@@ -51,10 +49,6 @@ public class ExomiserSettings {
     //PRIORITISER options
     //candidate-gene (command-line was: candidate_gene, refered to variable: candidateGene)
     private final String candidateGene;
-    /**
-     * This String can be set to AD, AR, or X to initiate filtering according to
-     * inheritance pattern.
-     */
     //inheritance-mode (command-line was: inheritance, refered to variable: inheritanceMode)
     private final ModeOfInheritance modeOfInheritance;
     //disease-id (command-line was: omim_disease, refered to variable: disease)
@@ -72,14 +66,14 @@ public class ExomiserSettings {
     //out-format 
     private final OutputFormat outputFormat;
 
-    /**
-     * Name of the disease gene family (an OMIM phenotypic series) that is being
-     * used for prioritization with ExomeWalker.
-     */
+    //Name of the disease gene family (an OMIM phenotypic series) that is being
+    //used for prioritization with ExomeWalker.
     //should this therefore only be a part of an ExomeWalkerOptions?
     //(command-line was: ?, refered to variable: ?)
     private final String diseaseGeneFamilyName;
 
+    private boolean isValid = true;
+    
     public static class Builder {
 
         //INPUT file options
@@ -208,11 +202,18 @@ public class ExomiserSettings {
     private ExomiserSettings(Builder builder) {
 
         vcfFilePath = builder.vcfFilePath; //required, no default
+        if (vcfFilePath == null) {
+            logger.error("Error building ExomiserSettings - VCF file path has not been set, settings are INVALID!");
+            isValid = false;
+        }
         pedFilePath = builder.pedFilePath;
 
         //Priority
         prioritiserType = builder.prioritiserType;  //required, no default
-
+        if (prioritiserType == PriorityType.NOT_SET) {
+            logger.error("Error building ExomiserSettings - Prioritiser has not been set, settings are INVALID!");
+            isValid = false;
+        }
         //FILTER options
         maximumFrequency = builder.maximumFrequency;
         minimumQuality = builder.minimumQuality;
@@ -233,19 +234,11 @@ public class ExomiserSettings {
         outFileName = builder.outFileName;
         outputFormat = builder.outputFormat;
 
-        diseaseGeneFamilyName = builder.diseaseGeneFamilyName;
+        diseaseGeneFamilyName = builder.diseaseGeneFamilyName;    
     }
 
-    public boolean areValid() {
-        if (vcfFilePath == null) {
-            logger.error("VCF file path has not been set - settings are INVALID!");
-            return false;
-        }
-        if (prioritiserType == PriorityType.NOT_SET) {
-            logger.error("Prioritiser has not been set - settings are INVALID!");
-            return false;
-        }
-        return true;
+    public boolean isValid() {
+        return isValid;
     }
 
     public Path getVcfPath() {
@@ -316,6 +309,13 @@ public class ExomiserSettings {
         return outputFormat;
     }
 
+    public Properties toProperties() {
+        Properties properties = new Properties();
+        properties.setProperty("vcf", vcfFilePath.toString());
+        properties.setProperty("disease-id", diseaseId);
+        return properties;
+    }
+    
     @Override
     public String toString() {
         return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", includePathogenic=" + includePathogenic + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outFileName + ", outputFormat=" + outputFormat + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + '}';

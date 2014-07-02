@@ -46,9 +46,9 @@ public class Main {
         //There is no other input other than this settings object so most of what comes next could be wrapped back up into an exomiser class 
         ExomiserSettings exomiserSettings = commandLineOptionsParser.parseCommandLineArguments(args);
         //
-        if (!exomiserSettings.areValid()) {
+        if (!exomiserSettings.isValid()) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("java -jar Exomizer [...]", options);
+            formatter.printHelp("java -jar exomizer-cli [...]", options);
             System.exit(1);
         }
 

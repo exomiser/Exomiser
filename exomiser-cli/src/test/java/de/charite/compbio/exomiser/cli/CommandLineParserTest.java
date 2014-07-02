@@ -41,7 +41,7 @@ public class CommandLineParserTest {
         String input = "--ped def.ped -D OMIM:101600 --prioritiser=phenodigm-mgi";
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
-        assertThat(exomiserSettings.areValid(), is(false));    
+        assertThat(exomiserSettings.isValid(), is(false));    
     }
     
     @Test
@@ -49,7 +49,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --ped def.ped -D OMIM:101600";
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
-        assertThat(exomiserSettings.areValid(), is(false));    
+        assertThat(exomiserSettings.isValid(), is(false));    
     }
     
     @Test
@@ -57,7 +57,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
-        assertThat(exomiserSettings.areValid(), is(true));    
+        assertThat(exomiserSettings.isValid(), is(true));    
     }
     
     @Test
@@ -65,7 +65,7 @@ public class CommandLineParserTest {
         String input = "--settings-file wibble.settings";
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
-        assertThat(exomiserSettings.areValid(), is(false));    
+        assertThat(exomiserSettings.isValid(), is(false));    
     }
     
     @Test
@@ -74,7 +74,7 @@ public class CommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
         System.out.println(exomiserSettings);
-        assertThat(exomiserSettings.areValid(), is(false));
+        assertThat(exomiserSettings.isValid(), is(false));
     }
     
     @Test
@@ -83,7 +83,7 @@ public class CommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
         System.out.println(exomiserSettings);
-        assertThat(exomiserSettings.areValid(), is(true));
+        assertThat(exomiserSettings.isValid(), is(true));
     }
     
     @Test

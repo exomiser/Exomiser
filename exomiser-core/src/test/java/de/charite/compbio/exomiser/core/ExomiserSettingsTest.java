@@ -119,6 +119,34 @@ public class ExomiserSettingsTest {
         assertThat(settings.getVcfPath(), nullValue());
     }
 
+    @Test
+    public void testThatTheDefaultSettingsIsNotValid() {
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.isValid(), is(false));
+    }
+    
+    @Test
+    public void testThatJustSettingAFcvFileIsNotValid() {
+        builder.vcfFilePath(VCF_PATH);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.isValid(), is(false));
+    }
+    
+    @Test
+    public void testThatJustSettingAPrioritiserIsNotValid() {
+        builder.usePrioritiser(PriorityType.OMIM_PRIORITY);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.isValid(), is(false));
+    }
+    
+    @Test
+    public void testThatTheMinimumRequiredValidSettingsIsAFcvFileAndPrioritiser() {
+        builder.vcfFilePath(VCF_PATH);
+        builder.usePrioritiser(PriorityType.OMIM_PRIORITY);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.isValid(), is(true));
+    }
+    
     /**
      * Test of getPedPath method, of class ExomiserSettings.
      */
@@ -417,7 +445,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
         assertThat(settings.getOutputFormat(), equalTo(OUTPUT_FORMAT));
-
+        assertThat(settings.isValid(), is(true));
     }
     
     @Test
@@ -451,6 +479,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
         assertThat(settings.getOutputFormat(), equalTo(OUTPUT_FORMAT));
+        assertThat(settings.isValid(), is(true));
 
     }
 
