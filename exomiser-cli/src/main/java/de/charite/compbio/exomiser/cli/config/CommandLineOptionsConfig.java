@@ -128,7 +128,7 @@ public class CommandLineOptionsConfig {
                 .withArgName("type")
                 .withType(OutputFormat.class)
                 .withValueSeparator()
-                .withDescription("Specify format option HTML, VCF or TAB e.g. --out-format=TAB")
+                .withDescription("Specify format option HTML, VCF or TAB. Defaults to HTML if not specified. e.g. --out-format=TAB")
                 .withLongOpt(OUT_FORMAT_OPTION.getLongOption())
                 .create("f"));
 
