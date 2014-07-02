@@ -21,7 +21,11 @@ public enum CommandLineOption {
 
     //FILTER OPTIONS
     REMOVE_DBSNP_OPTION("remove-dbsnp"),
-    //other values for this are handled by FilterType
+    MAX_FREQ_OPTION("max-freq"),
+    INTERVAL_OPTION("restrict-interval"),
+    MIN_QUAL_OPTION("min-qual"),
+    INCLUDE_PATHOGENIC_OPTION("include-pathogenic"),
+    REMOVE_OFF_TARGET_OPTION("remove-off-target-syn"),
 
     //PRIORITISER OPTIONS
     CANDIDATE_GENE_OPTION("candidate-gene"),

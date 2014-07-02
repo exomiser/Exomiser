@@ -8,8 +8,6 @@ package de.charite.compbio.exomiser.cli;
 import static de.charite.compbio.exomiser.cli.CommandLineOption.*;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.Builder;
-import de.charite.compbio.exomiser.filter.FilterType;
-import static de.charite.compbio.exomiser.filter.FilterType.PATHOGENICITY_FILTER;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.common.ModeOfInheritance;
@@ -291,12 +289,12 @@ public class CommandLineParser {
     }
     private static final String PED = PED_OPTION.getLongOption();
     private static final String PRIORITISER = PRIORITISER_OPTION.getLongOption();
-    private static final String MAX_FREQ = FilterType.FREQUENCY_FILTER.getCommandLineValue();
-    private static final String INTERVAL = FilterType.INTERVAL_FILTER.getCommandLineValue();
-    private static final String MIN_QUAL = FilterType.QUALITY_FILTER.getCommandLineValue();
-    private static final String INCLUDE_PATHOGENIC = PATHOGENICITY_FILTER.getCommandLineValue();
+    private static final String MAX_FREQ = MAX_FREQ_OPTION.getLongOption();
+    private static final String INTERVAL = INTERVAL_OPTION.getLongOption();
+    private static final String MIN_QUAL = MIN_QUAL_OPTION.getLongOption();
+    private static final String INCLUDE_PATHOGENIC = INCLUDE_PATHOGENIC_OPTION.getLongOption();
     private static final String REMOVE_DBSNP = REMOVE_DBSNP_OPTION.getLongOption();
-    private static final String REMOVE_OFF_TARGET = FilterType.TARGET_FILTER.getCommandLineValue();
+    private static final String REMOVE_OFF_TARGET = REMOVE_OFF_TARGET_OPTION.getLongOption();
     private static final String CANDIDATE_GENE = CANDIDATE_GENE_OPTION.getLongOption();
     private static final String HPO_IDS = HPO_IDS_OPTION.getLongOption();
     private static final String SEED_GENES = SEED_GENES_OPTION.getLongOption();

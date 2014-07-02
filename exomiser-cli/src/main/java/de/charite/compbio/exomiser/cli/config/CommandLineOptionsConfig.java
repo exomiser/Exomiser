@@ -84,16 +84,16 @@ public class CommandLineOptionsConfig {
     private void addFilterOptions(Options options) {
         // Filtering options
         //Do filters filter-out or retain the options specified below? Would be good to spell this out in all cases.
-        options.addOption(new Option("F", FREQUENCY_FILTER.getCommandLineValue(), true, "Maximum frequency threshold for variants to be retained. e.g. 100.00 will retain all variants. Default: 100.00")); // FrequencyFilter filter above or below threshold?
-        options.addOption(new Option("R", INTERVAL_FILTER.getCommandLineValue(), true, "Restrict to region/interval (e.g., chr2:12345-67890)")); //IntervalFilter
-        options.addOption(new Option("Q", QUALITY_FILTER.getCommandLineValue(), true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
+        options.addOption(new Option("F", MAX_FREQ_OPTION.getLongOption(), true, "Maximum frequency threshold for variants to be retained. e.g. 100.00 will retain all variants. Default: 100.00")); // FrequencyFilter filter above or below threshold?
+        options.addOption(new Option("R", INTERVAL_OPTION.getLongOption(), true, "Restrict to region/interval (e.g., chr2:12345-67890)")); //IntervalFilter
+        options.addOption(new Option("Q", MIN_QUAL_OPTION.getLongOption(), true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
         //no extra args required - these are Booleans 
-        options.addOption(new Option("P", PATHOGENICITY_FILTER.getCommandLineValue(), false, "Filter variants to include those with predicted pathogenicity. Default: false"));//PathogenicityFilter 
+        options.addOption(new Option("P", INCLUDE_PATHOGENIC_OPTION.getLongOption(), false, "Filter variants to include those with predicted pathogenicity. Default: false"));//PathogenicityFilter 
         options.addOption(new Option(null, REMOVE_DBSNP_OPTION.getLongOption(), false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false"));
         //TODO: WTF is going on with PathogenicityFilter? It actualy needs boolean filterOutNonpathogenic, boolean removeSynonomousVariants
         //but these set (or don't set) things in the PathogenicityTriage - maybe we could have a MissensePathogenicityFilter too? 
         options.addOption(new Option("O", "exclude-pathogenic-missense", false, "Filter variants to include those with predicted pathogenicity - MISSENSE MUTATIONS ONLY"));//PathogenicityFilter 
-        options.addOption(new Option("T", TARGET_FILTER.getCommandLineValue(), false, "Keep off-target variants. These are defined as intergenic, intronic, upstream, downstream, synonymous or intronic ncRNA variants. Default: true")); //TargetFilter 
+        options.addOption(new Option("T", REMOVE_OFF_TARGET_OPTION.getLongOption(), false, "Keep off-target variants. These are defined as intergenic, intronic, upstream, downstream, synonymous or intronic ncRNA variants. Default: true")); //TargetFilter 
     }
 
     private void addPrioritiserOptions(Options options) {
