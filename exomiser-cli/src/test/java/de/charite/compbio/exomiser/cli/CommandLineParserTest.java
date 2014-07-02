@@ -31,10 +31,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = CommandLineOptionsConfig.class)
-public class ExomiserOptionsCommandLineParserTest {
+public class CommandLineParserTest {
     
     @Autowired
-    private ExomiserOptionsCommandLineParser instance;
+    private CommandLineParser instance;
         
     @Test
     public void exomiser_settings_are_invalid_when_a_vcf_file_was_not_specified() {

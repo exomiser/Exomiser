@@ -43,16 +43,16 @@ import org.springframework.stereotype.Component;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
-public class ExomiserOptionsCommandLineParser {
+public class CommandLineParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExomiserOptionsCommandLineParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommandLineParser.class);
 
     @Autowired
     private final Options options;
 
     private static final String VCF = VCF_OPTION.getLongOption();
 
-    public ExomiserOptionsCommandLineParser(Options options) {
+    public CommandLineParser(Options options) {
         this.options = options;
     }
 
@@ -82,9 +82,9 @@ public class ExomiserOptionsCommandLineParser {
 
         Builder settingsBuilder = new ExomiserSettings.Builder();
 
-        String settingsFileOption = SETTINGS_FILE_OPTION.getLongOption();
-        if (commandLine.hasOption(settingsFileOption)) {
-            parseSettingsFile(commandLine.getOptionValue(settingsFileOption), settingsBuilder);
+        String settingsFile = SETTINGS_FILE_OPTION.getLongOption();
+        if (commandLine.hasOption(settingsFile)) {
+            settingsBuilder = parseSettingsFile(Paths.get(commandLine.getOptionValue(settingsFile)));
             logger.warn("Settings file parameters will be overridden by command-line parameters!");
         }
         for (Option option : commandLine.getOptions()) {
@@ -250,12 +250,12 @@ public class ExomiserOptionsCommandLineParser {
      * @param value
      * @param settingsBuilder
      */
-    private void parseSettingsFile(String value, Builder settingsBuilder) {
-        Path settingsFile = Paths.get(value);
-//        Properties defaults = ExomiserSettings.
-        Properties settingsProperties = new Properties();
+    private Builder parseSettingsFile(Path settingsFile) {
 
+        Builder settingsBuilder = new ExomiserSettings.Builder();
+        
         try (Reader reader = Files.newBufferedReader(settingsFile, Charset.defaultCharset());) {
+            Properties settingsProperties = new Properties();
 
             settingsProperties.load(reader);
             logger.info("Loaded settings from properties file: {}", settingsProperties);
@@ -285,9 +285,9 @@ public class ExomiserOptionsCommandLineParser {
             settingsBuilder.outFileName(settingsProperties.getProperty(OUT_FILE));
             settingsBuilder.outputFormat(parseOutputFormat(settingsProperties.getProperty(OUT_FORMAT)));
         } catch (IOException ex) {
-            logger.error(null, ex);
+            logger.error("Unable to parse settings from file {}", settingsFile, ex);
         }
-
+        return settingsBuilder;
     }
     private static final String PED = PED_OPTION.getLongOption();
     private static final String PRIORITISER = PRIORITISER_OPTION.getLongOption();

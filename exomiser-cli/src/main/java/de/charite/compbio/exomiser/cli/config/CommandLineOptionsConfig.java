@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import static de.charite.compbio.exomiser.cli.CommandLineOption.*;
-import de.charite.compbio.exomiser.cli.ExomiserOptionsCommandLineParser;
+import de.charite.compbio.exomiser.cli.CommandLineParser;
 import static de.charite.compbio.exomiser.filter.FilterType.*;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.util.OutputFormat;
@@ -28,8 +28,8 @@ import org.springframework.context.annotation.Configuration;
 public class CommandLineOptionsConfig {
 
     @Bean
-    public ExomiserOptionsCommandLineParser exomiserCommandLineOptionsParser() {
-        return new ExomiserOptionsCommandLineParser(options());
+    public CommandLineParser commandLineParser() {
+        return new CommandLineParser(options());
     }
 
     @Bean

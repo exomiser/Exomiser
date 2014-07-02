@@ -13,10 +13,12 @@ package de.charite.compbio.exomiser.cli;
  */
 public enum CommandLineOption {
 
+    //INPUT FILE OPTIONS
     SETTINGS_FILE_OPTION("settings-file"),
     VCF_OPTION("vcf"),
-    PRIORITISER_OPTION("prioritiser"), //values for this are handled by PriorityType
     PED_OPTION("ped"),
+    PRIORITISER_OPTION("prioritiser"), //values for this are handled by PriorityType
+
     //FILTER OPTIONS
     REMOVE_DBSNP_OPTION("remove-dbsnp"),
     //other values for this are handled by FilterType

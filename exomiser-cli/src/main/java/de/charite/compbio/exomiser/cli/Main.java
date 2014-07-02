@@ -42,7 +42,7 @@ public class Main {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
 
         Options options = applicationContext.getBean(Options.class);
-        ExomiserOptionsCommandLineParser commandLineOptionsParser = applicationContext.getBean(ExomiserOptionsCommandLineParser.class);
+        CommandLineParser commandLineOptionsParser = applicationContext.getBean(CommandLineParser.class);
         //There is no other input other than this settings object so most of what comes next could be wrapped back up into an exomiser class 
         ExomiserSettings exomiserSettings = commandLineOptionsParser.parseCommandLineArguments(args);
         //
