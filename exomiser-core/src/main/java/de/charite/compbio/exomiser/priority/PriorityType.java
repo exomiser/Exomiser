@@ -8,8 +8,6 @@ public enum PriorityType {
    
     /**
      * Flag to represent results of filtering against an inheritance pattern.
-     *//**
-     * Flag to represent results of filtering against an inheritance pattern.
      */
     INHERITANCE_MODE_PRIORITY("inheritance-mode", ScoringMode.RAW_SCORE),
     /**
