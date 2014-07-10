@@ -3,14 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.cli.config;
 
-import de.charite.compbio.exomiser.cli.Main;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.CodeSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -36,71 +31,76 @@ public class DataSourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
 
-    @Autowired
-    Environment env;
-    
-    @Autowired
-    Path dataPath;
-    
-    @Bean
-    String h2Path(){
-        return dataPath.resolve("exomiser").toString();
-    }
-        
-    /**
-     * Used to find the Path the Main application is running on in order to
-     * pick-up the user-configured properties files.
-     *
-     * @return
-     */
-    @Bean
-    public static Path mainJarPath() {
-        CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
+    private static final int MAX_CONNECTIONS = 10; //maybe make this user accessible? 
 
-        Path jarFilePath = null;
-        try {
-            jarFilePath = Paths.get(codeSource.getLocation().toURI()).getParent();
-        } catch (URISyntaxException ex) {
-            logger.error("Unable to find jar file", ex);
-        }
-        logger.info("Jar file is running from location: {}", jarFilePath);
-        return jarFilePath;
-    }
-    
+    @Autowired
+    private Environment env;
+
+    @Autowired
+    private Path dataPath;
+
     @Bean
     public DataSource dataSource() {
-        logger.info("h2Path: {}", h2Path());
-        //this is a shitty hack to get the database url to work without configuration
-        //but my Spring-Fu is weak to I can't get the bugger to do a dynamic placeholder resolve
-        //of ${h2Path} 
-        String url = env.getProperty("exomiser.url").replace("$h2Path", h2Path());
-        logger.info("DataSource url set to: {}", url);
-        int maxConnections = 10; //maybe get this to be user accessible 
-        logger.info("DataSource using maximum of {} database connections", maxConnections);        
-        String user = env.getProperty("exomiser.username");
-        String password = env.getProperty("exomiser.password");
-        if (env.getProperty("exomiser.driverClassName").equals("org.postgresql.Driver")){
-            PGPoolingDataSource dataSource = new PGPoolingDataSource();
-            dataSource.setMaxConnections(maxConnections);
-            String server = env.getProperty("exomiser.server");
-            String db = env.getProperty("exomiser.database");
-            int port = Integer.parseInt(env.getProperty("exomiser.port"));
-            dataSource.setServerName(server);
-            dataSource.setDatabaseName(db);
-            dataSource.setPortNumber(port);
-            dataSource.setUser(user);
-            dataSource.setPassword(password);
-            logger.info("Returning a new DataSource to URL {} user: {}", url, user);
-            return dataSource;
+        if (env.getProperty("usePostgreSQL").equals("true")) {
+            return postgreSQLDataSource();
         }
-        else{
-            JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
-            dataSource.setMaxConnections(maxConnections);
-            logger.info("Returning a new DataSource to URL {} user: {}", url, user);
-            return dataSource;
-        }
+        return h2DataSource();
     }
 
+    private DataSource postgreSQLDataSource() {
+               
+        PGPoolingDataSource dataSource = new PGPoolingDataSource();
+        dataSource.setMaxConnections(MAX_CONNECTIONS);
+        dataSource.setInitialConnections(3);
+        
+        //resolve the placeholders in the settings
+        env.resolvePlaceholders("user");
+        env.resolvePlaceholders("password");
+        env.resolvePlaceholders("server");
+        env.resolvePlaceholders("database");
+        env.resolvePlaceholders("port");
+        
+        String server = env.getProperty("pg.server");
+        String db = env.getProperty("pg.database");
+        int port = Integer.parseInt(env.getProperty("pg.port"));
+        String user = env.getProperty("pg.username");
+        String password = env.getProperty("pg.password");
+        
+        dataSource.setServerName(server);
+        dataSource.setDatabaseName(db);
+        dataSource.setPortNumber(port);
+        dataSource.setUser(user);
+        dataSource.setPassword(password);
+
+        String url = String.format("jdbc:postgresql://%s:%d/%s", server, port, db);
+
+        logger.info("Returning a new PostgreSQL DataSource to URL {} user: {}", url, user);
+        return dataSource;
+    }
+
+    private DataSource h2DataSource() {
+        
+        String user = env.getProperty("h2.username");
+        String password = env.getProperty("h2.password");
+        String url = env.getProperty("h2.url");
+        
+        if (env.containsProperty("h2Path") & !env.getProperty("h2Path").isEmpty()) {
+            env.resolvePlaceholders("h2Path"); //this comes from the application.properties
+        } else {
+            //in this case it hasn't been manually set, so we'll use the default location
+            //the placeholders are not visible in the url string hence we replace the 'file:'
+            String h2Filepath = String.format("file:%s", dataPath);
+            url = env.getProperty("h2.url").replace("file:", h2Filepath);
+        }
+        logger.info("DataSource using maximum of {} database connections", MAX_CONNECTIONS);
+        JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
+        dataSource.setMaxConnections(MAX_CONNECTIONS);
+        
+        logger.info("Returning a new H2 DataSource to URL {} user: {}", url, user);
+        return dataSource;
+    }
+    
+    
     @Bean
     public Connection connection() {
         Connection connection = null;
@@ -115,12 +115,8 @@ public class DataSourceConfig {
 //    @Bean
 //    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 //        PropertySourcesPlaceholderConfigurer pspc = new PropertySourcesPlaceholderConfigurer();
-//        Path jdbcPropertiesPath = jarPath.resolve("jdbc.properties");
-//        Resource[] resources = new PathResource[]{
-//                new PathResource(jdbcPropertiesPath)};//,
-////                new PathResource(applicationPropertiesPath)};
-//        pspc.setLocations(resources);
-//        pspc.setIgnoreUnresolvablePlaceholders(true);
+//        pspc.setLocation(new PathResource("jdbc.properties"));
 //        return pspc;
 //    }
+
 }

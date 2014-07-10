@@ -14,53 +14,28 @@ public enum FilterType {
      * Flag for output of field representing the Quality filter for the VCF
      * entry
      */
-    QUALITY_FILTER("min-qual"),
+    QUALITY_FILTER,
     /**
      * Flag for filter type "interval"
      */
-    INTERVAL_FILTER("restrict-interval"),
+    INTERVAL_FILTER,
     /**
      * Flag to output results of filtering against polyphen, SIFT, and mutation
      * taster.
      */
-    PATHOGENICITY_FILTER("include-pathogenic"),
+    PATHOGENICITY_FILTER,
     /**
      * Flag to output results of filtering against frequency with Thousand
      * Genomes and ESP data.
      */
-    FREQUENCY_FILTER("max-freq"),
+    FREQUENCY_FILTER,
     /**
      * Flag to represent target filter
      */
-    TARGET_FILTER("remove-off-target-syn"),
+    TARGET_FILTER,
     /**
      * Filter for target regions in a BED file
      */
-    BED_FILTER("bed");
+    BED_FILTER;
 
-    /**
-     * The string representation of the FilterType as used when specifying the type on the command-line.
-     */
-    private final String commandLineValue;
-    
-    private FilterType(String commandLineValue) {
-        this.commandLineValue = commandLineValue;
-    }
-    
-    public String getCommandLineValue() {
-        return commandLineValue;
-    }
-    /**
-     * Returns the type of Filter/Priority for the 
-     * @param value
-     * @return 
-     */
-    public static FilterType valueOfCommandLine(String value) {
-        for (FilterType filterType : values()) {
-            if (filterType.commandLineValue.equals(value)) {
-                return filterType;
-            }
-        }
-        return FilterType.FREQUENCY_FILTER;
-    }
 }

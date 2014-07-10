@@ -63,4 +63,14 @@ public class PriorityTypeTest {
         assertEquals(expResult, result);
     }
 
+    /**
+     * Test of toString method, of class PriorityType.
+     */
+    @Test
+    public void testToString() {
+        PriorityType instance = PriorityType.BOQA_PRIORITY;
+        String expResult = "boqa";
+        String result = instance.toString();
+        assertEquals(expResult, result);
+    }
 }
