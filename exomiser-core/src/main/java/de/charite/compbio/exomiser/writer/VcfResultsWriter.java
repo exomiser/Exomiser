@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,27 +37,33 @@ public class VcfResultsWriter implements ResultsWriter {
     private static final String NEWLINE = System.lineSeparator();
 
     @Override
-    public void write(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
-        String outFileName = settings.getOutFileName();
+    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
+        String outFileName = ResultsWriterUtils.determineFileExtension(settings);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             logger.info("Writing {} file to: {}", settings.getOutputFormat(), outFileName);
-
-            writer.write(VCF_FILE_FORMAT_4_1_LINE);
-            //TODO: Add in the settings used and other data for Will and Orion here
-            //(Issue #26 https://bitbucket.org/exomiser/exomiser/issue/26/vcf-output-format-requirements)
-            writer.write(VCF_COLUMN_LINE);
-
-            for (Gene gene : sampleData.getGeneList()) {
-                writer.write(buildGeneVariantsString(gene));
-            }
+            writer.write(writeString(sampleData, settings, filterList, priorityList));
             writer.close();
 
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
         logger.info("Results written to file {}.", outFileName);
+    }
+
+    @Override
+    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(VCF_FILE_FORMAT_4_1_LINE);
+        //TODO: Add in the settings used and other data for Will and Orion here
+        //(Issue #26 https://bitbucket.org/exomiser/exomiser/issue/26/vcf-output-format-requirements)
+        stringBuilder.append(VCF_COLUMN_LINE);
+        //write in the results for each variant in each gene
+        for (Gene gene : sampleData.getGeneList()) {
+            stringBuilder.append(buildGeneVariantsString(gene));
+        }
+        return stringBuilder.toString();
     }
 
     protected String buildGeneVariantsString(Gene gene) {

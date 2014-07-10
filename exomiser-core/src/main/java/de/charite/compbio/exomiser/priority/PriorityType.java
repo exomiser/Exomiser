@@ -85,4 +85,10 @@ public enum PriorityType {
         }
         return PriorityType.NOT_SET;
     }
+
+    @Override
+    public String toString() {
+        return commandLineValue;
+    } 
+    
 }

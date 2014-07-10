@@ -37,18 +37,12 @@ public class TsvResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvResultsWriter.class);
 
     @Override
-    public void write(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
-        String outFileName = settings.getOutFileName();
+    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
+        String outFileName = ResultsWriterUtils.determineFileExtension(settings);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-            //this is either empty or has a gene name
-            String candidateGene = settings.getCandidateGene();
-
-            for (Gene gene : sampleData.getGeneList()) {
-                String s = makeGeneLine(gene, candidateGene);
-                writer.write(s);    
-            }
+            writer.write(writeString(sampleData, settings, filterList, priorityList));
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -56,11 +50,24 @@ public class TsvResultsWriter implements ResultsWriter {
 
     }
 
+    @Override
+    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
+        //this is either empty or has a gene name
+        String candidateGene = settings.getCandidateGene();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Gene gene : sampleData.getGeneList()) {
+            stringBuilder.append(makeGeneLine(gene, candidateGene));
+        }
+        return stringBuilder.toString();
+    }
+
     /**
-     * Writes out the gene data in a tab delimited string ending in a newline character. 
+     * Writes out the gene data in a tab delimited string ending in a newline
+     * character.
+     *
      * @param gene
      * @param candidateGene
-     * @return 
+     * @return
      */
     protected String makeGeneLine(Gene gene, String candidateGene) {
         float humanPhenScore = 0f;
@@ -118,7 +125,7 @@ public class TsvResultsWriter implements ResultsWriter {
         if (gene.getGeneSymbol().equals(candidateGene) || gene.getGeneSymbol().startsWith(candidateGene + ",")) {// bug fix for new Jannovar labelling where can have multiple genes per var but first one is most pathogenic
             matchesCandidateGene = 1;
         }
-        
+
         return String.format("%s\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%s\t%d\n",
                 gene.getGeneSymbol(),
                 gene.getEntrezGeneID(),

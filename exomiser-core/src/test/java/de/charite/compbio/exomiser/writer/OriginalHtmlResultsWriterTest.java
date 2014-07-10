@@ -35,11 +35,13 @@ public class OriginalHtmlResultsWriterTest {
     public void testWrite() {
         SampleData sampleData = new SampleData();
         sampleData.setGeneList(new ArrayList<Gene>());
-        ExomiserSettings settings = new ExomiserSettings.Builder().outFileName("testWriteOriiginal.html").build();
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWriteOriiginal.html").build();
         List<Filter> filterList = new ArrayList<>();
         List<Priority> priorityList = new ArrayList<>();
         //TODO: make this work!
-//        instance.write(sampleData, settings, filterList, priorityList);
+        // when the Filter and Results have been decoupled this should mean we 
+        //don't have to run the entire program just to see some formatted data being written.   
+//        instance.writeFile(sampleData, settings, filterList, priorityList);
 //        assertTrue(Paths.get("testWriteOriiginal.html").toFile().exists());
 //        assertTrue(Paths.get("testWriteOriiginal.html").toFile().delete());
     }

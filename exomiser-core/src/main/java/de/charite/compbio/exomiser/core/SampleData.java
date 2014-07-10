@@ -57,6 +57,10 @@ public class SampleData {
 
     private List<Gene> geneList;
     
+    //TODO: a way of collecting the before and after data for the Filtering Summary in the HTML results.
+    //this will cut down on the generally unused List<Filter> and List<Priority> required by the Writers just to satisfy the 
+    //HTMLWriter#writeHTMLFilterSummary
+    //See: https://bitbucket.org/exomiser/exomiser/issue/32/collect-the-filter-and-priority-summary
     
     
     public SampleData() {

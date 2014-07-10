@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.writer;
 
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.SampleData;
 import de.charite.compbio.exomiser.exome.Gene;
 import de.charite.compbio.exomiser.exome.VariantEvaluation;
@@ -13,7 +14,6 @@ import de.charite.compbio.exomiser.filter.FilterType;
 import de.charite.compbio.exomiser.filter.FrequencyVariantScore;
 import de.charite.compbio.exomiser.filter.PathogenicityVariantScore;
 import de.charite.compbio.exomiser.priority.Priority;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.annotation.Annotation;
 import jannovar.annotation.AnnotationList;
@@ -25,8 +25,10 @@ import jannovar.reference.TranscriptModel;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -34,8 +36,10 @@ import static org.junit.Assert.*;
  */
 public class TsvResultsWriterTest {
 
-    Gene gene;
-    TsvResultsWriter instance;
+    private final Gene gene;
+    private final TsvResultsWriter instance;
+    private static final String GENE_STRING = "FGFR2	-10	-10.0000	-10.0000	-10.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	1.0000	1.0000	1.0000	1.0000	1.0000	1.0000	STOPGAIN	0\n";
+    private SampleData sampleData;
     
     public TsvResultsWriterTest() {
         instance = new TsvResultsWriter();
@@ -60,24 +64,35 @@ public class TsvResultsWriterTest {
         gene = new Gene(variantEval);
     }
 
+    @Before
+    public void before() {
+        sampleData = new SampleData();
+        sampleData.setGeneList(new ArrayList<Gene>());
+    }
+    
     @Test
     public void testWrite() {
-        SampleData sampleData = new SampleData();
-        sampleData.setGeneList(new ArrayList<Gene>());
-        List<Filter> filterList = null;
-        List<Priority> priorityList = null;
-        ExomiserSettings settings = new ExomiserSettings.Builder().outFileName("testWrite.tsv").outputFormat(OutputFormat.TSV).build();
-        instance.write(sampleData, settings, filterList, priorityList);
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormat(OutputFormat.TSV).build();
+        instance.writeFile(sampleData, settings, null, null);
         assertTrue(Paths.get("testWrite.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.tsv").toFile().delete());
+    }
+    
+    @Test
+    public void testWriteString() {
+        List<Gene> geneList = new ArrayList();
+        geneList.add(gene);
+        sampleData.setGeneList(geneList);
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormat(OutputFormat.TSV).build();
+        String outString = instance.writeString(sampleData, settings, null, null);
+        assertThat(outString, equalTo(GENE_STRING));
     }
 
     @Test
     public void testMakeGeneLine() {
         String candidateGene = "";
-        String expResult = "FGFR2	-10	-10.0000	-10.0000	-10.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	1.0000	1.0000	1.0000	1.0000	1.0000	1.0000	STOPGAIN	0\n";
         String result = instance.makeGeneLine(gene, candidateGene);
-        assertEquals(expResult, result);
+        assertThat(result, equalTo(GENE_STRING));
     }
 
 }

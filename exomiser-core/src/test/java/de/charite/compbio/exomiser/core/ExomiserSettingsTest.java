@@ -5,15 +5,22 @@
  */
 package de.charite.compbio.exomiser.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.core.ExomiserSettings.Builder;
 import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.common.ModeOfInheritance;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -29,13 +36,18 @@ import org.junit.Test;
  */
 public class ExomiserSettingsTest {
 
-    Builder builder;
+    SettingsBuilder builder;
 
     //
+    private static final String BUILD_VERSION_DEFAULT = "";
+    private static final String BUILD_VERSION = "2.1.0";
+    private static final String BUILD_TIMESTAMP_DEFAULT = "";
+    private static final String BUILD_TIMESTAMP = "20140704-1556";
+
     private static final Path VCF_PATH_NOT_SET = null;
-    private static final Path VCF_PATH = Paths.get("test.vcf");
+    private static final Path VCF_PATH = Paths.get("data/test.vcf");
     private static final Path PED_PATH_NOT_SET = null;
-    private static final Path PED_PATH = Paths.get("test.ped");
+    private static final Path PED_PATH = Paths.get("data/test.ped");
     private static final float MAXIMUM_FREQUENCY_DEFAULT = 100.0f;
     private static final float MAXIMUM_FREQUENCY = 42.24f;
     private static final float MIMIMUM_QUALITY_DEFAULT = 0.0f;
@@ -61,7 +73,9 @@ public class ExomiserSettingsTest {
     private static final int NUMBER_OF_GENES_TO_SHOW_DEFAULT = 0;
     private static final int NUMBER_OF_GENES_TO_SHOW = 12438803;
     private static final String OUT_FILE_NAME_DEFAULT = "";
-    private static final String OUT_FILE_NAME = "wibbler.tab";
+    private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET = "results/test-exomiser-results";
+    private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET = "results/test-exomiser-" + BUILD_VERSION + "-results";
+    private static final String OUT_FILE_NAME = "wibbler";
     private static final OutputFormat OUTPUT_FORMAT_DEFAULT = OutputFormat.HTML;
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV;
 
@@ -70,7 +84,7 @@ public class ExomiserSettingsTest {
 
     @Before
     public void setUp() {
-        builder = new ExomiserSettings.Builder();
+        builder = new SettingsBuilder();
     }
 
     @Test
@@ -98,6 +112,32 @@ public class ExomiserSettingsTest {
 
     }
 
+    @Test
+    public void testBuildVersionDefault() {
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.getBuildVersion(), equalTo(BUILD_VERSION_DEFAULT));
+    }
+    
+    @Test
+    public void testThatBuildVersionCanBeSet() {
+        builder.buildVersion(BUILD_VERSION);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.getBuildVersion(), equalTo(BUILD_VERSION));
+    }
+    
+    @Test
+    public void testBuildTimestampDefault() {
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.getBuildTimestamp(), equalTo(BUILD_TIMESTAMP_DEFAULT));
+    }
+    
+    @Test
+    public void testThatBuildTimestampCanBeSet() {
+        builder.buildTimestamp(BUILD_TIMESTAMP);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.getBuildTimestamp(), equalTo(BUILD_TIMESTAMP));
+    }
+    
     /**
      * Test of getVcfPath method, of class ExomiserSettings.
      */
@@ -124,21 +164,21 @@ public class ExomiserSettingsTest {
         ExomiserSettings settings = builder.build();
         assertThat(settings.isValid(), is(false));
     }
-    
+
     @Test
     public void testThatJustSettingAFcvFileIsNotValid() {
         builder.vcfFilePath(VCF_PATH);
         ExomiserSettings settings = builder.build();
         assertThat(settings.isValid(), is(false));
     }
-    
+
     @Test
     public void testThatJustSettingAPrioritiserIsNotValid() {
         builder.usePrioritiser(PriorityType.OMIM_PRIORITY);
         ExomiserSettings settings = builder.build();
         assertThat(settings.isValid(), is(false));
     }
-    
+
     @Test
     public void testThatTheMinimumRequiredValidSettingsIsAFcvFileAndPrioritiser() {
         builder.vcfFilePath(VCF_PATH);
@@ -146,7 +186,7 @@ public class ExomiserSettingsTest {
         ExomiserSettings settings = builder.build();
         assertThat(settings.isValid(), is(true));
     }
-    
+
     /**
      * Test of getPedPath method, of class ExomiserSettings.
      */
@@ -383,6 +423,21 @@ public class ExomiserSettingsTest {
     }
 
     @Test
+    public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileName() {
+        builder.vcfFilePath(VCF_PATH);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET));
+    }
+    
+    @Test
+    public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileNameAndBuildVersion() {
+        builder.vcfFilePath(VCF_PATH);
+        builder.buildVersion(BUILD_VERSION);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET));
+    }
+
+    @Test
     public void testThatBuilderProducesSetOutFileName() {
         builder.outFileName(OUT_FILE_NAME);
         ExomiserSettings settings = builder.build();
@@ -447,7 +502,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getOutputFormat(), equalTo(OUTPUT_FORMAT));
         assertThat(settings.isValid(), is(true));
     }
-    
+
     @Test
     public void testThatBuilderCanSetSomeValuesAndOthersRemainAsDefault() {
 
@@ -483,4 +538,30 @@ public class ExomiserSettingsTest {
 
     }
 
+    @Test
+    public void testJsonWrite() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+        ExomiserSettings defaultSettings = builder.build();
+        try {
+            String jsonString = mapper.writeValueAsString(defaultSettings);
+            System.out.println(jsonString);
+        } catch (JsonProcessingException ex) {
+            System.out.println(ex);
+        }
+    }
+
+    @Test
+    public void testJsonRead() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
+        String jsonString = "{\"prioritiser\":\"phenodigm-mgi\",\"max-freq\":0.1,\"min-qual\":0.0,\"restrict-interval\":\"\",\"include-pathogenic\":false,\"remove-dbsnp\":false,\"remove-off-target-syn\":true,\"candidate-gene\":\"FGFR2\",\"inheritance-mode\":\"AUTOSOMAL_DOMINANT\",\"disease-id\":\"\",\"hpo-ids\":[\"HP:0987654\",\"HP:1234567\"],\"seed-genes\":[123,4567],\"num-genes\":0,\"out-file\":\"\",\"out-format\":\"HTML\",\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
+        try {
+            ExomiserSettings defaultSettings = mapper.readValue(jsonString, ExomiserSettings.class);
+            System.out.println(defaultSettings);
+        } catch (IOException ex) {
+            System.out.println(ex);
+        }
+    }
 }

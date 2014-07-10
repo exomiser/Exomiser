@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -46,21 +47,27 @@ public class HtmlResultsWriter implements ResultsWriter {
 
 
     @Override
-    public void write(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
+    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
         
-        String outFileName = settings.getOutFileName();
+        String outFileName = ResultsWriterUtils.determineFileExtension(settings);
         Path outFile = Paths.get(outFileName);
         
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
             
-            Context context = new Context();
-            context.setVariable("filters", filterList);
-            writer.write(templateEngine.process("results", context));
+            writer.write(writeString(sampleData, settings, filterList, priorityList));
             
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
         logger.info("Results written to file {}.", outFileName);
 
+    }
+
+    @Override
+    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList) {
+            Context context = new Context();
+            //write out the filter results section
+            context.setVariable("filters", filterList);
+            return templateEngine.process("results", context);
     }
 }

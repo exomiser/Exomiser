@@ -18,5 +18,25 @@ import java.util.List;
  */
 public interface ResultsWriter {
     
-    void write(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList);
+    /**
+     * Writes the result data out to the file specified in the ExomiserSettings object.
+     * 
+     * @param sampleData
+     * @param settings
+     * @param filterList
+     * @param priorityList 
+     */
+    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList);
+    
+    /**
+     * Writes the result data out to a String.
+     * 
+     * @param sampleData
+     * @param settings
+     * @param filterList
+     * @param priorityList 
+     * @return  
+     */
+    //TODO: Issue #32 https://bitbucket.org/exomiser/exomiser/issue/32/collect-the-filter-and-priority-summary
+    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Filter> filterList, List<Priority> priorityList);
 }
