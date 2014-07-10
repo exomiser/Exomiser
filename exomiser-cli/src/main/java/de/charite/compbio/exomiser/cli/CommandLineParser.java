@@ -5,9 +5,9 @@
  */
 package de.charite.compbio.exomiser.cli;
 
-import static de.charite.compbio.exomiser.cli.CommandLineOption.*;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.Builder;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.util.OutputFormat;
 import jannovar.common.ModeOfInheritance;
@@ -48,8 +48,6 @@ public class CommandLineParser {
     @Autowired
     private final Options options;
 
-    private static final String VCF = VCF_OPTION.getLongOption();
-
     public CommandLineParser(Options options) {
         this.options = options;
     }
@@ -60,7 +58,7 @@ public class CommandLineParser {
      * @param args the list of arguments from the command line
      * @return an ExomiserSettings object built from the command line.
      */
-    public ExomiserSettings parseCommandLineArguments(String[] args) {
+    public SettingsBuilder parseCommandLineArguments(String[] args) {
 
         Parser parser = new GnuParser();
         CommandLine cmd;
@@ -74,88 +72,126 @@ public class CommandLineParser {
         return null;
     }
 
-    private ExomiserSettings parseCommandLine(CommandLine commandLine) {
+    private SettingsBuilder parseCommandLine(CommandLine commandLine) {
 
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
 
-        Builder settingsBuilder = new ExomiserSettings.Builder();
+        SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
 
-        String settingsFile = SETTINGS_FILE_OPTION.getLongOption();
-        if (commandLine.hasOption(settingsFile)) {
-            settingsBuilder = parseSettingsFile(Paths.get(commandLine.getOptionValue(settingsFile)));
+        if (commandLine.hasOption(SETTINGS_FILE_OPTION)) {
+            settingsBuilder = parseSettingsFile(Paths.get(commandLine.getOptionValue(SETTINGS_FILE_OPTION)));
             logger.warn("Settings file parameters will be overridden by command-line parameters!");
         }
         for (Option option : commandLine.getOptions()) {
             logger.info("--{} : {}", option.getLongOpt(), option.getValues());
-            CommandLineOption commandLineOption = CommandLineOption.valueOfLongOption(option.getLongOpt());
-            switch (commandLineOption) {
-                //REQUIRED
-                case VCF_OPTION:
-                    settingsBuilder.vcfFilePath(Paths.get(option.getValue()));
-                    break;
-                case PED_OPTION:
-                    settingsBuilder.pedFilePath(Paths.get(option.getValue()));
-                    break;
-                case PRIORITISER_OPTION:
-                    settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(option.getValue()));
-                    break;
-
-                //FILTER OPTIONS
-                case MAX_FREQ_OPTION:
-                    settingsBuilder.maximumFrequency(Float.parseFloat(option.getValue()));
-                    break;
-                case INTERVAL_OPTION:
-                    settingsBuilder.geneticInterval(option.getValue());
-                    break;
-                case MIN_QUAL_OPTION:
-                    settingsBuilder.minimumQuality(Float.parseFloat(option.getValue()));
-                    break;
-                case INCLUDE_PATHOGENIC_OPTION:
-                    //default is false
-                    settingsBuilder.includePathogenic(true);
-                    break;
-                case REMOVE_DBSNP_OPTION:
-                    //default is false
-                    settingsBuilder.removeDbSnp(true);
-                    break;
-                case REMOVE_OFF_TARGET_OPTION:
-                    //default is true
-                    settingsBuilder.removeOffTargetVariants(false);
-                    break;
-
-                //PRIORITISER OPTIONS
-                case CANDIDATE_GENE_OPTION:
-                    settingsBuilder.candidateGene(option.getValue());
-                    break;
-                case HPO_IDS_OPTION:
-                    settingsBuilder.hpoIdList(parseHpoStringList(option.getValue()));
-                    break;
-                case SEED_GENES_OPTION:
-                    settingsBuilder.seedGeneList(makeIntegerList(option.getValue()));
-                    break;
-                case DISEASE_ID_OPTION:
-                    settingsBuilder.diseaseId(option.getValue());
-                    break;
-                case INHERITANCE_MODE_OPTION:
-                    settingsBuilder.modeOfInheritance(parseInheritanceMode(option.getValue()));
-                    break;
-
-                //OUTPUT OPTIONS
-                case NUM_GENES_OPTION:
-                    settingsBuilder.numberOfGenesToShow(Integer.parseInt(option.getValue()));
-                    break;
-                case OUT_FILE_OPTION:
-                    //TODO: out-file and out-format are now somewhat inter-dependent
-                    settingsBuilder.outFileName(option.getValue());
-                    break;
-                case OUT_FORMAT_OPTION:
-                    settingsBuilder.outputFormat(parseOutputFormat(option.getValue()));
-                    break;
-            }
+            setBuilderValue(option.getLongOpt(), option.getValue(), settingsBuilder);
         }
 
-        return settingsBuilder.build();
+        return settingsBuilder;
 
+    }
+
+    /**
+     * Parses the settings file and sets the values from this into a settings
+     * object.
+     *
+     * @param value
+     * @param settingsBuilder
+     */
+    private SettingsBuilder parseSettingsFile(Path settingsFile) {
+
+        SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        
+        try (Reader reader = Files.newBufferedReader(settingsFile, Charset.defaultCharset())) {
+            Properties settingsProperties = new Properties();
+
+            settingsProperties.load(reader);
+            logger.info("Loaded settings from properties file: {}", settingsProperties);
+            for (String key : settingsProperties.stringPropertyNames()) {
+                setBuilderValue(key, settingsProperties.getProperty(key), settingsBuilder);
+            }
+
+        } catch (IOException ex) {
+            logger.error("Unable to parse settings from file {}", settingsFile, ex);
+        }
+        return settingsBuilder;
+    }
+    
+    private void setBuilderValue(String key, String value, SettingsBuilder settingsBuilder) throws NumberFormatException {
+        switch (key) {
+            //REQUIRED
+            case VCF_OPTION:
+                settingsBuilder.vcfFilePath(Paths.get(value));
+                break;
+            case PED_OPTION:
+                settingsBuilder.pedFilePath(Paths.get(value));
+                break;
+            case PRIORITISER_OPTION:
+                settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(value));
+                break;
+                
+                //FILTER OPTIONS
+            case MAX_FREQ_OPTION:
+                settingsBuilder.maximumFrequency(Float.parseFloat(value));
+                break;
+            case GENETIC_INTERVAL_OPTION:
+                settingsBuilder.geneticInterval(value);
+                break;
+            case MIN_QUAL_OPTION:
+                settingsBuilder.minimumQuality(Float.parseFloat(value));
+                break;
+            case INCLUDE_PATHOGENIC_OPTION:
+                //default is false
+                settingsBuilder.includePathogenic(true);
+                break;
+            case REMOVE_DBSNP_OPTION:
+                //default is false
+                if (value == null || value.isEmpty()) {
+                    //the command line is just a switch
+                    settingsBuilder.removeDbSnp(true);                
+                } else {
+                    //but the json/properties file specify true or false
+                    settingsBuilder.removeDbSnp(Boolean.parseBoolean(value));
+                }
+                break;
+            case REMOVE_OFF_TARGET_OPTION:
+                //default is true
+                if (value == null || value.isEmpty()) {
+                    settingsBuilder.removeOffTargetVariants(false);
+                } else {
+                    settingsBuilder.removeOffTargetVariants(Boolean.parseBoolean(value));
+                }
+                break;
+                
+                //PRIORITISER OPTIONS
+            case CANDIDATE_GENE_OPTION:
+                settingsBuilder.candidateGene(value);
+                break;
+            case HPO_IDS_OPTION:
+                settingsBuilder.hpoIdList(parseHpoStringList(value));
+                break;
+            case SEED_GENES_OPTION:
+                settingsBuilder.seedGeneList(makeIntegerList(value));
+                break;
+            case DISEASE_ID_OPTION:
+                settingsBuilder.diseaseId(value);
+                break;
+            case MODE_OF_INHERITANCE_OPTION:
+                settingsBuilder.modeOfInheritance(parseInheritanceMode(value));
+                break;
+                
+                //OUTPUT OPTIONS
+            case NUM_GENES_OPTION:
+                settingsBuilder.numberOfGenesToShow(Integer.parseInt(value));
+                break;
+            case OUT_FILE_OPTION:
+                //TODO: out-file and out-format are now somewhat inter-dependent
+                settingsBuilder.outFileName(value);
+                break;
+            case OUT_FORMAT_OPTION:
+                settingsBuilder.outputFormat(parseOutputFormat(value));
+                break;
+        }
     }
 
     @Override
@@ -197,9 +233,15 @@ public class CommandLineParser {
         switch (value) {
             case "AR":
                 return ModeOfInheritance.AUTOSOMAL_RECESSIVE;
+            case "AUTOSOMAL_RECESSIVE":
+                return ModeOfInheritance.AUTOSOMAL_RECESSIVE;
             case "AD":
                 return ModeOfInheritance.AUTOSOMAL_DOMINANT;
+            case "AUTOSOMAL_DOMINANT":
+                return ModeOfInheritance.AUTOSOMAL_DOMINANT;
             case "X":
+                return ModeOfInheritance.X_RECESSIVE;
+            case "X_RECESSIVE":
                 return ModeOfInheritance.X_RECESSIVE;
             default:
                 logger.error("value {} is not one of AR, AD or X - inheritance mode has not been set", value);
@@ -241,68 +283,5 @@ public class CommandLineParser {
 
         return returnList;
     }
-
-    /**
-     * Parses the settings file and sets the values from this into a settings
-     * object.
-     *
-     * @param value
-     * @param settingsBuilder
-     */
-    private Builder parseSettingsFile(Path settingsFile) {
-
-        Builder settingsBuilder = new ExomiserSettings.Builder();
-        
-        try (Reader reader = Files.newBufferedReader(settingsFile, Charset.defaultCharset());) {
-            Properties settingsProperties = new Properties();
-
-            settingsProperties.load(reader);
-            logger.info("Loaded settings from properties file: {}", settingsProperties);
-            //REQUIRED
-            settingsBuilder.vcfFilePath(Paths.get(settingsProperties.getProperty(VCF)));
-            settingsBuilder.pedFilePath(Paths.get(settingsProperties.getProperty(PED)));
-            settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(settingsProperties.getProperty(PRIORITISER)));
-            
-            //FILTER SETTINGS
-            settingsBuilder.maximumFrequency(Float.parseFloat(settingsProperties.getProperty(MAX_FREQ)));
-            settingsBuilder.geneticInterval(settingsProperties.getProperty(INTERVAL));
-            settingsBuilder.minimumQuality(Float.parseFloat(settingsProperties.getProperty(MIN_QUAL)));
-            settingsBuilder.includePathogenic(Boolean.valueOf(settingsProperties.getProperty(INCLUDE_PATHOGENIC)));
-            settingsBuilder.removeDbSnp(Boolean.valueOf(settingsProperties.getProperty(REMOVE_DBSNP)));
-            settingsBuilder.removeOffTargetVariants(Boolean.valueOf(settingsProperties.getProperty(REMOVE_OFF_TARGET)));
-
-            //PRIORITISER OPTIONS
-            settingsBuilder.candidateGene(settingsProperties.getProperty(CANDIDATE_GENE));
-            settingsBuilder.hpoIdList(parseHpoStringList(settingsProperties.getProperty(HPO_IDS)));
-            settingsBuilder.seedGeneList(makeIntegerList(settingsProperties.getProperty(SEED_GENES)));
-            settingsBuilder.diseaseId(settingsProperties.getProperty(DISEASE_ID));
-            settingsBuilder.modeOfInheritance(parseInheritanceMode(settingsProperties.getProperty(INHERITANCE_MODE)));
-
-            //OUTPUT OPTIONS
-            settingsBuilder.numberOfGenesToShow(Integer.parseInt(settingsProperties.getProperty(NUM_GENES)));
-            //TODO: out-file and out-format are now somewhat inter-dependent
-            settingsBuilder.outFileName(settingsProperties.getProperty(OUT_FILE));
-            settingsBuilder.outputFormat(parseOutputFormat(settingsProperties.getProperty(OUT_FORMAT)));
-        } catch (IOException ex) {
-            logger.error("Unable to parse settings from file {}", settingsFile, ex);
-        }
-        return settingsBuilder;
-    }
-    private static final String PED = PED_OPTION.getLongOption();
-    private static final String PRIORITISER = PRIORITISER_OPTION.getLongOption();
-    private static final String MAX_FREQ = MAX_FREQ_OPTION.getLongOption();
-    private static final String INTERVAL = INTERVAL_OPTION.getLongOption();
-    private static final String MIN_QUAL = MIN_QUAL_OPTION.getLongOption();
-    private static final String INCLUDE_PATHOGENIC = INCLUDE_PATHOGENIC_OPTION.getLongOption();
-    private static final String REMOVE_DBSNP = REMOVE_DBSNP_OPTION.getLongOption();
-    private static final String REMOVE_OFF_TARGET = REMOVE_OFF_TARGET_OPTION.getLongOption();
-    private static final String CANDIDATE_GENE = CANDIDATE_GENE_OPTION.getLongOption();
-    private static final String HPO_IDS = HPO_IDS_OPTION.getLongOption();
-    private static final String SEED_GENES = SEED_GENES_OPTION.getLongOption();
-    private static final String DISEASE_ID = DISEASE_ID_OPTION.getLongOption();
-    private static final String INHERITANCE_MODE = INHERITANCE_MODE_OPTION.getLongOption();
-    private static final String NUM_GENES = NUM_GENES_OPTION.getLongOption();
-    private static final String OUT_FILE = OUT_FILE_OPTION.getLongOption();
-    private static final String OUT_FORMAT = OUT_FORMAT_OPTION.getLongOption();
-
+    
 }

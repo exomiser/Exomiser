@@ -6,11 +6,7 @@
 
 package de.charite.compbio.exomiser.cli.config;
 
-import de.charite.compbio.exomiser.cli.Main;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.CodeSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -31,49 +27,30 @@ import org.springframework.core.env.Environment;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@PropertySource({"jdbc.properties"})
+@PropertySource({"jdbc.properties", "file:${jarFilePath}/jdbc.properties"})
 public class DataSourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
 
     @Autowired
-    Environment env;
+    private Environment env;
     
     @Autowired
-    Path dataPath;
-    
-    @Bean
-    String h2Path(){
-        return dataPath.resolve("exomiser").toString();
-    }
-        
-    /**
-     * Used to find the Path the Main application is running on in order to
-     * pick-up the user-configured properties files.
-     *
-     * @return
-     */
-    @Bean
-    public static Path mainJarPath() {
-        CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
-
-        Path jarFilePath = null;
-        try {
-            jarFilePath = Paths.get(codeSource.getLocation().toURI()).getParent();
-        } catch (URISyntaxException ex) {
-            logger.error("Unable to find jar file", ex);
-        }
-        logger.info("Jar file is running from location: {}", jarFilePath);
-        return jarFilePath;
-    }
-    
+    private Path dataPath;
+                          
     @Bean
     public DataSource dataSource() {
-        logger.info("h2Path: {}", h2Path());
-        //this is a shitty hack to get the database url to work without configuration
-        //but my Spring-Fu is weak to I can't get the bugger to do a dynamic placeholder resolve
-        //of ${h2Path} 
-        String url = env.getProperty("exomiser.url").replace("$h2Path", h2Path());
+        String url = env.getProperty("exomiser.url");
+        if (env.containsProperty("h2Path") &! env.getProperty("h2Path").isEmpty()) {
+            env.resolvePlaceholders("h2Path"); //this comes from the application.properties
+//            url = env.getProperty("exomiser.url");
+        }
+        else {
+            //so it hasn't been manually set we'll use the default location
+            //the placeholders are not visible in the url string hence we replace the 'file:'
+            String h2Filepath = String.format("file:%s", dataPath);
+            url = env.getProperty("exomiser.url").replace("file:", h2Filepath);
+        }
         logger.info("DataSource url set to: {}", url);
         int maxConnections = 10; //maybe get this to be user accessible 
         logger.info("DataSource using maximum of {} database connections", maxConnections);        
@@ -115,12 +92,7 @@ public class DataSourceConfig {
 //    @Bean
 //    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 //        PropertySourcesPlaceholderConfigurer pspc = new PropertySourcesPlaceholderConfigurer();
-//        Path jdbcPropertiesPath = jarPath.resolve("jdbc.properties");
-//        Resource[] resources = new PathResource[]{
-//                new PathResource(jdbcPropertiesPath)};//,
-////                new PathResource(applicationPropertiesPath)};
-//        pspc.setLocations(resources);
-//        pspc.setIgnoreUnresolvablePlaceholders(true);
+//        pspc.setLocation(new PathResource("jdbc.properties"));
 //        return pspc;
 //    }
 }

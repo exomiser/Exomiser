@@ -20,7 +20,6 @@
     
     <profiles>
         <profile>
-            <id>default</id>
             <build>
                 <resources>          
                     <resource>
@@ -144,7 +143,7 @@
                                     <includes>
                                         <include>application.properties</include>
                                         <include>jdbc.properties</include>
-                                        <include>example_settings.properties</include>
+                                        <include>example.settings</include>
                                         <include>log4j2.xml</include>
                                     </includes> 
                                 </resource>

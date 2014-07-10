@@ -6,8 +6,7 @@
 
 package de.charite.compbio.exomiser.cli.config;
 
-import de.charite.compbio.exomiser.cli.CommandLineOption;
-import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -33,27 +32,27 @@ public class CommandLineOptionsConfigTest {
 
     @Test
     public void options_specify_a_vcf_file() {
-        String longOption = CommandLineOption.VCF_OPTION.getLongOption();
+        String longOption = VCF_OPTION;
         Option option = options.getOption(longOption);
         assertThat(option.getLongOpt(), equalTo(longOption));
     }
     
     @Test
     public void options_specify_a_prioritiser() {
-        String longOption = CommandLineOption.PRIORITISER_OPTION.getLongOption();
+        String longOption = PRIORITISER_OPTION;
         Option option = options.getOption(longOption);
         assertThat(option.getLongOpt(), equalTo(longOption));
     }
     
     @Test
     public void prioritiserOptionsHaveADecentDescription() {
-        String description = options.getOption(CommandLineOption.PRIORITISER_OPTION.getLongOption()).getDescription();
+        String description = options.getOption(PRIORITISER_OPTION).getDescription();
         System.out.println(description);
         assertThat(description.isEmpty(), is(false));
     }
     
     @Test
     public void optionsContainsSettingsFile() {
-        assertThat(options.hasOption(CommandLineOption.SETTINGS_FILE_OPTION.getLongOption()), is(true));
+        assertThat(options.hasOption(SETTINGS_FILE_OPTION), is(true));
     }
 }

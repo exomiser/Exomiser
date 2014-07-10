@@ -40,7 +40,7 @@ public class CommandLineParserTest {
     public void exomiser_settings_are_invalid_when_a_vcf_file_was_not_specified() {
         String input = "--ped def.ped -D OMIM:101600 --prioritiser=phenodigm-mgi";
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.isValid(), is(false));    
     }
     
@@ -48,7 +48,7 @@ public class CommandLineParserTest {
     public void exomiser_settings_are_invalid_when_a_prioritiser_was_not_specified() {
         String input = "-v 123.vcf --ped def.ped -D OMIM:101600";
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.isValid(), is(false));    
     }
     
@@ -56,7 +56,7 @@ public class CommandLineParserTest {
     public void command_line_should_specify_a_vcf_file_and_a_prioritiser() {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.isValid(), is(true));    
     }
     
@@ -64,33 +64,43 @@ public class CommandLineParserTest {
     public void should_throw_caught_exception_when_settings_file_not_found() {
         String input = "--settings-file wibble.settings";
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.isValid(), is(false));    
     }
     
     @Test
-    public void should_produce_invalid_settings_when_a_settings_file_is_indicated() {
+    public void should_produce_invalid_settings_when_a_settings_file_is_provided() {
         String input = "--settings-file src/test/resources/testInvalidSettings.properties";
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.isValid(), is(false));
     }
     
     @Test
-    public void should_produce_valid_settings_when_a_valid_settings_file_is_indicated() {
+    public void should_produce_valid_settings_when_a_valid_settings_file_is_provided() {
         String input = "--settings-file src/test/resources/testValidSettings.properties";
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.isValid(), is(true));
+    }
+    
+    @Test
+    public void should_produce_valid_default_settings_when_an_incomplete_settings_file_is_provided() {
+        String input = "--settings-file src/test/resources/testIncompleteSettings.properties";
+        String[] args = input.split(" ");
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
+        System.out.println(exomiserSettings);
+        assertThat(exomiserSettings.getMaximumFrequency(), equalTo(100f));
+        assertThat(exomiserSettings.includePathogenic(), is(false));
     }
     
     @Test
     public void should_produce_settings_when_a_settings_file_is_indicated_and_overwrite_values_when_a_command_line_option_is_specified() {
         String input = " --max-freq=0.1 --settings-file src/test/resources/exomiserSettings.properties";
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(0.1f));
     }
     
@@ -100,7 +110,7 @@ public class CommandLineParserTest {
         String input = String.format("-v %s --ped def.ped -D OMIM:101600 --prioritiser=phenodigm-mgi", vcfFile);
         String[] args = input.split(" ");
         
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.getVcfPath(), equalTo(Paths.get(vcfFile)));
     }
     
@@ -110,7 +120,7 @@ public class CommandLineParserTest {
         String input = String.format("--vcf %s --ped def.ped -D OMIM:101600 --prioritiser=phenodigm-mgi", vcfFile);
         String[] args = input.split(" ");
         
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.getVcfPath(), equalTo(Paths.get(vcfFile)));
     }
     
@@ -119,7 +129,7 @@ public class CommandLineParserTest {
         String pedFile = "ped.ped";
         String input = String.format("-v 123.vcf --ped %s -D OMIM:101600 --prioritiser=phenodigm-mgi", pedFile);
         String[] args = input.split(" ");        
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         assertThat(exomiserSettings.getPedPath(), equalTo(Paths.get(pedFile)));
     }
     
@@ -128,7 +138,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getPedPath(), nullValue());
     }
@@ -138,7 +148,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertEquals(PriorityType.PHENODIGM_MGI_PRIORITY, exomiserSettings.getPrioritiserType()); 
     }
@@ -148,7 +158,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf -F not_a_float --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
     }
     
     @Test
@@ -156,7 +166,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(100.0f)); 
 
@@ -169,7 +179,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf -F 25.23 --prioritiser=phenodigm-mgi", frequency);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(frequency)); 
 
@@ -182,7 +192,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf -Q 73.12 --prioritiser=phenodigm-mgi", frequency);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getMinimumQuality(), equalTo(frequency)); 
     }
@@ -192,7 +202,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf -Q not_a_float --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
     }
          
     @Test
@@ -202,7 +212,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getGeneticInterval(), equalTo(value)); 
     }
@@ -213,7 +223,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s --prioritiser=phenodigm-mgi", option);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.includePathogenic(), is(true)); 
     }
@@ -224,7 +234,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.includePathogenic(), is(false)); 
     }
@@ -235,7 +245,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s --prioritiser=phenodigm-mgi", option);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.removeDbSnp(), is(true)); 
     }
@@ -246,7 +256,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.removeDbSnp(), is(false)); 
     }
@@ -257,7 +267,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s --prioritiser=phenodigm-mgi", option);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.removeOffTargetVariants(), is(false)); 
     }
@@ -268,7 +278,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.removeOffTargetVariants(), is(true)); 
     }
@@ -280,7 +290,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getCandidateGene(), equalTo(value)); 
     }
@@ -292,7 +302,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         List<String> expectedList = new ArrayList();
         expectedList.add("HP:0000407");
@@ -309,7 +319,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         List<String> expectedList = new ArrayList();
         expectedList.add("HP:0000407");
@@ -324,7 +334,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         List<String> expectedList = new ArrayList();
 
@@ -339,7 +349,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         List<String> expectedList = new ArrayList();
         expectedList.add("HP:0000407");
@@ -355,7 +365,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         List<Integer> expectedList = new ArrayList();
         expectedList.add(123);
@@ -372,7 +382,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         List<Integer> expectedList = new ArrayList();
         expectedList.add(123);
@@ -387,7 +397,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         List<Integer> expectedList = new ArrayList();
 
@@ -401,7 +411,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getDiseaseId(), equalTo(value)); 
     }
@@ -413,7 +423,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getDiseaseId(), equalTo(value)); 
     }
@@ -425,7 +435,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT)); 
     } 
@@ -437,7 +447,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_RECESSIVE)); 
     }                        
@@ -449,7 +459,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.X_RECESSIVE)); 
     }
@@ -461,7 +471,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED)); 
     }
@@ -473,7 +483,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED)); 
     }
@@ -485,7 +495,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getNumberOfGenesToShow(), equalTo(Integer.parseInt(value))); 
     }
@@ -497,7 +507,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getOutFileName(), equalTo(value)); 
     }
@@ -509,7 +519,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getOutFileName(), equalTo(value)); 
     }
@@ -521,7 +531,7 @@ public class CommandLineParserTest {
 //        String input = String.format("-v %s.vcf --prioritiser=phenodigm-mgi", value);
 //        
 //        String[] args = input.split(" ");
-//        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+//        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
 //        
 //        String expectedFileName = String.format("%s-exomiser-results.%s", value, OutputFormat.HTML.getFileExtension());
 //        
@@ -535,7 +545,7 @@ public class CommandLineParserTest {
 //        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
 //        
 //        String[] args = input.split(" ");
-//        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+//        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
 //        String expectedFilename = String.format("%s.%s",value, OutputFormat.HTML.getFileExtension());
 //        
 //        assertThat(exomiserSettings.getOutFileName(), equalTo(expectedFilename)); 
@@ -548,7 +558,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.HTML)); 
     }
@@ -559,7 +569,7 @@ public class CommandLineParserTest {
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.HTML)); 
     }
@@ -571,7 +581,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.TSV)); 
     }
@@ -583,7 +593,7 @@ public class CommandLineParserTest {
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
-        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args);
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
         assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.VCF)); 
     }
