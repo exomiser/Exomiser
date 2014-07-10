@@ -35,7 +35,7 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 @Import({DataSourceConfig.class, CommandLineOptionsConfig.class}) 
-@PropertySource({"buildversion.properties", "application.properties", "file:${jarFilePath}/application.properties"}) //
+@PropertySource({"buildversion.properties", "file:${jarFilePath}/application.properties"})
 public class MainConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
