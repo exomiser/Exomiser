@@ -75,6 +75,9 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
     private HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpMpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
     private HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpHpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
     private HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpZpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
+    private float best_max_score = 0f;
+    private float best_avg_score = 0f;
+    
     /**
      * This is the matrix of similarities between the seeed genes and all genes
      * in the network, i.e., p<sub>infinity</sub>.
@@ -241,41 +244,43 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             }
         }
         String[] hps = new String[hp_list.size()];
-        hp_list.toArray(hps);
-        // calculate perfect model scores
-        float sum_best_score = 0f;
-        float best_max_score = 0f;
-        int best_hit_counter = 0;
-        // loop over each hp id should start herre
-        for (String hpid : hps) {
-            if (best_mapped_term_score.get(hpid) != null) {
-                float hp_score = best_mapped_term_score.get(hpid);
-                // add in scores for best match for the HP term                                                                                                                                                
-                sum_best_score += hp_score;
-                best_hit_counter++;
-                if (hp_score > best_max_score) {
-                    best_max_score = hp_score;
-                }
-                // add in MP-HP hits                                                                                                                                                                           
-                String mpid = best_mapped_term_mpid.get(hpid);
-                float best_score = 0f;
-                for (String hpid2 : hps) {
-                    StringBuffer hashKey = new StringBuffer();
-                    hashKey.append(hpid2);
-                    hashKey.append(mpid);
-                    if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
-                        best_score = mapped_terms.get(hashKey.toString());
+        hp_list.toArray(hps);   
+        // calculate perfect model scores for human
+        if (species.equals("human")) {
+            float sum_best_score = 0f;
+            int best_hit_counter = 0;
+            // loop over each hp id should start herre
+            for (String hpid : hps) {
+                if (best_mapped_term_score.get(hpid) != null) {
+                    float hp_score = best_mapped_term_score.get(hpid);
+                    // add in scores for best match for the HP term                                                                                                                                                
+                    sum_best_score += hp_score;
+                    best_hit_counter++;
+                    if (hp_score > best_max_score) {
+                        this.best_max_score = hp_score;
+                    }
+                    // add in MP-HP hits                                                                                                                                                                           
+                    String mpid = best_mapped_term_mpid.get(hpid);
+                    float best_score = 0f;
+                    for (String hpid2 : hps) {
+                        StringBuffer hashKey = new StringBuffer();
+                        hashKey.append(hpid2);
+                        hashKey.append(mpid);
+                        if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
+                            best_score = mapped_terms.get(hashKey.toString());
+                        }
+                    }
+                    // add in scores for best match for the MP term                                                                                                                                                
+                    sum_best_score += best_score;
+                    best_hit_counter++;
+                    if (best_score > best_max_score) {
+                        this.best_max_score = best_score;
                     }
                 }
-                // add in scores for best match for the MP term                                                                                                                                                
-                sum_best_score += best_score;
-                best_hit_counter++;
-                if (best_score > best_max_score) {
-                    best_max_score = best_score;
-                }
             }
+            this.best_avg_score = sum_best_score / best_hit_counter;
         }
-        float best_avg_score = sum_best_score / best_hit_counter;
+ 
         // calculate score for this gene
         try {
             ResultSet rs = findAnnotationStatement.executeQuery();
@@ -389,7 +394,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
 //                    if (species.equals("fish")) {
 //                        score = score - ((score) / 2);
 //                    }
-                    // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
+                                       // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
                     if ((hit == null ? disease == null : hit.equals(disease))
                             && (humanGene == null ? candGene == null : humanGene.equals(candGene))) {
                         //System.out.println("FOUND self hit " + disease + ":"+candGene);
@@ -398,32 +403,23 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                             phenoGeneSymbols.add(humanGene);
                         }
                     } else {
-                        if (scores.get(entrez) != null) {
-                            if (score > scores.get(entrez)) {
-                                scores.put(entrez, score);
-                                if (species.equals("human")) {
-                                    humanScores.put(entrez, score);
-                                    humanDiseases.put(entrez, hit);
-                                } else if (species.equals("fish")) {
-                                    fishScores.put(entrez, score);
-                                } else if (species.equals("mouse")) {
-                                    mouseScores.put(entrez, score);
-                                }
-                            }
-                        } else {
-                            if (score > 0.65) {// only build PPI network for high qual hits
-                                phenoGenes.add(entrez);
-                                phenoGeneSymbols.add(humanGene);
-                            }
+                        // normal behaviour when not trying to exclude candidate gene to simulate novel gene disovery in benchmarking
+                        if (score > 0.65) {// only build PPI network for high qual hits
+                            phenoGenes.add(entrez);
+                            phenoGeneSymbols.add(humanGene);
+                        }
+                        if (scores.get(entrez) == null || score > scores.get(entrez)) {
                             scores.put(entrez, score);
-                            if (species.equals("human")) {
-                                humanScores.put(entrez, score);
-                                humanDiseases.put(entrez, hit);
-                            } else if (species.equals("fish")) {
-                                fishScores.put(entrez, score);
-                            } else if (species.equals("mouse")) {
-                                mouseScores.put(entrez, score);
-                            }
+                        }
+                        if (species.equals("human") && (humanScores.get(entrez) == null || score > humanScores.get(entrez))) {
+                            humanScores.put(entrez, score);
+                            humanDiseases.put(entrez, hit);
+                        }
+                        if (species.equals("mouse") && (mouseScores.get(entrez) == null || score > mouseScores.get(entrez))) {
+                            mouseScores.put(entrez, score);
+                        }
+                        if (species.equals("fish") && (fishScores.get(entrez) == null || score > fishScores.get(entrez))) {
+                            fishScores.put(entrez, score);
                         }
                     }
                 }
@@ -440,7 +436,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
      * seed genes given by the user.
      */
     private void computeDistanceAllNodesFromStartNodes() throws ExomizerInitializationException {
-        if (disease != null && !disease.isEmpty()) {
+        if (disease != null && !disease.isEmpty() && hpoIds.isEmpty()) {
             logger.info("Setting HPO IDs using disease annoataions for {}", disease);
             setHPOfromDisease(disease);
         }
@@ -511,8 +507,8 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             String error = "Problem setting up SQL query:" + hpo_query;
             throw new ExomizerInitializationException(error);
         }
-        // Mouse
-        String mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
+        // Human
+        String mapping_query = String.format("SELECT hp_id_hit, score FROM hp_hp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
         PreparedStatement findMappingStatement = null;
         try {
             findMappingStatement = connection.prepareStatement(mapping_query);
@@ -521,26 +517,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             throw new ExomizerInitializationException(error);
         }
         PreparedStatement findAnnotationStatement = null;
-        String annotation = String.format("SELECT mouse_model_id, mp_id, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'");
-        try {
-            findAnnotationStatement = connection.prepareStatement(annotation);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + annotation;
-            throw new ExomizerInitializationException(error);
-        }
-        hpMpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "mouse");
-
-
-        // Human
-        mapping_query = String.format("SELECT hp_id_hit, score FROM hp_hp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
-        findMappingStatement = null;
-        try {
-            findMappingStatement = connection.prepareStatement(mapping_query);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + mapping_query;
-            throw new ExomizerInitializationException(error);
-        }
-        annotation = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
+        String annotation = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
         try {
             findAnnotationStatement = connection.prepareStatement(annotation);
         } catch (SQLException e) {
@@ -548,6 +525,23 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             throw new ExomizerInitializationException(error);
         }
         hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "human");
+        // Mouse
+        mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
+        findMappingStatement = null;
+        try {
+            findMappingStatement = connection.prepareStatement(mapping_query);
+        } catch (SQLException e) {
+            String error = "Problem setting up SQL query:" + mapping_query;
+            throw new ExomizerInitializationException(error);
+        }
+        annotation = String.format("SELECT mouse_model_id, mp_id, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'");
+        try {
+            findAnnotationStatement = connection.prepareStatement(annotation);
+        } catch (SQLException e) {
+            String error = "Problem setting up SQL query:" + annotation;
+            throw new ExomizerInitializationException(error);
+        }
+        hpMpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "mouse");
 
         // Fish
         mapping_query = String.format("SELECT zp_id, score FROM hp_zp_mappings_monarch M WHERE M.hp_id = ? and score > 3");
