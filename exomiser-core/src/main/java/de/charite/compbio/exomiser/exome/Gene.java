@@ -433,7 +433,10 @@ public class Gene implements Comparable<Gene> {
      */
     public float getCombinedScore() {
         if (relevanceMap.get(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY) != null){           
-            double logitScore = 1/(1 + Math.exp(-(-13.96442 + 11.60897*priorityScore + 8.02343*filterScore)));
+            // model when using human and fish rescaled - for UDP release
+            //double logitScore = 1/(1 + Math.exp(-(-13.96442 + 11.60897*priorityScore + 8.02343*filterScore)));
+            // model when scaling all scores to best possible human score
+            double logitScore = 1/(1 + Math.exp(-(-12.77436 + 10.53333*priorityScore + 8.25607*filterScore)));
             return (float) logitScore;
         }
         else if (relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY) != null){
