@@ -35,16 +35,14 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 @Import({DataSourceConfig.class, CommandLineOptionsConfig.class}) 
-@PropertySource({"classpath:application.properties"})
+@PropertySource({"buildversion.properties", "file:${jarFilePath}/application.properties"})
 public class MainConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
     @Autowired
-    Environment env;
+    private Environment env;
 
-    private static final Path jarPath = mainJarPath();
-    
     /**
      * Used to find the Path the Main application is running on in order to
      * pick-up the user-configured properties files.
@@ -52,7 +50,7 @@ public class MainConfig {
      * @return
      */
     @Bean
-    public static Path mainJarPath() {
+    public Path jarFilePath() {
         CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
 
         Path jarFilePath = null;
@@ -65,19 +63,36 @@ public class MainConfig {
         return jarFilePath;
     }
 
-//    @Bean
 //    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 //        PropertySourcesPlaceholderConfigurer pspc = new PropertySourcesPlaceholderConfigurer();
 //        Path jdbcPropertiesPath = jarPath.resolve("jdbc.properties");
-////        Path applicationPropertiesPath = jarPath.resolve("application.properties");
-//        Resource[] resources = new PathResource[]{
-//                new PathResource(jdbcPropertiesPath)};//,
-////                new PathResource(applicationPropertiesPath)};
+//        Path applicationPropertiesPath = jarPath.resolve("application.properties");
+//        PathResource[] resources = new PathResource[]{
+//                new PathResource(jdbcPropertiesPath),
+//                new PathResource(applicationPropertiesPath)};
+//                
 //        pspc.setLocations(resources);
-//        pspc.postProcessBeanFactory(null);
+//        env = new StandardEnvironment();
+//        PropertySources propertySources = pspc.getAppliedPropertySources();
+//        for (org.springframework.core.env.PropertySource<?> propertySource : propertySources) {
+//            logger.info("Adding propertySource {}", propertySource);
+//            env.getPropertySources().addFirst(propertySource);        
+//        }
+//        logger.info(env.getPropertySources().toString());
+//        
+//        pspc.setEnvironment(env);
 //        return pspc;
 //    }
-    
+    @Bean
+    public String buildVersion() {
+        return env.getProperty("buildVersion");
+    }
+
+    @Bean
+    public String buildTimestamp() {
+        return env.getProperty("buildTimestamp");
+    }
+
     /**
      * This is critical for the application to run as it points to the data
      * directory where all the required resources are found. Without this being
@@ -87,7 +102,7 @@ public class MainConfig {
      */
     @Bean
     public Path dataPath() {
-        Path dataPath = jarPath.resolve(env.getProperty("dataDir"));
+        Path dataPath = jarFilePath().resolve(env.getProperty("dataDir"));
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
 
         return dataPath;

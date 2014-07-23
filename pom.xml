@@ -17,6 +17,8 @@
     
     <properties>
         <spring-version>4.0.5.RELEASE</spring-version>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>     
+        <build.timestamp>${maven.build.timestamp}</build.timestamp>
     </properties>
     
     <dependencies>

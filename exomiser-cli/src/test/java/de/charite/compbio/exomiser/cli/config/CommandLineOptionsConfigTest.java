@@ -6,8 +6,10 @@
 
 package de.charite.compbio.exomiser.cli.config;
 
-import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -30,12 +32,27 @@ public class CommandLineOptionsConfigTest {
 
     @Test
     public void options_specify_a_vcf_file() {
-        assertThat(options.getRequiredOptions().contains("v"), is(true));
+        String longOption = VCF_OPTION;
+        Option option = options.getOption(longOption);
+        assertThat(option.getLongOpt(), equalTo(longOption));
     }
     
     @Test
     public void options_specify_a_prioritiser() {
-        assertThat(options.getRequiredOptions().contains("prioritiser"), is(true));
+        String longOption = PRIORITISER_OPTION;
+        Option option = options.getOption(longOption);
+        assertThat(option.getLongOpt(), equalTo(longOption));
     }
     
+    @Test
+    public void prioritiserOptionsHaveADecentDescription() {
+        String description = options.getOption(PRIORITISER_OPTION).getDescription();
+        System.out.println(description);
+        assertThat(description.isEmpty(), is(false));
+    }
+    
+    @Test
+    public void optionsContainsSettingsFile() {
+        assertThat(options.hasOption(SETTINGS_FILE_OPTION), is(true));
+    }
 }

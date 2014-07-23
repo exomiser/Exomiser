@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.priority;
 
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
-import de.charite.compbio.exomiser.util.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -98,44 +98,6 @@ public class PriorityFactory {
                 break;               
             
         }
-        //was:
-//            //        this.prioritiser.addOMIMPrioritizer();
-//        genePriorityList.add(priorityFactory.getOmimPrioritizer());
-//        //is order *really* an issue here? If not these could be specified using inheritance? 
-//        //inheritance_mode, disease, hpo_ids, candidateGene are actual input variables, the rest is configuration data
-//        if (this.inheritance_filter_type != null) {
-////            this.prioritiser.addInheritancePrioritiser(this.inheritance_filter_type);
-//            genePriorityList.add(priorityFactory.getInheritancePrioritiser(inheritance_filter_type));
-//        }
-//        if (doMGIPhenodigmPrioritization()) {
-////            this.prioritiser.addMGIPhenodigmPrioritiser(this.disease);
-//            genePriorityList.add(priorityFactory.getMGIPhenodigmPrioritiser(disease));
-//        } else if (hpo_ids != null) {
-//            if (doPhenomizerPrioritization()) {
-//                //this doesn't check whether hpo_ids is not null! should be part of that block? Are Phenomizer and BOQA exclusive?
-////            this.prioritiser.addPhenomizerPrioritiser(this.phenomizerDataDirectory, this.hpo_ids);
-//                genePriorityList.add(priorityFactory.getPhenomizerPrioritiser(phenomizerDataDirectory, hpo_ids));
-//            } else if (doBOQAPrioritization()) {
-////                this.prioritiser.addBOQAPrioritiser(this.hpoOntologyFile, this.hpoAnnotationFile, this.hpo_ids);
-//                genePriorityList.add(priorityFactory.getBOQAPrioritiser(hpoOntologyFile, hpoAnnotationFile, hpo_ids));
-//            } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null) {
-////                this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.hpo_ids, this.candidateGene, this.disease, this.randomWalkMatrix);
-//                genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, hpo_ids, candidateGene, disease, randomWalkMatrix));
-//            } else {
-////                this.prioritiser.addDynamicPhenodigmPrioritiser(this.hpo_ids);
-//                genePriorityList.add(priorityFactory.getDynamicPhenodigmPrioritiser(hpo_ids));
-//            }
-//        } else if (doZFINPhenodigm()) {
-////            this.prioritiser.addZFINPrioritiser(this.disease);
-//            genePriorityList.add(priorityFactory.getZFINPrioritiser(disease));
-//        } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.disease != null) {
-////            this.prioritiser.addDynamicPhenoWandererPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.disease, this.candidateGene, this.disease, this.randomWalkMatrix);
-//            //TODO: CHECK!! should the first disease in this constructor actually be the hpo_ids? Could do with some type-safety in this constructor.
-//            genePriorityList.add(priorityFactory.getDynamicPhenoWandererPrioritiser(randomWalkFilePath, randomWalkIndexPath, disease, candidateGene, disease, randomWalkMatrix));
-//        } else if (this.randomWalkFilePath != null && this.randomWalkIndexPath != null && this.entrezSeedGenes != null) {
-////            this.prioritiser.addExomeWalkerPrioritiser(this.randomWalkFilePath, this.randomWalkIndexPath, this.entrezSeedGenes);
-//            genePriorityList.add(priorityFactory.getExomeWalkerPrioritiser(randomWalkFilePath, randomWalkIndexPath, entrezSeedGenes));
-//        }
 
         return genePriorityList;
     }

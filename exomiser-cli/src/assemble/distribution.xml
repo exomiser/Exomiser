@@ -29,8 +29,9 @@
             <directory>${project.build.directory}/resources</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>jdbc.properties</include>
+                <!--<include>jdbc.properties</include>-->
                 <include>application.properties</include>
+                <include>example.settings</include>
                 <include>log4j2.xml</include>
             </includes>
         </fileSet>

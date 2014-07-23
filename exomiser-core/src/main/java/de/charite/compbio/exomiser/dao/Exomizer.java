@@ -1,7 +1,7 @@
 package de.charite.compbio.exomiser.dao;
 
 import de.charite.compbio.exomiser.util.Prioritiser;
-import de.charite.compbio.exomiser.common.SampleData;
+import de.charite.compbio.exomiser.core.SampleData;
 import de.charite.compbio.exomiser.exception.ExomizerException;
 import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
 import de.charite.compbio.exomiser.exome.Gene;

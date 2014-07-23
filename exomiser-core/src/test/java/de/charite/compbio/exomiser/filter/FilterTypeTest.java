@@ -29,39 +29,4 @@ public class FilterTypeTest {
         assertEquals(expResult, result);
 
     }
-
-    /**
-     * Test of getCommandLineValue method, of class FilterType.
-     */
-    @Test
-    public void testGetCommandLineValue() {
-        FilterType instance = FilterType.FREQUENCY_FILTER;
-        String expResult = "max-freq";
-        String result = instance.getCommandLineValue();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of valueOfCommandLine method, of class FilterType.
-     */
-    @Test
-    public void testValueOfCommandLineUnrecognisedDefault() {
-        String value = "pweep!";
-        FilterType expResult = FilterType.FREQUENCY_FILTER;
-        FilterType result = FilterType.valueOfCommandLine(value);
-        assertEquals(expResult, result);
-    }
- 
-    
-    /**
-     * Test of valueOfCommandLine method, of class FilterType.
-     */
-    @Test
-    public void testValueOfCommandLine() {
-        String value = "restrict-interval";
-        FilterType expResult = FilterType.INTERVAL_FILTER;
-        FilterType result = FilterType.valueOfCommandLine(value);
-        assertEquals(expResult, result);
-    }
-
 }
