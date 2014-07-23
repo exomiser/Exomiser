@@ -54,7 +54,7 @@ public class DataSourceConfig {
         dataSource.setInitialConnections(3);
         
         //resolve the placeholders in the settings
-        env.resolvePlaceholders("user");
+        env.resolvePlaceholders("username");
         env.resolvePlaceholders("password");
         env.resolvePlaceholders("server");
         env.resolvePlaceholders("database");
