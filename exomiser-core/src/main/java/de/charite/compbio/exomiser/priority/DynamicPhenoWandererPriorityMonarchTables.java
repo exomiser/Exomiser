@@ -68,13 +68,15 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
     private Map<Integer, Double> humanScores = new HashMap<Integer, Double>();
     private Map<Integer, Double> fishScores = new HashMap<Integer, Double>();
     private Map<Integer, String> humanDiseases = new HashMap<Integer, String>();
+    private Map<Integer, String> mouseDiseases = new HashMap<Integer, String>();
+    private Map<Integer, String> fishDiseases = new HashMap<Integer, String>();
     private Map<String, String> hpoTerms = new HashMap<String, String>();
     private Map<String, String> mpoTerms = new HashMap<String, String>();
     private Map<String, String> zpoTerms = new HashMap<String, String>();
     private Map<String, String> diseaseTerms = new HashMap<String, String>();
-    private HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpMpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
-    private HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpHpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
-    private HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpZpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
+    private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpMpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
+    private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpHpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
+    private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpZpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
     private float best_max_score = 0f;
     private float best_avg_score = 0f;
     
@@ -178,7 +180,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
      * Set hpo_ids variable based on the entered disease
      */
     private void setHPOfromDisease(String disease) throws ExomizerInitializationException {
-        String hpo_query = String.format("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
+        String hpo_query = String.format("SELECT hp_id FROM disease_hp_monarch WHERE disease_id = ?");
         PreparedStatement hpoIdsStatement = null;
         String hpoListString= "";
         try {
@@ -194,20 +196,28 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
         hpoIds = parseHpoIdListFromString(hpoListString);
     }
 
-    private HashMap<Integer, HashMap<String, HashMap<Float, String>>> runDynamicQuery(PreparedStatement findMappingStatement, PreparedStatement findAnnotationStatement, List<String> hps_initial, String species) throws ExomizerInitializationException {
+    private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> runDynamicQuery(PreparedStatement findMappingStatement, PreparedStatement findAnnotationStatement, List<String> hps_initial, String species) throws ExomizerInitializationException {
 
         ArrayList<String> hp_list = new ArrayList<String>();
         HashMap<String, Float> mapped_terms = new HashMap<String, Float>();
         HashMap<String, Float> best_mapped_term_score = new HashMap<String, Float>();
         HashMap<String, String> best_mapped_term_mpid = new HashMap<String, String>();
         HashMap<String, Integer> knownMps = new HashMap<String, Integer>();
-        HashMap<Integer, HashMap<String, HashMap<Float, String>>> hpMatches = new HashMap<Integer, HashMap<String, HashMap<Float, String>>>();
+        HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
         for (String hpid : hps_initial) {
             try {
                 findMappingStatement.setString(1, hpid);
                 ResultSet rs = findMappingStatement.executeQuery();
                 int found = 0;
                 while (rs.next()) {
+                    // hack to skip all MONARCH inheritance and onset results for hp vs hp as artificially high
+                    // now just used MONARCH annotation table
+                    //                    if (hpid.equals("HP:0000005") || hpid.equals("HP:0000006") || hpid.equals("HP:0001452") || hpid.equals("HP:0012274") || hpid.equals("HP:0012275") || hpid.equals("HP:0001444") || hpid.equals("HP:0001470") 
+//                            || hpid.equals("HP:0001475") || hpid.equals("HP:0000007") || hpid.equals("HP:0001466") || hpid.equals("HP:0001472") || hpid.equals("HP:0003743") || hpid.equals("HP:0003744") 
+//                            || hpid.equals("HP:0010985") || hpid.equals("HP:0001417") || hpid.equals("HP:0001423") || hpid.equals("HP:0001419") || hpid.equals("HP:0001450") || hpid.equals("HP:0001425") || hpid.equals("HP:0001427") 
+//                            || hpid.equals("HP:0001426") || hpid.equals("HP:0010983") || hpid.equals("HP:0010984") || hpid.equals("HP:0010982") || hpid.equals("HP:0001428") || hpid.equals("HP:0001442") || hpid.equals("HP:0003745")){
+//                        continue;
+//                    }
                     //found = 1;
                     String mp_id = rs.getString(1);
                     knownMps.put(mp_id, 1);
@@ -215,13 +225,18 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                     hashKey.append(hpid);
                     hashKey.append(mp_id);
                     float score = rs.getFloat(2);
+                    // hack as Monarch gives AD, AR etc an arbitary max score
+//                    if (score > 12.856503 && score < 12.856505){
+//                        logger.info("SKIPPING HIT FOR " + hpid + " AND " + mp_id);
+//                        continue;
+//                    }
                     mapped_terms.put(hashKey.toString(), score);
                     if (species.equals("human")) {
                         if (hpid.equals(mp_id)) {
                             best_mapped_term_score.put(hpid, score);
                             best_mapped_term_mpid.put(hpid, mp_id);
-                            found = 1;
                         }
+                        found = 1;//for some hp terms e.g. HP we won't have the self hit but still want to flag found
                     } else {
                         if (best_mapped_term_score.get(hpid) != null) {
                             if (score > best_mapped_term_score.get(hpid)) {
@@ -255,10 +270,12 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                     float hp_score = best_mapped_term_score.get(hpid);
                     // add in scores for best match for the HP term                                                                                                                                                
                     sum_best_score += hp_score;
+                    
                     best_hit_counter++;
                     if (hp_score > best_max_score) {
                         this.best_max_score = hp_score;
                     }
+                    logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
                     // add in MP-HP hits                                                                                                                                                                           
                     String mpid = best_mapped_term_mpid.get(hpid);
                     float best_score = 0f;
@@ -272,13 +289,15 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                     }
                     // add in scores for best match for the MP term                                                                                                                                                
                     sum_best_score += best_score;
+                    logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + best_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
                     best_hit_counter++;
                     if (best_score > best_max_score) {
                         this.best_max_score = best_score;
                     }
                 }
             }
-            this.best_avg_score = sum_best_score / best_hit_counter;
+            //this.best_avg_score = sum_best_score / best_hit_counter;
+            this.best_avg_score = sum_best_score / (2 * hps.length);
         }
  
         // calculate score for this gene
@@ -317,21 +336,27 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                             }
                             if (score > 0) {
                                 if (hpMatches.get(entrez) == null) {
-                                    hpMatches.put(entrez, new HashMap<String, HashMap<Float, String>>());
-                                    hpMatches.get(entrez).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrez).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrez).get(hpid) == null) {
-                                    hpMatches.get(entrez).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrez).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrez).get(hpid).keySet().iterator().next() < score) {
-                                    hpMatches.get(entrez).get(hpid).clear();
-                                    hpMatches.get(entrez).get(hpid).put(score, mpid);
+                                    hpMatches.put(entrez, new HashMap<String, HashMap<String, HashMap<Float, String>>>());
+                                    hpMatches.get(entrez).put(hit, new HashMap<String, HashMap<Float, String>>());
+                                    hpMatches.get(entrez).get(hit).put(hpid, new HashMap<Float, String>());
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);
+                                } else if (hpMatches.get(entrez).get(hit) == null){
+                                    hpMatches.get(entrez).put(hit, new HashMap<String, HashMap<Float, String>>());
+                                    hpMatches.get(entrez).get(hit).put(hpid, new HashMap<Float, String>());
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);    
+                                } else if (hpMatches.get(entrez).get(hit).get(hpid) == null) {
+                                    hpMatches.get(entrez).get(hit).put(hpid, new HashMap<Float, String>());
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);
+                                } else if (hpMatches.get(entrez).get(hit).get(hpid).keySet().iterator().next() < score) {
+                                    hpMatches.get(entrez).get(hit).get(hpid).clear();
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);
                                 }
                             }
                         }
                     }
                     if (best_score != 0) {
                         sum_best_hit_rows_columns_score += best_score;
+                       
                         if (best_score > max_score) {
                             max_score = best_score;
                         }
@@ -352,15 +377,20 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                             }
                             if (score > 0) {
                                 if (hpMatches.get(entrez) == null) {
-                                    hpMatches.put(entrez, new HashMap<String, HashMap<Float, String>>());
-                                    hpMatches.get(entrez).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrez).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrez).get(hpid) == null) {
-                                    hpMatches.get(entrez).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrez).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrez).get(hpid).keySet().iterator().next() < score) {
-                                    hpMatches.get(entrez).get(hpid).clear();
-                                    hpMatches.get(entrez).get(hpid).put(score, mpid);
+                                    hpMatches.put(entrez, new HashMap<String, HashMap<String, HashMap<Float, String>>>());
+                                    hpMatches.get(entrez).put(hit, new HashMap<String, HashMap<Float, String>>());
+                                    hpMatches.get(entrez).get(hit).put(hpid, new HashMap<Float, String>());
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);
+                                } else if (hpMatches.get(entrez).get(hit) == null){
+                                    hpMatches.get(entrez).put(hit, new HashMap<String, HashMap<Float, String>>());
+                                    hpMatches.get(entrez).get(hit).put(hpid, new HashMap<Float, String>());
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);    
+                                } else if (hpMatches.get(entrez).get(hit).get(hpid) == null) {
+                                    hpMatches.get(entrez).get(hit).put(hpid, new HashMap<Float, String>());
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);
+                                } else if (hpMatches.get(entrez).get(hit).get(hpid).keySet().iterator().next() < score) {
+                                    hpMatches.get(entrez).get(hit).get(hpid).clear();
+                                    hpMatches.get(entrez).get(hit).get(hpid).put(score, mpid);
                                 }
                             }
                         }
@@ -398,10 +428,11 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                     if ((hit == null ? disease == null : hit.equals(disease))
                             && (humanGene == null ? candGene == null : humanGene.equals(candGene))) {
                         //System.out.println("FOUND self hit " + disease + ":"+candGene);
-                        if (scores.get(entrez) != null) {
-                            phenoGenes.add(entrez);
-                            phenoGeneSymbols.add(humanGene);
-                        }
+                        // Decided does not make sense to build PPI to candidate gene unless another good disease/mouse/fish hit exists for it
+//                        if (scores.get(entrez) != null) {
+//                            phenoGenes.add(entrez);
+//                            phenoGeneSymbols.add(humanGene);
+//                        }
                     } else {
                         // normal behaviour when not trying to exclude candidate gene to simulate novel gene disovery in benchmarking
                         if (score > 0.65) {// only build PPI network for high qual hits
@@ -417,9 +448,11 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                         }
                         if (species.equals("mouse") && (mouseScores.get(entrez) == null || score > mouseScores.get(entrez))) {
                             mouseScores.put(entrez, score);
+                            mouseDiseases.put(entrez, hit);
                         }
                         if (species.equals("fish") && (fishScores.get(entrez) == null || score > fishScores.get(entrez))) {
                             fishScores.put(entrez, score);
+                            fishDiseases.put(entrez, hit);
                         }
                     }
                 }
@@ -491,7 +524,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             String error = "Problem setting up SQL query:" + hpo_query;
             throw new ExomizerInitializationException(error);
         }
-        String zpo_query = "SELECT zp_id, zp_term FROM zp";
+        String zpo_query = "SELECT zp_id, zp_term FROM zp_monarch";
         PreparedStatement zpoTermsStatement = null;
         try {
             zpoTermsStatement = connection.prepareStatement(zpo_query);
@@ -517,7 +550,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             throw new ExomizerInitializationException(error);
         }
         PreparedStatement findAnnotationStatement = null;
-        String annotation = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
+        String annotation = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp_monarch M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
         try {
             findAnnotationStatement = connection.prepareStatement(annotation);
         } catch (SQLException e) {
@@ -551,7 +584,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             String error = "Problem setting up SQL query:" + mapping_query;
             throw new ExomizerInitializationException(error);
         }
-        annotation = String.format("SELECT zfin_model_id, zp_id, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'");
+        annotation = String.format("SELECT zfin_model_id, zp_id, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp_monarch M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'");
         try {
             findAnnotationStatement = connection.prepareStatement(annotation);
         } catch (SQLException e) {
@@ -636,6 +669,7 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                 if (humanScores.get(entrezGeneID) != null) {
                     humanScore = humanScores.get(entrezGeneID);
                     String diseaseId = humanDiseases.get(entrezGeneID);
+                    String originalDiseaseId = diseaseId;
                     String diseaseLink = diseaseTerms.get(diseaseId);
                     if (diseaseId.split(":")[0].equals("OMIM")) {
                         diseaseId = diseaseId.split(":")[1];
@@ -645,13 +679,13 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                         diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
                     }
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to %s associated with %s. <a class=\"op1\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", humanScores.get(gene.getEntrezGeneID()), diseaseLink, gene.getGeneSymbol());
-                    if (hpHpMatches.get(entrezGeneID) != null) {
+                    if (hpHpMatches.get(entrezGeneID) != null && hpHpMatches.get(entrezGeneID).get(originalDiseaseId) != null) {
                         for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
-                            if (hpHpMatches.get(entrezGeneID).get(hpId) != null) {
-                                Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(hpId).keySet();
+                            if (hpHpMatches.get(entrezGeneID).get(originalDiseaseId).get(hpId) != null) {
+                                Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(originalDiseaseId).get(hpId).keySet();
                                 for (float hpIdScore : hpIdScores) {
-                                    String hpIdHit = hpHpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String hpIdHit = hpHpMatches.get(entrezGeneID).get(originalDiseaseId).get(hpId).get(hpIdScore);
                                     String hpTermHit = hpoTerms.get(hpIdHit);
                                     humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("<ul><li>%s (%s) - %s (%s)</li></ul>", hpTerm, hpId, hpTermHit, hpIdHit);
                                 }
@@ -664,15 +698,16 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                 }
                 // MOUSE
                 if (mouseScores.get(gene.getEntrezGeneID()) != null) {
+                    String mouseModel = mouseDiseases.get(entrezGeneID);
                     mouseScore = mouseScores.get(entrezGeneID);
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>. <a class=\"op2\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", mouseScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
-                    if (hpMpMatches.get(gene.getEntrezGeneID()) != null) {
+                    if (hpMpMatches.get(gene.getEntrezGeneID()) != null && hpMpMatches.get(gene.getEntrezGeneID()).get(mouseModel) != null) {
                         for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
-                            if (hpMpMatches.get(entrezGeneID).get(hpId) != null) {
-                                Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(hpId).keySet();
+                            if (hpMpMatches.get(entrezGeneID).get(mouseModel).get(hpId) != null) {
+                                Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(mouseModel).get(hpId).keySet();
                                 for (float hpIdScore : hpIdScores) {
-                                    String mpIdHit = hpMpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String mpIdHit = hpMpMatches.get(entrezGeneID).get(mouseModel).get(hpId).get(hpIdScore);
                                     String mpTermHit = mpoTerms.get(mpIdHit);
                                     mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("<ul><li>%s (%s) - %s (%s)</li></ul>", hpTerm, hpId, mpTermHit, mpIdHit);
                                 }
@@ -685,16 +720,17 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                 }
                 // FISH
                 if (fishScores.get(gene.getEntrezGeneID()) != null) {
+                    String fishModel = fishDiseases.get(entrezGeneID);
                     fishScore = fishScores.get(entrezGeneID);
                     evidence = evidence + String.format("<ul><li>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>. <a class=\"op3\" id=\"" + entrezGeneID + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", fishScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                     //evidence = evidence + "<br>Best phenotype matches: ";
-                    if (hpZpMatches.get(gene.getEntrezGeneID()) != null) {
+                    if (hpZpMatches.get(gene.getEntrezGeneID()) != null && hpZpMatches.get(gene.getEntrezGeneID()).get(fishModel) != null) {
                         for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
-                            if (hpZpMatches.get(entrezGeneID).get(hpId) != null) {
-                                Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(hpId).keySet();
+                            if (hpZpMatches.get(entrezGeneID).get(fishModel).get(hpId) != null) {
+                                Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(fishModel).get(hpId).keySet();
                                 for (float hpIdScore : hpIdScores) {
-                                    String zpIdHit = hpZpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String zpIdHit = hpZpMatches.get(entrezGeneID).get(fishModel).get(hpId).get(hpIdScore);
                                     String zpTermHit = zpoTerms.get(zpIdHit);
                                     fishPhenotypeEvidence = fishPhenotypeEvidence + String.format("<ul><li>%s (%s) - %s (%s)</li></ul>", hpTerm, hpId, zpTermHit, zpIdHit);
                                 }
@@ -720,7 +756,9 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                 entrezGeneID = phenoGenes.get(col_idx);
                 // HUMAN
                 if (humanScores.get(phenoGenes.get(col_idx)) != null) {
+                    humanScore = humanScores.get(entrezGeneID);
                     String diseaseId = humanDiseases.get(phenoGenes.get(col_idx));
+                    String originalDiseaseId = diseaseId;
                     String diseaseLink = diseaseTerms.get(diseaseId);
                     if (diseaseId.split(":")[0].equals("OMIM")) {
                         diseaseId = diseaseId.split(":")[1];
@@ -729,15 +767,15 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                         diseaseId = diseaseId.split(":")[1];
                         diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
                     }
-                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, diseaseLink, closestGene);
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> with score %s and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, humanScore, diseaseLink, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches";
-                    if (hpHpMatches.get(phenoGenes.get(col_idx)) != null) {
+                    if (hpHpMatches.get(entrezGeneID) != null && hpHpMatches.get(entrezGeneID).get(originalDiseaseId) != null) {
                         for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
-                            if (hpHpMatches.get(entrezGeneID).get(hpId) != null) {
-                                Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(hpId).keySet();
+                            if (hpHpMatches.get(entrezGeneID).get(originalDiseaseId).get(hpId) != null) {
+                                Set<Float> hpIdScores = hpHpMatches.get(entrezGeneID).get(originalDiseaseId).get(hpId).keySet();
                                 for (float hpIdScore : hpIdScores) {
-                                    String hpIdHit = hpHpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String hpIdHit = hpHpMatches.get(entrezGeneID).get(originalDiseaseId).get(hpId).get(hpIdScore);
                                     String hpTermHit = hpoTerms.get(hpIdHit);
                                     humanPhenotypeEvidence = humanPhenotypeEvidence + String.format("<ul><li>%s (%s) - %s (%s)</li></ul>", hpTerm, hpId, hpTermHit, hpIdHit);
                                 }
@@ -750,15 +788,16 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                 }
                 // MOUSE
                 if (mouseScores.get(phenoGenes.get(col_idx)) != null) {
+                    String mouseModel = mouseDiseases.get(entrezGeneID);
                     evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to mouse mutant of %s. <a class=\"op2\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches: ";
-                    if (hpMpMatches.get(phenoGenes.get(col_idx)) != null) {
+                    if (hpMpMatches.get(entrezGeneID) != null && hpMpMatches.get(entrezGeneID).get(mouseModel) != null) {
                         for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
-                            if (hpMpMatches.get(entrezGeneID).get(hpId) != null) {
-                                Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(hpId).keySet();
+                            if (hpMpMatches.get(entrezGeneID).get(mouseModel).get(hpId) != null) {
+                                Set<Float> hpIdScores = hpMpMatches.get(entrezGeneID).get(mouseModel).get(hpId).keySet();
                                 for (float hpIdScore : hpIdScores) {
-                                    String mpIdHit = hpMpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String mpIdHit = hpMpMatches.get(entrezGeneID).get(mouseModel).get(hpId).get(hpIdScore);
                                     String mpTermHit = mpoTerms.get(mpIdHit);
                                     mousePhenotypeEvidence = mousePhenotypeEvidence + String.format("<ul><li>%s (%s) - %s (%s)</li></ul>", hpTerm, hpId, mpTermHit, mpIdHit);
                                 }
@@ -772,20 +811,21 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
                 }
                 // FISH
                 if (fishScores.get(phenoGenes.get(col_idx)) != null) {
+                    String fishModel = fishDiseases.get(entrezGeneID);
                     evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.  <a class=\"op3\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches: ";
-                    if (hpZpMatches.get(phenoGenes.get(col_idx)) != null) {
+                    if (hpZpMatches.get(entrezGeneID) != null && hpZpMatches.get(entrezGeneID).get(fishModel) != null) {
                         for (String hpId : hpoIds) {
                             String hpTerm = hpoTerms.get(hpId);
-                            if (hpZpMatches.get(entrezGeneID).get(hpId) != null) {
-                                Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(hpId).keySet();
+                            if (hpZpMatches.get(entrezGeneID).get(fishModel).get(hpId) != null) {
+                                Set<Float> hpIdScores = hpZpMatches.get(entrezGeneID).get(fishModel).get(hpId).keySet();
                                 for (float hpIdScore : hpIdScores) {
-                                    String zpIdHit = hpZpMatches.get(entrezGeneID).get(hpId).get(hpIdScore);
+                                    String zpIdHit = hpZpMatches.get(entrezGeneID).get(fishModel).get(hpId).get(hpIdScore);
                                     String zpTermHit = zpoTerms.get(zpIdHit);
-                                    fishPhenotypeEvidence = mousePhenotypeEvidence + String.format("<ul><li>%s (%s) - %s (%s)</li></ul>", hpTerm, hpId, zpTermHit, zpIdHit);
+                                    fishPhenotypeEvidence = fishPhenotypeEvidence + String.format("<ul><li>%s (%s) - %s (%s)</li></ul>", hpTerm, hpId, zpTermHit, zpIdHit);
                                 }
                             } else {
-                                fishPhenotypeEvidence = mousePhenotypeEvidence + String.format("<ul><li>%s (%s) - </li></ul>", hpTerm, hpId);
+                                fishPhenotypeEvidence = fishPhenotypeEvidence + String.format("<ul><li>%s (%s) - </li></ul>", hpTerm, hpId);
                             }
                         }
                     }
@@ -830,7 +870,8 @@ public class DynamicPhenoWandererPriorityMonarchTables implements Priority {
             if (sharedHits > 1) {
                 adjustedRank = rank + (sharedHits / 2);
             }
-            float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
+            //float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
+            float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
                 g.resetRelevanceScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY, newScore);
