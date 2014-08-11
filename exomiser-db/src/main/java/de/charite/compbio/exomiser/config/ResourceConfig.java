@@ -115,7 +115,7 @@ public class ResourceConfig {
     public Resource hpoResource() {
         logger.info("Making HPO resource");
         Resource resource = new Resource("HPO");
-        resource.setUrl("http://compbio.charite.de/hudson/job/hpo/lastStableBuild/artifact/ontology/release/");
+        resource.setUrl("http://compbio.charite.de/hudson/job/hpo/lastStableBuild/artifact/hp/");
         resource.setRemoteFileName("hp.obo");
         resource.setVersion("");
         resource.setExtractedFileName("hpo.obo");
@@ -137,9 +137,9 @@ public class ResourceConfig {
         // this is a 4.4GB file so might take a while
         // it is also about 25GB when uncompresssed
         resource.setUrl("http://dbnsfp.houstonbioinformatics.org/dbNSFPzip/");
-        resource.setRemoteFileName("dbNSFPv2.4.zip");
-        resource.setVersion("2.4");
-        resource.setExtractedFileName("dbNSFPv2.4.zip");
+        resource.setRemoteFileName("dbNSFPv2.6.zip");
+        resource.setVersion("2.6");
+        resource.setExtractedFileName("dbNSFPv2.6.zip");
         resource.setExtractionScheme("copy");
         //parsing
         resource.setParserClass(NSFP2SQLDumpParser.class);
