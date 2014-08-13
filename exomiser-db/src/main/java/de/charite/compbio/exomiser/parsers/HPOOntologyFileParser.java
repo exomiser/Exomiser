@@ -2,11 +2,10 @@ package de.charite.compbio.exomiser.parsers;
 
 import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -58,9 +57,9 @@ public class HPOOntologyFileParser implements ResourceParser {
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
         ResourceOperationStatus status;
 
-        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.forName("UTF-8"));
+              BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+            
             int termCount = 0; /* count of terms */
 
             String line;
@@ -73,6 +72,7 @@ public class HPOOntologyFileParser implements ResourceParser {
             String name = null;
             List<String> synonymLst = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
+                logger.info(line);
                 if (line.startsWith("id:")) {
                     id = line.substring(3).trim(); /* Gets rid of "id:" and any whitespace in e.g., HP:0000003 */
 

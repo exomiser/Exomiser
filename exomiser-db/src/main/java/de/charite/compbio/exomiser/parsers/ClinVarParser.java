@@ -148,7 +148,7 @@ public class ClinVarParser implements ResourceParser {
         int goodVariants = 0;
         ResourceOperationStatus status;
         
-        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
+        try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.forName("UTF-8"));
                 BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
         
             String line;
