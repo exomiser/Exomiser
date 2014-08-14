@@ -436,8 +436,9 @@ public class Gene implements Comparable<Gene> {
             // model when using human and fish rescaled - for UDP release
             //double logitScore = 1/(1 + Math.exp(-(-13.96442 + 11.60897*priorityScore + 8.02343*filterScore)));
             // model when scaling all scores to best possible human score
-            double logitScore = 1/(1 + Math.exp(-(-12.77436 + 10.53333*priorityScore + 8.25607*filterScore)));
-            return (float) logitScore;
+            //double logitScore = 1/(1 + Math.exp(-(-12.77436 + 10.53333*priorityScore + 8.25607*filterScore)));//original
+            double logitScore = 1/(1 + Math.exp(-(-12.73141 + 10.35971*priorityScore + 8.59299*filterScore)));//new MONARCH based
+            return (float) logitScore;            
         }
         else if (relevanceMap.get(PriorityType.GENEWANDERER_PRIORITY) != null){
             //NB this is based on raw walker score
