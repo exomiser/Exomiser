@@ -1,5 +1,6 @@
 package de.charite.compbio.exomiser.priority;
 
+
 import java.util.ArrayList;
 
 import org.jblas.DoubleMatrix;
@@ -33,11 +34,13 @@ import org.slf4j.LoggerFactory;
 public class DynamicPhenoWandererPriority implements Priority {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicPhenoWandererPriority.class);
+
     private Connection connection = null;
     /**
      * A list of error-messages
      */
     private ArrayList<String> error_record = new ArrayList<String>();
+        
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
@@ -76,6 +79,7 @@ public class DynamicPhenoWandererPriority implements Priority {
     private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpZpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
     private float best_max_score = 0f;
     private float best_avg_score = 0f;
+    
     /**
      * This is the matrix of similarities between the seeed genes and all genes
      * in the network, i.e., p<sub>infinity</sub>.
@@ -105,7 +109,7 @@ public class DynamicPhenoWandererPriority implements Priority {
         randomWalkMatrix = rwMatrix;
         logger.info("Using randomWalkMatrix: {}", randomWalkMatrix);
     }
-
+    
     /**
      * Create a new instance of the {@link GenewandererPriority}.
      *
@@ -128,17 +132,17 @@ public class DynamicPhenoWandererPriority implements Priority {
         this.candGene = candGene;
         this.disease = disease;
 
-
+        
         try {
             randomWalkMatrix = new DataMatrix(randomWalkMatrixFileZip, randomWalkGeneId2IndexFileZip, true);
         } catch (Exception e) {
             /*
-             * This exception is thrown if the files for the random walk cannot
-             * be found.
+             * This exception is thrown if the files for the random walk
+             * cannot be found.
              */
             logger.error("Unable to initialize the random walk matrix", e);
         }
-
+        
         /*
          * some logging stuff
          */
@@ -149,14 +153,13 @@ public class DynamicPhenoWandererPriority implements Priority {
     private List<String> parseHpoIdListFromString(String hpoIdsString) {
         logger.info("Attempting to create HPO ID list from string: {} ", hpoIdsString);
         String[] hpoArray = hpoIdsString.split(",");
-        List<String> hpoIdList = new ArrayList<>();
+        List<String> hpoIdList = new ArrayList<>(); 
         for (String string : hpoArray) {
             hpoIdList.add(string.trim());
         }
         logger.info("Made list: {}", hpoIdList);
         return hpoIdList;
     }
-
     /**
      * @see exomizer.priority.IPriority#getPriorityName()
      */
@@ -179,7 +182,7 @@ public class DynamicPhenoWandererPriority implements Priority {
     private void setHPOfromDisease(String disease) throws ExomizerInitializationException {
         String hpo_query = String.format("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
         PreparedStatement hpoIdsStatement = null;
-        String hpoListString = "";
+        String hpoListString= "";
         try {
             hpoIdsStatement = connection.prepareStatement(hpo_query);
             hpoIdsStatement.setString(1, disease);
@@ -207,6 +210,14 @@ public class DynamicPhenoWandererPriority implements Priority {
                 ResultSet rs = findMappingStatement.executeQuery();
                 int found = 0;
                 while (rs.next()) {
+                    // hack to skip all MONARCH inheritance and onset results for hp vs hp as artificially high
+                    // now just used MONARCH annotation table
+                    //                    if (hpid.equals("HP:0000005") || hpid.equals("HP:0000006") || hpid.equals("HP:0001452") || hpid.equals("HP:0012274") || hpid.equals("HP:0012275") || hpid.equals("HP:0001444") || hpid.equals("HP:0001470") 
+//                            || hpid.equals("HP:0001475") || hpid.equals("HP:0000007") || hpid.equals("HP:0001466") || hpid.equals("HP:0001472") || hpid.equals("HP:0003743") || hpid.equals("HP:0003744") 
+//                            || hpid.equals("HP:0010985") || hpid.equals("HP:0001417") || hpid.equals("HP:0001423") || hpid.equals("HP:0001419") || hpid.equals("HP:0001450") || hpid.equals("HP:0001425") || hpid.equals("HP:0001427") 
+//                            || hpid.equals("HP:0001426") || hpid.equals("HP:0010983") || hpid.equals("HP:0010984") || hpid.equals("HP:0010982") || hpid.equals("HP:0001428") || hpid.equals("HP:0001442") || hpid.equals("HP:0003745")){
+//                        continue;
+//                    }
                     //found = 1;
                     String mp_id = rs.getString(1);
                     knownMps.put(mp_id, 1);
@@ -214,13 +225,18 @@ public class DynamicPhenoWandererPriority implements Priority {
                     hashKey.append(hpid);
                     hashKey.append(mp_id);
                     float score = rs.getFloat(2);
+                    // hack as Monarch gives AD, AR etc an arbitary max score
+//                    if (score > 12.856503 && score < 12.856505){
+//                        logger.info("SKIPPING HIT FOR " + hpid + " AND " + mp_id);
+//                        continue;
+//                    }
                     mapped_terms.put(hashKey.toString(), score);
                     if (species.equals("human")) {
                         if (hpid.equals(mp_id)) {
                             best_mapped_term_score.put(hpid, score);
                             best_mapped_term_mpid.put(hpid, mp_id);
-                            found = 1;
                         }
+                        found = 1;//for some hp terms e.g. HP we won't have the self hit but still want to flag found
                     } else {
                         if (best_mapped_term_score.get(hpid) != null) {
                             if (score > best_mapped_term_score.get(hpid)) {
@@ -243,7 +259,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             }
         }
         String[] hps = new String[hp_list.size()];
-        hp_list.toArray(hps);
+        hp_list.toArray(hps);   
         // calculate perfect model scores for human
         if (species.equals("human")) {
             float sum_best_score = 0f;
@@ -254,10 +270,12 @@ public class DynamicPhenoWandererPriority implements Priority {
                     float hp_score = best_mapped_term_score.get(hpid);
                     // add in scores for best match for the HP term                                                                                                                                                
                     sum_best_score += hp_score;
+                    
                     best_hit_counter++;
                     if (hp_score > best_max_score) {
                         this.best_max_score = hp_score;
                     }
+                    //logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
                     // add in MP-HP hits                                                                                                                                                                           
                     String mpid = best_mapped_term_mpid.get(hpid);
                     float best_score = 0f;
@@ -271,6 +289,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     }
                     // add in scores for best match for the MP term                                                                                                                                                
                     sum_best_score += best_score;
+                    //logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + best_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
                     best_hit_counter++;
                     if (best_score > best_max_score) {
                         this.best_max_score = best_score;
@@ -280,6 +299,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             //this.best_avg_score = sum_best_score / best_hit_counter;
             this.best_avg_score = sum_best_score / (2 * hps.length);
         }
+ 
         // calculate score for this gene
         try {
             ResultSet rs = findAnnotationStatement.executeQuery();
@@ -336,6 +356,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                     }
                     if (best_score != 0) {
                         sum_best_hit_rows_columns_score += best_score;
+                       
                         if (best_score > max_score) {
                             max_score = best_score;
                         }
@@ -394,8 +415,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                      * Adjust human score as a hit that is 60% of the perfect
                      * (identical) HPO match is a much better match than
                      * something that is 60% of the perfect mouse match -
-                     * imperfect HP-MP mapping. SHOULD PROB REMOVE AND DO
-                     * PROPERLY WITH LOGISTIC
+                     * imperfect HP-MP mapping
                      */
 //                    if (species.equals("human")) {
 //                        score = score + ((1 - score) / 2);
@@ -404,7 +424,7 @@ public class DynamicPhenoWandererPriority implements Priority {
 //                    if (species.equals("fish")) {
 //                        score = score - ((score) / 2);
 //                    }
-                    // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
+                                       // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
                     if ((hit == null ? disease == null : hit.equals(disease))
                             && (humanGene == null ? candGene == null : humanGene.equals(candGene))) {
                         //System.out.println("FOUND self hit " + disease + ":"+candGene);
@@ -436,7 +456,6 @@ public class DynamicPhenoWandererPriority implements Priority {
                         }
                     }
                 }
-
             }//end of rs
         } catch (SQLException e) {
             String error = "Problem setting up SQL query:";
@@ -539,7 +558,6 @@ public class DynamicPhenoWandererPriority implements Priority {
             throw new ExomizerInitializationException(error);
         }
         hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "human");
-
         // Mouse
         mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?");
         findMappingStatement = null;
@@ -604,7 +622,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * of score filtering.
      */
     public ArrayList<String> getMessages() {
-
+        
         for (String s : error_record) {
             this.messages.add("Error: " + s);
         }
@@ -738,6 +756,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                 entrezGeneID = phenoGenes.get(col_idx);
                 // HUMAN
                 if (humanScores.get(phenoGenes.get(col_idx)) != null) {
+                    humanScore = humanScores.get(entrezGeneID);
                     String diseaseId = humanDiseases.get(phenoGenes.get(col_idx));
                     String originalDiseaseId = diseaseId;
                     String diseaseLink = diseaseTerms.get(diseaseId);
@@ -748,7 +767,7 @@ public class DynamicPhenoWandererPriority implements Priority {
                         diseaseId = diseaseId.split(":")[1];
                         diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
                     }
-                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, diseaseLink, closestGene);
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> with score %s and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, humanScore, diseaseLink, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches";
                     if (hpHpMatches.get(entrezGeneID) != null && hpHpMatches.get(entrezGeneID).get(originalDiseaseId) != null) {
                         for (String hpId : hpoIds) {
@@ -817,7 +836,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             else {
                 evidence = "<ul><li>No phenotype or PPI evidence</li></ul>";
             }
-            DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence,
+            DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, 
                     fishPhenotypeEvidence, humanScore, mouseScore, fishScore, walkerScore);
             gene.addRelevanceScore(relScore, PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
         }
@@ -851,7 +870,8 @@ public class DynamicPhenoWandererPriority implements Priority {
             if (sharedHits > 1) {
                 adjustedRank = rank + (sharedHits / 2);
             }
-            float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
+            //float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
+            float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
                 g.resetRelevanceScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY, newScore);
@@ -873,8 +893,7 @@ public class DynamicPhenoWandererPriority implements Priority {
     /**
      * This causes a summary of RW prioritization to appear in the HTML output
      * of the exomizer
-     *
-     * @return
+     * @return 
      */
     @Override
     public boolean displayInHTML() {
@@ -953,6 +972,5 @@ public class DynamicPhenoWandererPriority implements Priority {
      */
     public void setDatabaseConnection(Connection connection) {
         this.connection = connection;
-        logger.info("Connection is " + connection);
     }
 }

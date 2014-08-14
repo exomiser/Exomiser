@@ -83,10 +83,7 @@ public class PriorityFactory {
                 break;            
             case DYNAMIC_PHENOWANDERER_PRIORITY:
                 genePriorityList.add(getDynamicPhenoWandererPrioritiser(hpoIds, candidateGene, disease));
-                break; 
-            case DYNAMIC_PHENOWANDERER_PRIORITY_MONARCH_TABLES:
-                genePriorityList.add(getDynamicPhenoWandererPrioritiserMonarchTables(hpoIds, candidateGene, disease));
-                break;   
+                break;  
             case DYNAMIC_PHENODIGM_PRIORITY:
                 genePriorityList.add(getDynamicPhenodigmPrioritiser(hpoIds));
                 break;
@@ -167,20 +164,9 @@ public class PriorityFactory {
         logger.info("Made new GeneWanderer Priority: {}", priority);
         return priority;
     }
-
+    
     public Priority getDynamicPhenoWandererPrioritiser(List<String> hpoIds, String candGene, String disease) {
         Priority priority = new DynamicPhenoWandererPriority(hpoIds, candGene, disease, randomWalkMatrix);
-        try {
-            priority.setDatabaseConnection(dataSource.getConnection());
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
-        logger.info("Made new DynamicPhenoWanderer Priority: {}", priority);
-        return priority;
-    }
-    
-    public Priority getDynamicPhenoWandererPrioritiserMonarchTables(List<String> hpoIds, String candGene, String disease) {
-        Priority priority = new DynamicPhenoWandererPriorityMonarchTables(hpoIds, candGene, disease, randomWalkMatrix);
         try {
             priority.setDatabaseConnection(dataSource.getConnection());
         } catch (SQLException ex) {

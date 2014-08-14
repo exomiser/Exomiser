@@ -28,9 +28,7 @@ public enum PriorityType {
      */
 
     DYNAMIC_PHENOWANDERER_PRIORITY("dynamic-pheno-wanderer", ScoringMode.RAW_SCORE),
-    DYNAMIC_PHENOWANDERER_PRIORITY_MONARCH_TABLES("dynamic-pheno-wanderer-monarch-tables", ScoringMode.RAW_SCORE),
-    DYNAMIC_PHENOWANDERER_PRIORITY_MONARCH_SERVICES("dynamic-pheno-wanderer-monarch-services", ScoringMode.RAW_SCORE),
-
+    
     /**
      * Flag to represent results of annotating against OMIM data
      */
