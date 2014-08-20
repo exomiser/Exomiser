@@ -43,20 +43,21 @@
             <version>1.2.3</version>
         </dependency>
         <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>ontologizer</artifactId>
-            <version>2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>javautil</artifactId>
-            <version>0.1</version>
-        </dependency>
-        <dependency>
             <groupId>sonumina</groupId>
-            <artifactId>boqua</artifactId>
+            <artifactId>boqua</artifactId> <!-- Should be boqa without the 'u'-->
             <version>0.2-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>de.sonumina</groupId>
+            <artifactId>javautil</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>ontologizer</groupId>
+            <artifactId>ontologizer</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
         <dependency>
             <groupId>org.thymeleaf</groupId>

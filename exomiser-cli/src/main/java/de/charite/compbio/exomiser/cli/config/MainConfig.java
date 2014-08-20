@@ -6,11 +6,15 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
-import de.charite.compbio.exomiser.filter.FilterFactory;
+import de.charite.compbio.exomiser.core.model.Exomiser;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.dao.FrequencyDao;
+import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
+import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
-import de.charite.compbio.exomiser.util.ChromosomeMapFactory;
-import de.charite.compbio.exomiser.util.VariantAnnotator;
+import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
+import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import jannovar.reference.Chromosome;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -34,7 +38,7 @@ import org.springframework.core.env.Environment;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@Import({DataSourceConfig.class, CommandLineOptionsConfig.class}) 
+@Import({DataSourceConfig.class, CommandLineOptionsConfig.class})
 @PropertySource({"buildversion.properties", "file:${jarFilePath}/application.properties"})
 public class MainConfig {
 
@@ -167,6 +171,16 @@ public class MainConfig {
     }
 
     @Bean
+    public FrequencyDao frequencyDao() {
+        return new FrequencyDao();
+    }
+
+    @Bean
+    public PathogenicityDao pathogenicityDao() {
+        return new PathogenicityDao();
+    }
+
+    @Bean
     public FilterFactory filterFactory() {
         return new FilterFactory();
     }
@@ -174,5 +188,16 @@ public class MainConfig {
     @Bean
     public PriorityFactory priorityFactory() {
         return new PriorityFactory();
+    }
+
+    @Bean
+    @Lazy
+    public SampleDataFactory sampleDataFactory() {
+        return new SampleDataFactory();
+    }
+
+    @Bean
+    public Exomiser exomiser() {
+        return new Exomiser();
     }
 }

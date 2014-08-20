@@ -137,6 +137,7 @@
                 <a name="Settings">Analysis Settings</a>
             </h2>
             <p>Settings used for this analysis:</p>
+            <pre th:text="${settings}">settings</pre>
             <h2>
                 <a name="Filtering">Filtering Summary</a>
             </h2>
@@ -145,18 +146,18 @@
                     <tr>
                         <th>Filter</th>
                         <th>Parameters</th>
-                        <th>Variants before filtering</th>
-                        <th>Variants after filtering</th>
+                        <th>Variants passed filter</th>
+                        <th>Variants failed filter</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="filter : ${filters}">
-                        <td th:text="${filter.filterName}"></td>
+                    <tr th:each="report : ${filterReports}">
+                        <td th:text="${report.filterType}"></td>
                         <td>
-                            <ul th:each="message : ${filter.messages}" th:if="${not #lists.isEmpty(filter.messages)}" th:text="${message}"></ul>
+                            <ul th:each="message : ${report.messages}" th:if="${not #lists.isEmpty(report.messages)}" th:text="${message}"></ul>
                         </td>
-                            <td th:text="${filter.before}"></td>
-                        <td th:text="${filter.after}"></td>
+                            <td th:text="${report.passed}"></td>
+                        <td th:text="${report.failed}"></td>
                     </tr>
                 </tbody>
             </table>
@@ -216,6 +217,14 @@
                     <th style="width:50%">Variant</th>
                     <th style="width:20%">Variant analysis</th>
                     <th style="width:30%">Phenotypic analysis</th>
+                </tr>
+                <tr th:each="variantEval : ${variantEvaluations}" class="ds">
+                    <td></td>
+                    <td>
+                        <i>Pathogenicity:</i>
+                        <i>Frequency</i>
+                    </td>
+                    <td></td>
                 </tr>
             </table>
             <h2><a name="About">About</a></h2>

@@ -1,9 +1,6 @@
 package de.charite.compbio.exomiser.priority;
 
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
-import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.core.model.Gene;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -306,13 +303,13 @@ public class BoqaPriority implements Priority {
      */
     @Override
     public void prioritizeGenes(List<Gene> gene_list) {
-
-        ArrayList<BoqaRelevanceScore> scoreList = new ArrayList<BoqaRelevanceScore>(gene_list.size());
+        
+        ArrayList<BoqaPriorityScore> scoreList = new ArrayList<BoqaPriorityScore>(gene_list.size());
         KahanSummation sum = new KahanSummation();
 
         /* First, calculate the score for each gene */
         for (Gene g : gene_list) {
-            BoqaRelevanceScore bqrel = retrieve_boqa_result(g);
+            BoqaPriorityScore bqrel = retrieve_boqa_result(g);
             sum.add(bqrel.getPosteriorProbability());
             scoreList.add(bqrel);
         }
@@ -322,12 +319,12 @@ public class BoqaPriority implements Priority {
         /* Now normalize such that the total sum will be 1.0 next time,
          * i.e., make it a probability measure */
         for (int i = 0; i < gene_list.size(); i++) {
-            BoqaRelevanceScore bqrel = scoreList.get(i);
+            BoqaPriorityScore bqrel = scoreList.get(i);
             Gene g = gene_list.get(i);
             bqrel.setPosteriorProbability(bqrel.getPosteriorProbability() / totalSum);
-            g.addRelevanceScore(bqrel, PriorityType.BOQA_PRIORITY);
+            g.addPriorityScore(bqrel, PriorityType.BOQA_PRIORITY);
 
-            System.err.println("Gene " + g.getGeneSymbol() + " has an relevance score of " + bqrel.getScore());
+            logger.info("Gene " + g.getGeneSymbol() + " has an relevance score of " + bqrel.getScore());
         }
     }
 
@@ -339,15 +336,15 @@ public class BoqaPriority implements Priority {
      * in the class variable {@link #resultMap}. Since there may be multiple
      * such diseases, the function chooses the maximum BOQA score (which
      * represents the posterior probability). It uses this score to initialize
-     * the {@link exomizer.priority.BoqaRelevanceScore BoqaRelevanceScore}
+     * the {@link exomizer.priority.BoqaRelevanceScore BoqaPriorityScore}
      * object that will be association with this gene.
      *
      * @param g A gene for which we will find the BOQA score.
      */
-    private BoqaRelevanceScore retrieve_boqa_result(Gene g) {
+    private BoqaPriorityScore retrieve_boqa_result(Gene g) {
         int entrez = g.getEntrezGeneID();
         ResultSet rs = null;
-        BoqaRelevanceScore rel = null;
+        BoqaPriorityScore rel = null;
         try {
             this.preparedQuery.setInt(1, entrez);
             rs = preparedQuery.executeQuery();
@@ -373,7 +370,7 @@ public class BoqaPriority implements Priority {
             if (maxProb < 0) {
                 rel = noDataScore();
             } else {
-                rel = new BoqaRelevanceScore(maxProb, maxDis);
+                rel = new BoqaPriorityScore(maxProb, maxDis);
             }
         } catch (SQLException e) {
             logger.error(null, e);
@@ -388,9 +385,9 @@ public class BoqaPriority implements Priority {
      * {@link exomizer.priority.IPriority FilterType}. basically as a kind of
      * uniform prior.
      */
-    public static BoqaRelevanceScore noDataScore() {
+    public static BoqaPriorityScore noDataScore() {
         float nodatascore = 0.1f;
-        BoqaRelevanceScore brs = new BoqaRelevanceScore(nodatascore, "No disease data found");
+        BoqaPriorityScore brs = new BoqaPriorityScore(nodatascore, "No disease data found");
         return brs;
     }
 
@@ -473,17 +470,6 @@ public class BoqaPriority implements Priority {
     @Override
     public String getHTMLCode() {
         return "";
-    }
-
-    /**
-     * Set parameters of prioritizer if needed.
-     *
-     * @param par A String with the parameters (usually extracted from the cmd
-     * line) for this prioiritizer)
-     */
-    @Override
-    public void setParameters(String par) {
-        /* -- Nothing needed now --- */
     }
 
 }

@@ -1,8 +1,6 @@
 package de.charite.compbio.exomiser.priority;
 
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -221,32 +219,32 @@ public class GenewandererPriority implements Priority {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
-            GenewandererRelevanceScore relScore = null;;
-            if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
-                double val = computeSimStartNodesToNode(gene);
-                if (val > max) {
-                    max = val;
+                GenewandererPriorityScore relScore = null;
+                if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
+                    double val = computeSimStartNodesToNode(gene);
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                    relScore = new GenewandererPriorityScore(val);
+                    ++PPIdataAvailable;
+                } else {
+                    relScore = GenewandererPriorityScore.noPPIDataScore();
                 }
-                if (val < min) {
-                    min = val;
-                }
-                relScore = new GenewandererRelevanceScore(val);
-                ++PPIdataAvailable;
-            } else {
-                relScore = GenewandererRelevanceScore.noPPIDataScore();
-            }
-            gene.addRelevanceScore(relScore, GENEWANDERER_PRIORITY);
+                gene.addPriorityScore(relScore, GENEWANDERER_PRIORITY);
         }
 
 //        float factor = 1f / (float) max;
 //        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
 //
 //        for (Gene gene : geneList) {
-//            float scr = gene.getRelevanceScore(GENEWANDERER_PRIORITY);
+//            float scr = gene.getPriorityScore(GENEWANDERER_PRIORITY);
 //            float newscore = factor * (scr - (float) min);
-//            gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
+//            gene.resetPriorityScore(GENEWANDERER_PRIORITY, newscore);
 //            newscore = factorMaxPossible * (scr - (float) min);
-//            gene.resetRelevanceScore(GENEWANDERER_PRIORITY, newscore);
+//            gene.resetPriorityScore(GENEWANDERER_PRIORITY, newscore);
 //        }
 
         String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
@@ -301,35 +299,6 @@ public class GenewandererPriority implements Priority {
      */
     public int getAfter() {
         return this.n_after;
-    }
-
-    /**
-     * Set parameters of the GeneWanderer prioritizer. We expect to get a string
-     * of entrez gene ids separated by a comma, e.g.,
-     * <pre>
-     * 123,2123,34445,12321
-     * </pre> This String is parsed and put into the class variable
-     * {@link #seedGenes}.
-     *
-     * @param par A String with entrez gene ids separated by a comma.
-     * @Deprecated Use the constructor to set the Entrez gene ids. 
-     */
-    @Override
-    @Deprecated
-    public void setParameters(String par) {
-        String A[] = par.split(",");
-        List<Integer> parsedIntegers = new ArrayList<>();
-        for (String a : A) {
-            try {
-                Integer entrezIdInt = Integer.parseInt(a.trim());
-                parsedIntegers.add(entrezIdInt);
-            } catch (NumberFormatException e) {
-                logger.error("Error encountered while setting up random walk analysis due to malformed Entrez Gene id: {}", a, e);
-            }
-        }
-        
-        addMatchedGenesToSeedGeneList(parsedIntegers);
-        computeDistanceAllNodesFromStartNodes();
     }
     
     /**

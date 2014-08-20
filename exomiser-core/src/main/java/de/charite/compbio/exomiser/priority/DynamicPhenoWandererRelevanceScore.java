@@ -1,11 +1,14 @@
 package de.charite.compbio.exomiser.priority;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class DynamicPhenoWandererRelevanceScore implements GeneScore  {
+public class DynamicPhenoWandererRelevanceScore implements PriorityScore {
     /**
      * The Random walk similarity score.
      */
@@ -112,13 +115,8 @@ public class DynamicPhenoWandererRelevanceScore implements GeneScore  {
      *
      * @param newscore new value for relevance score
      */
-    public void resetScore(float newscore) {
+    public void setScore(float newscore) {
         this.genewandererScore = newscore;
-    }
-
-    @Override
-    public String getFilterResultSummary() {
-        return String.format("Random walk score: %.2f", this.genewandererScore);
     }
 
     /**
@@ -126,7 +124,7 @@ public class DynamicPhenoWandererRelevanceScore implements GeneScore  {
      * for gene wanderer.
      */
     @Override
-    public java.util.ArrayList<String> getFilterResultList() {
-        return null;
+    public List<String> getFilterResultList() {
+        return new ArrayList<>();
     }
 }

@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.io;
 
-import de.charite.compbio.exomiser.exome.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

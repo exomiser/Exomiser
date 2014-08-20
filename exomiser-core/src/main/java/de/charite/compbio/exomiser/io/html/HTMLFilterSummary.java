@@ -49,8 +49,8 @@ public class HTMLFilterSummary {
 		  "<tr>\n"+
 		  "<th>Filter</th>");
 	out.write("<th>Parameters</th>");
-	out.write("<th>Variants before filtering</th>");
-	out.write("<th>Variants after filtering</th>");
+	out.write("<th>Variants passed filtering</th>");
+	out.write("<th>Variants failed filtering</th>");
 	out.write("</tr>\n");
 	for (HTMLFilterSummaryRow r : this.row_list) {
 	    String s = r.getHTMLCodeForRow();

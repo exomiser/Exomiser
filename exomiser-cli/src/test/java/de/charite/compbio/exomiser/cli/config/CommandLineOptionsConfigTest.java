@@ -6,7 +6,7 @@
 
 package de.charite.compbio.exomiser.cli.config;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
+import static de.charite.compbio.exomiser.core.model.ExomiserSettings.*;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,14 +31,14 @@ public class CommandLineOptionsConfigTest {
     private Options options;
 
     @Test
-    public void options_specify_a_vcf_file() {
+    public void optionsSpecifyOneVcfFile() {
         String longOption = VCF_OPTION;
         Option option = options.getOption(longOption);
         assertThat(option.getLongOpt(), equalTo(longOption));
     }
     
     @Test
-    public void options_specify_a_prioritiser() {
+    public void optionsSpecifyOnePrioritiser() {
         String longOption = PRIORITISER_OPTION;
         Option option = options.getOption(longOption);
         assertThat(option.getLongOpt(), equalTo(longOption));
@@ -54,5 +54,29 @@ public class CommandLineOptionsConfigTest {
     @Test
     public void optionsContainsSettingsFile() {
         assertThat(options.hasOption(SETTINGS_FILE_OPTION), is(true));
+    }
+    
+    @Test
+    public void outputFormatOptionsCanHaveMultipleCommaSeparatedValues() {
+        String longOption = OUT_FORMAT_OPTION;
+        Option option = options.getOption(longOption);
+        assertThat(option.hasArgs(), is(true));
+        assertThat(option.getValueSeparator(), equalTo(','));
+    }
+    
+    @Test
+    public void seedGenesOptionsCanHaveMultipleCommaSeparatedValues() {
+        String longOption = SEED_GENES_OPTION;
+        Option option = options.getOption(longOption);
+        assertThat(option.hasArgs(), is(true));
+        assertThat(option.getValueSeparator(), equalTo(','));
+    }
+    
+    @Test
+    public void hpoIdsOptionsCanHaveMultipleCommaSeparatedValues() {
+        String longOption = HPO_IDS_OPTION;
+        Option option = options.getOption(longOption);
+        assertThat(option.hasArgs(), is(true));
+        assertThat(option.getValueSeparator(), equalTo(','));
     }
 }

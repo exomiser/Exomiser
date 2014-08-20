@@ -1,11 +1,11 @@
 package de.charite.compbio.exomiser.io.html;
 
-import de.charite.compbio.exomiser.filter.FilterType;
-import de.charite.compbio.exomiser.exome.Gene; 
-import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.VariantScore;
+import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.model.Gene; 
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.filter.FilterScore;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.GeneScore;
+import de.charite.compbio.exomiser.priority.PriorityScore;
 import jannovar.pedigree.Pedigree;
 import java.io.IOException;
 import java.io.Writer; 
@@ -65,20 +65,19 @@ public class HTMLTablePanel extends HTMLTable {
 	out.write("</tr>\n");
     }
 
-
     /**
      * @return A string intended to display information about diseases associated with the
      * gene on the ExomeWalker HTML page
      */
     private String getOmimText(Gene gene) {
-	Map<PriorityType,GeneScore> relevanceMap = gene.getRelevanceMap();
-	GeneScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
-	List<String> lst = mim.getFilterResultList();
+	Map<PriorityType, PriorityScore> relevanceScoreMap = gene.getPriorityScoreMap();
+	PriorityScore mim = relevanceScoreMap.get(PriorityType.OMIM_PRIORITY);
 	if (mim == null) {
 	    return "No known human Mendelian disease";
 	} else {
 	    StringBuilder sb = new StringBuilder();
 	    sb.append(String.format("Diseases associated with %s:<br/>\n",gene.getGeneSymbol()));
+            List<String> lst = mim.getFilterResultList();
 	    for (String a : lst) {
 		sb.append(String.format("%s<br/>\n",a));
 	    }
@@ -120,7 +119,7 @@ public class HTMLTablePanel extends HTMLTable {
 	    String chrvar = varev.getChromosomalVariant();
 	    String annot = varev.getRepresentativeAnnotation(); 
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 
-	    String ucscLink = getUCSCBrowswerURL(varev);
+	    String ucscLink = getUCSCBrowserURL(varev);
 	    String pathogenicity = getPathogenicityForToolTip(varev);
 	    float varScore = varev.getFilterScore();
 	    if (varScore < 0.2)
@@ -143,18 +142,18 @@ public class HTMLTablePanel extends HTMLTable {
 
 
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
-	Map<FilterType, VariantScore> triageMap = varev.getVariantScoreMap();
-	VariantScore frq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	VariantScore pth = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	Map<FilterType, FilterScore> triageMap = varev.getFilterScoreMap();
+	FilterScore frq = triageMap.get(FilterType.FREQUENCY_FILTER);
+	FilterScore pth = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	float score = varev.getFilterScore();
-	float frscore = frq.filterResult();
+	float frscore = frq.getScore(); //this could cause an NPE if the VariantEvaluation didn't pass the filter...
 	StringBuilder sb = new StringBuilder();
-	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<br/>Frequency Score: %.2f<span>",score,frscore)); 
-	if (pth != null) {
-	    sb.append(pth. getFilterResultSummary());
+	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<br/>Frequency Score: %.2f<span>",score, frscore)); 
+	if (varev.passedFilter(FilterType.PATHOGENICITY_FILTER)) {
+	    sb.append(pathResultsWriter.getFilterResultSummary(varev));
 	}
-	if (frq != null) {
-	    sb.append(frq.getFilterResultSummary());
+	if (varev.passedFilter(FilterType.FREQUENCY_FILTER)) {
+	    sb.append(frequencyResultWriter.getFilterResultSummary(varev));
 	}
 	sb.append("</span></p>\n");
 	return sb.toString();
@@ -163,8 +162,6 @@ public class HTMLTablePanel extends HTMLTable {
 
 
    
-
-
 
     /**
      * We get a string linke this HLA-A(uc003nok.3:exon2:c.28G>T:p.G10W) 
@@ -180,10 +177,4 @@ public class HTMLTablePanel extends HTMLTable {
 	String anchor = String.format("<a href=\"%s\" target=\"_new%s\">View %s in UCSC Browser</a>",url,kg,kg);
 	return anchor;
     }
-
-
-   
-
-
 }
-/* eof */

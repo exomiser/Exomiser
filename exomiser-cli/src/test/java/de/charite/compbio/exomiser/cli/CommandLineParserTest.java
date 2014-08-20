@@ -6,17 +6,20 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.model.ExomiserSettings;
+import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.util.OutputFormat;
+import de.charite.compbio.exomiser.core.writer.OutputFormat;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
@@ -93,7 +96,7 @@ public class CommandLineParserTest {
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(100f));
-        assertThat(exomiserSettings.includePathogenic(), is(false));
+        assertThat(exomiserSettings.keepNonPathogenicMissense(), is(true));
     }
     
     @Test
@@ -206,9 +209,9 @@ public class CommandLineParserTest {
     }
          
     @Test
-    public void should_produce_settings_with_restrict_interval_when_set() {
+    public void should_produce_settings_with_genetic_interval_when_set() {
         String option = "--restrict-interval";
-        String value =  "chr2:12345-67890";
+        GeneticInterval value = new GeneticInterval((byte) 2, 12345, 67890);
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
@@ -219,24 +222,24 @@ public class CommandLineParserTest {
 
     @Test
     public void should_produce_settings_with_include_pathogenic_when_set() {
-        String option = "--include-pathogenic";
-        String input = String.format("-v 123.vcf %s --prioritiser=phenodigm-mgi", option);
-        
+        String option = ExomiserSettings.KEEP_NON_PATHOGENIC_MISSENSE_OPTION;
+        String input = String.format("-v 123.vcf --%s=false --prioritiser=phenodigm-mgi", option);
+        System.out.println(input);
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
-        assertThat(exomiserSettings.includePathogenic(), is(true)); 
+        assertThat(exomiserSettings.keepNonPathogenicMissense(), is(false)); 
     }
     
     @Test
     public void should_produce_settings_with_include_pathogenic_default_when_not_set() {
-        String option = "--include-pathogenic";
+        String option = ExomiserSettings.KEEP_NON_PATHOGENIC_MISSENSE_OPTION;
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
-        assertThat(exomiserSettings.includePathogenic(), is(false)); 
+        assertThat(exomiserSettings.keepNonPathogenicMissense(), is(true)); 
     }
     
     @Test
@@ -480,7 +483,7 @@ public class CommandLineParserTest {
     public void should_produce_settings_with_UNINITIALIZED_inheritance_mode_when_value_not_recognised() {
         String option = "--inheritance-mode";
         String value =  "wibble";
-        String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
         
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
@@ -524,35 +527,8 @@ public class CommandLineParserTest {
         assertThat(exomiserSettings.getOutFileName(), equalTo(value)); 
     }
     
-//    @Test
-//    public void should_produce_settings_out_file_with_sample_file_name_and_output_format_defaults_when_not_specified() {
-//
-//        String value =  "wibble";
-//        String input = String.format("-v %s.vcf --prioritiser=phenodigm-mgi", value);
-//        
-//        String[] args = input.split(" ");
-//        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
-//        
-//        String expectedFileName = String.format("%s-exomiser-results.%s", value, OutputFormat.HTML.getFileExtension());
-//        
-//        assertThat(exomiserSettings.getOutFileName(), equalTo(expectedFileName)); 
-//    }
-//    
-//    @Test
-//    public void should_produce_settings_with_outfile_with_HTML_extension_when_extension_not_specified() {
-//        String option = "--out-file";
-//        String value =  "wibble";
-//        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
-//        
-//        String[] args = input.split(" ");
-//        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
-//        String expectedFilename = String.format("%s.%s",value, OutputFormat.HTML.getFileExtension());
-//        
-//        assertThat(exomiserSettings.getOutFileName(), equalTo(expectedFilename)); 
-//    }
-
     @Test
-    public void should_produce_settings_out_file_with_HTML_output_format_when_value_not_recognised() {
+    public void shouldProduceSettingsWithHTMLOutputFormatAsDefaultWhenInputValueNotRecognised() {
         String option = "--out-format";
         String value =  "wibble";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
@@ -560,22 +536,26 @@ public class CommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
-        assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.HTML)); 
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.HTML);
+        
+        assertThat(exomiserSettings.getOutputFormats(), equalTo(expected)); 
     }
         
     @Test
-    public void should_produce_settings_out_file_with_HTML_output_format_when_not_specified() {
+    public void shouldProduceSettingsWithHTMLOutputFormatAsDefaultWhenNoneSpecified() {
 
         String input = "-v 123.vcf --prioritiser=phenodigm-mgi";
         
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
-        assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.HTML)); 
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.HTML);
+        
+        assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));  
     }
     
     @Test
-    public void should_produce_settings_out_file_with_TAB_output_format_when_specified() {
+    public void shouldProduceSettingsWithTABOutputFormatWhenSpecified() {
         String option = "--out-format";
         String value =  "TAB";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
@@ -583,11 +563,13 @@ public class CommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
-        assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.TSV)); 
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.TSV);
+        
+        assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));  
     }
     
     @Test
-    public void should_produce_settings_out_file_with_VCF_output_format_when_specified() {
+    public void shouldProduceSettingsWithVCFOutputFormatWhenSpecified() {
         String option = "--out-format";
         String value =  "VCF";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
@@ -595,8 +577,23 @@ public class CommandLineParserTest {
         String[] args = input.split(" ");
         ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
         
-        assertThat(exomiserSettings.getOutputFormat(), equalTo(OutputFormat.VCF)); 
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF);
+        
+        assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));  
     }
-     
+    
+    @Test
+    public void shouldProduceSettingsWithTSVAndVCFOutputFormatWhenSpecified() {
+        String option = "--out-format";
+        String value =  "TAB,VCF";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=phenodigm-mgi", option, value);
+        
+        String[] args = input.split(" ");
+        ExomiserSettings exomiserSettings = instance.parseCommandLineArguments(args).build();
+        
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF, OutputFormat.TSV);
+        
+        assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));  
+    }
 }
 

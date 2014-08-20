@@ -16,10 +16,7 @@ import sonumina.math.graph.SlimDirectedGraphView;
 
 import jannovar.common.Constants;
 
-import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.io.UberphenoIO;
 import de.charite.compbio.exomiser.priority.util.UberphenoAnnotationContainer;
 import java.sql.Connection;
@@ -179,36 +176,36 @@ public class UberphenoPriority implements Priority {
 	public void prioritizeGenes(List<Gene> gene_list)
     {
 	this.found_annotation_in_uberpheno	= 0;
-	
+	int analysedGenes = gene_list.size();
 	
 	for (Gene gene : gene_list){
-	    try {
-		UberphenoRelevanceScore uberphenoRelScore = scoreVariantUberpheno(gene);
-		gene.addRelevanceScore(uberphenoRelScore, PriorityType.UBERPHENO_PRIORITY);
-	    } catch (ExomizerException e) {
+            try {
+		UberphenoPriorityScore uberphenoRelScore = scoreVariantUberpheno(gene);
+		gene.addPriorityScore(uberphenoRelScore, PriorityType.UBERPHENO_PRIORITY);
+	    } catch (Exception e) {
 		error_record.add(e.toString());
 	    }
 	}
 	
 	String s = 
 	    String.format("Data investigated in Uberpheno for %d genes (%.1f%%)",
-			  gene_list.size());
+			  analysedGenes);
 	this.messages.add(s);
     }
     
     /** 
      * @param g A {@link exomizer.exome.Gene Gene} whose score is to be determined.
      */
-    private UberphenoRelevanceScore scoreVariantUberpheno(Gene g) throws ExomizerSQLException {
+    private UberphenoPriorityScore scoreVariantUberpheno(Gene g) {
 	
 	int entrezGeneId 	= g.getEntrezGeneID();
 	Set<Term> terms  	= uberphenoAnnotationContainer.getAnnotationsOfGene(entrezGeneId);
 	if (terms == null || terms.size()<1){
-	    return new UberphenoRelevanceScore(Constants.UNINITIALIZED_FLOAT);
+	    return new UberphenoPriorityScore(Constants.UNINITIALIZED_FLOAT);
 	}
 	ArrayList<Term> termsAl			= new ArrayList<Term>(terms);
 	double similarityScore			= similarityMeasure.computeObjectSimilarity(annotationsOfDisease,termsAl);
-	return new UberphenoRelevanceScore(similarityScore);
+	return new UberphenoPriorityScore(similarityScore);
     }
 
     
@@ -243,15 +240,6 @@ public class UberphenoPriority implements Priority {
     @Override
     public int getAfter() {
         return 0;
-    }
-
-    
-    /**
-     * Set parameters of prioritizer if needed.
-     * @param par A String with the parameters (usually extracted from the cmd line) for this prioiritizer)
-     */
-    @Override public void setParameters(String par){
-	/* -- Nothing needed now --- */
     }
 
      /**

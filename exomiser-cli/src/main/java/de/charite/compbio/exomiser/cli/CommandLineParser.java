@@ -5,11 +5,12 @@
  */
 package de.charite.compbio.exomiser.cli;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.model.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.model.ExomiserSettings.*;
+import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.util.OutputFormat;
+import de.charite.compbio.exomiser.core.writer.OutputFormat;
 import jannovar.common.ModeOfInheritance;
 import java.io.IOException;
 import java.io.Reader;
@@ -18,8 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
@@ -84,7 +87,7 @@ public class CommandLineParser {
         }
         for (Option option : commandLine.getOptions()) {
             logger.info("--{} : {}", option.getLongOpt(), option.getValues());
-            setBuilderValue(option.getLongOpt(), option.getValue(), settingsBuilder);
+            setBuilderValue(option.getLongOpt(), option.getValues(), settingsBuilder);
         }
 
         return settingsBuilder;
@@ -108,7 +111,7 @@ public class CommandLineParser {
             settingsProperties.load(reader);
             logger.info("Loaded settings from properties file: {}", settingsProperties);
             for (String key : settingsProperties.stringPropertyNames()) {
-                setBuilderValue(key, settingsProperties.getProperty(key), settingsBuilder);
+                setBuilderValue(key, settingsProperties.getProperty(key).split(","), settingsBuilder);
             }
 
         } catch (IOException ex) {
@@ -117,7 +120,12 @@ public class CommandLineParser {
         return settingsBuilder;
     }
     
-    private void setBuilderValue(String key, String value, SettingsBuilder settingsBuilder) throws NumberFormatException {
+    private void setBuilderValue(String key, String[] values, SettingsBuilder settingsBuilder) throws NumberFormatException {
+        String value = "";
+        if (values != null) {
+            value = values[0];
+        }
+        
         switch (key) {
             //REQUIRED
             case VCF_OPTION:
@@ -135,14 +143,18 @@ public class CommandLineParser {
                 settingsBuilder.maximumFrequency(Float.parseFloat(value));
                 break;
             case GENETIC_INTERVAL_OPTION:
-                settingsBuilder.geneticInterval(value);
+                if (value == null || value.isEmpty()) {
+                    //use the default null value
+                    break;
+                }
+                settingsBuilder.geneticInterval(GeneticInterval.parseString(value));
                 break;
             case MIN_QUAL_OPTION:
                 settingsBuilder.minimumQuality(Float.parseFloat(value));
                 break;
-            case INCLUDE_PATHOGENIC_OPTION:
-                //default is false
-                settingsBuilder.includePathogenic(true);
+            case KEEP_NON_PATHOGENIC_MISSENSE_OPTION:
+                //default is true
+                settingsBuilder.keepNonPathogenicMissense(Boolean.parseBoolean(value));
                 break;
             case REMOVE_DBSNP_OPTION:
                 //default is false
@@ -168,10 +180,10 @@ public class CommandLineParser {
                 settingsBuilder.candidateGene(value);
                 break;
             case HPO_IDS_OPTION:
-                settingsBuilder.hpoIdList(parseHpoStringList(value));
+                settingsBuilder.hpoIdList(parseHpoStringList(values));
                 break;
             case SEED_GENES_OPTION:
-                settingsBuilder.seedGeneList(makeIntegerList(value));
+                settingsBuilder.seedGeneList(parseEntrezSeedGeneList(values));
                 break;
             case DISEASE_ID_OPTION:
                 settingsBuilder.diseaseId(value);
@@ -189,7 +201,7 @@ public class CommandLineParser {
                 settingsBuilder.outFileName(value);
                 break;
             case OUT_FORMAT_OPTION:
-                settingsBuilder.outputFormat(parseOutputFormat(value));
+                settingsBuilder.outputFormats(parseOutputFormat(values));
                 break;
         }
     }
@@ -201,11 +213,8 @@ public class CommandLineParser {
         return "ExomiserCommandLineOptionsParser{" + options + '}';
     }
 
-    private List<String> parseHpoStringList(String value) {
-        String delimiter = ",";
-        logger.info("Parsing list from: ", value);
-
-        String values[] = value.split(delimiter);
+    private List<String> parseHpoStringList(String[] values) {
+        logger.info("Parsing HPO values from: {}", values);
 
         List<String> hpoList = new ArrayList<>();
         Pattern hpoPattern = Pattern.compile("HP:[0-9]{7}");
@@ -222,7 +231,7 @@ public class CommandLineParser {
 
                 hpoList.add(token);
             } else {
-                logger.error("Malformed HPO input string \"{}\". Term \"{}\" does not match the HPO identifier pattern: {}", value, token, hpoPattern);
+                logger.error("Malformed HPO input string \"{}\". Term \"{}\" does not match the HPO identifier pattern: {}", values, token, hpoPattern);
             }
         }
 
@@ -249,35 +258,47 @@ public class CommandLineParser {
         }
     }
 
-    private OutputFormat parseOutputFormat(String value) {
-        switch (value) {
-            case "HTML":
-                return OutputFormat.HTML;
-            case "TAB":
-                return OutputFormat.TSV;
-            case "TSV":
-                return OutputFormat.TSV;
-            case "VCF":
-                return OutputFormat.VCF;
-            default:
-                return OutputFormat.HTML;
+    private Set<OutputFormat> parseOutputFormat(String[] values) {
+        List<OutputFormat> outputFormats = new ArrayList<>();
+        logger.debug("Parsing output options: {}", values);
+    
+        for (String outputFormatString : values) {
+            switch (outputFormatString.trim()) {
+                case "HTML":
+                    outputFormats.add(OutputFormat.HTML);
+                    break;
+                case "TAB":
+                    outputFormats.add(OutputFormat.TSV);
+                    break;
+                case "TSV":
+                    outputFormats.add(OutputFormat.TSV);
+                    break;
+                case "VCF":
+                    outputFormats.add(OutputFormat.VCF);
+                    break;
+                default:
+                    logger.info("{} is not a recognised output format. Please choose one or more of HTML, TAB, VCF - defaulting to HTML", outputFormatString);
+                    outputFormats.add(OutputFormat.HTML);
+                    break;
+            }
         }
+        logger.debug("Setting output formats: {}", outputFormats);
+        return EnumSet.copyOf(outputFormats);
     }
 
-    private List<Integer> makeIntegerList(String value) {
-        String delimiter = ",";
+    private List<Integer> parseEntrezSeedGeneList(String[] values) {
 
         List<Integer> returnList = new ArrayList<>();
 
-        Pattern mgiGeneIdPattern = Pattern.compile("[0-9]+");
+        Pattern entrezGeneIdPattern = Pattern.compile("[0-9]+");
 
-        for (String string : value.split(delimiter)) {
-            Matcher mgiGeneIdPatternMatcher = mgiGeneIdPattern.matcher(string);
-            if (mgiGeneIdPatternMatcher.matches()) {
+        for (String string : values) {
+            Matcher entrezGeneIdPatternMatcher = entrezGeneIdPattern.matcher(string);
+            if (entrezGeneIdPatternMatcher.matches()) {
                 Integer integer = Integer.parseInt(string.trim());
                 returnList.add(integer);
             } else {
-                logger.error("Malformed MGI gene ID input string \"{}\". Term \"{}\" does not match the MGI gene ID identifier pattern: {}", value, string, mgiGeneIdPattern);
+                logger.error("Malformed Entrez gene ID input string \"{}\". Term \"{}\" does not match the Entrez gene ID identifier pattern: {}", values, string, entrezGeneIdPattern);
             }
         }
 

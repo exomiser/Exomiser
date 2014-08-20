@@ -1,14 +1,12 @@
 package de.charite.compbio.exomiser.priority;
 
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
-import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.core.model.Gene;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,13 +88,9 @@ public class OMIMPriority implements Priority {
      */
     @Override
     public void prioritizeGenes(List<Gene> gene_list) {
-        Iterator<Gene> it = gene_list.iterator();
-        while (it.hasNext()) {
-            Gene g = it.next();
-            
-                OMIMRelevanceScore mimrel = retrieve_omim_data(g);
-                g.addRelevanceScore(mimrel, PriorityType.OMIM_PRIORITY);
-            
+        for (Gene g : gene_list) {
+            OMIMPriorityScore mimrel = retrieve_omim_data(g);
+            g.addPriorityScore(mimrel, PriorityType.OMIM_PRIORITY);
         }
     }
 
@@ -108,11 +102,12 @@ public class OMIMPriority implements Priority {
      *
      * @param g The gene which is being evaluated.
      */
-    private OMIMRelevanceScore retrieve_omim_data(Gene g) {
-        OMIMRelevanceScore rel = new OMIMRelevanceScore();
+    private OMIMPriorityScore retrieve_omim_data(Gene g) {
+        OMIMPriorityScore rel = new OMIMPriorityScore();
         int entrez = g.getEntrezGeneID();
         if (entrez < 0) {
             return rel; /* Return an empty relevance score object. */
+
         }
         try {
             ResultSet rs = null;
@@ -170,13 +165,13 @@ public class OMIMPriority implements Priority {
         if (inheritance == 'U') {
             /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
             return 1f;
-        } else if (g.is_consistent_with_dominant() && (inheritance == 'D' || inheritance == 'B')) {
+        } else if (g.isConsistentWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
             /* inheritance of disease is dominant or both (dominant/recessive) */
             return 1f;
-        } else if (g.is_consistent_with_recessive() && (inheritance == 'R' || inheritance == 'B')) {
+        } else if (g.isConsistentWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
             /* inheritance of disease is recessive or both (dominant/recessive) */
             return 1f;
-        } else if (g.is_X_chromosomal() && inheritance == 'X') {
+        } else if (g.isXChromosomal() && inheritance == 'X') {
             return 1f;
         } else if (inheritance == 'Y') {
             return 1f; /* Y chromosomal, rare. */
@@ -238,7 +233,8 @@ public class OMIMPriority implements Priority {
     /**
      * Since no filtering of prioritizing is done with the OMIM data for now, it
      * does not make sense to display this in the HTML table.
-     * @return 
+     *
+     * @return
      */
     @Override
     public boolean displayInHTML() {
@@ -264,14 +260,4 @@ public class OMIMPriority implements Priority {
         return 0;
     }
 
-    /**
-     * Set parameters of prioritizer if needed.
-     *
-     * @param par A String with the parameters (usually extracted from the cmd
-     * line) for this prioiritizer)
-     */
-    @Override
-    public void setParameters(String par) {
-        /* -- Nothing needed now */
-    }
 }
