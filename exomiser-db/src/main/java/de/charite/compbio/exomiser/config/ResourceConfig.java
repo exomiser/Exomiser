@@ -155,7 +155,7 @@ public class ResourceConfig {
     public Resource dbSnpResource() {
         logger.info("Making dbSNP resource");
         Resource resource = new Resource("dbSNP");
-        resource.setUrl("ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/");
+        resource.setUrl("ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh37p13/VCF/");//once all switched to b38 and 1000g frequencies in should set back to human_9606 default
         resource.setRemoteFileName("00-All.vcf.gz");
         resource.setVersion("00");
         resource.setExtractedFileName("dbSNP_00-All.vcf");
