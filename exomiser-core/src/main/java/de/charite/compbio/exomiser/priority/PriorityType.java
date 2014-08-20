@@ -28,7 +28,7 @@ public enum PriorityType {
      */
 
     DYNAMIC_PHENOWANDERER_PRIORITY("dynamic-pheno-wanderer", ScoringMode.RAW_SCORE),
-    
+
     /**
      * Flag to represent results of annotating against OMIM data
      */

@@ -1,16 +1,15 @@
 package de.charite.compbio.exomiser.io.html;
 
+import de.charite.compbio.exomiser.core.filter.FilterReport;
 import java.io.Writer;
 import java.io.IOException; 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import de.charite.compbio.exomiser.filter.FilterType;
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.filter.Filter;
+import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.filter.Filter;
 import de.charite.compbio.exomiser.priority.Priority;
 
 import jannovar.common.VariantType;
@@ -62,7 +61,7 @@ public class HTMLWriterCRE extends HTMLWriter {
      * Create a BufferedWriter from the file pointed to by fname
      * @param fname Name and path of file to be written to.
      */
-    public HTMLWriterCRE(String fname) throws ExomizerInitializationException {
+    public HTMLWriterCRE(String fname) {
 	super(fname);
     }
      /**
@@ -70,7 +69,7 @@ public class HTMLWriterCRE extends HTMLWriter {
      * @param fname Name and path of file to be written to.
      * @param basename The basename of the VCF file with which we performed the analysis.
      */
-    public HTMLWriterCRE(String fname,String basename) throws ExomizerInitializationException {
+    public HTMLWriterCRE(String fname,String basename) {
 	super(fname,basename);
     }
 
@@ -451,52 +450,55 @@ public class HTMLWriterCRE extends HTMLWriter {
      /**
      * Print information on the filters chosen by the user
      * and a summary of the filtering results.
-     * @param filterList List of the filters chosen by the user.
+     * @param filterReports List of reports from filters chosen by the user
      * @param priorityList List of prioritizers chosen by the user.
+     * @throws java.io.IOException
      */
-    @Override public void writeHTMLFilterSummary(List<Filter> filterList, 
-				       List<Priority> priorityList) 
-	throws IOException
-    {
-	// The following code gets information on the filters chosen by the use
-	// and prints out a summary of the filtering results.
-	HTMLFilterSummary filtersum = new HTMLFilterSummary();
-	for (Filter f : filterList) {
-	    FilterType fl = f.getFilterType();
-	    // Get data for row in the filter table.
-	    String name =  f.getFilterName();
-	    List<String> descript = f.getMessages();
-	    int before = f.getBefore();
-	    int after  = f.getAfter();
-	    filtersum.addRow(name,descript,before,after);
-	}
-	for (Priority p : priorityList) {
-	    if (p.displayInHTML()) {
-		String name =  p.getPriorityName();
-		System.out.println("Calling for " + name);
-		List<String> descript = p.getMessages();
-		int before = p.getBefore();
-		int after  = p.getAfter();
-		filtersum.addRow(name,descript,before,after);
-	    }
-	}
+    @Override
+    public void writeHTMLFilterSummary(List<FilterReport> filterReports,
+            List<Priority> priorityList)
+            throws IOException {
+        // The following code gets information on the filters chosen by the use
+        // and prints out a summary of the filtering results.
+        HTMLFilterSummary filtersum = new HTMLFilterSummary();
+        for (FilterReport report : filterReports) {
+            FilterType fl = report.getFilterType();
+            // Get data for row in the filter table.
+            String name = String.format("%s filter", report.getFilterType().toString());
+            List<String> descript = report.getMessages();
+            int before = report.getPassed();
+            int after = report.getFailed();
+            if (descript.size() == 1) {
+                filtersum.addRow(name, descript.get(0), before, after);
+            } else {
+                filtersum.addRow(name, descript, before, after);
+            }
+        }
 
-	out.write("<div class=\"boxcontainer\">\n"+
-		  "<article class=\"box\">\n"+
-		  "<a name=\"filter\"/>\n"+
-		  "<h2>Exome Filtering Results</h2>\n");
-	filtersum.writeTableWithCSS(this.out);
-	/* Close the boxcontainer div */
-	out.write("</article>\n"+
-		  "</div>\n");
+        /* Similar as above, but for the prioritizers. */
+        for (Priority p : priorityList) {
+            if (p.displayInHTML()) {
+                String name = p.getPriorityName();
+                System.out.println("Calling for " + name);
+                List<String> descript = p.getMessages();
+                int before = p.getBefore();
+                int after = p.getAfter();
+                filtersum.addRow(name, descript, before, after);
+            }
+        }
+
+        out.write("<div class=\"boxcontainer\">\n"
+                + "<article class=\"box\">\n"
+                + "<a name=\"filter\"/>\n"
+                + "<h2>Exome Filtering Results</h2>\n");
+        filtersum.writeTableWithCSS(this.out);
+        /* Close the boxcontainer div */
+        out.write("</article>\n"
+                + "</div>\n");
     }
 
 
-    
-
-
-
-     /**
+    /**
      * Output a Table with the distribution of VariantTypes.
      * @param vtc An object from the Jannovar library with counts of all variant types
      * @param sampleNames Names of the (multiple) samples in the VCF file
@@ -522,7 +524,7 @@ public class HTMLWriterCRE extends HTMLWriter {
 	    Iterator<VariantType> iter = vtc.getVariantTypeIterator();
 	    while (iter.hasNext()) {
 		VariantType vt = iter.next();
-		ArrayList<Integer> cts = vtc.getTypeSpecificCounts(vt);
+		List<Integer> cts = vtc.getTypeSpecificCounts(vt);
 		String vtstr = vt.toDisplayString();
 		out.write(String.format("<tr><td>%s</td>", vtstr));
 		for (int k=0;k<ncol;++k) {
@@ -534,7 +536,7 @@ public class HTMLWriterCRE extends HTMLWriter {
 	    out.write("</article>\n"+
 		      "</div>\n");
 	} catch (IOException e) {
-	    logger.error("Error writing variant distribtion table", e);
+	    logger.error("Error writing variant distribution table", e);
 	}
     }
 

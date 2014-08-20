@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.priority;
 
+import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -46,9 +46,6 @@ public class PriorityFactory {
     public PriorityFactory() {
     }
 
-    public PriorityFactory(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
     public List<Priority> makePrioritisers(ExomiserSettings exomiserSettings) {
         
         String disease = exomiserSettings.getDiseaseId();
@@ -57,20 +54,10 @@ public class PriorityFactory {
         List<Integer> entrezSeedGenes = exomiserSettings.getSeedGeneList();
         
         List<Priority> genePriorityList = new ArrayList<>();
-        //TODO: these chaps are usually specified implicitly - perhaps they should be different types of ExomiserSettings?
+        //TODO: OmimPrioritizer is specified implicitly - perhaps they should be different types of ExomiserSettings?
         //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. These might be badly named as the OMIM proritiser is currently the default.
-        //InheritancePriority ALWAYS runs but uses a default InheritanceMode.UNSPECIFIED
-//        commandLineToPriorityMap.put(vcfFilePath, InheritancePriority.class);
-        //TODO: check how this works - I think it is always included.
-//        commandLineToPriorityMap.put(vcfFilePath, OMIMPriority.class);
-        //not sure if this is actually used at all....
-//        commandLineToPriorityMap.put(vcfFilePath, DynamicPhenodigmPriority.class);
-
-//        this.prioritiser.addOMIMPrioritizer();
         genePriorityList.add(getOmimPrioritizer());
-//            this.prioritiser.addInheritancePrioritiser(this.inheritance_filter_type);
-        genePriorityList.add(new InheritancePriority(exomiserSettings.getModeOfInheritance()));
-
+        
         switch (exomiserSettings.getPrioritiserType()) {
             case PHENODIGM_MGI_PRIORITY:
                 genePriorityList.add(getMGIPhenodigmPrioritiser(disease));
@@ -89,8 +76,7 @@ public class PriorityFactory {
                 break;
             case GENEWANDERER_PRIORITY:
                 genePriorityList.add(getGeneWandererPrioritiser(entrezSeedGenes));
-                break;               
-            
+                break;                      
         }
 
         return genePriorityList;
@@ -106,12 +92,6 @@ public class PriorityFactory {
         }
 
         logger.info("Made new OMIM Priority: {}", priority);
-        return priority;
-    }
-
-    public Priority getInheritancePrioritiser(ModeOfInheritance modeOfInheritance){
-        Priority priority = new InheritancePriority(modeOfInheritance);
-        logger.info("Made new Inheritance Priority: {}", priority);
         return priority;
     }
 

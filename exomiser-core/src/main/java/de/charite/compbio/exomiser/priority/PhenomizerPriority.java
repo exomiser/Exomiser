@@ -2,15 +2,12 @@ package de.charite.compbio.exomiser.priority;
 
 
 
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.priority.util.ScoreDistribution;
 import de.charite.compbio.exomiser.priority.util.ScoreDistributionContainer;
 import hpo.HPOutils;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -82,7 +79,7 @@ public class PhenomizerPriority implements Priority {
      * a defined disease gene. */
     private int offTargetGenes=0;
     /** Total number of genes used for the query, including genes with no associated disease. */
-    private int totalGenes;
+    private int analysedGenes;
 
     private boolean symmetric;
     /** Path to the directory that has the files needed to calculate the score distribution. */
@@ -297,18 +294,14 @@ public class PhenomizerPriority implements Priority {
      */
     @Override 
     public void prioritizeGenes(List<Gene> gene_list) {
-	this.totalGenes = gene_list.size();
+	analysedGenes = gene_list.size();
 
 	for (Gene gene : gene_list) {
-	    try {
-		PhenomizerRelevanceScore phenomizerRelScore = scoreVariantHPO(gene);
-		gene.addRelevanceScore(phenomizerRelScore, PriorityType.PHENOMIZER_PRIORITY);
-		//System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getScore());
-	    } catch (ExomizerException e) {
-		error_record.add(e.toString());
-	    }
+            PhenomizerPriorityScore phenomizerRelScore = scoreVariantHPO(gene);
+            gene.addPriorityScore(phenomizerRelScore, PriorityType.PHENOMIZER_PRIORITY);
+            //System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getScore());
 	}
-	String s = String.format("Data investigated in HPO for %d genes. No data for %d genes", gene_list.size(),this.offTargetGenes);
+	String s = String.format("Data investigated in HPO for %d genes. No data for %d genes", analysedGenes, this.offTargetGenes);
 	//System.out.println(s);
 	normalizePhenomizerScores(gene_list);
 	this.messages.add(s);
@@ -325,11 +318,11 @@ public class PhenomizerPriority implements Priority {
      */
     private void normalizePhenomizerScores(List<Gene> gene_list) {
 	if ( maxSemSim < 1) return;
-	PhenomizerRelevanceScore.setNormalizationFactor(1d/maxSemSim);
+	PhenomizerPriorityScore.setNormalizationFactor(1d / maxSemSim);
 	/*for (Gene g : gene_list) {
 	    float score = g.getRelevagetScorepe.PHENOMIZER_PRIORITY);
 	    score /= this.maxSemSim;
-	    g.resetScore(FilterType.PHENOMIZER_PRIORITY, score);
+	    g.setScore(FilterType.PHENOMIZER_PRIORITY, score);
 	    }*/
     }
 
@@ -340,7 +333,7 @@ public class PhenomizerPriority implements Priority {
      * @param g   A {@link exomizer.exome.Gene Gene} whose score is to be
      *            determined.
      */
-    private PhenomizerRelevanceScore scoreVariantHPO(Gene g) throws ExomizerException {
+    private PhenomizerPriorityScore scoreVariantHPO(Gene g) {
 	
 	int entrezGeneId = g.getEntrezGeneID();
 	String entrezGeneIdString = entrezGeneId + "";
@@ -348,7 +341,7 @@ public class PhenomizerPriority implements Priority {
 	if (!geneId2annotations.containsKey(entrezGeneIdString)) {
 	    //System.err.println("INVALID GENE GIVEN (will set to default-score): Entrez ID: " + g.getEntrezGeneID() + " / " + g.getGeneSymbol());
 	    this.offTargetGenes++;
-	    return new PhenomizerRelevanceScore(DEFAULT_SCORE);
+	    return new PhenomizerPriorityScore(DEFAULT_SCORE);
 	}
 	
 	ArrayList<Term> annotationsOfGene = geneId2annotations.get(entrezGeneIdString);
@@ -357,7 +350,7 @@ public class PhenomizerPriority implements Priority {
 	if (similarityScore > maxSemSim) 
 	    maxSemSim = similarityScore;
 	if (Double.isNaN(similarityScore)) {
-	    throw new ExomizerException("score was NAN for gene:" + g + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
+            error_record.add("score was NAN for gene:" + g + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
 	}
 	
 	ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(entrezGeneIdString, numberQueryTerms, symmetric,
@@ -367,7 +360,7 @@ public class PhenomizerPriority implements Priority {
 	
 	double rawPvalue;
 	if (scoreDist == null)
-	    return new PhenomizerRelevanceScore(DEFAULT_SCORE);
+	    return new PhenomizerPriorityScore(DEFAULT_SCORE);
 	else {
 	    rawPvalue = scoreDist.getPvalue(similarityScore, 1000.);
 	    rawPvalue = Math.log(rawPvalue) * -1.0; /* Negative log of p value : most significant get highest score */
@@ -375,11 +368,11 @@ public class PhenomizerPriority implements Priority {
 		maxNegLogP = rawPvalue;
 	}
 	
-	return new PhenomizerRelevanceScore(rawPvalue, similarityScore);
+	return new PhenomizerPriorityScore(rawPvalue, similarityScore);
 	// // filter genes not associated with any disease
 	// if
 	// (!HPOutils.diseaseGeneMapper.entrezId2diseaseIds.containsKey(entrezGeneId))
-	// return new PhenomizerRelevanceScore(DEFAULT_SCORE);
+	// return new PhenomizerPriorityScore(DEFAULT_SCORE);
 	//
 	// double sum = 0; // sum of semantic similarity
 	// int num = 0; // required to make average
@@ -391,13 +384,13 @@ public class PhenomizerPriority implements Priority {
 	// if (diseaseEntry == null) {
 	// // System.out.println("diseaseID = " + diseaseId);
 	// // System.out.println("diseaseEntry = NULL " );
-	// // return new PhenomizerRelevanceScore(DEFAULT_SCORE);
+	// // return new PhenomizerPriorityScore(DEFAULT_SCORE);
 	// continue;
 	// }
 	// ArrayList<Term> termsAL = diseaseEntry.getOrganAssociatedTerms();
 	// if (termsAL == null || termsAL.size() < 1) {
 	// continue;
-	// // return new PhenomizerRelevanceScore(DEFAULT_SCORE);
+	// // return new PhenomizerPriorityScore(DEFAULT_SCORE);
 	// }
 	// double similarityScore =
 	// similarityMeasure.computeObjectSimilarity(hpoQueryTerms, termsAL);
@@ -405,11 +398,11 @@ public class PhenomizerPriority implements Priority {
 	// ++num;
 	// }
 	// if (num == 0) {
-	// return new PhenomizerRelevanceScore(DEFAULT_SCORE);
+	// return new PhenomizerPriorityScore(DEFAULT_SCORE);
 	// }
 	//
 	// double avg = sum / num;
-	// return new PhenomizerRelevanceScore(avg);
+	// return new PhenomizerPriorityScore(avg);
     }
     
     /**
@@ -427,7 +420,7 @@ public class PhenomizerPriority implements Priority {
     @Override
     public String getHTMLCode() {
 	String s = String.format("Phenomizer: %d genes were evaluated; no phenotype data available for %d of them",
-				 this.totalGenes, this.offTargetGenes);
+				 this.analysedGenes, this.offTargetGenes);
 	String t = null;
 	if (symmetric)
 	    t = String.format("Symmetric Phenomizer query with %d terms was performed",this.numberQueryTerms);
@@ -441,25 +434,13 @@ public class PhenomizerPriority implements Priority {
     
     /** Get number of variants before filter was applied */
     @Override public int getBefore() {
-	return this.totalGenes;
+	return this.analysedGenes;
     }
     
     /** Get number of variants after filter was applied (this number will show the number of genes with 
      * HPO annotations. Other genes are not removed, however.*/
     @Override public int getAfter() {
-	return this.totalGenes - this.offTargetGenes;
-    }
-    
-    /**
-     * Set parameters of prioritizer if needed.
-     * 
-     * @param par
-     *            A String with the parameters (usually extracted from the cmd
-     *            line) for this prioiritizer)
-     */
-    @Override
-	public void setParameters(String par) {
-	/* -- Nothing needed now --- */
+	return this.analysedGenes - this.offTargetGenes;
     }
     
     /**

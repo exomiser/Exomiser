@@ -5,10 +5,10 @@
  */
 package de.charite.compbio.exomiser.cli.config;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
+import static de.charite.compbio.exomiser.core.model.ExomiserSettings.*;
 import de.charite.compbio.exomiser.cli.CommandLineParser;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.util.OutputFormat;
+import de.charite.compbio.exomiser.core.writer.OutputFormat;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.Option;
@@ -86,20 +86,32 @@ public class CommandLineOptionsConfig {
         options.addOption(new Option("F", MAX_FREQ_OPTION, true, "Maximum frequency threshold for variants to be retained. e.g. 100.00 will retain all variants. Default: 100.00")); // FrequencyFilter filter above or below threshold?
         options.addOption(new Option("R", GENETIC_INTERVAL_OPTION, true, "Restrict to region/interval (e.g., chr2:12345-67890)")); //IntervalFilter
         options.addOption(new Option("Q", MIN_QUAL_OPTION, true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
+        options.addOption(new Option("P", KEEP_NON_PATHOGENIC_MISSENSE_OPTION, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true"));//PathogenicityFilter 
         //no extra args required - these are Booleans 
-        options.addOption(new Option("P", INCLUDE_PATHOGENIC_OPTION, false, "Filter variants to include those with predicted pathogenicity. Default: false"));//PathogenicityFilter 
         options.addOption(new Option(null, REMOVE_DBSNP_OPTION, false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false"));
         //TODO: WTF is going on with PathogenicityFilter? It actualy needs boolean filterOutNonpathogenic, boolean removeSynonomousVariants
         //but these set (or don't set) things in the PathogenicityTriage - maybe we could have a MissensePathogenicityFilter too? 
-        options.addOption(new Option("O", "exclude-pathogenic-missense", false, "Filter variants to include those with predicted pathogenicity - MISSENSE MUTATIONS ONLY"));//PathogenicityFilter 
+//        options.addOption(new Option("O", "exclude-pathogenic-missense", false, "Filter variants to include those with predicted pathogenicity - MISSENSE MUTATIONS ONLY"));//PathogenicityFilter 
         options.addOption(new Option("T", REMOVE_OFF_TARGET_OPTION, false, "Keep off-target variants. These are defined as intergenic, intronic, upstream, downstream, synonymous or intronic ncRNA variants. Default: true")); //TargetFilter 
     }
 
     private void addPrioritiserOptions(Options options) {
         // Prioritiser options - may or may not be required depending on the priotitiser chosen.
         options.addOption(new Option(null, CANDIDATE_GENE_OPTION, true, "Known or suspected gene association e.g. FGFR2"));
-        options.addOption(new Option(null, HPO_IDS_OPTION, true, "Comma separated list of HPO IDs for the sample being sequenced e.g. HP:0000407,HP:0009830,HP:0002858"));
-        options.addOption(new Option("S", SEED_GENES_OPTION, true, "Comma separated list of seed genes (Entrez gene IDs) for random walk"));
+        options.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("HPO ID")
+                .withValueSeparator(',')
+                .withDescription("Comma separated list of HPO IDs for the sample being sequenced e.g. HP:0000407,HP:0009830,HP:0002858")
+                .withLongOpt(HPO_IDS_OPTION)
+                .create());
+        options.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("Entrez geneId")
+                .withValueSeparator(',')
+                .withDescription("Comma separated list of seed genes (Entrez gene IDs) for random walk")
+                .withLongOpt(SEED_GENES_OPTION)
+                .create("S"));
         //Prioritisers - Apart from the disease and inheritance prioritisers are all mutually exclusive.
         options.addOption(new Option("D", DISEASE_ID_OPTION, true, "OMIM ID for disease being sequenced. e.g. OMIM:101600")); //OMIMPriority
         options.addOption(new Option("I", MODE_OF_INHERITANCE_OPTION, true, "Filter variants for inheritance pattern (AR, AD, X)")); //InheritancePriority change to DOMINANT / RECESSIVE / X ? Inclusive or exclusive?
@@ -123,11 +135,11 @@ public class CommandLineOptionsConfig {
         options.addOption(new Option(null, NUM_GENES_OPTION, true, "Number of genes to show in output"));
         options.addOption(new Option("o", OUT_FILE_OPTION, true, "name of out file. Will default to vcf-filename-exomiser-results.html"));
         options.addOption(OptionBuilder
-                .hasArg()
+                .hasArgs()
                 .withArgName("type")
                 .withType(OutputFormat.class)
-                .withValueSeparator()
-                .withDescription("Specify format option HTML, VCF or TAB. Defaults to HTML if not specified. e.g. --out-format=TAB")
+                .withValueSeparator(',')
+                .withDescription("Comma separated list of format options: HTML, VCF or TAB. Defaults to HTML if not specified. e.g. --out-format=TAB or --out-format=TAB,HTML,VCF")
                 .withLongOpt(OUT_FORMAT_OPTION)
                 .create("f"));
 

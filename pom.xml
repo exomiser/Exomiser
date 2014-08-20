@@ -20,7 +20,18 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>     
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
     </properties>
-    
+ 
+    <repositories>
+        <repository>
+            <id>sonumina</id>
+            <url>http://sonumina.de/maven</url>
+        </repository>
+        <repository>
+            <id>compbio</id>
+            <url>http://compbio.charite.de/tl_files/maven</url>
+        </repository>
+    </repositories>
+       
     <dependencies>
         <!--DI framework -->
         <dependency>
@@ -45,6 +56,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>${spring-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.5</version>
             <scope>test</scope>
         </dependency>
         <!--Logging framework -->
@@ -77,6 +94,58 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.1.201405082137</version>
+                <configuration>
+                    <excludes>
+                        <!--		 Application starter 
+                        <exclude>ac/simons/biking2/Application.class</exclude>
+                         Configuration 
+                        <exclude>ac/simons/biking2/config/*</exclude>			-->
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>		
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule> 
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <!--yep, pretty low expectations here-->
+                                            <minimum>0.01</minimum>			
+                                        </limit>
+                                        <limit> 
+                                            <counter>COMPLEXITY</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <!--yep, pretty low expectations here-->
+                                            <minimum>0.01</minimum> 
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
     </build>
+    
 </project>

@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 import jannovar.common.Constants;
 
-import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,21 +101,6 @@ public class DynamicPhenodigmPriority implements Priority {
         return PriorityType.DYNAMIC_PHENODIGM_PRIORITY;
     } 
 
-     /** Sets the score threshold for variants.
-      * Note: Keeping this method for now, but I do not think we need
-      * parameters for Phenodigm prioritization?
-      * @param par A score threshold, e.g., a string such as "0.02"
-      * @deprecated use the setScoreThreshold method for setting the scoreThreshold
-      */
-     @Override
-     @Deprecated
-     public void setParameters(String par) {
-	 try {
-	     this.score_threshold  = Float.parseFloat(par);
-	 } catch (NumberFormatException e) {
-	     logger.error("Could not parse score parameter for MGI PhenoDigm filter: \"{}\"", par);
-	 }
-     }
  
      /** Sets the score threshold for variants.
       * Note: Keeping this method for now, but I do not think we need
@@ -139,14 +124,12 @@ public class DynamicPhenodigmPriority implements Priority {
     
     public void prioritizeGenes(List<Gene> gene_list)
     {
-	Iterator<Gene> it = gene_list.iterator();
+	
 	this.found_data_for_mgi_phenodigm=0;
 	this.n_before = gene_list.size();
-	while (it.hasNext()) {
-	    Gene g = it.next();
-		MGIPhenodigmRelevanceScore rscore = retrieve_score_data(g);
-		g.addRelevanceScore(rscore, PHENODIGM_MGI_PRIORITY);
-	   
+	for (Gene g : gene_list) {
+            MGIPhenodigmPriorityScore rscore = retrieve_score_data(g);
+            g.addPriorityScore(rscore, PHENODIGM_MGI_PRIORITY);          
 	}
 	this.n_after = gene_list.size();
 	String s = 
@@ -159,7 +142,7 @@ public class DynamicPhenodigmPriority implements Priority {
      * @param g A gene whose relevance score is to be retrieved from the SQL database by this function.
      * @return result of prioritization (represents a non-negative score)
      */
-  private MGIPhenodigmRelevanceScore retrieve_score_data(Gene g) {
+  private MGIPhenodigmPriorityScore retrieve_score_data(Gene g) {
       float MGI_SCORE = Constants.UNINITIALIZED_FLOAT;
       String MGI_GENE_ID = null;
       String MGI_GENE=null;
@@ -347,7 +330,7 @@ public class DynamicPhenodigmPriority implements Priority {
       catch(SQLException e) {
 	logger.error("Error executing Phenodigm query: ", e);
       }
-      MGIPhenodigmRelevanceScore rscore = new MGIPhenodigmRelevanceScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
+      MGIPhenodigmPriorityScore rscore = new MGIPhenodigmPriorityScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
       return rscore;
   }
 

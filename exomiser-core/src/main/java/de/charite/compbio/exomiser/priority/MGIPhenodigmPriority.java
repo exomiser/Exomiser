@@ -2,10 +2,7 @@ package de.charite.compbio.exomiser.priority;
 
 
 
-import de.charite.compbio.exomiser.exception.ExomizerException;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exception.ExomizerSQLException;
-import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.core.model.Gene;
 import jannovar.common.Constants;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -87,21 +84,6 @@ public class MGIPhenodigmPriority implements Priority {
 
     /** Flag to output results of filtering against PhenoDigm data. */
     @Override public PriorityType getPriorityType() { return PriorityType.PHENODIGM_MGI_PRIORITY; } 
-
-     /** Sets the score threshold for variants.
-      * Note: Keeping this method for now, but I do not think we need
-      * parameters for Phenodigm prioritization?
-      * @param par A score threshold, e.g., a string such as "0.02"
-      * @throws exomizer.exception.ExomizerInitializationException
-      */
-     @Override 
-    public void setParameters(String par) {
-	 try {
-	     this.score_threshold  = Float.parseFloat(par);
-	 } catch (NumberFormatException e) {
-	     logger.error("Could not parse score parameter for MGI PhenoDigm filter: \"{}\"", par);
-	 }
-     }
  
     /**
      * @return list of messages representing process, result, and if any, errors of score filtering. 
@@ -114,29 +96,23 @@ public class MGIPhenodigmPriority implements Priority {
 
    
     
-    public void prioritizeGenes(List<Gene> gene_list)
-    {
-	Iterator<Gene> it = gene_list.iterator();
-	this.found_data_for_mgi_phenodigm=0;
-	this.n_before = gene_list.size();
-	while (it.hasNext()) {
-	    Gene g = it.next();
-		MGIPhenodigmRelevanceScore rscore = retrieveScoreData(g);
-		g.addRelevanceScore(rscore, PriorityType.PHENODIGM_MGI_PRIORITY);
-	    
-	}
-	this.n_after = gene_list.size();
-	String s = 
-	    String.format("Data analysed for %d genes using Mouse PhenoDigm",
-			  gene_list.size());
-	this.messages.add(s);
-   }
+    @Override
+    public void prioritizeGenes(List<Gene> geneList) {
+        this.found_data_for_mgi_phenodigm = 0;
+        int analysedGenes = geneList.size();
+        for (Gene gene : geneList) {          
+                MGIPhenodigmPriorityScore rscore = retrieveScoreData(gene);
+                gene.addPriorityScore(rscore, PriorityType.PHENODIGM_MGI_PRIORITY);   
+        }
+        String s = String.format("Data analysed for %d genes using Mouse PhenoDigm", analysedGenes);
+        this.messages.add(s);
+    }
 
     /** 
      * @param g A gene whose relevance score is to be retrieved from the SQL database by this function.
      * @return result of prioritization (represents a non-negative score)
      */
-  private MGIPhenodigmRelevanceScore retrieveScoreData(Gene g) {
+  private MGIPhenodigmPriorityScore retrieveScoreData(Gene g) {
       float MGI_SCORE = 0;
       String MGI_GENE_ID = null;
       String MGI_GENE=null;
@@ -176,7 +152,7 @@ public class MGIPhenodigmPriority implements Priority {
       catch(SQLException e) {
 	  logger.error("Error executing Phenodigm query: ", e);
       }
-      MGIPhenodigmRelevanceScore rscore = new MGIPhenodigmRelevanceScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
+      MGIPhenodigmPriorityScore rscore = new MGIPhenodigmPriorityScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
       return rscore;
   }
 

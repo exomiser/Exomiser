@@ -4,15 +4,13 @@ import java.io.Writer;
 import java.io.IOException; 
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.filter.FilterType;
-import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.VariantScore;
+import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.GeneScore;
+import de.charite.compbio.exomiser.priority.PriorityScore;
 
 
 /**
@@ -72,46 +70,17 @@ public class HTMLTableCRE extends HTMLTable {
 	}
     }
 
-
-        /**
-     * @return A string intended to display information about diseases associated with the
-     * gene on the ExomeWalker HTML page
-     */
-    private String getOmimText(Gene gene) {
-	Map<PriorityType, GeneScore> relevanceScoreMap = gene.getRelevanceMap();
-	GeneScore mim = relevanceScoreMap.get(PriorityType.OMIM_PRIORITY);
-	List<String> lst = mim.getFilterResultList();
-	if (mim == null) {
-	    return "No known human Mendelian disease";
-	} else {
-	    StringBuilder sb = new StringBuilder();
-	    sb.append(String.format("Diseases associated with %s:<br/>\n",gene.getGeneSymbol()));
-	    for (String a : lst) {
-		sb.append(String.format("%s<br/>\n",a));
-	    }
-	    return sb.toString();
-	}
-    }
-
-    
-
-
-
-
     /**
      * This function writes an HTML row for a single variant that is not the
      * first variant to be show for the current gene (the first variant is
      * written by the function {@link #writeVariantAndGeneRow}).
+     *
      * @param var The evaluation object for the variant
      * @param out A file handle to write to
      */
     protected void writeVariant(VariantEvaluation var,  Writer out) throws IOException {
-	String ucsc = getUCSCBrowswerURL(var);
+	String ucsc = getUCSCBrowserURL(var);
 
-	// Each variant now has exactly the same number of VariantScore objects with the results of filtering.
-	Map<FilterType,VariantScore> triageMap = var.getVariantScoreMap();
-	VariantScore freq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	VariantScore path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	out.write("<td>");  
 	/* Output the variant (chromosomal notation) */
 	String rep = getCRERepresentativeVariant(var);
@@ -119,7 +88,6 @@ public class HTMLTableCRE extends HTMLTable {
 	out.write("<b>" + var.getVariantType() + "</b></br>\n");
 	/* Output the genotype */
 	List<String> genotypeList = var.getGenotypeList();
-	String gtype = null;
 	if (genotypeList.size() == 1) {
 	    out.write( String.format("Genotype: [<b>%s</b>] <br/>",genotypeList.get(0)));
 	} else {
@@ -128,9 +96,8 @@ public class HTMLTableCRE extends HTMLTable {
 	}
 	/* Output the UCSC URL */
 	out.write( ucsc + "<br/>\n" );
-	VariantScore qual = var.getVariantScoreMap().get(FilterType.QUALITY_FILTER);
-	if (qual!=null) {
-	    List<String> lst = qual.getFilterResultList();
+	if (var.passedFilter(FilterType.QUALITY_FILTER)) {
+	    List<String> lst = qualityResultWriter.getFilterResultList(var);
 	    out.write("Phred variant quality: " + lst.get(0) + "<br/>\n");
 	}
 	String tooltip = getTranscriptListForToolTip(var);
@@ -142,7 +109,7 @@ public class HTMLTableCRE extends HTMLTable {
 	    out.write(mut + "<br/>\n");
 	}
 	out.write("</td>\n");
-	writeVariantCREScoreCell(path,freq,var,out);
+	writeVariantCREScoreCell(var,out);
 
     } 
 
@@ -168,20 +135,22 @@ public class HTMLTableCRE extends HTMLTable {
      * @param freq An object containing the frequency evaluation
      * @param out A file handle to the HTML file being written
      */
-    protected void writeVariantCREScoreCell(VariantScore path,VariantScore freq, VariantEvaluation var, Writer out) throws IOException
+    protected void writeVariantCREScoreCell(VariantEvaluation var, Writer out) throws IOException
     {
 	out.write("<td>");
 	out.write("<i>Pathogenicity:</i><br/>\n");
 
-	if (path==null)
-	    out.write("n/a<br/>\n");
-	else
-	    out.write(path.getFilterResultSummary());
+	if (var.passedFilter(FilterType.PATHOGENICITY_FILTER)) {
+            out.write(pathResultsWriter.getFilterResultSummary(var));
+        } else {
+            out.write("n/a<br/>\n");
+        }
 	out.write("<i>Frequency</i><br/>\n");
-	if (freq==null)
-	    out.write("n/a<br/>\n");
-	else
-	    out.write(freq.getFilterResultSummary());
+	if (var.passedFilter(FilterType.FREQUENCY_FILTER)) {
+            out.write(frequencyResultWriter.getFilterResultSummary(var));
+        } else {
+            out.write("n/a<br/>\n");
+        }
 	out.write("Variant read depth: " + var.getVariantReadDepth() + "<br/>\n");
 	if (var.isSNV()) {
 	    String mt = mutationTasterLink(var);
@@ -236,17 +205,17 @@ public class HTMLTableCRE extends HTMLTable {
 	out.write(String.format("<tr>\n"));
 	writeVariant(ve,out);
 	
-	// Each variant now has exactly the same number of VariantScore objects with the results of filtering.
-	//HashMap<FilterType,VariantScore> triageMap = ve.getTriageMap();
+	// Each variant now has exactly the same number of FilterScore objects with the results of filtering.
+	//HashMap<FilterType,FilterScore> triageMap = ve.getTriageMap();
 	
 	//Triage freq = triageMap.get(FilterType.FREQUENCY_FILTER);
 	//Triage path = triageMap.get(FilterType.PATHOGENICITY_FILTER);
 	//writeVariantScoreCell(path,freq,out);
 	
 
-	Map<PriorityType, GeneScore> relevanceMap= gen.getRelevanceMap();
-	GeneScore phenomizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
-	GeneScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+	Map<PriorityType, PriorityScore> relevanceMap= gen.getPriorityScoreMap();
+	PriorityScore phenomizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
+	PriorityScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\" valign=\"top\">",n_variants)); 
 	if (phenomizer == null && mim == null) {
@@ -279,8 +248,4 @@ public class HTMLTableCRE extends HTMLTable {
 	out.write("</tr>\n");
 	this.currentRow = 0;
     }
-
-
-
-
 }

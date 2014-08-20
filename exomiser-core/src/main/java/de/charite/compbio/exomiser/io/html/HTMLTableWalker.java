@@ -4,18 +4,15 @@ import java.io.Writer;
 import java.io.IOException; 
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Iterator;
 
+import de.charite.compbio.exomiser.priority.PriorityScore;
 import jannovar.pedigree.Pedigree;
 
-import de.charite.compbio.exomiser.filter.FilterType;
-import de.charite.compbio.exomiser.exome.Gene;
-import de.charite.compbio.exomiser.exome.VariantEvaluation;
-import de.charite.compbio.exomiser.filter.VariantScore;
+import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.GeneScore;
-
 
 
 /**
@@ -67,14 +64,13 @@ public class HTMLTableWalker extends HTMLTable {
 	out.write("</tr>\n");
     }
 
-
     /**
      * @return A string intended to display information about diseases associated with the
      * gene on the ExomeWalker HTML page
      */
     private String getOmimText(Gene gene) {
-	Map<PriorityType,GeneScore> relevanceMap = gene.getRelevanceMap();
-	GeneScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
+	Map<PriorityType, PriorityScore> relevanceScoreMap = gene.getPriorityScoreMap();
+	PriorityScore mim = relevanceScoreMap.get(PriorityType.OMIM_PRIORITY);
 	if (mim == null) {
 	    return "No known human Mendelian disease";
 	} else {
@@ -130,7 +126,7 @@ public class HTMLTableWalker extends HTMLTable {
 	    String chrvar = varev.getChromosomalVariant();
 	    String annot = varev.getRepresentativeAnnotation(); 
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 
-	    String ucscLink = getUCSCBrowswerURL(varev);
+	    String ucscLink = getUCSCBrowserURL(varev);
 	    String pathogenicity = getPathogenicityForToolTip(varev);
 	    out.write(String.format("<tr><td>%s<br/> %s<br/> %s</td>",chrvar,annot,pathogenicity));
 	    out.write(String.format("<td>%s",ucscLink));
@@ -152,15 +148,15 @@ public class HTMLTableWalker extends HTMLTable {
      * @param out File handle to write to
      * @param n A running number for the current gene.
      */
-    @Override public void writeGeneTable(Gene gene, Writer out, int n) throws IOException {
+    @Override 
+    public void writeGeneTable(Gene gene, Writer out, int n) throws IOException {
 	int n_variants = gene.getNumberOfVariants(); /* Number of variants associated with this gene */
-	String entrez = getEntrezURL(gene);
-	double priorityScore = gene.getPriorityScore();
 	double filterScore = gene.getFilterScore();
 	double combined = gene.getCombinedScore();
+	double priorityScore = gene.getPriorityScore();
 	String scoreString = String.format("Random walk score: %.3f<br/>variant score %.3f&nbsp;&nbsp;<br/>total score: %.3f",
 					   priorityScore,filterScore,combined);
-
+	String entrez = getEntrezURL(gene);
 	String omim = getOmimText(gene);
 	if (n_variants == 0) { 
 	    return; /* this should never happen */ 
@@ -179,7 +175,7 @@ public class HTMLTableWalker extends HTMLTable {
 	    String chrvar = varev.getChromosomalVariant();
 	    String annot = varev.getRepresentativeAnnotation(); 
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 
-	    String ucscLink = getUCSCBrowswerURL(varev);
+	    String ucscLink = getUCSCBrowserURL(varev);
 	    String pathogenicity = getPathogenicityForToolTip(varev);
 	    out.write(String.format("<tr><td>%s<br/> %s<br/> %s</td>",chrvar,annot,pathogenicity));
 	    out.write(String.format("<td>%s",ucscLink));
@@ -197,17 +193,13 @@ public class HTMLTableWalker extends HTMLTable {
 
 
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
-	Map<FilterType, VariantScore> triageMap = varev.getVariantScoreMap();
-	VariantScore frq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	VariantScore pth = triageMap.get(FilterType.PATHOGENICITY_FILTER);
-	float score = varev.getFilterScore();
 	StringBuilder sb = new StringBuilder();
-	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<span>",score)); 
-	if (pth != null) {
-	    sb.append(pth. getFilterResultSummary());
+	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<span>", varev.getFilterScore())); 
+	if (varev.passedFilter(FilterType.PATHOGENICITY_FILTER)) {
+	    sb.append(pathResultsWriter.getFilterResultSummary(varev));
 	}
-	if (frq != null) {
-	    sb.append(frq.getFilterResultSummary());
+	if (varev.passedFilter(FilterType.FREQUENCY_FILTER)) {
+	    sb.append(frequencyResultWriter.getFilterResultSummary(varev));
 	}
 	sb.append("</span></p>\n");
 	return sb.toString();
@@ -231,10 +223,4 @@ public class HTMLTableWalker extends HTMLTable {
 	String anchor = String.format("<a href=\"%s\" target=\"_new%s\">View %s in UCSC Browser</a>",url,kg,kg);
 	return anchor;
     }
-
-
-   
-
-
 }
-/* eof */

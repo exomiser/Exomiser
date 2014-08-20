@@ -2,15 +2,13 @@ package de.charite.compbio.exomiser.priority;
 
 import java.util.List;
 
-import de.charite.compbio.exomiser.filter.FilterType;
-import de.charite.compbio.exomiser.exception.ExomizerInitializationException;
-import de.charite.compbio.exomiser.exome.Gene;
+import de.charite.compbio.exomiser.core.model.Gene;
 import java.sql.Connection;
 
 /**
  * This interface is implemented by classes that perform prioritization of genes
- * (i.e., {@link exomizer.exome.Gene Gene} objects). In contrast to the classes
- * that implement {@code exomizer.filter.Filter}, which remove variants from
+ * (i.e., {@link de.charite.compbio.exomiser.exome.Gene Gene} objects). In contrast to the classes
+ * that implement {@code de.charite.compbio.exomiser.filter.Filter}, which remove variants from
  * further consideration (e.g., because they are not predicted to be at all
  * pathogenic), FilterType is inteded to work on genes (predict the relevance of
  * the gene to the disease, without taking the nature or pathogenicity of any
@@ -22,20 +20,20 @@ import java.sql.Connection;
  *
  * @author Peter N Robinson
  * @version 0.13 (13 May, 2013).
- * @see exomizer.filter.Filter
+ * @see de.charite.compbio.exomiser.filter.Filter
  */
 public interface Priority {
 
     /**
      * Apply a prioritization algorithm to a list of
-     * {@link exomizer.exome.Gene Gene} objects. This will have the side effect
-     * of setting the Class variable {@link exomizer.exome.Gene#priorityScore}
+     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects. This will have the side effect
+     * of setting the Class variable {@link de.charite.compbio.exomiser.exome.Gene#priorityScore}
      * correspondingly. This, together with the filter scores of the {@link jannovar.exome.Variant Variant}
-     * {@link exomizer.exome.Gene Gene} objects can then be used to sort the
-     * {@link exomizer.exome.Gene Gene} objects.
+     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects can then be used to sort the
+     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects.
      * <p>
      * Note that this may result in the removal of
-     * {@link exomizer.exome.Gene Gene} objects if they do not conform to the
+     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects if they do not conform to the
      * Prioritizer.
      *
      * @param geneList
@@ -53,18 +51,6 @@ public interface Priority {
      */
     public String getPriorityName();
 
-    /**
-     * Set parameters of prioritizer if needed.
-     *
-     * @param par A String with the parameters (usually extracted from the cmd
-     * line) for this prioiritizer)
-     * 
-     * @deprecated Either use the constructor or a setter method with a type. 
-     * This method is horribly abused to pass in the string representations of 
-     * int, float, lists, paths and all manner of other types. 
-     */
-    @Deprecated
-    public void setParameters(String par);
 
     /**
      * Should this prioritizer be displayed in the HTML page?
