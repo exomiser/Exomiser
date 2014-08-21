@@ -134,6 +134,13 @@ public class CommandLineParser {
                 break;
             case PRIORITISER_OPTION:
                 settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(value));
+                if (PriorityType.valueOfCommandLine(value) == PriorityType.NOT_SET) {
+                    logger.error("Invalid prioritiser option: {} ", value);
+                    logger.error("Please choose one of:");
+                    for (PriorityType priorityType : PriorityType.values()) {
+                        logger.error("\t{}", priorityType.getCommandLineValue());                 
+                    }
+                }
                 break;
 
             //FILTER OPTIONS

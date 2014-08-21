@@ -133,8 +133,7 @@ public class Main {
             Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);
             if (commandLine.hasOption("help")) {
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("java -jar exomizer-cli [...]", options);
+                printHelp();
             }
             //check the args for a batch file first as this option is otherwise ignored 
             if (commandLine.hasOption("batch-file")) {
@@ -145,6 +144,7 @@ public class Main {
                 settingsBuilders.add(commandLineOptionsParser.parseCommandLine(commandLine));
             }
         } catch (ParseException ex) {
+            printHelp();
             logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);    
         }
        
@@ -162,5 +162,10 @@ public class Main {
         }
         
         return sampleSettings;
+    }
+
+    private static void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("java -jar exomizer-cli [...]", options);
     }
 }
