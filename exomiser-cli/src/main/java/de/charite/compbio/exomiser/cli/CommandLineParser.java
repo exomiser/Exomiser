@@ -12,6 +12,7 @@ import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.core.writer.OutputFormat;
 import jannovar.common.ModeOfInheritance;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -19,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
@@ -26,12 +28,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,27 +54,7 @@ public class CommandLineParser {
         this.options = options;
     }
 
-    /**
-     * Parse the command line.
-     *
-     * @param args the list of arguments from the command line
-     * @return an ExomiserSettings object built from the command line.
-     */
-    public SettingsBuilder parseCommandLineArguments(String[] args) {
-
-        Parser parser = new GnuParser();
-        CommandLine cmd;
-        try {
-            cmd = parser.parse(options, args);
-            return parseCommandLine(cmd);
-        } catch (ParseException ex) {
-            logger.error("Unable to parse command line argumnets. Please check you have typed the parameters correctly.", ex);
-        }
-
-        return null;
-    }
-
-    private SettingsBuilder parseCommandLine(CommandLine commandLine) {
+    public SettingsBuilder parseCommandLine(CommandLine commandLine) {
 
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
 
@@ -94,17 +73,36 @@ public class CommandLineParser {
 
     }
 
+    public Collection<SettingsBuilder> parseBatchFile(Path batchFilePath) {
+        
+        List<SettingsBuilder> settingsBuilders = new ArrayList<>();
+
+        logger.info("Parsing settings from batch file {}", batchFilePath);
+        try (BufferedReader reader = Files.newBufferedReader(batchFilePath, Charset.defaultCharset())) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Path settingsFile = Paths.get(line);
+                SettingsBuilder settingsBuilder = parseSettingsFile(settingsFile);
+                settingsBuilders.add(settingsBuilder);
+            }
+
+        } catch (IOException ex) {
+            logger.error("Unable to parse batch file {}", batchFilePath, ex);
+        }
+        return settingsBuilders;
+    }
+
     /**
      * Parses the settings file and sets the values from this into a settings
      * object.
      *
-     * @param value
-     * @param settingsBuilder
+     * @param settingsFile
+     * @return
      */
-    private SettingsBuilder parseSettingsFile(Path settingsFile) {
+    public SettingsBuilder parseSettingsFile(Path settingsFile) {
 
         SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
-        
+
         try (Reader reader = Files.newBufferedReader(settingsFile, Charset.defaultCharset())) {
             Properties settingsProperties = new Properties();
 
@@ -119,13 +117,13 @@ public class CommandLineParser {
         }
         return settingsBuilder;
     }
-    
+
     private void setBuilderValue(String key, String[] values, SettingsBuilder settingsBuilder) throws NumberFormatException {
         String value = "";
         if (values != null) {
             value = values[0];
         }
-        
+
         switch (key) {
             //REQUIRED
             case VCF_OPTION:
@@ -137,8 +135,8 @@ public class CommandLineParser {
             case PRIORITISER_OPTION:
                 settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(value));
                 break;
-                
-                //FILTER OPTIONS
+
+            //FILTER OPTIONS
             case MAX_FREQ_OPTION:
                 settingsBuilder.maximumFrequency(Float.parseFloat(value));
                 break;
@@ -160,7 +158,7 @@ public class CommandLineParser {
                 //default is false
                 if (value == null || value.isEmpty()) {
                     //the command line is just a switch
-                    settingsBuilder.removeDbSnp(true);                
+                    settingsBuilder.removeDbSnp(true);
                 } else {
                     //but the json/properties file specify true or false
                     settingsBuilder.removeDbSnp(Boolean.parseBoolean(value));
@@ -174,8 +172,8 @@ public class CommandLineParser {
                     settingsBuilder.removeOffTargetVariants(Boolean.parseBoolean(value));
                 }
                 break;
-                
-                //PRIORITISER OPTIONS
+
+            //PRIORITISER OPTIONS
             case CANDIDATE_GENE_OPTION:
                 settingsBuilder.candidateGene(value);
                 break;
@@ -191,8 +189,8 @@ public class CommandLineParser {
             case MODE_OF_INHERITANCE_OPTION:
                 settingsBuilder.modeOfInheritance(parseInheritanceMode(value));
                 break;
-                
-                //OUTPUT OPTIONS
+
+            //OUTPUT OPTIONS
             case NUM_GENES_OPTION:
                 settingsBuilder.numberOfGenesToShow(Integer.parseInt(value));
                 break;
@@ -214,9 +212,14 @@ public class CommandLineParser {
     }
 
     private List<String> parseHpoStringList(String[] values) {
-        logger.info("Parsing HPO values from: {}", values);
+        logger.debug("Parsing HPO values from: {}", values);
 
         List<String> hpoList = new ArrayList<>();
+
+        if (values.length == 0) {
+            return hpoList;
+        }
+
         Pattern hpoPattern = Pattern.compile("HP:[0-9]{7}");
         //I've gone for a more verbose splitting and individual token parsing 
         //instead of doing while hpoMatcher.matches(); hpoList.add(hpoMatcher.group()) 
@@ -261,7 +264,7 @@ public class CommandLineParser {
     private Set<OutputFormat> parseOutputFormat(String[] values) {
         List<OutputFormat> outputFormats = new ArrayList<>();
         logger.debug("Parsing output options: {}", values);
-    
+
         for (String outputFormatString : values) {
             switch (outputFormatString.trim()) {
                 case "HTML":
@@ -290,6 +293,10 @@ public class CommandLineParser {
 
         List<Integer> returnList = new ArrayList<>();
 
+        if (values.length == 0) {
+            return returnList;
+        }
+
         Pattern entrezGeneIdPattern = Pattern.compile("[0-9]+");
 
         for (String string : values) {
@@ -304,5 +311,5 @@ public class CommandLineParser {
 
         return returnList;
     }
-    
+
 }

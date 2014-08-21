@@ -79,4 +79,12 @@ public class CommandLineOptionsConfigTest {
         assertThat(option.hasArgs(), is(true));
         assertThat(option.getValueSeparator(), equalTo(','));
     }
+    
+    @Test
+    public void hasBatchModeOption() {
+        String longOption = "batch-file";
+        Option option = options.getOption(longOption);
+        assertThat(option.hasArg(), is(true));
+        assertThat(option.getLongOpt(), equalTo(longOption));
+    }
 }

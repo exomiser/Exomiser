@@ -20,13 +20,15 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -40,73 +42,125 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
+    private static AnnotationConfigApplicationContext applicationContext;
+
+    private static Options options;
+    private static CommandLineParser commandLineOptionsParser;
+
+    private static String buildVersion;
+    private static String buildTimestamp;
+
     public static void main(String[] args) {
+
+        setup();
+
+        logger.info("Running Exomiser build version {}", buildVersion);
+
+        List<ExomiserSettings> sampleSettings = parseArgs(args);
+
+        logger.info("Running exome analyis on {} samples:", sampleSettings.size());
+        for (ExomiserSettings settings : sampleSettings) {
+            runAnalysis(settings);
+        }
+
+    }
+
+    private static void setup() {
+        applicationContext = setUpApplicationContext();
+        options = applicationContext.getBean(Options.class);
+        commandLineOptionsParser = applicationContext.getBean(CommandLineParser.class);
+        buildVersion = (String) applicationContext.getBean("buildVersion");
+        buildTimestamp = (String) applicationContext.getBean("buildTimestamp");
+    }
+
+    private static AnnotationConfigApplicationContext setUpApplicationContext() {
         //Get Spring started - this contains the configuration of the application
         CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
-
         Path jarFilePath = null;
         try {
             jarFilePath = Paths.get(codeSource.getLocation().toURI()).getParent();
         } catch (URISyntaxException ex) {
             logger.error("Unable to find jar file", ex);
         }
-        //this is set here so that Spring can load 
-        System.setProperty("jarFilePath", jarFilePath.toString());        
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
-//        applicationContext.register();
-//        applicationContext.register(MainConfig.class);
+        //this is set here so that Spring can load
+        System.setProperty("jarFilePath", jarFilePath.toString());
+        applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
         Path defaultOutputDir = jarFilePath.resolve(ExomiserSettings.DEFAULT_OUTPUT_DIR);
         try {
             if (!Files.exists(defaultOutputDir)) {
-                Files.createDirectory(defaultOutputDir);            
+                Files.createDirectory(defaultOutputDir);
             }
         } catch (IOException ex) {
-            logger.error("Unable to create default output directory for results {}",defaultOutputDir , ex);
+            logger.error("Unable to create default output directory for results {}", defaultOutputDir, ex);
         }
-        
-        logger.info("Running Exomiser build version {}", applicationContext.getBean("buildVersion"));
-        
-        Options options = applicationContext.getBean(Options.class);
-        CommandLineParser commandLineOptionsParser = applicationContext.getBean(CommandLineParser.class);
-        
-        //There is no other input other than this settings object so most of what comes next could be wrapped back up into an exomiser class 
-        SettingsBuilder settingsBuilder = commandLineOptionsParser.parseCommandLineArguments(args);
-        settingsBuilder.buildVersion((String) applicationContext.getBean("buildVersion"));
-        settingsBuilder.buildTimestamp((String) applicationContext.getBean("buildTimestamp"));
-        
-        ExomiserSettings exomiserSettings = settingsBuilder.build();
-        //
-        if (!exomiserSettings.isValid()) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("java -jar exomizer-cli [...]", options);
-            System.exit(1);
-        }
+        return applicationContext;
+    }
 
+    private static void runAnalysis(ExomiserSettings exomiserSettings) {
         //3) Get the VCF file path (this creates a List of Variants)
         Path vcfFile = exomiserSettings.getVcfPath();
+        logger.info("Running analysis for {}", vcfFile);
         //4) Get the PED file path if the VCF file has multiple samples
         //this can be null for single sample VCF files or refer to an actual file
         Path pedigreeFile = exomiserSettings.getPedPath();
-        
-        logger.info("CREATING AND ANNOTATING SAMPLE DATA");
+
+        logger.info("Creating and annotating sample data");
         SampleDataFactory sampleDataFactory = (SampleDataFactory) applicationContext.getBean("sampleDataFactory");
         //now we have the sample data read in we can create a SampleData object to hold on to all the relvant information
         SampleData sampleData = sampleDataFactory.createSampleData(vcfFile, pedigreeFile);
-        
+
         //run the analysis....
         Exomiser exomiser = (Exomiser) applicationContext.getBean("exomiser");
         exomiser.analyse(sampleData, exomiserSettings);
-        
-        logger.info("OUTPUTTING RESULTS");
-        
+
+        logger.info("Writing results");
+
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
             ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outFormat);
             //TODO: remove priorityList - this should become another report
             List<Priority> priorityList = new ArrayList<>();
             resultsWriter.writeFile(sampleData, exomiserSettings, priorityList);
         }
-        
-        logger.info("FINISHED EXOMISER");
 
+        logger.info("Finished analysis");
+    }
+
+    private static List<ExomiserSettings> parseArgs(String[] args) {
+
+        List<SettingsBuilder> settingsBuilders = new ArrayList<>();
+
+        try {
+            Parser parser = new GnuParser();
+            CommandLine commandLine = parser.parse(options, args);
+            if (commandLine.hasOption("help")) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("java -jar exomizer-cli [...]", options);
+            }
+            //check the args for a batch file first as this option is otherwise ignored 
+            if (commandLine.hasOption("batch-file")) {
+                Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
+                settingsBuilders.addAll(commandLineOptionsParser.parseBatchFile(batchFilePath));
+            } else {
+                //make a single SettingsBuilder
+                settingsBuilders.add(commandLineOptionsParser.parseCommandLine(commandLine));
+            }
+        } catch (ParseException ex) {
+            logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);    
+        }
+       
+        List<ExomiserSettings> sampleSettings = new ArrayList<>();
+
+        for (SettingsBuilder settingsBuilder : settingsBuilders) {
+            settingsBuilder.buildVersion(buildVersion);
+            settingsBuilder.buildTimestamp(buildTimestamp);
+
+            ExomiserSettings exomiserSettings = settingsBuilder.build();
+
+            if (exomiserSettings.isValid()) {
+                sampleSettings.add(exomiserSettings);
+            }
+        }
+        
+        return sampleSettings;
     }
 }

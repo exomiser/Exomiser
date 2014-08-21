@@ -37,6 +37,7 @@ public class CommandLineOptionsConfig {
 
         addHelpOptions(options);
         addSettingsFileOptions(options);
+        addBatchFileOptions(options);
         addSampleDataOptions(options);
         addFilterOptions(options);
         addPrioritiserOptions(options);
@@ -56,6 +57,16 @@ public class CommandLineOptionsConfig {
                 .hasArg()
                 .withDescription("Path to settings file. Any settings specified in the file will be overidden by parameters added on the command-line.")
                 .withLongOpt(SETTINGS_FILE_OPTION)
+                .create()
+        );
+    }
+    
+    private void addBatchFileOptions(Options options) {
+        options.addOption(OptionBuilder
+                .withArgName("file")
+                .hasArg()
+                .withDescription("Path to batch file. This should contain a list of fully qualified path names for the settings files you wish to process. There should be one file name on each line.")
+                .withLongOpt("batch-file")
                 .create()
         );
     }
