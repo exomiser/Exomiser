@@ -29,7 +29,7 @@
             <directory>${project.build.directory}/resources</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <!--<include>jdbc.properties</include>-->
+                <include>test.settings</include>
                 <include>application.properties</include>
                 <include>example.settings</include>
                 <include>log4j2.xml</include>
