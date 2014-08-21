@@ -108,7 +108,7 @@ public class MainConfig {
     public Path dataPath() {
         Path dataPath = jarFilePath().resolve(env.getProperty("dataDir"));
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
-
+        
         return dataPath;
     }
 

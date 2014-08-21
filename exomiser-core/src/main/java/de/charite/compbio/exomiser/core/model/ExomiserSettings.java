@@ -99,6 +99,7 @@ public class ExomiserSettings {
     public static final String OUT_FILE_OPTION = "out-file";
     public static final String OUT_FORMAT_OPTION = "out-format";
 
+    public static final String DEFAULT_OUTPUT_DIR = "results";
     //OUTPUT variables
     //num-genes (command-line was: ngenes, refered to variable: numberOfGenesToShow)
     private final int numberOfGenesToShow;
@@ -282,12 +283,12 @@ public class ExomiserSettings {
      * @param vcfFilePath
      */
     private String generateDefaultOutputFileName(Path vcfFilePath, String buildVersion) {
-        String outputFileName = "";
+        String outputFileName;
         String vcfFilenameWithoutExtension = FilenameUtils.removeExtension(vcfFilePath.toFile().getName());
         if (buildVersion.isEmpty()) {
-            outputFileName = String.format("results/%s-exomiser-results", vcfFilenameWithoutExtension);
+            outputFileName = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension);
         } else {
-            outputFileName = String.format("results/%s-exomiser-%s-results", vcfFilenameWithoutExtension, buildVersion);   
+            outputFileName = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension, buildVersion);   
         }
         logger.debug("Output filename set to: {}", outputFileName);
         return outputFileName;

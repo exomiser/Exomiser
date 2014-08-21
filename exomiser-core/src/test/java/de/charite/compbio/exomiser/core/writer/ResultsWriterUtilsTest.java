@@ -6,7 +6,9 @@
 package de.charite.compbio.exomiser.core.writer;
 
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.model.ExomiserSettings.DEFAULT_OUTPUT_DIR;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
@@ -34,7 +36,7 @@ public class ResultsWriterUtilsTest {
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.TSV;
         ExomiserSettings settings = settingsbuilder.build();
-        String expResult = String.format("results/wibble-exomiser-results.%s", testedFormat.getFileExtension());
+        String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
         assertThat(result, equalTo(expResult));
     }
@@ -43,7 +45,7 @@ public class ResultsWriterUtilsTest {
     public void testThatSpecifiedVcfFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.VCF;
         ExomiserSettings settings = settingsbuilder.build();
-        String expResult = String.format("results/wibble-exomiser-results.%s", testedFormat.getFileExtension());
+        String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
         assertThat(result, equalTo(expResult));
     }
@@ -63,7 +65,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.HTML;
         settingsbuilder.buildVersion("2.1.0");
         ExomiserSettings settings = settingsbuilder.build();
-        String expResult = "results/wibble-exomiser-2.1.0-results.html";
+        String expResult = DEFAULT_OUTPUT_DIR + "/wibble-exomiser-2.1.0-results.html";
         String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
         assertThat(result, equalTo(expResult));
     }

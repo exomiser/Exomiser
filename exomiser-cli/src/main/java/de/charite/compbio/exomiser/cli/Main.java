@@ -6,21 +6,25 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.model.Exomiser;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.core.writer.OutputFormat;
 import de.charite.compbio.exomiser.core.writer.ResultsWriter;
 import de.charite.compbio.exomiser.core.writer.ResultsWriterFactory;
+import de.charite.compbio.exomiser.priority.Priority;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.slf4j.Logger;
@@ -51,11 +55,20 @@ public class Main {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
 //        applicationContext.register();
 //        applicationContext.register(MainConfig.class);
+        Path defaultOutputDir = jarFilePath.resolve(ExomiserSettings.DEFAULT_OUTPUT_DIR);
+        try {
+            if (!Files.exists(defaultOutputDir)) {
+                Files.createDirectory(defaultOutputDir);            
+            }
+        } catch (IOException ex) {
+            logger.error("Unable to create default output directory for results {}",defaultOutputDir , ex);
+        }
         
         logger.info("Running Exomiser build version {}", applicationContext.getBean("buildVersion"));
         
         Options options = applicationContext.getBean(Options.class);
         CommandLineParser commandLineOptionsParser = applicationContext.getBean(CommandLineParser.class);
+        
         //There is no other input other than this settings object so most of what comes next could be wrapped back up into an exomiser class 
         SettingsBuilder settingsBuilder = commandLineOptionsParser.parseCommandLineArguments(args);
         settingsBuilder.buildVersion((String) applicationContext.getBean("buildVersion"));

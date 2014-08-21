@@ -6,12 +6,6 @@
 
 package de.charite.compbio.exomiser.core.writer;
 
-import de.charite.compbio.exomiser.core.writer.OutputFormat;
-import de.charite.compbio.exomiser.core.writer.OriginalHtmlResultsWriter;
-import de.charite.compbio.exomiser.core.writer.ResultsWriterFactory;
-import de.charite.compbio.exomiser.core.writer.VcfResultsWriter;
-import de.charite.compbio.exomiser.core.writer.TsvResultsWriter;
-import de.charite.compbio.exomiser.core.writer.ResultsWriter;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 import org.junit.Test;
