@@ -23,7 +23,7 @@ public class V2_0__Insert_frequency implements JdbcMigration {
     public void migrate(Connection connection) throws Exception {
         CopyManager copyManager = new CopyManager((BaseConnection) connection);
         try (FileReader fileReader = new FileReader("data/frequency.pg")) {
-            copyManager.copyIn("COPY frequency from STDIN WITH DELIMITER '|';", fileReader, 1024);
+            copyManager.copyIn("COPY frequency from STDIN WITH DELIMITER '|' NULL as 'NULL';", fileReader, 1024);
         }
     }
 }
