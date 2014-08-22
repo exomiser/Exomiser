@@ -2,3 +2,7 @@
 /exomiser-core/target/
 /exomiser-db/data/
 /exomiser/target/
+/.idea
+*.iml
+*.log
+nbactions.xml
