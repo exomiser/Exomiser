@@ -1,5 +1,19 @@
 The Exomiser - Command Line Executable 
 ===============================================================
+# Change log
+
+## 3.0.0 2014-08-22
+- Completely re-worked under the hood code
+- New extensible API
+- Simplified command-line usage
+- Multiple output formats
+- Batch mode analysis
+- Settings file input
+- Zero-config installation 
+
+## 2.1.0 2014-05-06
+- Embedded H2 database or PostgreSQL
+- Simplified set-up/installation
 
 # Installation
 
@@ -42,28 +56,28 @@ Phenix - phenotype comparisons to known human disease genes
 
     java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
 
-Other useful params:
+# Other useful params:
 
-    Multiple output formats:
+Multiple output formats:
 
-        --output-format TSV (TSV summary instead of HTML)
-        --output-format VCF (VCF summary instead of HTML)
-        --output-format TSV,VCF (TSV and VCF summary instead of HTML)
+    --output-format TSV (TSV summary instead of HTML)
+    --output-format VCF (VCF summary instead of HTML)
+    --output-format TSV,VCF (TSV and VCF summary instead of HTML)
 
-    Settings file:
-        Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
+Settings file:
+    Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
 
-        java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --settings-file test.settings
+    java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --settings-file test.settings
 
-        Alternatively you can mix up a settings file and override settings by specifying them on the command line:
+    Alternatively you can mix up a settings file and override settings by specifying them on the command line:
 
-        java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --settings-file test.settings --prioritiser=phenix
+    java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --settings-file test.settings --prioritiser=phenix
 
 
-    Batch mode analysis:
-        Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
+Batch mode analysis:
+    Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
 
-        java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --batch-file batch.txt
+    java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --batch-file batch.txt
 
     -T leave in off-target variants
 
@@ -72,7 +86,6 @@ Want help?
     java -jar exomiser-cli-3.0.0.jar --help
 
    
-
 # Project Build
 
 This maven project is used to build the main exomiser jar for distribution. The 
