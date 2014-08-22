@@ -6,7 +6,7 @@
 
 package de.charite.compbio.exomiser.parsers;
 
-import de.charite.compbio.exomiser.core.VariantPathogenicity;
+import de.charite.compbio.exomiser.core.model.VariantPathogenicity;
 import de.charite.compbio.exomiser.resources.Resource;
 import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.nio.file.Path;

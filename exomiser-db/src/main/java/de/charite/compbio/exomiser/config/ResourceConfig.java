@@ -115,15 +115,15 @@ public class ResourceConfig {
     public Resource hpoResource() {
         logger.info("Making HPO resource");
         Resource resource = new Resource("HPO");
-        resource.setUrl("http://compbio.charite.de/hudson/job/hpo/lastStableBuild/artifact/ontology/release/");
+        resource.setUrl("http://compbio.charite.de/hudson/job/hpo/lastStableBuild/artifact/hp/");
         resource.setRemoteFileName("hp.obo");
         resource.setVersion("");
         resource.setExtractedFileName("hpo.obo");
         resource.setExtractionScheme("copy");
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(HPOOntologyFileParser.class);
         resource.setParsedFileName("hpo.pg");
-        //
+        //resource groups
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
         
@@ -137,11 +137,11 @@ public class ResourceConfig {
         // this is a 4.4GB file so might take a while
         // it is also about 25GB when uncompresssed
         resource.setUrl("http://dbnsfp.houstonbioinformatics.org/dbNSFPzip/");
-        resource.setRemoteFileName("dbNSFPv2.4.zip");
-        resource.setVersion("2.4");
-        resource.setExtractedFileName("dbNSFPv2.4.zip");
+        resource.setRemoteFileName("dbNSFPv2.6.zip");
+        resource.setVersion("2.6");
+        resource.setExtractedFileName("dbNSFPv2.6.zip");
         resource.setExtractionScheme("copy");
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(NSFP2SQLDumpParser.class);
         resource.setParsedFileName("variant.pg");
         //
@@ -155,15 +155,15 @@ public class ResourceConfig {
     public Resource dbSnpResource() {
         logger.info("Making dbSNP resource");
         Resource resource = new Resource("dbSNP");
-        resource.setUrl("ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/VCF/");
+        resource.setUrl("ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh37p13/VCF/");//once all switched to b38 and 1000g frequencies in should set back to human_9606 default
         resource.setRemoteFileName("00-All.vcf.gz");
         resource.setVersion("00");
         resource.setExtractedFileName("dbSNP_00-All.vcf");
         resource.setExtractionScheme("copy"); //can also do a gz 
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(DbSnpFrequencyParser.class);
         resource.setParsedFileName("frequency.pg");
-        //TODO: define groups seperately using DI
+        //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
         
@@ -179,10 +179,10 @@ public class ResourceConfig {
         resource.setVersion("");
         resource.setExtractedFileName("ESP_snps_indels");
         resource.setExtractionScheme("tgz");
-        //TODO: this ought to return an actual class or instantiated object?
+        //parsing
         resource.setParserClass(EspFrequencyParser.class);
         resource.setParsedFileName("frequency.pg");
-        //TODO: define groups seperately using DI
+        //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
         

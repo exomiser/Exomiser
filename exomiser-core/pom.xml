@@ -1,14 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>de.charite.compbio</groupId>
-        <artifactId>Exomiser</artifactId>
-        <version>2.0.0</version>
-    </parent>
+    
     <artifactId>exomiser-core</artifactId>
     <packaging>jar</packaging>
+    <name>exomiser-core</name>
+
+    <parent>    
+        <groupId>de.charite.compbio</groupId>
+        <artifactId>Exomiser</artifactId>
+        <version>3.0.0</version>
+    </parent>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <profiles>
+        <profile>
+            <build>
+                <resources>          
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
+                        <filtering>true</filtering>
+                    </resource>
+                </resources> 
+            </build>
+        </profile>
+    </profiles>
+    
+    <dependencies>
+        <!--Jannovar is used for providing known gene annotations on variants -->
+        <dependency>
+            <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar</artifactId>
+            <version>0.6-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jblas</groupId>
+            <artifactId>jblas</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>sonumina</groupId>
+            <artifactId>boqua</artifactId> <!-- Should be boqa without the 'u'-->
+            <version>0.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.sonumina</groupId>
+            <artifactId>javautil</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>ontologizer</groupId>
+            <artifactId>ontologizer</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+            <version>1.1.5</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Logging dependencies -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.0-rc1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.0-rc1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.0-rc1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.4.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.4.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk7</artifactId>
+            <version>2.4.1</version>
+        </dependency>    
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
 </project>

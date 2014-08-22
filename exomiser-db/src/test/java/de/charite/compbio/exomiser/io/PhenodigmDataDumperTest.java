@@ -14,13 +14,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -50,10 +49,6 @@ public class PhenodigmDataDumperTest {
         assertTrue(outputDir.isDirectory());
         assertEquals("Expected output path to be empty before tests start", 0, outputDir.listFiles().length);
 
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
     }
 
     @Before
@@ -87,9 +82,9 @@ public class PhenodigmDataDumperTest {
         expectedFiles.add(new File(outputPath.toFile(), "mouseMp.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "diseaseDisease.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "omimTerms.pg"));
-        expectedFiles.add(new File(outputPath.toFile(), "mouseGeneLevelSummary.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "hpMpMapping.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "hpHpMapping.pg"));
+        expectedFiles.add(new File(outputPath.toFile(), "orphanet.pg"));
 
         int expectedNoFiles = expectedFiles.size();
         assertEquals("Wrong number of files in output directory", expectedNoFiles, outputDir.listFiles().length);
@@ -151,24 +146,17 @@ public class PhenodigmDataDumperTest {
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
-
-    @Test
-    public void testDumpMouseGeneSummaryData() {
-        File expectedFile = instance.dumpMouseGeneLevelSummary(outputPath, "testDumpMouseGeneSummary.pg");
-        assertTrue(expectedFile.exists());
-        assertNotEquals(0, expectedFile.length());
-    }
-    
-    @Test
-    public void testDumpFishGeneLevelSummary() {
-        File expectedFile = instance.dumpFishGeneLevelSummary(outputPath, "testDumpFishGeneLevelSummary.pg");
-        assertTrue(expectedFile.exists());
-        assertNotEquals(0, expectedFile.length());
-    }
     
     @Test
     public void testDumpFishGeneOrthologs() {
         File expectedFile = instance.dumpFishGeneOrthologs(outputPath, "testDumpFishGeneOrtholog.pg");
+        assertTrue(expectedFile.exists());
+        assertNotEquals(0, expectedFile.length());
+    }
+    
+    @Test
+    public void testDumpOrphanet() {
+        File expectedFile = instance.dumpOrphanet(outputPath, "testDumpOrphanet.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }

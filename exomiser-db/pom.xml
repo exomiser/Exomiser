@@ -2,9 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.charite.compbio</groupId>
     <artifactId>exomiser-db</artifactId>
-    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>exomiser-db</name>
@@ -13,7 +11,7 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>2.0.0</version>
+        <version>3.0.0</version>
     </parent>
   
     <properties>
@@ -47,7 +45,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>exomiser-core</artifactId>
-            <version>2.0.0</version>
+            <version>3.0.0</version>
         </dependency>
         <!-- Database dependencies-->
         <dependency>
@@ -111,6 +109,22 @@
             <artifactId>javax.inject</artifactId>
             <version>1</version>
             <type>jar</type>
+        </dependency>
+        <!-- Logging dependencies -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.0-rc1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.0-rc1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.0-rc1</version>
         </dependency>
     </dependencies>
     <build>

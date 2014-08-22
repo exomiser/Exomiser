@@ -24,18 +24,6 @@
 -- CREATE SCHEMA EXOMISER;
 -- SET SCHEMA EXOMISER;
 
---
--- TOC entry 163 (class 1259 OID 16391)
--- Name: fish_gene_level_summary; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE fish_gene_level_summary (
-    disease_id character varying(20),
-    zfin_gene_id character varying(20),
-    zfin_gene_symbol character varying(100),
-    max_combined_perc double precision
-);
-
 
 --
 -- TOC entry 176 (class 1259 OID 16513)
@@ -161,17 +149,6 @@ CREATE TABLE zfin_zp (
     zp_id character varying(3000)
 );
 
---
--- TOC entry 168 (class 1259 OID 16418)
--- Name: mouse_gene_level_summary; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE mouse_gene_level_summary (
-    disease_id character varying(20),
-    mgi_gene_id character varying(20),
-    mgi_gene_symbol character varying(100),
-    max_combined_perc double precision
-);
 
 
 --
@@ -380,28 +357,7 @@ CREATE INDEX entrez_id_2 ON human2fish_orthologs (entrez_id);
 CREATE INDEX mgi_gene_id ON human2mouse_orthologs (mgi_gene_id);
 
 
---
--- TOC entry 1855 (class 1259 OID 16472)
--- Name: mgi_gene_id_2; Type: INDEX; Schema: public; Owner: -
---
 
-CREATE INDEX mgi_gene_id_2 ON mouse_gene_level_summary (mgi_gene_id);
-
-
---
--- TOC entry 1856 (class 1259 OID 16473)
--- Name: disease_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX disease_id ON mouse_gene_level_summary (disease_id);
-
-
---
--- TOC entry 1848 (class 1259 OID 16474)
--- Name: disease_id_2; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX disease_id_2 ON fish_gene_level_summary (disease_id);
 
 
 --
@@ -412,12 +368,6 @@ CREATE INDEX disease_id_2 ON fish_gene_level_summary (disease_id);
 CREATE INDEX zfin_gene_id ON human2fish_orthologs (zfin_gene_id);
 
 
---
--- TOC entry 1849 (class 1259 OID 16476)
--- Name: zfin_gene_id_2; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX zfin_gene_id_2 ON fish_gene_level_summary (zfin_gene_id);
 
 
 CREATE INDEX mgi_gene_id_4 ON mgi_mp (mgi_gene_id);

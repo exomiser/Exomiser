@@ -53,8 +53,6 @@ public class PhenodigmDataDumper {
         dumpOmimTerms(outputPath, "omimTerms.pg");
         dumpHpMpMapping(outputPath, "hpMpMapping.pg");
         dumpHpHpMapping(outputPath, "hpHpMapping.pg");
-        dumpMouseGeneLevelSummary(outputPath, "mouseGeneLevelSummary.pg");
-        dumpFishGeneLevelSummary(outputPath, "fishGeneLevelSummary.pg");
         dumpFishGeneOrthologs(outputPath, "human2fishOrthologs.pg");
         dumpOrphanet(outputPath, "orphanet.pg");
         dumpZp(outputPath, "zp.pg");
@@ -210,8 +208,10 @@ public class PhenodigmDataDumper {
     protected File dumpDiseaseHp(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm diseaseHp data to file: {}", outfile);
-
-        String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d, hp_hp_mapping h where d.hp_id=h.hp_id group by disease_id";
+        // ? why I added the join to hp_hp_mapping - results in scores < 1 when run an Exomiser query with full set of HPO IDs defined in the HPO annotation file
+        // Going to try reverting and check nothing breaks 
+        //String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d, hp_hp_mapping h where d.hp_id=h.hp_id group by disease_id";
+        String sql = "select distinct disease_id , group_concat(distinct d.hp_id) as hpids from disease_hp d group by disease_id";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -357,7 +357,7 @@ public class PhenodigmDataDumper {
         //hp_mp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, mp_id, sqrt(ic*simJ) as score from hp_mp_mapping where ic > 2.75";
+        String sql = "select hp_id, mp_id, ic as score from hp_mp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -388,7 +388,7 @@ public class PhenodigmDataDumper {
         //hp_mp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, zp_id, sqrt(ic*simJ) as score from hp_zp_mapping where ic > 2.75";
+        String sql = "select hp_id, zp_id, ic as score from hp_zp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -420,7 +420,7 @@ public class PhenodigmDataDumper {
         //hp_hp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, hp_id_hit, sqrt(ic*simJ) as score from hp_hp_mapping where ic > 2.75";
+        String sql = "select hp_id, hp_id_hit, ic as score from hp_hp_mapping where ic > 2.75";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -445,73 +445,5 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    protected File dumpMouseGeneLevelSummary(Path outputPath, String outName) {
-        File outfile = new File(outputPath.toFile(), outName);
-        logger.info("Dumping Phenodigm MouseGeneLevelSummary data to file: {}", outfile);
-
-        String sql = "select disease_id , mdm.model_gene_id , model_gene_symbol, "
-                + "IF((max_mod_disease_to_model_perc_score is not null && max_htpc_disease_to_model_perc_score is null) || max_mod_disease_to_model_perc_score > max_htpc_disease_to_model_perc_score, max_mod_disease_to_model_perc_score, max_htpc_disease_to_model_perc_score ) as score "
-                + "from mouse_disease_gene_summary mdm, mouse_gene_ortholog mgo "
-                + "where mdm.model_gene_id = mgo.model_gene_id and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";
-//                + "and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";
-
-        //no need to close  things when using the try-with-resources            
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmDataSource.getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
-
-            ps.setFetchSize(Integer.MIN_VALUE);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                String diseaseId = rs.getString("disease_id");
-                String modelGeneId = rs.getString("model_gene_id");
-                String modelGeneSymbol = rs.getString("model_gene_symbol");
-                String score = rs.getString("score");
-
-                String outLine = String.format("%s|%s|%s|%s", diseaseId, modelGeneId, modelGeneSymbol, score);
-                writer.write(outLine);
-                writer.newLine();
-            }
-
-        } catch (IOException | SQLException ex) {
-            logger.error(null, ex);
-        }
-        return outfile;
-    }
-
-    protected File dumpFishGeneLevelSummary(Path outputPath, String outName) {
-        File outfile = new File(outputPath.toFile(), outName);
-        logger.info("Dumping Phenodigm FishGeneLevelSummary data to file: {}", outfile);
-
-        String sql = "select distinct disease_id , mdm.model_gene_id , model_gene_symbol, "
-                + "IF((max_mod_disease_to_model_perc_score is not null && max_htpc_disease_to_model_perc_score is null) || max_mod_disease_to_model_perc_score > max_htpc_disease_to_model_perc_score, max_mod_disease_to_model_perc_score, max_htpc_disease_to_model_perc_score ) as score "
-                + "from fish_disease_gene_summary mdm, fish_gene_ortholog mgo "
-                + "where mdm.model_gene_id = mgo.model_gene_id and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";
-//                + "and (max_mod_disease_to_model_perc_score is not null or max_htpc_disease_to_model_perc_score is not null)";
-
-        //no need to close  things when using the try-with-resources            
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-                Connection connection = phenodigmDataSource.getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
-
-            ps.setFetchSize(Integer.MIN_VALUE);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                String diseaseId = rs.getString("disease_id");
-                String modelGeneId = rs.getString("model_gene_id");
-                String modelGeneSymbol = rs.getString("model_gene_symbol");
-                String score = rs.getString("score");
-
-                String outLine = String.format("%s|%s|%s|%s", diseaseId, modelGeneId, modelGeneSymbol, score);
-                writer.write(outLine);
-                writer.newLine();
-            }
-
-        } catch (IOException | SQLException ex) {
-            logger.error(null, ex);
-        }
-        return outfile;
-    }
+    
 }
