@@ -404,7 +404,7 @@ public class ExomiserMousePriority implements Priority {
      * Note that there are two queries. The testGeneStatement basically tests whether
      * the gene in question is in the database; it must have both an orthologue in the
      * table {@code human2mouse_orthologs}, and there must be some data on it
-     * in the table {@code  mouse_gene_level_summary}.
+     * in the table {@code  mgi_mp}.
      * <P>
      * Then, we select the MGI gene id (e.g., MGI:1234567), the corresponding mouse
      * gene symbol and the phenodigm score. There is currently one score for
@@ -433,11 +433,10 @@ public class ExomiserMousePriority implements Priority {
 	    logger.error("Problem setting up SQL query: {}", mouse_annotation, e);
         }
     
-	String test_gene_query = String.format("SELECT human_gene_symbol " +
-			"FROM mouse_gene_level_summary, human2mouse_orthologs "+
-			"WHERE mouse_gene_level_summary.mgi_gene_id=human2mouse_orthologs.mgi_gene_id " +
-			"AND human_gene_symbol = ? LIMIT 1");
-
+	String test_gene_query = String.format("SELECT human_gene_symbol "
+                + "FROM mgi_mp, human2mouse_orthologs "
+                + "WHERE mgi_mp.mgi_gene_id=human2mouse_orthologs.mgi_gene_id "
+                + "AND human_gene_symbol = ? LIMIT 1");
 	try {
 	    this.testGeneStatement  = connection.prepareStatement(test_gene_query);
 	  
