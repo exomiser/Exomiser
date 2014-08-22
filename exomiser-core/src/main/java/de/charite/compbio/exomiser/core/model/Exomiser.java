@@ -14,6 +14,7 @@ import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.ScoringMode;
 import de.charite.compbio.exomiser.core.util.GeneScorer;
+import de.charite.compbio.exomiser.core.writer.OutputFormat;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,10 +53,15 @@ public class Exomiser {
         List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
              
         logger.info("PRIORITISING GENES");        
-        //this is currently handled by Prioritiser but should probably be part of an Exomiser - 
-        //e.g. RareDiseaseExomiser would OMIMPriority by default (the current situation)
-        GenePrioritiser.prioritiseFilteredGenes(priorityList, sampleData.getGeneList());
-        
+        //for VCF we need the priority scores for all genes, even those with no passed
+        //variants. For other output formats we only need to do if for genes with at
+        //least one passed variant and this is much faster
+        if (exomiserSettings.getOutputFormats().contains(OutputFormat.VCF)){
+            GenePrioritiser.prioritiseGenes(priorityList, sampleData.getGeneList());
+        }
+        else{
+            GenePrioritiser.prioritiseFilteredGenes(priorityList, sampleData.getGeneList());
+        }    
         logger.info("SCORING GENES");        
         //prioritser needs to provide the mode of scoring it requires. Mostly it is RAW_SCORE.
         //Either RANK_BASED or RAW_SCORE

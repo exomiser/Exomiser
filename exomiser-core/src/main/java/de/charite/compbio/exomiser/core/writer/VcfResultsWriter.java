@@ -90,7 +90,7 @@ public class VcfResultsWriter implements ResultsWriter {
                 addColumnField(sb, formatFailedFilters(ve.getFailedFilters()));
             }
             //INFO\t
-            String infoField = String.format("GENE=%s;PHENO_SCORE=%s;VARIANT_SCORE=%s;COMBINED_SCORE=%s", gene.getGeneSymbol(), gene.getPriorityScore(), gene.getFilterScore(), gene.getCombinedScore());
+            String infoField = String.format("GENE=%s;VARIANT_SCORE=%s;GENE_PHENO_SCORE=%s;GENE_VARIANT_SCORE=%s;GENE_COMBINED_SCORE=%s", gene.getGeneSymbol(), ve.getFilterScore(), gene.getPriorityScore(), gene.getFilterScore(), gene.getCombinedScore());
             addColumnField(sb, infoField);
             //FORMAT\t
             addColumnField(sb, "GT");
