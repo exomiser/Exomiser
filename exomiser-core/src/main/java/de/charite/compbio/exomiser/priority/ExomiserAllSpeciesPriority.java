@@ -108,55 +108,13 @@ public class ExomiserAllSpeciesPriority implements Priority {
         randomWalkMatrix = rwMatrix;
         logger.info("Using randomWalkMatrix: {}", randomWalkMatrix);
     }
-    
-    /**
-     * Create a new instance of the {@link GenewandererPriority}.
-     *
-     * Assumes the list of seed genes (Entrez gene IDs) has been set!! This
-     * happens with the method
-     *  {@link #setParameters}.
-     *
-     * @param randomWalkMatrixFileZip The zipped(!) RandomWalk matrix file.
-     * @param randomWalkGeneId2IndexFileZip The zipped(!) file with the mapping
-     * between Entrez-Ids and Matrix-Indices.
-     * @param hpo_ids
-     * @param candGene
-     * @param disease
-     * @see <a
-     * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
-     * Hudson page</a>
-     */
-    public ExomiserAllSpeciesPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip, String hpo_ids, String candGene, String disease) {
-        this.hpoIds = parseHpoIdListFromString(hpo_ids);
-        this.candGene = candGene;
-        this.disease = disease;
-
-        
-        try {
-            randomWalkMatrix = new DataMatrix(randomWalkMatrixFileZip, randomWalkGeneId2IndexFileZip, true);
-        } catch (Exception e) {
-            /*
-             * This exception is thrown if the files for the random walk
-             * cannot be found.
-             */
-            logger.error("Unable to initialize the random walk matrix", e);
-        }
-        
-        /*
-         * some logging stuff
-         */
-        this.error_record = new ArrayList<String>();
-        this.messages = new ArrayList<String>();
-    }
 
     private List<String> parseHpoIdListFromString(String hpoIdsString) {
-        logger.info("Attempting to create HPO ID list from string: {} ", hpoIdsString);
         String[] hpoArray = hpoIdsString.split(",");
         List<String> hpoIdList = new ArrayList<>(); 
         for (String string : hpoArray) {
             hpoIdList.add(string.trim());
         }
-        logger.info("Made list: {}", hpoIdList);
         return hpoIdList;
     }
     /**
