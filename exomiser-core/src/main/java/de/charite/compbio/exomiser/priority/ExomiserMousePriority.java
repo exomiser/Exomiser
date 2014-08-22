@@ -31,11 +31,11 @@ import org.slf4j.LoggerFactory;
  * @author Damian Smedley
  * @version 0.05 (April 6, 2013)
  */
-public class DynamicPhenodigmPriority implements Priority {
+public class ExomiserMousePriority implements Priority {
 
-    private static final Logger logger = LoggerFactory.getLogger(DynamicPhenodigmPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExomiserMousePriority.class);
 
-    private static final PriorityType PHENODIGM_MGI_PRIORITY = PriorityType.PHENODIGM_MGI_PRIORITY;
+    private static final PriorityType priorityType = PriorityType.EXOMISER_MOUSE_PRIORITY;
 
     
     /** Threshold for filtering. Retain only those variants whose score is below this threshold. */
@@ -43,6 +43,7 @@ public class DynamicPhenodigmPriority implements Priority {
     private String hpo_ids = null;
     
     private List<String> hpoIds;
+    private String disease;
     
     /** Database handle to the postgreSQL database used by this application. */
     private Connection connection=null;
@@ -74,19 +75,45 @@ public class DynamicPhenodigmPriority implements Priority {
     /** Keeps track of the number of variants for which data was available in Phenodigm. */
     private int found_data_for_mgi_phenodigm;
     
-    public DynamicPhenodigmPriority(String hpo_ids) {
+    public ExomiserMousePriority(String hpo_ids, String disease) {
     	this.hpo_ids = hpo_ids;
+        this.disease = disease;
 	//String url = String.format("http://omim.org/%s",disease);
 	messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
-	String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
-	messages.add(anchor);
+        if (disease != null){
+            String url = String.format("http://omim.org/%s",disease);
+            if (disease.contains("ORPHANET")){
+                String diseaseId = disease.split(":")[1];
+                url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s",diseaseId);
+            }
+            String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n",url,disease);
+            this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
+            messages.add(anchor);
+        }
+        else{
+            String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
+            messages.add(anchor);
+        }
      }
 
-    public DynamicPhenodigmPriority(List<String> hpoIds) {
+    public ExomiserMousePriority(List<String> hpoIds, String disease) {
         this.hpoIds = hpoIds;
+        this.disease = disease;
         messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
-	String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
-	messages.add(anchor);
+        if (disease != null){
+            String url = String.format("http://omim.org/%s",disease);
+            if (disease.contains("ORPHANET")){
+                String diseaseId = disease.split(":")[1];
+                url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s",diseaseId);
+            }
+            String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n",url,disease);
+            this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
+            messages.add(anchor);
+        }
+        else{
+            String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
+            messages.add(anchor);
+        }
     }
     
     /** Get the name of this prioritization algorithm. */
@@ -98,7 +125,7 @@ public class DynamicPhenodigmPriority implements Priority {
     /** Flag to output results of filtering against PhenoDigm data. */
     @Override 
     public PriorityType getPriorityType() { 
-        return PriorityType.DYNAMIC_PHENODIGM_PRIORITY;
+        return PriorityType.EXOMISER_MOUSE_PRIORITY;
     } 
 
  
@@ -128,8 +155,8 @@ public class DynamicPhenodigmPriority implements Priority {
 	this.found_data_for_mgi_phenodigm=0;
 	this.n_before = gene_list.size();
 	for (Gene g : gene_list) {
-            MGIPhenodigmPriorityScore rscore = retrieve_score_data(g);
-            g.addPriorityScore(rscore, PHENODIGM_MGI_PRIORITY);          
+            ExomiserMousePriorityScore rscore = retrieve_score_data(g);
+            g.addPriorityScore(rscore, priorityType);          
 	}
 	this.n_after = gene_list.size();
 	String s = 
@@ -137,12 +164,49 @@ public class DynamicPhenodigmPriority implements Priority {
 			  gene_list.size());
 	this.messages.add(s);
    }
+    
+    /**
+     * Set hpo_ids variable based on the entered disease
+     */
+    private void setHPOfromDisease(String disease) {
+        String hpo_query = String.format("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
+        PreparedStatement hpoIdsStatement = null;
+        String hpoListString = "";
+        try {
+            hpoIdsStatement = connection.prepareStatement(hpo_query);
+            hpoIdsStatement.setString(1, disease);
+            ResultSet rs = hpoIdsStatement.executeQuery();
+            rs.next();
+            hpoListString = rs.getString(1);
+        } catch (SQLException e) {
+            String error = "Problem setting up SQL query:" + hpo_query;
+            logger.error(error, e);
+        }
+        hpoIds = parseHpoIdListFromString(hpoListString);
+    }
+
+    private List<String> parseHpoIdListFromString(String hpoIdsString) {
+        logger.info("Attempting to create HPO ID list from string: {} ", hpoIdsString);
+        String[] hpoArray = hpoIdsString.split(",");
+        List<String> hpoIdList = new ArrayList<>();
+        for (String string : hpoArray) {
+            hpoIdList.add(string.trim());
+        }
+        logger.info("Made list: {}", hpoIdList);
+        return hpoIdList;
+    }
 
     /** 
      * @param g A gene whose relevance score is to be retrieved from the SQL database by this function.
      * @return result of prioritization (represents a non-negative score)
      */
-  private MGIPhenodigmPriorityScore retrieve_score_data(Gene g) {
+  private ExomiserMousePriorityScore retrieve_score_data(Gene g) {
+      
+      if (disease != null && !disease.isEmpty() && hpoIds.isEmpty()) {
+            logger.info("Setting HPO IDs using disease annotaions for {}", disease);
+            setHPOfromDisease(disease);
+      }
+      
       float MGI_SCORE = Constants.UNINITIALIZED_FLOAT;
       String MGI_GENE_ID = null;
       String MGI_GENE=null;
@@ -330,7 +394,7 @@ public class DynamicPhenodigmPriority implements Priority {
       catch(SQLException e) {
 	logger.error("Error executing Phenodigm query: ", e);
       }
-      MGIPhenodigmPriorityScore rscore = new MGIPhenodigmPriorityScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
+      ExomiserMousePriorityScore rscore = new ExomiserMousePriorityScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
       return rscore;
   }
 
@@ -340,7 +404,7 @@ public class DynamicPhenodigmPriority implements Priority {
      * Note that there are two queries. The testGeneStatement basically tests whether
      * the gene in question is in the database; it must have both an orthologue in the
      * table {@code human2mouse_orthologs}, and there must be some data on it
-     * in the table {@code  mouse_gene_level_summary}.
+     * in the table {@code  mgi_mp}.
      * <P>
      * Then, we select the MGI gene id (e.g., MGI:1234567), the corresponding mouse
      * gene symbol and the phenodigm score. There is currently one score for
@@ -369,11 +433,10 @@ public class DynamicPhenodigmPriority implements Priority {
 	    logger.error("Problem setting up SQL query: {}", mouse_annotation, e);
         }
     
-	String test_gene_query = String.format("SELECT human_gene_symbol " +
-			"FROM mouse_gene_level_summary, human2mouse_orthologs "+
-			"WHERE mouse_gene_level_summary.mgi_gene_id=human2mouse_orthologs.mgi_gene_id " +
-			"AND human_gene_symbol = ? LIMIT 1");
-
+	String test_gene_query = String.format("SELECT human_gene_symbol "
+                + "FROM mgi_mp, human2mouse_orthologs "
+                + "WHERE mgi_mp.mgi_gene_id=human2mouse_orthologs.mgi_gene_id "
+                + "AND human_gene_symbol = ? LIMIT 1");
 	try {
 	    this.testGeneStatement  = connection.prepareStatement(test_gene_query);
 	  

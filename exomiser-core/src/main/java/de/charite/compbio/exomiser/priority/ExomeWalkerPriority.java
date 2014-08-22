@@ -27,11 +27,11 @@ import org.slf4j.LoggerFactory;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class GenewandererPriority implements Priority {
+public class ExomeWalkerPriority implements Priority {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenewandererPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 
-    private final PriorityType GENEWANDERER_PRIORITY = PriorityType.GENEWANDERER_PRIORITY;
+    private final PriorityType GENEWANDERER_PRIORITY = PriorityType.EXOMEWALKER_PRIORITY;
 
     /**
      * A list of error-messages
@@ -71,7 +71,7 @@ public class GenewandererPriority implements Priority {
     private DoubleMatrix combinedProximityVector;
 
     /**
-     * Create a new instance of the {@link GenewandererPriority}.
+     * Create a new instance of the {@link ExomeWalkerPriority}.
      *
      * Assumes the list of seed genes (Entrez gene IDs) has been set!! This
      * happens with the method {@link #setParameters}.
@@ -84,7 +84,7 @@ public class GenewandererPriority implements Priority {
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
      */
-    public GenewandererPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip) {
+    public ExomeWalkerPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip) {
 
         if (randomWalkMatrix == null) {
             try {
@@ -101,7 +101,7 @@ public class GenewandererPriority implements Priority {
      * @param randomWalkMatrix
      * @param entrezSeedGenes 
      */
-    public GenewandererPriority(DataMatrix randomWalkMatrix, List<Integer> entrezSeedGenes) {
+    public ExomeWalkerPriority(DataMatrix randomWalkMatrix, List<Integer> entrezSeedGenes) {
         
         this.randomWalkMatrix = randomWalkMatrix;
         seedGenes = new ArrayList<>();
@@ -143,7 +143,7 @@ public class GenewandererPriority implements Priority {
      */
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.GENEWANDERER_PRIORITY;
+        return PriorityType.EXOMEWALKER_PRIORITY;
     }
 
     /**
@@ -219,7 +219,7 @@ public class GenewandererPriority implements Priority {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
-                GenewandererPriorityScore relScore = null;
+                ExomeWalkerPriorityScore relScore = null;
                 if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
                     double val = computeSimStartNodesToNode(gene);
                     if (val > max) {
@@ -228,10 +228,10 @@ public class GenewandererPriority implements Priority {
                     if (val < min) {
                         min = val;
                     }
-                    relScore = new GenewandererPriorityScore(val);
+                    relScore = new ExomeWalkerPriorityScore(val);
                     ++PPIdataAvailable;
                 } else {
-                    relScore = GenewandererPriorityScore.noPPIDataScore();
+                    relScore = ExomeWalkerPriorityScore.noPPIDataScore();
                 }
                 gene.addPriorityScore(relScore, GENEWANDERER_PRIORITY);
         }
@@ -240,11 +240,11 @@ public class GenewandererPriority implements Priority {
 //        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
 //
 //        for (Gene gene : geneList) {
-//            float scr = gene.getPriorityScore(GENEWANDERER_PRIORITY);
+//            float scr = gene.getPriorityScore(EXOMEWALKER_PRIORITY);
 //            float newscore = factor * (scr - (float) min);
-//            gene.resetPriorityScore(GENEWANDERER_PRIORITY, newscore);
+//            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
 //            newscore = factorMaxPossible * (scr - (float) min);
-//            gene.resetPriorityScore(GENEWANDERER_PRIORITY, newscore);
+//            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
 //        }
 
         String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",

@@ -9,7 +9,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class GenewandererPriorityScore implements PriorityScore {
+public class ExomeWalkerPriorityScore implements PriorityScore {
     /**
      * The Random walk similarity score.
      */
@@ -20,7 +20,7 @@ public class GenewandererPriorityScore implements PriorityScore {
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public GenewandererPriorityScore(double score) {
+    public ExomeWalkerPriorityScore(double score) {
 	this.genewandererScore = score;
         this.rawScore = score;
     }
@@ -42,9 +42,9 @@ public class GenewandererPriorityScore implements PriorityScore {
      * {@link exomizer.priority.IPriority IPriority}.
      * basically as a kind of uniform prior.
      */
-    public static GenewandererPriorityScore noPPIDataScore() {
+    public static ExomeWalkerPriorityScore noPPIDataScore() {
 	float nodatascore = 0f;
-	GenewandererPriorityScore grs = new GenewandererPriorityScore(nodatascore);
+	ExomeWalkerPriorityScore grs = new ExomeWalkerPriorityScore(nodatascore);
 	return grs;
     }
 

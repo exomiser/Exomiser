@@ -11,23 +11,19 @@ public enum PriorityType {
      */
     INHERITANCE_MODE_PRIORITY("inheritance-mode", ScoringMode.RAW_SCORE),
     /**
-     * Flag to represent results of filtering against MGI phenotype data (Phenodigm)
-     */
-    PHENODIGM_MGI_PRIORITY("phenodigm-mgi", ScoringMode.RAW_SCORE),
-    /**
      * Flag to represent results of filtering against phenotype data (Uberpheno)
      */
     UBERPHENO_PRIORITY("uber-pheno", ScoringMode.RAW_SCORE),
     /**
      * Flag to represent results of filtering against PPI-RandomWalk-proximity
      */
-    GENEWANDERER_PRIORITY("gene-wanderer", ScoringMode.RAW_SCORE),
+    EXOMEWALKER_PRIORITY("exomewalker", ScoringMode.RAW_SCORE),
     /**
      * Flag to represent results of filtering against PPI-RandomWalk-proximity
      * and dynamic human and mouse phenotypes
      */
 
-    DYNAMIC_PHENOWANDERER_PRIORITY("dynamic-pheno-wanderer", ScoringMode.RAW_SCORE),
+    EXOMISER_ALLSPECIES_PRIORITY("exomiser-allspecies", ScoringMode.RAW_SCORE),
 
     /**
      * Flag to represent results of annotating against OMIM data
@@ -40,11 +36,11 @@ public enum PriorityType {
     /**
      * Flag for phenomizer prioritizer
      */
-    PHENOMIZER_PRIORITY("phenomizer", ScoringMode.RAW_SCORE),
+    PHENIX_PRIORITY("phenix", ScoringMode.RAW_SCORE),
     /**
      * Flag for dynamic phenodigm filter.
      */
-    DYNAMIC_PHENODIGM_PRIORITY("dynamic-phenodigm", ScoringMode.RAW_SCORE),
+    EXOMISER_MOUSE_PRIORITY("exomiser-mouse", ScoringMode.RAW_SCORE),
     
     /**
      * Not set type - default for when things go wrong.

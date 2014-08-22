@@ -59,22 +59,19 @@ public class PriorityFactory {
         genePriorityList.add(getOmimPrioritizer());
         
         switch (exomiserSettings.getPrioritiserType()) {
-            case PHENODIGM_MGI_PRIORITY:
-                genePriorityList.add(getMGIPhenodigmPrioritiser(disease));
-                break;
-            case PHENOMIZER_PRIORITY:
+            case PHENIX_PRIORITY:
                 genePriorityList.add(getPhenomizerPrioritiser(hpoIds));
                 break;
             case BOQA_PRIORITY:
                 genePriorityList.add(getBOQAPrioritiser(hpoIds));
                 break;            
-            case DYNAMIC_PHENOWANDERER_PRIORITY:
+            case EXOMISER_ALLSPECIES_PRIORITY:
                 genePriorityList.add(getDynamicPhenoWandererPrioritiser(hpoIds, candidateGene, disease));
                 break;  
-            case DYNAMIC_PHENODIGM_PRIORITY:
-                genePriorityList.add(getDynamicPhenodigmPrioritiser(hpoIds));
+            case EXOMISER_MOUSE_PRIORITY:
+                genePriorityList.add(getDynamicPhenodigmPrioritiser(hpoIds,disease));
                 break;
-            case GENEWANDERER_PRIORITY:
+            case EXOMEWALKER_PRIORITY:
                 genePriorityList.add(getGeneWandererPrioritiser(entrezSeedGenes));
                 break;                      
         }
@@ -100,20 +97,8 @@ public class PriorityFactory {
         hpoIDset.addAll(hpoIds);
         
         boolean symmetric = false;
-        Priority priority = new PhenomizerPriority(phenomizerDataDirectory.toString(), hpoIDset, symmetric);
+        Priority priority = new PhenixPriority(phenomizerDataDirectory.toString(), hpoIDset, symmetric);
         logger.info("Made new Phenomizer Priority: {}", priority);
-        return priority;
-    }
-
-    public Priority getMGIPhenodigmPrioritiser(String disease) {
-
-        Priority priority = new MGIPhenodigmPriority(disease);
-        try {
-            priority.setDatabaseConnection(dataSource.getConnection());
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
-        logger.info("Made new MGIPhenodigm Priority: {}", priority);
         return priority;
     }
 
@@ -128,8 +113,8 @@ public class PriorityFactory {
         return priority;
     }
 
-    public Priority getDynamicPhenodigmPrioritiser(List<String> hpoIds) {
-        Priority priority = new DynamicPhenodigmPriority(hpoIds);
+    public Priority getDynamicPhenodigmPrioritiser(List<String> hpoIds,String disease) {
+        Priority priority = new ExomiserMousePriority(hpoIds,disease);
         try {
             priority.setDatabaseConnection(dataSource.getConnection());
         } catch (SQLException ex) {
@@ -140,13 +125,13 @@ public class PriorityFactory {
     }
 
     public Priority getGeneWandererPrioritiser(List<Integer> entrezSeedGenes) {
-        Priority priority = new GenewandererPriority(randomWalkMatrix, entrezSeedGenes);
+        Priority priority = new ExomeWalkerPriority(randomWalkMatrix, entrezSeedGenes);
         logger.info("Made new GeneWanderer Priority: {}", priority);
         return priority;
     }
     
     public Priority getDynamicPhenoWandererPrioritiser(List<String> hpoIds, String candGene, String disease) {
-        Priority priority = new DynamicPhenoWandererPriority(hpoIds, candGene, disease, randomWalkMatrix);
+        Priority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, randomWalkMatrix);
         try {
             priority.setDatabaseConnection(dataSource.getConnection());
         } catch (SQLException ex) {
