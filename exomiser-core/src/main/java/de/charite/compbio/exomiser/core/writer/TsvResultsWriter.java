@@ -17,7 +17,7 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filter.FilterScore;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.priority.*;
-import de.charite.compbio.exomiser.priority.GenewandererPriorityScore;
+import de.charite.compbio.exomiser.priority.ExomeWalkerPriorityScore;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -87,8 +87,8 @@ public class TsvResultsWriter implements ResultsWriter {
         // priority score calculation
         for (PriorityType i : gene.getPriorityScoreMap().keySet()) {
             PriorityScore priorityScore = gene.getPriorityScoreMap().get(i);
-            if (i == PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY) {
-                DynamicPhenoWandererRelevanceScore phenoScore = (DynamicPhenoWandererRelevanceScore) priorityScore;
+            if (i == PriorityType.EXOMISER_ALLSPECIES_PRIORITY) {
+                ExomiserAllSpeciesRelevanceScore phenoScore = (ExomiserAllSpeciesRelevanceScore) priorityScore;
                 exomiser2Score = phenoScore.getScore();
                 humanPhenScore = phenoScore.getHumanScore();
                 mousePhenScore = phenoScore.getMouseScore();
@@ -96,8 +96,8 @@ public class TsvResultsWriter implements ResultsWriter {
                 walkerScore = phenoScore.getWalkerScore();
             } else if (i == PriorityType.OMIM_PRIORITY) {
                 omimScore = priorityScore.getScore();
-            } else if (i == PriorityType.GENEWANDERER_PRIORITY) {
-                GenewandererPriorityScore wandererScore = (GenewandererPriorityScore) priorityScore;
+            } else if (i == PriorityType.EXOMEWALKER_PRIORITY) {
+                ExomeWalkerPriorityScore wandererScore = (ExomeWalkerPriorityScore) priorityScore;
                 walkerScore = priorityScore.getScore();
                 rawWalkerScore = (float) wandererScore.getRawScore();
                 scaledMaxScore = (float) wandererScore.getScaledScore();

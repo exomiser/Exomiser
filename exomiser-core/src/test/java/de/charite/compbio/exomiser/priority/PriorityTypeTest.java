@@ -20,17 +20,6 @@ public class PriorityTypeTest {
 
 
     /**
-     * Test of valueOf method, of class PriorityType.
-     */
-    @Test
-    public void testValueOf() {
-        String name = "PHENODIGM_MGI_PRIORITY";
-        PriorityType expResult = PriorityType.PHENODIGM_MGI_PRIORITY;
-        PriorityType result = PriorityType.valueOf(name);
-        assertEquals(expResult, result);
-    }
-
-    /**
      * Test of getCommandLineValue method, of class PriorityType.
      */
     @Test

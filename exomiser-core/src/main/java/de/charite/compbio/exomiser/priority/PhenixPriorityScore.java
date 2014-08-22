@@ -10,7 +10,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.05 (6 January, 2014).
  */
-public class PhenomizerPriorityScore implements PriorityScore {
+public class PhenixPriorityScore implements PriorityScore {
     /** The semantic similarity score as implemented in Phenomizer. Note that this is not the 
      * p-value methodology in that paper, but merely the simple semantic similarity score.
      */
@@ -32,13 +32,13 @@ public class PhenomizerPriorityScore implements PriorityScore {
     /**
      * @param negLogPVal The negative logarithm of the p-val
      */
-    public PhenomizerPriorityScore(double negLogPVal) {
+    public PhenixPriorityScore(double negLogPVal) {
 	this.negativeLogPval = negLogPVal;
     }
 
 
 
-    public PhenomizerPriorityScore(double negLogPVal, double semScore) {
+    public PhenixPriorityScore(double negLogPVal, double semScore) {
 	this.negativeLogPval = negLogPVal;
 	this.hpoSemSimScore = semScore;
 	 String s = String.format("Semantic similarity score: %.2f (neg. log of p-value: %.2f)",

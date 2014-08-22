@@ -30,9 +30,9 @@ import org.slf4j.LoggerFactory;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class DynamicPhenoWandererPriority implements Priority {
+public class ExomiserAllSpeciesPriority implements Priority {
 
-    private static final Logger logger = LoggerFactory.getLogger(DynamicPhenoWandererPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExomiserAllSpeciesPriority.class);
 
     private Connection connection = null;
     /**
@@ -100,7 +100,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
      */
-    public DynamicPhenoWandererPriority(List<String> hpoIds, String candidateGene, String disease, DataMatrix rwMatrix) {
+    public ExomiserAllSpeciesPriority(List<String> hpoIds, String candidateGene, String disease, DataMatrix rwMatrix) {
         this.hpoIds = hpoIds;
         candGene = candidateGene;
         this.disease = disease;
@@ -126,7 +126,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
      */
-    public DynamicPhenoWandererPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip, String hpo_ids, String candGene, String disease) {
+    public ExomiserAllSpeciesPriority(String randomWalkMatrixFileZip, String randomWalkGeneId2IndexFileZip, String hpo_ids, String candGene, String disease) {
         this.hpoIds = parseHpoIdListFromString(hpo_ids);
         this.candGene = candGene;
         this.disease = disease;
@@ -172,7 +172,7 @@ public class DynamicPhenoWandererPriority implements Priority {
      */
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY;
+        return PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
     }
 
     /**
@@ -833,9 +833,9 @@ public class DynamicPhenoWandererPriority implements Priority {
             else {
                 evidence = "<ul><li>No phenotype or PPI evidence</li></ul>";
             }
-            DynamicPhenoWandererRelevanceScore relScore = new DynamicPhenoWandererRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, 
+            ExomiserAllSpeciesRelevanceScore relScore = new ExomiserAllSpeciesRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, 
                     fishPhenotypeEvidence, humanScore, mouseScore, fishScore, walkerScore);
-            gene.addPriorityScore(relScore, PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
+            gene.addPriorityScore(relScore, PriorityType.EXOMISER_ALLSPECIES_PRIORITY);
         }
 
         /*
@@ -845,7 +845,7 @@ public class DynamicPhenoWandererPriority implements Priority {
         TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
         for (Gene g : gene_list) {
             if (scores.get(g.getEntrezGeneID()) == null && randomWalkMatrix.getObjectid2idx().containsKey(g.getEntrezGeneID())) {// Only do for non-pheno direct hits
-                float geneScore = g.getPriorityScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY);
+                float geneScore = g.getPriorityScore(PriorityType.EXOMISER_ALLSPECIES_PRIORITY);
                 if (geneScoreMap.containsKey(geneScore)) {
                     List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
                     geneScoreGeneList.add(g);
@@ -871,7 +871,7 @@ public class DynamicPhenoWandererPriority implements Priority {
             float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
-                g.resetPriorityScore(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY, newScore);
+                g.resetPriorityScore(PriorityType.EXOMISER_ALLSPECIES_PRIORITY, newScore);
             }
         }
         String s = String.format("Phenotype and Protein-Protein Interaction evidence was available for %d of %d genes (%.1f%%)",

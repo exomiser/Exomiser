@@ -40,9 +40,9 @@ import sonumina.math.graph.SlimDirectedGraphView;
  * @author Sebastian Koehler
  * @version 0.06 (6 December, 2013)
  */
-public class PhenomizerPriority implements Priority {
+public class PhenixPriority implements Priority {
 
-    private static final Logger logger = LoggerFactory.getLogger(PhenomizerPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(PhenixPriority.class);
 
     /** The HPO as Ontologizer-Ontology object */
     private Ontology hpo;
@@ -91,7 +91,7 @@ public class PhenomizerPriority implements Priority {
     
 
     /**
-     * Create a new instance of the PhenomizerPriority.
+     * Create a new instance of the PhenixPriority.
      * @param scoreDistributionFolder
      *            Folder which contains the score distributions (e.g. 3.out,
      *            3_symmetric.out, 4.out, 4_symmetric.out). It must also contain the
@@ -106,7 +106,7 @@ public class PhenomizerPriority implements Priority {
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      *      Hudson page</a>
      */
-    public PhenomizerPriority(String scoreDistributionFolder, Set<String> hpoQueryTermIds, boolean symmetric) {
+    public PhenixPriority(String scoreDistributionFolder, Set<String> hpoQueryTermIds, boolean symmetric) {
 	
 	if (!scoreDistributionFolder.endsWith(File.separatorChar + "")) {
 	    scoreDistributionFolder += File.separatorChar;
@@ -269,7 +269,7 @@ public class PhenomizerPriority implements Priority {
     /** Flag to output results of filtering against Uberpheno data. */
     @Override
 	public PriorityType getPriorityType() {
-	return PriorityType.PHENOMIZER_PRIORITY;
+	return PriorityType.PHENIX_PRIORITY;
     }
 
     /**
@@ -297,8 +297,8 @@ public class PhenomizerPriority implements Priority {
 	analysedGenes = gene_list.size();
 
 	for (Gene gene : gene_list) {
-            PhenomizerPriorityScore phenomizerRelScore = scoreVariantHPO(gene);
-            gene.addPriorityScore(phenomizerRelScore, PriorityType.PHENOMIZER_PRIORITY);
+            PhenixPriorityScore phenomizerRelScore = scoreVariantHPO(gene);
+            gene.addPriorityScore(phenomizerRelScore, PriorityType.PHENIX_PRIORITY);
             //System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getScore());
 	}
 	String s = String.format("Data investigated in HPO for %d genes. No data for %d genes", analysedGenes, this.offTargetGenes);
@@ -318,11 +318,11 @@ public class PhenomizerPriority implements Priority {
      */
     private void normalizePhenomizerScores(List<Gene> gene_list) {
 	if ( maxSemSim < 1) return;
-	PhenomizerPriorityScore.setNormalizationFactor(1d / maxSemSim);
+	PhenixPriorityScore.setNormalizationFactor(1d / maxSemSim);
 	/*for (Gene g : gene_list) {
-	    float score = g.getRelevagetScorepe.PHENOMIZER_PRIORITY);
+	    float score = g.getRelevagetScorepe.PHENIX_PRIORITY);
 	    score /= this.maxSemSim;
-	    g.setScore(FilterType.PHENOMIZER_PRIORITY, score);
+	    g.setScore(FilterType.PHENIX_PRIORITY, score);
 	    }*/
     }
 
@@ -333,7 +333,7 @@ public class PhenomizerPriority implements Priority {
      * @param g   A {@link exomizer.exome.Gene Gene} whose score is to be
      *            determined.
      */
-    private PhenomizerPriorityScore scoreVariantHPO(Gene g) {
+    private PhenixPriorityScore scoreVariantHPO(Gene g) {
 	
 	int entrezGeneId = g.getEntrezGeneID();
 	String entrezGeneIdString = entrezGeneId + "";
@@ -341,7 +341,7 @@ public class PhenomizerPriority implements Priority {
 	if (!geneId2annotations.containsKey(entrezGeneIdString)) {
 	    //System.err.println("INVALID GENE GIVEN (will set to default-score): Entrez ID: " + g.getEntrezGeneID() + " / " + g.getGeneSymbol());
 	    this.offTargetGenes++;
-	    return new PhenomizerPriorityScore(DEFAULT_SCORE);
+	    return new PhenixPriorityScore(DEFAULT_SCORE);
 	}
 	
 	ArrayList<Term> annotationsOfGene = geneId2annotations.get(entrezGeneIdString);
@@ -360,7 +360,7 @@ public class PhenomizerPriority implements Priority {
 	
 	double rawPvalue;
 	if (scoreDist == null)
-	    return new PhenomizerPriorityScore(DEFAULT_SCORE);
+	    return new PhenixPriorityScore(DEFAULT_SCORE);
 	else {
 	    rawPvalue = scoreDist.getPvalue(similarityScore, 1000.);
 	    rawPvalue = Math.log(rawPvalue) * -1.0; /* Negative log of p value : most significant get highest score */
@@ -368,11 +368,11 @@ public class PhenomizerPriority implements Priority {
 		maxNegLogP = rawPvalue;
 	}
 	
-	return new PhenomizerPriorityScore(rawPvalue, similarityScore);
+	return new PhenixPriorityScore(rawPvalue, similarityScore);
 	// // filter genes not associated with any disease
 	// if
 	// (!HPOutils.diseaseGeneMapper.entrezId2diseaseIds.containsKey(entrezGeneId))
-	// return new PhenomizerPriorityScore(DEFAULT_SCORE);
+	// return new PhenixPriorityScore(DEFAULT_SCORE);
 	//
 	// double sum = 0; // sum of semantic similarity
 	// int num = 0; // required to make average
@@ -384,13 +384,13 @@ public class PhenomizerPriority implements Priority {
 	// if (diseaseEntry == null) {
 	// // System.out.println("diseaseID = " + diseaseId);
 	// // System.out.println("diseaseEntry = NULL " );
-	// // return new PhenomizerPriorityScore(DEFAULT_SCORE);
+	// // return new PhenixPriorityScore(DEFAULT_SCORE);
 	// continue;
 	// }
 	// ArrayList<Term> termsAL = diseaseEntry.getOrganAssociatedTerms();
 	// if (termsAL == null || termsAL.size() < 1) {
 	// continue;
-	// // return new PhenomizerPriorityScore(DEFAULT_SCORE);
+	// // return new PhenixPriorityScore(DEFAULT_SCORE);
 	// }
 	// double similarityScore =
 	// similarityMeasure.computeObjectSimilarity(hpoQueryTerms, termsAL);
@@ -398,11 +398,11 @@ public class PhenomizerPriority implements Priority {
 	// ++num;
 	// }
 	// if (num == 0) {
-	// return new PhenomizerPriorityScore(DEFAULT_SCORE);
+	// return new PhenixPriorityScore(DEFAULT_SCORE);
 	// }
 	//
 	// double avg = sum / num;
-	// return new PhenomizerPriorityScore(avg);
+	// return new PhenixPriorityScore(avg);
     }
     
     /**

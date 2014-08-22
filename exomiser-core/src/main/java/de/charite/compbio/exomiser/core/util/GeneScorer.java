@@ -257,14 +257,14 @@ public class GeneScorer {
         Set<PriorityType> prioritiesRun = gene.getPriorityScoreMap().keySet();
 
         //TODO: what if we ran all of these? It *is* *possible* to do so. 
-        if (prioritiesRun.contains(PriorityType.DYNAMIC_PHENOWANDERER_PRIORITY)) {
-            double logitScore = 1 / (1 + Math.exp(-(-13.96442 + 11.60897 * priorityScore + 8.02343 * filterScore)));
+        if (prioritiesRun.contains(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)) {
+            double logitScore = 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * filterScore)));
             return (float) logitScore;
-        } else if (prioritiesRun.contains(PriorityType.GENEWANDERER_PRIORITY)) {
+        } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {
             //NB this is based on raw walker score
             double logitScore = 1 / (1 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * filterScore)));
             return (float) logitScore;
-        } else if (prioritiesRun.contains(PriorityType.PHENOMIZER_PRIORITY)) {
+        } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
             double logitScore = 1 / (1 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * filterScore)));
             return (float) logitScore;
         } else {

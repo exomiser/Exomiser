@@ -4,7 +4,9 @@ package de.charite.compbio.exomiser.priority;
 
 
 import java.util.ArrayList;
+
 import jannovar.common.Constants;
+import java.util.List;
 
 /**
  * Filter Variants on the basis of OWLSim phenotypic comparisons between the HPO clinical phenotypes
@@ -16,9 +18,9 @@ import jannovar.common.Constants;
  * <P>
  * This code was extended on Feb 1, 2013 to show links to the MGI webpage for the model in question.
  * @author Damian Smedley
- * @version 0.05 (April 2, 2013).
+ * @version 0.06 (April 22, 2013).
  */
-public class MGIPhenodigmPriorityScore implements PriorityScore {
+public class ExomiserMousePriorityScore implements PriorityScore {
     /** The phenodigm score as calculated by OWLsim. This score indicates the 
      * similarity between a humam disease and the phenotype of a genetically
      * modified mouse model.*/
@@ -44,10 +46,10 @@ public class MGIPhenodigmPriorityScore implements PriorityScore {
      * @param gene The corresponding gene symbol, e.g., Gfl1
      * @param PHENODIGM_MGI the phenodigm score for this gene.
      */
-    public MGIPhenodigmPriorityScore(String mgi_id, String gene, float PHENODIGM_MGI) {
-	this.MGI_ID=mgi_id;
+    public ExomiserMousePriorityScore(String mgi_id, String gene, float PHENODIGM_MGI) {
+	this.MGI_ID = mgi_id;
 	this.geneSymbol = gene;
-	this.MGI_Phenodigm =  PHENODIGM_MGI;
+	this.MGI_Phenodigm = PHENODIGM_MGI;
     }
 
     /** If we have not data for the object, then we simply create a noData object
@@ -55,9 +57,9 @@ public class MGIPhenodigmPriorityScore implements PriorityScore {
 	initialized. The purpose of this is so that we do not throuw away Variants if 
 	there is no data about them in our database -- presumably, these are really rare.
     */
-   public static MGIPhenodigmPriorityScore createNoDataRelevanceObject()
+   public static ExomiserMousePriorityScore createNoDataRelevanceObject()
     {
-	MGIPhenodigmPriorityScore rscore = new MGIPhenodigmPriorityScore(null,null,Constants.UNINITIALIZED_FLOAT);
+	ExomiserMousePriorityScore rscore = new ExomiserMousePriorityScore(null,null, Constants.UNINITIALIZED_FLOAT);
 	return rscore;
     }
     
@@ -69,7 +71,7 @@ public class MGIPhenodigmPriorityScore implements PriorityScore {
 	    return 0.1f;// mouse model exists but no hit to this disease
     	}
     	else if (MGI_Phenodigm == Constants.NOPARSE_FLOAT){
-	    return 0.60f;// no mouse model exists in MGI
+	    return 0.6f;// no mouse model exists in MGI
     	}
     	else{
 	    return MGI_Phenodigm;
@@ -81,10 +83,10 @@ public class MGIPhenodigmPriorityScore implements PriorityScore {
     /** @return A string with a summary of the filtering results .*/
     public String getFilterResultSummary() {return null;}
     /** @return A list with detailed results of filtering. The list is intended to be displayed as an HTML list if desired. */
-    public java.util.ArrayList<String> getFilterResultList() {
-	ArrayList<String> L = new ArrayList<String>();
+    public List<String> getFilterResultList() {
+	List<String> L = new ArrayList<String>();
 	if (MGI_Phenodigm == Constants.UNINITIALIZED_FLOAT) {
-	    L.add("MGI Phenodigm: no hit for this disease");
+	    L.add("MGI Phenodigm: no hit for these phenotypes");
 	} else if (MGI_Phenodigm == Constants.NOPARSE_FLOAT){
 	    L.add("MGI Phenodigm: no mouse model for this gene");
 	} else  {
@@ -94,8 +96,7 @@ public class MGIPhenodigmPriorityScore implements PriorityScore {
 	return L;
     }
 
-
-    /**
+     /**
      * @return HTML code with score the Phenodigm score for the current gene or a message if no MGI data was found.
      */
     @Override  
@@ -124,5 +125,7 @@ public class MGIPhenodigmPriorityScore implements PriorityScore {
 	return anchor;
     }
 
-     @Override public void setScore(float newscore){ /* not implemented */ }
+    @Override public void setScore(float newscore){ /* not implemented */ }
+
+
 }

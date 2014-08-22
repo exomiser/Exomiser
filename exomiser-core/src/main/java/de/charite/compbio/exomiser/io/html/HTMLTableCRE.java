@@ -214,7 +214,7 @@ public class HTMLTableCRE extends HTMLTable {
 	
 
 	Map<PriorityType, PriorityScore> relevanceMap= gen.getPriorityScoreMap();
-	PriorityScore phenomizer = relevanceMap.get(PriorityType.PHENOMIZER_PRIORITY);
+	PriorityScore phenomizer = relevanceMap.get(PriorityType.PHENIX_PRIORITY);
 	PriorityScore mim = relevanceMap.get(PriorityType.OMIM_PRIORITY);
 	/** Span over all rows with variants for this gene. */
 	out.write(String.format("<td rowspan=\"%d\" valign=\"top\">",n_variants)); 
