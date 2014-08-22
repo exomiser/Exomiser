@@ -7,7 +7,7 @@
 
 #REQUIRED OPTIONS - these need to be filled in either here or on the command-line.
 vcf=data/Pfeiffer.vcf
-prioritiser=phenodigm-mgi
+prioritiser=exomiser-mouse
 
 #SAMPLE DATA OPTIONS
 ped=
