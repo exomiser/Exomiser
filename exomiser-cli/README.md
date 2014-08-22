@@ -65,17 +65,20 @@ Multiple output formats:
     --output-format TSV,VCF (TSV and VCF summary instead of HTML)
 
 Settings file:
-    Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
+    
+Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
 
     java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --settings-file test.settings
 
-    Alternatively you can mix up a settings file and override settings by specifying them on the command line:
+    
+Alternatively you can mix up a settings file and override settings by specifying them on the command line:
 
     java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --settings-file test.settings --prioritiser=phenix
 
 
 Batch mode analysis:
-    Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
+    
+Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
 
     java -Xms5g -Xmx5g -jar exomiser-cli-3.0.0.jar --batch-file batch.txt
 
