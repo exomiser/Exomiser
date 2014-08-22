@@ -82,7 +82,6 @@ public class PhenodigmDataDumperTest {
         expectedFiles.add(new File(outputPath.toFile(), "mouseMp.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "diseaseDisease.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "omimTerms.pg"));
-        expectedFiles.add(new File(outputPath.toFile(), "mouseGeneLevelSummary.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "hpMpMapping.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "hpHpMapping.pg"));
         expectedFiles.add(new File(outputPath.toFile(), "orphanet.pg"));
@@ -144,20 +143,6 @@ public class PhenodigmDataDumperTest {
     @Test
     public void testDumpMouseGeneOrthologData() {
         File expectedFile = instance.dumpMouseGeneOrthologs(outputPath, "testDumpMouseGeneOrtholog.pg");
-        assertTrue(expectedFile.exists());
-        assertNotEquals(0, expectedFile.length());
-    }
-
-    @Test
-    public void testDumpMouseGeneSummaryData() {
-        File expectedFile = instance.dumpMouseGeneLevelSummary(outputPath, "testDumpMouseGeneSummary.pg");
-        assertTrue(expectedFile.exists());
-        assertNotEquals(0, expectedFile.length());
-    }
-    
-    @Test
-    public void testDumpFishGeneLevelSummary() {
-        File expectedFile = instance.dumpFishGeneLevelSummary(outputPath, "testDumpFishGeneLevelSummary.pg");
         assertTrue(expectedFile.exists());
         assertNotEquals(0, expectedFile.length());
     }
