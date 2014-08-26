@@ -60,19 +60,19 @@ public class PriorityFactory {
         
         switch (exomiserSettings.getPrioritiserType()) {
             case PHENIX_PRIORITY:
-                genePriorityList.add(getPhenomizerPrioritiser(hpoIds));
+                genePriorityList.add(getPhenixPrioritiser(hpoIds));
                 break;
             case BOQA_PRIORITY:
                 genePriorityList.add(getBOQAPrioritiser(hpoIds));
                 break;            
             case EXOMISER_ALLSPECIES_PRIORITY:
-                genePriorityList.add(getDynamicPhenoWandererPrioritiser(hpoIds, candidateGene, disease));
+                genePriorityList.add(getExomiserAllSpeciesPrioritiser(hpoIds, candidateGene, disease));
                 break;  
             case EXOMISER_MOUSE_PRIORITY:
-                genePriorityList.add(getDynamicPhenodigmPrioritiser(hpoIds,disease));
+                genePriorityList.add(getExomiserMousePrioritiser(hpoIds,disease));
                 break;
             case EXOMEWALKER_PRIORITY:
-                genePriorityList.add(getGeneWandererPrioritiser(entrezSeedGenes));
+                genePriorityList.add(getExomeWalkerPrioritiser(entrezSeedGenes));
                 break;                      
         }
 
@@ -92,7 +92,7 @@ public class PriorityFactory {
         return priority;
     }
 
-    public Priority getPhenomizerPrioritiser(List<String> hpoIds) {
+    public Priority getPhenixPrioritiser(List<String> hpoIds) {
         Set<String> hpoIDset = new HashSet<>();
         hpoIDset.addAll(hpoIds);
         
@@ -113,7 +113,7 @@ public class PriorityFactory {
         return priority;
     }
 
-    public Priority getDynamicPhenodigmPrioritiser(List<String> hpoIds,String disease) {
+    public Priority getExomiserMousePrioritiser(List<String> hpoIds,String disease) {
         Priority priority = new ExomiserMousePriority(hpoIds,disease);
         try {
             priority.setDatabaseConnection(dataSource.getConnection());
@@ -124,13 +124,13 @@ public class PriorityFactory {
         return priority;
     }
 
-    public Priority getGeneWandererPrioritiser(List<Integer> entrezSeedGenes) {
+    public Priority getExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
         Priority priority = new ExomeWalkerPriority(randomWalkMatrix, entrezSeedGenes);
         logger.info("Made new GeneWanderer Priority: {}", priority);
         return priority;
     }
     
-    public Priority getDynamicPhenoWandererPrioritiser(List<String> hpoIds, String candGene, String disease) {
+    public Priority getExomiserAllSpeciesPrioritiser(List<String> hpoIds, String candGene, String disease) {
         Priority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, randomWalkMatrix);
         try {
             priority.setDatabaseConnection(dataSource.getConnection());
