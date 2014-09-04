@@ -2,6 +2,9 @@ The Exomiser - Command Line Executable
 ===============================================================
 # Change log
 
+## 3.0.1 2014-09-04
+- Bug-fix for duplicate variants in Frequency table where the RSID was different.
+
 ## 3.0.0 2014-08-22
 - Completely re-worked under the hood code
 - New extensible API
