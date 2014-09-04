@@ -20,7 +20,7 @@ The Exomiser - Command Line Executable
 
 # Installation
 
-Unpack the exomiser-cli-${project.version}.tar.gz or exomiser-cli-${project.version}.zip and it's ready to go.
+Unpack the exomiser-cli-${project.version}.zip and it's ready to go.
 
 # Alternative set-up
 
