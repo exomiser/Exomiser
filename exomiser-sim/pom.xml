@@ -5,11 +5,10 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
     </parent>
     <groupId>de.charite.compbio</groupId>
     <artifactId>exomiser-sim</artifactId>
-    <version>2.1.0</version>
     <name>exomiser-sim</name>
     <url>http://maven.apache.org</url>
     <build>
