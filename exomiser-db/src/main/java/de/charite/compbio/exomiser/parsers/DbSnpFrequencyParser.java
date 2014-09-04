@@ -67,8 +67,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
      * Threshold distance from an exon to be considered as flanking
      */
     private final static int FLANKING = 50;
-    
-    private Frequency previous = null; /* use to help avoid duplicate entries. */
 
     /**
      * Map of Chromosomes
@@ -248,14 +246,14 @@ public class DbSnpFrequencyParser implements ResourceParser {
                 if (maf >= 0f) {
                     frequency.setDbSnpGmaf(maf);
                 }
-                //Frequency previous = null; /* use to help avoid duplicate entries. */
+                Frequency previous = null; /* use to help avoid duplicate entries. */
 
                 if (previous != null && previous.isIdenticalSNP(frequency)) {
                     float x = previous.getMaximumFrequency();
                     float y = frequency.getMaximumFrequency();
-                    this.n_duplicates++;
                     if (y > x) {
-                        previous.resetFrequencyValues(frequency);    
+                        previous.resetFrequencyValues(frequency);
+                        this.n_duplicates++;
                     }
                 } else {
                     /* i.e., we have never seen this frequency object before. */
@@ -266,7 +264,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
                 //System.out.println("Not located");
                 n_non_exonic_vars++;
             }
-            previous = frequency;
         }
 
     }
