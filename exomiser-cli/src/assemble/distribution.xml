@@ -11,6 +11,7 @@
         <fileSet>
             <directory>${project.basedir}</directory>
             <outputDirectory>/</outputDirectory>
+            <filtered>true</filtered>
             <includes>
                 <include>*.jar</include>
                 <include>README*</include>
