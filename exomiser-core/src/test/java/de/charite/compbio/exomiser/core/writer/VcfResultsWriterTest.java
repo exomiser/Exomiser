@@ -38,9 +38,9 @@ public class VcfResultsWriterTest {
     private final Gene gene;
     private final Gene failGene;
     private final VcfResultsWriter instance;
-    private static final String PASS_VARIANT_STRING = "chr1	1	.	A	T	2.2	PASS	GENE=.;VARIANT_SCORE=1.0;GENE_PHENO_SCORE=0.0;GENE_VARIANT_SCORE=0.0;GENE_COMBINED_SCORE=0.0	GT	0/1\n";
+    private static final String PASS_VARIANT_STRING = "chr1	1	.	A	T	2.2	PASS	;EXOMISER_GENE=.;EXOMISER_VARIANT_SCORE=1.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_GENE_COMBINED_SCORE=0.0	GT	0/1\n";
     private static final FilterType FAIL_FILTER_TYPE = FilterType.PATHOGENICITY_FILTER;
-    private static final String FAIL_VARIANT_STRING = String.format("chr1	2	.	T	-	2.2	%s	GENE=.;VARIANT_SCORE=0.0;GENE_PHENO_SCORE=0.0;GENE_VARIANT_SCORE=0.0;GENE_COMBINED_SCORE=0.0	GT	0/1\n", FAIL_FILTER_TYPE.toString());
+    private static final String FAIL_VARIANT_STRING = String.format("chr1	2	.	T	-	2.2	%s	;EXOMISER_GENE=.;EXOMISER_VARIANT_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_GENE_COMBINED_SCORE=0.0	GT	0/1\n", FAIL_FILTER_TYPE.toString());
     private SampleData sampleData;
     
     @Mock
@@ -57,12 +57,12 @@ public class VcfResultsWriterTest {
         byte chr = 1;
 
         
-        Variant passVariant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f);
+        Variant passVariant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
         passVariant.setAnnotation(annotationList);
         VariantEvaluation passVariantEval = new VariantEvaluation(passVariant);
         gene = new Gene(passVariantEval);
         
-        Variant failVariant = new Variant(chr, 2, "T", "-", genotypeCall, 2.2f);
+        Variant failVariant = new Variant(chr, 2, "T", "-", genotypeCall, 2.2f, "");
         failVariant.setAnnotation(annotationList);
         VariantEvaluation failVariantEval = new VariantEvaluation(failVariant);
         failVariantEval.addFailedFilter(FAIL_FILTER_TYPE, new TargetFilterScore(0f));
