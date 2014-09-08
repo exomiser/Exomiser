@@ -48,7 +48,7 @@ public class TsvResultsWriterTest {
         GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, Integer.SIZE);
         byte chr = 1;
         
-        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f);
+        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
 
         Annotation annotation = new Annotation(TranscriptModel.createTranscriptModel(), "KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q", VariantType.UTR3);
         annotation.setGeneSymbol("FGFR2");

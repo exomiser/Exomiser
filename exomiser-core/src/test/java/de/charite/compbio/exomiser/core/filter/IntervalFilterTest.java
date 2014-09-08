@@ -54,16 +54,16 @@ public class IntervalFilterTest {
     }
     
     private void setUpVariants() {
-        Variant rightChromosomeRightPositionVariant = new Variant(RIGHT_CHR, INSIDE_REGION, "A", "T", null, 3);
+        Variant rightChromosomeRightPositionVariant = new Variant(RIGHT_CHR, INSIDE_REGION, "A", "T", null, 3, "");
         rightChromosomeRightPosition = new VariantEvaluation(rightChromosomeRightPositionVariant);
     
-        Variant rightChromosomeWrongPositionVariant = new Variant(RIGHT_CHR, BEFORE_REGION, "T", "A", null, 3);
+        Variant rightChromosomeWrongPositionVariant = new Variant(RIGHT_CHR, BEFORE_REGION, "T", "A", null, 3, "");
         rightChromosomeWrongPosition = new VariantEvaluation(rightChromosomeWrongPositionVariant);
         
-        Variant wrongChromosomeRightPositionVariant = new Variant(WRONG_CHR, INSIDE_REGION, "C", "T", null, 3);
+        Variant wrongChromosomeRightPositionVariant = new Variant(WRONG_CHR, INSIDE_REGION, "C", "T", null, 3, "");
         wrongChromosomeRightPosition = new VariantEvaluation(wrongChromosomeRightPositionVariant);
         
-        Variant wrongChromosomeWrongPositionVariant = new Variant(WRONG_CHR, AFTER_REGION, "A", "G", null, 3);
+        Variant wrongChromosomeWrongPositionVariant = new Variant(WRONG_CHR, AFTER_REGION, "A", "G", null, 3, "");
         wrongChromosomeWrongPosition = new VariantEvaluation(wrongChromosomeWrongPositionVariant);
     }
     

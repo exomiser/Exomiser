@@ -41,7 +41,7 @@ public class VariantEvaluationTest {
     public void setUp() {
         GenotypeCall genotypeCall = new GenotypeCall(HETEROZYGOUS, QUALITY, READ_DEPTH);
         byte chr = 1;
-        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f);
+        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
         instance = new VariantEvaluation(variant);
     }
 
