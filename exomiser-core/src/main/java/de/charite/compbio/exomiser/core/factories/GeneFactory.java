@@ -46,7 +46,7 @@ public class GeneFactory {
              * pathogenic. Therefore hash on this first symbol if multiple
              */
             String fullName = variantEvaluation.getGeneSymbol();
-            if (fullName != null) {
+            if (fullName != null && !".".equals(fullName)) {
                 // Off target variants do not have gene-symbols.
                 // This if avoids null pointers
                 String geneName = parseGeneName(fullName);
