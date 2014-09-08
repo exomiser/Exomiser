@@ -42,6 +42,10 @@
             <includes>
                 <include>Pfeiffer.vcf</include>
                 <include>ucsc_hg19.ser</include>
+                <include>rw_string_9_05.gz</include>
+                <include>rw_string_9_05_id2index.gz</include>
+                <include>exomiser.h2.db</include>
+                <include>phenix/*</include>
             </includes>
         </fileSet>
         <fileSet>
