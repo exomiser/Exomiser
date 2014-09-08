@@ -18,25 +18,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     
-    <profiles>
-        <profile>
-            <build>
-                <resources>          
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
-                        <filtering>true</filtering>
-                    </resource>
-                </resources> 
-            </build>
-        </profile>
-    </profiles>
-    
     <dependencies>
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>exomiser-core</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <!--Jannovar is used for providing known gene annotations on variants -->
         <dependency>
@@ -77,6 +63,13 @@
     </dependencies>
  
     <build>
+        <resources>          
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
+                <filtering>true</filtering>
+            </resource>
+        </resources> 
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
