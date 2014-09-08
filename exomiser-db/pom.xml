@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.2</version>
     </parent>
   
     <properties>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>exomiser-core</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
         </dependency>
         <!-- Database dependencies-->
         <dependency>
