@@ -119,13 +119,13 @@ public class ExomiserMousePriority implements Priority {
     /** Get the name of this prioritization algorithm. */
     @Override 
     public String getPriorityName() { 
-        return "Dynamic PhenoDigm"; 
+        return priorityType.getCommandLineValue(); 
     }
 
     /** Flag to output results of filtering against PhenoDigm data. */
     @Override 
     public PriorityType getPriorityType() { 
-        return PriorityType.EXOMISER_MOUSE_PRIORITY;
+        return priorityType;
     } 
 
  
@@ -149,8 +149,7 @@ public class ExomiserMousePriority implements Priority {
 
    
     
-    public void prioritizeGenes(List<Gene> gene_list)
-    {
+    public void prioritizeGenes(List<Gene> gene_list) {
 	
 	this.found_data_for_mgi_phenodigm=0;
 	this.n_before = gene_list.size();
