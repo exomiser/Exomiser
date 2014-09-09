@@ -843,6 +843,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
         //this.messages.add(hpInput);// now display all HPO terms on results no need for this
         this.n_before = totalGenes;
         this.n_after = totalGenes;
+        try{
+            connection.close();
+        }
+        catch(SQLException e){
+            logger.error("{}",e);
+        }
     }
 
     /**

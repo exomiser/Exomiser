@@ -162,6 +162,12 @@ public class ExomiserMousePriority implements Priority {
 	    String.format("Data analysed for %d genes using Mouse PhenoDigm",
 			  gene_list.size());
 	this.messages.add(s);
+        try{
+            connection.close();
+        }
+        catch(SQLException e){
+            logger.error("{}",e);
+        }        
    }
     
     /**

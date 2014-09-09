@@ -92,6 +92,12 @@ public class OMIMPriority implements Priority {
             OMIMPriorityScore mimrel = retrieve_omim_data(g);
             g.addPriorityScore(mimrel, PriorityType.OMIM_PRIORITY);
         }
+        try{
+            connection.close();
+        }
+        catch(SQLException e){
+            logger.error("{}",e);
+        }
     }
 
     /**
