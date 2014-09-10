@@ -9,6 +9,8 @@ import de.charite.compbio.exomiser.core.filter.FilterScore;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.filter.FrequencyFilterScore;
 import de.charite.compbio.exomiser.core.filter.QualityFilterScore;
+import de.charite.compbio.exomiser.core.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import jannovar.common.Genotype;
 import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;
@@ -16,6 +18,8 @@ import java.util.EnumSet;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,6 +80,28 @@ public class VariantEvaluationTest {
         assertThat(instance.getVariantEndPosition(), equalTo(1));
     }
 
+    @Test
+    public void testThatTheConstructorCreatesAnEmptyFrequencyDataObject() {
+        FrequencyData frequencyData = instance.getFrequencyData();
+        assertThat(frequencyData, notNullValue());
+        assertThat(frequencyData.getDbSnpMaf(), nullValue());
+        assertThat(frequencyData.getEspAaMaf(), nullValue());
+        assertThat(frequencyData.getEspAllMaf(), nullValue());
+        assertThat(frequencyData.getEspEaMaf(), nullValue());
+        assertThat(frequencyData.getRsId(), nullValue());
+    }
+    
+    @Test
+    public void testThatTheConstructorCreatesAnEmptyPathogenicityDataObject() {
+        PathogenicityData pathogenicityData = instance.getPathogenicityData();
+        assertThat(pathogenicityData, notNullValue());
+        assertThat(pathogenicityData.getMutationTasterScore(), nullValue());
+        assertThat(pathogenicityData.getPolyPhenScore(), nullValue());
+        assertThat(pathogenicityData.getSiftScore(), nullValue());
+        assertThat(pathogenicityData.getCaddScore(), nullValue());
+        assertThat(pathogenicityData.hasPredictedScore(), is(false));
+    }
+    
     @Test
     public void testThatAddingAFilterScoreUpdatesVariantEvaluationFilterScore() {
 

@@ -4,6 +4,7 @@ import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.filter.FilterScore;
 import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.pathogenicity.VariantTypePathogenicityScores;
 import jannovar.common.ModeOfInheritance;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
@@ -59,6 +60,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         passedFilterScoreMap = new HashMap<>();
         failedFilters = EnumSet.noneOf(FilterType.class);
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+        frequencyData = new FrequencyData(null, null, null, null, null);
+        pathogenicityData = new PathogenicityData(null, null, null, null);
     }
 
     /**
