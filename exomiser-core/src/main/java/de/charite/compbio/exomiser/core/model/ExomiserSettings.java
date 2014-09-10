@@ -52,6 +52,11 @@ public class ExomiserSettings {
     private final Path pedFilePath; //might be required if vcf if a multi-sample family vcf
     private final PriorityType prioritiserType;  //required, no default
 
+    //ANALYSIS OPTIONS
+    public static final String RUN_FULL_ANALYSIS_OPTION = "full-analysis";
+    
+    private final boolean runFullAnalysis;
+    
     //FILTER OPTIONS (these are used for JSON de/serealisation and the command-line)
     public static final String MAX_FREQ_OPTION = "max-freq";
     public static final String MIN_QUAL_OPTION = "min-qual";
@@ -126,6 +131,9 @@ public class ExomiserSettings {
         private Path vcfFilePath; //required, no default
         private Path pedFilePath = null;
 
+        //ANALYSIS options
+        private boolean runFullAnalysis = true;
+        
         //PRIORITISER
         private PriorityType prioritiserType = PriorityType.NOT_SET;
         //FILTER options
@@ -171,6 +179,12 @@ public class ExomiserSettings {
         @JsonSetter(PED_OPTION)
         public SettingsBuilder pedFilePath(Path pedFilePath) {
             this.pedFilePath = pedFilePath;
+            return this;
+        }
+        
+        @JsonSetter(RUN_FULL_ANALYSIS_OPTION)
+        public SettingsBuilder runFullAnalysis(boolean runFullAnalysis) {
+            this.runFullAnalysis = runFullAnalysis;
             return this;
         }
 
@@ -307,6 +321,9 @@ public class ExomiserSettings {
         }
         pedFilePath = builder.pedFilePath;
 
+        //analysis
+        runFullAnalysis = builder.runFullAnalysis;
+        
         //Priority
         prioritiserType = builder.prioritiserType;  //required, no default
         if (prioritiserType == PriorityType.NOT_SET) {
@@ -356,6 +373,11 @@ public class ExomiserSettings {
         return pedFilePath;
     }
 
+    @JsonProperty(RUN_FULL_ANALYSIS_OPTION)
+    public boolean runFullAnalysis() {
+        return runFullAnalysis;
+    } 
+    
     @JsonProperty(PRIORITISER_OPTION)
     public PriorityType getPrioritiserType() {
         return prioritiserType;
