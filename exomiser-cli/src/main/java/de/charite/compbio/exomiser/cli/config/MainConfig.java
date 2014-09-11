@@ -6,20 +6,25 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
-import de.charite.compbio.exomiser.core.model.Exomiser;
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
+import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
+import de.charite.compbio.exomiser.core.filter.SparseVariantFilterer;
+import de.charite.compbio.exomiser.core.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.Exomiser;
+import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
-import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
-import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import jannovar.reference.Chromosome;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
+import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,5 +204,18 @@ public class MainConfig {
     @Bean
     public Exomiser exomiser() {
         return new Exomiser();
+    }
+    
+    @Bean 
+    public SparseVariantFilterer sparseVariantFilterer() {
+        return new SparseVariantFilterer();
+    }
+    
+    @Bean
+    public VariantEvaluationDataFactory variantEvaluationDataFactory() {
+        Map<String, FrequencyData> frequencyDataCache = new HashMap<>();
+        Map<String, PathogenicityData> pathogenicityDataCache = new HashMap<>();
+        
+        return new VariantEvaluationDataFactory(frequencyDataCache, pathogenicityDataCache);
     }
 }
