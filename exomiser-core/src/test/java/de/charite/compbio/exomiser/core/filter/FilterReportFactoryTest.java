@@ -5,15 +5,11 @@
  */
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.filter.FilterReport;
-import de.charite.compbio.exomiser.core.filter.FilterReportFactory;
-import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 import org.junit.Before;

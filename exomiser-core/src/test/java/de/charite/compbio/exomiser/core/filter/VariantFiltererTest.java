@@ -5,9 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.filter.Filter;
-import de.charite.compbio.exomiser.core.filter.VariantFilterer;
-import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,14 +13,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(MockitoJUnitRunner.class)
 public class VariantFiltererTest {
 
     //Frequency filter data
@@ -44,6 +46,8 @@ public class VariantFiltererTest {
     @Mock
     private VariantEvaluation passesTargetQualityFilter;
 
+    @Mock
+    private FrequencyDao frequencyDao;
 
     public VariantFiltererTest() {
     }
@@ -53,6 +57,9 @@ public class VariantFiltererTest {
 
         MockitoAnnotations.initMocks(this);
 
+        Mockito.when(frequencyDao.getFrequencyData(null)).thenReturn(null);
+
+                
         Mockito.when(passesAllFilters.passesFilters()).thenReturn(true);
         Mockito.when(failsAllFilters.passesFilters()).thenReturn(false);
         Mockito.when(passesQualityFrequencyFilter.passesFilters()).thenReturn(false);
@@ -100,6 +107,32 @@ public class VariantFiltererTest {
         Assert.assertThat(result, equalTo(expResult));
     }
 
+    @Test
+    public void testUseDestructiveFilteringMaintainsOriginalVariantEvaluations() {
+        List<Filter> filters = new ArrayList<>();
+        filters.add(targetFilter);
+        filters.add(qualityFilter);
+        filters.add(frequencyFilter);
+
+        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+        variantEvaluations.add(passesTargetQualityFilter);
+        variantEvaluations.add(passesQualityFrequencyFilter);
+        variantEvaluations.add(failsAllFilters);
+        variantEvaluations.add(passesAllFilters);
+
+        List<VariantEvaluation> expResult = new ArrayList<>();
+        expResult.add(passesTargetQualityFilter);
+        expResult.add(passesQualityFrequencyFilter);
+        expResult.add(failsAllFilters);
+        expResult.add(passesAllFilters);
+        
+        //when
+        VariantFilterer.useDestructiveFiltering(filters, variantEvaluations);
+
+        //then
+        Assert.assertThat(variantEvaluations, equalTo(expResult));
+    }
+    
     @Test
     public void testUseNonDestructiveFilteringReturnsAllVariantEvaluations() {
         List<Filter> filters = new ArrayList<>();

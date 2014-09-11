@@ -5,11 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.filter.Filter;
-import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.QualityFilter;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
 import java.util.EnumSet;
