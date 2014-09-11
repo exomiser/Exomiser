@@ -132,7 +132,7 @@ public class ExomiserSettings {
         private Path pedFilePath = null;
 
         //ANALYSIS options
-        private boolean runFullAnalysis = true;
+        private boolean runFullAnalysis = false;
         
         //PRIORITISER
         private PriorityType prioritiserType = PriorityType.NOT_SET;

@@ -78,8 +78,8 @@ public class ExomiserSettingsTest {
     private static final String OUT_FILE_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV);
-    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = true;
-    private static final boolean RUN_FULL_ANALYSIS = false;
+    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
+    private static final boolean RUN_FULL_ANALYSIS = true;
     
     public ExomiserSettingsTest() {
     }
