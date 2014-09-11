@@ -25,23 +25,8 @@ public class VariantAnnotator {
 
     private final Map<Byte, Chromosome> chromosomeMap;
 
-    public VariantAnnotator(Map<Byte, Chromosome> chromosomeMap) {
+     public VariantAnnotator(Map<Byte, Chromosome> chromosomeMap) {
         this.chromosomeMap = chromosomeMap;
-    }
-
-    /**
-     * Iterates over all the variants parsed from the VCF file and provides each
-     * one with an annovar-style annotation.
-     */
-    public List<VariantEvaluation> annotateVariants(List<VariantEvaluation> variantList) {
-        logger.info("Annotating {} variants with known gene data", variantList.size());
-        for (VariantEvaluation ve : variantList) {
-            Variant v = ve.getVariant();
-            // System.out.println(v);
-            annotateVariant(v);
-        }
-        logger.info("Done");
-        return variantList;
     }
 
     public void annotateVariant(Variant variant) {
