@@ -326,6 +326,12 @@ public class BoqaPriority implements Priority {
 
             logger.info("Gene " + g.getGeneSymbol() + " has an relevance score of " + bqrel.getScore());
         }
+        try{
+            connection.close();
+        }
+        catch(SQLException e){
+            logger.error("{}",e);
+        }
     }
 
     /**
