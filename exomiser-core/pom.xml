@@ -16,19 +16,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <profiles>
-        <profile>
-            <build>
-                <resources>          
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
-                        <filtering>true</filtering>
-                    </resource>
-                </resources> 
-            </build>
-        </profile>
-    </profiles>
     
     <dependencies>
         <!--Jannovar is used for providing known gene annotations on variants -->
@@ -108,4 +95,24 @@
             <type>jar</type>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <!--<skipTests>true</skipTests>-->
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>          
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
+                <filtering>true</filtering>
+            </resource>
+        </resources> 
+    </build>
 </project>

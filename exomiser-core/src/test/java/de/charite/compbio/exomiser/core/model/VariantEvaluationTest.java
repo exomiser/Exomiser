@@ -81,14 +81,9 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testThatTheConstructorCreatesAnEmptyFrequencyDataObject() {
+    public void testThatTheConstructorDoesNotSetAFrequencyDataObject() {
         FrequencyData frequencyData = instance.getFrequencyData();
-        assertThat(frequencyData, notNullValue());
-        assertThat(frequencyData.getDbSnpMaf(), nullValue());
-        assertThat(frequencyData.getEspAaMaf(), nullValue());
-        assertThat(frequencyData.getEspAllMaf(), nullValue());
-        assertThat(frequencyData.getEspEaMaf(), nullValue());
-        assertThat(frequencyData.getRsId(), nullValue());
+        assertThat(frequencyData, nullValue());
     }
     
     @Test

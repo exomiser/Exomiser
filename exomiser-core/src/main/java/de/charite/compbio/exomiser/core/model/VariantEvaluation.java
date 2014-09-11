@@ -60,7 +60,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         passedFilterScoreMap = new HashMap<>();
         failedFilters = EnumSet.noneOf(FilterType.class);
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-        frequencyData = new FrequencyData(null, null, null, null, null);
+        //why not set the frequency data too? Well, not having a null implies that
+        //the data has been set from the database and if there is no data then 
+        //it must be an extremely rare and therefore interesting variant. 
+        //This will then erroneously pass the frequency filter.   
         pathogenicityData = new PathogenicityData(null, null, null, null);
     }
 
