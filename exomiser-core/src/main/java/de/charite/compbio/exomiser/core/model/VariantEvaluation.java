@@ -52,13 +52,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     private PathogenicityData pathogenicityData;
 
-    private Set inheritanceModes;
-
     public VariantEvaluation(Variant v) {
         var = v;
         passedFilterScoreMap = new HashMap<>();
         failedFilters = EnumSet.noneOf(FilterType.class);
-        inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
     }
 
     /**
@@ -393,20 +390,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public void setPathogenicityData(PathogenicityData pathogenicityData) {
         this.pathogenicityData = pathogenicityData;
-    }
-
-    /**
-     *
-     * @return a Set of {@code ModeOfInheritance} with which this variant is
-     * compatible with. This will be dependant on the {@code SampleData}
-     * {@code Pedigree} for this particular {@code Variant}.
-     */
-    public Set getInheritanceModes() {
-        return inheritanceModes;
-    }
-
-    public void setInheritanceModes(Set inheritanceModes) {
-        this.inheritanceModes = inheritanceModes;
     }
 
 }

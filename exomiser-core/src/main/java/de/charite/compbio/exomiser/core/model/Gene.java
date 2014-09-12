@@ -203,8 +203,20 @@ public class Gene implements Comparable<Gene>, Filterable {
     /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
-    public List<VariantEvaluation> getVariantList() {
+    public List<VariantEvaluation> getVariantEvaluations() {
         return variantList;
+    }
+    
+    public List<VariantEvaluation> getPassedVariantEvaluations() {
+        List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
+        
+        for (VariantEvaluation variantEvaluation : variantList) {
+            if (variantEvaluation.passesFilters()) {
+                passedVariantEvaluations.add(variantEvaluation);
+            }
+        }
+        
+        return passedVariantEvaluations;
     }
 
     /**
@@ -400,25 +412,6 @@ public class Gene implements Comparable<Gene>, Filterable {
     public Iterator<VariantEvaluation> getVariantEvaluationIterator() {
         Collections.sort(this.variantList);
         return this.variantList.iterator();
-    }
-
-    /**
-     * Adds the given {@code FilterType} to the set of filters which the
-     * {@code VariantEvaluation} failed to pass.
-     *
-     * @param filterType
-     */
-    public void addFailedFilter(FilterType filterType) {
-        failedFilters.add(filterType);
-    }
-
-    /**
-     *
-     * @return the Set of {@code FilterType} which the {@code VariantEvaluation}
-     * failed to pass.
-     */
-    public Set<FilterType> getFailedFilters() {
-        return failedFilters;
     }
 
     @Override

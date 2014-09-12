@@ -69,7 +69,7 @@ public class VcfResultsWriter implements ResultsWriter {
 
     protected String buildGeneVariantsString(Gene gene) {
         StringBuilder sb = new StringBuilder();
-        for (VariantEvaluation ve : gene.getVariantList()) {
+        for (VariantEvaluation ve : gene.getVariantEvaluations()) {
             Variant v = ve.getVariant();
             //CHROM\t
             addColumnField(sb, v.get_chromosome_as_string());

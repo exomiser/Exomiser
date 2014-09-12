@@ -185,7 +185,7 @@ public class HTMLTable {
 //	}
         List<VariantEvaluation> passedFilters = new ArrayList<>();
 
-        for (VariantEvaluation ve : gene.getVariantList()) {
+        for (VariantEvaluation ve : gene.getVariantEvaluations()) {
             if (ve.passesFilters()) {
                 passedFilters.add(ve);
             }
@@ -461,7 +461,7 @@ public class HTMLTable {
     protected StringBuilder appendPrioritiserResultCell(StringBuilder stringBuilder, Gene gene) {
 
         int numPassedVariants = 0;
-        for (VariantEvaluation varEval : gene.getVariantList()) {
+        for (VariantEvaluation varEval : gene.getVariantEvaluations()) {
             if (varEval.passesFilters()) {
                 numPassedVariants++;
             }
@@ -503,7 +503,7 @@ public class HTMLTable {
 //        //this is a hack as the first variant is shown regardless of whether it passed any filters or not. 
 //        //FIX THIS!!! (use Thymeleaf....)
 //        int numPassedVariants = 0;
-//        for (VariantEvaluation varEval : gen.getVariantList()) {
+//        for (VariantEvaluation varEval : gen.getVariantEvaluations()) {
 //            if (varEval.passesFilters()) {
 //                numPassedVariants++;
 //            }

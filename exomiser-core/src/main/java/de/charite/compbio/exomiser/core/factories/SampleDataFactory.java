@@ -75,11 +75,6 @@ public class SampleDataFactory {
         //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
         List<Gene> geneList = GeneFactory.createGeneList(sampleData.getVariantEvaluations());
 
-        //lastly remember to analyse the inheritance modes for the gene and variants 
-        //otherwise Bad Things (filter and priority scores depending on the inheritance 
-        //mode will be screwy) will happen 
-        analyseCompatibleInheritanceModes(geneList, pedigree);
-
         sampleData.setGeneList(geneList);
 
         return sampleData;
@@ -242,22 +237,4 @@ public class SampleDataFactory {
         }
 
     }
-
-    /**
-     * This method sets the mode of inheritance for all Gene objects for
-     * segregation analysis. It is intended that pedigree filtering algorithms
-     * can use the genotypes associated with this Gene and its Variants in order
-     * to perform inheritance filtering.
-     *
-     * @param ped The pedigree corresponding to the current VCF file.
-     */
-    private void analyseCompatibleInheritanceModes(List<Gene> geneList, Pedigree pedigree) {
-        InheritanceModeAnalyser inheritanceModeAnaylser = new InheritanceModeAnalyser(pedigree);
-
-        for (Gene gene : geneList) {
-            Set<ModeOfInheritance> geneInheritanceModes = inheritanceModeAnaylser.analyseInheritanceModesForGene(gene);
-            gene.setInheritanceModes(geneInheritanceModes);
-        }
-    }
-
 }
