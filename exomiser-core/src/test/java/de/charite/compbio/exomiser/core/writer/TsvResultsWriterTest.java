@@ -39,7 +39,7 @@ public class TsvResultsWriterTest {
 
     private final Gene gene;
     private final TsvResultsWriter instance;
-    private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.9500	NaN	NaN	NaN	NaN	STOPGAIN	0\n";
+    private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0\n";
     private SampleData sampleData;
     
     public TsvResultsWriterTest() {
