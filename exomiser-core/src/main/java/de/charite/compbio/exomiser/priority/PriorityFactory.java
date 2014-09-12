@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.priority;
 
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
-import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -82,11 +81,7 @@ public class PriorityFactory {
     public Priority getOmimPrioritizer() {
         Priority priority = new OMIMPriority();
 
-        try {
-            priority.setDatabaseConnection(dataSource.getConnection());
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
+        setPrioritiserConnection(priority);
 
         logger.info("Made new OMIM Priority: {}", priority);
         return priority;
@@ -104,22 +99,14 @@ public class PriorityFactory {
 
     public Priority getBOQAPrioritiser(List<String> hpoIds) {
         Priority priority = new BoqaPriority(hpoOntologyFilePath, hpoAnnotationFilePath, hpoIds);
-        try {
-            priority.setDatabaseConnection(dataSource.getConnection());
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
+        setPrioritiserConnection(priority);
         logger.info("Made new BOQA Priority: {}", priority);
         return priority;
     }
 
     public Priority getExomiserMousePrioritiser(List<String> hpoIds,String disease) {
         Priority priority = new ExomiserMousePriority(hpoIds,disease);
-        try {
-            priority.setDatabaseConnection(dataSource.getConnection());
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
+        setPrioritiserConnection(priority);
         logger.info("Made new DynamicPhenodigm Priority: {}", priority);
         return priority;
     }
@@ -132,13 +119,17 @@ public class PriorityFactory {
     
     public Priority getExomiserAllSpeciesPrioritiser(List<String> hpoIds, String candGene, String disease) {
         Priority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, randomWalkMatrix);
+        setPrioritiserConnection(priority);
+        logger.info("Made new DynamicPhenoWanderer Priority: {}", priority);
+        return priority;
+    }
+
+    private void setPrioritiserConnection(Priority priority) {
         try {
-            priority.setDatabaseConnection(dataSource.getConnection());
+            priority.setConnection(dataSource.getConnection());
         } catch (SQLException ex) {
             logger.error(null, ex);
         }
-        logger.info("Made new DynamicPhenoWanderer Priority: {}", priority);
-        return priority;
     }
 
 }

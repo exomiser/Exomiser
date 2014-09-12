@@ -208,6 +208,10 @@ public class InheritancePriority implements Priority {
      * elsewhere.
      */
     @Override
-    public void setDatabaseConnection(Connection connection) { /* no-op */ }
+    public void setConnection(Connection connection) { /* no-op */ }
 
+    @Override
+    public void closeConnection() {
+        //not implemented - no connection to close
+    }   
 }

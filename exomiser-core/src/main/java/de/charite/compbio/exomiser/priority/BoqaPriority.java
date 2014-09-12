@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import ontologizer.association.AssociationContainer;
 import ontologizer.association.AssociationParser;
 import ontologizer.association.Gene2Associations;
@@ -116,6 +117,7 @@ public class BoqaPriority implements Priority {
         inputHPO(hpoOboFile, hpoAnnotationFile);
         initializeHPOTermList(hpoTermList);
         performBOQACalculations();
+        closeConnection();
     }
 
     public BoqaPriority(Path hpoOboFilePath, Path hpoAnnotationFilePath, List<String> hpoTermList) {
@@ -129,6 +131,7 @@ public class BoqaPriority implements Priority {
         inputHPO(hpoOboFilePath.toString(), hpoAnnotationFilePath.toString());
         hpoList = hpoTermList;
         performBOQACalculations();
+        closeConnection();
     }
     /**
      * Add an HPO term and all of its ancestors to the BOQA object, i.e., make
@@ -444,9 +447,18 @@ public class BoqaPriority implements Priority {
      * or tomcat.
      */
     @Override
-    public void setDatabaseConnection(Connection connection) {
+    public void setConnection(Connection connection) {
         this.connection = connection;
         setUpSQLPreparedStatement();
+    }
+
+    @Override
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException ex) {
+            logger.error(null, ex);
+        }
     }
 
     /**

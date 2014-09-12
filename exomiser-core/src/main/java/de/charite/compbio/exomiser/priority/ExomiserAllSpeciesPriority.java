@@ -843,12 +843,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         //this.messages.add(hpInput);// now display all HPO terms on results no need for this
         this.n_before = totalGenes;
         this.n_after = totalGenes;
-        try{
-            connection.close();
-        }
-        catch(SQLException e){
-            logger.error("{}",e);
-        }
+        closeConnection();
     }
 
     /**
@@ -927,7 +922,17 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * @param connection A connection to a postgreSQL database from the exomizer
      * or tomcat.
      */
-    public void setDatabaseConnection(Connection connection) {
+    @Override
+    public void setConnection(Connection connection) {
         this.connection = connection;
+    }
+
+    @Override
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException ex) {
+            logger.error(null, ex);
+        }
     }
 }
