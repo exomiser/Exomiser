@@ -78,6 +78,10 @@ public class ExomiserAllSpeciesPriority implements Priority {
     private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpZpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
     private float best_max_score = 0f;
     private float best_avg_score = 0f;
+    private boolean ppi = false;
+    private boolean human = false;
+    private boolean mouse = false;
+    private boolean fish = false;
     
     /**
      * This is the matrix of similarities between the seeed genes and all genes
@@ -100,12 +104,35 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
      */
-    public ExomiserAllSpeciesPriority(List<String> hpoIds, String candidateGene, String disease, DataMatrix rwMatrix) {
+    public ExomiserAllSpeciesPriority(List<String> hpoIds, String candidateGene, String disease, String exomiser2Params, DataMatrix rwMatrix) {
         this.hpoIds = hpoIds;
         candGene = candidateGene;
         this.disease = disease;
-
         randomWalkMatrix = rwMatrix;
+        logger.info("Params are " + exomiser2Params);
+        if (exomiser2Params.equals("")){
+            this.ppi = true;
+            this.human = true;  
+            this.mouse = true;
+            this.fish = true;
+        } else {
+            String[] paramsArray = exomiser2Params.split(",");
+            for (String param : paramsArray) {
+                if (param.equals("ppi")){
+                    this.ppi = true;
+                }
+                else if (param.equals("human")){
+                    this.human = true;
+                }
+                else if (param.equals("mouse")){
+                    this.mouse = true;
+                }
+                else if (param.equals("fish")){
+                    this.fish = true;
+                }
+            }
+        }
+        logger.info("PPI"+ppi+":"+"HUMAN"+human+":"+"MOUSE"+mouse+":"+"FISH"+fish);
         logger.info("Using randomWalkMatrix: {}", randomWalkMatrix);
     }
 
@@ -167,26 +194,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 ResultSet rs = findMappingStatement.executeQuery();
                 int found = 0;
                 while (rs.next()) {
-                    // hack to skip all MONARCH inheritance and onset results for hp vs hp as artificially high
-                    // now just used MONARCH annotation table
-                    //                    if (hpid.equals("HP:0000005") || hpid.equals("HP:0000006") || hpid.equals("HP:0001452") || hpid.equals("HP:0012274") || hpid.equals("HP:0012275") || hpid.equals("HP:0001444") || hpid.equals("HP:0001470") 
-//                            || hpid.equals("HP:0001475") || hpid.equals("HP:0000007") || hpid.equals("HP:0001466") || hpid.equals("HP:0001472") || hpid.equals("HP:0003743") || hpid.equals("HP:0003744") 
-//                            || hpid.equals("HP:0010985") || hpid.equals("HP:0001417") || hpid.equals("HP:0001423") || hpid.equals("HP:0001419") || hpid.equals("HP:0001450") || hpid.equals("HP:0001425") || hpid.equals("HP:0001427") 
-//                            || hpid.equals("HP:0001426") || hpid.equals("HP:0010983") || hpid.equals("HP:0010984") || hpid.equals("HP:0010982") || hpid.equals("HP:0001428") || hpid.equals("HP:0001442") || hpid.equals("HP:0003745")){
-//                        continue;
-//                    }
-                    //found = 1;
                     String mp_id = rs.getString(1);
                     knownMps.put(mp_id, 1);
                     StringBuffer hashKey = new StringBuffer();
                     hashKey.append(hpid);
                     hashKey.append(mp_id);
                     float score = rs.getFloat(2);
-                    // hack as Monarch gives AD, AR etc an arbitary max score
-//                    if (score > 12.856503 && score < 12.856505){
-//                        logger.info("SKIPPING HIT FOR " + hpid + " AND " + mp_id);
-//                        continue;
-//                    }
                     mapped_terms.put(hashKey.toString(), score);
                     if (species.equals("human")) {
                         if (hpid.equals(mp_id)) {
@@ -256,7 +269,16 @@ public class ExomiserAllSpeciesPriority implements Priority {
             //this.best_avg_score = sum_best_score / best_hit_counter;
             this.best_avg_score = sum_best_score / (2 * hps.length);
         }
- 
+        if (species.equals("human") && !human){
+            return hpMatches;
+        }
+        if (species.equals("mouse") && !mouse){
+            return hpMatches;
+        }
+        if (species.equals("fish") && !fish){
+            return hpMatches;
+        }
+        
         // calculate score for this gene
         try {
             ResultSet rs = findAnnotationStatement.executeQuery();
@@ -601,7 +623,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         computeDistanceAllNodesFromStartNodes();
         
         if (phenoGenes == null || phenoGenes.size() < 1) {
-            throw new RuntimeException("Please specify a valid list of known genes!");
+            //throw new RuntimeException("Please specify a valid list of known genes!");
         }
         int PPIdataAvailable = 0;
         int totalGenes = gene_list.size();
@@ -698,11 +720,11 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
                 ++PPIdataAvailable;
             } //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
-            else if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
+            if (ppi && randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID()) && phenoGenes != null && phenoGenes.size() > 0) {
                 int col_idx = computeSimStartNodesToNode(gene);
                 int row_idx = randomWalkMatrix.getObjectid2idx().get(gene.getEntrezGeneID());
-                val = combinedProximityVector.get(row_idx, col_idx);
-                walkerScore = val;
+                walkerScore = combinedProximityVector.get(row_idx, col_idx);
+                //walkerScore = val;
                 String closestGene = phenoGeneSymbols.get(col_idx);
                 String thisGene = gene.getGeneSymbol();
                 //String stringDbImageLink = "http://string-db.org/api/image/networkList?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
@@ -711,7 +733,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 entrezGeneID = phenoGenes.get(col_idx);
                 // HUMAN
                 if (humanScores.get(phenoGenes.get(col_idx)) != null) {
-                    humanScore = humanScores.get(entrezGeneID);
+                    double humanPPIScore = humanScores.get(entrezGeneID);
                     String diseaseId = humanDiseases.get(phenoGenes.get(col_idx));
                     String originalDiseaseId = diseaseId;
                     String diseaseLink = diseaseTerms.get(diseaseId);
@@ -722,7 +744,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                         diseaseId = diseaseId.split(":")[1];
                         diseaseLink = "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseLink + "</a>";
                     }
-                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> with score %s and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, humanScore, diseaseLink, closestGene);
+                    evidence = evidence + String.format("<ul><li>Proximity in <a href=\"%s\">interactome to %s</a> with score %s and phenotypic similarity to %s associated with %s. <a class=\"op1\" id=\"" + gene.getEntrezGeneID() + "\"><button type=\"button\">Best Phenotype Matches</button></a></li></ul>", stringDbLink, closestGene, humanPPIScore, diseaseLink, closestGene);
                     //evidence = evidence + "<br>Best phenotype matches";
                     if (hpHpMatches.get(entrezGeneID) != null && hpHpMatches.get(entrezGeneID).get(originalDiseaseId) != null) {
                         for (String hpId : hpoIds) {
@@ -788,7 +810,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
                 ++PPIdataAvailable;
             } // NO PHENO HIT OR PPI INTERACTION
-            else {
+            if (evidence.equals("")) {
                 evidence = "<ul><li>No phenotype or PPI evidence</li></ul>";
             }
             ExomiserAllSpeciesRelevanceScore relScore = new ExomiserAllSpeciesRelevanceScore(val, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence, 
@@ -802,8 +824,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
          */
         TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
         for (Gene g : gene_list) {
-            if (scores.get(g.getEntrezGeneID()) == null && randomWalkMatrix.getObjectid2idx().containsKey(g.getEntrezGeneID())) {// Only do for non-pheno direct hits
-                float geneScore = g.getPriorityScore(PriorityType.EXOMISER_ALLSPECIES_PRIORITY);
+            //if (randomWalkMatrix.getObjectid2idx().containsKey(g.getEntrezGeneID())) {// Only do for PPI hits
+                //float geneScore = g.getPriorityScore(PriorityType.EXOMISER_ALLSPECIES_PRIORITY);
+                float geneScore = ((ExomiserAllSpeciesRelevanceScore) g.getPriorityScoreMap().get(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)).getWalkerScore();
+                if (geneScore == 0f){
+                    continue;
+                }
                 if (geneScoreMap.containsKey(geneScore)) {
                     List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
                     geneScoreGeneList.add(g);
@@ -812,7 +838,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                     geneScoreGeneList.add(g);
                     geneScoreMap.put(geneScore, geneScoreGeneList);
                 }
-            }
+            //}
         }
         float rank = 1;
         Set<Float> set = geneScoreMap.descendingKeySet();
@@ -826,10 +852,15 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 adjustedRank = rank + (sharedHits / 2);
             }
             //float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
-            float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
+            //float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
+            float newScore = 0.55f - 0.55f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
-                g.resetPriorityScore(PriorityType.EXOMISER_ALLSPECIES_PRIORITY, newScore);
+                logger.info(g.getGeneSymbol()+":"+newScore+":"+g.getPriorityScore()+":"+
+                        ((ExomiserAllSpeciesRelevanceScore) g.getPriorityScoreMap().get(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)).getScore());
+                if (newScore > ((ExomiserAllSpeciesRelevanceScore) g.getPriorityScoreMap().get(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)).getScore()){//i.e. only overwrite phenotype-based score if PPI score is larger
+                    g.resetPriorityScore(PriorityType.EXOMISER_ALLSPECIES_PRIORITY, newScore);
+                }
             }
         }
         String s = String.format("Phenotype and Protein-Protein Interaction evidence was available for %d of %d genes (%.1f%%)",
@@ -843,7 +874,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
         //this.messages.add(hpInput);// now display all HPO terms on results no need for this
         this.n_before = totalGenes;
         this.n_after = totalGenes;
-        closeConnection();
+        try{
+            connection.close();
+        }
+        catch(SQLException e){
+            logger.error("{}",e);
+        }
     }
 
     /**
@@ -915,7 +951,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         }
         return bestHitIndex;
     }
-
+    
     /**
      * Initialize the database connection and call {@link #setUpSQLPreparedStatements}
      *
@@ -934,5 +970,5 @@ public class ExomiserAllSpeciesPriority implements Priority {
         } catch (SQLException ex) {
             logger.error(null, ex);
         }
-    }
+    }    
 }

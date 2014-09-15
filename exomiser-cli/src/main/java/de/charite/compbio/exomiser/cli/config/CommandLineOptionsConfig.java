@@ -137,6 +137,7 @@ public class CommandLineOptionsConfig {
         //Prioritisers - Apart from the disease and inheritance prioritisers are all mutually exclusive.
         options.addOption(new Option("D", DISEASE_ID_OPTION, true, "OMIM ID for disease being sequenced. e.g. OMIM:101600")); //OMIMPriority
         options.addOption(new Option("I", MODE_OF_INHERITANCE_OPTION, true, "Filter variants for inheritance pattern (AR, AD, X)")); //InheritancePriority change to DOMINANT / RECESSIVE / X ? Inclusive or exclusive?
+        options.addOption(new Option("E", EXOMISER2_PARAMS_OPTION, true, "Optional paramaters for Exomiser 2 (human,mouse,fish,ppi)"));
         //The desired PRIORITISER_OPTION e.g. --PRIORITISER_OPTION=pheno-wanderer or --PRIORITISER_OPTION=zfin-phenodigm
         //this is less ambiguous to the user and makes for easier parsing. Can then check that all the required fields are present before proceeding.
         String prioritiserLongOpt = PRIORITISER_OPTION;
