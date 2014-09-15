@@ -193,6 +193,9 @@ public class CommandLineParser {
             case DISEASE_ID_OPTION:
                 settingsBuilder.diseaseId(value);
                 break;
+            case EXOMISER2_PARAMS_OPTION:
+                settingsBuilder.exomiser2Params(parseExomiser2Params(values));
+                break;    
             case MODE_OF_INHERITANCE_OPTION:
                 settingsBuilder.modeOfInheritance(parseInheritanceMode(value));
                 break;
@@ -218,6 +221,23 @@ public class CommandLineParser {
         return "ExomiserCommandLineOptionsParser{" + options + '}';
     }
 
+    private String parseExomiser2Params(String[] values) {
+        String exomiser2Params = "";
+        if (values.length == 0) {
+            return exomiser2Params;
+        }
+        for (String token : values) {
+            token = token.trim();
+            if (exomiser2Params.equals("")){
+                exomiser2Params = token;
+            }
+            else{
+                exomiser2Params = exomiser2Params + "," + token;
+            }
+        }
+        return exomiser2Params;
+    }
+    
     private List<String> parseHpoStringList(String[] values) {
         logger.debug("Parsing HPO values from: {}", values);
 

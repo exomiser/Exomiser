@@ -51,7 +51,7 @@ public class PriorityFactory {
         String candidateGene = exomiserSettings.getCandidateGene();
         List<String> hpoIds = exomiserSettings.getHpoIds();
         List<Integer> entrezSeedGenes = exomiserSettings.getSeedGeneList();
-        
+        String exomiser2Params = exomiserSettings.getExomiser2Params();
         List<Priority> genePriorityList = new ArrayList<>();
         //TODO: OmimPrioritizer is specified implicitly - perhaps they should be different types of ExomiserSettings?
         //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. These might be badly named as the OMIM proritiser is currently the default.
@@ -65,7 +65,7 @@ public class PriorityFactory {
                 genePriorityList.add(getBOQAPrioritiser(hpoIds));
                 break;            
             case EXOMISER_ALLSPECIES_PRIORITY:
-                genePriorityList.add(getExomiserAllSpeciesPrioritiser(hpoIds, candidateGene, disease));
+                genePriorityList.add(getExomiserAllSpeciesPrioritiser(hpoIds, candidateGene, disease, exomiser2Params));
                 break;  
             case EXOMISER_MOUSE_PRIORITY:
                 genePriorityList.add(getExomiserMousePrioritiser(hpoIds,disease));
@@ -117,8 +117,8 @@ public class PriorityFactory {
         return priority;
     }
     
-    public Priority getExomiserAllSpeciesPrioritiser(List<String> hpoIds, String candGene, String disease) {
-        Priority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, randomWalkMatrix);
+    public Priority getExomiserAllSpeciesPrioritiser(List<String> hpoIds, String candGene, String disease, String exomiser2Params) {
+        Priority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, exomiser2Params, randomWalkMatrix);
         setPrioritiserConnection(priority);
         logger.info("Made new DynamicPhenoWanderer Priority: {}", priority);
         return priority;

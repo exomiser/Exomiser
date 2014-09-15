@@ -81,6 +81,7 @@ public class ExomiserSettings {
     public static final String SEED_GENES_OPTION = "seed-genes";
     public static final String DISEASE_ID_OPTION = "disease-id";
     public static final String MODE_OF_INHERITANCE_OPTION = "inheritance-mode";
+    public static final String EXOMISER2_PARAMS_OPTION = "exomiser2-params";
 
     //PRIORITISER variables
     //candidate-gene (command-line was: candidate_gene, refered to variable: candidateGene)
@@ -93,6 +94,7 @@ public class ExomiserSettings {
     private final List<String> hpoIds;
     //seed-genes (command-line was: SeedGenes, refered to variable: entrezSeedGenes)
     private final List<Integer> seedGeneList;
+    private final String exomiser2Params;
 
     //OUTPUT OPTIONS (these are used for JSON de/serealisation and the command-line)
     public static final String NUM_GENES_OPTION = "num-genes";
@@ -142,6 +144,7 @@ public class ExomiserSettings {
         private String diseaseId = "";
         private List<String> hpoIds = new ArrayList();
         private List<Integer> seedGeneList = new ArrayList();
+        private String exomiser2Params = "";
 
         //OUTPUT options
         private int numberOfGenesToShow = 0;
@@ -173,7 +176,7 @@ public class ExomiserSettings {
             this.pedFilePath = pedFilePath;
             return this;
         }
-
+        
        @JsonSetter(PRIORITISER_OPTION)
         public SettingsBuilder usePrioritiser(PriorityType prioritiserType) {
             this.prioritiserType = prioritiserType;
@@ -231,6 +234,12 @@ public class ExomiserSettings {
         @JsonSetter(DISEASE_ID_OPTION)
         public SettingsBuilder diseaseId(String value) {
             diseaseId = value;
+            return this;
+        }
+        
+        @JsonSetter(EXOMISER2_PARAMS_OPTION)
+        public SettingsBuilder exomiser2Params(String value) {
+            exomiser2Params = value;
             return this;
         }
 
@@ -327,6 +336,7 @@ public class ExomiserSettings {
         diseaseId = builder.diseaseId;
         hpoIds = builder.hpoIds;
         seedGeneList = builder.seedGeneList;
+        exomiser2Params = builder.exomiser2Params;
 
         //OUTPUT options
         numberOfGenesToShow = builder.numberOfGenesToShow;
@@ -404,6 +414,11 @@ public class ExomiserSettings {
     @JsonProperty(DISEASE_ID_OPTION)
     public String getDiseaseId() {
         return diseaseId;
+    }
+    
+    @JsonProperty(EXOMISER2_PARAMS_OPTION)
+    public String getExomiser2Params() {
+        return exomiser2Params;
     }
 
     @JsonProperty(HPO_IDS_OPTION)
