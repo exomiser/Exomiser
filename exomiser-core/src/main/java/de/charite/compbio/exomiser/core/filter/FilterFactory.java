@@ -57,7 +57,7 @@ public class FilterFactory {
                     variantFilterList.add(getIntervalFilter(settings.getGeneticInterval()));
                     break;
                 case INHERITANCE_FILTER:
-                    variantFilterList.add(getInheritanceFilter(settings.getModeOfInheritance()));
+                    //this isn't run as a VariantFilter - it's actually a Gene filter - currently it's a bastard orphan sitting in Exomiser
                     break;
             }
         }
@@ -89,7 +89,7 @@ public class FilterFactory {
         if (settings.getGeneticInterval() != null) {
             filtersToRun.add(FilterType.INTERVAL_FILTER);
         }
-
+        //this is used later for the HTML output so we need to retain it even 
         if (settings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
             filtersToRun.add(FilterType.INHERITANCE_FILTER);
         }
@@ -162,12 +162,6 @@ public class FilterFactory {
 
     public Filter getBedFilter(Set<String> commalist) {
         Filter filter = new BedFilter(commalist);
-        logger.info("Made new: {}", filter);
-        return filter;
-    }
-
-    public Filter getInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-        Filter filter = new InheritanceFilter(modeOfInheritance);
         logger.info("Made new: {}", filter);
         return filter;
     }

@@ -14,6 +14,7 @@ import jannovar.common.ModeOfInheritance;
 import jannovar.genotype.GenotypeCall;
 import jannovar.pedigree.Pedigree;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -31,17 +32,18 @@ public class GeneScorer {
     private static final Logger logger = LoggerFactory.getLogger(GeneScorer.class);
 
     /**
-     * Calculates the final ranks of all genes that have been run through the filtering
-     * and prioritising steps. The strategy is that for autosomal dominant diseases,
-     * we take the single most pathogenic score of any variant affecting the
-     * gene; for autosomal recessive diseases, we take the mean of the two most
-     * pathogenic variants. X-linked diseases are filtered such that only
-     * X-chromosomal genes are left over, and the single worst variant is taken.
+     * Calculates the final ranks of all genes that have been run through the
+     * filtering and prioritising steps. The strategy is that for autosomal
+     * dominant diseases, we take the single most pathogenic score of any
+     * variant affecting the gene; for autosomal recessive diseases, we take the
+     * mean of the two most pathogenic variants. X-linked diseases are filtered
+     * such that only X-chromosomal genes are left over, and the single worst
+     * variant is taken.
      * <P>
      * Once the scores have been calculated, we sort the array list of
      * {@link exomizer.exome.Gene Gene} objects according to the combined
      * filter/priority score.
-     * 
+     *
      * @param geneList
      * @param modeOfInheritance
      * @param pedigree
@@ -62,14 +64,14 @@ public class GeneScorer {
         Collections.sort(geneList);
     }
 
-
     /**
      * Calculates the final ranks of all genes that have survived the filtering
-     * and prioritising steps. The strategy is that for autosomal dominant diseases,
-     * we take the single most pathogenic score of any variant affecting the
-     * gene; for autosomal recessive diseases, we take the mean of the two most
-     * pathogenic variants. X-linked diseases are filtered such that only
-     * X-chromosomal genes are left over, and the single worst variant is taken.
+     * and prioritising steps. The strategy is that for autosomal dominant
+     * diseases, we take the single most pathogenic score of any variant
+     * affecting the gene; for autosomal recessive diseases, we take the mean of
+     * the two most pathogenic variants. X-linked diseases are filtered such
+     * that only X-chromosomal genes are left over, and the single worst variant
+     * is taken.
      * <P>
      * Once the scores have been calculated, we sort the array list of
      * {@link exomizer.exome.Gene Gene} objects according to the combined
@@ -78,13 +80,13 @@ public class GeneScorer {
     private static void scoreGenes(List<Gene> geneList, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
         logger.info("Scoring genes");
         for (Gene gene : geneList) {
-            float filterScore = calculateFilterScore(gene, modeOfInheritance, pedigree);
+            float filterScore = calculateFilterScore(gene.getVariantEvaluations(), modeOfInheritance, pedigree);
             gene.setFilterScore(filterScore);
 
-            float priorityScore = calculatePriorityScore(gene);
+            float priorityScore = calculatePriorityScore(gene.getPriorityScoreMap().values());
             gene.setPriorityScore(priorityScore);
 
-            float combinedScore = calculateCombinedScore(gene);
+            float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityScoreMap().keySet());
             gene.setCombinedScore(combinedScore);
         }
     }
@@ -146,11 +148,11 @@ public class GeneScorer {
     }
 
     /**
-     * Calculates the total priority score for this gene based on data stored in
-     * its associated {@link jannovar.exome.Variant Variant} objects. Note that
-     * for assumed autosomal recessive variants, the mean of the worst two
-     * variants is taken, and for other modes of inheritance,the since worst
-     * value is taken.
+     * Calculates the total priority score for the {@code VariantEvaluation} of
+     * the gene based on data stored in its associated
+     * {@link jannovar.exome.Variant Variant} objects. Note that for assumed
+     * autosomal recessive variants, the mean of the worst two variants is
+     * taken, and for other modes of inheritance,the since worst value is taken.
      * <P>
      * Note that we <b>assume that genes have been filtered for mode of
      * inheritance before this function is called. This means that we do not
@@ -159,30 +161,34 @@ public class GeneScorer {
      * not (for autosomal recessive inheritance, these variants get counted
      * twice).
      *
+     * @param variantEvaluations from a gene 
      * @param modeOfInheritance Autosomal recessive, dominant, or X chromosomal
      * recessive.
      * @param pedigree of the effected individual
+     * @return 
      */
-    private static float calculateFilterScore(Gene gene, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
-        if (gene.getVariantList().isEmpty()) {
+    protected static float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
+
+        if (variantEvaluations.isEmpty()) {
             return 0f;
         }
         if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            return calculateAutosomalRecessiveFilterScore(gene.getVariantList(), pedigree);
+            return calculateAutosomalRecessiveFilterScore(variantEvaluations, pedigree);
         } // not autosomal recessive
 
-        return calculateNonAutosomalRecessiveFilterScore(gene.getVariantList());
+        return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
 
     }
 
     /**
-     * Calculate the combined priority score for this gene.
-     * @param gene
-     * @return 
+     * Calculate the combined priority score for the gene.
+     *
+     * @param priorityScores of the gene
+     * @return
      */
-    private static float calculatePriorityScore(Gene gene) {
+    protected static float calculatePriorityScore(Collection<PriorityScore> priorityScores) {
         float priorityScore = 1f;
-        for (PriorityScore r : gene.getPriorityScoreMap().values()) {
+        for (PriorityScore r : priorityScores) {
             priorityScore *= r.getScore();
         }
         return priorityScore;
@@ -196,17 +202,24 @@ public class GeneScorer {
      * @param pedigree
      * @return
      */
-    private static float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, Pedigree pedigree) {
-        float filterScore = 0f;
+    protected static float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, Pedigree pedigree) {
+
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            filterScores.add(ve.getFilterScore());
-            GenotypeCall gc = ve.getVariant().getGenotype();
-            if (pedigree.containsCompatibleHomozygousVariant(gc)) {
-                //Add the value a second time, it is homozygous
+            //make sure the scoring only includes variants which have actually passed all the required filters
+            if (ve.passesFilters()) {
                 filterScores.add(ve.getFilterScore());
+                GenotypeCall gc = ve.getVariant().getGenotype();
+                if (pedigree.containsCompatibleHomozygousVariant(gc)) {
+                    //Add the value a second time, it is homozygous
+                    filterScores.add(ve.getFilterScore());
+                }
             }
+        }
+        //maybe the variants were all crappy and nothing passed....
+        if (filterScores.isEmpty()) {
+            return 0f;
         }
         //Sort in descending order
         Collections.sort(filterScores, Collections.reverseOrder());
@@ -216,7 +229,7 @@ public class GeneScorer {
         }
         float x = filterScores.get(0);
         float y = filterScores.get(1);
-        filterScore = (x + y) / (2f);
+        float filterScore = (x + y) / (2f);
         return filterScore;
     }
 
@@ -227,12 +240,20 @@ public class GeneScorer {
      * @param variantEvaluations
      * @return
      */
-    private static float calculateNonAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
+    protected static float calculateNonAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            filterScores.add(ve.getFilterScore());
+            //make sure the scoring only includes variants which have actually passed all the required filters
+            if (ve.passesFilters()) {
+                filterScores.add(ve.getFilterScore());
+            }
         }
+        //maybe the variants were all crappy and nothing passed....
+        if (filterScores.isEmpty()) {
+            return 0f;
+        }
+
         //Sort in descending order
         Collections.sort(filterScores, Collections.reverseOrder());
         //Not autosomal recessive, there is just one heterozygous mutation
@@ -250,11 +271,7 @@ public class GeneScorer {
      * been called.
      *
      */
-    private static float calculateCombinedScore(Gene gene) {
-        float filterScore = gene.getFilterScore();
-        float priorityScore = gene.getPriorityScore();
-
-        Set<PriorityType> prioritiesRun = gene.getPriorityScoreMap().keySet();
+    protected static float calculateCombinedScore(float filterScore, float priorityScore, Set<PriorityType> prioritiesRun) {
 
         //TODO: what if we ran all of these? It *is* *possible* to do so. 
         if (prioritiesRun.contains(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)) {

@@ -8,9 +8,7 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.util.InheritanceModeAnalyser;
 import de.charite.compbio.exomiser.core.util.VariantAnnotator;
-import jannovar.common.ModeOfInheritance;
 import jannovar.exception.JannovarException;
 import jannovar.exception.PedParseException;
 import jannovar.exception.VCFParseException;
@@ -22,7 +20,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,11 +62,6 @@ public class SampleDataFactory {
 
         //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
         List<Gene> geneList = GeneFactory.createGeneList(sampleData.getVariantEvaluations());
-
-        //lastly remember to analyse the inheritance modes for the gene and variants 
-        //otherwise Bad Things (filter and priority scores depending on the inheritance 
-        //mode will be screwy) will happen 
-        analyseCompatibleInheritanceModes(geneList, pedigree);
 
         sampleData.setGeneList(geneList);
 
@@ -230,22 +222,4 @@ public class SampleDataFactory {
         }
 
     }
-
-    /**
-     * This method sets the mode of inheritance for all Gene objects for
-     * segregation analysis. It is intended that pedigree filtering algorithms
-     * can use the genotypes associated with this Gene and its Variants in order
-     * to perform inheritance filtering.
-     *
-     * @param ped The pedigree corresponding to the current VCF file.
-     */
-    private void analyseCompatibleInheritanceModes(List<Gene> geneList, Pedigree pedigree) {
-        InheritanceModeAnalyser inheritanceModeAnaylser = new InheritanceModeAnalyser(pedigree);
-
-        for (Gene gene : geneList) {
-            Set<ModeOfInheritance> geneInheritanceModes = inheritanceModeAnaylser.analyseInheritanceModesForGene(gene);
-            gene.setInheritanceModes(geneInheritanceModes);
-        }
-    }
-
 }

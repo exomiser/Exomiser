@@ -141,7 +141,7 @@ public class ExomiserMousePriority implements Priority {
     /**
      * @return list of messages representing process, result, and if any, errors of score filtering. 
      */
-    // @Override
+    @Override
     public ArrayList<String> getMessages() {
 	return this.messages;
     }
@@ -149,6 +149,7 @@ public class ExomiserMousePriority implements Priority {
 
    
     
+    @Override
     public void prioritizeGenes(List<Gene> gene_list) {
 	
 	this.found_data_for_mgi_phenodigm=0;
@@ -162,12 +163,7 @@ public class ExomiserMousePriority implements Priority {
 	    String.format("Data analysed for %d genes using Mouse PhenoDigm",
 			  gene_list.size());
 	this.messages.add(s);
-        try{
-            connection.close();
-        }
-        catch(SQLException e){
-            logger.error("{}",e);
-        }        
+        closeConnection();
    }
     
     /**
@@ -451,19 +447,24 @@ public class ExomiserMousePriority implements Priority {
 	
     }
      
-    
-
     /**
      * Initialize the database connection and call {@link #setUpSQLPreparedStatements}
      * @param connection A connection to a postgreSQL database from the exomizer or tomcat.
      */
     @Override
-     public void setDatabaseConnection(Connection connection) {
+     public void setConnection(Connection connection) {
 	this.connection = connection;
 	setUpSQLPreparedStatements();
     }
 
-    
+    @Override
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException ex) {
+            logger.error(null, ex);
+        }
+    }
     /**
      * To do
      * @return 

@@ -246,6 +246,12 @@ public class UberphenoPriority implements Priority {
       * This class does not need a database connection, this function only there to satisfy the interface.
      * @param connection An SQL (postgres) connection that was initialized elsewhere.
      */
-    @Override  public void setDatabaseConnection(Connection connection) { /* no-op */ }
-	
+    @Override
+    public void setConnection(Connection connection) { /* no-op */ }
+
+    @Override
+    public void closeConnection() {
+        //not implemented - nothing to close
+    }
+    
 }

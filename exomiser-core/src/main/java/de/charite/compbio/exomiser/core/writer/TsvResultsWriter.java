@@ -7,15 +7,7 @@ package de.charite.compbio.exomiser.core.writer;
 
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.pathogenicity.CaddScore;
-import de.charite.compbio.exomiser.core.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.pathogenicity.PolyPhenScore;
-import de.charite.compbio.exomiser.core.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filter.FilterScore;
-import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.priority.*;
 import de.charite.compbio.exomiser.priority.ExomeWalkerPriorityScore;
 
@@ -26,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,53 +94,13 @@ public class TsvResultsWriter implements ResultsWriter {
                 scaledMaxScore = (float) wandererScore.getScaledScore();
             }
         }
-        //pathogenicity and frequency variant scores
-        float maxFreq = 0f;
-        float pathogenicityScore = 0f;
-        float polyphen = Float.NaN;
-        float sift = Float.NaN;
-        float mutTaster = Float.NaN;
-        float caddRaw = Float.NaN;
-        String variantType = "";
-        for (VariantEvaluation ve : gene.getVariantList()) {
-            Map<FilterType, FilterScore> filterScoreMap = ve.getFilterScoreMap();
-            //FilterType.PATHOGENICITY_FILTER is always run so in theory should never be null....
-            if (ve.passedFilter(FilterType.PATHOGENICITY_FILTER)) {
-                FilterScore pathogenicityFilterScore = ve.getFilterScore(FilterType.PATHOGENICITY_FILTER);
-                if (pathogenicityFilterScore.getScore() > pathogenicityScore) {
-                    variantType = ve.getVariantType().toString();
-                    //reset the pathogenicity scores as this variant now has the best result
-                    pathogenicityScore = pathogenicityFilterScore.getScore();
-                    PathogenicityData pathData = ve.getPathogenicityData();
-                    PolyPhenScore polyPhenScore = pathData.getPolyPhenScore();
-                    if (polyPhenScore != null){
-                        polyphen = polyPhenScore.getScore();
-                    }
-                    SiftScore siftScore = pathData.getSiftScore();
-                    if (siftScore != null){
-                        sift = siftScore.getScore();
-                    }
-                    MutationTasterScore mutationTasterScore = pathData.getMutationTasterScore();
-                    if (mutationTasterScore != null){
-                        mutTaster = mutationTasterScore.getScore();
-                    }
-                    CaddScore caddScore = pathData.getCaddScore();
-                    if (caddScore != null){
-                        caddRaw = caddScore.getScore();
-                    }
-                 }
-            }
-            if (ve.passedFilter(FilterType.FREQUENCY_FILTER)) {
-                maxFreq = ve.getFrequencyData().getMaxFreq();
-            }
-        }
         //flag to indicate if the gene matches the candidate gene specified by the user
         int matchesCandidateGene = 0;
         if (gene.getGeneSymbol().equals(candidateGene) || gene.getGeneSymbol().startsWith(candidateGene + ",")) {// bug fix for new Jannovar labelling where can have multiple genes per var but first one is most pathogenic
             matchesCandidateGene = 1;
         }
 
-        return String.format("%s\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%s\t%d\n",
+        return String.format("%s\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%d\n",
                 gene.getGeneSymbol(),
                 gene.getEntrezGeneID(),
                 gene.getPriorityScore(),
@@ -163,13 +114,6 @@ public class TsvResultsWriter implements ResultsWriter {
                 walkerScore,
                 exomiser2Score,
                 omimScore,
-                maxFreq,
-                pathogenicityScore,
-                polyphen,
-                sift,
-                mutTaster,
-                caddRaw,
-                variantType,
                 matchesCandidateGene);
     }
 

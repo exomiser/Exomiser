@@ -54,6 +54,7 @@ public interface Priority {
 
     /**
      * Should this prioritizer be displayed in the HTML page?
+     * @return 
      */
     public boolean displayInHTML();
 
@@ -66,17 +67,24 @@ public interface Priority {
 
     /**
      * Get number of variants before filter was applied
+     * @return 
      */
     public int getBefore();
 
     /**
      * Get number of variants after filter was applied
+     * @return 
      */
     public int getAfter();
 
     /**
      * @param connection An SQL connection that was initialized elsewhere.
      */
-    public void setDatabaseConnection(Connection connection);
+    public void setConnection(Connection connection);
+
+    /**
+     * Close the database connection.
+     */
+    public void closeConnection();
 
 }
