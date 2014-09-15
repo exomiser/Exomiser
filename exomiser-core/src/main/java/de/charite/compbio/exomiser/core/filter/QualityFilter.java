@@ -10,12 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filter variants according to their frequency. We use the thousand genomes and
- * the ESP (exome server project) data. The filter is implemented with an SQL
- * query.
+ * Filter Variants on the basis of the PHRED quality score for the variant that
+ * was derived from the VCF file (QUAL field).
  *
  * @author Peter N Robinson
- * @version 0.11 (December 29, 2013)
+ * @version 0.09 (18 December, 2013).
  */
 public class QualityFilter implements Filter {
 
