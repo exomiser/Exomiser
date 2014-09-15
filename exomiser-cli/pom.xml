@@ -147,15 +147,6 @@
                                     <directory>src/test/resources</directory>
                                     <include>Pfeiffer.vcf</include>
                                 </resource>                                                            
-                                <!--<resource>
-                                    <directory>${project.build.directory}/../../exomiser-db/data/extracted</directory>
-                                    <include>ucsc_hg19.ser</include>
-                                </resource>-->
-                                <!-- This is about 22GB so only enable it when you *really* want to build this automatically -->
-                                <!--<resource>
-                                    <directory>${project.build.directory}/../../exomiser-db/data</directory>
-                                    <include>exomiser.h2.db</include>
-                                </resource>-->
                             </resources>              
                         </configuration>            
                     </execution>

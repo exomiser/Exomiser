@@ -78,7 +78,9 @@ public class ExomiserSettingsTest {
     private static final String OUT_FILE_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV);
-
+    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
+    private static final boolean RUN_FULL_ANALYSIS = true;
+    
     public ExomiserSettingsTest() {
     }
 
@@ -109,6 +111,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT_DEFAULT));
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
 
     }
 
@@ -459,6 +462,19 @@ public class ExomiserSettingsTest {
         ExomiserSettings settings = builder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
     }
+    
+    @Test
+    public void testThatBuilderProducesRunFullAnalysisDefault() {
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
+    }
+    
+    @Test
+    public void testThatBuilderProducesRunFullAnalysisWhenDefined() {
+        builder.runFullAnalysis(RUN_FULL_ANALYSIS);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
+    }
 
     @Test
     public void testThatBuilderCanSetAllValues() {
@@ -479,7 +495,8 @@ public class ExomiserSettingsTest {
                 .seedGeneList(SEED_GENE_LIST)
                 .numberOfGenesToShow(NUMBER_OF_GENES_TO_SHOW)
                 .outFileName(OUT_FILE_NAME)
-                .outputFormats(OUTPUT_FORMAT);
+                .outputFormats(OUTPUT_FORMAT)
+                .runFullAnalysis(RUN_FULL_ANALYSIS);
 
         ExomiserSettings settings = builder.build();
 
@@ -500,6 +517,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
         assertThat(settings.isValid(), is(true));
     }
 
@@ -534,6 +552,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
         assertThat(settings.isValid(), is(true));
 
     }

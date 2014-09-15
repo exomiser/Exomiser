@@ -31,8 +31,6 @@ public class DataSourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
 
-    private static final int MAX_CONNECTIONS = 10; //maybe make this user accessible? 
-
     @Autowired
     private Environment env;
 
@@ -47,25 +45,37 @@ public class DataSourceConfig {
         return h2DataSource();
     }
 
+    private int maxConnections() {
+        int maxConnections = 10;
+        String userSpecifiedMaxConn = env.getProperty("maxConnections");
+        try {
+            maxConnections = Integer.parseInt(userSpecifiedMaxConn);
+        } catch (NumberFormatException ex) {
+            logger.error("{} is not a valid integer value. Returning defualt value of {}", userSpecifiedMaxConn, maxConnections, ex);
+        }
+        return maxConnections;
+    }
+
     private DataSource postgreSQLDataSource() {
-               
+        int maxConnections = maxConnections();
         PGPoolingDataSource dataSource = new PGPoolingDataSource();
-        dataSource.setMaxConnections(MAX_CONNECTIONS);
+        dataSource.setMaxConnections(maxConnections);
+        logger.info("DataSource using maximum of {} database connections", maxConnections);
         dataSource.setInitialConnections(3);
-        
+
         //resolve the placeholders in the settings
         env.resolvePlaceholders("username");
         env.resolvePlaceholders("password");
         env.resolvePlaceholders("server");
         env.resolvePlaceholders("database");
         env.resolvePlaceholders("port");
-        
+
         String server = env.getProperty("pg.server");
         String db = env.getProperty("pg.database");
         int port = Integer.parseInt(env.getProperty("pg.port"));
         String user = env.getProperty("pg.username");
         String password = env.getProperty("pg.password");
-        
+
         dataSource.setServerName(server);
         dataSource.setDatabaseName(db);
         dataSource.setPortNumber(port);
@@ -79,11 +89,11 @@ public class DataSourceConfig {
     }
 
     private DataSource h2DataSource() {
-        
+
         String user = env.getProperty("h2.username");
         String password = env.getProperty("h2.password");
         String url = env.getProperty("h2.url");
-        
+
         if (env.containsProperty("h2Path") & !env.getProperty("h2Path").isEmpty()) {
             env.resolvePlaceholders("h2Path"); //this comes from the application.properties
         } else {
@@ -92,15 +102,15 @@ public class DataSourceConfig {
             String h2Filepath = String.format("file:%s", dataPath);
             url = env.getProperty("h2.url").replace("file:", h2Filepath);
         }
-        logger.info("DataSource using maximum of {} database connections", MAX_CONNECTIONS);
+        int maxConnections = maxConnections();
+        logger.info("DataSource using maximum of {} database connections", maxConnections);
         JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
-        dataSource.setMaxConnections(MAX_CONNECTIONS);
-        
+        dataSource.setMaxConnections(maxConnections);
+
         logger.info("Returning a new H2 DataSource to URL {} user: {}", url, user);
         return dataSource;
     }
-    
-    
+
     @Bean
     public Connection connection() {
         Connection connection = null;
@@ -118,5 +128,4 @@ public class DataSourceConfig {
 //        pspc.setLocation(new PathResource("jdbc.properties"));
 //        return pspc;
 //    }
-
 }

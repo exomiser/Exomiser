@@ -4,6 +4,7 @@ import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.filter.FilterScore;
 import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.pathogenicity.VariantTypePathogenicityScores;
 import jannovar.common.ModeOfInheritance;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
@@ -56,6 +57,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         var = v;
         passedFilterScoreMap = new HashMap<>();
         failedFilters = EnumSet.noneOf(FilterType.class);
+        //why not set the frequency data too? Well, not having a null implies that
+        //the data has been set from the database and if there is no data then 
+        //it must be an extremely rare and therefore interesting variant. 
+        //This will then erroneously pass the frequency filter.   
+        pathogenicityData = new PathogenicityData(null, null, null, null);
     }
 
     /**

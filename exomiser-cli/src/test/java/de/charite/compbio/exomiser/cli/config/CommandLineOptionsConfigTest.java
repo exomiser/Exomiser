@@ -87,4 +87,12 @@ public class CommandLineOptionsConfigTest {
         assertThat(option.hasArg(), is(true));
         assertThat(option.getLongOpt(), equalTo(longOption));
     }
+    
+    @Test
+    public void hasFullAnalysisOption() {
+        String longOption = "full-analysis";
+        Option option = options.getOption(longOption);
+        assertThat(option.hasArg(), is(true));
+        assertThat(option.getLongOpt(), equalTo(longOption));
+    }
 }

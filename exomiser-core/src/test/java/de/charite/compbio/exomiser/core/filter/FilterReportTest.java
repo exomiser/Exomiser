@@ -6,8 +6,6 @@
 
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.filter.FilterReport;
-import de.charite.compbio.exomiser.core.filter.FilterType;
 import java.util.ArrayList;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;

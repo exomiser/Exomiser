@@ -39,6 +39,7 @@ public class CommandLineOptionsConfig {
         addSettingsFileOptions(options);
         addBatchFileOptions(options);
         addSampleDataOptions(options);
+        addFullAnalysisOptions(options);
         addFilterOptions(options);
         addPrioritiserOptions(options);
         addOutputOptions(options);
@@ -57,6 +58,16 @@ public class CommandLineOptionsConfig {
                 .hasArg()
                 .withDescription("Path to settings file. Any settings specified in the file will be overidden by parameters added on the command-line.")
                 .withLongOpt(SETTINGS_FILE_OPTION)
+                .create()
+        );
+    }
+    
+    private void addFullAnalysisOptions(Options options) {
+        options.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("true/false")
+                .withDescription("Run the analysis such that all variants are run through all filters. This will take longer, but give more complete results. Default is false")
+                .withLongOpt(RUN_FULL_ANALYSIS_OPTION)
                 .create()
         );
     }

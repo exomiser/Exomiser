@@ -6,15 +6,6 @@
 
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.filter.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filter.BedFilter;
-import de.charite.compbio.exomiser.core.filter.Filter;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filter.IntervalFilter;
-import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.TargetFilter;
-import de.charite.compbio.exomiser.core.filter.FilterFactory;
-import de.charite.compbio.exomiser.core.filter.QualityFilter;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
