@@ -58,7 +58,8 @@ public class VariantEvaluationDataFactory {
         
         PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variant);
         
-        pathogenicityCache.put(variantCoordinates, pathData);
+        //TODO: This would be nice to enable - look into making this more robust so that we can't unwittingly run out of memory 
+//        pathogenicityCache.put(variantCoordinates, pathData);
         
         return pathData;
     }
@@ -73,7 +74,8 @@ public class VariantEvaluationDataFactory {
         
         FrequencyData frequencyData = frequencyDao.getFrequencyData(variant);
         
-        frequencyCache.put(variantCoordinates, frequencyData);
+        //TODO: This would be nice to enable - look into making this more robust so that we can't unwittingly run out of memory 
+//        frequencyCache.put(variantCoordinates, frequencyData);
               
         return frequencyData;
     }
