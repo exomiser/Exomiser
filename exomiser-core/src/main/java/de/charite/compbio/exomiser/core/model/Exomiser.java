@@ -10,8 +10,6 @@ import de.charite.compbio.exomiser.core.filter.Filter;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SimpleVariantFilterer;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterer;
-import de.charite.compbio.exomiser.core.filter.VariantFilterer;
-import de.charite.compbio.exomiser.core.util.GeneScorer;
 import de.charite.compbio.exomiser.core.filter.FilterScore;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.filter.InheritanceFilterScore;
@@ -58,16 +56,24 @@ public class Exomiser {
         logger.info("MAKING FILTERS");
         List<Filter> filterList = filterFactory.makeFilters(exomiserSettings);
 
-        logger.info("FILTERING VARIANTS");
-        VariantFilterer.useNonDestructiveFiltering(filterList, sampleData.getVariantEvaluations());
-
-        //
-        filterGenesForInheritanceMode(exomiserSettings.getModeOfInheritance(), sampleData);
-
         //create the priority factory - this will deliberately fail if there are
         //incorrect input options for the specified prioritiser. 
         logger.info("MAKING PRIORITISERS");
         List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
+
+        VariantFilterer variantFilterer;
+        logger.info("FILTERING VARIANTS");
+        if (exomiserSettings.runFullAnalysis()) {
+            setVariantFrequencyAndPathogenicityData(sampleData.getVariantEvaluations());
+            variantFilterer = new SimpleVariantFilterer();
+        } else {
+            //the sparseVariantFilterer will handle getting data when it needs it.
+            variantFilterer = sparseVariantFilterer;
+        }
+        variantFilterer.filterVariants(filterList, sampleData.getVariantEvaluations());
+
+        //Filter the resulting Genes for their inheritance mode 
+        filterGenesForInheritanceMode(exomiserSettings.getModeOfInheritance(), sampleData);
 
         logger.info("PRIORITISING GENES");
         //for VCF we need the priority scores for all genes, even those with no passed
@@ -78,7 +84,6 @@ public class Exomiser {
         } else {
             GenePrioritiser.prioritiseFilteredGenes(priorityList, sampleData.getGeneList());
         }
-
         logger.info("SCORING GENES");
         //prioritser needs to provide the mode of scoring it requires. Mostly it is RAW_SCORE.
         //Either RANK_BASED or RAW_SCORE
@@ -86,6 +91,14 @@ public class Exomiser {
         ScoringMode scoreMode = prioriserType.getScoringMode();
 
         GeneScorer.scoreGenes(sampleData.getGeneList(), exomiserSettings.getModeOfInheritance(), sampleData.getPedigree(), scoreMode);
+    }
+
+    private void setVariantFrequencyAndPathogenicityData(List<VariantEvaluation> variantEvaluations) {
+        logger.info("Setting variant frequency and pathogenicity data");
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            variantEvaluationFactory.addFrequencyData(variantEvaluation);
+            variantEvaluationFactory.addPathogenicityData(variantEvaluation);
+        }
     }
 
     //TODO: move into a GeneFilter class
@@ -110,6 +123,7 @@ public class Exomiser {
         }
     }
 
+    
     private void filterGeneForInheritanceMode(ModeOfInheritance modeOfInheritance, Gene gene, FilterScore passedScore, FilterScore failedScore) {
         
         if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
