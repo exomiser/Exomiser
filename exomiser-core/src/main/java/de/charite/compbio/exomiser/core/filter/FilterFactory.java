@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Factory class for handling creation of Filter objects.
+ * Factory class for handling creation of VariantFilter objects.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -28,33 +28,33 @@ public class FilterFactory {
 
     /**
      * Utility method for wrapping-up how the
-     * {@code de.charite.compbio.exomiser.filter.Filter} classes are created
-     * using an ExomiserSettings.
+     * {@code VariantFilter} classes are
+     * created using an ExomiserSettings.
      *
      * @param settings
-     * @return A list of Filter objects
+     * @return A list of {@code VariantFilter} objects
      */
-    public List<Filter> makeFilters(ExomiserSettings settings) {
-        List<Filter> variantFilterList = new ArrayList<>();
+    public List<Filter> makeVariantFilters(ExomiserSettings settings) {
+        List<Filter> variantFilters = new ArrayList<>();
 
         List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
         for (FilterType filterType : filtersRequired) {
             switch (filterType) {
                 case TARGET_FILTER:
-                    variantFilterList.add(getTargetFilter());
+                    variantFilters.add(getTargetFilter());
                     break;
                 case FREQUENCY_FILTER:
-                    variantFilterList.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeDbSnp()));
+                    variantFilters.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeDbSnp()));
                     break;
                 case QUALITY_FILTER:
-                    variantFilterList.add(getQualityFilter(settings.getMinimumQuality()));
+                    variantFilters.add(getQualityFilter(settings.getMinimumQuality()));
                     break;
                 case PATHOGENICITY_FILTER:
-                    variantFilterList.add(getPathogenicityFilter(settings.keepNonPathogenicMissense()));
+                    variantFilters.add(getPathogenicityFilter(settings.keepNonPathogenicMissense()));
                     break;
                 case INTERVAL_FILTER:
-                    variantFilterList.add(getIntervalFilter(settings.getGeneticInterval()));
+                    variantFilters.add(getIntervalFilter(settings.getGeneticInterval()));
                     break;
                 case INHERITANCE_FILTER:
                     //this isn't run as a VariantFilter - it's actually a Gene filter - currently it's a bastard orphan sitting in Exomiser
@@ -62,7 +62,28 @@ public class FilterFactory {
             }
         }
 
-        return variantFilterList;
+        return variantFilters;
+    }
+
+    /**
+     * Makes a list of {@code GeneFilter} 
+     * @param settings
+     * @return GeneFilters to run
+     */
+    public List<Filter> makeGeneFilters(ExomiserSettings settings) {
+        List<Filter> geneFilters = new ArrayList<>();
+
+        List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
+
+        for (FilterType filterType : filtersRequired) {
+            switch (filterType) {
+                case INHERITANCE_FILTER:
+                    geneFilters.add(getInheritanceFilter(settings.getModeOfInheritance()));
+                    break;
+            }
+        }
+
+        return geneFilters;
     }
 
     /**
@@ -89,7 +110,6 @@ public class FilterFactory {
         if (settings.getGeneticInterval() != null) {
             filtersToRun.add(FilterType.INTERVAL_FILTER);
         }
-        //this is used later for the HTML output so we need to retain it even 
         if (settings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
             filtersToRun.add(FilterType.INHERITANCE_FILTER);
         }
@@ -98,13 +118,14 @@ public class FilterFactory {
     }
 
     /**
-     * Filter on variant type that is expected potential pathogenic (Missense,
-     * Intergenic etc and not off target (INTERGENIC, UPSTREAM, DOWNSTREAM).
+     * VariantFilter on variant type that is expected potential pathogenic
+     * (Missense, Intergenic etc and not off target (INTERGENIC, UPSTREAM,
+     * DOWNSTREAM).
      *
      * @return
      */
-    public Filter getTargetFilter() {
-        Filter targetFilter = new TargetFilter();
+    public VariantFilter getTargetFilter() {
+        VariantFilter targetFilter = new TargetFilter();
         logger.info("Made new: {}", targetFilter);
         return targetFilter;
     }
@@ -116,15 +137,14 @@ public class FilterFactory {
      * the maximum MAF. else we set the frequency filter to 100%, i.e., no
      * filtering.
      *
-     * @param dataSource
      * @param maxFrequency
      * @param filterOutAllDbsnp
      * @return
      */
-    public Filter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
+    public VariantFilter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
 
 //        FrequencyVariantScoreDao variantTriageDAO = new FrequencyVariantScoreDao(dataSource);
-        Filter frequencyFilter = new FrequencyFilter(maxFrequency, filterOutAllDbsnp);
+        VariantFilter frequencyFilter = new FrequencyFilter(maxFrequency, filterOutAllDbsnp);
 
 //        if (filterOutAllDbsnp) {
 //            frequencyFilter.setParameters("RS");
@@ -139,31 +159,36 @@ public class FilterFactory {
         return frequencyFilter;
     }
 
-    public Filter getQualityFilter(float quality_threshold) {
-        Filter filter = new QualityFilter(quality_threshold);
+    public VariantFilter getQualityFilter(float quality_threshold) {
+        VariantFilter filter = new QualityFilter(quality_threshold);
 
         logger.info("Made new Quality Filter: {}", filter);
         return filter;
     }
 
-    public Filter getPathogenicityFilter(boolean filterOutNonpathogenic) {
+    public VariantFilter getPathogenicityFilter(boolean filterOutNonpathogenic) {
         PathogenicityFilter filter = new PathogenicityFilter(filterOutNonpathogenic);
         logger.info("Made new: {}", filter);
         return filter;
     }
 
-    public Filter getIntervalFilter(GeneticInterval interval) {
+    public VariantFilter getIntervalFilter(GeneticInterval interval) {
 
-        Filter filter = new IntervalFilter(interval);
+        VariantFilter filter = new IntervalFilter(interval);
 
         logger.info("Made new: {}", filter);
         return filter;
     }
 
-    public Filter getBedFilter(Set<String> commalist) {
-        Filter filter = new BedFilter(commalist);
+    public VariantFilter getBedFilter(Set<String> commalist) {
+        VariantFilter filter = new BedFilter(commalist);
         logger.info("Made new: {}", filter);
         return filter;
     }
 
+    public GeneFilter getInheritanceFilter(ModeOfInheritance modeOfInheritance) {
+        GeneFilter filter = new InheritanceFilter(modeOfInheritance);
+        logger.info("Made new: {}", filter);
+        return filter;
+    }
 }

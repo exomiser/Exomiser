@@ -41,10 +41,7 @@ public class RsId {
             return false;
         }
         final RsId other = (RsId) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        return true;
+        return this.id == other.id;
     }
 
     @Override

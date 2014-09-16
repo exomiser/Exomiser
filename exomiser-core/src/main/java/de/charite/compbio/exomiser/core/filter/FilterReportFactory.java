@@ -7,6 +7,8 @@ package de.charite.compbio.exomiser.core.filter;
 
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,51 +29,51 @@ public class FilterReportFactory {
      * Makes a List of {@code FilterReport} for the {@code FilterType} specified.
      * @param filterTypes
      * @param settings
-     * @param variantEvaluations
+     * @param sampleData
      * @return a List of {@code FilterReport} 
      */
-    public List<FilterReport> makeFilterReports(List<FilterType> filterTypes, ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    public List<FilterReport> makeFilterReports(List<FilterType> filterTypes, ExomiserSettings settings, SampleData sampleData) {
 
         List<FilterReport> filterReports = new ArrayList<>();
 
         for (FilterType filterType : filterTypes) {
-            filterReports.add(makeFilterReport(filterType, settings, variantEvaluations));
+            filterReports.add(makeFilterReport(filterType, settings, sampleData));
         }
 
         return filterReports;
     }
 
     /**
-     * Returns a FilterReport for the VariantEvaluation and the specified
+     * Returns a FilterReport for the SampleData and the specified
      * FilterType. If the FilterType is not recognised or supported then this
      * method will return a default report with no messages.
      *
      * @param filterType
      * @param settings
-     * @param variantEvaluations
+     * @param sampleData
      * @return
      */
-    public FilterReport makeFilterReport(FilterType filterType, ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    public FilterReport makeFilterReport(FilterType filterType, ExomiserSettings settings, SampleData sampleData) {
         switch (filterType) {
             case TARGET_FILTER:
-                return makeTargetFilterReport(settings, variantEvaluations);
+                return makeTargetFilterReport(settings, sampleData.getVariantEvaluations());
             case FREQUENCY_FILTER:
-                return makeFrequencyFilterReport(settings, variantEvaluations);
+                return makeFrequencyFilterReport(settings, sampleData.getVariantEvaluations());
             case QUALITY_FILTER:
-                return makeQualityFilterReport(settings, variantEvaluations);
+                return makeQualityFilterReport(settings, sampleData.getVariantEvaluations());
             case PATHOGENICITY_FILTER:
-                return makePathogenicityFilterReport(settings, variantEvaluations);
+                return makePathogenicityFilterReport(settings, sampleData.getVariantEvaluations());
             case INTERVAL_FILTER:
-                return makeIntervalFilterReport(settings, variantEvaluations);
+                return makeIntervalFilterReport(settings, sampleData.getVariantEvaluations());
             case INHERITANCE_FILTER:
-                return makeInheritanceFilterReport(settings, variantEvaluations);
+                return makeInheritanceFilterReport(settings, sampleData.getGenes());
             default:
-                return makeDefaultFilterReport(filterType, variantEvaluations);
+                return makeDefaultVariantFilterReport(filterType, sampleData.getVariantEvaluations());
         }
     }
 
     private FilterReport makeTargetFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultFilterReport(FilterType.TARGET_FILTER, variantEvaluations);
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.TARGET_FILTER, variantEvaluations);
         
         report.addMessage(String.format("Removed a total of %d off-target variants from further consideration", report.getFailed()));
         report.addMessage("Off target variants are defined as synonymous, intergenic, intronic but not in splice sequences");
@@ -80,7 +82,7 @@ public class FilterReportFactory {
     }
 
     private FilterReport makeFrequencyFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultFilterReport(FilterType.FREQUENCY_FILTER, variantEvaluations);
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.FREQUENCY_FILTER, variantEvaluations);
         
         int numDbSnpFreqData = 0;
         int numDbSnpRsId = 0;
@@ -114,14 +116,14 @@ public class FilterReportFactory {
     }
 
     private FilterReport makeQualityFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultFilterReport(FilterType.QUALITY_FILTER, variantEvaluations);
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.QUALITY_FILTER, variantEvaluations);
 
         report.addMessage(String.format("PHRED quality %.1f", settings.getMinimumQuality()));
         return report;
     }
 
     private FilterReport makePathogenicityFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultFilterReport(FilterType.PATHOGENICITY_FILTER, variantEvaluations);
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.PATHOGENICITY_FILTER, variantEvaluations);
         
         if (settings.keepNonPathogenicMissense()) {
             report.addMessage("Retained all non-pathogenic missense variants");
@@ -137,18 +139,18 @@ public class FilterReportFactory {
     }
 
     private FilterReport makeIntervalFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultFilterReport(FilterType.INTERVAL_FILTER, variantEvaluations);
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.INTERVAL_FILTER, variantEvaluations);
 
         report.addMessage(String.format("Restricted variants to interval: %s", settings.getGeneticInterval()));
         
         return report;
     }
 
-    private FilterReport makeInheritanceFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultFilterReport(FilterType.INHERITANCE_FILTER, variantEvaluations);
+    private FilterReport makeInheritanceFilterReport(ExomiserSettings settings, List<Gene> genes) {
+        FilterReport report = makeDefaultGeneFilterReport(FilterType.INHERITANCE_FILTER, genes);
         
-        report.addMessage(String.format("Total of %d variants were analyzed. %d had variants with distribution compatible with %s inheritance.",
-                variantEvaluations.size(), report.getPassed(), settings.getModeOfInheritance()));
+        report.addMessage(String.format("Total of %d genes were analyzed. %d had genes with distribution compatible with %s inheritance.",
+                genes.size(), report.getPassed(), settings.getModeOfInheritance()));
         
         return report;
     }
@@ -159,7 +161,7 @@ public class FilterReportFactory {
      * @param variantEvaluations
      * @return 
      */
-    private FilterReport makeDefaultFilterReport(FilterType filterType, List<VariantEvaluation> variantEvaluations) {
+    private FilterReport makeDefaultVariantFilterReport(FilterType filterType, List<VariantEvaluation> variantEvaluations) {
         int passed = 0;
 
         for (VariantEvaluation ve : variantEvaluations) {
@@ -169,6 +171,19 @@ public class FilterReportFactory {
         }
         
         int failed = variantEvaluations.size() - passed;
+        return new FilterReport(filterType, passed, failed);
+    }
+    
+    private FilterReport makeDefaultGeneFilterReport(FilterType filterType, List<Gene> genes) {
+        int passed = 0;
+
+        for (Gene gene : genes) {
+            if (gene.passedFilter(filterType)) {
+                passed++;
+            }
+        }
+        
+        int failed = genes.size() - passed;
         return new FilterReport(filterType, passed, failed);
     }
 }

@@ -62,13 +62,13 @@ public class OriginalHtmlResultsWriter extends HtmlResultsWriter implements Resu
             writer.write("</pre></p>");
             
             //add summary of filter results
-            List<FilterReport> filterReports = makeFilterReports(settings, sampleData.getVariantEvaluations());
+            List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
 
             htmlWriter.writeHTMLFilterSummary(filterReports, priorityList);
             VariantTypeCounter vtc = getVariantTypeCounter(sampleData.getVariantEvaluations());
             htmlWriter.writeVariantDistributionTable(vtc, sampleData.getSampleNames());
 
-            htmlWriter.writeHTMLBody(sampleData.getPedigree(), sampleData.getGeneList());
+            htmlWriter.writeHTMLBody(sampleData.getPedigree(), sampleData.getGenes());
             htmlWriter.writeAbout();
             htmlWriter.writeHTMLFooter();
         } catch (IOException ex) {

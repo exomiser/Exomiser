@@ -1,12 +1,13 @@
 package de.charite.compbio.exomiser.core.filter;
 
+import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class BedFilter implements Filter {
+public class BedFilter implements VariantFilter {
 
     
     private final FilterType filterType = FilterType.BED_FILTER;
@@ -44,7 +45,7 @@ public class BedFilter implements Filter {
      * @param variantList
      */
     @Override
-    public void filterVariants(List<VariantEvaluation> variantList) {
+    public void filter(List<VariantEvaluation> variantList) {
 
         Set<String> nontargetGenes = new HashSet<>();
 
@@ -71,7 +72,7 @@ public class BedFilter implements Filter {
     }
 
     @Override
-    public boolean filterVariant(VariantEvaluation variantEvaluation) {
+    public boolean filter(VariantEvaluation variantEvaluation) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

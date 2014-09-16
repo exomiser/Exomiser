@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core.filter;
 
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,10 @@ public class FilterReportFactoryTest {
         List<FilterType> filterTypes = new ArrayList<>();
         List<FilterReport> expResult = new ArrayList<>();
 
-        List<FilterReport> result = instance.makeFilterReports(filterTypes, settings, variantEvaluations);
+        SampleData sampleData = new SampleData();
+        sampleData.setVariantEvaluations(variantEvaluations);
+
+        List<FilterReport> result = instance.makeFilterReports(filterTypes, settings, sampleData);
 
         assertThat(result, equalTo(expResult));
     }
@@ -52,7 +56,10 @@ public class FilterReportFactoryTest {
         filterTypes.add(FilterType.FREQUENCY_FILTER);
         filterTypes.add(FilterType.PATHOGENICITY_FILTER);
 
-        List<FilterReport> result = instance.makeFilterReports(filterTypes, settings, variantEvaluations);
+        SampleData sampleData = new SampleData();
+        sampleData.setVariantEvaluations(variantEvaluations);
+
+        List<FilterReport> result = instance.makeFilterReports(filterTypes, settings, sampleData);
 
         assertThat(result.size(), equalTo(filterTypes.size()));
     }
@@ -63,8 +70,11 @@ public class FilterReportFactoryTest {
         ExomiserSettings settings = new SettingsBuilder().build();
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
 
+        SampleData sampleData = new SampleData();
+        sampleData.setVariantEvaluations(variantEvaluations);
+
         FilterReport expResult = new FilterReport(filterType, 0, 0);
-        FilterReport result = instance.makeFilterReport(filterType, settings, variantEvaluations);
+        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
 
         assertThat(result, equalTo(expResult));
     }

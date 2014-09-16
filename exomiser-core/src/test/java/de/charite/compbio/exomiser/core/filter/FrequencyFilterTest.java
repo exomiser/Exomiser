@@ -32,6 +32,8 @@ public class FrequencyFilterTest {
     private VariantEvaluation failsFrequency;
     private VariantEvaluation passesNoFrequencyData;
     
+    private VariantEvaluation nullFrequencyVariant;
+    
     @Mock
     Variant mockVariant;
     
@@ -83,6 +85,8 @@ public class FrequencyFilterTest {
                 
         passesNoFrequencyData = new VariantEvaluation(mockVariant);
         passesNoFrequencyData.setFrequencyData(noFreqData);
+        
+        nullFrequencyVariant = new VariantEvaluation(mockVariant);
     }
     
     @Test
@@ -104,7 +108,7 @@ public class FrequencyFilterTest {
         variantList.add(passesNoFrequencyData);
         variantList.add(failsFrequency);
         
-        instance.filterVariants(variantList);
+        instance.filter(variantList);
         
         Set failedFilterSet = EnumSet.of(FilterType.FREQUENCY_FILTER);
         
@@ -142,7 +146,7 @@ public class FrequencyFilterTest {
         variantList.add(passesNoFrequencyData);
         variantList.add(failsFrequency);
         
-        instance.filterVariants(variantList);
+        instance.filter(variantList);
         
         Set failedFilterSet = EnumSet.of(FilterType.FREQUENCY_FILTER);
         
@@ -164,6 +168,15 @@ public class FrequencyFilterTest {
         assertThat(passesNoFrequencyData.passesFilters(), is(true));
         assertThat(passesNoFrequencyData.getFailedFilters().isEmpty(), is(true));
               
+    }
+    
+    @Test
+    public void testFilterFailsVariantEvaluationWithNullFrequency() {
+        boolean filterOutAllKnownVariants = true;
+        
+        instance = new FrequencyFilter(FREQ_THRESHOLD, filterOutAllKnownVariants);
+                
+        assertThat(instance.filter(nullFrequencyVariant), is(false));
     }
      
     @Test

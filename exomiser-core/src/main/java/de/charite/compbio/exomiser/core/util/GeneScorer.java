@@ -80,15 +80,27 @@ public class GeneScorer {
     private static void scoreGenes(List<Gene> geneList, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
         logger.info("Scoring genes");
         for (Gene gene : geneList) {
-            float filterScore = calculateFilterScore(gene.getVariantEvaluations(), modeOfInheritance, pedigree);
-            gene.setFilterScore(filterScore);
-
-            float priorityScore = calculatePriorityScore(gene.getPriorityScoreMap().values());
-            gene.setPriorityScore(priorityScore);
-
-            float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityScoreMap().keySet());
-            gene.setCombinedScore(combinedScore);
+            float filterScore = setGeneFilterScore(gene, modeOfInheritance, pedigree);
+            float priorityScore = setGenePriorityScore(gene);
+            setGeneCombinedScore(filterScore, priorityScore, gene);
         }
+    }
+
+    private static void setGeneCombinedScore(float filterScore, float priorityScore, Gene gene) {
+        float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityScoreMap().keySet());
+        gene.setCombinedScore(combinedScore);
+    }
+
+    private static float setGenePriorityScore(Gene gene) {
+        float priorityScore = calculatePriorityScore(gene.getPriorityScoreMap().values());
+        gene.setPriorityScore(priorityScore);
+        return priorityScore;
+    }
+
+    private static float setGeneFilterScore(Gene gene, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
+        float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance, pedigree);
+        gene.setFilterScore(filterScore);
+        return filterScore;
     }
 
     /**
@@ -161,11 +173,11 @@ public class GeneScorer {
      * not (for autosomal recessive inheritance, these variants get counted
      * twice).
      *
-     * @param variantEvaluations from a gene 
+     * @param variantEvaluations from a gene
      * @param modeOfInheritance Autosomal recessive, dominant, or X chromosomal
      * recessive.
      * @param pedigree of the effected individual
-     * @return 
+     * @return
      */
     protected static float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
 
@@ -187,11 +199,11 @@ public class GeneScorer {
      * @return
      */
     protected static float calculatePriorityScore(Collection<PriorityScore> priorityScores) {
-        float priorityScore = 1f;
-        for (PriorityScore r : priorityScores) {
-            priorityScore *= r.getScore();
+        float finalPriorityScore = 1f;
+        for (PriorityScore priorityScore : priorityScores) {
+            finalPriorityScore *= priorityScore.getScore();
         }
-        return priorityScore;
+        return finalPriorityScore;
     }
 
     /**
@@ -207,30 +219,41 @@ public class GeneScorer {
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            //make sure the scoring only includes variants which have actually passed all the required filters
-            if (ve.passesFilters()) {
+            filterScores.add(ve.getFilterScore());
+            if (variantIsHomozygous(ve, pedigree)) {
+                //Add the value a second time
                 filterScores.add(ve.getFilterScore());
-                GenotypeCall gc = ve.getVariant().getGenotype();
-                if (pedigree.containsCompatibleHomozygousVariant(gc)) {
-                    //Add the value a second time, it is homozygous
-                    filterScores.add(ve.getFilterScore());
-                }
             }
         }
         //maybe the variants were all crappy and nothing passed....
         if (filterScores.isEmpty()) {
             return 0f;
         }
-        //Sort in descending order
-        Collections.sort(filterScores, Collections.reverseOrder());
+        sortFilterScoresInDecendingOrder(filterScores);
         if (filterScores.size() < 2) {
             //Less than two variants, cannot be AR
             return filterScores.get(0);
         }
+        return calculateAverageOfFirstTwoScores(filterScores);
+    }
+
+    private static boolean variantIsHomozygous(VariantEvaluation ve, Pedigree pedigree) {
+        GenotypeCall gc = ve.getVariant().getGenotype();
+        if (pedigree.containsCompatibleHomozygousVariant(gc)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static float calculateAverageOfFirstTwoScores(List<Float> filterScores) {
         float x = filterScores.get(0);
         float y = filterScores.get(1);
         float filterScore = (x + y) / (2f);
         return filterScore;
+    }
+
+    private static void sortFilterScoresInDecendingOrder(List<Float> filterScores) {
+        Collections.sort(filterScores, Collections.reverseOrder());
     }
 
     /**
@@ -244,18 +267,14 @@ public class GeneScorer {
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            //make sure the scoring only includes variants which have actually passed all the required filters
-            if (ve.passesFilters()) {
-                filterScores.add(ve.getFilterScore());
-            }
+            filterScores.add(ve.getFilterScore());
         }
         //maybe the variants were all crappy and nothing passed....
         if (filterScores.isEmpty()) {
             return 0f;
         }
 
-        //Sort in descending order
-        Collections.sort(filterScores, Collections.reverseOrder());
+        sortFilterScoresInDecendingOrder(filterScores);
         //Not autosomal recessive, there is just one heterozygous mutation
         //thus return only the single best score.
         return filterScores.get(0);

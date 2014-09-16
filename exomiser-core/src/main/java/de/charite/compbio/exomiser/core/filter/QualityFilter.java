@@ -10,13 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filter Variants on the basis of the PHRED quality score for the variant that
- * was derived from the VCF file (QUAL field).
+ * VariantFilter Variants on the basis of the PHRED quality score for the variant that
+ was derived from the VCF file (QUAL field).
  *
  * @author Peter N Robinson
  * @version 0.09 (18 December, 2013).
  */
-public class QualityFilter implements Filter {
+public class QualityFilter implements VariantFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(QualityFilter.class);
 
@@ -38,8 +38,8 @@ public class QualityFilter implements Filter {
     private int minAltReadThresold = 0;
 
     /**
-     * Constructs a Filter for removing variants which do not pass the defined
-     * PHRED score.
+     * Constructs a VariantFilter for removing variants which do not pass the defined
+ PHRED score.
      *
      * n.b. We are no longer filtering by requiring a minimum number of reads
      * for each DP4 field (alt/ref in both directions). Instead, we are just
@@ -64,25 +64,23 @@ public class QualityFilter implements Filter {
     }
 
     @Override
-    public void filterVariants(List<VariantEvaluation> variantList) {
+    public void filter(List<VariantEvaluation> variantList) {
         for (VariantEvaluation ve : variantList) {
-            filterVariant(ve);
+            filter(ve);
         }
     }
 
     @Override
-    public boolean filterVariant(VariantEvaluation variantEvaluation) {
+    public boolean filter(VariantEvaluation variantEvaluation) {
         Variant v = variantEvaluation.getVariant();
         float phredScore = v.getVariantPhredScore();
         if (passesFilter(phredScore)) {
             // We passed the filter (Variant has good enough quality).
-            variantEvaluation.addPassedFilter(filterType, passedScore);
-            return true;
+            return variantEvaluation.addPassedFilter(filterType, passedScore);
         }
         // Variant is not of good quality, mark it as failed.
         //add a token failed score - this is essentially a boolean pass/fail so we're using 0 here.
-        variantEvaluation.addFailedFilter(filterType, failedScore);
-        return false;
+        return variantEvaluation.addFailedFilter(filterType, failedScore);
     }
 
     protected boolean passesFilter(float qualityScore) {

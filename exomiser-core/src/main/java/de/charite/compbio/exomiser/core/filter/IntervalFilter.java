@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filter variants according to a linkage interval. For instance, if the
+ * VariantFilter variants according to a linkage interval. For instance, if the
  * interval is chr2:12345-67890, then we would only keep variants located
  * between positions 12345 and 67890 on chromosome 2. All other variants are
  * discarded.
@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter N Robinson
  * @version 0.08 (April 28, 2013)
  */
-public class IntervalFilter implements Filter {
+public class IntervalFilter implements VariantFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(IntervalFilter.class);
 
@@ -59,30 +59,27 @@ public class IntervalFilter implements Filter {
      * @param variantList
      */
     @Override
-    public void filterVariants(List<VariantEvaluation> variantList) {
+    public void filter(List<VariantEvaluation> variantList) {
 
         for (VariantEvaluation ve : variantList) {
-            filterVariant(ve);
+            filter(ve);
         }
     }
 
     @Override
-    public boolean filterVariant(VariantEvaluation variantEvaluation) {
+    public boolean filter(VariantEvaluation variantEvaluation) {
         Variant v = variantEvaluation.getVariant();
         
         int c = v.get_chromosome();
         if (c != interval.getChromosome()) {
-            variantEvaluation.addFailedFilter(filterType, failedScore);
-            return false;
+            return variantEvaluation.addFailedFilter(filterType, failedScore);
         }
         /* If we get here, we are on the same chromosome */
         int pos = v.get_position();
         if (pos < interval.getStart() || pos > interval.getEnd()) {
-            variantEvaluation.addFailedFilter(filterType, failedScore);
-            return false;
+            return variantEvaluation.addFailedFilter(filterType, failedScore);
         }
-        variantEvaluation.addPassedFilter(filterType, passedScore);
-        return true;
+        return variantEvaluation.addPassedFilter(filterType, passedScore);
     }
 
     @Override

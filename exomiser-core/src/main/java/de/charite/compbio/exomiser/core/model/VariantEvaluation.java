@@ -311,27 +311,33 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * identifies the type of
      * {@link de.charite.compbio.exomiser.filter.FilterScore FilterScore} object
      * being added (e.g., pathogenicity, frequency, etc).
+     * 
+     * Always returns true.
      *
      * @param type
      * @param filterScore
+     * @return true
      */
-    public void addPassedFilter(FilterType type, FilterScore filterScore) {
+    public boolean addPassedFilter(FilterType type, FilterScore filterScore) {
         this.passedFilterScoreMap.put(type, filterScore);
         //remember to re-calculate the overall filtering score each time a new 
         //filterScore is added
         this.filterScore *= filterScore.getScore();
+        return true;
     }
 
     /**
      * Adds the given {@code FilterType} to the set of filters which the
-     * {@code VariantEvaluation} failed to pass.
+     * {@code VariantEvaluation} failed to pass. Always returns false.
      *
      * @param filterScore
      * @param filterType
+     * @return false
      */
-    public void addFailedFilter(FilterType filterType, FilterScore filterScore) {
+    public boolean addFailedFilter(FilterType filterType, FilterScore filterScore) {
         failedFilters.add(filterType);
         this.filterScore *= filterScore.getScore();
+        return false;
     }
 
     /**

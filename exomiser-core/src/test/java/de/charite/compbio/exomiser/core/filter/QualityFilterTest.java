@@ -71,7 +71,7 @@ public class QualityFilterTest {
         variantList.add(lowQualityFailsFilter);
 
         
-        instance.filterVariants(variantList);
+        instance.filter(variantList);
         
         Set failedFilterSet = EnumSet.of(FilterType.QUALITY_FILTER);
 
@@ -84,12 +84,12 @@ public class QualityFilterTest {
 
     @Test
     public void testFilterVariantOfHighQualityIsTrue() {
-        assertThat(instance.filterVariant(highQualityPassesFilter), is(true));
+        assertThat(instance.filter(highQualityPassesFilter), is(true));
     }
     
     @Test
     public void testFilterVariantOfLowQualityIsFalse() {
-        assertThat(instance.filterVariant(lowQualityFailsFilter), is(false));
+        assertThat(instance.filter(lowQualityFailsFilter), is(false));
     }
 
     @Test
@@ -105,13 +105,19 @@ public class QualityFilterTest {
     
     @Test
     public void testHashCode() {
-        Filter qualityFilter = new QualityFilter(MIN_QUAL_THRESHOLD);
+        VariantFilter qualityFilter = new QualityFilter(MIN_QUAL_THRESHOLD);
         assertThat(instance.hashCode(), equalTo(qualityFilter.hashCode()));
     }
 
     @Test
     public void testNotEqualNull() {
         Object obj = null;
+        assertThat(instance.equals(obj), is(false));
+    }
+    
+    @Test
+    public void testNotEqualAnotherClass() {
+        Object obj = new TargetFilter();;
         assertThat(instance.equals(obj), is(false));
     }
     

@@ -81,7 +81,7 @@ public class IntervalFilterTest {
         variantList.add(wrongChromosomeRightPosition);
         variantList.add(wrongChromosomeWrongPosition);
         
-        instance.filterVariants(variantList);
+        instance.filter(variantList);
 
         //yep there is more than one assert here...
         Set<FilterType> expectedFailedFilters = EnumSet.of(instance.getFilterType());

@@ -19,9 +19,9 @@ import org.springframework.stereotype.Component;
  * @author jj8
  */
 @Component
-public class SparseVariantFilterer implements VariantFilterer{
+public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation, VariantFilter> {
 
-    private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterer.class);
+    private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterRunner.class);
 
     @Autowired
     private VariantEvaluationDataFactory variantEvaluationFactory;
@@ -33,8 +33,8 @@ public class SparseVariantFilterer implements VariantFilterer{
      * @return
      */
     @Override
-    public List<VariantEvaluation> filterVariants(List<Filter> filters, List<VariantEvaluation> variantEvaluations) {
-        logger.info("Filtering {} variants using DESTRUCTIVE sparse filtering", variantEvaluations.size());
+    public List<VariantEvaluation> run(List<VariantFilter> filters, List<VariantEvaluation> variantEvaluations) {
+        logger.info("Filtering {} variants using sparse filtering", variantEvaluations.size());
         List<VariantEvaluation> filteredList = new ArrayList<>();
 
         if (filters.isEmpty()) {
@@ -50,7 +50,7 @@ public class SparseVariantFilterer implements VariantFilterer{
                 if (filter.getFilterType() == FilterType.PATHOGENICITY_FILTER) {
                     variantEvaluationFactory.addPathogenicityData(variantEvaluation);
                 }
-                if (!filter.filterVariant(variantEvaluation)) {
+                if (!filter.filter(variantEvaluation)) {
                     break;
                 }
             }

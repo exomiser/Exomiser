@@ -61,7 +61,7 @@ public class VcfResultsWriter implements ResultsWriter {
         //(Issue #26 https://bitbucket.org/exomiser/exomiser/issue/26/vcf-output-format-requirements)
         stringBuilder.append(VCF_COLUMN_LINE);
         //write in the results for each variant in each gene
-        for (Gene gene : sampleData.getGeneList()) {
+        for (Gene gene : sampleData.getGenes()) {
             stringBuilder.append(buildGeneVariantsString(gene));
         }
         return stringBuilder.toString();

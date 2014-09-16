@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filter variants according to their predicted pathogenicity. There are two
+ * VariantFilter variants according to their predicted pathogenicity. There are two
  * components to this, which may better be separated in later versions of this
  * software, but I think there are more advantages to keeping them all in one
  * class.
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @author Peter N Robinson
  * @version 0.09 (29 December, 2012).
  */
-public class PathogenicityFilter implements Filter {
+public class PathogenicityFilter implements VariantFilter {
 
     private final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
 
@@ -61,36 +61,38 @@ public class PathogenicityFilter implements Filter {
     }
 
     /**
-     * Filter variants based on their calculated pathogenicity. Those that pass
+     * VariantFilter variants based on their calculated pathogenicity. Those that pass
      * have a pathogenicity score assigned to them. The failed ones are deemed
      * to be non-pathogenic and marked as such.
      *
      * @param variantList
      */
     @Override
-    public void filterVariants(List<VariantEvaluation> variantList) {
+    public void filter(List<VariantEvaluation> variantList) {
 
         for (VariantEvaluation ve : variantList) {
-            filterVariant(ve);
+            filter(ve);
         }
     }
 
     @Override
-    public boolean filterVariant(VariantEvaluation variantEvaluation) {
+    public boolean filter(VariantEvaluation variantEvaluation) {
         PathogenicityData pathData = variantEvaluation.getPathogenicityData();
         VariantType variantType = variantEvaluation.getVariantType();
+        
         FilterScore filterScore = calculateFilterScore(variantType, pathData);
+        
         if (passesFilter(variantType, pathData)) {
             // We passed the filter (Variant is predicted pathogenic).
-            variantEvaluation.addPassedFilter(filterType, filterScore);
-            return true;
+            return variantEvaluation.addPassedFilter(filterType, filterScore);
         }
         // Variant is not predicted pathogenic, mark as failed.
-        variantEvaluation.addFailedFilter(filterType, filterScore);
-        return false;
+        return variantEvaluation.addFailedFilter(filterType, filterScore);
     }
 
     /**
+     * @param variantType
+     * @param pathData
      * @return true if the variant being analyzed passes the filter (e.g., has
      * high quality )
      */

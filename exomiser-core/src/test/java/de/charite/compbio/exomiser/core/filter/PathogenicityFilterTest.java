@@ -228,7 +228,7 @@ public class PathogenicityFilterTest {
         variantList.add(stopGainPassesFilter);
         variantList.add(missenseFailsFilter);
 
-        instance.filterVariants(variantList);
+        instance.filter(variantList);
 
         Set failedFilterSet = EnumSet.of(FilterType.PATHOGENICITY_FILTER);
 

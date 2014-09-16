@@ -88,7 +88,7 @@ public class TargetFilterTest {
         variantList.add(synonymousFailsFilter);
         
         TargetFilter instance = new TargetFilter();
-        instance.filterVariants(variantList);
+        instance.filter(variantList);
         
         Set failedFilterSet = EnumSet.of(FilterType.TARGET_FILTER);
 
@@ -130,4 +130,10 @@ public class TargetFilterTest {
         assertThat(instance.equals(obj), is(true));
     }
 
+    @Test
+    public void testHashCode() {
+        TargetFilter aTargetFilter = new TargetFilter();
+        TargetFilter anotherTargetFilter = new TargetFilter();
+        assertThat(aTargetFilter.hashCode(), equalTo(anotherTargetFilter.hashCode()));
+    }
 }
