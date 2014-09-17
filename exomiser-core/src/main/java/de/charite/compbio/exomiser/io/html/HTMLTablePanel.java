@@ -142,9 +142,8 @@ public class HTMLTablePanel extends HTMLTable {
 
 
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
-	Map<FilterType, FilterScore> triageMap = varev.getFilterScoreMap();
-	FilterScore frq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	FilterScore pth = triageMap.get(FilterType.PATHOGENICITY_FILTER);
+	FilterScore frq = varev.getFilterScore(FilterType.FREQUENCY_FILTER);
+	FilterScore pth = varev.getFilterScore(FilterType.PATHOGENICITY_FILTER);
 	float score = varev.getFilterScore();
 	float frscore = frq.getScore(); //this could cause an NPE if the VariantEvaluation didn't pass the filter...
 	StringBuilder sb = new StringBuilder();
