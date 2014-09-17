@@ -25,7 +25,7 @@ public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
         int numGenesWhichPassedFilters = 0;
         for (Gene gene : genes) {
             //Gene filtering needs to happen after variant filtering and only on genes which have passed the variant filtering steps 
-            if (gene.passesFilters()) {
+            if (gene.passedFilters()) {
                 numGenesWhichPassedFilters++;
                 for (Filter filter : filters) {
                     if (!filter.filter(gene)) {

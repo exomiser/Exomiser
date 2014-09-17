@@ -54,7 +54,7 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
                     break;
                 }
             }
-            if (variantEvaluation.passesFilters()) {
+            if (variantEvaluation.passedFilters()) {
                 filteredList.add(variantEvaluation);
             }
         }

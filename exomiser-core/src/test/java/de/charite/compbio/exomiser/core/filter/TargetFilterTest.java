@@ -92,20 +92,20 @@ public class TargetFilterTest {
         
         Set failedFilterSet = EnumSet.of(FilterType.TARGET_FILTER);
 
-        assertThat(missensePassesFilter.passesFilters(), is(true));
-        assertThat(missensePassesFilter.getFailedFilters().isEmpty(), is(true));
+        assertThat(missensePassesFilter.passedFilters(), is(true));
+        assertThat(missensePassesFilter.getFailedFilterTypes().isEmpty(), is(true));
 
-        assertThat(downstreamFailsFilter.passesFilters(), is(false));
-        assertThat(downstreamFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(downstreamFailsFilter.passedFilters(), is(false));
+        assertThat(downstreamFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
 
-        assertThat(intergenicFailsFilter.passesFilters(), is(false));
-        assertThat(intergenicFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(intergenicFailsFilter.passedFilters(), is(false));
+        assertThat(intergenicFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
 
-        assertThat(upstreamFailsFilter.passesFilters(), is(false));
-        assertThat(upstreamFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(upstreamFailsFilter.passedFilters(), is(false));
+        assertThat(upstreamFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
 
-        assertThat(synonymousFailsFilter.passesFilters(), is(false));
-        assertThat(synonymousFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(synonymousFailsFilter.passedFilters(), is(false));
+        assertThat(synonymousFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
 
     }
 

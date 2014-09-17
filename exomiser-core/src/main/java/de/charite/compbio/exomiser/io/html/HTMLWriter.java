@@ -587,7 +587,7 @@ public class HTMLWriter {
         this.out.write("<hr/>\n");
         table.writeTableHeader(this.out);
         for (Gene gene : geneList) {
-            if (gene.passesFilters()) {
+            if (gene.passedFilters()) {
                 table.writeTableRow(gene, this.out);
             }
         }

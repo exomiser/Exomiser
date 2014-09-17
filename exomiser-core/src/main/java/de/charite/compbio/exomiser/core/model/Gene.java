@@ -211,7 +211,7 @@ public class Gene implements Comparable<Gene>, Filterable {
         List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
         
         for (VariantEvaluation variantEvaluation : variantList) {
-            if (variantEvaluation.passesFilters()) {
+            if (variantEvaluation.passedFilters()) {
                 passedVariantEvaluations.add(variantEvaluation);
             }
         }
@@ -415,9 +415,9 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     @Override
-    public boolean passesFilters() {
+    public boolean passedFilters() {
         for (VariantEvaluation variantEvaluation : variantList) {
-            if (variantEvaluation.passesFilters()) {
+            if (variantEvaluation.passedFilters()) {
                 return true;
             }
         }

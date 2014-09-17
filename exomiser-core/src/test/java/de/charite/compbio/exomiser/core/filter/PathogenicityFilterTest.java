@@ -232,17 +232,17 @@ public class PathogenicityFilterTest {
 
         Set failedFilterSet = EnumSet.of(FilterType.PATHOGENICITY_FILTER);
 
-        assertThat(downstreamFailsFilter.passesFilters(), is(false));
-        assertThat(downstreamFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(downstreamFailsFilter.passedFilters(), is(false));
+        assertThat(downstreamFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
 
-        assertThat(missensePassesFilter.passesFilters(), is(true));
-        assertThat(missensePassesFilter.getFailedFilters().isEmpty(), is(true));
+        assertThat(missensePassesFilter.passedFilters(), is(true));
+        assertThat(missensePassesFilter.getFailedFilterTypes().isEmpty(), is(true));
 
-        assertThat(stopGainPassesFilter.passesFilters(), is(true));
-        assertThat(stopGainPassesFilter.getFailedFilters().isEmpty(), is(true));
+        assertThat(stopGainPassesFilter.passedFilters(), is(true));
+        assertThat(stopGainPassesFilter.getFailedFilterTypes().isEmpty(), is(true));
 
-        assertThat(missenseFailsFilter.passesFilters(), is(false));
-        assertThat(missenseFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(missenseFailsFilter.passedFilters(), is(false));
+        assertThat(missenseFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
     }
 
     @Test

@@ -75,11 +75,11 @@ public class QualityFilterTest {
         
         Set failedFilterSet = EnumSet.of(FilterType.QUALITY_FILTER);
 
-        assertThat(highQualityPassesFilter.passesFilters(), is(true));
-        assertThat(highQualityPassesFilter.getFailedFilters().isEmpty(), is(true));
+        assertThat(highQualityPassesFilter.passedFilters(), is(true));
+        assertThat(highQualityPassesFilter.getFailedFilterTypes().isEmpty(), is(true));
 
-        assertThat(lowQualityFailsFilter.passesFilters(), is(false));
-        assertThat(lowQualityFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(lowQualityFailsFilter.passedFilters(), is(false));
+        assertThat(lowQualityFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
     }
 
     @Test

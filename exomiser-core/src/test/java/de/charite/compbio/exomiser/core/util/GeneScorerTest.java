@@ -120,7 +120,7 @@ public class GeneScorerTest {
         variantEvaluations.add(failedFrequencyPassedPathogenicity);
         variantEvaluations.add(passedFrequencyPassedPathogenicity);
         
-        float bestScore = passedFrequencyPassedPathogenicity.getFilterScore();
+        float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
         
         float calculatedScore = GeneScorer.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
         
@@ -144,7 +144,7 @@ public class GeneScorerTest {
         variantEvaluations.add(failedFrequency);
         variantEvaluations.add(passedFrequencyPassedPathogenicity);
                 
-        float bestScore = passedFrequencyPassedPathogenicity.getFilterScore();
+        float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
         
         float calculatedScore = GeneScorer.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED, null);
 

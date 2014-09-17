@@ -86,17 +86,17 @@ public class IntervalFilterTest {
         //yep there is more than one assert here...
         Set<FilterType> expectedFailedFilters = EnumSet.of(instance.getFilterType());
         
-        assertThat(rightChromosomeRightPosition.passesFilters(), is(true));
-        assertThat(rightChromosomeRightPosition.getFailedFilters().isEmpty(), is(true));
+        assertThat(rightChromosomeRightPosition.passedFilters(), is(true));
+        assertThat(rightChromosomeRightPosition.getFailedFilterTypes().isEmpty(), is(true));
         
-        assertThat(rightChromosomeWrongPosition.passesFilters(), is(false));
-        assertThat(rightChromosomeWrongPosition.getFailedFilters(), equalTo(expectedFailedFilters));
+        assertThat(rightChromosomeWrongPosition.passedFilters(), is(false));
+        assertThat(rightChromosomeWrongPosition.getFailedFilterTypes(), equalTo(expectedFailedFilters));
         
-        assertThat(wrongChromosomeRightPosition.passesFilters(), is(false));
-        assertThat(wrongChromosomeRightPosition.getFailedFilters(), equalTo(expectedFailedFilters));
+        assertThat(wrongChromosomeRightPosition.passedFilters(), is(false));
+        assertThat(wrongChromosomeRightPosition.getFailedFilterTypes(), equalTo(expectedFailedFilters));
         
-        assertThat(wrongChromosomeWrongPosition.passesFilters(), is(false));
-        assertThat(wrongChromosomeWrongPosition.getFailedFilters(), equalTo(expectedFailedFilters));
+        assertThat(wrongChromosomeWrongPosition.passedFilters(), is(false));
+        assertThat(wrongChromosomeWrongPosition.getFailedFilterTypes(), equalTo(expectedFailedFilters));
     }
     
     @Test

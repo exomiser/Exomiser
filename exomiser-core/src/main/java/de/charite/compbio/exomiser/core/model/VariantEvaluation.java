@@ -4,13 +4,11 @@ import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.filter.FilterScore;
 import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.pathogenicity.VariantTypePathogenicityScores;
-import jannovar.common.ModeOfInheritance;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,15 +35,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final Variant var;
 
     /**
-     * A map of the results of filtering and prioritization. The key to the map
+     * A map of the results of filtering. The key to the map
      * is an integer constant as defined in
      * {@link exomizer.common.FilterType FilterType}.
      */
     private final Map<FilterType, FilterScore> passedFilterScoreMap;
+    private final Set<FilterType> failedFilterTypes;
 
-    private float filterScore = 1f;
-
-    private final Set<FilterType> failedFilters;
+    private float variantScore = 1f;
 
     private List<String> mutationRefList = null;
 
@@ -55,8 +52,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public VariantEvaluation(Variant v) {
         var = v;
-        passedFilterScoreMap = new HashMap<>();
-        failedFilters = EnumSet.noneOf(FilterType.class);
+        passedFilterScoreMap = new LinkedHashMap<>();
+        failedFilterTypes = EnumSet.noneOf(FilterType.class);
         //why not set the frequency data too? Well, not having a null implies that
         //the data has been set from the database and if there is no data then 
         //it must be an extremely rare and therefore interesting variant. 
@@ -266,7 +263,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * This method calculates a filter score (prediction of the pathogenicity
+     * This method returns the variant score (prediction of the pathogenicity
      * and relevance of the Variant) by using data from the {@code FilterScore}
      * objects associated with this Variant.
      * <P>
@@ -275,18 +272,18 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * predicted to be potentially pathogenic, there are different strengths of
      * prediction, which is what this score tries to reflect.
      *
-     * @return a priority score between 0 and 1
+     * @return a score between 0 and 1
      */
-    public float getFilterScore() {
-        return filterScore;
+    public float getVariantScore() {
+        return variantScore;
     }
 
     /**
      * @return the map of FilterScore objects that represent the result of
      * filtering
      */
-    public Map<FilterType, FilterScore> getFilterScoreMap() {
-        return this.passedFilterScoreMap;
+    public Map<FilterType, FilterScore> getFilterScores() {
+        return passedFilterScoreMap;
     }
 
     /**
@@ -322,7 +319,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.passedFilterScoreMap.put(type, filterScore);
         //remember to re-calculate the overall filtering score each time a new 
         //filterScore is added
-        this.filterScore *= filterScore.getScore();
+        this.variantScore *= filterScore.getScore();
         return true;
     }
 
@@ -335,8 +332,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return false
      */
     public boolean addFailedFilter(FilterType filterType, FilterScore filterScore) {
-        failedFilters.add(filterType);
-        this.filterScore *= filterScore.getScore();
+        failedFilterTypes.add(filterType);
+        this.variantScore *= filterScore.getScore();
         return false;
     }
 
@@ -345,8 +342,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return the Set of {@code FilterType} which the {@code VariantEvaluation}
      * failed to pass.
      */
-    public Set<FilterType> getFailedFilters() {
-        return failedFilters;
+    public Set<FilterType> getFailedFilterTypes() {
+        return failedFilterTypes;
     }
 
     /**
@@ -358,13 +355,13 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return
      */
     @Override
-    public boolean passesFilters() {
-        return failedFilters.isEmpty();
+    public boolean passedFilters() {
+        return failedFilterTypes.isEmpty();
     }
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-        return !failedFilters.contains(filterType) && passedFilterScoreMap.containsKey(filterType);
+        return !failedFilterTypes.contains(filterType) && passedFilterScoreMap.containsKey(filterType);
     }
 
     public FilterScore getFilterScore(FilterType filterType) {
@@ -378,8 +375,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public int compareTo(VariantEvaluation other) {
-        float me = getFilterScore();
-        float them = other.getFilterScore();
+        float me = getVariantScore();
+        float them = other.getVariantScore();
         if (me > them) {
             return -1;
         } else if (them > me) {

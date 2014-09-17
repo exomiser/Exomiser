@@ -83,9 +83,9 @@ public class InheritanceFilterTest {
         InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
         instance.filter(genes);
 
-        assertThat(compatibleWithAutosomalDominant.passesFilters(), is(true));
-        assertThat(compatibleWithAutosomalRecessive.passesFilters(), is(true));
-        assertThat(compatibleWithXLinked.passesFilters(), is(true));
+        assertThat(compatibleWithAutosomalDominant.passedFilters(), is(true));
+        assertThat(compatibleWithAutosomalRecessive.passedFilters(), is(true));
+        assertThat(compatibleWithXLinked.passedFilters(), is(true));
 
     }
     

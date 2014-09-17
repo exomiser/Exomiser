@@ -112,23 +112,23 @@ public class FrequencyFilterTest {
         
         Set failedFilterSet = EnumSet.of(FilterType.FREQUENCY_FILTER);
         
-        assertThat(failsFrequency.passesFilters(), is(false));
-        assertThat(failsFrequency.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(failsFrequency.passedFilters(), is(false));
+        assertThat(failsFrequency.getFailedFilterTypes(), equalTo(failedFilterSet));
         
-        assertThat(passesDbsnpFrequency.passesFilters(), is(true));
-        assertThat(passesDbsnpFrequency.getFailedFilters().isEmpty(), is(true));
+        assertThat(passesDbsnpFrequency.passedFilters(), is(true));
+        assertThat(passesDbsnpFrequency.getFailedFilterTypes().isEmpty(), is(true));
         
-        assertThat(passesEspAAFrequency.passesFilters(), is(true));
-        assertThat(passesEspAAFrequency.getFailedFilters().isEmpty(), is(true));
+        assertThat(passesEspAAFrequency.passedFilters(), is(true));
+        assertThat(passesEspAAFrequency.getFailedFilterTypes().isEmpty(), is(true));
         
-        assertThat(passesEspAllFrequency.passesFilters(), is(true));
-        assertThat(passesEspAllFrequency.getFailedFilters().isEmpty(), is(true));
+        assertThat(passesEspAllFrequency.passedFilters(), is(true));
+        assertThat(passesEspAllFrequency.getFailedFilterTypes().isEmpty(), is(true));
         
-        assertThat(passesEspEAFrequency.passesFilters(), is(true));
-        assertThat(passesEspEAFrequency.getFailedFilters().isEmpty(), is(true));
+        assertThat(passesEspEAFrequency.passedFilters(), is(true));
+        assertThat(passesEspEAFrequency.getFailedFilterTypes().isEmpty(), is(true));
         
-        assertThat(passesNoFrequencyData.passesFilters(), is(true));
-        assertThat(passesNoFrequencyData.getFailedFilters().isEmpty(), is(true));
+        assertThat(passesNoFrequencyData.passedFilters(), is(true));
+        assertThat(passesNoFrequencyData.getFailedFilterTypes().isEmpty(), is(true));
            
     }
     
@@ -150,23 +150,23 @@ public class FrequencyFilterTest {
         
         Set failedFilterSet = EnumSet.of(FilterType.FREQUENCY_FILTER);
         
-        assertThat(failsFrequency.passesFilters(), is(false));
-        assertThat(failsFrequency.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(failsFrequency.passedFilters(), is(false));
+        assertThat(failsFrequency.getFailedFilterTypes(), equalTo(failedFilterSet));
         
-        assertThat(passesDbsnpFrequency.passesFilters(), is(false));
-        assertThat(passesDbsnpFrequency.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(passesDbsnpFrequency.passedFilters(), is(false));
+        assertThat(passesDbsnpFrequency.getFailedFilterTypes(), equalTo(failedFilterSet));
         
-        assertThat(passesEspAAFrequency.passesFilters(), is(false));
-        assertThat(passesEspAAFrequency.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(passesEspAAFrequency.passedFilters(), is(false));
+        assertThat(passesEspAAFrequency.getFailedFilterTypes(), equalTo(failedFilterSet));
         
-        assertThat(passesEspAllFrequency.passesFilters(), is(false));
-        assertThat(passesEspAllFrequency.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(passesEspAllFrequency.passedFilters(), is(false));
+        assertThat(passesEspAllFrequency.getFailedFilterTypes(), equalTo(failedFilterSet));
         
-        assertThat(passesEspEAFrequency.passesFilters(), is(false));
-        assertThat(passesEspEAFrequency.getFailedFilters(), equalTo(failedFilterSet));
+        assertThat(passesEspEAFrequency.passedFilters(), is(false));
+        assertThat(passesEspEAFrequency.getFailedFilterTypes(), equalTo(failedFilterSet));
         
-        assertThat(passesNoFrequencyData.passesFilters(), is(true));
-        assertThat(passesNoFrequencyData.getFailedFilters().isEmpty(), is(true));
+        assertThat(passesNoFrequencyData.passedFilters(), is(true));
+        assertThat(passesNoFrequencyData.getFailedFilterTypes().isEmpty(), is(true));
               
     }
     

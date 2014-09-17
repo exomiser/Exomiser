@@ -121,7 +121,7 @@ public class HTMLTablePanel extends HTMLTable {
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 
 	    String ucscLink = getUCSCBrowserURL(varev);
 	    String pathogenicity = getPathogenicityForToolTip(varev);
-	    float varScore = varev.getFilterScore();
+	    float varScore = varev.getVariantScore();
 	    if (varScore < 0.2)
 		out.write("<tr bgcolor=\"#BDBDBD\">");
 	    else
@@ -144,7 +144,7 @@ public class HTMLTablePanel extends HTMLTable {
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
 	FilterScore frq = varev.getFilterScore(FilterType.FREQUENCY_FILTER);
 	FilterScore pth = varev.getFilterScore(FilterType.PATHOGENICITY_FILTER);
-	float score = varev.getFilterScore();
+	float score = varev.getVariantScore();
 	float frscore = frq.getScore(); //this could cause an NPE if the VariantEvaluation didn't pass the filter...
 	StringBuilder sb = new StringBuilder();
 	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<br/>Frequency Score: %.2f<span>",score, frscore)); 

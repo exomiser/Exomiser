@@ -63,10 +63,10 @@ public class SimpleVariantFilterRunnerTest {
         Mockito.when(frequencyDao.getFrequencyData(null)).thenReturn(null);
 
                 
-        Mockito.when(passesAllFilters.passesFilters()).thenReturn(true);
-        Mockito.when(failsAllFilters.passesFilters()).thenReturn(false);
-        Mockito.when(passesQualityFrequencyFilter.passesFilters()).thenReturn(false);
-        Mockito.when(passesTargetQualityFilter.passesFilters()).thenReturn(false);
+        Mockito.when(passesAllFilters.passedFilters()).thenReturn(true);
+        Mockito.when(failsAllFilters.passedFilters()).thenReturn(false);
+        Mockito.when(passesQualityFrequencyFilter.passedFilters()).thenReturn(false);
+        Mockito.when(passesTargetQualityFilter.passedFilters()).thenReturn(false);
         
         Mockito.when(frequencyFilter.getFilterType()).thenReturn(FilterType.FREQUENCY_FILTER);
         Mockito.when(qualityFilter.getFilterType()).thenReturn(FilterType.QUALITY_FILTER);

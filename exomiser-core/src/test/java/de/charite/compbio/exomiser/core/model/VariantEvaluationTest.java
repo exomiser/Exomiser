@@ -98,24 +98,24 @@ public class VariantEvaluationTest {
     }
     
     @Test
-    public void testThatAddingAFilterScoreUpdatesVariantEvaluationFilterScore() {
+    public void testThatAddingAFilterScoreUpdatesVariantScore() {
 
-        assertThat(instance.getFilterScore(), equalTo(1.0f));
+        assertThat(instance.getVariantScore(), equalTo(1.0f));
 
         float qScore = 0.45f;
         FilterScore qualityScore = new QualityFilterScore(qScore);
         //adding a FilterScore also updates the score of the VariantEvaluation 
         instance.addPassedFilter(FilterType.QUALITY_FILTER, qualityScore);
-        assertThat(instance.getFilterScoreMap().size(), equalTo(1));
-        assertThat(instance.getFilterScore(), equalTo(qScore));
+        assertThat(instance.getFilterScores().size(), equalTo(1));
+        assertThat(instance.getVariantScore(), equalTo(qScore));
     }
 
     @Test
-    public void testThatAddingTwoFilterScoresUpdatesVariantEvaluationFilterScore() {
+    public void testThatAddingTwoFilterScoresUpdatesVariantScore() {
 
-        assertThat(instance.getFilterScore(), equalTo(1.0f));
+        assertThat(instance.getVariantScore(), equalTo(1.0f));
 
-        float expectedScore = instance.getFilterScore();
+        float expectedScore = instance.getVariantScore();
 
         float qScore = 0.45f;
         FilterScore qualityScore = new QualityFilterScore(qScore);
@@ -128,17 +128,17 @@ public class VariantEvaluationTest {
         expectedScore *= fScore;
         //adding a FilterScore also updates the score of the VariantEvaluation 
         instance.addPassedFilter(FilterType.FREQUENCY_FILTER, frequencyScore);
-        assertThat(instance.getFilterScoreMap().size(), equalTo(2));
-        assertThat(instance.getFilterScore(), equalTo(expectedScore));
+        assertThat(instance.getFilterScores().size(), equalTo(2));
+        assertThat(instance.getVariantScore(), equalTo(expectedScore));
     }
 
     @Test
-    public void testGetFilterScore() {
+    public void testGetVariantScore() {
         float qScore = 0.45f;
         FilterScore qualityScore = new QualityFilterScore(qScore);
         //adding a FilterScore also updates the score of the VariantEvaluation 
         instance.addPassedFilter(FilterType.QUALITY_FILTER, qualityScore);
-        assertThat(instance.getFilterScore(), equalTo(qScore));
+        assertThat(instance.getVariantScore(), equalTo(qScore));
     }
 
     @Test
@@ -149,7 +149,7 @@ public class VariantEvaluationTest {
         Set<FilterType> expectedFilters = EnumSet.of(filterType);
         
         instance.addFailedFilter(filterType, frequencyScore);
-        assertThat(instance.getFailedFilters(), equalTo(expectedFilters));
+        assertThat(instance.getFailedFilterTypes(), equalTo(expectedFilters));
     }
 
     @Test
@@ -158,27 +158,27 @@ public class VariantEvaluationTest {
         FilterScore frequencyScore = new FrequencyFilterScore(0.1f);
         
         instance.addFailedFilter(filterType, frequencyScore);
-        assertThat(instance.passesFilters(), is(false));
+        assertThat(instance.passedFilters(), is(false));
     }
 
     @Test
-    public void testVariantFilterScoreIsUpdatedWhenFailedFilterAdded() {
+    public void testVariantScoreIsUpdatedWhenFailedFilterAdded() {
         float score = 0.1f;
         
         FilterType filterType = FilterType.FREQUENCY_FILTER;
         FilterScore frequencyScore = new FrequencyFilterScore(score);
         
         instance.addFailedFilter(filterType, frequencyScore);
-        assertThat(instance.getFilterScore(), equalTo(score));
+        assertThat(instance.getVariantScore(), equalTo(score));
     }
     
     @Test
-    public void testVariantFilterScoreIsUpdatedWhenPassedAndFailedFilterAdded() {
+    public void testVariantScoreIsUpdatedWhenPassedAndFailedFilterAdded() {
         float qualScore = 0.45f;
         FilterScore qualityScore = new QualityFilterScore(qualScore);
         //adding a FilterScore also updates the score of the VariantEvaluation 
         instance.addPassedFilter(FilterType.QUALITY_FILTER, qualityScore);
-        assertThat(instance.getFilterScore(), equalTo(qualScore));
+        assertThat(instance.getVariantScore(), equalTo(qualScore));
         
         float freqScore = 0.1f;
         FilterType filterType = FilterType.FREQUENCY_FILTER;
@@ -186,12 +186,12 @@ public class VariantEvaluationTest {
         //adding a failed FilterScore also updates the score of the VariantEvaluation         
         instance.addFailedFilter(filterType, frequencyScore);
         
-        assertThat(instance.getFilterScore(), equalTo(qualScore * freqScore));
+        assertThat(instance.getVariantScore(), equalTo(qualScore * freqScore));
     } 
     
     @Test
     public void testPassesFilters() {
-        assertThat(instance.passesFilters(), is(true));
+        assertThat(instance.passedFilters(), is(true));
     }
 
     @Test

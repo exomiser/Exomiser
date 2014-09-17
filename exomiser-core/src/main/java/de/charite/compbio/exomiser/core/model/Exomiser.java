@@ -109,7 +109,7 @@ public class Exomiser {
         InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(sampleData.getPedigree());
                 
         for (Gene gene : sampleData.getGenes()) {
-            if (gene.passesFilters()) {
+            if (gene.passedFilters()) {
                 gene.setInheritanceModes(inheritanceModeAnalyser.analyseInheritanceModesForGene(gene));
             }          
         }
