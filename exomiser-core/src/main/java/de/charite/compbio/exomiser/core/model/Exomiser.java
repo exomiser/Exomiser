@@ -7,15 +7,9 @@ package de.charite.compbio.exomiser.core.model;
 
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
 import de.charite.compbio.exomiser.core.filter.Filter;
-import de.charite.compbio.exomiser.core.filter.VariantFilter;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SimpleVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.filter.FilterScore;
-import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.GeneFilter;
-import de.charite.compbio.exomiser.core.filter.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filter.InheritanceFilterScore;
 import de.charite.compbio.exomiser.core.filter.FilterRunner;
 import de.charite.compbio.exomiser.core.filter.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.util.GeneScorer;
@@ -26,9 +20,7 @@ import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.ScoringMode;
-import jannovar.common.ModeOfInheritance;
 import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,8 +53,6 @@ public class Exomiser {
         List<Filter> variantFilters = filterFactory.makeVariantFilters(exomiserSettings);
         List<Filter> geneFilters = filterFactory.makeGeneFilters(exomiserSettings);
 
-        //create the priority factory - this will deliberately fail if there are
-        //incorrect input options for the specified prioritiser. 
         logger.info("MAKING PRIORITISERS");
         List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
 
