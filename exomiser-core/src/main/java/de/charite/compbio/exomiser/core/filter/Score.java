@@ -11,7 +11,7 @@ package de.charite.compbio.exomiser.core.filter;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface Scoreable {
+public interface Score {
     
     /**
      * @return return a float representation of the filter result [0..1]. If the

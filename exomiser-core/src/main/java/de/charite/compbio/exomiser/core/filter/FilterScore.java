@@ -7,6 +7,6 @@ package de.charite.compbio.exomiser.core.filter;
  * @author Peter N Robinson
  * @version 0.02 (16 April, 2012)
  */
-public interface FilterScore extends Scoreable {
+public interface FilterScore extends Score {
 
 }
