@@ -357,7 +357,7 @@ public class PhenodigmDataDumper {
         //hp_mp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, mp_id, ic as score from hp_mp_mapping where ic > 2.75";
+        String sql = "select hp_id, mp_id, ic as score from hp_mp_mapping";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -388,7 +388,7 @@ public class PhenodigmDataDumper {
         //hp_mp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, zp_id, ic as score from hp_zp_mapping where ic > 2.75";
+        String sql = "select hp_id, zp_id, ic as score from hp_zp_mapping";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -420,7 +420,7 @@ public class PhenodigmDataDumper {
         //hp_hp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, hp_id_hit, ic as score from hp_hp_mapping where ic > 2.75";
+        String sql = "select hp_id, hp_id_hit, ic as score from hp_hp_mapping";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
