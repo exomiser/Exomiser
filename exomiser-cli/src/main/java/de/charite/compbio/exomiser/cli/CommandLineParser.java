@@ -161,9 +161,9 @@ public class CommandLineParser {
             case MIN_QUAL_OPTION:
                 settingsBuilder.minimumQuality(Float.parseFloat(value));
                 break;
-            case KEEP_NON_PATHOGENIC_MISSENSE_OPTION:
+            case REMOVE_PATHOGENICITY_FILTER_CUTOFF:
                 //default is true
-                settingsBuilder.keepNonPathogenicMissense(Boolean.parseBoolean(value));
+                settingsBuilder.removePathFilterCutOff(Boolean.parseBoolean(value));
                 break;
             case REMOVE_DBSNP_OPTION:
                 //default is false

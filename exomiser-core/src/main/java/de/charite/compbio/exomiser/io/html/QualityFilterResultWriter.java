@@ -7,7 +7,7 @@
 package de.charite.compbio.exomiser.io.html;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filter.FilterScore;
+import de.charite.compbio.exomiser.core.filter.FilterResult;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class QualityFilterResultWriter implements FilterResultWriter {
      * @return A string with a summary of the filtering results .
      */
     public String getFilterResultSummary(VariantEvaluation variantEval) {
-        FilterScore qualityScore = variantEval.getFilterScore(FilterType.QUALITY_FILTER);
+        FilterResult qualityScore = variantEval.getFilterResult(FilterType.QUALITY_FILTER);
         return String.format("Quality: %.1f", qualityScore.getScore());
     }
 
@@ -31,7 +31,7 @@ public class QualityFilterResultWriter implements FilterResultWriter {
      * bullet point.
      */
     public String getHTMLCode(VariantEvaluation variantEval) {
-        FilterScore qualityScore = variantEval.getFilterScore(FilterType.QUALITY_FILTER);
+        FilterResult qualityScore = variantEval.getFilterResult(FilterType.QUALITY_FILTER);
         return String.format("<UL><LI>PHRED: %d</LI></UL>\n", (int) qualityScore.getScore());
     }
 
@@ -54,7 +54,7 @@ public class QualityFilterResultWriter implements FilterResultWriter {
      * "detailed list not available or sensible".
      */
     public List<String> getFilterResultList(VariantEvaluation variantEval) {
-        FilterScore qualityScore = variantEval.getFilterScore(FilterType.QUALITY_FILTER);
+        FilterResult qualityScore = variantEval.getFilterResult(FilterType.QUALITY_FILTER);
         List<String> L = new ArrayList<>();
         L.add(String.format("%d", (int) qualityScore.getScore()));
 

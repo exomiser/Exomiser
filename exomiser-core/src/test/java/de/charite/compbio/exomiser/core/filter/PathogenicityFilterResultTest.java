@@ -5,20 +5,18 @@
  */
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.filter.FilterScore;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilterScore;
-import de.charite.compbio.exomiser.core.filter.PathogenicityFilterScore;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static de.charite.compbio.exomiser.core.filter.FilterResultStatus.*;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PathogenicityFilterScoreTest{
+public class PathogenicityFilterResultTest{
 
 
     @Before
@@ -29,45 +27,43 @@ public class PathogenicityFilterScoreTest{
     @Test
     public void testScoreIsSetByConstructor() {
         float expectedScore = 1.0f;
-        PathogenicityFilterScore instance = new PathogenicityFilterScore(expectedScore);
+        PathogenicityFilterResult instance = new PathogenicityFilterResult(expectedScore, PASS);
         assertThat(instance.getScore(), equalTo(expectedScore));
     }
 
     @Test
     public void testNotEqualsNull() {
         Object obj = null;
-        PathogenicityFilterScore instance = new PathogenicityFilterScore(1.0f);
+        PathogenicityFilterResult instance = new PathogenicityFilterResult(1.0f, PASS);
         assertThat(instance.equals(obj), is(false));
     }
     
     @Test
     public void testNotEqualsOtherScoreValue() {
-        FilterScore obj = new PathogenicityFilterScore(0.9f);
-        PathogenicityFilterScore instance = new PathogenicityFilterScore(1.0f);
+        FilterResult obj = new PathogenicityFilterResult(0.9f, PASS);
+        PathogenicityFilterResult instance = new PathogenicityFilterResult(1.0f, PASS);
         assertThat(instance.equals(obj), is(false));
     }
     
     @Test
     public void testNotEqualsOtherScoreClass() {
-        FilterScore obj = new FrequencyFilterScore(0.45f);
-        PathogenicityFilterScore instance = new PathogenicityFilterScore(0.45f);
+        FilterResult obj = new FrequencyFilterResult(0.45f, PASS);
+        PathogenicityFilterResult instance = new PathogenicityFilterResult(0.45f, PASS);
         assertThat(instance.equals(obj), is(false));
     }
     
     @Test
     public void testEqualsOtherScoreClass() {
-        FilterScore obj = new PathogenicityFilterScore(0.99f);
-        PathogenicityFilterScore instance = new PathogenicityFilterScore(0.99f);
+        FilterResult obj = new PathogenicityFilterResult(0.99f, PASS);
+        PathogenicityFilterResult instance = new PathogenicityFilterResult(0.99f, PASS);
         assertThat(instance.equals(obj), is(true));
     }
 
     @Test
     public void testToString() {
-        PathogenicityFilterScore instance = new PathogenicityFilterScore(0.04999f);
-        String expResult = "Path score: 0.050";
+        PathogenicityFilterResult instance = new PathogenicityFilterResult(0.04999f, PASS);
+        String expResult = "Filter=Pathogenicity score=0.050 status=PASS";
         assertThat(instance.toString(), equalTo(expResult));
     }
-    
-    
 
 }

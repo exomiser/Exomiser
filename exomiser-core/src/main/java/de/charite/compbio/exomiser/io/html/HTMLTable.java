@@ -186,7 +186,7 @@ public class HTMLTable {
         List<VariantEvaluation> passedFilters = new ArrayList<>();
 
         for (VariantEvaluation ve : gene.getVariantEvaluations()) {
-            if (ve.passesFilters()) {
+            if (ve.passedFilters()) {
                 passedFilters.add(ve);
             }
         }
@@ -462,7 +462,7 @@ public class HTMLTable {
 
         int numPassedVariants = 0;
         for (VariantEvaluation varEval : gene.getVariantEvaluations()) {
-            if (varEval.passesFilters()) {
+            if (varEval.passedFilters()) {
                 numPassedVariants++;
             }
         }
@@ -504,7 +504,7 @@ public class HTMLTable {
 //        //FIX THIS!!! (use Thymeleaf....)
 //        int numPassedVariants = 0;
 //        for (VariantEvaluation varEval : gen.getVariantEvaluations()) {
-//            if (varEval.passesFilters()) {
+//            if (varEval.passedFilters()) {
 //                numPassedVariants++;
 //            }
 //        }
@@ -514,7 +514,7 @@ public class HTMLTable {
 //        }
 //        String entrez = getEntrezURL(gen);
 //        double priorityScore = gen.getPriorityScore();
-//        double filterScore = gen.getFilterScore();
+//        double filterScore = gen.getVariantScore();
 //        double combined = gen.getCombinedScore();
 //        String scoreString = String.format("&nbsp;&nbsp;gene relevance score: %.3f&nbsp;&nbsp;variant score %.3f&nbsp;&nbsp;total score: %.3f",
 //                priorityScore, filterScore, combined);

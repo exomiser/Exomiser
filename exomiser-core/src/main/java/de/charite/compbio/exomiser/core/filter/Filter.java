@@ -1,23 +1,18 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package de.charite.compbio.exomiser.core.filter;
 
 import de.charite.compbio.exomiser.core.model.Filterable;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import java.util.List;
 
 /**
- * This interface is implemented by classes that perform filtering of the
- * <b>variants</b> in the VCF file according to various criteria. A Triage
- * object gets attached to each Variant object.
- * <P>
- * Note that classes that implement the interface
- * {@link de.charite.compbio.exomiser.priority.Priority Priority} are
- * responsible for gene-level filtering.
  *
- * @author Peter N Robinson
- * @version 0.07 (April 28, 2013).
- * @see de.charite.compbio.exomiser.priority.Priority
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @param <T>
  */
-public interface Filter {
+public interface Filter<T extends Filterable> {
 
     /**
      * @return an integer constant (as defined in exomizer.common.Constants)
@@ -31,17 +26,18 @@ public interface Filter {
      * variant does not pass the filter it is marked as having failed that
      * filter.
      *
-     * @param variantEvaluations to be filtered
+     * @param filterables
      */
-    public void filterVariants(List<VariantEvaluation> variantEvaluations);
+    
+    //TODO: this needs to move into the FilterRunner class
+//    public void applyFilter(List<T> filterables);
 
     /**
      * True or false depending on whether the {@code VariantEvaluation} passes
-     * the filter or not.
+ the runFilter or not.
      *
-     * @param variantEvaluation to be filtered
-     * @return true if the {@code VariantEvaluation} passes the filter.
+     * @param filterable
+     * @return true if the {@code VariantEvaluation} passes the runFilter.
      */
-    public boolean filterVariant(VariantEvaluation variantEvaluation);
-
+    public FilterResult runFilter(T filterable);
 }

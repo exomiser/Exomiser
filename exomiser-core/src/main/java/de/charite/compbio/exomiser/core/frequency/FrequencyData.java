@@ -123,7 +123,7 @@ public class FrequencyData {
      * @return a List of Frequency data
      */
     public List<Frequency> getKnownFrequencies() {
-        return knownFrequencies;
+        return new ArrayList(knownFrequencies);
     }
 
     /**
@@ -133,12 +133,13 @@ public class FrequencyData {
      * @return
      */
     public float getMaxFreq() {
+        //TODO this is analagous to PathogenicityData.getMostPathogenicScore()
+        //TODO so should really return a Frequency object...
         float maxFreq = 0f;
-
         for (Frequency freq : knownFrequencies) {
+            //TODO ...but frequency needs to implement comparable first
             maxFreq = Math.max(maxFreq, freq.getFrequency());
         }
-
         return maxFreq;
     }
 

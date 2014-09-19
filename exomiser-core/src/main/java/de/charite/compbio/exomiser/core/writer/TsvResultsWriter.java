@@ -50,8 +50,8 @@ public class TsvResultsWriter implements ResultsWriter {
         //this is either empty or has a gene name
         String candidateGene = settings.getCandidateGene();
         StringBuilder stringBuilder = new StringBuilder();
-        for (Gene gene : sampleData.getGeneList()) {
-            if (gene.passesFilters()) {
+        for (Gene gene : sampleData.getGenes()) {
+            if (gene.passedFilters()) {
                 stringBuilder.append(makeGeneLine(gene, candidateGene));
             }
         }

@@ -6,13 +6,12 @@
 
 package de.charite.compbio.exomiser.core.util;
 
+import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilterScore;
-import de.charite.compbio.exomiser.core.filter.PathogenicityFilterScore;
+import de.charite.compbio.exomiser.core.filter.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filter.PathogenicityFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.priority.PriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.ScoringMode;
 import jannovar.common.Genotype;
 import jannovar.common.ModeOfInheritance;
@@ -45,20 +44,20 @@ public class GeneScorerTest {
     @Before
     public void setUp() {
         failedFrequency = getNewTestVariantEvaluation();
-        failedFrequency.addFailedFilter(FilterType.FREQUENCY_FILTER, new FrequencyFilterScore(0f));
+        failedFrequency.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
         
         failedPathogenicity = getNewTestVariantEvaluation();
-        failedPathogenicity.addFailedFilter(FilterType.PATHOGENICITY_FILTER, new PathogenicityFilterScore(0f));
+        failedPathogenicity.addFilterResult(new PathogenicityFilterResult(0f, FilterResultStatus.FAIL));
         
         failedFrequencyPassedPathogenicity = getNewTestVariantEvaluation();
-        failedFrequencyPassedPathogenicity.addFailedFilter(FilterType.FREQUENCY_FILTER, new FrequencyFilterScore(0f));
-        failedFrequencyPassedPathogenicity.addPassedFilter(FilterType.PATHOGENICITY_FILTER, new PathogenicityFilterScore(1f));
+        failedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
+        failedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(1f, FilterResultStatus.PASS));
         //these are set up so that failedFrequencyPassedPathogenicity has a higher 
         //pathogenicity score (1.0)than passedFrequencyPassedPathogenicity (0.75) to ensure that the scoring only includes variants
         //which have actually passed all the filters
         passedFrequencyPassedPathogenicity = getNewTestVariantEvaluation();
-        passedFrequencyPassedPathogenicity.addPassedFilter(FilterType.FREQUENCY_FILTER, new FrequencyFilterScore(0.75f));
-        passedFrequencyPassedPathogenicity.addPassedFilter(FilterType.PATHOGENICITY_FILTER, new PathogenicityFilterScore(0.75f));
+        passedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0.75f, FilterResultStatus.PASS));
+        passedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(0.75f, FilterResultStatus.PASS));
     }
     
     private VariantEvaluation getNewTestVariantEvaluation() {
@@ -120,7 +119,7 @@ public class GeneScorerTest {
         variantEvaluations.add(failedFrequencyPassedPathogenicity);
         variantEvaluations.add(passedFrequencyPassedPathogenicity);
         
-        float bestScore = passedFrequencyPassedPathogenicity.getFilterScore();
+        float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
         
         float calculatedScore = GeneScorer.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
         
@@ -144,7 +143,7 @@ public class GeneScorerTest {
         variantEvaluations.add(failedFrequency);
         variantEvaluations.add(passedFrequencyPassedPathogenicity);
                 
-        float bestScore = passedFrequencyPassedPathogenicity.getFilterScore();
+        float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
         
         float calculatedScore = GeneScorer.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED, null);
 

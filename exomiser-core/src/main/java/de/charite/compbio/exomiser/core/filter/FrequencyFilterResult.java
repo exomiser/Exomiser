@@ -3,8 +3,8 @@ package de.charite.compbio.exomiser.core.filter;
 
 /**
  * Filter Variants on the basis of Thousand Genomes and 5000 Exome project data.
- * The FrequencyFilterScore is created by the FrequencyFilter, one for each tested
- variant. The FrequencyFilterScore object can be used to ask whether the variant
+ * The FrequencyFilterResult is created by the FrequencyFilter, one for each tested
+ variant. The FrequencyFilterResult object can be used to ask whether the variant
  passes the filter, in this case whether it is rarer than then threshold in
  both the Thousand Genomes data and the Exome Server Project data. If no
  information is available for either of these, the filter is not applied (ergo
@@ -14,18 +14,15 @@ package de.charite.compbio.exomiser.core.filter;
  * proportion).
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.05 (9 January,2013).
  */
-public class FrequencyFilterScore implements FilterScore {
+public class FrequencyFilterResult extends GenericFilterResult {
 
-    /**
-     * The score as a result of filtering.
-     */
-    private final float score;
-
+    private static final FilterType FILTER_TYPE = FilterType.FREQUENCY_FILTER;
     
-    public FrequencyFilterScore(float score) {
-        this.score = score;
+    public FrequencyFilterResult(float score, FilterResultStatus resultStatus) {
+        super(FILTER_TYPE, score, resultStatus);
     }
 
     /**
@@ -40,12 +37,6 @@ public class FrequencyFilterScore implements FilterScore {
      */
     @Override
     public float getScore() {
-        return score;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("FrequencyFilterScore=%.3f", score);
-    }
-   
+        return super.getScore();
+    }   
 }

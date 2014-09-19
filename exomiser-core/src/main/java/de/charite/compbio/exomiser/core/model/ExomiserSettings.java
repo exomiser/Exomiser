@@ -61,7 +61,7 @@ public class ExomiserSettings {
     public static final String MAX_FREQ_OPTION = "max-freq";
     public static final String MIN_QUAL_OPTION = "min-qual";
     public static final String GENETIC_INTERVAL_OPTION = "restrict-interval";
-    public static final String KEEP_NON_PATHOGENIC_MISSENSE_OPTION = "keep-non-pathogenic-missense";
+    public static final String REMOVE_PATHOGENICITY_FILTER_CUTOFF = "remove-path-filter-cutoff";
     public static final String REMOVE_DBSNP_OPTION = "remove-dbsnp";
     public static final String REMOVE_OFF_TARGET_OPTION = "remove-off-target-syn";
 
@@ -73,8 +73,8 @@ public class ExomiserSettings {
     private final float minimumQuality;
     //restrict-interval (command-line was: interval, refered to variable: )
     private final GeneticInterval geneticInterval;
-    //include-pathogenic (command-line was: path, refered to variable: use_pathogenicity_filter)
-    private final boolean keepNonPathogenicMissense;
+    //remove-path-filter-cutoff
+    private final boolean removePathFilterCutOff;
     //remove-dbsnp (command-line was: dbsnp, refered to variable:  filterOutAlldbSNP)
     private final boolean removeDbSnp;
     //remove-off-target-syn the target filter switch - not specified in the original exomiser as this was a default. 
@@ -142,7 +142,7 @@ public class ExomiserSettings {
         private float maximumFrequency = 100.00f;
         private float minimumQuality = 0;
         private GeneticInterval geneticInterval = null;
-        private boolean keepNonPathogenicMissense = true;
+        private boolean removePathFilterCutOff = false;
         private boolean removeDbSnp = false;
         private boolean removeOffTargetVariants = true;
 
@@ -215,9 +215,9 @@ public class ExomiserSettings {
             return this;
         }
 
-        @JsonSetter(KEEP_NON_PATHOGENIC_MISSENSE_OPTION)
-        public SettingsBuilder keepNonPathogenicMissense(boolean value) {
-            keepNonPathogenicMissense = value;
+        @JsonSetter(REMOVE_PATHOGENICITY_FILTER_CUTOFF)
+        public SettingsBuilder removePathFilterCutOff(boolean value) {
+            removePathFilterCutOff = value;
             return this;
         }
 
@@ -343,7 +343,7 @@ public class ExomiserSettings {
         maximumFrequency = builder.maximumFrequency;
         minimumQuality = builder.minimumQuality;
         geneticInterval = builder.geneticInterval;
-        keepNonPathogenicMissense = builder.keepNonPathogenicMissense;
+        removePathFilterCutOff = builder.removePathFilterCutOff;
         removeDbSnp = builder.removeDbSnp;
         removeOffTargetVariants = builder.removeOffTargetVariants;
 
@@ -408,9 +408,9 @@ public class ExomiserSettings {
         return geneticInterval;
     }
 
-    @JsonProperty(KEEP_NON_PATHOGENIC_MISSENSE_OPTION)
-    public boolean keepNonPathogenicMissense() {
-        return keepNonPathogenicMissense;
+    @JsonProperty(REMOVE_PATHOGENICITY_FILTER_CUTOFF)
+    public boolean removePathFilterCutOff() {
+        return removePathFilterCutOff;
     }
 
     @JsonProperty(REMOVE_DBSNP_OPTION)
@@ -480,7 +480,7 @@ public class ExomiserSettings {
 
     @Override
     public String toString() {
-        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", keepNonPathogenicMissense=" + keepNonPathogenicMissense + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outFileName + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
+        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", removePathFilterCutOff=" + removePathFilterCutOff + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outFileName + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
     }
 
 }

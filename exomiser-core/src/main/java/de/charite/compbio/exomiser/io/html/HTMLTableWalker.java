@@ -194,7 +194,7 @@ public class HTMLTableWalker extends HTMLTable {
 
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
 	StringBuilder sb = new StringBuilder();
-	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<span>", varev.getFilterScore())); 
+	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<span>", varev.getVariantScore())); 
 	if (varev.passedFilter(FilterType.PATHOGENICITY_FILTER)) {
 	    sb.append(pathResultsWriter.getFilterResultSummary(varev));
 	}

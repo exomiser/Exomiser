@@ -61,7 +61,7 @@ public class VcfResultsWriter implements ResultsWriter {
         //(Issue #26 https://bitbucket.org/exomiser/exomiser/issue/26/vcf-output-format-requirements)
         stringBuilder.append(VCF_COLUMN_LINE);
         //write in the results for each variant in each gene
-        for (Gene gene : sampleData.getGeneList()) {
+        for (Gene gene : sampleData.getGenes()) {
             stringBuilder.append(buildGeneVariantsString(gene));
         }
         return stringBuilder.toString();
@@ -84,13 +84,13 @@ public class VcfResultsWriter implements ResultsWriter {
             //QUAL\t
             addColumnField(sb, String.valueOf(v.getVariantPhredScore()));
             //FILTER\t
-            if (ve.passesFilters()) {
+            if (ve.passedFilters()) {
                 addColumnField(sb, "PASS");            
             } else {
-                addColumnField(sb, formatFailedFilters(ve.getFailedFilters()));
+                addColumnField(sb, formatFailedFilters(ve.getFailedFilterTypes()));
             }
             //INFO\t
-            String infoField = String.format("%s;EXOMISER_GENE=%s;EXOMISER_VARIANT_SCORE=%s;EXOMISER_GENE_PHENO_SCORE=%s;EXOMISER_GENE_VARIANT_SCORE=%s;EXOMISER_GENE_COMBINED_SCORE=%s", ve.getVariant().get_info(), gene.getGeneSymbol(), ve.getFilterScore(), gene.getPriorityScore(), gene.getFilterScore(), gene.getCombinedScore());
+            String infoField = String.format("%s;EXOMISER_GENE=%s;EXOMISER_VARIANT_SCORE=%s;EXOMISER_GENE_PHENO_SCORE=%s;EXOMISER_GENE_VARIANT_SCORE=%s;EXOMISER_GENE_COMBINED_SCORE=%s", ve.getVariant().get_info(), gene.getGeneSymbol(), ve.getVariantScore(), gene.getPriorityScore(), gene.getFilterScore(), gene.getCombinedScore());
             addColumnField(sb, infoField);
             //FORMAT\t
             addColumnField(sb, "GT");

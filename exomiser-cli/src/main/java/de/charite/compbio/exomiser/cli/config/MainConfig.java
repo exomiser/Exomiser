@@ -12,7 +12,7 @@ import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
-import de.charite.compbio.exomiser.core.filter.SparseVariantFilterer;
+import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.Exomiser;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
@@ -207,8 +207,8 @@ public class MainConfig {
     }
     
     @Bean 
-    public SparseVariantFilterer sparseVariantFilterer() {
-        return new SparseVariantFilterer();
+    public SparseVariantFilterRunner sparseVariantFilterer() {
+        return new SparseVariantFilterRunner();
     }
     
     @Bean

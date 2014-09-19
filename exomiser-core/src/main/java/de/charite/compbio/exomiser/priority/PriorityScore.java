@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.priority;
 
-import de.charite.compbio.exomiser.core.filter.Scoreable;
+import de.charite.compbio.exomiser.core.filter.Score;
 import java.util.List;
 
 /**
@@ -14,7 +14,7 @@ import java.util.List;
  * @version 0.04 (6 January, 2014)
  * @see exomizer.filter.Triage
  */
-public interface PriorityScore extends Scoreable {
+public interface PriorityScore extends Score {
 
     /**
      * @return a numerical value representing the relevance of the gene. Should

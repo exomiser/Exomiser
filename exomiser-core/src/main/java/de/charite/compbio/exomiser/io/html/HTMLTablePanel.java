@@ -3,7 +3,7 @@ package de.charite.compbio.exomiser.io.html;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene; 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filter.FilterScore;
+import de.charite.compbio.exomiser.core.filter.FilterResult;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.PriorityScore;
 import jannovar.pedigree.Pedigree;
@@ -121,7 +121,7 @@ public class HTMLTablePanel extends HTMLTable {
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 
 	    String ucscLink = getUCSCBrowserURL(varev);
 	    String pathogenicity = getPathogenicityForToolTip(varev);
-	    float varScore = varev.getFilterScore();
+	    float varScore = varev.getVariantScore();
 	    if (varScore < 0.2)
 		out.write("<tr bgcolor=\"#BDBDBD\">");
 	    else
@@ -142,10 +142,9 @@ public class HTMLTablePanel extends HTMLTable {
 
 
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
-	Map<FilterType, FilterScore> triageMap = varev.getFilterScoreMap();
-	FilterScore frq = triageMap.get(FilterType.FREQUENCY_FILTER);
-	FilterScore pth = triageMap.get(FilterType.PATHOGENICITY_FILTER);
-	float score = varev.getFilterScore();
+	FilterResult frq = varev.getFilterResult(FilterType.FREQUENCY_FILTER);
+	FilterResult pth = varev.getFilterResult(FilterType.PATHOGENICITY_FILTER);
+	float score = varev.getVariantScore();
 	float frscore = frq.getScore(); //this could cause an NPE if the VariantEvaluation didn't pass the filter...
 	StringBuilder sb = new StringBuilder();
 	sb.append(String.format("<p class=\"h\">Pathogenicity score: %.2f<br/>Frequency Score: %.2f<span>",score, frscore)); 

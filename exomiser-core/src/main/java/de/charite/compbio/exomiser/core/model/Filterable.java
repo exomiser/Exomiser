@@ -14,7 +14,7 @@ import de.charite.compbio.exomiser.core.filter.FilterType;
  */
 public interface Filterable {
     
-    public boolean passesFilters();
+    public boolean passedFilters();
     
     public boolean passedFilter(FilterType filterType);
 }
