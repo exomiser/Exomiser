@@ -61,9 +61,6 @@ public class PriorityFactory {
             case PHENIX_PRIORITY:
                 genePriorityList.add(getPhenixPrioritiser(hpoIds));
                 break;
-            case BOQA_PRIORITY:
-                genePriorityList.add(getBOQAPrioritiser(hpoIds));
-                break;            
             case EXOMISER_ALLSPECIES_PRIORITY:
                 genePriorityList.add(getExomiserAllSpeciesPrioritiser(hpoIds, candidateGene, disease, exomiser2Params));
                 break;  
@@ -94,13 +91,6 @@ public class PriorityFactory {
         boolean symmetric = false;
         Priority priority = new PhenixPriority(phenomizerDataDirectory.toString(), hpoIDset, symmetric);
         logger.info("Made new Phenomizer Priority: {}", priority);
-        return priority;
-    }
-
-    public Priority getBOQAPrioritiser(List<String> hpoIds) {
-        Priority priority = new BoqaPriority(hpoOntologyFilePath, hpoAnnotationFilePath, hpoIds);
-        setPrioritiserConnection(priority);
-        logger.info("Made new BOQA Priority: {}", priority);
         return priority;
     }
 

@@ -18,18 +18,6 @@ public class PriorityTypeTest {
     public PriorityTypeTest() {
     }
 
-
-    /**
-     * Test of getCommandLineValue method, of class PriorityType.
-     */
-    @Test
-    public void testGetCommandLineValue() {
-        PriorityType instance = PriorityType.BOQA_PRIORITY;
-        String expResult = "boqa";
-        String result = instance.getCommandLineValue();
-        assertEquals(expResult, result);
-    }
-
     /**
      * Test of valueOfCommandLine method, of class PriorityType.
      */
@@ -57,8 +45,8 @@ public class PriorityTypeTest {
      */
     @Test
     public void testToString() {
-        PriorityType instance = PriorityType.BOQA_PRIORITY;
-        String expResult = "boqa";
+        PriorityType instance = PriorityType.EXOMISER_MOUSE_PRIORITY;
+        String expResult = "exomiser-mouse";
         String result = instance.toString();
         assertEquals(expResult, result);
     }
