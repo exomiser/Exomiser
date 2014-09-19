@@ -6,56 +6,38 @@
 package de.charite.compbio.exomiser.core.filter;
 
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import jannovar.common.ModeOfInheritance;
-import java.util.List;
 import java.util.Objects;
 
 /**
- * A Gene filter for filtering against a particular inheritance mode.
+ * A Gene runFilter for filtering against a particular inheritance mode.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class InheritanceFilter implements GeneFilter {
 
-    private final FilterType filterType = FilterType.INHERITANCE_FILTER;
+    private static final FilterType filterType = FilterType.INHERITANCE_FILTER;
     
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterScore passedScore = new InheritanceFilterScore(1f);
-    private final FilterScore failedScore = new InheritanceFilterScore(0f);
+    private final FilterResult passResult = new InheritanceFilterResult(1f, FilterResultStatus.PASS);
+    private final FilterResult failResult = new InheritanceFilterResult(0f, FilterResultStatus.FAIL);
 
     private final ModeOfInheritance modeOfInheritance;
     
     public InheritanceFilter(ModeOfInheritance modeOfInheritance) {
         this.modeOfInheritance = modeOfInheritance;
     }
-        
-    @Override
-    public void filter(List<Gene> genes) {
-        for (Gene gene : genes) {
-            filter(gene);
-        }
-    }
 
     @Override
-    public boolean filter(Gene gene) {
+    public FilterResult runFilter(Gene gene) {
         if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
-            //if ModeOfInheritance.UNINITIALIZED pass the filter - ideally it shouldn't be applied in the first place.
-            return true;
+            //if ModeOfInheritance.UNINITIALIZED pass the runFilter - ideally it shouldn't be applied in the first place.
+            return new InheritanceFilterResult(1f, FilterResultStatus.NOT_RUN);
         }
-        
-        //set the filter scores for the variant evaluations
         if (gene.isConsistentWith(modeOfInheritance)) {
-            //yay we're compatible!
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-                variantEvaluation.addPassedFilter(FilterType.INHERITANCE_FILTER, passedScore);
-            }
-            return true;
+            return passResult;
         } else {
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-                variantEvaluation.addFailedFilter(FilterType.INHERITANCE_FILTER, failedScore);
-            }
-            return false;
+            return failResult;
         }
     }
 

@@ -10,7 +10,7 @@ import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filter.FilterScore;
+import de.charite.compbio.exomiser.core.filter.FilterResult;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import jannovar.common.VariantType;
 import java.util.ArrayList;
@@ -30,13 +30,13 @@ public class PathogenicityFilterResultWriter implements FilterResultWriter {
     @Override
     public String getFilterResultSummary(VariantEvaluation variantEvaluation) {
         PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
-        FilterScore pathogenicityScore = variantEvaluation.getFilterScore(FilterType.PATHOGENICITY_FILTER);
+        FilterResult pathogenicityResult = variantEvaluation.getFilterResult(FilterType.PATHOGENICITY_FILTER);
         VariantType variantType = variantEvaluation.getVariantType();
 
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("<b>%s</b><br/>\n", variantType.toString()));
         if (variantType != VariantType.MISSENSE) {
-            sb.append(String.format("%s<br/>\n", pathogenicityScore));
+            sb.append(String.format("%s<br/>\n", pathogenicityResult.getScore()));
         } else {
             //how many predictions do we have?
             int c = 0;
@@ -79,7 +79,7 @@ public class PathogenicityFilterResultWriter implements FilterResultWriter {
      */
     public List<String> getFilterResultList(VariantEvaluation variantEvaluation) {
         PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
-        FilterScore pathogenicityScore = variantEvaluation.getFilterScore(FilterType.PATHOGENICITY_FILTER);
+        FilterResult pathogenicityFilterResult = variantEvaluation.getFilterResult(FilterType.PATHOGENICITY_FILTER);
         VariantType variantType = variantEvaluation.getVariantType();
 
         List<String> resultList = new ArrayList<>();
@@ -91,7 +91,7 @@ public class PathogenicityFilterResultWriter implements FilterResultWriter {
          * For non-missense mutations, just return the overall type)
          */
         if (variantType != VariantType.MISSENSE) {
-            resultList.add(pathogenicityScore.toString());
+            resultList.add(pathogenicityFilterResult.toString());
             return resultList;
         }
 
@@ -113,14 +113,14 @@ public class PathogenicityFilterResultWriter implements FilterResultWriter {
         } else {
             resultList.add("SIFT: .");
         }
-        resultList.add(pathogenicityScore.toString());
+        resultList.add(String.format("Path score: %.3f", pathogenicityFilterResult.getScore()));
         
         return resultList;
     }
 
     public String getHTMLCode(VariantEvaluation variantEvaluation) {
         PathogenicityData pathogenicityData = variantEvaluation.getPathogenicityData();
-        FilterScore pathogenicityScore = variantEvaluation.getFilterScore(FilterType.PATHOGENICITY_FILTER);
+        FilterResult pathogenicityFilterResult = variantEvaluation.getFilterResult(FilterType.PATHOGENICITY_FILTER);
         VariantType variantType = variantEvaluation.getVariantType();
 
         StringBuilder sb = new StringBuilder();
@@ -141,7 +141,7 @@ public class PathogenicityFilterResultWriter implements FilterResultWriter {
         if (siftScore != null) {
             sb.append(String.format("<li>%s</li>\n", siftScore));
         }
-        sb.append(String.format("<li>%s</li>\n", pathogenicityScore));
+        sb.append(String.format("<li>Path score: %.3f</li>\n", pathogenicityFilterResult.getScore()));
         sb.append("</ul>\n");
         return sb.toString();
     }

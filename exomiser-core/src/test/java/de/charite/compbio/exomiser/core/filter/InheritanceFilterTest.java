@@ -26,99 +26,61 @@ import org.mockito.MockitoAnnotations;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class InheritanceFilterTest {
-    
+
     private Gene compatibleWithAutosomalDominant;
     private Gene compatibleWithAutosomalRecessive;
     private Gene compatibleWithXLinked;
 
     @Mock
     private Variant variant;
-    
+
     public InheritanceFilterTest() {
     }
-    
+
     @Before
     public void setUp() {
-        
+
         MockitoAnnotations.initMocks(this);
         Mockito.when(variant.getGeneSymbol()).thenReturn("mockGeneId");
         Mockito.when(variant.getEntrezGeneID()).thenReturn(12345);
-                
+
         compatibleWithAutosomalDominant = new Gene(new VariantEvaluation(variant));
         compatibleWithAutosomalDominant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        
+
         compatibleWithAutosomalRecessive = new Gene(new VariantEvaluation(variant));
         compatibleWithAutosomalRecessive.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
-                
+
         compatibleWithXLinked = new Gene(new VariantEvaluation(variant));
         compatibleWithXLinked.setInheritanceModes(EnumSet.of(ModeOfInheritance.X_RECESSIVE));
     }
 
     @Test
-    public void testFilterListOfGenesWhenInheritanceModeIsInitialised() {
-        
-        List<Gene> genes = new ArrayList<>();
-        genes.add(compatibleWithAutosomalDominant);
-        genes.add(compatibleWithAutosomalRecessive);
-        genes.add(compatibleWithXLinked);
-        
-        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
-        instance.filter(genes);
+    public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsUnInitialised() {
 
-        assertThat(compatibleWithAutosomalDominant.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
-        assertThat(compatibleWithAutosomalRecessive.passedFilter(FilterType.INHERITANCE_FILTER), is(false));
-        assertThat(compatibleWithXLinked.passedFilter(FilterType.INHERITANCE_FILTER), is(false));
-    }
-    
-    @Test
-    public void testGenesPassFiltersWhenInheritanceModeIsUnInitialised() {
-        
-        List<Gene> genes = new ArrayList<>();
-        genes.add(compatibleWithAutosomalDominant);
-        genes.add(compatibleWithAutosomalRecessive);
-        genes.add(compatibleWithXLinked);
-        
         ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.UNINITIALIZED;
         InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
-        instance.filter(genes);
-
-        assertThat(compatibleWithAutosomalDominant.passedFilters(), is(true));
-        assertThat(compatibleWithAutosomalRecessive.passedFilters(), is(true));
-        assertThat(compatibleWithXLinked.passedFilters(), is(true));
-
-    }
-    
-    @Test
-    public void testGenesHaveNotPassedInheritanceFilterWhenInheritanceModeIsUnInitialised() {
         
-        List<Gene> genes = new ArrayList<>();
-        genes.add(compatibleWithAutosomalDominant);
-        genes.add(compatibleWithAutosomalRecessive);
-        genes.add(compatibleWithXLinked);
-        
-        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.UNINITIALIZED;
-        InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
-        instance.filter(genes);
+        FilterResult filterResult = instance.runFilter(compatibleWithAutosomalRecessive);
 
-        //they should all have failed the filter
-        assertThat(compatibleWithAutosomalDominant.passedFilter(FilterType.INHERITANCE_FILTER), is(false));
-        assertThat(compatibleWithAutosomalRecessive.passedFilter(FilterType.INHERITANCE_FILTER), is(false));
-        assertThat(compatibleWithXLinked.passedFilter(FilterType.INHERITANCE_FILTER), is(false));
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.NOT_RUN));
     }
 
     @Test
     public void testFilterGenePasses() {
         InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        
-        assertThat(dominantFilter.filter(compatibleWithAutosomalDominant), is(true));
+
+        FilterResult filterResult = dominantFilter.runFilter(compatibleWithAutosomalDominant);
+
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
     }
-    
+
     @Test
     public void testFilterGeneFails() {
         InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        
-        assertThat(dominantFilter.filter(compatibleWithAutosomalRecessive), is(false));
+
+        FilterResult filterResult = dominantFilter.runFilter(compatibleWithAutosomalRecessive);
+
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
     }
 
     @Test
@@ -132,7 +94,7 @@ public class InheritanceFilterTest {
     public void testHashCode() {
         InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
         InheritanceFilter other = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
-        
+
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
 
@@ -153,12 +115,12 @@ public class InheritanceFilterTest {
         assertThat(recessiveFilter.equals(dominantFilter), is(false));
 
     }
-    
+
     @Test
     public void testToString() {
         InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        
+
         assertThat(instance.toString(), equalTo("Inheritance filter: ModeOfInheritance=AUTOSOMAL_RECESSIVE"));
     }
-    
+
 }

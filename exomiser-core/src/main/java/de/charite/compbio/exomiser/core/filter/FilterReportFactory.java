@@ -125,15 +125,17 @@ public class FilterReportFactory {
     private FilterReport makePathogenicityFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.PATHOGENICITY_FILTER, variantEvaluations);
         
-        if (settings.keepNonPathogenicMissense()) {
-            report.addMessage("Retained all non-pathogenic missense variants");
+        if (settings.removePathFilterCutOff()) {
+            report.addMessage("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
         } else {
+            report.addMessage("Retained all non-pathogenic missense variants");
+            //this is redundant as the defaut now is to keep all these anyway, but maybe somone will be interested in the cutoffs used for the categories?
             // Set up the message - these scores ought to belong to the score itself thather than being hard-coded here...
-            report.addMessage("Pathogenicity predictions are based on the dbNSFP-normalized values");
-            report.addMessage("Mutation Taster: >0.95 assumed pathogenic, prediction categories not shown");
-            report.addMessage("Polyphen2 (HVAR): \"D\" (> 0.956,probably damaging), \"P\": [0.447-0.955], "
-                    + "possibly damaging, and \"B\", <0.447, benign.");
-            report.addMessage("SIFT: \"D\"<0.05, damaging and \"T\"&ge;0.05, tolerated");
+//            report.addMessage("Pathogenicity predictions are based on the dbNSFP-normalized values");
+//            report.addMessage("Mutation Taster: >0.95 assumed pathogenic, prediction categories not shown");
+//            report.addMessage("Polyphen2 (HVAR): \"D\" (> 0.956,probably damaging), \"P\": [0.447-0.955], "
+//                    + "possibly damaging, and \"B\", <0.447, benign.");
+//            report.addMessage("SIFT: \"D\"<0.05, damaging and \"T\"&ge;0.05, tolerated");
         }
         return report;
     }

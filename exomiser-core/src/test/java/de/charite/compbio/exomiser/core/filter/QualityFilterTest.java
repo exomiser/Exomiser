@@ -63,43 +63,33 @@ public class QualityFilterTest {
         assertThat(instance.getFilterType(), equalTo(FilterType.QUALITY_FILTER));
     }
 
-    @Test
-    public void testFilterVariants() {
-        List<VariantEvaluation> variantList = new ArrayList<>();
-        
-        variantList.add(highQualityPassesFilter);
-        variantList.add(lowQualityFailsFilter);
-
-        
-        instance.filter(variantList);
-        
-        Set failedFilterSet = EnumSet.of(FilterType.QUALITY_FILTER);
-
-        assertThat(highQualityPassesFilter.passedFilters(), is(true));
-        assertThat(highQualityPassesFilter.getFailedFilterTypes().isEmpty(), is(true));
-
-        assertThat(lowQualityFailsFilter.passedFilters(), is(false));
-        assertThat(lowQualityFailsFilter.getFailedFilterTypes(), equalTo(failedFilterSet));
-    }
-
-    @Test
-    public void testFilterVariantOfHighQualityIsTrue() {
-        assertThat(instance.filter(highQualityPassesFilter), is(true));
+    @Test(expected = IllegalArgumentException.class)
+    public void filterThrowIllegalArgumentExceptionWhenInitialisedWithNegativeValue() {
+        instance = new QualityFilter(-1);
     }
     
     @Test
-    public void testFilterVariantOfLowQualityIsFalse() {
-        assertThat(instance.filter(lowQualityFailsFilter), is(false));
+    public void testFilterVariantOfHighQualityPassesFilter() {
+        FilterResult filterResult = instance.runFilter(highQualityPassesFilter);
+        
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
+    }
+    
+    @Test
+    public void testFilterVariantOfLowQualityFailsFilter() {
+        FilterResult filterResult = instance.runFilter(lowQualityFailsFilter);
+        
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
     }
 
     @Test
     public void testPassesFilterOverThresholdIsTrue() {
-        assertThat(instance.passesFilter(OVER_THRESHOLD), is(true));
+        assertThat(instance.overQualityThreshold(OVER_THRESHOLD), is(true));
     }
 
     @Test
     public void testPassesFilterUnderThresholdIsFalse() {
-        assertThat(instance.passesFilter(UNDER_THRESHOLD), is(false));
+        assertThat(instance.overQualityThreshold(UNDER_THRESHOLD), is(false));
     }
 
     
@@ -117,7 +107,7 @@ public class QualityFilterTest {
     
     @Test
     public void testNotEqualAnotherClass() {
-        Object obj = new TargetFilter();;
+        Object obj = new TargetFilter();
         assertThat(instance.equals(obj), is(false));
     }
     

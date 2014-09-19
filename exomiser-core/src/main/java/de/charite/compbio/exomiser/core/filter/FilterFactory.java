@@ -27,8 +27,7 @@ public class FilterFactory {
     }
 
     /**
-     * Utility method for wrapping-up how the
-     * {@code VariantFilter} classes are
+     * Utility method for wrapping-up how the {@code VariantFilter} classes are
      * created using an ExomiserSettings.
      *
      * @param settings
@@ -51,13 +50,13 @@ public class FilterFactory {
                     variantFilters.add(getQualityFilter(settings.getMinimumQuality()));
                     break;
                 case PATHOGENICITY_FILTER:
-                    variantFilters.add(getPathogenicityFilter(settings.keepNonPathogenicMissense()));
+                    variantFilters.add(getPathogenicityFilter(settings.removePathFilterCutOff()));
                     break;
                 case INTERVAL_FILTER:
                     variantFilters.add(getIntervalFilter(settings.getGeneticInterval()));
                     break;
                 case INHERITANCE_FILTER:
-                    //this isn't run as a VariantFilter - it's actually a Gene filter - currently it's a bastard orphan sitting in Exomiser
+                    //this isn't run as a VariantFilter - it's actually a Gene runFilter - currently it's a bastard orphan sitting in Exomiser
                     break;
             }
         }
@@ -66,7 +65,8 @@ public class FilterFactory {
     }
 
     /**
-     * Makes a list of {@code GeneFilter} 
+     * Makes a list of {@code GeneFilter}
+     *
      * @param settings
      * @return GeneFilters to run
      */
@@ -131,10 +131,10 @@ public class FilterFactory {
     }
 
     /**
-     * Add a frequency filter. There are several options. If the argument
+     * Add a frequency runFilter. There are several options. If the argument
      * filterOutAllDbsnp is true, then all dbSNP entries are removed
      * (dangerous). Else if the frequency is set to some value, we set this as
-     * the maximum MAF. else we set the frequency filter to 100%, i.e., no
+     * the maximum MAF. else we set the frequency runFilter to 100%, i.e., no
      * filtering.
      *
      * @param maxFrequency
@@ -143,18 +143,8 @@ public class FilterFactory {
      */
     public VariantFilter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
 
-//        FrequencyVariantScoreDao variantTriageDAO = new FrequencyVariantScoreDao(dataSource);
         VariantFilter frequencyFilter = new FrequencyFilter(maxFrequency, filterOutAllDbsnp);
 
-//        if (filterOutAllDbsnp) {
-//            frequencyFilter.setParameters("RS");
-//        } else if (maxFrequency != null && !maxFrequency.equals("none")) {
-//            frequencyFilter.(maxFrequency);
-//        } else {
-//            // default is freq filter at 100 i.e. keep everything so still
-//            // get freq data in output and inclusion in prioritization
-//            frequencyFilter.setParameters("100");
-//        }
         logger.info("Made new: {}", frequencyFilter);
         return frequencyFilter;
     }
@@ -166,8 +156,10 @@ public class FilterFactory {
         return filter;
     }
 
-    public VariantFilter getPathogenicityFilter(boolean filterOutNonpathogenic) {
-        PathogenicityFilter filter = new PathogenicityFilter(filterOutNonpathogenic);
+    public VariantFilter getPathogenicityFilter(boolean removePathFilterCutOff) {
+        // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always 
+        // pass the pathogenicity filter and still get scored for pathogenicity
+        PathogenicityFilter filter = new PathogenicityFilter(removePathFilterCutOff);
         logger.info("Made new: {}", filter);
         return filter;
     }

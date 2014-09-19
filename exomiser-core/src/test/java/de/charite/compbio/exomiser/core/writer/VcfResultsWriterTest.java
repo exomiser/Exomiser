@@ -5,12 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.writer;
 
+import de.charite.compbio.exomiser.core.filter.FilterResult;
+import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.TargetFilterScore;
+import de.charite.compbio.exomiser.core.filter.TargetFilterResult;
 import jannovar.annotation.AnnotationList;
 import jannovar.common.Genotype;
 import jannovar.exome.Variant;
@@ -39,7 +41,8 @@ public class VcfResultsWriterTest {
     private final Gene failGene;
     private final VcfResultsWriter instance;
     private static final String PASS_VARIANT_STRING = "chr1	1	.	A	T	2.2	PASS	;EXOMISER_GENE=.;EXOMISER_VARIANT_SCORE=1.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_GENE_COMBINED_SCORE=0.0	GT	0/1\n";
-    private static final FilterType FAIL_FILTER_TYPE = FilterType.PATHOGENICITY_FILTER;
+    private static final FilterResult FAIL_FILTER_RESULT = new TargetFilterResult(0f, FilterResultStatus.FAIL);
+    private static final FilterType FAIL_FILTER_TYPE = FAIL_FILTER_RESULT.getFilterType();
     private static final String FAIL_VARIANT_STRING = String.format("chr1	2	.	T	-	2.2	%s	;EXOMISER_GENE=.;EXOMISER_VARIANT_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_GENE_COMBINED_SCORE=0.0	GT	0/1\n", FAIL_FILTER_TYPE.toString());
     private SampleData sampleData;
     
@@ -65,7 +68,7 @@ public class VcfResultsWriterTest {
         Variant failVariant = new Variant(chr, 2, "T", "-", genotypeCall, 2.2f, "");
         failVariant.setAnnotation(annotationList);
         VariantEvaluation failVariantEval = new VariantEvaluation(failVariant);
-        failVariantEval.addFailedFilter(FAIL_FILTER_TYPE, new TargetFilterScore(0f));
+        failVariantEval.addFilterResult(FAIL_FILTER_RESULT);
         failGene = new Gene(failVariantEval);
     }
     

@@ -1,8 +1,9 @@
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
 import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.filter.FilterScore;
+import de.charite.compbio.exomiser.core.filter.FilterResult;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
@@ -35,11 +36,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final Variant var;
 
     /**
-     * A map of the results of filtering. The key to the map
-     * is an integer constant as defined in
-     * {@link exomizer.common.FilterType FilterType}.
+     * A map of the results of filtering. The key to the map is an integer
+     * constant as defined in {@link exomizer.common.FilterType FilterType}.
      */
-    private final Map<FilterType, FilterScore> passedFilterScoreMap;
+    private final Map<FilterType, FilterResult> passedFilterResultsMap;
     private final Set<FilterType> failedFilterTypes;
 
     private float variantScore = 1f;
@@ -52,7 +52,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public VariantEvaluation(Variant v) {
         var = v;
-        passedFilterScoreMap = new LinkedHashMap<>();
+        passedFilterResultsMap = new LinkedHashMap<>();
         failedFilterTypes = EnumSet.noneOf(FilterType.class);
         //why not set the frequency data too? Well, not having a null implies that
         //the data has been set from the database and if there is no data then 
@@ -264,7 +264,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     /**
      * This method returns the variant score (prediction of the pathogenicity
-     * and relevance of the Variant) by using data from the {@code FilterScore}
+     * and relevance of the Variant) by using data from the {@code FilterResult}
      * objects associated with this Variant.
      * <P>
      * Note that we use results of filtering to remove Variants that are
@@ -279,11 +279,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * @return the map of FilterScore objects that represent the result of
+     * @return the map of FilterResult objects that represent the result of
      * filtering
      */
-    public Map<FilterType, FilterScore> getFilterScores() {
-        return passedFilterScoreMap;
+    public Map<FilterType, FilterResult> getFilterResults() {
+        return passedFilterResultsMap;
     }
 
     /**
@@ -301,39 +301,35 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * This method is used to add a {@code FilterScore} object to this variant.
-     * Such objects represent the results of evaluation of this variant and may
-     * be used for filtering or prioritization. The Integer is a constant from
-     * {@link de.charite.compbio.exomiser.filter.FilterType FilterType} that
-     * identifies the type of
-     * {@link de.charite.compbio.exomiser.filter.FilterScore FilterScore} object
-     * being added (e.g., pathogenicity, frequency, etc).
-     * 
-     * Always returns true.
+     * This method is used to add a {@code FilterResult} object to this variant.
+     * Such objects represent the results of running the variant through a
+     * {@code Filter}.
      *
-     * @param type
-     * @param filterScore
-     * @return true
+     * @param filterResult
+     * @return
      */
-    public boolean addPassedFilter(FilterType type, FilterScore filterScore) {
-        this.passedFilterScoreMap.put(type, filterScore);
-        //remember to re-calculate the overall filtering score each time a new 
+    public boolean addFilterResult(FilterResult filterResult) {
+        reCalculateVariantScore(filterResult);
+
+        if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
+            return addPassedFilterResult(filterResult);
+        }
+        return addFailedFilterResult(filterResult);
+    }
+
+    private void reCalculateVariantScore(FilterResult filterScore) {
+        //remember to re-calculate the overall filtering score each time a new
         //filterScore is added
-        this.variantScore *= filterScore.getScore();
+        variantScore *= filterScore.getScore();
+    }
+
+    private boolean addPassedFilterResult(FilterResult filterResult) {
+        passedFilterResultsMap.put(filterResult.getFilterType(), filterResult);
         return true;
     }
 
-    /**
-     * Adds the given {@code FilterType} to the set of filters which the
-     * {@code VariantEvaluation} failed to pass. Always returns false.
-     *
-     * @param filterScore
-     * @param filterType
-     * @return false
-     */
-    public boolean addFailedFilter(FilterType filterType, FilterScore filterScore) {
-        failedFilterTypes.add(filterType);
-        this.variantScore *= filterScore.getScore();
+    private boolean addFailedFilterResult(FilterResult filterResult) {
+        failedFilterTypes.add(filterResult.getFilterType());
         return false;
     }
 
@@ -361,11 +357,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-        return !failedFilterTypes.contains(filterType) && passedFilterScoreMap.containsKey(filterType);
+//        if (filterResultsMap.containsKey(filterType)) {
+//            FilterResult filterResult = filterResultsMap.get(filterType);
+//            return filterResult.passedFilter();
+//        }
+//        return false;
+        return !failedFilterTypes.contains(filterType) && passedFilterResultsMap.containsKey(filterType);
     }
 
-    public FilterScore getFilterScore(FilterType filterType) {
-        return passedFilterScoreMap.get(filterType);
+    public FilterResult getFilterResult(FilterType filterType) {
+        return passedFilterResultsMap.get(filterType);
     }
 
     /**

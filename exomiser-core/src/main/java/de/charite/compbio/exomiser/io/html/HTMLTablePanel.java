@@ -3,7 +3,7 @@ package de.charite.compbio.exomiser.io.html;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene; 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filter.FilterScore;
+import de.charite.compbio.exomiser.core.filter.FilterResult;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.priority.PriorityScore;
 import jannovar.pedigree.Pedigree;
@@ -142,8 +142,8 @@ public class HTMLTablePanel extends HTMLTable {
 
 
     private String getPathogenicityForToolTip(VariantEvaluation varev) {
-	FilterScore frq = varev.getFilterScore(FilterType.FREQUENCY_FILTER);
-	FilterScore pth = varev.getFilterScore(FilterType.PATHOGENICITY_FILTER);
+	FilterResult frq = varev.getFilterResult(FilterType.FREQUENCY_FILTER);
+	FilterResult pth = varev.getFilterResult(FilterType.PATHOGENICITY_FILTER);
 	float score = varev.getVariantScore();
 	float frscore = frq.getScore(); //this could cause an NPE if the VariantEvaluation didn't pass the filter...
 	StringBuilder sb = new StringBuilder();

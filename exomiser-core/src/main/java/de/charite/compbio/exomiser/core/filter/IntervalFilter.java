@@ -3,7 +3,6 @@ package de.charite.compbio.exomiser.core.filter;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import jannovar.exome.Variant;
-import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +23,11 @@ public class IntervalFilter implements VariantFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(IntervalFilter.class);
 
-    private final FilterType filterType = FilterType.INTERVAL_FILTER;
+    private static final FilterType filterType = FilterType.INTERVAL_FILTER;
 
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterScore passedScore = new IntervalFilterScore(1f);        
-    private final FilterScore failedScore = new IntervalFilterScore(0f);
+    private final FilterResult passFilterResult = new IntervalFilterResult(1f, FilterResultStatus.PASS);
+    private final FilterResult failedFilterResult = new IntervalFilterResult(0f, FilterResultStatus.FAIL);
 
     private final GeneticInterval interval;
 
@@ -52,40 +51,33 @@ public class IntervalFilter implements VariantFilter {
         return filterType;
     }
 
-    /**
-     * Take a list of variants and apply the filter to each variant. If a
-     * variant does not pass the filter, flag it as failed.
-     *
-     * @param variantList
-     */
     @Override
-    public void filter(List<VariantEvaluation> variantList) {
-
-        for (VariantEvaluation ve : variantList) {
-            filter(ve);
+    public FilterResult runFilter(VariantEvaluation variantEvaluation) {
+        if (variantIsNotWithinInterval(variantEvaluation.getVariant())) {
+            return failedFilterResult;
         }
+        return passFilterResult;
     }
 
-    @Override
-    public boolean filter(VariantEvaluation variantEvaluation) {
-        Variant v = variantEvaluation.getVariant();
-        
-        int c = v.get_chromosome();
-        if (c != interval.getChromosome()) {
-            return variantEvaluation.addFailedFilter(filterType, failedScore);
+    private boolean variantIsNotWithinInterval(Variant variant) {
+        if (variantNotOnSameChromosomeAsInterval(variant.get_chromosome())) {
+            return true;
         }
-        /* If we get here, we are on the same chromosome */
-        int pos = v.get_position();
-        if (pos < interval.getStart() || pos > interval.getEnd()) {
-            return variantEvaluation.addFailedFilter(filterType, failedScore);
-        }
-        return variantEvaluation.addPassedFilter(filterType, passedScore);
+        return variantPositionOutsideOfIntervalBounds(variant.get_position());
+    }
+
+    private boolean variantNotOnSameChromosomeAsInterval(int variantChromosome) {
+        return variantChromosome != interval.getChromosome();
+    }
+
+    private boolean variantPositionOutsideOfIntervalBounds(int variantPosition) {
+        return variantPosition < interval.getStart() || variantPosition > interval.getEnd();
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 97 * hash + Objects.hashCode(this.filterType);
+        hash = 97 * hash + Objects.hashCode(IntervalFilter.filterType);
         hash = 97 * hash + Objects.hashCode(this.interval);
         return hash;
     }
@@ -99,13 +91,7 @@ public class IntervalFilter implements VariantFilter {
             return false;
         }
         final IntervalFilter other = (IntervalFilter) obj;
-        if (this.filterType != other.filterType) {
-            return false;
-        }
-        if (!Objects.equals(this.interval, other.interval)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.interval, other.interval);
     }
 
     @Override

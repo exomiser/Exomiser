@@ -3,92 +3,71 @@ package de.charite.compbio.exomiser.core.filter;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import jannovar.common.VariantType;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * VariantFilter variants according to whether they are on target (i.e., located
- * within an exon or splice junction) or not. This filter also has the side
+ * within an exon or splice junction) or not. This runFilter also has the side
  * effect of calculating the counts of the various variant classes. The class
  * uses the annotations made by classes from the {@code jannovar.annotation}
  * package etc.
  * <P>
  * Note that this class does not require a corresponding
  * {@link exomizer.filter.Triage Triage} object, because variants that do not
- * pass the filter are simply removed.
+ * pass the runFilter are simply removed.
  *
  * @author Peter N Robinson
  * @version 0.16 (20 December, 2013)
  */
 public class TargetFilter implements VariantFilter {
 
-    private final Logger logger = LoggerFactory.getLogger(TargetFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(TargetFilter.class);
 
-    private final FilterType filterType = FilterType.TARGET_FILTER;
+    private static final FilterType filterType = FilterType.TARGET_FILTER;
 
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterScore passedScore = new TargetFilterScore(1f);
-    private final FilterScore failedScore = new TargetFilterScore(0f);
+    private final FilterResult passedFilterResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
+    private final FilterResult failedFilterResult = new TargetFilterResult(0f, FilterResultStatus.FAIL);
 
     /**
-     * A set of off-target variant types such as Intergenic that we will filter
-     * out from further consideration.
+     * A set of off-target variant types such as Intergenic that we will
+     * runFilter out from further consideration.
      */
-    private final EnumSet<VariantType> offTarget;
+    private final EnumSet<VariantType> offTargetVariantTypes;
 
     /**
      * The constructor initializes the set of off-target
      * {@link jannovar.common.VariantType VariantType} constants, e.g.,
-     * INTERGENIC, that we will filter out using this class.
+     * INTERGENIC, that we will runFilter out using this class.
      */
     public TargetFilter() {
-        offTarget = EnumSet.of(VariantType.DOWNSTREAM,
+        offTargetVariantTypes = EnumSet.of(VariantType.DOWNSTREAM,
                 VariantType.INTERGENIC, VariantType.INTRONIC,
                 VariantType.ncRNA_INTRONIC, VariantType.SYNONYMOUS,
                 VariantType.UPSTREAM, VariantType.ERROR);
     }
 
-    /**
-     * @return an integer constant (as defined in exomizer.common.Constants)
-     * that will act as a flag to generate the output HTML dynamically depending
-     * on the filters that the user has chosen.
-     */
     @Override
     public FilterType getFilterType() {
         return filterType;
     }
 
-    /**
-     * Take a list of variants and apply the filter to each variant. If a
-     * variant does not pass the filter, flag it as failed.
-     *
-     * @param variantList
-     */
     @Override
-    public void filter(List<VariantEvaluation> variantList) {
-
-        for (VariantEvaluation ve : variantList) {
-            filter(ve);
+    public FilterResult runFilter(VariantEvaluation filterable) {
+        VariantType vtype = filterable.getVariantType();
+        if (offTargetVariantTypes.contains(vtype)) {
+            return failedFilterResult;
         }
-    }
-
-    @Override
-    public boolean filter(VariantEvaluation variantEvaluation) {
-        VariantType vtype = variantEvaluation.getVariantType();
-        if (offTarget.contains(vtype)) {
-            //add a token failed score - this is essentially a boolean pass/fail so we're using 0 here.
-            return variantEvaluation.addFailedFilter(filterType, failedScore);
-        }
-        return variantEvaluation.addPassedFilter(filterType, passedScore);
+        return passedFilterResult;
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 37 * hash + Objects.hashCode(this.filterType);
-        hash = 37 * hash + Objects.hashCode(this.offTarget);
+        hash = 37 * hash + Objects.hashCode(TargetFilter.filterType);
+        hash = 37 * hash + Objects.hashCode(this.offTargetVariantTypes);
         return hash;
     }
 
@@ -101,18 +80,12 @@ public class TargetFilter implements VariantFilter {
             return false;
         }
         final TargetFilter other = (TargetFilter) obj;
-        if (this.filterType != other.filterType) {
-            return false;
-        }
-        if (!Objects.equals(this.offTarget, other.offTarget)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.offTargetVariantTypes, other.offTargetVariantTypes);
     }
 
     @Override
     public String toString() {
-        return filterType + " filter offTarget=" + offTarget;
+        return filterType + " filter offTarget=" + offTargetVariantTypes;
     }
 
 }

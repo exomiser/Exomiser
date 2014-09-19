@@ -58,7 +58,7 @@ public class FilterFactoryTest {
     @Test
     public void testDetermineFilterTypesToRun() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        ExomiserSettings settings = settingsBuilder.keepNonPathogenicMissense(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
+        ExomiserSettings settings = settingsBuilder.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
 
         List<FilterType> expResult = new ArrayList<>();
 
@@ -76,7 +76,7 @@ public class FilterFactoryTest {
     @Test
     public void testMakeVariantFilters() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        ExomiserSettings settings = settingsBuilder.keepNonPathogenicMissense(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
+        ExomiserSettings settings = settingsBuilder.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
 
         List<Filter> expResult = new ArrayList<>();
 
@@ -102,7 +102,7 @@ public class FilterFactoryTest {
     @Test
     public void testMakeVariantFiltersDoesNotIncludeGeneFiltersInReturnedList() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval VariantFilters 
-        ExomiserSettings settings = settingsBuilder.keepNonPathogenicMissense(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval)
+        ExomiserSettings settings = settingsBuilder.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval)
                 //and a Inheritance GeneFilter
                 .modeOfInheritance(ModeOfInheritance.X_DOMINANT).build();
 
@@ -172,8 +172,7 @@ public class FilterFactoryTest {
     @Test
     public void testGetPathogenicityFilter() {
         boolean filterOutNonpathogenic = false;
-        boolean removeSynonomousVariants = false;
-        Filter expResult = new PathogenicityFilter(removeSynonomousVariants);
+        Filter expResult = new PathogenicityFilter(filterOutNonpathogenic);
         Filter result = instance.getPathogenicityFilter(filterOutNonpathogenic);
         assertThat(result, equalTo(expResult));
 

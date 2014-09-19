@@ -15,22 +15,13 @@ import java.util.List;
 public interface GeneFilter extends Filter<Gene> {
 
     /**
-     * Take a list of genes and apply the filter against. If a gene does not
-     * pass the filter it is marked as having failed that filter.
-     *
-     * @param genes to be filtered
-     */
-    @Override
-    public void filter(List<Gene> genes);
-
-    /**
-     * True or false depending on whether the {@code Gene} passes the filter or
-     * not.
+     * True or false depending on whether the {@code Gene} passes the runFilter
+     * or not.
      *
      * @param gene to be filtered
-     * @return true if the {@code Gene} passes the filter.
+     * @return true if the {@code Gene} passes the runFilter.
      */
     @Override
-    public boolean filter(Gene gene);
+    public FilterResult runFilter(Gene gene);
 
 }

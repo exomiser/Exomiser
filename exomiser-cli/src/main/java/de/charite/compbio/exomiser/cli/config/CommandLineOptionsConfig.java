@@ -108,7 +108,7 @@ public class CommandLineOptionsConfig {
         options.addOption(new Option("F", MAX_FREQ_OPTION, true, "Maximum frequency threshold for variants to be retained. e.g. 100.00 will retain all variants. Default: 100.00")); // FrequencyFilter filter above or below threshold?
         options.addOption(new Option("R", GENETIC_INTERVAL_OPTION, true, "Restrict to region/interval (e.g., chr2:12345-67890)")); //IntervalFilter
         options.addOption(new Option("Q", MIN_QUAL_OPTION, true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
-        options.addOption(new Option("P", KEEP_NON_PATHOGENIC_MISSENSE_OPTION, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true"));//PathogenicityFilter 
+        options.addOption(new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true"));//PathogenicityFilter 
         //no extra args required - these are Booleans 
         options.addOption(new Option(null, REMOVE_DBSNP_OPTION, false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false"));
         //TODO: WTF is going on with PathogenicityFilter? It actualy needs boolean filterOutNonpathogenic, boolean removeSynonomousVariants

@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core.filter;
 
 import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +29,8 @@ public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
             if (gene.passedFilters()) {
                 numGenesWhichPassedFilters++;
                 for (Filter filter : filters) {
-                    if (!filter.filter(gene)) {
-                        break;
-                    }
+                    FilterResult filterResult = filter.runFilter(gene);
+                    addFilterResultToGeneVariantEvaluations(filterResult, gene);
                 }
             }
         }
@@ -38,4 +38,10 @@ public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
         return genes;
     }
 
+    private void addFilterResultToGeneVariantEvaluations(FilterResult filterResult, Gene gene) {
+        //TODO: should the gene also have a filterResult added to it?
+        for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+            variantEvaluation.addFilterResult(filterResult);
+        }
+    }
 }

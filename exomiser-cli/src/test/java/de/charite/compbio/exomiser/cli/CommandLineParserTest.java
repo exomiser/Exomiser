@@ -132,7 +132,7 @@ public class CommandLineParserTest {
 
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(100f));
-        assertThat(exomiserSettings.keepNonPathogenicMissense(), is(true));
+        assertThat(exomiserSettings.removePathFilterCutOff(), is(false));
     }
 
     @Test
@@ -251,24 +251,25 @@ public class CommandLineParserTest {
     }
 
     @Test
-    public void should_produce_settings_with_include_pathogenic_when_set() {
-        String option = ExomiserSettings.KEEP_NON_PATHOGENIC_MISSENSE_OPTION;
-        String input = String.format("-v 123.vcf --%s=false --prioritiser=exomiser-mouse", option);
+    public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsTrueWhenSet() {
+        String option = ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
+        boolean value = true;
+        String input = String.format("-v 123.vcf --%s=%s --prioritiser=exomiser-mouse", option, value);
         System.out.println(input);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.keepNonPathogenicMissense(), is(false));
+        assertThat(exomiserSettings.removePathFilterCutOff(), equalTo(value));
     }
 
     @Test
-    public void should_produce_settings_with_include_pathogenic_default_when_not_set() {
-        String option = ExomiserSettings.KEEP_NON_PATHOGENIC_MISSENSE_OPTION;
+    public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsFalseWhenNotSet() {
+        String option = ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
         String input = "-v 123.vcf --prioritiser=exomiser-mouse";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.keepNonPathogenicMissense(), is(true));
+        assertThat(exomiserSettings.removePathFilterCutOff(), is(false));
     }
 
     @Test
