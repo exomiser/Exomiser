@@ -730,6 +730,9 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 //String stringDbImageLink = "http://string-db.org/api/image/networkList?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
                 String stringDbLink = "http://string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
                 double phenoScore = scores.get(phenoGenes.get(col_idx));
+                humanPhenotypeEvidence = "";
+                mousePhenotypeEvidence = "";
+                fishPhenotypeEvidence = "";
                 entrezGeneID = phenoGenes.get(col_idx);
                 // HUMAN
                 if (humanScores.get(phenoGenes.get(col_idx)) != null) {
