@@ -92,7 +92,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("settings", jsonSettings);
 
         //write out the filter reports section
-        List<FilterReport> filterReports = makeFilterReports(settings, sampleData.getVariantEvaluations());
+        List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
         context.setVariable("filterReports", filterReports);
         //write out the variant type counters
         VariantTypeCounter vtc = getVariantTypeCounter(sampleData.getVariantEvaluations());
@@ -124,10 +124,10 @@ public class HtmlResultsWriter implements ResultsWriter {
         return vtypeCounter;
     }
 
-    protected List<FilterReport> makeFilterReports(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    protected List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {
 
         List<FilterType> filtersApplied = FilterFactory.determineFilterTypesToRun(settings);
-        return filterReportFactory.makeFilterReports(filtersApplied, settings, variantEvaluations);
+        return filterReportFactory.makeFilterReports(filtersApplied, settings, sampleData);
         
     }
 

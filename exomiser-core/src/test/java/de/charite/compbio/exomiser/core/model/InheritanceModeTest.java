@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.model.InheritanceMode;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

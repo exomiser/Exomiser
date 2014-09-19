@@ -1,6 +1,29 @@
 The Exomiser - Command Line Executable 
 ===============================================================
-# Change log
+# Change log (version numbers follow semantic versioning - semver.org)  
+
+## 4.0.0 2014-09-19
+- Changed FilterScores to FilterResults to encapsulate the pass/fail , score and filterTypes returned from the filters in various ways previously.
+- Changed Filter behaviour to simply return a FilterResult instead of altering the VariantEvaluation in inconsistent ways.
+- VariantEvaluation now hides a bit more of its inner workings regarding FilterResults.
+- PathogenicityData will now return its own most pathogenic score instead of relying on something else to figure this out.
+
+- Major changes to PathogenicityFilter behaviour - Missense variants will always pass the filter regardless of their predicted pathogenicity. Other variant types can now be filtered according to the cutoff score or allowed to pass irrespective of the score.  
+- Command line option changes:
+    -P --remove-path-filter-cutoff command line option added to allow all variant types through pathogenicity filter.
+    -P --keep-non-pathogenic-missense command line option removed.
+    -P option default changed from true to false! Sorry. Check your existing settings carefully!
+
+- Added GeneFilter functionality
+- Renamed Scorable interface to Score
+- Renamed VariantEvaluation variables and accessor methods:
+    getFilterScoreMap to getFilterResults to match how it is referred to in the code output.
+    getFailedFilters to getFailedFilterTypes
+    passesFilters to passedFilters
+
+- Bug-fixes 
+    - Prioritisers now release database connections when finished (affects batch-mode performance)
+    - Inheritance filter now performs correctly in all cases.
 
 ## 3.0.2 2014-09-08
 - VCF output now contains original VCF INFO field with exomiser info appended onto this. 

@@ -33,6 +33,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class TargetFilterTest {
 
+    private TargetFilter instance;
+    
     private static VariantEvaluation missensePassesFilter;
     private static VariantEvaluation downstreamFailsFilter;
     private static VariantEvaluation synonymousFailsFilter;
@@ -50,20 +52,21 @@ public class TargetFilterTest {
     @Mock
     Variant intergenicVariant;
 
-
     public TargetFilterTest() {
     }
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        instance = new TargetFilter();
         
+        MockitoAnnotations.initMocks(this);
+
         Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
         Mockito.when(downstreamVariant.getVariantTypeConstant()).thenReturn(VariantType.DOWNSTREAM);
         Mockito.when(synonymousVariant.getVariantTypeConstant()).thenReturn(VariantType.SYNONYMOUS);
         Mockito.when(upstreamVariant.getVariantTypeConstant()).thenReturn(VariantType.UPSTREAM);
         Mockito.when(intergenicVariant.getVariantTypeConstant()).thenReturn(VariantType.INTERGENIC);
-        
+
         missensePassesFilter = new VariantEvaluation(missenseVariant);
         downstreamFailsFilter = new VariantEvaluation(downstreamVariant);
         synonymousFailsFilter = new VariantEvaluation(synonymousVariant);
@@ -73,61 +76,64 @@ public class TargetFilterTest {
 
     @Test
     public void testGetFilterType() {
-        TargetFilter instance = new TargetFilter();
         assertThat(instance.getFilterType(), equalTo(FilterType.TARGET_FILTER));
     }
 
     @Test
-    public void testFilterVariants() {
-        List<VariantEvaluation> variantList = new ArrayList<>();
-        
-        variantList.add(missensePassesFilter);
-        variantList.add(downstreamFailsFilter);
-        variantList.add(intergenicFailsFilter);
-        variantList.add(upstreamFailsFilter);
-        variantList.add(synonymousFailsFilter);
-        
-        TargetFilter instance = new TargetFilter();
-        instance.filterVariants(variantList);
-        
-        Set failedFilterSet = EnumSet.of(FilterType.TARGET_FILTER);
+    public void testMissenseVariantPassesFilter() {
+        FilterResult filterResult = instance.runFilter(missensePassesFilter);
 
-        assertThat(missensePassesFilter.passesFilters(), is(true));
-        assertThat(missensePassesFilter.getFailedFilters().isEmpty(), is(true));
-
-        assertThat(downstreamFailsFilter.passesFilters(), is(false));
-        assertThat(downstreamFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
-
-        assertThat(intergenicFailsFilter.passesFilters(), is(false));
-        assertThat(intergenicFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
-
-        assertThat(upstreamFailsFilter.passesFilters(), is(false));
-        assertThat(upstreamFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
-
-        assertThat(synonymousFailsFilter.passesFilters(), is(false));
-        assertThat(synonymousFailsFilter.getFailedFilters(), equalTo(failedFilterSet));
-
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
     }
 
+    @Test
+    public void testDownstreamVariantFailsFilter() {
+        FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
+        
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+    }
+    @Test
+    public void testIntergenicVariantFailsFilter() {
+        FilterResult filterResult = instance.runFilter(intergenicFailsFilter);
+        
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+    }
+    
+    @Test
+    public void testUpstreamVariantFailsFilter() {
+        FilterResult filterResult = instance.runFilter(upstreamFailsFilter);
+        
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+    }
+    
+    @Test
+    public void testSynonymousVariantFailsFilter() {
+       FilterResult filterResult = instance.runFilter(synonymousFailsFilter);
+        
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+    }
+    
     @Test
     public void testNotEqualNull() {
         Object obj = null;
-        TargetFilter instance = new TargetFilter();
         assertThat(instance.equals(obj), is(false));
     }
-    
+
     @Test
     public void testNotEqualOtherFilter() {
         PathogenicityFilter obj = new PathogenicityFilter(true);
-        TargetFilter instance = new TargetFilter();
         assertThat(instance.equals(obj), is(false));
     }
-    
+
     @Test
     public void testEqualOtherTagetFilter() {
         TargetFilter obj = new TargetFilter();
-        TargetFilter instance = new TargetFilter();
         assertThat(instance.equals(obj), is(true));
     }
 
+    @Test
+    public void testHashCode() {
+        TargetFilter anotherTargetFilter = new TargetFilter();
+        assertThat(instance.hashCode(), equalTo(anotherTargetFilter.hashCode()));
+    }
 }

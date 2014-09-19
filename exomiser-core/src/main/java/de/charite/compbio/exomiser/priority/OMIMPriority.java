@@ -92,6 +92,7 @@ public class OMIMPriority implements Priority {
             OMIMPriorityScore mimrel = retrieve_omim_data(g);
             g.addPriorityScore(mimrel, PriorityType.OMIM_PRIORITY);
         }
+        closeConnection();
     }
 
     /**
@@ -225,11 +226,20 @@ public class OMIMPriority implements Priority {
      * or tomcat.
      */
     @Override
-    public void setDatabaseConnection(Connection connection) {
+    public void setConnection(Connection connection) {
         this.connection = connection;
         setUpSQLPreparedStatement();
     }
 
+    @Override
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException ex) {
+            logger.error(null, ex);
+        }
+    }
+    
     /**
      * Since no filtering of prioritizing is done with the OMIM data for now, it
      * does not make sense to display this in the HTML table.

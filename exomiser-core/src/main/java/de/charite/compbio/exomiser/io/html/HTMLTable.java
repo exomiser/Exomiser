@@ -185,8 +185,8 @@ public class HTMLTable {
 //	}
         List<VariantEvaluation> passedFilters = new ArrayList<>();
 
-        for (VariantEvaluation ve : gene.getVariantList()) {
-            if (ve.passesFilters()) {
+        for (VariantEvaluation ve : gene.getVariantEvaluations()) {
+            if (ve.passedFilters()) {
                 passedFilters.add(ve);
             }
         }
@@ -461,8 +461,8 @@ public class HTMLTable {
     protected StringBuilder appendPrioritiserResultCell(StringBuilder stringBuilder, Gene gene) {
 
         int numPassedVariants = 0;
-        for (VariantEvaluation varEval : gene.getVariantList()) {
-            if (varEval.passesFilters()) {
+        for (VariantEvaluation varEval : gene.getVariantEvaluations()) {
+            if (varEval.passedFilters()) {
                 numPassedVariants++;
             }
         }
@@ -503,8 +503,8 @@ public class HTMLTable {
 //        //this is a hack as the first variant is shown regardless of whether it passed any filters or not. 
 //        //FIX THIS!!! (use Thymeleaf....)
 //        int numPassedVariants = 0;
-//        for (VariantEvaluation varEval : gen.getVariantList()) {
-//            if (varEval.passesFilters()) {
+//        for (VariantEvaluation varEval : gen.getVariantEvaluations()) {
+//            if (varEval.passedFilters()) {
 //                numPassedVariants++;
 //            }
 //        }
@@ -514,7 +514,7 @@ public class HTMLTable {
 //        }
 //        String entrez = getEntrezURL(gen);
 //        double priorityScore = gen.getPriorityScore();
-//        double filterScore = gen.getFilterScore();
+//        double filterScore = gen.getVariantScore();
 //        double combined = gen.getCombinedScore();
 //        String scoreString = String.format("&nbsp;&nbsp;gene relevance score: %.3f&nbsp;&nbsp;variant score %.3f&nbsp;&nbsp;total score: %.3f",
 //                priorityScore, filterScore, combined);

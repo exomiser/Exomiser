@@ -142,7 +142,11 @@ public class CommandLineParser {
                     }
                 }
                 break;
-
+            //ANALYSIS OPTIONS
+            case RUN_FULL_ANALYSIS_OPTION:
+                //default is false
+                settingsBuilder.runFullAnalysis(Boolean.parseBoolean(value));
+                break;
             //FILTER OPTIONS
             case MAX_FREQ_OPTION:
                 settingsBuilder.maximumFrequency(Float.parseFloat(value));
@@ -157,9 +161,9 @@ public class CommandLineParser {
             case MIN_QUAL_OPTION:
                 settingsBuilder.minimumQuality(Float.parseFloat(value));
                 break;
-            case KEEP_NON_PATHOGENIC_MISSENSE_OPTION:
+            case REMOVE_PATHOGENICITY_FILTER_CUTOFF:
                 //default is true
-                settingsBuilder.keepNonPathogenicMissense(Boolean.parseBoolean(value));
+                settingsBuilder.removePathFilterCutOff(Boolean.parseBoolean(value));
                 break;
             case REMOVE_DBSNP_OPTION:
                 //default is false
@@ -193,6 +197,9 @@ public class CommandLineParser {
             case DISEASE_ID_OPTION:
                 settingsBuilder.diseaseId(value);
                 break;
+            case EXOMISER2_PARAMS_OPTION:
+                settingsBuilder.exomiser2Params(parseExomiser2Params(values));
+                break;    
             case MODE_OF_INHERITANCE_OPTION:
                 settingsBuilder.modeOfInheritance(parseInheritanceMode(value));
                 break;
@@ -202,7 +209,6 @@ public class CommandLineParser {
                 settingsBuilder.numberOfGenesToShow(Integer.parseInt(value));
                 break;
             case OUT_FILE_OPTION:
-                //TODO: out-file and out-format are now somewhat inter-dependent
                 settingsBuilder.outFileName(value);
                 break;
             case OUT_FORMAT_OPTION:
@@ -218,6 +224,23 @@ public class CommandLineParser {
         return "ExomiserCommandLineOptionsParser{" + options + '}';
     }
 
+    private String parseExomiser2Params(String[] values) {
+        String exomiser2Params = "";
+        if (values.length == 0) {
+            return exomiser2Params;
+        }
+        for (String token : values) {
+            token = token.trim();
+            if (exomiser2Params.equals("")){
+                exomiser2Params = token;
+            }
+            else{
+                exomiser2Params = exomiser2Params + "," + token;
+            }
+        }
+        return exomiser2Params;
+    }
+    
     private List<String> parseHpoStringList(String[] values) {
         logger.debug("Parsing HPO values from: {}", values);
 

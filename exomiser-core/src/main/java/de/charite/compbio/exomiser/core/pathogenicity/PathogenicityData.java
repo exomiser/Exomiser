@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.pathogenicity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,29 +21,30 @@ public class PathogenicityData {
     private final MutationTasterScore mutationTasterScore;
     private final SiftScore siftScore;
     private final CaddScore caddScore;
-    private final List<PathogenicityScore> knownPathogenicityScores;
+    private final List<PathogenicityScore> predictedPathogenicityScores;
 
     public PathogenicityData(PolyPhenScore polyPhenScore, MutationTasterScore mutationTasterScore, SiftScore siftScore, CaddScore caddScore) {
+    //TODO: this is a bit brittle - adding or removing a score will change the signature - perhaps accept a list of scores only?
         this.polyPhenScore = polyPhenScore;
         this.mutationTasterScore = mutationTasterScore;
         this.siftScore = siftScore;
         this.caddScore = caddScore;
-        knownPathogenicityScores = new ArrayList<>();
+        predictedPathogenicityScores = new ArrayList<>();
 
         if (polyPhenScore != null) {
-            knownPathogenicityScores.add(polyPhenScore);
+            predictedPathogenicityScores.add(polyPhenScore);
         }
         if (mutationTasterScore != null) {
-            knownPathogenicityScores.add(mutationTasterScore);
+            predictedPathogenicityScores.add(mutationTasterScore);
         }
         if (siftScore != null) {
-            knownPathogenicityScores.add(siftScore);
+            predictedPathogenicityScores.add(siftScore);
         }
         //we're not using CaddRaw or Cadd for the pathogenicity filtering yet so
         //enabling it here will cause serious scoring issues with the overal scores unless this
         //is taken into account by the PathogenicityFilter
 //        if (caddScore != null) {
-//            knownPathogenicityScores.add(caddScore);
+//            predictedPathogenicityScores.add(caddScore);
 //        }
 
     }
@@ -63,12 +65,26 @@ public class PathogenicityData {
         return caddScore;
     }
 
-    public List<PathogenicityScore> getKnownPathogenicityScores() {
-        return new ArrayList(knownPathogenicityScores);
+    public List<PathogenicityScore> getPredictedPathogenicityScores() {
+        return new ArrayList(predictedPathogenicityScores);
     }
 
     public boolean hasPredictedScore() {
-        return !knownPathogenicityScores.isEmpty();
+        return !predictedPathogenicityScores.isEmpty();
+    }
+
+    /**
+     * Returns the most pathogenic score or null if there are no predicted scores
+     * @return 
+     */
+    public PathogenicityScore getMostPathogenicScore() {
+        if (predictedPathogenicityScores.isEmpty()) {
+            return null;
+        }
+        List<PathogenicityScore> knownPathScores = this.getPredictedPathogenicityScores();
+        Collections.sort(knownPathScores);
+        PathogenicityScore mostPathogenic = knownPathScores.get(0);
+        return mostPathogenic;  
     }
 
     @Override
@@ -99,10 +115,7 @@ public class PathogenicityData {
         if (!Objects.equals(this.siftScore, other.siftScore)) {
             return false;
         }
-        if (!Objects.equals(this.caddScore, other.caddScore)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.caddScore, other.caddScore);
     }
 
     @Override

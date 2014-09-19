@@ -31,7 +31,7 @@ public class GenePrioritiser {
     public static List<Gene> prioritiseFilteredGenes(List<Priority> prioritisers, List<Gene> genes) {
         List<Gene> filteredGenes = new ArrayList<>();
         for (Gene gene : genes) {
-            if (gene.passesFilters()) {
+            if (gene.passedFilters()) {
                 filteredGenes.add(gene);
             }
         }

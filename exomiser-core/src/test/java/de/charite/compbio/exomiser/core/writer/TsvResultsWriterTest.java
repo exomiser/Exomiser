@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.writer;
 
+import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.frequency.FrequencyData;
@@ -13,8 +14,8 @@ import de.charite.compbio.exomiser.core.pathogenicity.VariantTypePathogenicitySc
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilterScore;
-import de.charite.compbio.exomiser.core.filter.PathogenicityFilterScore;
+import de.charite.compbio.exomiser.core.filter.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filter.PathogenicityFilterResult;
 import jannovar.annotation.Annotation;
 import jannovar.annotation.AnnotationList;
 import jannovar.common.Genotype;
@@ -39,7 +40,7 @@ public class TsvResultsWriterTest {
 
     private final Gene gene;
     private final TsvResultsWriter instance;
-    private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.9500	NaN	NaN	NaN	NaN	STOPGAIN	0\n";
+    private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0\n";
     private SampleData sampleData;
     
     public TsvResultsWriterTest() {
@@ -59,8 +60,8 @@ public class TsvResultsWriterTest {
         variant.setAnnotation(annotationList);
 
         VariantEvaluation variantEval = new VariantEvaluation(variant);
-        variantEval.addPassedFilter(FilterType.PATHOGENICITY_FILTER, new PathogenicityFilterScore(VariantTypePathogenicityScores.getPathogenicityScoreOf(VariantType.STOPGAIN)));
-        variantEval.addPassedFilter(FilterType.FREQUENCY_FILTER, new FrequencyFilterScore(0f));
+        variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores.getPathogenicityScoreOf(VariantType.STOPGAIN), FilterResultStatus.PASS));
+        variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
         
         variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null)); 
         variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));

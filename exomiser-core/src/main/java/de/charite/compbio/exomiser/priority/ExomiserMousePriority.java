@@ -141,7 +141,7 @@ public class ExomiserMousePriority implements Priority {
     /**
      * @return list of messages representing process, result, and if any, errors of score filtering. 
      */
-    // @Override
+    @Override
     public ArrayList<String> getMessages() {
 	return this.messages;
     }
@@ -149,19 +149,22 @@ public class ExomiserMousePriority implements Priority {
 
    
     
+    @Override
     public void prioritizeGenes(List<Gene> gene_list) {
 	
 	this.found_data_for_mgi_phenodigm=0;
 	this.n_before = gene_list.size();
-	for (Gene g : gene_list) {
-            ExomiserMousePriorityScore rscore = retrieve_score_data(g);
-            g.addPriorityScore(rscore, priorityType);          
-	}
+        retrieve_score_data(gene_list);
+//	for (Gene g : gene_list) {
+//            ExomiserMousePriorityScore rscore = retrieve_score_data(g);
+//            g.addPriorityScore(rscore, priorityType);          
+//	}
 	this.n_after = gene_list.size();
 	String s = 
 	    String.format("Data analysed for %d genes using Mouse PhenoDigm",
 			  gene_list.size());
 	this.messages.add(s);
+        closeConnection();
    }
     
     /**
@@ -199,202 +202,207 @@ public class ExomiserMousePriority implements Priority {
      * @param g A gene whose relevance score is to be retrieved from the SQL database by this function.
      * @return result of prioritization (represents a non-negative score)
      */
-  private ExomiserMousePriorityScore retrieve_score_data(Gene g) {
+  private void retrieve_score_data(List<Gene> gene_list) {
       
       if (disease != null && !disease.isEmpty() && hpoIds.isEmpty()) {
-            logger.info("Setting HPO IDs using disease annotaions for {}", disease);
-            setHPOfromDisease(disease);
+          logger.info("Setting HPO IDs using disease annotaions for {}", disease);
+          setHPOfromDisease(disease);
       }
       
-      float MGI_SCORE = Constants.UNINITIALIZED_FLOAT;
-      String MGI_GENE_ID = null;
-      String MGI_GENE=null;
-	  
-      String genesymbol = g.getGeneSymbol();
-      ResultSet rs2 = null;
-      try {	  
-    	  this.testGeneStatement.setString(1,genesymbol);
-    	  rs2 = testGeneStatement.executeQuery();
-    	  if ( rs2.next() ) {
-    		  /* replace this with code to do dynamic querying for this gene based on HP-MP and 
-        	   * perfect mouse scores from user-defined HPO terms
-        	   * Once working move the HP-MP mapping part to a cache in the constructor
-        	   */
-    		  HashMap<String,Float> mapped_terms = new HashMap<>();
-    		  HashMap<String,Float> best_mapped_term_score = new HashMap<>();
-    		  HashMap<String,String> best_mapped_term_mpid = new HashMap<>();
-    		  HashMap<String,Integer> knownMps = new HashMap<>();
-    		  List<String> hpList  = new ArrayList<>();
-    		  for (String hpid : hpoIds){
-		      this.findMappingStatement.setString(1,hpid);	  
-		      ResultSet rs = findMappingStatement.executeQuery();
-		      int found = 0;
-		      while ( rs.next() ) {
-			  found = 1;
-			  String mp_id = rs.getString(1);
-			  knownMps.put(mp_id,1);
-			  StringBuffer hashKey = new StringBuffer();
-			  hashKey.append(hpid);
-			  hashKey.append(mp_id);
-			  float score = rs.getFloat(2);
-			  mapped_terms.put(hashKey.toString(),score);
-			  if (best_mapped_term_score.get(hpid) != null) {
-			      if (score > best_mapped_term_score.get(hpid)) {
-				  best_mapped_term_score.put(hpid,score);	
-				  best_mapped_term_mpid.put(hpid,mp_id);
-			      }
-			  }
-			  else{
-			      best_mapped_term_score.put(hpid,score);
-			      best_mapped_term_mpid.put(hpid,mp_id);
-			  }
-		      }
-		      if (found == 1){
-			  hpList.add(hpid);
-		      }
-		  }
-                  
-		  // calculate perfect mouse model scores
-		  float sum_best_score = 0f;
-		  float best_max_score = 0f;
-		  int best_hit_counter = 0;
-		  // loop over each hp id should start herre
-		  for (String hpid : hpList){
-		      if (best_mapped_term_score.get(hpid) != null){
-			  float hp_score = best_mapped_term_score.get(hpid);
-			  // add in scores for best match for the HP term                                                                                                                                                
-			  sum_best_score += hp_score;
-			  best_hit_counter++;
-			  if (hp_score > best_max_score) {
-			      best_max_score = hp_score; 	
-			  }
-			  // add in MP-HP hits                                                                                                                                                                           
-			  String mpid = best_mapped_term_mpid.get(hpid);
-			  float best_score = 0f;
-			  for (String hpid2 : hpList){
-			      StringBuffer hashKey = new StringBuffer();
-			      hashKey.append(hpid2);
-			      hashKey.append(mpid);
-			      if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
-				  //System.out.println("added in best score for mp term:"+mpid);
-				  best_score = mapped_terms.get(hashKey.toString()); 
-			      }
-			  }
-			  // add in scores for best match for the MP term                                                                                                                                                
-			  sum_best_score += best_score;
-			  best_hit_counter++;
-			  if (best_score > best_max_score) {
-			      best_max_score = best_score; 	
-			  }
-		      }
-		  }
-		  float best_avg_score = sum_best_score/best_hit_counter;
-		  
-		  // calculate score for this gene
-		  this.findMouseAnnotationStatement.setString(1,genesymbol);
-		  ResultSet rs = findMouseAnnotationStatement.executeQuery();
-		  float best_combined_score = 0f;// keep track of best score for gene
-		  while ( rs.next() ) {
-		      int mouse_model_id = rs.getInt(1); 	
-		      //System.out.println("Calculating score for mouse model id "+mouse_model_id+" gene "+genesymbol);
-		      String mp_ids = rs.getString(2);
-		      MGI_GENE_ID = rs.getString(3);
-		      MGI_GENE = rs.getString(4);
-		      String[] mp_initial = mp_ids.split(",");
-		      List<String> mpList  = new ArrayList<>();
-		      for (String mpid : mp_initial){
-			  if (knownMps.get(mpid) != null){
-			      mpList.add(mpid);
-			  }
-		      }
+      HashMap<String, Float> mapped_terms = new HashMap<>();
+      HashMap<String, Float> best_mapped_term_score = new HashMap<>();
+      HashMap<String, String> best_mapped_term_mpid = new HashMap<>();
+      HashMap<String, Integer> knownMps = new HashMap<>();
+      List<String> hpList = new ArrayList<>();
+      float best_max_score = 0f;
+      float best_avg_score = 0f;
+      try {
+          for (String hpid : hpoIds) {
+              this.findMappingStatement.setString(1, hpid);
+              ResultSet rs = findMappingStatement.executeQuery();
+              int found = 0;
+              while (rs.next()) {
+                  found = 1;
+                  String mp_id = rs.getString(1);
+                  knownMps.put(mp_id, 1);
+                  StringBuffer hashKey = new StringBuffer();
+                  hashKey.append(hpid);
+                  hashKey.append(mp_id);
+                  float score = rs.getFloat(2);
+                  mapped_terms.put(hashKey.toString(), score);
+                  if (best_mapped_term_score.get(hpid) != null) {
+                      if (score > best_mapped_term_score.get(hpid)) {
+                          best_mapped_term_score.put(hpid, score);
+                          best_mapped_term_mpid.put(hpid, mp_id);
+                      }
+                  } else {
+                      best_mapped_term_score.put(hpid, score);
+                      best_mapped_term_mpid.put(hpid, mp_id);
+                  }
+              }
+              if (found == 1) {
+                  hpList.add(hpid);
+              }
+          }
+          // calculate perfect mouse model scores
+          float sum_best_score = 0f;
+          
+          int best_hit_counter = 0;
+          // loop over each hp id should start herre
+          for (String hpid : hpList) {
+              if (best_mapped_term_score.get(hpid) != null) {
+                  float hp_score = best_mapped_term_score.get(hpid);
+                  // add in scores for best match for the HP term                                                                                                                                                
+                  sum_best_score += hp_score;
+                  best_hit_counter++;
+                  if (hp_score > best_max_score) {
+                      best_max_score = hp_score;
+                  }
+                  // add in MP-HP hits                                                                                                                                                                           
+                  String mpid = best_mapped_term_mpid.get(hpid);
+                  float best_score = 0f;
+                  for (String hpid2 : hpList) {
+                      StringBuffer hashKey = new StringBuffer();
+                      hashKey.append(hpid2);
+                      hashKey.append(mpid);
+                      if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
+                          //System.out.println("added in best score for mp term:"+mpid);
+                          best_score = mapped_terms.get(hashKey.toString());
+                      }
+                  }
+                  // add in scores for best match for the MP term                                                                                                                                                
+                  sum_best_score += best_score;
+                  best_hit_counter++;
+                  if (best_score > best_max_score) {
+                      best_max_score = best_score;
+                  }
+              }
+          }
+          best_avg_score = sum_best_score / best_hit_counter;
+      } catch (SQLException e) {
+          logger.error("Error executing Phenodigm query: ", e);
+      }
+      for (Gene g : gene_list) {
+          float MGI_SCORE = Constants.UNINITIALIZED_FLOAT;
+          String MGI_GENE_ID = null;
+          String MGI_GENE = null;
+          
+          String genesymbol = g.getGeneSymbol();
+          ResultSet rs2 = null;
+          try {              
+              this.testGeneStatement.setString(1, genesymbol);
+              rs2 = testGeneStatement.executeQuery();
+              if (rs2.next()) {
+
+
+                  // calculate score for this gene
+                  this.findMouseAnnotationStatement.setString(1, genesymbol);
+                  ResultSet rs = findMouseAnnotationStatement.executeQuery();
+                  float best_combined_score = 0f;// keep track of best score for gene
+                  while (rs.next()) {
+                      int mouse_model_id = rs.getInt(1);
+                      //System.out.println("Calculating score for mouse model id "+mouse_model_id+" gene "+genesymbol);
+                      String mp_ids = rs.getString(2);
+                      MGI_GENE_ID = rs.getString(3);
+                      MGI_GENE = rs.getString(4);
+                      String[] mp_initial = mp_ids.split(",");
+                      List<String> mpList = new ArrayList<>();
+                      for (String mpid : mp_initial) {
+                          if (knownMps.get(mpid) != null) {
+                              mpList.add(mpid);
+                          }
+                      }
 //		      String[] mps = new String[mpList.size()];
 //		      mpList.toArray(mps);
-		      
-		      int row_column_count = hpList.size() + mpList.size();
-		      float max_score = 0f;
-		      float sum_best_hit_rows_columns_score = 0f;
-		      
-		      for (String hpid : hpList){
-			  float best_score = 0f;
-			  String best_mpid = "";
-			  String best_hpid = "";
-			  for (String mpid : mpList){
-			      StringBuffer hashKey = new StringBuffer();
-			      hashKey.append(hpid);
-			      hashKey.append(mpid);
-			      //System.out.println("SEEING IF ANY MAPPED TERMS FOR "+hashKey);
-			      if (mapped_terms.get(hashKey.toString()) != null){
-				  float score = mapped_terms.get(hashKey.toString());
-				  // identify best match                                                                                                                                                                 
-				  if (score > best_score){
-				      best_mpid =mpid;
-				      best_hpid = hpid;
-				      best_score = score;
-				  }
-			      }
-			  }
-			  if (best_score != 0){
-			      sum_best_hit_rows_columns_score += best_score;
-			      if (best_score > max_score) {
-				  max_score = best_score; 
-			      }	
-			  }
-		      }
-		      // Reciprocal hits                                                                                                                                                                                 
-		      for (String mpid : mpList){
-			  float best_score = 0f;
-			  String best_mpid = "";
-			  String best_hpid = "";
-			  for (String hpid : hpList){
-			      StringBuilder hashKey = new StringBuilder();
-			      hashKey.append(hpid);
-			      hashKey.append(mpid);
-			      if (mapped_terms.get(hashKey.toString()) != null){
-				  float score = mapped_terms.get(hashKey.toString());
-				  // identify best match                                                                                                                                                                 
-				  if (score > best_score){
-				      best_mpid = mpid;
-				      best_hpid = hpid;
-				      best_score = score;
-				  }
-			      }
-			  }
-			  if (best_score != 0){
-			      sum_best_hit_rows_columns_score += best_score;
-			      if (best_score > max_score) {
-				  max_score = best_score; 
-			      }	
-			  }
-		      }
-		      // calculate combined score
-		      if (sum_best_hit_rows_columns_score != 0) {
-			  float avg_best_hit_rows_columns_score = sum_best_hit_rows_columns_score/row_column_count;
-			  float combined_score =  50* (max_score/best_max_score +  
-						       avg_best_hit_rows_columns_score/best_avg_score);
-			  if (combined_score > 100) {
-			      combined_score = 100; 
-			  }
-			  // is this the best score so far for this gene?
-			  if (combined_score > best_combined_score){
-			      best_combined_score = combined_score;
-			  }
-		      }
-		      // do next mouse model
-		  }
-		  rs.close();
-		  MGI_SCORE = best_combined_score/100;
-		  if (! (MGI_SCORE <= 0 )) found_data_for_mgi_phenodigm++;
-    	  }
-    	  else {
-	      MGI_SCORE = Constants.NOPARSE_FLOAT;//use to indicate there is no phenotyped mouse model in MGI
-    	  }
-    	  rs2.close();
+                      
+                      int row_column_count = hpList.size() + mpList.size();
+                      float max_score = 0f;
+                      float sum_best_hit_rows_columns_score = 0f;
+                      
+                      for (String hpid : hpList) {
+                          float best_score = 0f;
+                          String best_mpid = "";
+                          String best_hpid = "";
+                          for (String mpid : mpList) {
+                              StringBuffer hashKey = new StringBuffer();
+                              hashKey.append(hpid);
+                              hashKey.append(mpid);
+                              //System.out.println("SEEING IF ANY MAPPED TERMS FOR "+hashKey);
+                              if (mapped_terms.get(hashKey.toString()) != null) {
+                                  float score = mapped_terms.get(hashKey.toString());
+                                  // identify best match                                                                                                                                                                 
+                                  if (score > best_score) {
+                                      best_mpid = mpid;
+                                      best_hpid = hpid;
+                                      best_score = score;
+                                  }
+                              }
+                          }
+                          if (best_score != 0) {
+                              sum_best_hit_rows_columns_score += best_score;
+                              if (best_score > max_score) {
+                                  max_score = best_score;                                  
+                              }                              
+                          }
+                      }
+                      // Reciprocal hits                                                                                                                                                                                 
+                      for (String mpid : mpList) {
+                          float best_score = 0f;
+                          String best_mpid = "";
+                          String best_hpid = "";
+                          for (String hpid : hpList) {
+                              StringBuilder hashKey = new StringBuilder();
+                              hashKey.append(hpid);
+                              hashKey.append(mpid);
+                              if (mapped_terms.get(hashKey.toString()) != null) {
+                                  float score = mapped_terms.get(hashKey.toString());
+                                  // identify best match                                                                                                                                                                 
+                                  if (score > best_score) {
+                                      best_mpid = mpid;
+                                      best_hpid = hpid;
+                                      best_score = score;
+                                  }
+                              }
+                          }
+                          if (best_score != 0) {
+                              sum_best_hit_rows_columns_score += best_score;
+                              if (best_score > max_score) {
+                                  max_score = best_score;                                  
+                              }                              
+                          }
+                      }
+                      // calculate combined score
+                      if (sum_best_hit_rows_columns_score != 0) {
+                          float avg_best_hit_rows_columns_score = sum_best_hit_rows_columns_score / row_column_count;
+                          float combined_score = 50 * (max_score / best_max_score
+                                  + avg_best_hit_rows_columns_score / best_avg_score);
+                          if (combined_score > 100) {
+                              combined_score = 100;                              
+                          }
+                          // is this the best score so far for this gene?
+                          if (combined_score > best_combined_score) {
+                              best_combined_score = combined_score;
+                          }
+                      }
+                      // do next mouse model
+                  }
+                  rs.close();
+                  MGI_SCORE = best_combined_score / 100;
+                  if (!(MGI_SCORE <= 0)) {
+                      found_data_for_mgi_phenodigm++;
+                  }
+              } else {
+                  MGI_SCORE = Constants.NOPARSE_FLOAT;//use to indicate there is no phenotyped mouse model in MGI
+              }
+              rs2.close();
+              ExomiserMousePriorityScore rscore = new ExomiserMousePriorityScore(MGI_GENE_ID, MGI_GENE, MGI_SCORE);
+              g.addPriorityScore(rscore, priorityType);
+          } catch (SQLException e) {
+              logger.error("Error executing Phenodigm query: ", e);
+          }
       }
-      catch(SQLException e) {
-	logger.error("Error executing Phenodigm query: ", e);
-      }
-      ExomiserMousePriorityScore rscore = new ExomiserMousePriorityScore(MGI_GENE_ID,MGI_GENE, MGI_SCORE);
-      return rscore;
+      
+      
   }
 
     /**
@@ -445,19 +453,24 @@ public class ExomiserMousePriority implements Priority {
 	
     }
      
-    
-
     /**
      * Initialize the database connection and call {@link #setUpSQLPreparedStatements}
      * @param connection A connection to a postgreSQL database from the exomizer or tomcat.
      */
     @Override
-     public void setDatabaseConnection(Connection connection) {
+     public void setConnection(Connection connection) {
 	this.connection = connection;
 	setUpSQLPreparedStatements();
     }
 
-    
+    @Override
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException ex) {
+            logger.error(null, ex);
+        }
+    }
     /**
      * To do
      * @return 

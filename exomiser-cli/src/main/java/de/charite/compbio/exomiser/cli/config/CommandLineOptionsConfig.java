@@ -39,6 +39,7 @@ public class CommandLineOptionsConfig {
         addSettingsFileOptions(options);
         addBatchFileOptions(options);
         addSampleDataOptions(options);
+        addFullAnalysisOptions(options);
         addFilterOptions(options);
         addPrioritiserOptions(options);
         addOutputOptions(options);
@@ -57,6 +58,16 @@ public class CommandLineOptionsConfig {
                 .hasArg()
                 .withDescription("Path to settings file. Any settings specified in the file will be overidden by parameters added on the command-line.")
                 .withLongOpt(SETTINGS_FILE_OPTION)
+                .create()
+        );
+    }
+    
+    private void addFullAnalysisOptions(Options options) {
+        options.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("true/false")
+                .withDescription("Run the analysis such that all variants are run through all filters. This will take longer, but give more complete results. Default is false")
+                .withLongOpt(RUN_FULL_ANALYSIS_OPTION)
                 .create()
         );
     }
@@ -97,7 +108,7 @@ public class CommandLineOptionsConfig {
         options.addOption(new Option("F", MAX_FREQ_OPTION, true, "Maximum frequency threshold for variants to be retained. e.g. 100.00 will retain all variants. Default: 100.00")); // FrequencyFilter filter above or below threshold?
         options.addOption(new Option("R", GENETIC_INTERVAL_OPTION, true, "Restrict to region/interval (e.g., chr2:12345-67890)")); //IntervalFilter
         options.addOption(new Option("Q", MIN_QUAL_OPTION, true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
-        options.addOption(new Option("P", KEEP_NON_PATHOGENIC_MISSENSE_OPTION, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true"));//PathogenicityFilter 
+        options.addOption(new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true"));//PathogenicityFilter 
         //no extra args required - these are Booleans 
         options.addOption(new Option(null, REMOVE_DBSNP_OPTION, false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false"));
         //TODO: WTF is going on with PathogenicityFilter? It actualy needs boolean filterOutNonpathogenic, boolean removeSynonomousVariants
@@ -126,6 +137,7 @@ public class CommandLineOptionsConfig {
         //Prioritisers - Apart from the disease and inheritance prioritisers are all mutually exclusive.
         options.addOption(new Option("D", DISEASE_ID_OPTION, true, "OMIM ID for disease being sequenced. e.g. OMIM:101600")); //OMIMPriority
         options.addOption(new Option("I", MODE_OF_INHERITANCE_OPTION, true, "Filter variants for inheritance pattern (AR, AD, X)")); //InheritancePriority change to DOMINANT / RECESSIVE / X ? Inclusive or exclusive?
+        options.addOption(new Option("E", EXOMISER2_PARAMS_OPTION, true, "Optional paramaters for Exomiser 2 (human,mouse,fish,ppi)"));
         //The desired PRIORITISER_OPTION e.g. --PRIORITISER_OPTION=pheno-wanderer or --PRIORITISER_OPTION=zfin-phenodigm
         //this is less ambiguous to the user and makes for easier parsing. Can then check that all the required fields are present before proceeding.
         String prioritiserLongOpt = PRIORITISER_OPTION;

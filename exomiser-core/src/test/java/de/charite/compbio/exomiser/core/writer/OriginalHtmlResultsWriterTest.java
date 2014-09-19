@@ -8,7 +8,7 @@ package de.charite.compbio.exomiser.core.writer;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filter.Filter;
+import de.charite.compbio.exomiser.core.filter.VariantFilter;
 import de.charite.compbio.exomiser.priority.Priority;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import java.util.ArrayList;
@@ -32,10 +32,10 @@ public class OriginalHtmlResultsWriterTest {
         SampleData sampleData = new SampleData();
         sampleData.setGeneList(new ArrayList<Gene>());
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWriteOriiginal.html").build();
-        List<Filter> filterList = new ArrayList<>();
+        List<VariantFilter> filterList = new ArrayList<>();
         List<Priority> priorityList = new ArrayList<>();
         //TODO: make this work!
-        // when the Filter and Results have been decoupled this should mean we 
+        // when the VariantFilter and Results have been decoupled this should mean we 
         //don't have to run the entire program just to see some formatted data being written.   
 //        instance.writeFile(sampleData, settings, filterList, priorityList);
 //        assertTrue(Paths.get("testWriteOriiginal.html").toFile().exists());
@@ -45,7 +45,7 @@ public class OriginalHtmlResultsWriterTest {
     @Test
     public void testGetVariantTypeCounter() {
         System.out.println("getVariantTypeCounter");
-        List<Filter> filterList = new ArrayList<>();
+        List<VariantFilter> filterList = new ArrayList<>();
         List<VariantEvaluation> variantList = new ArrayList<>();
         //TODO: make this work!
 //        VariantTypeCounter result = instance.getVariantTypeCounter(filterList, variantList);

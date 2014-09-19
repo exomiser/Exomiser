@@ -6,13 +6,9 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.dao.FrequencyDao;
-import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.util.InheritanceModeAnalyser;
 import de.charite.compbio.exomiser.core.util.VariantAnnotator;
-import jannovar.common.ModeOfInheritance;
 import jannovar.exception.JannovarException;
 import jannovar.exception.PedParseException;
 import jannovar.exception.VCFParseException;
@@ -22,12 +18,8 @@ import jannovar.io.VCFReader;
 import jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,10 +40,6 @@ public class SampleDataFactory {
 
     @Autowired
     private VariantAnnotator variantAnnotator;
-    @Autowired
-    private FrequencyDao frequencyDao;
-    @Autowired
-    private PathogenicityDao pathogenicityDao;
 
     public SampleDataFactory() {
     }
@@ -75,11 +63,6 @@ public class SampleDataFactory {
         //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
         List<Gene> geneList = GeneFactory.createGeneList(sampleData.getVariantEvaluations());
 
-        //lastly remember to analyse the inheritance modes for the gene and variants 
-        //otherwise Bad Things (filter and priority scores depending on the inheritance 
-        //mode will be screwy) will happen 
-        analyseCompatibleInheritanceModes(geneList, pedigree);
-
         sampleData.setGeneList(geneList);
 
         return sampleData;
@@ -88,14 +71,11 @@ public class SampleDataFactory {
     private List<VariantEvaluation> createVariantEvaluations(List<Variant> variantList) {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>(variantList.size());
 
-        logger.info("Annotating variants, adding frequency and pathogenicity data");
+        logger.info("Creating sample VariantEvaluations");
         //Variants are annotated with KnownGene data from UCSC or Ensemble
         for (Variant variant : variantList) {
             VariantEvaluation variantEvaluation = new VariantEvaluation(variant);
             variantAnnotator.annotateVariant(variant);
-            variantEvaluation.setFrequencyData(frequencyDao.getFrequencyData(variant));
-            variantEvaluation.setPathogenicityData(pathogenicityDao.getPathogenicityData(variant));
-            //should have 
             variantEvaluations.add(variantEvaluation);
         }
 
@@ -180,7 +160,6 @@ public class SampleDataFactory {
      *
      * @param pedigreeFilePath
      * @param sampleData
-     * @param sampleNames
      * @return
      */
     protected Pedigree createPedigreeData(Path pedigreeFilePath, SampleData sampleData) {
@@ -202,7 +181,8 @@ public class SampleDataFactory {
             if (pedigreeFilePath == null) {
                 logger.error("VCF file has {} samples but no PED file available.", sampleData.getNumberOfSamples());
                 logger.error("PED file must be be provided for multi-sample VCF files.");
-                //don't terminate the program - the application should decide how to let the user know that it needs the data.
+                //terminate the program - we really need one of these.
+                throw new RuntimeException("Pedigree file path cannot be null.");
             }
             try {
                 pedigree = parser.parseFile(pedigreeFilePath.toString());
@@ -242,22 +222,4 @@ public class SampleDataFactory {
         }
 
     }
-
-    /**
-     * This method sets the mode of inheritance for all Gene objects for
-     * segregation analysis. It is intended that pedigree filtering algorithms
-     * can use the genotypes associated with this Gene and its Variants in order
-     * to perform inheritance filtering.
-     *
-     * @param ped The pedigree corresponding to the current VCF file.
-     */
-    private void analyseCompatibleInheritanceModes(List<Gene> geneList, Pedigree pedigree) {
-        InheritanceModeAnalyser inheritanceModeAnaylser = new InheritanceModeAnalyser(pedigree);
-
-        for (Gene gene : geneList) {
-            Set<ModeOfInheritance> geneInheritanceModes = inheritanceModeAnaylser.analyseInheritanceModesForGene(gene);
-            gene.setInheritanceModes(geneInheritanceModes);
-        }
-    }
-
 }

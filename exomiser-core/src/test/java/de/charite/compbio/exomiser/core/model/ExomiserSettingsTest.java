@@ -54,8 +54,8 @@ public class ExomiserSettingsTest {
     private static final float MIMIMUM_QUALITY = 666.24f;
     private static final GeneticInterval GENETIC_INTERVAL_DEFAULT = null;
     private static final GeneticInterval GENETIC_INTERVAL = new GeneticInterval((byte) 2, 12345, 67890);
-    private static final boolean KEEP_NON_PATHOGENIC_MISSENSE_DEFAULT = true;
-    private static final boolean KEEP_NON_PATHOGENIC_MISSENSE = false;
+    private static final boolean REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT = false;
+    private static final boolean REMOVE_PATHOGENIC_FILTER_CUTOFF = true;
     private static final boolean REMOVE_DBSNP_DEFAULT = false;
     private static final boolean REMOVE_DBSNP = true;
     private static final boolean REMOVE_OFF_TARGET_VARIANTS_DEFAULT = true;
@@ -78,7 +78,9 @@ public class ExomiserSettingsTest {
     private static final String OUT_FILE_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV);
-
+    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
+    private static final boolean RUN_FULL_ANALYSIS = true;
+    
     public ExomiserSettingsTest() {
     }
 
@@ -98,7 +100,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
-        assertThat(settings.keepNonPathogenicMissense(), is(KEEP_NON_PATHOGENIC_MISSENSE_DEFAULT));
+        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
         assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
@@ -109,6 +111,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT_DEFAULT));
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
 
     }
 
@@ -270,19 +273,19 @@ public class ExomiserSettingsTest {
     }
 
     /**
-     * Test of keepNonPathogenicMissense method, of class ExomiserSettings.
+     * Test of removePathFilterCutOff method, of class ExomiserSettings.
      */
     @Test
     public void testThatBuilderProducesIncludePathogenicDefault() {
         ExomiserSettings settings = builder.build();
-        assertThat(settings.keepNonPathogenicMissense(), is(KEEP_NON_PATHOGENIC_MISSENSE_DEFAULT));
+        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesIncludePathogenicWhenSet() {
-        builder.keepNonPathogenicMissense(KEEP_NON_PATHOGENIC_MISSENSE);
+        builder.removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF);
         ExomiserSettings settings = builder.build();
-        assertThat(settings.keepNonPathogenicMissense(), is(KEEP_NON_PATHOGENIC_MISSENSE));
+        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
     }
 
     /**
@@ -459,6 +462,19 @@ public class ExomiserSettingsTest {
         ExomiserSettings settings = builder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
     }
+    
+    @Test
+    public void testThatBuilderProducesRunFullAnalysisDefault() {
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
+    }
+    
+    @Test
+    public void testThatBuilderProducesRunFullAnalysisWhenDefined() {
+        builder.runFullAnalysis(RUN_FULL_ANALYSIS);
+        ExomiserSettings settings = builder.build();
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
+    }
 
     @Test
     public void testThatBuilderCanSetAllValues() {
@@ -469,7 +485,7 @@ public class ExomiserSettingsTest {
                 .maximumFrequency(MAXIMUM_FREQUENCY)
                 .minimumQuality(MIMIMUM_QUALITY)
                 .geneticInterval(GENETIC_INTERVAL)
-                .keepNonPathogenicMissense(KEEP_NON_PATHOGENIC_MISSENSE)
+                .removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF)
                 .removeDbSnp(REMOVE_DBSNP)
                 .removeOffTargetVariants(REMOVE_OFF_TARGET_VARIANTS)
                 .candidateGene(CANDIDATE_GENE_NAME)
@@ -479,7 +495,8 @@ public class ExomiserSettingsTest {
                 .seedGeneList(SEED_GENE_LIST)
                 .numberOfGenesToShow(NUMBER_OF_GENES_TO_SHOW)
                 .outFileName(OUT_FILE_NAME)
-                .outputFormats(OUTPUT_FORMAT);
+                .outputFormats(OUTPUT_FORMAT)
+                .runFullAnalysis(RUN_FULL_ANALYSIS);
 
         ExomiserSettings settings = builder.build();
 
@@ -489,7 +506,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL));
-        assertThat(settings.keepNonPathogenicMissense(), is(KEEP_NON_PATHOGENIC_MISSENSE));
+        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP));
         assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME));
@@ -500,6 +517,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
         assertThat(settings.isValid(), is(true));
     }
 
@@ -523,7 +541,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
-        assertThat(settings.keepNonPathogenicMissense(), is(KEEP_NON_PATHOGENIC_MISSENSE_DEFAULT));
+        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
         assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
@@ -534,6 +552,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
+        assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
         assertThat(settings.isValid(), is(true));
 
     }

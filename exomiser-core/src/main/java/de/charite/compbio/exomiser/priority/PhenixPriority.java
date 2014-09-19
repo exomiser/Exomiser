@@ -451,8 +451,13 @@ public class PhenixPriority implements Priority {
      *            An SQL (postgres) connection that was initialized elsewhere.
      */
     @Override
-    public void setDatabaseConnection(Connection connection) { 
+    public void setConnection(Connection connection) { 
 	/** no - op */
+    }
+
+    @Override
+    public void closeConnection() {
+        //not implemented - no connection to close
     }
 
     private HashMap<Term, Double> caclulateTermIC(Ontology ontology, HashMap<Term, HashSet<String>> term2objectIdsAnnotated) {

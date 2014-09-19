@@ -41,9 +41,14 @@ public class InheritanceModeAnalyser {
      * @return a Set of inheritance modes with which the gene is compatible with.
      */
     public Set<ModeOfInheritance> analyseInheritanceModesForGene(Gene gene) {
-        return analyseInheritanceModes(gene.getVariantList());
+        return analyseInheritanceModes(gene.getPassedVariantEvaluations());
     }
 
+    /**
+     * Caution - this only really works if 
+     * @param variantEvaluations
+     * @return 
+     */
     public Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations) {
         Set inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         
@@ -51,29 +56,13 @@ public class InheritanceModeAnalyser {
         
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             variantList.add(variantEvaluation.getVariant());
-            inheritanceModes.addAll(analyseInheritanceModes(variantEvaluation));
         }
-        
-        //this is a bit hacky, but for genes with a single sample pedigree we need
-        //to ask this question as it requires all variants in the gene and will
-        //be missed when scoring variants singly
-        if (pedigree.singleSampleCompatibleWithAutosomalRecessive(variantList)) {
-            inheritanceModes.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-            //add the AUTOSOMAL_RECESSIVE mode back into all the variantEvaluations 
-            //otherwise they will fail the InheritanceFilter if its set to AUTOSOMAL_RECESSIVE
-            for (VariantEvaluation variantEvaluation : variantEvaluations) {
-                variantEvaluation.getInheritanceModes().add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-            }
-        }
-
+        inheritanceModes.addAll(analyseInheritanceModes(variantList));
+      
         return inheritanceModes;
     }
 
-    public Set<ModeOfInheritance> analyseInheritanceModes(VariantEvaluation variantEvaluation) {
-        Variant variant = variantEvaluation.getVariant();
-        ArrayList<Variant> variantList = new ArrayList<>();
-        variantList.add(variant);
-
+    public Set<ModeOfInheritance> analyseInheritanceModes(ArrayList<Variant> variantList) {
         Set inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
         if (pedigree.isCompatibleWithAutosomalRecessive(variantList)) {
@@ -85,8 +74,6 @@ public class InheritanceModeAnalyser {
         if (pedigree.isCompatibleWithXChromosomalRecessive(variantList)) {
             inheritanceModes.add(ModeOfInheritance.X_RECESSIVE);
         }
-
-        variantEvaluation.setInheritanceModes(inheritanceModes);
 
         return inheritanceModes;
     }

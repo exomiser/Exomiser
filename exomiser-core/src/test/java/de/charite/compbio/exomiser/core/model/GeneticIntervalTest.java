@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;

@@ -6,10 +6,11 @@ package de.charite.compbio.exomiser.core.filter;
  * jannovar hierarchy for now because it is intertwined with Variant.
  *
  * @author Peter Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.05 (10 January, 2014)
  */
 public enum FilterType {
-    
+
     /**
      * Flag for output of field representing the Quality filter for the VCF
      * entry
@@ -33,7 +34,6 @@ public enum FilterType {
      * Flag to represent target filter
      */
     TARGET_FILTER,
-    
     INHERITANCE_FILTER,
     /**
      * Filter for target regions in a BED file
@@ -42,7 +42,7 @@ public enum FilterType {
 
     @Override
     public String toString() {
-        switch (this){
+        switch (this) {
             case QUALITY_FILTER:
                 return "Quality";
             case INTERVAL_FILTER:

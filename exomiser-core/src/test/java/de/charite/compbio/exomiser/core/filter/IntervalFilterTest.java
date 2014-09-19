@@ -71,33 +71,30 @@ public class IntervalFilterTest {
     public void setUp() {
         instance = new IntervalFilter(SEARCH_INTERVAL);
     }
-
+    
     @Test
-    public void testFilterVariants() {
-        System.out.println("filterVariants");
-        List<VariantEvaluation> variantList = new ArrayList<>();
-        variantList.add(rightChromosomeRightPosition);
-        variantList.add(rightChromosomeWrongPosition);
-        variantList.add(wrongChromosomeRightPosition);
-        variantList.add(wrongChromosomeWrongPosition);
-        
-        instance.filterVariants(variantList);
-
-        //yep there is more than one assert here...
-        Set<FilterType> expectedFailedFilters = EnumSet.of(instance.getFilterType());
-        
-        assertThat(rightChromosomeRightPosition.passesFilters(), is(true));
-        assertThat(rightChromosomeRightPosition.getFailedFilters().isEmpty(), is(true));
-        
-        assertThat(rightChromosomeWrongPosition.passesFilters(), is(false));
-        assertThat(rightChromosomeWrongPosition.getFailedFilters(), equalTo(expectedFailedFilters));
-        
-        assertThat(wrongChromosomeRightPosition.passesFilters(), is(false));
-        assertThat(wrongChromosomeRightPosition.getFailedFilters(), equalTo(expectedFailedFilters));
-        
-        assertThat(wrongChromosomeWrongPosition.passesFilters(), is(false));
-        assertThat(wrongChromosomeWrongPosition.getFailedFilters(), equalTo(expectedFailedFilters));
+    public void testThatRightChromosomeRightPositionPassesFilter() {
+        FilterResult filterResult = instance.runFilter(rightChromosomeRightPosition);
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
     }
+    
+    @Test
+    public void testThatRightChromosomeWrongPositionFailsFilter() {
+        FilterResult filterResult = instance.runFilter(rightChromosomeWrongPosition);
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+    }
+    
+    @Test
+    public void testThatWrongChromosomeRightPositionFailsFilter() {
+        FilterResult filterResult = instance.runFilter(wrongChromosomeRightPosition);
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+    }
+    @Test
+    public void testThatWrongChromosomeWrongPositionFailsFilter() {
+        FilterResult filterResult = instance.runFilter(wrongChromosomeWrongPosition);
+        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+    }
+    
     
     @Test
     public void testGetFilterType() {

@@ -3,6 +3,7 @@ package de.charite.compbio.exomiser.priority;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.jblas.DoubleMatrix;
@@ -97,12 +98,12 @@ public class ExomeWalkerPriority implements Priority {
     }
 
     /**
-     * 
+     *
      * @param randomWalkMatrix
-     * @param entrezSeedGenes 
+     * @param entrezSeedGenes
      */
     public ExomeWalkerPriority(DataMatrix randomWalkMatrix, List<Integer> entrezSeedGenes) {
-        
+
         this.randomWalkMatrix = randomWalkMatrix;
         seedGenes = new ArrayList<>();
         addMatchedGenesToSeedGeneList(entrezSeedGenes);
@@ -110,14 +111,14 @@ public class ExomeWalkerPriority implements Priority {
     }
 
     /**
-     * Adds the Entrez ids in the list provided to the seedGenes if it is contained
-     * in the DataMatrix.
-     * 
-     * @param entrezSeedGenes 
+     * Adds the Entrez ids in the list provided to the seedGenes if it is
+     * contained in the DataMatrix.
+     *
+     * @param entrezSeedGenes
      */
     private void addMatchedGenesToSeedGeneList(List<Integer> entrezSeedGenes) {
         for (Integer entrezId : entrezSeedGenes) {
-            
+
             if (randomWalkMatrix.getObjectid2idx().containsKey(entrezId)) {
                 seedGenes.add(entrezId);
             } else {
@@ -219,21 +220,21 @@ public class ExomeWalkerPriority implements Priority {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
-                ExomeWalkerPriorityScore relScore = null;
-                if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
-                    double val = computeSimStartNodesToNode(gene);
-                    if (val > max) {
-                        max = val;
-                    }
-                    if (val < min) {
-                        min = val;
-                    }
-                    relScore = new ExomeWalkerPriorityScore(val);
-                    ++PPIdataAvailable;
-                } else {
-                    relScore = ExomeWalkerPriorityScore.noPPIDataScore();
+            ExomeWalkerPriorityScore relScore = null;
+            if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
+                double val = computeSimStartNodesToNode(gene);
+                if (val > max) {
+                    max = val;
                 }
-                gene.addPriorityScore(relScore, GENEWANDERER_PRIORITY);
+                if (val < min) {
+                    min = val;
+                }
+                relScore = new ExomeWalkerPriorityScore(val);
+                ++PPIdataAvailable;
+            } else {
+                relScore = ExomeWalkerPriorityScore.noPPIDataScore();
+            }
+            gene.addPriorityScore(relScore, GENEWANDERER_PRIORITY);
         }
 
 //        float factor = 1f / (float) max;
@@ -246,7 +247,6 @@ public class ExomeWalkerPriority implements Priority {
 //            newscore = factorMaxPossible * (scr - (float) min);
 //            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
 //        }
-
         String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
                 PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
         this.n_before = totalGenes;
@@ -300,7 +300,7 @@ public class ExomeWalkerPriority implements Priority {
     public int getAfter() {
         return this.n_after;
     }
-    
+
     /**
      * This function retrieves the random walk similarity score for the gene
      *
@@ -320,6 +320,11 @@ public class ExomeWalkerPriority implements Priority {
      * elsewhere.
      */
     @Override
-    public void setDatabaseConnection(Connection connection) { /* no-op */ }
+    public void setConnection(Connection connection) { /* no-op */ }
+
+    @Override
+    public void closeConnection() {
+        //not-implemented - there is no connection to close.
+    }
 
 }

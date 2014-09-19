@@ -4,12 +4,10 @@ import de.charite.compbio.exomiser.core.filter.FilterReport;
 import java.io.Writer;
 import java.io.IOException; 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.filter.Filter;
 import de.charite.compbio.exomiser.priority.Priority;
 
 import jannovar.common.VariantType;

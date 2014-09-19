@@ -8,7 +8,6 @@ import java.util.Iterator;
 
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.filter.Filter;
 import de.charite.compbio.exomiser.priority.Priority;
 
 import jannovar.pedigree.Pedigree;

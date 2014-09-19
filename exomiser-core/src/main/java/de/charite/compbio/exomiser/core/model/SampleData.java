@@ -112,7 +112,7 @@ public class SampleData {
         this.pedigree = pedigree;
     }
 
-    public List<Gene> getGeneList() {
+    public List<Gene> getGenes() {
         return geneList;
     }
 

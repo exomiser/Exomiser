@@ -3,22 +3,22 @@ package de.charite.compbio.exomiser.core.filter;
 import de.charite.compbio.exomiser.core.frequency.Frequency;
 import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filter variants according to their frequency. The Frequency is retrieved from
- * our database and comes from dbSNP (see
+ * VariantFilter variants according to their frequency. The Frequency is
+ * retrieved from our database and comes from dbSNP (see
  * {@link exomizer.io.dbSNP2FrequencyParser dbSNP2FrequencyParser} and
  * {@link exomizer.io.ESP2FrequencyParser ESP2FrequencyParser}), and the
  * frequency data are expressed as percentages.
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.09 (April 28, 2013)
  */
-public class FrequencyFilter implements Filter {
+public class FrequencyFilter implements VariantFilter {
 
     /**
      * Threshold for filtering. Retain only those variants whose frequency
@@ -27,25 +27,27 @@ public class FrequencyFilter implements Filter {
      */
     private float maxFreq = 100.0f;
 
-    private final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
 
-    private final FilterType filterType = FilterType.FREQUENCY_FILTER;
+    private static final FilterType filterType = FilterType.FREQUENCY_FILTER;
+
+    private static final float FAIL_FREQUENCY_FILTER_SCORE = 0f;
+    private static final float PASS_FREQUENCY_FILTER_SCORE = 1f;
 
     /**
-     * Filter out variants if they are represented at all in dbSNP or ESP,
-     * regardless of frequency.
+     * VariantFilter out variants if they are represented at all in dbSNP or
+     * ESP, regardless of frequency.
      */
     private boolean strictFiltering = false;
 
-
     /**
-     * Creates a filter with a maximum frequency threshold for variants.
+     * Creates a runFilter with a maximum frequency threshold for variants.
      *
      * @param maxFreq sets the maximum frequency threshold (percent value) of
      * the minor allele required to pass the filer. For example a value of 1
      * will set the threshold of the minor allele frequency to under 1%.
-     * @param filterOutAllKnownVariants removes all variants found in the dbSNP or in
-     * the ESP database regardless of their frequency.
+     * @param filterOutAllKnownVariants removes all variants found in the dbSNP
+     * or in the ESP database regardless of their frequency.
      *
      */
     public FrequencyFilter(float maxFreq, boolean filterOutAllKnownVariants) {
@@ -54,22 +56,6 @@ public class FrequencyFilter implements Filter {
         }
         this.maxFreq = maxFreq;
         this.strictFiltering = filterOutAllKnownVariants;
-    }
-    
-    public float getMaxFreq() {
-        return maxFreq;
-    }
-
-    public void setMaxFreq(float maxFreq) {
-        this.maxFreq = maxFreq;
-    }
-
-    public boolean filterOutAllDbsnp() {
-        return strictFiltering;
-    }
-
-    public void setFilterOutAllDbsnp(boolean removeDbSnp) {
-        this.strictFiltering = removeDbSnp;
     }
 
     /**
@@ -82,52 +68,61 @@ public class FrequencyFilter implements Filter {
     }
 
     /**
-     * Filter out list of variants on the basis of the estimated frequency of
-     * the variant in the population. If the variant in question has a higher
+     * Returns true if the {@code VariantEvaluation} passes the runFilter.
+     * Returns a PASS or FAIL on the basis of the estimated frequency of the
+     * variant in the population. If the variant in question has a higher
      * frequency than the threshold in either the dbSNP data or the ESP data,
      * then we flag it as failed.
      *
-     * @param variantEvaluationtList a list of Variants to be tested for rarity.
+     * @param variantEvaluation
+     * @return
      */
     @Override
-    public void filterVariants(List<VariantEvaluation> variantEvaluationtList) {
+    public FilterResult runFilter(VariantEvaluation variantEvaluation) {
+        FrequencyData frequencyData = variantEvaluation.getFrequencyData();
+        //frequency data is derived from the database and depending on whether the full-analysis option has been specified the data may not have been set
+        //by the time it gets here. It should have been, so this will issue a warning.
+        if (frequencyDataIsNull(frequencyData)) {
+            logger.warn("{} frequency data has not been set - {} filter failed.", variantEvaluation.getChromosomalVariant(), filterType);
+            return returnFailedFilterResult(FAIL_FREQUENCY_FILTER_SCORE);
+        }
 
-        for (VariantEvaluation ve : variantEvaluationtList) {
-            filterVariant(ve);
+        float filterScore = calculateFilterScore(frequencyData);
+
+        if (strictFiltering) {
+            return applyStrictFiltering(frequencyData, filterScore);
+        } else {
+            return applyFrequencyBasedFiltering(frequencyData, filterScore);
         }
     }
 
-    /**
-     * Returns true if the {@code VariantEvaluation} passes the filter.
-     * @param variantEvaluation
-     * @return 
-     */
-    @Override
-    public boolean filterVariant(VariantEvaluation variantEvaluation) {
-        FrequencyData frequencyData = variantEvaluation.getFrequencyData();
-        FilterScore filterScore = calculateFilterScore(frequencyData);
+    private boolean frequencyDataIsNull(FrequencyData frequencyData) {
+        return frequencyData == null;
+    }
 
-            if (strictFiltering) {
-                if (frequencyData.representedInDatabase()) {
-                    //not rare enough! 
-                    variantEvaluation.addFailedFilter(filterType, filterScore);
-                    return false;
-                } 
-                //wow - a variant no one has seen before this could be interesting! 
-                variantEvaluation.addPassedFilter(filterType, filterScore);
-                return true;
-            } 
-            else {
-                if (passesFilter(frequencyData)) {
-                    // We passed the filter (Variant is rare).
-                    variantEvaluation.addPassedFilter(filterType, filterScore);
-                    return true;
-                } else {
-                    // Variant is not rare, fail the filter.
-                    variantEvaluation.addFailedFilter(filterType, filterScore);
-                    return false;
-                }
-            }
+    private FilterResult applyStrictFiltering(FrequencyData frequencyData, float filterScore) {
+        if (frequencyData.representedInDatabase()) {
+            return returnFailedFilterResult(filterScore);
+        }
+        return returnPassedFilterResult(filterScore);
+    }
+
+    private FilterResult applyFrequencyBasedFiltering(FrequencyData frequencyData, float filterScore) {
+        if (passesFilter(frequencyData)) {
+            return returnPassedFilterResult(filterScore);
+        } else {
+            return returnFailedFilterResult(filterScore);
+        }
+    }
+
+    private FilterResult returnPassedFilterResult(float filterScore) {
+        //wow - a really rare variant, this could be interesting!
+        return new FrequencyFilterResult(filterScore, FilterResultStatus.PASS);
+    }
+
+    private FilterResult returnFailedFilterResult(float filterScore) {
+        //not rare enough!
+        return new FrequencyFilterResult(filterScore, FilterResultStatus.FAIL);
     }
 
     /**
@@ -139,9 +134,9 @@ public class FrequencyFilter implements Filter {
      * @return true if the variant being analyzed is rarer than the threshold
      */
     protected boolean passesFilter(FrequencyData frequencyData) {
-        
+
         for (Frequency frequency : frequencyData.getKnownFrequencies()) {
-            if (frequency.isOverThreshold(maxFreq)){
+            if (frequency.isOverThreshold(maxFreq)) {
                 return false;
             }
         }
@@ -157,55 +152,27 @@ public class FrequencyFilter implements Filter {
      *
      * @param frequencyData
      *
-     * @return return a float representation of the filter result [0..1]. If the
-     * result is boolean, return 0.0 for false and 1.0 for true
+     * @return return a float representation of the runFilter result [0..1]. If
+     * the result is boolean, return 0.0 for false and 1.0 for true
      */
-    protected FrequencyFilterScore calculateFilterScore(FrequencyData frequencyData) {
-        
+    protected float calculateFilterScore(FrequencyData frequencyData) {
+
         float max = frequencyData.getMaxFreq();
-        
+
         if (max <= 0) {
-            return new FrequencyFilterScore(1f);
+            return PASS_FREQUENCY_FILTER_SCORE;
         } else if (max > 2) {
-            return new FrequencyFilterScore(0f);
+            return FAIL_FREQUENCY_FILTER_SCORE;
         } else {
-            float score = 1f - (0.13533f * (float) Math.exp(max));
-            return new FrequencyFilterScore(score);
-        }        
-    }
-    
-    /**
-     * Produces a FilterReport for the frequency data filtering.
-     * 
-     * @param filterType
-     * @param passed
-     * @param failed
-     * @param maxFreq
-     * @param dbSNPfreqData
-     * @param dbSNPrsID
-     * @param espFreqData
-     * @return 
-     */
-    private FilterReport makeReport(FilterType filterType, int passed, int failed, float maxFreq, int dbSNPfreqData, int dbSNPrsID, int espFreqData) {
-
-        FilterReport report = new FilterReport(filterType, passed, failed);
-
-        int before = passed + failed;
-
-        report.addMessage(String.format("Allele frequency &lt; %.2f %%", maxFreq));
-        report.addMessage(String.format("Frequency Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)",
-                dbSNPfreqData, 100f * (double) dbSNPfreqData / before));
-        report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", dbSNPrsID, 100 * (double) dbSNPrsID / before));
-        report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", espFreqData, 100f * (double) espFreqData / before));
-
-        return report;
+            return 1f - (0.13533f * (float) Math.exp(max));
+        }
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 29 * hash + Float.floatToIntBits(this.maxFreq);
-        hash = 29 * hash + Objects.hashCode(this.filterType);
+        hash = 29 * hash + Objects.hashCode(FrequencyFilter.filterType);
         hash = 29 * hash + (this.strictFiltering ? 1 : 0);
         return hash;
     }
@@ -222,16 +189,8 @@ public class FrequencyFilter implements Filter {
         if (Float.floatToIntBits(this.maxFreq) != Float.floatToIntBits(other.maxFreq)) {
             return false;
         }
-        if (this.filterType != other.filterType) {
-            return false;
-        }
-        if (this.strictFiltering != other.strictFiltering) {
-            return false;
-        }
-        return true;
+        return this.strictFiltering == other.strictFiltering;
     }
-    
-    
 
     @Override
     public String toString() {

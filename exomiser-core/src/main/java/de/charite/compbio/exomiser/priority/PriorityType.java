@@ -30,10 +30,6 @@ public enum PriorityType {
      */
     OMIM_PRIORITY("omim", ScoringMode.RAW_SCORE),
     /**
-     * Flag for BOQA prioritizer.
-     */
-    BOQA_PRIORITY("boqa", ScoringMode.RAW_SCORE),
-    /**
      * Flag for phenomizer prioritizer
      */
     PHENIX_PRIORITY("phenix", ScoringMode.RAW_SCORE),
