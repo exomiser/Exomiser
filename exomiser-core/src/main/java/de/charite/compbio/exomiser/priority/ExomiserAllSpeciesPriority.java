@@ -852,8 +852,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 adjustedRank = rank + (sharedHits / 2);
             }
             //float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
-            //float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
-            float newScore = 0.55f - 0.55f * (adjustedRank / gene_list.size());
+            float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
                 logger.info(g.getGeneSymbol()+":"+newScore+":"+g.getPriorityScore()+":"+
