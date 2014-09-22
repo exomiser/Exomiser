@@ -45,7 +45,6 @@ public class Main {
     private static AnnotationConfigApplicationContext applicationContext;
 
     private static Options options;
-    private static CommandLineParser commandLineOptionsParser;
 
     private static String buildVersion;
     private static String buildTimestamp;
@@ -68,7 +67,6 @@ public class Main {
     private static void setup() {
         applicationContext = setUpApplicationContext();
         options = applicationContext.getBean(Options.class);
-        commandLineOptionsParser = applicationContext.getBean(CommandLineParser.class);
         buildVersion = (String) applicationContext.getBean("buildVersion");
         buildTimestamp = (String) applicationContext.getBean("buildTimestamp");
     }
@@ -128,7 +126,7 @@ public class Main {
     private static List<ExomiserSettings> parseArgs(String[] args) {
 
         List<SettingsBuilder> settingsBuilders = new ArrayList<>();
-
+        CommandLineParser commandLineOptionsParser = new CommandLineParser();
         try {
             Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);

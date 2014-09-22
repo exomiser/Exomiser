@@ -42,7 +42,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(classes = CommandLineOptionsConfig.class)
 public class CommandLineParserTest {
 
-    @Autowired
     private CommandLineParser instance;
 
     @Autowired
@@ -65,6 +64,7 @@ public class CommandLineParserTest {
         } catch (ParseException ex) {
             Logger.getLogger(CommandLineParserTest.class.getName()).log(Level.SEVERE, null, ex);
         }
+        instance = new CommandLineParser();
         return instance.parseCommandLine(commandLine).build();
     }
 
@@ -408,6 +408,19 @@ public class CommandLineParserTest {
 
         List<Integer> expectedList = new ArrayList();
         expectedList.add(123);
+
+        assertThat(exomiserSettings.getSeedGeneList(), equalTo(expectedList));
+    }
+    
+    @Test
+    public void should_produce_settings_when_seed_gene_specified_but_not_set() {
+        String option = "--seed-genes";
+        String value = "";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=exomiser-mouse", option, value);
+
+        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+
+        List<Integer> expectedList = new ArrayList();
 
         assertThat(exomiserSettings.getSeedGeneList(), equalTo(expectedList));
     }

@@ -28,13 +28,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * Handles parsing of the commandline input to provide properly typed data to
@@ -42,16 +38,11 @@ import org.springframework.stereotype.Component;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Component
 public class CommandLineParser {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandLineParser.class);
 
-    @Autowired
-    private final Options options;
-
-    public CommandLineParser(Options options) {
-        this.options = options;
+    public CommandLineParser() {
     }
 
     public SettingsBuilder parseCommandLine(CommandLine commandLine) {
@@ -217,13 +208,6 @@ public class CommandLineParser {
         }
     }
 
-    @Override
-    public String toString() {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar exomizer-cli-n.n.n.jar", options);
-        return "ExomiserCommandLineOptionsParser{" + options + '}';
-    }
-
     private String parseExomiser2Params(String[] values) {
         String exomiser2Params = "";
         if (values.length == 0) {
@@ -256,6 +240,9 @@ public class CommandLineParser {
         //on the whole input string so tha the user has a warning about any invalid HPO ids
         for (String token : values) {
             token = token.trim();
+            if (token.isEmpty()) {
+                continue;
+            }
             Matcher hpoMatcher = hpoPattern.matcher(token);
             if (hpoMatcher.matches()) { /* A well formed HPO term starts with "HP:" and has ten characters. */
 
@@ -329,10 +316,14 @@ public class CommandLineParser {
 
         Pattern entrezGeneIdPattern = Pattern.compile("[0-9]+");
 
-        for (String string : values) {
-            Matcher entrezGeneIdPatternMatcher = entrezGeneIdPattern.matcher(string);
+        for (String string : values) {            
+            if (string.isEmpty()) {
+                continue;
+            }
+            String trimmedString = string.trim();
+            Matcher entrezGeneIdPatternMatcher = entrezGeneIdPattern.matcher(trimmedString);
             if (entrezGeneIdPatternMatcher.matches()) {
-                Integer integer = Integer.parseInt(string.trim());
+                Integer integer = Integer.parseInt(trimmedString);
                 returnList.add(integer);
             } else {
                 logger.error("Malformed Entrez gene ID input string \"{}\". Term \"{}\" does not match the Entrez gene ID identifier pattern: {}", values, string, entrezGeneIdPattern);

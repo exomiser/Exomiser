@@ -27,11 +27,6 @@ import org.springframework.context.annotation.Configuration;
 public class CommandLineOptionsConfig {
 
     @Bean
-    public CommandLineParser commandLineParser() {
-        return new CommandLineParser(options());
-    }
-
-    @Bean
     protected Options options() {
         Options options = new Options();
 
@@ -61,7 +56,7 @@ public class CommandLineOptionsConfig {
                 .create()
         );
     }
-    
+
     private void addFullAnalysisOptions(Options options) {
         options.addOption(OptionBuilder
                 .hasArg()
@@ -71,7 +66,7 @@ public class CommandLineOptionsConfig {
                 .create()
         );
     }
-    
+
     private void addBatchFileOptions(Options options) {
         options.addOption(OptionBuilder
                 .withArgName("file")
@@ -110,10 +105,7 @@ public class CommandLineOptionsConfig {
         options.addOption(new Option("Q", MIN_QUAL_OPTION, true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
         options.addOption(new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true"));//PathogenicityFilter 
         //no extra args required - these are Booleans 
-        options.addOption(new Option(null, REMOVE_DBSNP_OPTION, false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false"));
-        //TODO: WTF is going on with PathogenicityFilter? It actualy needs boolean filterOutNonpathogenic, boolean removeSynonomousVariants
-        //but these set (or don't set) things in the PathogenicityTriage - maybe we could have a MissensePathogenicityFilter too? 
-//        options.addOption(new Option("O", "exclude-pathogenic-missense", false, "Filter variants to include those with predicted pathogenicity - MISSENSE MUTATIONS ONLY"));//PathogenicityFilter 
+        options.addOption(new Option(null, REMOVE_DBSNP_OPTION, false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false")); // FrequencyFilter
         options.addOption(new Option("T", REMOVE_OFF_TARGET_OPTION, false, "Keep off-target variants. These are defined as intergenic, intronic, upstream, downstream, synonymous or intronic ncRNA variants. Default: true")); //TargetFilter 
     }
 
@@ -153,7 +145,7 @@ public class CommandLineOptionsConfig {
         options.addOption(priorityOption);
     }
 
-      private void addOutputOptions(Options options) {
+    private void addOutputOptions(Options options) {
         //output options
         options.addOption(new Option(null, NUM_GENES_OPTION, true, "Number of genes to show in output"));
         options.addOption(new Option("o", OUT_FILE_OPTION, true, "name of out file. Will default to vcf-filename-exomiser-results.html"));
@@ -170,7 +162,7 @@ public class CommandLineOptionsConfig {
         options.addOption(new Option(null, "withinFirewall", false, "Set flag that we are running on private server"));
     }
 
-        /**
+    /**
      * There is a lot of messing about needed to get the Prioritiser option
      * description sorted, but this will now automatically change to reflect
      * changes in any names or types which are added to the
@@ -224,7 +216,6 @@ public class CommandLineOptionsConfig {
 
         return priorityOptionDescriptionBuilder.toString();
     }
-
 
         //the original options:
 //        options.addOption(new Option("h", "HELP_OPTION", false, "Shows this HELP_OPTION"));
