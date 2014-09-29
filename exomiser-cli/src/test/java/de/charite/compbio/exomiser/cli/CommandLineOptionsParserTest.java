@@ -13,6 +13,7 @@ import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -40,13 +41,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = CommandLineOptionsConfig.class)
-public class CommandLineParserTest {
+public class CommandLineOptionsParserTest {
 
-    private CommandLineParser instance;
+    @Autowired
+    private CommandLineOptionsParser instance;
 
     @Autowired
     private Options options;
-
+    
     /**
      * Utility method for parsing input strings and producing ExomiserSettings
      * for test asserts.
@@ -62,12 +64,11 @@ public class CommandLineParserTest {
         try {
             commandLine = parser.parse(options, args);
         } catch (ParseException ex) {
-            Logger.getLogger(CommandLineParserTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CommandLineOptionsParserTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        instance = new CommandLineParser();
         return instance.parseCommandLine(commandLine).build();
     }
-
+    
     @Test
     public void exomiserSettingsAreInvalidWhenAVcfFileWasNotSpecified() {
         String input = "--ped def.ped -D OMIM:101600 --prioritiser=exomiser-mouse";

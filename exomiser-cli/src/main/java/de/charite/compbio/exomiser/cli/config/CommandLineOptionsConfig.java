@@ -5,15 +5,43 @@
  */
 package de.charite.compbio.exomiser.cli.config;
 
+import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.PedFileOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.VcfFileOptionMarshaller;
 import static de.charite.compbio.exomiser.core.model.ExomiserSettings.*;
-import de.charite.compbio.exomiser.cli.CommandLineParser;
+import de.charite.compbio.exomiser.cli.CommandLineOptionsParser;
+import de.charite.compbio.exomiser.cli.options.BatchFileOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.CandidateGeneOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.DiseaseIdOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.ExomiserAllSpeciesOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.FrequencyDbSnpOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.FrequencyThresholdOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.FullAnalysisOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.GeneticIntervalOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.HpoIdsOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.InheritanceModeOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.NumGenesOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.OutFileOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.OutFormatOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.PathogenicityFilterCutOffOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.PrioritiserOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.QualityThresholdOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.SeedGenesOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.SettingsFileOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.TargetFilterOptionMarshaller;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import de.charite.compbio.exomiser.core.writer.OutputFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,195 +54,82 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CommandLineOptionsConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(CommandLineOptionsConfig.class);
+
     @Bean
-    protected Options options() {
-        Options options = new Options();
-
-        addHelpOptions(options);
-        addSettingsFileOptions(options);
-        addBatchFileOptions(options);
-        addSampleDataOptions(options);
-        addFullAnalysisOptions(options);
-        addFilterOptions(options);
-        addPrioritiserOptions(options);
-        addOutputOptions(options);
-
-        return options;
-    }
-
-    private void addHelpOptions(Options options) {
-        options.addOption(new Option("h", "help", false, "Shows this help"));
-        options.addOption(new Option("H", "help", false, "Shows this help"));
-    }
-
-    private void addSettingsFileOptions(Options options) {
-        options.addOption(OptionBuilder
-                .withArgName("file")
-                .hasArg()
-                .withDescription("Path to settings file. Any settings specified in the file will be overidden by parameters added on the command-line.")
-                .withLongOpt(SETTINGS_FILE_OPTION)
-                .create()
-        );
-    }
-
-    private void addFullAnalysisOptions(Options options) {
-        options.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("true/false")
-                .withDescription("Run the analysis such that all variants are run through all filters. This will take longer, but give more complete results. Default is false")
-                .withLongOpt(RUN_FULL_ANALYSIS_OPTION)
-                .create()
-        );
-    }
-
-    private void addBatchFileOptions(Options options) {
-        options.addOption(OptionBuilder
-                .withArgName("file")
-                .hasArg()
-                .withDescription("Path to batch file. This should contain a list of fully qualified path names for the settings files you wish to process. There should be one file name on each line.")
-                .withLongOpt("batch-file")
-                .create()
-        );
-    }
-
-    private void addSampleDataOptions(Options options) {
-        //input files - at least the VCF_OPTION file is required!
-        Option inputVcf = OptionBuilder
-                .withArgName("file")
-                //                .isRequired()
-                .hasArg()
-                .withDescription("Path to VCF file with mutations to be analyzed. Can be either for an individual or a family.")
-                .withLongOpt(VCF_OPTION)
-                .create("v");
-        options.addOption(inputVcf);
-
-        options.addOption(OptionBuilder
-                .withArgName("file")
-                .hasArg()
-                .withDescription("Path to pedigree (ped) file. Required if the vcf file is for a family.")
-                .withLongOpt(PED_OPTION)
-                .create("p")
-        );
-    }
-
-    private void addFilterOptions(Options options) {
-        // Filtering options
-        //Do filters filter-out or retain the options specified below? Would be good to spell this out in all cases.
-        options.addOption(new Option("F", MAX_FREQ_OPTION, true, "Maximum frequency threshold for variants to be retained. e.g. 100.00 will retain all variants. Default: 100.00")); // FrequencyFilter filter above or below threshold?
-        options.addOption(new Option("R", GENETIC_INTERVAL_OPTION, true, "Restrict to region/interval (e.g., chr2:12345-67890)")); //IntervalFilter
-        options.addOption(new Option("Q", MIN_QUAL_OPTION, true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0")); //QualityFilter
-        options.addOption(new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true"));//PathogenicityFilter 
-        //no extra args required - these are Booleans 
-        options.addOption(new Option(null, REMOVE_DBSNP_OPTION, false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false")); // FrequencyFilter
-        options.addOption(new Option("T", REMOVE_OFF_TARGET_OPTION, false, "Keep off-target variants. These are defined as intergenic, intronic, upstream, downstream, synonymous or intronic ncRNA variants. Default: true")); //TargetFilter 
-    }
-
-    private void addPrioritiserOptions(Options options) {
-        // Prioritiser options - may or may not be required depending on the priotitiser chosen.
-        options.addOption(new Option(null, CANDIDATE_GENE_OPTION, true, "Known or suspected gene association e.g. FGFR2"));
-        options.addOption(OptionBuilder
-                .hasArgs()
-                .withArgName("HPO ID")
-                .withValueSeparator(',')
-                .withDescription("Comma separated list of HPO IDs for the sample being sequenced e.g. HP:0000407,HP:0009830,HP:0002858")
-                .withLongOpt(HPO_IDS_OPTION)
-                .create());
-        options.addOption(OptionBuilder
-                .hasArgs()
-                .withArgName("Entrez geneId")
-                .withValueSeparator(',')
-                .withDescription("Comma separated list of seed genes (Entrez gene IDs) for random walk")
-                .withLongOpt(SEED_GENES_OPTION)
-                .create("S"));
-        //Prioritisers - Apart from the disease and inheritance prioritisers are all mutually exclusive.
-        options.addOption(new Option("D", DISEASE_ID_OPTION, true, "OMIM ID for disease being sequenced. e.g. OMIM:101600")); //OMIMPriority
-        options.addOption(new Option("I", MODE_OF_INHERITANCE_OPTION, true, "Filter variants for inheritance pattern (AR, AD, X)")); //InheritancePriority change to DOMINANT / RECESSIVE / X ? Inclusive or exclusive?
-        options.addOption(new Option("E", EXOMISER2_PARAMS_OPTION, true, "Optional paramaters for Exomiser 2 (human,mouse,fish,ppi)"));
-        //The desired PRIORITISER_OPTION e.g. --PRIORITISER_OPTION=pheno-wanderer or --PRIORITISER_OPTION=zfin-phenodigm
-        //this is less ambiguous to the user and makes for easier parsing. Can then check that all the required fields are present before proceeding.
-        String prioritiserLongOpt = PRIORITISER_OPTION;
-        //now we have the description, build the option.
-        Option priorityOption = OptionBuilder
-                //                .isRequired()
-                .hasArg()
-                .withArgName("name")
-                .withValueSeparator()
-                .withDescription(buildPrioritiserDescription(prioritiserLongOpt))
-                .withLongOpt(prioritiserLongOpt)
-                .create();
-        options.addOption(priorityOption);
-    }
-
-    private void addOutputOptions(Options options) {
-        //output options
-        options.addOption(new Option(null, NUM_GENES_OPTION, true, "Number of genes to show in output"));
-        options.addOption(new Option("o", OUT_FILE_OPTION, true, "name of out file. Will default to vcf-filename-exomiser-results.html"));
-        options.addOption(OptionBuilder
-                .hasArgs()
-                .withArgName("type")
-                .withType(OutputFormat.class)
-                .withValueSeparator(',')
-                .withDescription("Comma separated list of format options: HTML, VCF or TAB. Defaults to HTML if not specified. e.g. --out-format=TAB or --out-format=TAB,HTML,VCF")
-                .withLongOpt(OUT_FORMAT_OPTION)
-                .create("f"));
-
-        //TODO: check what this actually does (I think this is for Peter's CRE server, in which case it's not wanted here )
-        options.addOption(new Option(null, "withinFirewall", false, "Set flag that we are running on private server"));
+    public CommandLineOptionsParser commandLineParser() {
+        return new CommandLineOptionsParser();
     }
 
     /**
-     * There is a lot of messing about needed to get the Prioritiser option
-     * description sorted, but this will now automatically change to reflect
-     * changes in any names or types which are added to the
-     * {@link de.charite.compbio.exomiser.priority.PriorityType}
+     * Add the options you want to be made available to the application here.
      *
-     * @param prioritiserLongOpt
-     * @return
+     * @return the required OptionMarshallers for the system.
      */
-    private String buildPrioritiserDescription(String prioritiserLongOpt) {
-        List<PriorityType> inValidPriorityTypes = new ArrayList<>();
-        inValidPriorityTypes.add(PriorityType.NOT_SET);
-        inValidPriorityTypes.add(PriorityType.INHERITANCE_MODE_PRIORITY);
-        inValidPriorityTypes.add(PriorityType.OMIM_PRIORITY);
+    public Set<OptionMarshaller> desiredOptionMarshallers() {
+        Set<OptionMarshaller> desiredOptionMarshallers = new LinkedHashSet<>();
 
-        List<PriorityType> validPriorityTypes = new ArrayList<>();
-        //The last PriorityType is PriorityType.NOT_SET which has no command-line option so we ned to create a list of PriorityTypes without this one in.
-        for (PriorityType priorityType : PriorityType.values()) {
-            if (inValidPriorityTypes.contains(priorityType)) {
-                //we're not interested in this option
-            } else if (priorityType.getCommandLineValue().isEmpty()) {
-                //we're not interested in this option either
-            } else {
-                //This is the option we're looking for!
-                validPriorityTypes.add(priorityType);
-            }
+        //commandline parser options
+        desiredOptionMarshallers.add(new SettingsFileOptionMarshaller());
+        desiredOptionMarshallers.add(new BatchFileOptionMarshaller());
+
+        //analysis options
+        desiredOptionMarshallers.add(new FullAnalysisOptionMarshaller());
+
+        //sample data files 
+        desiredOptionMarshallers.add(new VcfFileOptionMarshaller());
+        desiredOptionMarshallers.add(new PedFileOptionMarshaller());
+
+        //filter options
+        desiredOptionMarshallers.add(new FrequencyThresholdOptionMarshaller());
+        desiredOptionMarshallers.add(new FrequencyDbSnpOptionMarshaller());
+        desiredOptionMarshallers.add(new GeneticIntervalOptionMarshaller());
+        desiredOptionMarshallers.add(new QualityThresholdOptionMarshaller());
+        desiredOptionMarshallers.add(new PathogenicityFilterCutOffOptionMarshaller());
+        desiredOptionMarshallers.add(new TargetFilterOptionMarshaller());
+
+        //prioritiser options
+        desiredOptionMarshallers.add(new PrioritiserOptionMarshaller());
+        desiredOptionMarshallers.add(new HpoIdsOptionMarshaller());
+        desiredOptionMarshallers.add(new InheritanceModeOptionMarshaller());
+        desiredOptionMarshallers.add(new SeedGenesOptionMarshaller());
+        desiredOptionMarshallers.add(new DiseaseIdOptionMarshaller());
+        desiredOptionMarshallers.add(new CandidateGeneOptionMarshaller());
+        desiredOptionMarshallers.add(new ExomiserAllSpeciesOptionMarshaller());
+
+        //output options
+        desiredOptionMarshallers.add(new NumGenesOptionMarshaller());
+        desiredOptionMarshallers.add(new OutFileOptionMarshaller());
+        desiredOptionMarshallers.add(new OutFormatOptionMarshaller());
+
+        return desiredOptionMarshallers;
+    }
+
+    @Bean
+    public Map<String, OptionMarshaller> optionMarshallers() {
+        Map<String, OptionMarshaller> optionMarshallers = new HashMap<>();
+
+        for (OptionMarshaller optionMarshaller : desiredOptionMarshallers()) {
+            String cliParameter = optionMarshaller.getCommandLineParameter();
+            logger.info("Adding {}", optionMarshaller);
+            optionMarshallers.put(cliParameter, optionMarshaller);
         }
-        //now we've got the valid list of types, build up the description
-        //this should look like this:
-        //"Name of the PRIORITISER_OPTION used to score the genes.
-        // Can be one of: inheritance-mode, phenomizer or dynamic-phenodigm. 
-        // e.g. --PRIORITISER_OPTION=dynamic-phenodigm"
+        return optionMarshallers;
+    }
 
-        StringBuilder priorityOptionDescriptionBuilder = new StringBuilder("Name of the prioritiser used to score the genes. Can be one of: ");
+    @Bean
+    public Options options() {
+        Options options = new Options();
 
-        int numPriorityTypes = validPriorityTypes.size();
-        int lastType = numPriorityTypes - 1;
-        int secondLastType = numPriorityTypes - 2;
-        for (int i = 0; i < numPriorityTypes; i++) {
-            PriorityType priorityType = validPriorityTypes.get(i);
-            if (i == lastType) {
-                priorityOptionDescriptionBuilder.append(priorityType.getCommandLineValue())
-                        .append(". e.g. --").append(prioritiserLongOpt)
-                        .append("=")
-                        .append(priorityType.getCommandLineValue());
-            } else if (i == secondLastType) {
-                priorityOptionDescriptionBuilder.append(priorityType.getCommandLineValue()).append(" or ");
-            } else {
-                priorityOptionDescriptionBuilder.append(priorityType.getCommandLineValue()).append(", ");
-            }
+        options.addOption(new Option("h", "help", false, "Shows this help"));
+        options.addOption(new Option("H", "help", false, "Shows this help"));
+
+        for (OptionMarshaller optionMarshaller : desiredOptionMarshallers()) {
+            Option option = optionMarshaller.getOption();
+            options.addOption(option);
         }
 
-        return priorityOptionDescriptionBuilder.toString();
+        return options;
     }
 
         //the original options:
