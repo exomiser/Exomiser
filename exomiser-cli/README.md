@@ -47,7 +47,9 @@ The Exomiser - Command Line Executable
 
 # Installation
 
-Unpack the exomiser-cli-${project.version}.zip and it's ready to go.
+1. Download and unzip exomiser-cli-4.0.0-distribution.zip
+2. Download exomiser-4.0.0.h2.db.zip from the h2_db_dumps folder and unzip in the exomiser-cli-4.0.0/data directory
+3. Run the example commands below from the exomiser-cli-4.0.0 directory
 
 # Alternative set-up
 
@@ -76,7 +78,7 @@ with
 
 (b) Exomiser v1 - phenotype comparisons to mice with disruption of the gene
 
-    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=exomiser-mouse -I AD -F 1 -M -D OMIM:101600 -v data/Pfeiffer.vcf
+    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=exomiser-mouse -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
 (c) Phenix - phenotype comparisons to known human disease genes
 
