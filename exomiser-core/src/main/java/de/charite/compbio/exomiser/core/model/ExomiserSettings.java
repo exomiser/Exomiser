@@ -292,31 +292,12 @@ public class ExomiserSettings {
             diseaseGeneFamilyName = value;
             return this;
         }
-
+        
         public ExomiserSettings build() {
             return new ExomiserSettings(this);
         }
-
     }
-
-    /**
-     * The default output name is set to the vcf file name (minus the full path
-     * and file extension), unless the filename is explicitly set by the user.
-     *
-     * @param vcfFilePath
-     */
-    private String generateDefaultOutputFileName(Path vcfFilePath, String buildVersion) {
-        String outputFileName;
-        String vcfFilenameWithoutExtension = FilenameUtils.removeExtension(vcfFilePath.toFile().getName());
-        if (buildVersion.isEmpty()) {
-            outputFileName = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension);
-        } else {
-            outputFileName = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension, buildVersion);   
-        }
-        logger.debug("Output filename set to: {}", outputFileName);
-        return outputFileName;
-    }
-
+    
     private ExomiserSettings(SettingsBuilder builder) {
 
         //build metadata
@@ -367,6 +348,25 @@ public class ExomiserSettings {
 
         diseaseGeneFamilyName = builder.diseaseGeneFamilyName;
     }
+
+    /**
+     * The default output name is set to the vcf file name (minus the full path
+     * and file extension), unless the filename is explicitly set by the user.
+     *
+     * @param vcfFilePath
+     */
+    private String generateDefaultOutputFileName(Path vcfFilePath, String buildVersion) {
+        String outputFileName;
+        String vcfFilenameWithoutExtension = FilenameUtils.removeExtension(vcfFilePath.toFile().getName());
+        if (buildVersion.isEmpty()) {
+            outputFileName = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension);
+        } else {
+            outputFileName = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension, buildVersion);   
+        }
+        logger.debug("Output filename set to: {}", outputFileName);
+        return outputFileName;
+    }
+
 
     @JsonIgnore
     public boolean isValid() {
