@@ -64,7 +64,8 @@ public class ExomiserSettings {
     public static final String REMOVE_PATHOGENICITY_FILTER_CUTOFF = "remove-path-filter-cutoff";
     public static final String REMOVE_DBSNP_OPTION = "remove-dbsnp";
     public static final String REMOVE_OFF_TARGET_OPTION = "remove-off-target-syn";
-
+    public static final String GENES_TO_KEEP_OPTION = "genes-to-keep";
+    
     //FILTER variables
     //max-freq (command-line was: freq_threshold, refered to variable: frequency_threshold)
     private final float maximumFrequency;
@@ -79,7 +80,9 @@ public class ExomiserSettings {
     private final boolean removeDbSnp;
     //remove-off-target-syn the target filter switch - not specified in the original exomiser as this was a default. 
     private final boolean removeOffTargetVariants;
-
+    //genes to keep in final results
+    private final List<Integer> genesToKeep;
+    
     //PRIORITISER OPTIONS
     public static final String CANDIDATE_GENE_OPTION = "candidate-gene";
     public static final String HPO_IDS_OPTION = "hpo-ids";
@@ -145,6 +148,7 @@ public class ExomiserSettings {
         private boolean removePathFilterCutOff = false;
         private boolean removeDbSnp = false;
         private boolean removeOffTargetVariants = true;
+        private List<Integer> genesToKeepList = new ArrayList();    
 
         //PRIORITISER options
         private String candidateGene = "";
@@ -153,7 +157,7 @@ public class ExomiserSettings {
         private List<String> hpoIds = new ArrayList();
         private List<Integer> seedGeneList = new ArrayList();
         private String exomiser2Params = "";
-
+        
         //OUTPUT options
         private int numberOfGenesToShow = 0;
         private String outFileName = "";
@@ -268,6 +272,12 @@ public class ExomiserSettings {
             seedGeneList = value;
             return this;
         }
+        
+        @JsonSetter(GENES_TO_KEEP_OPTION)
+        public SettingsBuilder genesToKeepList(List<Integer> value) {
+            genesToKeepList = value;
+            return this;
+        }
 
         @JsonSetter(NUM_GENES_OPTION)
         public SettingsBuilder numberOfGenesToShow(int value) {
@@ -327,7 +337,8 @@ public class ExomiserSettings {
         removePathFilterCutOff = builder.removePathFilterCutOff;
         removeDbSnp = builder.removeDbSnp;
         removeOffTargetVariants = builder.removeOffTargetVariants;
-
+        genesToKeep = builder.genesToKeepList;
+        
         //PRIORITISER options
         candidateGene = builder.candidateGene;
         modeOfInheritance = builder.modeOfInheritance;
@@ -453,6 +464,11 @@ public class ExomiserSettings {
         return seedGeneList;
     }
 
+    @JsonProperty(GENES_TO_KEEP_OPTION)
+    public List<Integer> getGenesToKeep() {
+        return genesToKeep;
+    }
+    
     @JsonProperty(NUM_GENES_OPTION)
     public int getNumberOfGenesToShow() {
         return numberOfGenesToShow;

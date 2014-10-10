@@ -99,6 +99,7 @@ public class Main {
 
     private static void runAnalysis(ExomiserSettings exomiserSettings) {
         //3) Get the VCF file path (this creates a List of Variants)
+        logger.info("SETTINGS RECEIVED " + exomiserSettings);
         Path vcfFile = exomiserSettings.getVcfPath();
         logger.info("Running analysis for {}", vcfFile);
         //4) Get the PED file path if the VCF file has multiple samples
