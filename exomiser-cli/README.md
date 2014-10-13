@@ -1,8 +1,9 @@
-The Exomiser - Command Line Executable 
+The Exomiser - A Tool to Annotate and Prioritize Exome Variants: Command Line Executable
 ===============================================================
-# Change log (version numbers follow semantic versioning - semver.org)  
 
-## 4.0.0 2014-09-19
+## Change log (version numbers follow semantic versioning - semver.org)  
+
+#### 4.0.0 2014-09-19
 - Changed FilterScores to FilterResults to encapsulate the pass/fail , score and filterTypes returned from the filters in various ways previously.
 - Changed Filter behaviour to simply return a FilterResult instead of altering the VariantEvaluation in inconsistent ways.
 - VariantEvaluation now hides a bit more of its inner workings regarding FilterResults.
@@ -25,14 +26,14 @@ The Exomiser - Command Line Executable
     - Prioritisers now release database connections when finished (affects batch-mode performance)
     - Inheritance filter now performs correctly in all cases.
 
-## 3.0.2 2014-09-08
+#### 3.0.2 2014-09-08
 - VCF output now contains original VCF INFO field with exomiser info appended onto this. 
 - Bug-fix for crash when Jannovar found no annotations for a variant.
 
-## 3.0.1 2014-09-04
+#### 3.0.1 2014-09-04
 - Bug-fix for duplicate variants in Frequency table where the RSID was different.
 
-## 3.0.0 2014-08-22
+#### 3.0.0 2014-08-22
 - Completely re-worked under the hood code
 - New extensible API
 - Simplified command-line usage
@@ -41,15 +42,15 @@ The Exomiser - Command Line Executable
 - Settings file input
 - Zero-config installation 
 
-## 2.1.0 2014-05-06
+#### 2.1.0 2014-05-06
 - Embedded H2 database or PostgreSQL
 - Simplified set-up/installation
 
-# Installation
+## Installation
 
 Unpack the exomiser-cli-${project.version}.zip and it's ready to go.
 
-# Alternative set-up
+## Alternative set-up
 
 If you want to run Exomiser using an H2 database from a location of your choosing edit the line in application.properties:
 
@@ -66,7 +67,7 @@ with
     (c) load into your postgres server: psql -h yourhost -U yourusername yourdatabase < exomiser_dump.pg
     (d) edit application.properties with the details of how to connect this new database
 
-# Usage
+## Usage
 
 (a) Exomiser v2 - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk 
 
@@ -86,7 +87,7 @@ Phenix - phenotype comparisons to known human disease genes
 
     java -Xms5g -Xmx5g -jar exomiser-cli-${project.version}.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
 
-# Other useful params:
+## Other useful params:
 
 Multiple output formats:
 
@@ -119,7 +120,7 @@ Want help?
     java -jar exomiser-cli-${project.version}.jar --help
 
    
-# Project Build
+## Project Build
 
 This maven project is used to build the main exomiser jar for distribution. The 
 assembly plugin will produce a zip and tar.gz with an internal structure defined 
@@ -130,14 +131,14 @@ defined in the outputDirectory fields for each fileSet of distribution.xml:
 
     cd target
     mkdir data
-    # copy in the data made from the db build or run this now if you haven't already
+1. copy in the data made from the db build or run this now if you haven't already
     cp ../../exomiser-db/data/exomiser.h2.db data/.
     cp ../../exomiser-db/data/extracted/ucsc_hg19.ser data/.
-    # copy in the rw_string_9_05* data to data/
+2. copy in the rw_string_9_05* data to data/
     ... from somewhere
-    # copy in the extra phenix data to data/
+3. copy in the extra phenix data to data/
     ... from somewhere
-    # make the archive.
+4. make the archive.
     tar -cvzf exomiser.tgz exomiser-cli-${project.version}.jar jdbc.properties log4j2.xml lib data 
-    # copy to the ftp site
+5. copy to the ftp site
     scp exomiser.tgz gen1:/nfs/disk69/ftp/pub/resources/software/exomiser/downloads/exomiser/ 
