@@ -72,26 +72,6 @@ public class MainConfig {
         return jarFilePath;
     }
 
-//    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-//        PropertySourcesPlaceholderConfigurer pspc = new PropertySourcesPlaceholderConfigurer();
-//        Path jdbcPropertiesPath = jarPath.resolve("jdbc.properties");
-//        Path applicationPropertiesPath = jarPath.resolve("application.properties");
-//        PathResource[] resources = new PathResource[]{
-//                new PathResource(jdbcPropertiesPath),
-//                new PathResource(applicationPropertiesPath)};
-//                
-//        pspc.setLocations(resources);
-//        env = new StandardEnvironment();
-//        PropertySources propertySources = pspc.getAppliedPropertySources();
-//        for (org.springframework.core.env.PropertySource<?> propertySource : propertySources) {
-//            logger.info("Adding propertySource {}", propertySource);
-//            env.getPropertySources().addFirst(propertySource);        
-//        }
-//        logger.info(env.getPropertySources().toString());
-//        
-//        pspc.setEnvironment(env);
-//        return pspc;
-//    }
     @Bean
     public String buildVersion() {
         return env.getProperty("buildVersion");
