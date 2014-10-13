@@ -51,11 +51,11 @@ public class Main {
 
     private static String buildVersion;
     private static String buildTimestamp;
-    
+        
     public static void main(String[] args) {
 
+        showSplash();
         setup();
-
         logger.info("Running Exomiser build version {}", buildVersion);
 
         List<ExomiserSettings> sampleSettings = parseArgs(args);
@@ -65,6 +65,21 @@ public class Main {
             runAnalysis(settings);
         }
 
+    }
+
+    private static void showSplash() {
+        String splash = 
+            "\n" +
+            " Welcome to:               \n" +
+            "  _____ _            _____                     _               \n" +
+            " |_   _| |__   ___  | ____|_  _____  _ __ ___ (_)___  ___ _ __ \n" +
+            "   | | | '_ \\ / _ \\ |  _| \\ \\/ / _ \\| '_ ` _ \\| / __|/ _ \\ '__|\n" +
+            "   | | | | | |  __/ | |___ >  < (_) | | | | | | \\__ \\  __/ |   \n" +
+            "   |_| |_| |_|\\___| |_____/_/\\_\\___/|_| |_| |_|_|___/\\___|_|   \n" +
+            "                                                               \n" + 
+            " A Tool to Annotate and Prioritize Exome Variants: Command Line Executable\n";
+        
+        logger.info("{}", splash);
     }
 
     private static void setup() {
@@ -167,6 +182,7 @@ public class Main {
 
     private static void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar exomizer-cli [...]", options);
+        String launchCommand = String.format("java -jar exomizer-cli-%s.jar [...]", buildVersion);
+        formatter.printHelp(launchCommand, options);
     }
 }
