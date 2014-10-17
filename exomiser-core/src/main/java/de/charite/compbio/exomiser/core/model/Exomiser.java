@@ -53,9 +53,6 @@ public class Exomiser {
         List<Filter> variantFilters = filterFactory.makeVariantFilters(exomiserSettings);
         List<Filter> geneFilters = filterFactory.makeGeneFilters(exomiserSettings);
 
-        logger.info("MAKING PRIORITISERS");
-        List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
-
         FilterRunner variantFilterRunner;
         logger.info("FILTERING VARIANTS");
         if (exomiserSettings.runFullAnalysis()) {
@@ -74,8 +71,10 @@ public class Exomiser {
             //Filter the resulting Genes for their inheritance mode
             FilterRunner geneFilterRunner = new SimpleGeneFilterRunner();
             geneFilterRunner.run(geneFilters, sampleData.getGenes());
-        }
-        
+        }        
+
+        logger.info("MAKING PRIORITISERS");
+        List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
 
         logger.info("PRIORITISING GENES");
         //for VCF we need the priority scores for all genes, even those with no passed
