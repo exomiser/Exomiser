@@ -5,12 +5,19 @@
  */
 package de.charite.compbio.exomiser.core.writer;
 
+import de.charite.compbio.exomiser.core.filter.FilterReport;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.model.ExomiserSettings.DEFAULT_OUTPUT_DIR;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
-import java.nio.file.Path;
+import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import jannovar.common.VariantType;
+import jannovar.exome.VariantTypeCounter;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,5 +75,27 @@ public class ResultsWriterUtilsTest {
         String expResult = DEFAULT_OUTPUT_DIR + "/wibble-exomiser-2.1.0-results.html";
         String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
         assertThat(result, equalTo(expResult));
+    }
+    
+    @Test
+    public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
+        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+        VariantTypeCounter emptyVariantTypeCounter = ResultsWriterUtils.makeVariantTypeCounter(variantEvaluations);
+        
+        assertThat(emptyVariantTypeCounter.getTypeSpecificCounts(VariantType.UTR3), equalTo(new ArrayList<Integer>()));
+    }
+    
+    @Test
+    public void canMakeFilterReportsFromSettingsAndVariantEvaluations(){
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().build();
+        SampleData sampleData = new SampleData(new ArrayList<String>(), null, new ArrayList<VariantEvaluation>());
+        
+        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(settings, sampleData);
+        
+        for (FilterReport result : results) {
+            System.out.println(result);
+        }
+        
+        assertThat(results.isEmpty(), is(false));
     }
 }

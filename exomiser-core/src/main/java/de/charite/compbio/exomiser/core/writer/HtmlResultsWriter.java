@@ -43,8 +43,6 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     private static TemplateEngine templateEngine;
     
-    private final FilterReportFactory filterReportFactory;
-
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.HTML;
     
     public HtmlResultsWriter() {
@@ -54,7 +52,6 @@ public class HtmlResultsWriter implements ResultsWriter {
         templateResolver.setSuffix(".html");
         templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
-        filterReportFactory = new FilterReportFactory();
     }
 
     @Override
@@ -95,40 +92,19 @@ public class HtmlResultsWriter implements ResultsWriter {
         List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
         context.setVariable("filterReports", filterReports);
         //write out the variant type counters
-        VariantTypeCounter vtc = getVariantTypeCounter(sampleData.getVariantEvaluations());
+        VariantTypeCounter vtc = makeVariantTypeCounter(sampleData.getVariantEvaluations());
         //TODO: make this simpler for templating engine to process.
         context.setVariable("variantTypeCounter", vtc);
         
         return templateEngine.process("results", context);
     }
 
-    /**
-     * Make a {@code VariantTypeCounter} object from the
-     * list of {@code VariantEvaluation}.
-     * We use this to print out a table of variant class distribution.
-     * @param variantEvaluations
-     * @return 
-     */
-    public VariantTypeCounter getVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
-        
-        if (variantEvaluations.isEmpty()) {
-            return new VariantTypeCounter(0);
-        }
-        
-        int numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
-        VariantTypeCounter vtypeCounter = new VariantTypeCounter(numIndividuals);
-
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            vtypeCounter.incrementCount(variantEvaluation.getVariant());
-        }
-        return vtypeCounter;
+    protected VariantTypeCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
+        return ResultsWriterUtils.makeVariantTypeCounter(variantEvaluations);
     }
 
-    protected List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {
-
-        List<FilterType> filtersApplied = FilterFactory.determineFilterTypesToRun(settings);
-        return filterReportFactory.makeFilterReports(filtersApplied, settings, sampleData);
-        
+    protected List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {  
+        return ResultsWriterUtils.makeFilterReports(settings, sampleData);   
     }
 
 }
