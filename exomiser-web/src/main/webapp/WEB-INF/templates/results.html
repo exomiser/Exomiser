@@ -19,21 +19,21 @@ and open the template in the editor.
                 Results
             </h1>
             <ul class="nav nav-pills" id="tabs">
-                <li><a href="#settings" role="tab" data-toggle="tab">Analysis Settings</a></li>
-                <li class="active"><a href="#filtering" role="tab" data-toggle="tab">Filtering summary</a></li>
+                <li><a href="#settings" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-cog"/> Analysis Settings</a></li>
+                <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-filter"/> Filtering summary</a></li>
                 <!--<li><a href="#distribution" role="tab" data-toggle="tab">Variant type distribution</a></li>-->
-                <li><a href="#prioritisation" role="tab" data-toggle="tab">Prioritized Variant List</a></li>
-                <li><a href="#about" role="tab" data-toggle="tab">About</a></li>
+                <li><a href="#prioritisation" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-sort"/> Prioritized Variant List</a></li>
+                <li><a href="#about" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-question-sign"/> About</a></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane fade" id="settings">
-                    <h3>Analysis Settings</h3>
+                    <h3><span class="glyphicon glyphicon-cog"/> Analysis Settings</h3>
                     <p>Settings used for this analysis:</p>
                     <pre th:text="${settings}">ExomiserSettings{vcfFilePath=Pfeiffer.vcf, pedFilePath=null, prioritiser=exomiser-mouse, maximumFrequency=1.0, minimumQuality=0.0, geneticInterval=null, removePathFilterCutOff=false, removeDbSnp=false, removeOffTargetVariants=true, candidateGene=, modeOfInheritance=AUTOSOMAL_DOMINANT, diseaseId=OMIM:101600, hpoIds=[], seedGeneList=[], numberOfGenesToShow=0, outFileName=results/Pfeiffer-exomiser-results, outputFormat=[HTML], diseaseGeneFamilyName=, buildVersion=, buildTimestamp=}</pre>
                 </div>
 
                 <div class="tab-pane fade in active" id="filtering">
-                    <h3>Filtering Summary</h3>
+                    <h3><span class="glyphicon glyphicon-filter"/> Filtering Summary</h3>
                     <table class="table">
                         <thead>
                             <tr>
@@ -103,80 +103,97 @@ and open the template in the editor.
 
 
                 <div class="tab-pane" id="prioritisation">
-                    <h3>Prioritised Variant List</h3>
-                        <table class="table table-striped" id="details">
-                            <thead>
-                                <tr>
-                                    <th >Gene</th>
-                                    <th >Exomiser Score</th>
-                                    <th >Phenotype Score</th>
-                                    <th >Variant Score</th>
-                                    <th >Analysis</th>
-                                    <!--                        <th style="width:30%">Phenotypic analysis</th>
-                                                            <th style="width:30%">Variants (those in bold contributing to the overall score)</th>
-                                                            <th style="width:20%">Variant analysis</th>-->
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="gene: ${genes}">
-                                    <td><b th:text="${gene.geneSymbol}">FGFR2</b></td>
-                                    <td th:text="${#numbers.formatDecimal(gene.combinedScore,1,3)}">1.005</td>
-                                    <td th:text="${#numbers.formatDecimal(gene.priorityScore,1,3)}">1.004</td>
-                                    <td th:text="${#numbers.formatDecimal(gene.filterScore,1,3)}">1.002</td>
-                                    <td>
-                                        <div class="container">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <dl th:each="priorityScore: ${gene.priorityScoreMap}">
-                                                        <dt th:text="${priorityScore.key}"></dt>
-                                                        <dd th:each="result: ${priorityScore.value.filterResultList}" th:text="${result}"></dd>
-                                                    </dl>
-                                                    <ul class="list-unstyled" >
-                                                        <li th:text="${result}">Phenotypic similarity 0.838 to mouse mutant involving FGFR2.</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div class="row" 
-                                                 th:each="variantEvaluation: ${gene.variantEvaluations}" 
-                                                 th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
-                                                    <div class="col-md-4" > 
-                                                        <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
-                                                        <dl class="list-unstyled" >
-                                                            <dt th:text="${variantEvaluation.chromosomalVariant}">chr10:g.123256215T>G [0/1] </dt>
-                                                            <dd th:each="annotation: ${variantEvaluation.annotationList}" 
-                                                                th:text="${annotation}">uc001lfg.4:exon6:c.518A>C:p.E173A
-                                                            </dd>
-                                                        </dl>
-                                                    </div>
-                                                    <div class="col-md-2">
-      
-                                                        <dl class="list-unstyled" th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
-                                                            <dt th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}" th:text="${#strings.prepend(mostPathogenicScore.score, 'Pathogenicity Score: ')}">1.00</dt>
-                                                            <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}" 
-                                                                th:text="${pathScore}">Mutation Taster: 1.000 (P)
-                                                            </dd>
-                                                        </dl>
-                                                        
-                                                        <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
-                                                            <dt th:each="rsId: ${frequencyData.rsId}"><a href="http://www.ncbi.nlm.nih.gov/snp/?term=rs141235720" th:text="${rsId}">rs141235720</a></dt>
-                                                            <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
-                                                            <dd th:each="freq: ${frequencyData.knownFrequencies}" th:text="${#strings.append(freq,' %')}"></dd>
-                                                        </dl>
-                                                    </div>
+                    <h3><span class="glyphicon glyphicon-sort"/> Prioritised Variant List</h3>
+                    <table class="table table-striped" id="details">
+                        <thead>
+                            <tr>
+                                <th >Gene</th>
+                                <th >Exomiser Score</th>
+                                <th >Phenotype Score</th>
+                                <th >Variant Score</th>
+                                <th >Analysis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="gene: ${genes}">
+                                <td>
+                                    <b>
+                                        <a th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${gene.entrezGeneID}|}" th:text="${gene.geneSymbol}">FGFR2</a>
+                                    </b>
+                                </td>
+                                <td th:text="${#numbers.formatDecimal(gene.combinedScore,1,3)}">1.005</td>
+                                <td th:text="${#numbers.formatDecimal(gene.priorityScore,1,3)}">1.004</td>
+                                <td th:text="${#numbers.formatDecimal(gene.filterScore,1,3)}">1.002</td>
+                                <td>
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <dl th:each="priorityScore: ${gene.priorityScoreMap}">
+                                                    <dt th:text="${priorityScore.key}"></dt>
+                                                    <dd th:each="result: ${priorityScore.value.filterResultList}" th:text="${result}"></dd>
+                                                </dl>
+                                                <ul class="list-unstyled" >
+                                                    <li th:text="${result}">Phenotypic similarity 0.838 to mouse mutant involving FGFR2.</li>
+                                                </ul>
                                             </div>
                                         </div>
-                                    </td>
+                                        <div class="containter" 
+                                             th:each="variantEvaluation: ${gene.variantEvaluations}" 
+                                             th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
+                                            <!--ideally want to do variantEvaluation.passedFilters but this is inaccessible for some reason-->
+                                            <div class="row">
 
-                                    <!--                            <td >
-                                                                    <i >Path scores</i>
-                                                                </td>
-                                                                <td >
-                                                                    <i>Phenotypic similarity 1.000 to Pfeiffer syndrome associated with FGFR2.</i>
-                                                                    <i>Phenotypic similarity 0.838 to mouse mutant involving FGFR2.</i>
-                                                                </td>-->
-                                </tr>
-                            </tbody>
-                        </table>
+                                                <p>
+                                                    <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
+                                                    <b th:text="${variantEvaluation.chromosomalVariant}"> chr10:g.123256215T>G</b>
+                                                    <b th:text=" |[${variantEvaluation.genotypeAsString}]|"> [0/1]</b>
+                                                    <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                                                        <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
+                                                           th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
+                                                        </a>
+                                                        <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
+                                                           th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)<span class="glyphicon glyphicon-link"/></a>
+                                                    </b>
+                                                </p>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4" > 
+                                                    <dl class="list-unstyled" >
+                                                        <dt>Transcripts:</dt>
+                                                        <dd th:each="annotation: ${variantEvaluation.annotationList}" 
+                                                            th:with="ucscData=${#strings.arraySplit(annotation,':')}, ucscId=${ucscData[0]}">
+                                                            <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" th:text="${annotation}">uc001lfg.4:exon6:c.518A> C:p.E173A</a>
+                                                        </dd>
+                                                    </dl>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <dl class="list-unstyled" th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
+                                                        <dt>Pathogenicity Data:</dt>
+                                                        <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}" th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00</dd>
+                                                        <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No pathogenicity data</dd>
+                                                        <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}" 
+                                                            th:text="${pathScore}">Mutation Taster: 1.000 (P)
+                                                        </dd>
+                                                    </dl>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                                                        <dt>Frequency Data:</dt>
+                                                        <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
+                                                        <dd th:each="dbSnp: ${#objects.nullSafe(frequencyData.dbSnpMaf, default)}" th:text="'DbSNP: ' + ${dbSnp} + '%'">dbSNP: 0.02%</dd>
+                                                        <dd th:each="espAll: ${#objects.nullSafe(frequencyData.espAllMaf, default)}" th:text="'ESP All: ' + ${espAll} + '%'">ESP All: 0.02%</dd>
+                                                        <dd th:each="espEa: ${#objects.nullSafe(frequencyData.espEaMaf, default)}" th:text="'ESP EA: ' + ${espEa} + '%'">ESP EA: 0.02%</dd>
+                                                        <dd th:each="espAa: ${#objects.nullSafe(frequencyData.espAaMaf, default)}" th:text="'ESP AA: ' + ${espAa} + '%'">ESP AA: 0.02%</dd>
+
+                                                    </dl>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <!--            <script type="text/javascript">
                                 $(document).ready(function () {
@@ -184,7 +201,7 @@ and open the template in the editor.
                                 });
                             </script>-->
                 <div class="tab-pane fade" id="about">
-                    <h3>About</h3>
+                    <h3><span class="glyphicon glyphicon-question-sign"/> About</h3>
                     <p>
                         The Exomizer is a Java program that functionally annotates variants from whole-exome 
                         sequencing data starting from a VCF file (version 4). The functional annotation code is 
