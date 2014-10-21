@@ -36,7 +36,9 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     @Bean
     MultipartResolver multipartResolver() {
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-        multipartResolver.setMaxUploadSize(50000000); //50MB filesize
+        int maxUploadSizeInMb = 50 * 1024 * 1204; //50MB filesize
+        
+        multipartResolver.setMaxUploadSize(maxUploadSizeInMb); 
         multipartResolver.setDefaultEncoding("UTF-8");
         //do we need this?
 //        multipartResolver.setUploadTempDir(null);

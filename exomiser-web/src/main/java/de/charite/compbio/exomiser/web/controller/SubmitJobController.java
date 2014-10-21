@@ -60,7 +60,7 @@ public class SubmitJobController {
 
     @RequestMapping(value = "submit", method = RequestMethod.GET)
     public String configure() {
-        return "analyse";
+        return "submit";
     }
 
     @RequestMapping(value = "submit", method = RequestMethod.POST)

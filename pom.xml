@@ -13,13 +13,14 @@
         <module>exomiser-db</module>
         <module>exomiser-sim</module>
         <module>exomiser-web</module>
-    </modules>
+  </modules>
     
     <properties>
-        <spring-version>4.0.5.RELEASE</spring-version>
+        <spring.version>4.0.5.RELEASE</spring.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>     
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.organization>Genome Research Limited and Charite Universitätsmedizin Berlin</project.organization>
     </properties>
  
     <repositories>
@@ -38,12 +39,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${spring-version}</version>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${spring-version}</version>
+            <version>${spring.version}</version>
             <type>jar</type>
         </dependency>
         <!--Testing framework-->
@@ -56,7 +57,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${spring-version}</version>
+            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -123,23 +124,23 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <rule> 
+<!--                                <rule> 
                                     <element>BUNDLE</element>
                                     <limits>
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <!--yep, pretty low expectations here-->
+                                            yep, pretty low expectations here
                                             <minimum>0.01</minimum>			
                                         </limit>
                                         <limit> 
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <!--yep, pretty low expectations here-->
+                                            yep, pretty low expectations here
                                             <minimum>0.01</minimum> 
                                         </limit>
                                     </limits>
-                                </rule>
+                                </rule>-->
                             </rules>
                         </configuration>
                     </execution>

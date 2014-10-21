@@ -142,13 +142,12 @@ and open the template in the editor.
                                              th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
                                             <!--ideally want to do variantEvaluation.passedFilters but this is inaccessible for some reason-->
                                             <div class="row">
-
                                                 <p>
                                                     <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
                                                     <b th:text="${variantEvaluation.chromosomalVariant}"> chr10:g.123256215T>G</b>
                                                     <b th:text=" |[${variantEvaluation.genotypeAsString}]|"> [0/1]</b>
                                                     <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
-                                                        <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
+                                                        <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
                                                            th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
                                                         </a>
                                                         <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
@@ -161,8 +160,13 @@ and open the template in the editor.
                                                     <dl class="list-unstyled" >
                                                         <dt>Transcripts:</dt>
                                                         <dd th:each="annotation: ${variantEvaluation.annotationList}" 
-                                                            th:with="ucscData=${#strings.arraySplit(annotation,':')}, ucscId=${ucscData[0]}">
-                                                            <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" th:text="${annotation}">uc001lfg.4:exon6:c.518A> C:p.E173A</a>
+                                                            th:with="ucscData=${#strings.listSplit(annotation,':')}, ucscId=${ucscData[0]}, text=${annotation.replace(ucscId + ':', '')}" 
+                                                            >
+                                                                                                                       
+                                                            <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" 
+                                                               th:text="${ucscId}">uc001lfg.4:exon6:c.518A> C:p.E173A
+                                                            </a>
+                                                            <span th:text="${text}"/>
                                                         </dd>
                                                     </dl>
                                                 </div>
@@ -226,16 +230,16 @@ and open the template in the editor.
                 </div>
             </div>
         </div>
+        
+        <script type="text/javascript" src="resources/bootstrap-3.2.0/js/jquery-2.1.1.min.js" th:href="@{resources/bootstrap-3.2.0/js/jquery-2.1.1.min}"/>
+        <script type="text/javascript" src="resources/bootstrap-3.2.0/js/bootstrap.min.js" th:href="@{resources/bootstrap-3.2.0/js/bootstrap.min.js}"/>
 
-    </body>
-    <script type="text/javascript" src="resources/bootstrap-3.2.0/js/jquery-2.1.1.min.js" th:href="@{resources/bootstrap-3.2.0/js/jquery-2.1.1.min}"/>
-    <script type="text/javascript" src="resources/bootstrap-3.2.0/js/bootstrap.min.js" th:href="@{resources/bootstrap-3.2.0/js/bootstrap.min.js}"/>
-
-    <script type ="text/javascript">
-        $(document).ready(function () {
-            $('#tabs a').click(function (e) {
-                $(this).tab('show');
+        <script type ="text/javascript">
+            $(document).ready(function () {
+                $('#tabs a').click(function (e) {
+                    $(this).tab('show');
+                });
             });
-        });
-    </script>
+        </script>
+    </body>
 </html>

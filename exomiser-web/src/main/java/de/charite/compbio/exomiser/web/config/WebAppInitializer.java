@@ -35,10 +35,6 @@ public class WebAppInitializer implements WebApplicationInitializer {
     
     private WebApplicationContext createRootContext(ServletContext servletContext) {
         AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
-        //TODO: configure the exomiser dependencies
-//        rootContext.register(DataSourceConfig.class);
-//        rootContext.register(ExomiserConfig.class);
-//        rootContext.refresh();
 
         servletContext.addListener(new ContextLoaderListener(rootContext));
         servletContext.setInitParameter("defaultHtmlEscape", "true");
@@ -50,8 +46,8 @@ public class WebAppInitializer implements WebApplicationInitializer {
         AnnotationConfigWebApplicationContext mvcContext = new AnnotationConfigWebApplicationContext();
         mvcContext.register(WebMvcConfig.class);
         mvcContext.register(ExomiserConfig.class);
-
         mvcContext.setParent(rootContext);
+        
         ServletRegistration.Dynamic appServlet = servletContext.addServlet("exomiser", new DispatcherServlet(mvcContext));
         appServlet.setLoadOnStartup(1);
         Set<String> mappingConflicts = appServlet.addMapping("/");
