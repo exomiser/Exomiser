@@ -71,7 +71,6 @@ public class Exomiser {
         calculateInheritanceModesForGenesWhichPassedFilters(sampleData);
         if (!geneFilters.isEmpty()) {
             logger.info("FILTERING GENES");
-            //calculateInheritanceModesForGenesWhichPassedFilters(sampleData);
 
             //Filter the resulting Genes for their inheritance mode
             FilterRunner geneFilterRunner = new SimpleGeneFilterRunner();
