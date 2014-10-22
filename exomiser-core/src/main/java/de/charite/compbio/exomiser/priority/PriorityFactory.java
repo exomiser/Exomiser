@@ -42,9 +42,6 @@ public class PriorityFactory {
     @Autowired
     private Path hpoAnnotationFilePath;
     
-    public PriorityFactory() {
-    }
-
     public List<Priority> makePrioritisers(ExomiserSettings exomiserSettings) {
         
         String disease = exomiserSettings.getDiseaseId();
