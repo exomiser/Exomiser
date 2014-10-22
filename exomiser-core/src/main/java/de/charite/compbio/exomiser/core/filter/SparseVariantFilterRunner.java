@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
 public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation, VariantFilter> {
@@ -35,26 +35,19 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
     @Override
     public List<VariantEvaluation> run(List<VariantFilter> filters, List<VariantEvaluation> variantEvaluations) {
         logger.info("Filtering {} variants using sparse filtering", variantEvaluations.size());
-        List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
 
         if (ifThereAreNoFiltersToRun(filters)) {
             return variantEvaluations;
         }
 
+        List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            for (Filter filter : filters) {
-                fetchMissingFrequencyAndPathogenicityData(filter, variantEvaluation);
-                FilterResult filterResult = filterVariantEvaluation(filter, variantEvaluation);
-                //we want to know which filter the variant failed and then don't run any more
-                //this can be an expensive operation when looking up frequency and pathogenicity info from the database
-                if (variantFailedTheFilter(filterResult)) {
-                    break;
-                }
-            }
+            runFiltersOverVariantEvaluationUntilFailure(filters, variantEvaluation);
             if (variantEvaluation.passedFilters()) {
                 filteredVariantEvaluations.add(variantEvaluation);
             }
         }
+
         int removed = variantEvaluations.size() - filteredVariantEvaluations.size();
         logger.info("Filtering removed {} variants. Returning {} filtered variants from initial list of {}", removed, filteredVariantEvaluations.size(), variantEvaluations.size());
         return filteredVariantEvaluations;
@@ -68,14 +61,27 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
         return false;
     }
 
-    private void fetchMissingFrequencyAndPathogenicityData(Filter filter, VariantEvaluation variantEvaluation) {
-        if (filter.getFilterType() == FilterType.FREQUENCY_FILTER) {
-            variantEvaluationFactory.addFrequencyData(variantEvaluation);
-        }
-        if (filter.getFilterType() == FilterType.PATHOGENICITY_FILTER) {
-            variantEvaluationFactory.addPathogenicityData(variantEvaluation);
+    private void runFiltersOverVariantEvaluationUntilFailure(List<VariantFilter> filters, VariantEvaluation variantEvaluation) {
+        for (Filter filter : filters) {
+            fetchMissingFrequencyAndPathogenicityData(filter.getFilterType(), variantEvaluation);
+            FilterResult filterResult = filterVariantEvaluation(filter, variantEvaluation);
+            //we want to know which filter the variant failed and then don't run any more
+            //this can be an expensive operation when looking up frequency and pathogenicity info from the database
+            if (variantFailedTheFilter(filterResult)) {
+                break;
+            }
         }
     }
+
+    private void fetchMissingFrequencyAndPathogenicityData(FilterType filterType, VariantEvaluation variantEvaluation) {
+        switch (filterType) {
+            case FREQUENCY_FILTER:
+                variantEvaluationFactory.addFrequencyData(variantEvaluation);
+            case PATHOGENICITY_FILTER:
+                variantEvaluationFactory.addPathogenicityData(variantEvaluation);
+        }
+    }
+
     private FilterResult filterVariantEvaluation(Filter filter, VariantEvaluation variantEvaluation) {
         FilterResult filterResult = filter.runFilter(variantEvaluation);
         variantEvaluation.addFilterResult(filterResult);
@@ -85,6 +91,5 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
     private static boolean variantFailedTheFilter(FilterResult filterResult) {
         return filterResult.getResultStatus() == FilterResultStatus.FAIL;
     }
-
 
 }
