@@ -36,10 +36,9 @@ public class FilterFactory {
         List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
         for (FilterType filterType : filtersRequired) {
-            logger.info("filter being added is " + filterType);
             switch (filterType) {
-                case GENE_LIST_FILTER:
-                    variantFilters.add(getGeneListFilter(settings.getGenesToKeep()));
+                case ENTREZ_GENE_ID_FILTER:
+                    variantFilters.add(getEntrezGeneIdFilter(settings.getGenesToKeep()));
                     break;
                 case TARGET_FILTER:
                     variantFilters.add(getTargetFilter());
@@ -60,6 +59,7 @@ public class FilterFactory {
                     //this isn't run as a VariantFilter - it's actually a Gene runFilter - currently it's a bastard orphan sitting in Exomiser
                     break;
             }
+            logger.info("Added {} filter" , filterType);
         }
 
         return variantFilters;
@@ -98,7 +98,7 @@ public class FilterFactory {
         List<FilterType> filtersToRun = new ArrayList<>();
 
         if (!settings.getGenesToKeep().isEmpty()) {
-            filtersToRun.add(FilterType.GENE_LIST_FILTER);
+            filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
         }
 
         if (settings.removeOffTargetVariants()) {
@@ -142,8 +142,8 @@ public class FilterFactory {
      *
      * @return
      */
-    public VariantFilter getGeneListFilter(Set<Integer> genesToKeep) {
-        VariantFilter geneListFilter = new GeneListFilter(genesToKeep);
+    public VariantFilter getEntrezGeneIdFilter(Set<Integer> genesToKeep) {
+        VariantFilter geneListFilter = new EntrezGeneIdFilter(genesToKeep);
         logger.info("Made new: {}", geneListFilter);
         return geneListFilter;
     }

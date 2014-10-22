@@ -10,11 +10,11 @@ package de.charite.compbio.exomiser.core.filter;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneListFilterResult extends GenericFilterResult {
+public class EntrezGeneIdFilterResult extends GenericFilterResult {
     
-    private static final FilterType FILTER_TYPE = FilterType.GENE_LIST_FILTER;
+    private static final FilterType FILTER_TYPE = FilterType.ENTREZ_GENE_ID_FILTER;
     
-    public GeneListFilterResult(float score, FilterResultStatus resultStatus) {
+    public EntrezGeneIdFilterResult(float score, FilterResultStatus resultStatus) {
         super(FILTER_TYPE, score, resultStatus);
     }  
  

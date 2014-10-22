@@ -149,7 +149,7 @@ public class ExomiserSettings {
         private boolean removePathFilterCutOff = false;
         private boolean removeDbSnp = false;
         private boolean removeOffTargetVariants = true;
-        private Set<Integer> genesToKeep = new LinkedHashSet();    
+        private Set<Integer> geneIdsToKeep = new LinkedHashSet();    
 
         //PRIORITISER options
         private String candidateGene = "";
@@ -276,7 +276,7 @@ public class ExomiserSettings {
         
         @JsonSetter(GENES_TO_KEEP_OPTION)
         public SettingsBuilder genesToKeepList(Set<Integer> value) {
-            genesToKeep = value;
+            geneIdsToKeep = value;
             return this;
         }
 
@@ -338,7 +338,7 @@ public class ExomiserSettings {
         removePathFilterCutOff = builder.removePathFilterCutOff;
         removeDbSnp = builder.removeDbSnp;
         removeOffTargetVariants = builder.removeOffTargetVariants;
-        genesToKeep = builder.genesToKeep;
+        genesToKeep = builder.geneIdsToKeep;
         
         //PRIORITISER options
         candidateGene = builder.candidateGene;

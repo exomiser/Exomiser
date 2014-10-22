@@ -16,19 +16,19 @@ import org.slf4j.LoggerFactory;
  * @author Damian Smedley
  * @author Jules Jacobsen
  */
-public class GeneListFilter implements VariantFilter {
+public class EntrezGeneIdFilter implements VariantFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneListFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(EntrezGeneIdFilter.class);
 
-    private static final FilterType filterType = FilterType.GENE_LIST_FILTER;
+    private static final FilterType filterType = FilterType.ENTREZ_GENE_ID_FILTER;
 
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passFilterResult = new GeneListFilterResult(1f, FilterResultStatus.PASS);
-    private final FilterResult failedFilterResult = new GeneListFilterResult(0f, FilterResultStatus.FAIL);
+    private final FilterResult passFilterResult = new EntrezGeneIdFilterResult(1f, FilterResultStatus.PASS);
+    private final FilterResult failedFilterResult = new EntrezGeneIdFilterResult(0f, FilterResultStatus.FAIL);
 
     private final Set<Integer> genesToKeep;
 
-    public GeneListFilter(Set<Integer> genesToKeep) {
+    public EntrezGeneIdFilter(Set<Integer> genesToKeep) {
         this.genesToKeep = genesToKeep;
     }
 
@@ -48,7 +48,7 @@ public class GeneListFilter implements VariantFilter {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 97 * hash + Objects.hashCode(GeneListFilter.filterType);
+        hash = 97 * hash + Objects.hashCode(EntrezGeneIdFilter.filterType);
         hash = 97 * hash + Objects.hashCode(this.genesToKeep);
         return hash;
     }
@@ -61,7 +61,7 @@ public class GeneListFilter implements VariantFilter {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GeneListFilter other = (GeneListFilter) obj;
+        final EntrezGeneIdFilter other = (EntrezGeneIdFilter) obj;
         return Objects.equals(this.genesToKeep, other.genesToKeep);
     }
 
