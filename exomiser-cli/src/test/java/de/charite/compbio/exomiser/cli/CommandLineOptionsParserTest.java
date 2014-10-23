@@ -13,6 +13,7 @@ import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -40,14 +41,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = CommandLineOptionsConfig.class)
-public class CommandLineParserTest {
+public class CommandLineOptionsParserTest {
 
     @Autowired
-    private CommandLineParser instance;
+    private CommandLineOptionsParser instance;
 
     @Autowired
     private Options options;
-
+    
     /**
      * Utility method for parsing input strings and producing ExomiserSettings
      * for test asserts.
@@ -63,11 +64,11 @@ public class CommandLineParserTest {
         try {
             commandLine = parser.parse(options, args);
         } catch (ParseException ex) {
-            Logger.getLogger(CommandLineParserTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CommandLineOptionsParserTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         return instance.parseCommandLine(commandLine).build();
     }
-
+    
     @Test
     public void exomiserSettingsAreInvalidWhenAVcfFileWasNotSpecified() {
         String input = "--ped def.ped -D OMIM:101600 --prioritiser=exomiser-mouse";
@@ -408,6 +409,19 @@ public class CommandLineParserTest {
 
         List<Integer> expectedList = new ArrayList();
         expectedList.add(123);
+
+        assertThat(exomiserSettings.getSeedGeneList(), equalTo(expectedList));
+    }
+    
+    @Test
+    public void should_produce_settings_when_seed_gene_specified_but_not_set() {
+        String option = "--seed-genes";
+        String value = "";
+        String input = String.format("-v 123.vcf %s %s --prioritiser=exomiser-mouse", option, value);
+
+        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+
+        List<Integer> expectedList = new ArrayList();
 
         assertThat(exomiserSettings.getSeedGeneList(), equalTo(expectedList));
     }

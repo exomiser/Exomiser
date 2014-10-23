@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
+import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.model.Exomiser;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
@@ -22,7 +23,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -45,11 +48,10 @@ public class Main {
     private static AnnotationConfigApplicationContext applicationContext;
 
     private static Options options;
-    private static CommandLineParser commandLineOptionsParser;
 
     private static String buildVersion;
     private static String buildTimestamp;
-
+    
     public static void main(String[] args) {
 
         setup();
@@ -68,7 +70,6 @@ public class Main {
     private static void setup() {
         applicationContext = setUpApplicationContext();
         options = applicationContext.getBean(Options.class);
-        commandLineOptionsParser = applicationContext.getBean(CommandLineParser.class);
         buildVersion = (String) applicationContext.getBean("buildVersion");
         buildTimestamp = (String) applicationContext.getBean("buildTimestamp");
     }
@@ -98,6 +99,7 @@ public class Main {
 
     private static void runAnalysis(ExomiserSettings exomiserSettings) {
         //3) Get the VCF file path (this creates a List of Variants)
+        logger.info("SETTINGS RECEIVED " + exomiserSettings);
         Path vcfFile = exomiserSettings.getVcfPath();
         logger.info("Running analysis for {}", vcfFile);
         //4) Get the PED file path if the VCF file has multiple samples
@@ -105,12 +107,12 @@ public class Main {
         Path pedigreeFile = exomiserSettings.getPedPath();
 
         logger.info("Creating and annotating sample data");
-        SampleDataFactory sampleDataFactory = (SampleDataFactory) applicationContext.getBean("sampleDataFactory");
+        SampleDataFactory sampleDataFactory = applicationContext.getBean(SampleDataFactory.class);
         //now we have the sample data read in we can create a SampleData object to hold on to all the relvant information
         SampleData sampleData = sampleDataFactory.createSampleData(vcfFile, pedigreeFile);
 
         //run the analysis....
-        Exomiser exomiser = (Exomiser) applicationContext.getBean("exomiser");
+        Exomiser exomiser = applicationContext.getBean(Exomiser.class);
         exomiser.analyse(sampleData, exomiserSettings);
 
         logger.info("Writing results");
@@ -128,7 +130,7 @@ public class Main {
     private static List<ExomiserSettings> parseArgs(String[] args) {
 
         List<SettingsBuilder> settingsBuilders = new ArrayList<>();
-
+        CommandLineOptionsParser commandLineOptionsParser = applicationContext.getBean(CommandLineOptionsParser.class);
         try {
             Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);

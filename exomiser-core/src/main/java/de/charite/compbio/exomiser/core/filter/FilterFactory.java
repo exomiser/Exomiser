@@ -8,8 +8,9 @@ package de.charite.compbio.exomiser.core.filter;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import jannovar.common.ModeOfInheritance;
-import java.util.ArrayList;
+import java.util.Objects;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,10 @@ public class FilterFactory {
         List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
         for (FilterType filterType : filtersRequired) {
+            logger.info("filter being added is " + filterType);
             switch (filterType) {
+                case GENE_LIST_FILTER:
+                    variantFilters.add(getGeneListFilter(settings.getGenesToKeep()));
                 case TARGET_FILTER:
                     variantFilters.add(getTargetFilter());
                     break;
@@ -95,7 +99,11 @@ public class FilterFactory {
      */
     public static List<FilterType> determineFilterTypesToRun(ExomiserSettings settings) {
         List<FilterType> filtersToRun = new ArrayList<>();
-
+        logger.info("genesToKeep are " + settings.getGenesToKeep());
+        if (!settings.getGenesToKeep().isEmpty()) {
+            filtersToRun.add(FilterType.GENE_LIST_FILTER);
+        }
+        
         if (settings.removeOffTargetVariants()) {
             filtersToRun.add(FilterType.TARGET_FILTER);
         }
@@ -128,6 +136,19 @@ public class FilterFactory {
         VariantFilter targetFilter = new TargetFilter();
         logger.info("Made new: {}", targetFilter);
         return targetFilter;
+    }
+    
+     /**
+     * VariantFilter to remove any not on a user-entered list of genes
+     * Note this could be done as a GeneFilter but will be most
+     * efficient to run as the first variantFilter
+     *
+     * @return
+     */
+    public VariantFilter getGeneListFilter(List<Integer> genesToKeep) {
+        VariantFilter geneListFilter = new GeneListFilter(genesToKeep);
+        logger.info("Made new: {}", geneListFilter);
+        return geneListFilter;
     }
 
     /**

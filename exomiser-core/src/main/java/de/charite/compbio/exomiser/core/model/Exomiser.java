@@ -67,9 +67,10 @@ public class Exomiser {
         }
         variantFilterRunner.run(variantFilters, sampleData.getVariantEvaluations());
 
+        // this is needed even if we don't have an inheritance gene filter set as the OMIM prioritiser relies on it    
+        calculateInheritanceModesForGenesWhichPassedFilters(sampleData);
         if (!geneFilters.isEmpty()) {
             logger.info("FILTERING GENES");
-            calculateInheritanceModesForGenesWhichPassedFilters(sampleData);
 
             //Filter the resulting Genes for their inheritance mode
             FilterRunner geneFilterRunner = new SimpleGeneFilterRunner();

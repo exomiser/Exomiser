@@ -109,7 +109,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         candGene = candidateGene;
         this.disease = disease;
         randomWalkMatrix = rwMatrix;
-        logger.info("Params are " + exomiser2Params);
+        //logger.info("Params are " + exomiser2Params);
         if (exomiser2Params.equals("")){
             this.ppi = true;
             this.human = true;  
@@ -132,8 +132,8 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
             }
         }
-        logger.info("PPI"+ppi+":"+"HUMAN"+human+":"+"MOUSE"+mouse+":"+"FISH"+fish);
-        logger.info("Using randomWalkMatrix: {}", randomWalkMatrix);
+        //logger.info("PPI"+ppi+":"+"HUMAN"+human+":"+"MOUSE"+mouse+":"+"FISH"+fish);
+        //logger.info("Using randomWalkMatrix: {}", randomWalkMatrix);
     }
 
     private List<String> parseHpoIdListFromString(String hpoIdsString) {
@@ -414,7 +414,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
 //                        }
                     } else {
                         // normal behaviour when not trying to exclude candidate gene to simulate novel gene disovery in benchmarking
-                        if (score > 0.65) {// only build PPI network for high qual hits
+                        if (score > 0.6) {// only build PPI network for high qual hits
                             phenoGenes.add(entrez);
                             phenoGeneSymbols.add(humanGene);
                         }
@@ -724,12 +724,19 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 int col_idx = computeSimStartNodesToNode(gene);
                 int row_idx = randomWalkMatrix.getObjectid2idx().get(gene.getEntrezGeneID());
                 walkerScore = combinedProximityVector.get(row_idx, col_idx);
+                if (walkerScore <= 0.00001){
+                    walkerScore = 0f;
+                }
+                else{
                 //walkerScore = val;
                 String closestGene = phenoGeneSymbols.get(col_idx);
                 String thisGene = gene.getGeneSymbol();
                 //String stringDbImageLink = "http://string-db.org/api/image/networkList?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
                 String stringDbLink = "http://string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
                 double phenoScore = scores.get(phenoGenes.get(col_idx));
+                humanPhenotypeEvidence = "";
+                mousePhenotypeEvidence = "";
+                fishPhenotypeEvidence = "";
                 entrezGeneID = phenoGenes.get(col_idx);
                 // HUMAN
                 if (humanScores.get(phenoGenes.get(col_idx)) != null) {
@@ -809,6 +816,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                     evidence = evidence + fishPhenotypeEvidence;
                 }
                 ++PPIdataAvailable;
+                }
             } // NO PHENO HIT OR PPI INTERACTION
             if (evidence.equals("")) {
                 evidence = "<ul><li>No phenotype or PPI evidence</li></ul>";
@@ -840,7 +848,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
             //}
         }
-        float rank = 1;
+        float rank = 0;//changed so when have only 2 genes say in filtered set 1st one will get 0.6 and second 0.3 rather than 0.3 and 0
         Set<Float> set = geneScoreMap.descendingKeySet();
         Iterator<Float> i = set.iterator();
         while (i.hasNext()) {
@@ -855,8 +863,6 @@ public class ExomiserAllSpeciesPriority implements Priority {
             float newScore = 0.6f - 0.6f * (adjustedRank / gene_list.size());
             rank = rank + sharedHits;
             for (Gene g : geneScoreGeneList) {
-                logger.info(g.getGeneSymbol()+":"+newScore+":"+g.getPriorityScore()+":"+
-                        ((ExomiserAllSpeciesRelevanceScore) g.getPriorityScoreMap().get(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)).getScore());
                 if (newScore > ((ExomiserAllSpeciesRelevanceScore) g.getPriorityScoreMap().get(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)).getScore()){//i.e. only overwrite phenotype-based score if PPI score is larger
                     g.resetPriorityScore(PriorityType.EXOMISER_ALLSPECIES_PRIORITY, newScore);
                 }
@@ -939,7 +945,11 @@ public class ExomiserAllSpeciesPriority implements Priority {
             if (!randomWalkMatrix.getObjectid2idx().containsKey(seedGeneEntrezId)) {
                 c++;
                 continue;
-            } else {
+            } else if (seedGeneEntrezId == nodeToCompute.getEntrezGeneID()) {//avoid self-hits now are testing genes with direct pheno-evidence as well
+                c++;
+                continue;
+            }
+            else {
                 double cellVal = combinedProximityVector.get(idx, c);
                 if (cellVal > val) {
                     val = cellVal;

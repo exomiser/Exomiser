@@ -21,6 +21,10 @@ public enum FilterType {
      */
     INTERVAL_FILTER,
     /**
+     * Flag to represent filtering by a user entered set of genes
+     */
+    GENE_LIST_FILTER,
+    /**
      * Flag to output results of filtering against polyphen, SIFT, and mutation
      * taster.
      */
@@ -43,6 +47,8 @@ public enum FilterType {
     @Override
     public String toString() {
         switch (this) {
+            case GENE_LIST_FILTER:
+                return "Genes to keep";
             case QUALITY_FILTER:
                 return "Quality";
             case INTERVAL_FILTER:
