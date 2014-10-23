@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filter.Filter;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SimpleVariantFilterRunner;
@@ -43,7 +43,7 @@ public class Exomiser {
     @Autowired
     private PriorityFactory priorityFactory;
     @Autowired
-    private VariantEvaluationDataFactory variantEvaluationFactory;
+    private VariantEvaluationDataService variantEvaluationFactory;
     @Autowired
     private SparseVariantFilterRunner sparseVariantFilterRunner;
 
@@ -89,8 +89,7 @@ public class Exomiser {
     private void setVariantFrequencyAndPathogenicityData(List<VariantEvaluation> variantEvaluations) {
         logger.info("Setting variant frequency and pathogenicity data");
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            variantEvaluationFactory.addFrequencyData(variantEvaluation);
-            variantEvaluationFactory.addPathogenicityData(variantEvaluation);
+            variantEvaluationFactory.setVariantFrequencyAndPathogenicityData(variantEvaluation);
         }
     }
 

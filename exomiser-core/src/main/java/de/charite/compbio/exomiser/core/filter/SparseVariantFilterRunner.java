@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
     private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterRunner.class);
 
     @Autowired
-    private VariantEvaluationDataFactory variantEvaluationFactory;
+    private VariantEvaluationDataService variantEvaluationFactory;
 
     /**
      *
@@ -76,9 +76,11 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
     private void fetchMissingFrequencyAndPathogenicityData(FilterType filterType, VariantEvaluation variantEvaluation) {
         switch (filterType) {
             case FREQUENCY_FILTER:
-                variantEvaluationFactory.addFrequencyData(variantEvaluation);
+                variantEvaluationFactory.setVariantFrequencyData(variantEvaluation);
+                break;
             case PATHOGENICITY_FILTER:
-                variantEvaluationFactory.addPathogenicityData(variantEvaluation);
+                variantEvaluationFactory.setVariantPathogenicityData(variantEvaluation);
+                break;
         }
     }
 

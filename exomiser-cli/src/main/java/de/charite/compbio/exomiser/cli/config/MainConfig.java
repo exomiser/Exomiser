@@ -10,12 +10,10 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.Exomiser;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
@@ -24,11 +22,15 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.ehcache.EhCacheCacheManager;
+import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -43,6 +45,7 @@ import org.springframework.core.env.Environment;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
+@EnableCaching
 @Import({DataSourceConfig.class, CommandLineOptionsConfig.class})
 @PropertySource({"buildversion.properties", "file:${jarFilePath}/application.properties"})
 public class MainConfig {
@@ -212,10 +215,16 @@ public class MainConfig {
     }
     
     @Bean
-    public VariantEvaluationDataFactory variantEvaluationDataFactory() {
-        Map<String, FrequencyData> frequencyDataCache = new HashMap<>();
-        Map<String, PathogenicityData> pathogenicityDataCache = new HashMap<>();
-        
-        return new VariantEvaluationDataFactory(frequencyDataCache, pathogenicityDataCache);
+    public VariantEvaluationDataService variantEvaluationDataService() {
+        return new VariantEvaluationDataService();
     }
+    
+    @Bean
+    public CacheManager cacheManager() {
+        //see http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html for how this works
+        CacheManager cacheManager = new ConcurrentMapCacheManager("pathogenicity","frequency");
+        logger.info("Set up caches: {}", cacheManager.getCacheNames());
+        return cacheManager;
+    }
+    
 }
