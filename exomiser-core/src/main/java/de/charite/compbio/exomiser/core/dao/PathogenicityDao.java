@@ -21,11 +21,12 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Repository
 public class PathogenicityDao {
@@ -35,6 +36,7 @@ public class PathogenicityDao {
     @Autowired
     private DataSource dataSource;
 
+    @Cacheable(value="pathogenicity", key="#variant.chromosomalVariant")
     public PathogenicityData getPathogenicityData(Variant variant) {
 
         //if a variant is not classified as missense then we don't need to hit 
