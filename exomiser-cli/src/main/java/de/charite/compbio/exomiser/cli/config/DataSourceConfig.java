@@ -63,19 +63,20 @@ public class DataSourceConfig {
         logger.info("DataSource using maximum of {} database connections", maxConnections);
         dataSource.setInitialConnections(3);
 
-        //resolve the placeholders in the jdbc.properties using the data from application.properties
+        //resolve the placeholders in the jdbc.properties using the user-supplied data from application.properties
         env.resolvePlaceholders("dbuser");
         env.resolvePlaceholders("password");
         env.resolvePlaceholders("server");
         env.resolvePlaceholders("database");
         env.resolvePlaceholders("port");
 
+        //read in the properties from jdbc.properties
+        String user = env.getProperty("pg.username");
+        String password = env.getProperty("pg.password");
         String server = env.getProperty("pg.server");
         String db = env.getProperty("pg.database");
         int port = Integer.parseInt(env.getProperty("pg.port"));
-        String user = env.getProperty("pg.username");
-        String password = env.getProperty("pg.password");
-
+        
         dataSource.setServerName(server);
         dataSource.setDatabaseName(db);
         dataSource.setPortNumber(port);
@@ -122,10 +123,4 @@ public class DataSourceConfig {
         return connection;
     }
 
-//    @Bean
-//    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-//        PropertySourcesPlaceholderConfigurer pspc = new PropertySourcesPlaceholderConfigurer();
-//        pspc.setLocation(new PathResource("jdbc.properties"));
-//        return pspc;
-//    }
 }
