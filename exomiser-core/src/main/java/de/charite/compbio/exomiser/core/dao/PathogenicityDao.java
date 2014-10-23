@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.pathogenicity.CaddScore;
@@ -30,14 +29,11 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public class PathogenicityDao {
-    
+
     private final Logger logger = LoggerFactory.getLogger(PathogenicityDao.class);
 
     @Autowired
     private DataSource dataSource;
-
-    public PathogenicityDao() {
-    }
 
     public PathogenicityData getPathogenicityData(Variant variant) {
 
@@ -143,7 +139,7 @@ public class PathogenicityDao {
         if (!Float.isNaN(cadd)) {
             caddScore = new CaddScore(cadd);
         }
-        
+
         return new PathogenicityData(polyPhenScore, mutationTasterScore, siftScore, caddScore);
 
     }

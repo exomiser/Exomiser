@@ -32,9 +32,6 @@ public class FrequencyDao {
     @Autowired
     private DataSource dataSource;
 
-    public FrequencyDao() {
-    }
-
     public FrequencyData getFrequencyData(Variant variant) {
 
         try (
