@@ -2,6 +2,10 @@ The Exomiser - Command Line Executable
 ===============================================================
 # Change log (version numbers follow semantic versioning - semver.org)  
 
+## 4.0.1 2014-10-23
+- Fixed bug where OMIM prioritiser did not work when inheritance model was not specified
+- Adjustment of the exomiser-allspecies algorithm for PPI hits
+
 ## 4.0.0 2014-09-19
 - Changed FilterScores to FilterResults to encapsulate the pass/fail , score and filterTypes returned from the filters in various ways previously.
 - Changed Filter behaviour to simply return a FilterResult instead of altering the VariantEvaluation in inconsistent ways.
@@ -47,9 +51,9 @@ The Exomiser - Command Line Executable
 
 # Installation
 
-1. Download and unzip exomiser-cli-4.0.0-distribution.zip
-2. Download exomiser-4.0.0.h2.db.zip from the h2_db_dumps folder and unzip in the exomiser-cli-4.0.0/data directory
-3. Run the example commands below from the exomiser-cli-4.0.0 directory
+1. Download and unzip exomiser-cli-4.0.1-distribution.zip
+2. Download exomiser-4.0.0.h2.db.zip from the h2_db_dumps folder and unzip in the exomiser-cli-4.0.1/data directory
+3. Run the example commands below from the exomiser-cli-4.0.1 directory
 
 # Alternative set-up
 
