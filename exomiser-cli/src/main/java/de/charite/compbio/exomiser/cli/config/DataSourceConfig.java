@@ -63,8 +63,8 @@ public class DataSourceConfig {
         logger.info("DataSource using maximum of {} database connections", maxConnections);
         dataSource.setInitialConnections(3);
 
-        //resolve the placeholders in the settings
-        env.resolvePlaceholders("username");
+        //resolve the placeholders in the jdbc.properties using the data from application.properties
+        env.resolvePlaceholders("dbuser");
         env.resolvePlaceholders("password");
         env.resolvePlaceholders("server");
         env.resolvePlaceholders("database");
