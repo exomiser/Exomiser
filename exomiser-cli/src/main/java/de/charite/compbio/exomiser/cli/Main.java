@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
-import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.model.Exomiser;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
@@ -23,9 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -74,7 +71,7 @@ public class Main {
         buildTimestamp = (String) applicationContext.getBean("buildTimestamp");
     }
 
-    private static AnnotationConfigApplicationContext setUpApplicationContext() {
+     private static AnnotationConfigApplicationContext setUpApplicationContext() {
         //Get Spring started - this contains the configuration of the application
         CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
         Path jarFilePath = null;
