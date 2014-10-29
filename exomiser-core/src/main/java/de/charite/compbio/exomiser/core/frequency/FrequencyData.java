@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core.frequency;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,6 +144,45 @@ public class FrequencyData {
         return maxFreq;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.rsId);
+        hash = 79 * hash + Objects.hashCode(this.dbSnpMaf);
+        hash = 79 * hash + Objects.hashCode(this.espEaMaf);
+        hash = 79 * hash + Objects.hashCode(this.espAaMaf);
+        hash = 79 * hash + Objects.hashCode(this.espAllMaf);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FrequencyData other = (FrequencyData) obj;
+        if (!Objects.equals(this.rsId, other.rsId)) {
+            return false;
+        }
+        if (!Objects.equals(this.dbSnpMaf, other.dbSnpMaf)) {
+            return false;
+        }
+        if (!Objects.equals(this.espEaMaf, other.espEaMaf)) {
+            return false;
+        }
+        if (!Objects.equals(this.espAaMaf, other.espAaMaf)) {
+            return false;
+        }
+        if (!Objects.equals(this.espAllMaf, other.espAllMaf)) {
+            return false;
+        }
+        return true;
+    }
+
+    
     @Override
     public String toString() {
         return "FrequencyData{" + rsId + ", dbSnpMaf=" + dbSnpMaf + ", espEaMaf=" + espEaMaf + ", espAaMaf=" + espAaMaf + ", espAllMaf=" + espAllMaf + '}';
