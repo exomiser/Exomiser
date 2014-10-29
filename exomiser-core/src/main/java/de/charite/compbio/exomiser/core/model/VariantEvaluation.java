@@ -57,7 +57,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         //why not set the frequency data too? Well, not having a null implies that
         //the data has been set from the database and if there is no data then 
         //it must be an extremely rare and therefore interesting variant. 
-        //This will then erroneously pass the frequency filter.   
+        //This will then erroneously pass the frequency filter.
         pathogenicityData = new PathogenicityData(null, null, null, null);
     }
 
@@ -370,9 +370,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * Sort based on chromosome and position. If these are equal, sort based on
-     * the lexicographic order of the reference sequence. If this is equal, sort
-     * based on the lexicographic order of the alt sequence.
+     * Sort based on the variant score. Variant scores are ranked on a scale of
+     * 1 to 0. The comparator will rank the variants with a higher numerical
+     * value variant score before those with a lower value variant score.
+     *
+     * Note: this class has a natural ordering that is inconsistent with equals.
      */
     @Override
     public int compareTo(VariantEvaluation other) {
