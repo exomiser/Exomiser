@@ -64,7 +64,7 @@ public class RsIdTest {
 
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("rsId" + ID));
+        assertThat(instance.toString(), equalTo("rs" + ID));
     }
     
 }
