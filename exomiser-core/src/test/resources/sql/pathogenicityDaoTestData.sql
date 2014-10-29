@@ -1,3 +1,5 @@
+DROP TABLE variant IF EXISTS;
+
 CREATE TABLE variant (
     chromosome smallint NOT NULL,
     "position" integer NOT NULL,

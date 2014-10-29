@@ -9,18 +9,18 @@ import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.jdbc.Sql;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-public class PathogenicityDaoTestConfig {
+public class DaoTestConfig {
     
-
     @Bean
     public DataSource dataSource() {
-        String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;INIT=runscript from 'src/test/resources/sql/pathogenicityDaoTest.sql'";
+        String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;"; //INIT=runscript from 'src/test/resources/sql/frequencyDaoTestData.sql'
         String user = "sa";
         String password = "sa";
         
@@ -29,8 +29,12 @@ public class PathogenicityDaoTestConfig {
     }
     
     @Bean
+    public DefaultFrequencyDao defaultFrequencyDao() {
+        return new DefaultFrequencyDao();
+    }
+    
+    @Bean
     public DefaultPathogenicityDao defaultPathogenicityDao() {
         return new DefaultPathogenicityDao();
     }
-    
 }

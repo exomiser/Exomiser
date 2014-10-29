@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class FrequencyData {
 
     private static final Logger logger = LoggerFactory.getLogger(FrequencyData.class);
-
+    
     /**
      * Thousand Genomes allele count (all samples).
      */

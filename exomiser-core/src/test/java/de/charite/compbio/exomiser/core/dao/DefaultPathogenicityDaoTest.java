@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
@@ -34,7 +35,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = PathogenicityDaoTestConfig.class)
+@ContextConfiguration(classes = DaoTestConfig.class)
+@Sql("file:src/test/resources/sql/pathogenicityDaoTestData.sql")
 public class DefaultPathogenicityDaoTest {
     
     @Autowired
