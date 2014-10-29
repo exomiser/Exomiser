@@ -13,7 +13,6 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import jannovar.exome.Variant;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,14 +42,12 @@ public class VariantEvaluationDataService {
         variantEvaluation.setPathogenicityData(pathData);
     }
 
-    @Cacheable(value="frequency", key="#variantEvaluation.chromosomalVariant")
     public FrequencyData getVariantFrequencyData(VariantEvaluation variantEvaluation) {
         Variant variant = variantEvaluation.getVariant();
         FrequencyData freqData = frequencyDao.getFrequencyData(variant);
         return freqData;
     }
     
-    @Cacheable(value="pathogenicity", key="#variantEvaluation.chromosomalVariant")
     public PathogenicityData getVariantPathogenicityData(VariantEvaluation variantEvaluation) {
         Variant variant = variantEvaluation.getVariant();
         PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variant);

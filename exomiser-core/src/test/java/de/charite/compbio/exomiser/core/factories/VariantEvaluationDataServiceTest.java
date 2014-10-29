@@ -5,19 +5,28 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.dao.FrequencyDao;
+import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
+import de.charite.compbio.exomiser.core.frequency.Frequency;
 import de.charite.compbio.exomiser.core.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.pathogenicity.CaddScore;
+import de.charite.compbio.exomiser.core.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.pathogenicity.PolyPhenScore;
+import de.charite.compbio.exomiser.core.pathogenicity.SiftScore;
 import jannovar.exome.Variant;
-import java.util.HashMap;
-import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -27,26 +36,62 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class VariantEvaluationDataServiceTest {
 
+    @InjectMocks
     private VariantEvaluationDataService instance;
+    @Mock
+    private PathogenicityDao mockPathogenicityDao;
+    @Mock
+    private FrequencyDao mockFrequencyDao;
 
-    private VariantEvaluation varEval;
-
-    private Variant variant;
+    private static final PathogenicityData PATH_DATA = new PathogenicityData(new PolyPhenScore(1), new MutationTasterScore(1), new SiftScore(0), new CaddScore(1));
+    private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f));
     
-    public VariantEvaluationDataServiceTest() {
-    }
+    private VariantEvaluation varEval;
+    private Variant variant;
 
     @Before
     public void setUp() {
-        
-        instance = new VariantEvaluationDataService();
-        
         variant = new Variant((byte) 1, 1, "C", "A", null, 5f, null);
         varEval = new VariantEvaluation(variant);
+        
+        MockitoAnnotations.initMocks(this);
+        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
+        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
+
     }
 
     @Test
     public void testInstanceIsNotNull() {
         assertThat(instance, notNullValue());
+    }
+
+    @Test
+    public void serviceAddsPathogenicityDataToAVariantEvaluation() {
+        instance.setVariantPathogenicityData(varEval);
+        assertThat(varEval.getPathogenicityData(), equalTo(PATH_DATA));
+    }
+    
+    @Test
+    public void serviceReturnsPathogenicityDataForAVariantEvaluation() {
+        PathogenicityData result = instance.getVariantPathogenicityData(varEval);
+        assertThat(result, equalTo(PATH_DATA));
+    }
+    
+    @Test
+    public void serviceAddsBothFrequencyAndPAthogenicityDataToAVariantEvaluation() {
+        instance.setVariantFrequencyAndPathogenicityData(varEval);
+        assertThat(varEval.getPathogenicityData(), equalTo(PATH_DATA));
+        assertThat(varEval.getFrequencyData(), equalTo(FREQ_DATA));
+    }
+    @Test
+    public void serviceAddsFrequencyDataToAVariantEvaluation() {
+        instance.setVariantFrequencyData(varEval);
+        assertThat(varEval.getFrequencyData(), equalTo(FREQ_DATA));
+    }
+    
+    @Test
+    public void serviceReturnsFrequencyDataForAVariantEvaluation() {
+        FrequencyData result = instance.getVariantFrequencyData(varEval);
+        assertThat(result, equalTo(FREQ_DATA));
     }
 }
