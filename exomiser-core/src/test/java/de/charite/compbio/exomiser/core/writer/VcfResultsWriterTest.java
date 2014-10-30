@@ -75,7 +75,7 @@ public class VcfResultsWriterTest {
     @Before
     public void before() {
         sampleData = new SampleData();
-        sampleData.setGeneList(new ArrayList<Gene>());
+        sampleData.setGenes(new ArrayList<Gene>());
     }
     
 
@@ -107,7 +107,7 @@ public class VcfResultsWriterTest {
     public void testWritePassGene() {
         List<Gene> geneList = new ArrayList();
         geneList.add(gene);
-        sampleData.setGeneList(geneList);
+        sampleData.setGenes(geneList);
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.VCF)).build();
         String result = instance.writeString(sampleData, settings, null);
         //there will be a header portion which we're not interested in for this test.
@@ -119,7 +119,7 @@ public class VcfResultsWriterTest {
     public void testWriteFailGene() {
         List<Gene> geneList = new ArrayList();
         geneList.add(failGene);
-        sampleData.setGeneList(geneList);
+        sampleData.setGenes(geneList);
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.VCF)).build();
         String result = instance.writeString(sampleData, settings, null);
         //there will be a header portion which we're not interested in for this test.

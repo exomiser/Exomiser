@@ -16,6 +16,7 @@ import jannovar.common.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
@@ -81,7 +82,7 @@ public class ExomiserSettings {
     //remove-off-target-syn the target filter switch - not specified in the original exomiser as this was a default. 
     private final boolean removeOffTargetVariants;
     //genes to keep in final results
-    private final List<Integer> genesToKeep;
+    private final Set<Integer> genesToKeep;
     
     //PRIORITISER OPTIONS
     public static final String CANDIDATE_GENE_OPTION = "candidate-gene";
@@ -148,7 +149,7 @@ public class ExomiserSettings {
         private boolean removePathFilterCutOff = false;
         private boolean removeDbSnp = false;
         private boolean removeOffTargetVariants = true;
-        private List<Integer> genesToKeepList = new ArrayList();    
+        private Set<Integer> geneIdsToKeep = new LinkedHashSet();    
 
         //PRIORITISER options
         private String candidateGene = "";
@@ -274,8 +275,8 @@ public class ExomiserSettings {
         }
         
         @JsonSetter(GENES_TO_KEEP_OPTION)
-        public SettingsBuilder genesToKeepList(List<Integer> value) {
-            genesToKeepList = value;
+        public SettingsBuilder genesToKeepList(Set<Integer> value) {
+            geneIdsToKeep = value;
             return this;
         }
 
@@ -337,7 +338,7 @@ public class ExomiserSettings {
         removePathFilterCutOff = builder.removePathFilterCutOff;
         removeDbSnp = builder.removeDbSnp;
         removeOffTargetVariants = builder.removeOffTargetVariants;
-        genesToKeep = builder.genesToKeepList;
+        genesToKeep = builder.geneIdsToKeep;
         
         //PRIORITISER options
         candidateGene = builder.candidateGene;
@@ -465,7 +466,7 @@ public class ExomiserSettings {
     }
 
     @JsonProperty(GENES_TO_KEEP_OPTION)
-    public List<Integer> getGenesToKeep() {
+    public Set<Integer> getGenesToKeep() {
         return genesToKeep;
     }
     

@@ -11,6 +11,7 @@ import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import jannovar.common.ModeOfInheritance;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -76,9 +77,15 @@ public class FilterFactoryTest {
     @Test
     public void testMakeVariantFilters() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        ExomiserSettings settings = settingsBuilder.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
+        Set<Integer> geneIdsToKeep = new HashSet<>();
+        geneIdsToKeep.add(1);
+        
+        ExomiserSettings settings = settingsBuilder.genesToKeepList(geneIdsToKeep).removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
 
         List<Filter> expResult = new ArrayList<>();
+
+        Filter geneIdFilter = new EntrezGeneIdFilter(geneIdsToKeep);
+        expResult.add(geneIdFilter);
 
         Filter targetFilter = new TargetFilter();
         expResult.add(targetFilter);
@@ -143,6 +150,14 @@ public class FilterFactoryTest {
         assertThat(result, equalTo(expResult));
     }
 
+    @Test
+    public void testGetEntrezGeneIdFilter() {
+        Set<Integer> geneIdentifiers = new HashSet<>();
+        Filter expResult = new EntrezGeneIdFilter(geneIdentifiers);
+        Filter result = instance.getEntrezGeneIdFilter(geneIdentifiers);
+        assertThat(result, equalTo(expResult));
+    }
+    
     @Test
     public void testGetTargetFilter() {
         Filter expResult = new TargetFilter();

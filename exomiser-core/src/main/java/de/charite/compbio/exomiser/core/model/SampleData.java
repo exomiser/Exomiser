@@ -20,7 +20,7 @@ public class SampleData {
     /**
      * Store the path of the file used to create this data.
      */
-    Path vcfFilePath;
+    private Path vcfFilePath;
     
     /**
      * Store lines of header of VCF file, in case we want to print them out
@@ -46,18 +46,7 @@ public class SampleData {
     private List<VariantEvaluation> variantList;
 
     private List<Gene> geneList;
-    
-    
-    public SampleData() {
-    }
-   
-    public SampleData(List<String> sampleNames, Pedigree pedigree, List<VariantEvaluation> variantList) {
-        this.sampleNames = sampleNames;
-        this.pedigree = pedigree;
-        this.variantList = variantList;
-    }   
-    
-          
+        
     /**
      * @return List of Strings representing the sample names in the VCF file.
      */
@@ -116,7 +105,7 @@ public class SampleData {
         return geneList;
     }
 
-    public void setGeneList(List<Gene> geneList) {
+    public void setGenes(List<Gene> geneList) {
         this.geneList = geneList;
     }    
 }

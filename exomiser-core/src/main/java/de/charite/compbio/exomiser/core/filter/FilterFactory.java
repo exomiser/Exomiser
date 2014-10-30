@@ -8,7 +8,6 @@ package de.charite.compbio.exomiser.core.filter;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import jannovar.common.ModeOfInheritance;
-import java.util.Objects;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -24,9 +23,6 @@ public class FilterFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(FilterFactory.class);
 
-    public FilterFactory() {
-    }
-
     /**
      * Utility method for wrapping-up how the {@code VariantFilter} classes are
      * created using an ExomiserSettings.
@@ -40,10 +36,10 @@ public class FilterFactory {
         List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
         for (FilterType filterType : filtersRequired) {
-            logger.info("filter being added is " + filterType);
             switch (filterType) {
-                case GENE_LIST_FILTER:
-                    variantFilters.add(getGeneListFilter(settings.getGenesToKeep()));
+                case ENTREZ_GENE_ID_FILTER:
+                    variantFilters.add(getEntrezGeneIdFilter(settings.getGenesToKeep()));
+                    break;
                 case TARGET_FILTER:
                     variantFilters.add(getTargetFilter());
                     break;
@@ -63,6 +59,7 @@ public class FilterFactory {
                     //this isn't run as a VariantFilter - it's actually a Gene runFilter - currently it's a bastard orphan sitting in Exomiser
                     break;
             }
+            logger.info("Added {} filter" , filterType);
         }
 
         return variantFilters;
@@ -99,11 +96,11 @@ public class FilterFactory {
      */
     public static List<FilterType> determineFilterTypesToRun(ExomiserSettings settings) {
         List<FilterType> filtersToRun = new ArrayList<>();
-        logger.info("genesToKeep are " + settings.getGenesToKeep());
+
         if (!settings.getGenesToKeep().isEmpty()) {
-            filtersToRun.add(FilterType.GENE_LIST_FILTER);
+            filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
         }
-        
+
         if (settings.removeOffTargetVariants()) {
             filtersToRun.add(FilterType.TARGET_FILTER);
         }
@@ -137,16 +134,16 @@ public class FilterFactory {
         logger.info("Made new: {}", targetFilter);
         return targetFilter;
     }
-    
-     /**
-     * VariantFilter to remove any not on a user-entered list of genes
-     * Note this could be done as a GeneFilter but will be most
-     * efficient to run as the first variantFilter
+
+    /**
+     * VariantFilter to remove any variants belonging to genes not on a
+     * user-entered list of genes. Note: this could be done as a GeneFilter but
+     * will be most efficient to run as the first variantFilter.
      *
      * @return
      */
-    public VariantFilter getGeneListFilter(List<Integer> genesToKeep) {
-        VariantFilter geneListFilter = new GeneListFilter(genesToKeep);
+    public VariantFilter getEntrezGeneIdFilter(Set<Integer> genesToKeep) {
+        VariantFilter geneListFilter = new EntrezGeneIdFilter(genesToKeep);
         logger.info("Made new: {}", geneListFilter);
         return geneListFilter;
     }

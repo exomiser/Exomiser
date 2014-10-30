@@ -7,15 +7,15 @@ package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
+import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
+import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.Exomiser;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ import org.springframework.core.env.Environment;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@Import({DataSourceConfig.class, CommandLineOptionsConfig.class})
+@Import({DataSourceConfig.class, CommandLineOptionsConfig.class, CacheConfig.class})
 @PropertySource({"buildversion.properties", "file:${jarFilePath}/application.properties"})
 public class MainConfig {
 
@@ -72,26 +71,6 @@ public class MainConfig {
         return jarFilePath;
     }
 
-//    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-//        PropertySourcesPlaceholderConfigurer pspc = new PropertySourcesPlaceholderConfigurer();
-//        Path jdbcPropertiesPath = jarPath.resolve("jdbc.properties");
-//        Path applicationPropertiesPath = jarPath.resolve("application.properties");
-//        PathResource[] resources = new PathResource[]{
-//                new PathResource(jdbcPropertiesPath),
-//                new PathResource(applicationPropertiesPath)};
-//                
-//        pspc.setLocations(resources);
-//        env = new StandardEnvironment();
-//        PropertySources propertySources = pspc.getAppliedPropertySources();
-//        for (org.springframework.core.env.PropertySource<?> propertySource : propertySources) {
-//            logger.info("Adding propertySource {}", propertySource);
-//            env.getPropertySources().addFirst(propertySource);        
-//        }
-//        logger.info(env.getPropertySources().toString());
-//        
-//        pspc.setEnvironment(env);
-//        return pspc;
-//    }
     @Bean
     public String buildVersion() {
         return env.getProperty("buildVersion");
@@ -111,42 +90,47 @@ public class MainConfig {
      */
     @Bean
     public Path dataPath() {
-        Path dataPath = jarFilePath().resolve(env.getProperty("dataDir"));
+        String dataDirValue = getValueOfProperty("dataDir");
+        Path dataPath = jarFilePath().resolve(dataDirValue);
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
-        
+
         return dataPath;
     }
 
     @Bean
     public Path ucscFilePath() {
-        Path ucscFilePath = dataPath().resolve(env.getProperty("ucscFileName"));
+        String ucscFileNameValue = getValueOfProperty("ucscFileName");
+        Path ucscFilePath = dataPath().resolve(ucscFileNameValue);
         logger.info("UCSC data file: {}", ucscFilePath.toAbsolutePath());
         return ucscFilePath;
     }
 
     @Bean
     public Path phenomizerDataDirectory() {
-        Path phenomizerDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
+        String phenomizerDataDirValue = getValueOfProperty("phenomizerDataDir");
+        Path phenomizerDataDirectory = dataPath().resolve(phenomizerDataDirValue);
         logger.info("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
         return phenomizerDataDirectory;
     }
 
     @Bean
     public Path hpoOntologyFilePath() {
-        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
+        String hpoOntologyFileValue = getValueOfProperty("hpoOntologyFile");
+        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(hpoOntologyFileValue);
         logger.info("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
         return hpoOntologyFilePath;
     }
 
     @Bean
     public Path hpoAnnotationFilePath() {
-        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
+        String hpoAnnotationFileValue = getValueOfProperty("hpoAnnotationFile");
+        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(hpoAnnotationFileValue);
         logger.info("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
 
     /**
-     * This takes a few seconds to de-serealise. Would be better to be eager in
+     * This takes a few seconds to de-serialise. Would be better to be eager in
      * a web-app, but lazy on the command-line as then the input parameters can
      * be checked before doing this.
      *
@@ -169,20 +153,23 @@ public class MainConfig {
     @Bean
     @Lazy
     public DataMatrix randomWalkMatrix() {
-        Path randomWalkFilePath = dataPath().resolve(env.getProperty("randomWalkFileName"));
-        Path randomWalkIndexFilePath = dataPath().resolve(env.getProperty("randomWalkIndexFileName"));
+        String randomWalkFileNameValue = getValueOfProperty("randomWalkFileName");
+        Path randomWalkFilePath = dataPath().resolve(randomWalkFileNameValue);
+
+        String randomWalkIndexFileNameValue = getValueOfProperty("randomWalkIndexFileName");
+        Path randomWalkIndexFilePath = dataPath().resolve(randomWalkIndexFileNameValue);
 
         return new DataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
     }
 
     @Bean
     public FrequencyDao frequencyDao() {
-        return new FrequencyDao();
+        return new DefaultFrequencyDao();
     }
 
     @Bean
     public PathogenicityDao pathogenicityDao() {
-        return new PathogenicityDao();
+        return new DefaultPathogenicityDao();
     }
 
     @Bean
@@ -205,17 +192,30 @@ public class MainConfig {
     public Exomiser exomiser() {
         return new Exomiser();
     }
-    
-    @Bean 
+
+    @Bean
     public SparseVariantFilterRunner sparseVariantFilterer() {
         return new SparseVariantFilterRunner();
     }
-    
+
     @Bean
-    public VariantEvaluationDataFactory variantEvaluationDataFactory() {
-        Map<String, FrequencyData> frequencyDataCache = new HashMap<>();
-        Map<String, PathogenicityData> pathogenicityDataCache = new HashMap<>();
-        
-        return new VariantEvaluationDataFactory(frequencyDataCache, pathogenicityDataCache);
+    public VariantEvaluationDataService variantEvaluationDataService() {
+        return new VariantEvaluationDataService();
+    }
+       
+    
+    protected String getValueOfProperty(String property) throws PropertyNotFoundException {
+        String value = env.getProperty(property);
+        if (value == null) {
+            throw new PropertyNotFoundException(String.format("Property '%s' not present in application.properties", property));
+        }
+        return value;
+    }
+
+    public class PropertyNotFoundException extends RuntimeException {
+
+        public PropertyNotFoundException(String message) {
+            super(message);
+        }
     }
 }

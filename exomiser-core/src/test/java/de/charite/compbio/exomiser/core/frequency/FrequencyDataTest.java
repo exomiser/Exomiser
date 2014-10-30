@@ -164,5 +164,5 @@ public class FrequencyDataTest {
         Frequency maxFrequency = new Frequency(maxFreq);
         FrequencyData instance = new FrequencyData(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
-    }    
+    }
 }

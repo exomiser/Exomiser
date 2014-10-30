@@ -19,6 +19,7 @@ min-qual=0
 keep-non-pathogenic-missense=true
 remove-dbsnp=false
 remove-off-target-syn=true
+full-analysis=true
 
 #PRIORITISER OPTIONS
 candidate-gene=
