@@ -63,7 +63,7 @@ public class SampleDataFactory {
         //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
         List<Gene> geneList = GeneFactory.createGeneList(sampleData.getVariantEvaluations());
 
-        sampleData.setGeneList(geneList);
+        sampleData.setGenes(geneList);
 
         return sampleData;
     }

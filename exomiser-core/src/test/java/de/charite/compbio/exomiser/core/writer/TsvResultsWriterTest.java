@@ -72,7 +72,7 @@ public class TsvResultsWriterTest {
     @Before
     public void before() {
         sampleData = new SampleData();
-        sampleData.setGeneList(new ArrayList<Gene>());
+        sampleData.setGenes(new ArrayList<Gene>());
     }
     
     @Test
@@ -87,7 +87,7 @@ public class TsvResultsWriterTest {
     public void testWriteString() {
         List<Gene> geneList = new ArrayList();
         geneList.add(gene);
-        sampleData.setGeneList(geneList);
+        sampleData.setGenes(geneList);
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV)).build();
         String outString = instance.writeString(sampleData, settings, null);
         assertThat(outString, equalTo(GENE_STRING));
