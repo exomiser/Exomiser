@@ -46,18 +46,7 @@ public class SampleData {
     private List<VariantEvaluation> variantList;
 
     private List<Gene> geneList;
-    
-    
-    public SampleData() {
-    }
-   
-    public SampleData(List<String> sampleNames, Pedigree pedigree, List<VariantEvaluation> variantList) {
-        this.sampleNames = sampleNames;
-        this.pedigree = pedigree;
-        this.variantList = variantList;
-    }   
-    
-          
+        
     /**
      * @return List of Strings representing the sample names in the VCF file.
      */
