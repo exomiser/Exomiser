@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.model;
 
 import jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,6 +52,9 @@ public class SampleData {
      * @return List of Strings representing the sample names in the VCF file.
      */
     public List<String> getSampleNames() {
+        if (sampleNames == null){
+            sampleNames = new ArrayList<>();
+        }
         return sampleNames;
     }
     
