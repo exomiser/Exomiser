@@ -17,14 +17,17 @@ import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(MockitoJUnitRunner.class)
 public class InheritanceFilterTest {
 
     private Gene compatibleWithAutosomalDominant;
@@ -32,7 +35,7 @@ public class InheritanceFilterTest {
     private Gene compatibleWithXLinked;
 
     @Mock
-    private Variant variant;
+    private VariantEvaluation variantEvaluation;
 
     public InheritanceFilterTest() {
     }
@@ -40,17 +43,16 @@ public class InheritanceFilterTest {
     @Before
     public void setUp() {
 
-        MockitoAnnotations.initMocks(this);
-        Mockito.when(variant.getGeneSymbol()).thenReturn("mockGeneId");
-        Mockito.when(variant.getEntrezGeneID()).thenReturn(12345);
+        Mockito.when(variantEvaluation.getGeneSymbol()).thenReturn("mockGeneId");
+        Mockito.when(variantEvaluation.getEntrezGeneID()).thenReturn(12345);
 
-        compatibleWithAutosomalDominant = new Gene(new VariantEvaluation(variant));
+        compatibleWithAutosomalDominant = new Gene(variantEvaluation);
         compatibleWithAutosomalDominant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-        compatibleWithAutosomalRecessive = new Gene(new VariantEvaluation(variant));
+        compatibleWithAutosomalRecessive = new Gene(variantEvaluation);
         compatibleWithAutosomalRecessive.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
-        compatibleWithXLinked = new Gene(new VariantEvaluation(variant));
+        compatibleWithXLinked = new Gene(variantEvaluation);
         compatibleWithXLinked.setInheritanceModes(EnumSet.of(ModeOfInheritance.X_RECESSIVE));
     }
 

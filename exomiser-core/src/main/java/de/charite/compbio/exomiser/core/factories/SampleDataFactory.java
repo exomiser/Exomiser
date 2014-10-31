@@ -40,9 +40,11 @@ public class SampleDataFactory {
     private VariantAnnotator variantAnnotator;
 
     private final PedigreeFactory pedigreeFactory;
+    private final GeneFactory geneFactory;
     
     public SampleDataFactory() {
         pedigreeFactory = new PedigreeFactory();
+        geneFactory = new GeneFactory();
     }
 
     public SampleData createSampleData(Path vcfFile, Path pedigreeFile) {
@@ -61,11 +63,11 @@ public class SampleDataFactory {
         SampleData sampleData = createSampleDataFromVcf(vcfParser);
         List<Variant> variantList = createVariants(vcfParser);
         //Now we've got all the basic bits of data sorted we'll need to fill-in the details needed for analysis
-        List<VariantEvaluation> variantEvaluationList = createVariantEvaluations(variantList);
-        sampleData.setVariantEvaluations(variantEvaluationList);
+        List<VariantEvaluation> variantEvaluations = createVariantEvaluations(variantList);
+        sampleData.setVariantEvaluations(variantEvaluations);
         
         //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
-        List<Gene> geneList = GeneFactory.createGeneList(sampleData.getVariantEvaluations());
+        List<Gene> geneList = geneFactory.createGenes(sampleData.getVariantEvaluations());
         sampleData.setGenes(geneList);
         
         return sampleData;

@@ -39,7 +39,7 @@ public class EntrezGeneIdFilter implements VariantFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        if (genesToKeep.contains(variantEvaluation.getVariant().getEntrezGeneID())) {
+        if (genesToKeep.contains(variantEvaluation.getEntrezGeneID())) {
             return passFilterResult;
         }
         return failedFilterResult;

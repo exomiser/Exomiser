@@ -1,12 +1,10 @@
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.priority.PriorityScore;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
-import jannovar.pedigree.Pedigree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -53,9 +51,9 @@ public class Gene implements Comparable<Gene>, Filterable {
     /**
      * A list of all of the variants that affect this gene.
      */
-    private final List<VariantEvaluation> variantList;
+    private final List<VariantEvaluation> variantEvaluations;
 
-    private final Set<FilterType> failedFilters;
+    private final Set<FilterType> failedFilterTypes;
 
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
@@ -90,36 +88,26 @@ public class Gene implements Comparable<Gene>, Filterable {
     /**
      * Construct the gene by adding the first variant that affects the gene. If
      * the current gene has additional variants, they will be added using the
-     * function add_variant.
+     * function addVariant.
      *
-     * @param var A variant located in this gene.
+     * @param variantEvaluation A variant located in this gene.
      */
-    public Gene(VariantEvaluation var) {
-        variantList = new ArrayList();
-        priorityScoreMap = new HashMap();
-        variantList.add(var);
-        geneSymbol = var.getVariant().getGeneSymbol();
-        entrezGeneId = var.getVariant().getEntrezGeneID();
-        failedFilters = EnumSet.noneOf(FilterType.class);
+    public Gene(VariantEvaluation variantEvaluation) {
+        variantEvaluations = new ArrayList();
+        variantEvaluations.add(variantEvaluation);
+        geneSymbol = variantEvaluation.getGeneSymbol();
+        entrezGeneId = variantEvaluation.getEntrezGeneID();
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+        failedFilterTypes = EnumSet.noneOf(FilterType.class);
+        priorityScoreMap = new HashMap();
     }
     
-    //commented out as this was unused - use the GeneScorer for this sort of function.
-//    public void downrankGeneIfMoreVariantsThanThreshold(int threshold) {
-//        int n = variantList.size();
-//        if (threshold <= n) {
-//            return;
-//        }
-//        int diff = threshold - n;
-//        this.priorityScore = ((float) 1 / diff) * this.priorityScore;
-//        this.filterScore = ((float) 1 / diff) * this.filterScore;
-//    }
     /**
      * @return the number of {@link jannovar.exome.Variant Variant} objects for
      * this gene.
      */
     public int getNumberOfVariants() {
-        return this.variantList.size();
+        return this.variantEvaluations.size();
     }
 
     /**
@@ -162,10 +150,10 @@ public class Gene implements Comparable<Gene>, Filterable {
      * gene.
      */
     public VariantEvaluation getNthVariant(int n) {
-        if (n >= this.variantList.size()) {
+        if (n >= this.variantEvaluations.size()) {
             return null;
         } else {
-            return this.variantList.get(n);
+            return this.variantEvaluations.get(n);
         }
     }
 
@@ -176,7 +164,7 @@ public class Gene implements Comparable<Gene>, Filterable {
      * @param var A Variant affecting the current gene.
      */
     public void addVariant(VariantEvaluation var) {
-        variantList.add(var);
+        variantEvaluations.add(var);
     }
 
     /**
@@ -204,13 +192,13 @@ public class Gene implements Comparable<Gene>, Filterable {
      * @return A list of all variants in the VCF file that affect this gene.
      */
     public List<VariantEvaluation> getVariantEvaluations() {
-        return variantList;
+        return variantEvaluations;
     }
     
     public List<VariantEvaluation> getPassedVariantEvaluations() {
         List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
         
-        for (VariantEvaluation variantEvaluation : variantList) {
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilters()) {
                 passedVariantEvaluations.add(variantEvaluation);
             }
@@ -311,19 +299,19 @@ public class Gene implements Comparable<Gene>, Filterable {
      * @return true if the gene is X chromosomal, otherwise false.
      */
     public boolean isXChromosomal() {
-        if (variantList.isEmpty()) {
+        if (variantEvaluations.isEmpty()) {
             return false;
         }
-        VariantEvaluation ve = this.variantList.get(0);
+        VariantEvaluation ve = this.variantEvaluations.get(0);
         Variant v = ve.getVariant();
         return v.is_X_chromosomal();
     }
 
     public boolean isYChromosomal() {
-        if (variantList.isEmpty()) {
+        if (variantEvaluations.isEmpty()) {
             return false;
         }
-        VariantEvaluation ve = this.variantList.get(0);
+        VariantEvaluation ve = this.variantEvaluations.get(0);
         Variant v = ve.getVariant();
         return v.is_Y_chromosomal();
     }
@@ -410,13 +398,13 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     public Iterator<VariantEvaluation> getVariantEvaluationIterator() {
-        Collections.sort(this.variantList);
-        return this.variantList.iterator();
+        Collections.sort(this.variantEvaluations);
+        return this.variantEvaluations.iterator();
     }
 
     @Override
     public boolean passedFilters() {
-        for (VariantEvaluation variantEvaluation : variantList) {
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilters()) {
                 return true;
             }
@@ -426,10 +414,10 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-        if (failedFilters.contains(filterType)) {
+        if (failedFilterTypes.contains(filterType)) {
             return false;
         }
-        for (VariantEvaluation variantEvaluation : variantList) {
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilter(filterType)) {
                 return true;
             }
@@ -465,7 +453,7 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public String toString() {
-        return String.format("%s %d consistentWith: %s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f failedFilters: %s variants: %d", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, failedFilters, variantList.size());
+        return String.format("%s %d consistentWith: %s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f failedFilters: %s variants: %d", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, failedFilterTypes, variantEvaluations.size());
     }
 
 }
