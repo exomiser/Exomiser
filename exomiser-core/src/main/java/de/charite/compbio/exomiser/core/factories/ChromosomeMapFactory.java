@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handles de-serealizing of known genes files produced from UCSC or Ensemble data.
+ * Handles de-serialising of known genes files produced from UCSC or Ensemble data.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -26,7 +26,7 @@ public class ChromosomeMapFactory {
     public static final Logger logger = LoggerFactory.getLogger(ChromosomeMapFactory.class);
     
     /**
-     * <P> Jannovar makes a serialized file that represents a
+     * Jannovar makes a serialized file that represents a
      * HashMap<String, TranscriptModel> containing each and every
      * {@link jannovar.reference.TranscriptModel TranscriptModel} object. This
      * method both deserializes this file and also adds each TranscriptModel to
@@ -44,10 +44,12 @@ public class ChromosomeMapFactory {
         try {
             kgList = manager.deserializeKnownGeneList(serealizedKnownGenePath.toString());
         } catch (JannovarException je) {
-            logger.error("Unable to deserialize the known gene definition file: %s", je);
+            String message = String.format("Unable to deserialize the known gene definition file: %s", serealizedKnownGenePath);
+            logger.error(message);
+            throw new RuntimeException(message, je);
         }
         logger.info("DONE DESERIALISING KNOWN GENES");
         return Chromosome.constructChromosomeMapWithIntervalTree(kgList);
     }
-    
+ 
 }

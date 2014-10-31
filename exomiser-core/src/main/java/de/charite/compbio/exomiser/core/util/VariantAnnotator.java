@@ -5,12 +5,10 @@
  */
 package de.charite.compbio.exomiser.core.util;
 
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import jannovar.annotation.AnnotationList;
 import jannovar.exception.AnnotationException;
 import jannovar.exome.Variant;
 import jannovar.reference.Chromosome;
-import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +23,7 @@ public class VariantAnnotator {
 
     private final Map<Byte, Chromosome> chromosomeMap;
 
-     public VariantAnnotator(Map<Byte, Chromosome> chromosomeMap) {
+    public VariantAnnotator(Map<Byte, Chromosome> chromosomeMap) {
         this.chromosomeMap = chromosomeMap;
     }
 
@@ -38,7 +36,7 @@ public class VariantAnnotator {
         if (c == null) {
             logger.error("Could not identify chromosome {}", chr);
             return;
-        } 
+        }
         try {
             AnnotationList anno = c.getAnnotationList(pos, ref, alt);
             if (anno == null) {
@@ -48,6 +46,6 @@ public class VariantAnnotator {
             variant.setAnnotation(anno);
         } catch (AnnotationException ae) {
             logger.error("Unable to annotate variant {}", variant.getChromosomalVariant(), ae);
-        }   
+        }
     }
 }
