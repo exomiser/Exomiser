@@ -72,7 +72,7 @@ public class HPOOntologyFileParser implements ResourceParser {
             String name = null;
             List<String> synonymLst = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
-                logger.info(line);
+//                logger.info(line);
                 if (line.startsWith("id:")) {
                     id = line.substring(3).trim(); /* Gets rid of "id:" and any whitespace in e.g., HP:0000003 */
 
