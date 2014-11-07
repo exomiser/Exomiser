@@ -24,8 +24,7 @@ import org.slf4j.LoggerFactory;
 public class ChromosomeMapFactory {
 
     public static final Logger logger = LoggerFactory.getLogger(ChromosomeMapFactory.class);
-    private static final SerializationManager manager = new SerializationManager();
-
+    
     /**
      * Jannovar makes a serialized file that represents a HashMap<String,
      * TranscriptModel> containing each and every
@@ -46,6 +45,7 @@ public class ChromosomeMapFactory {
     }
 
     private static ArrayList<TranscriptModel> makeTranscriptModelsFromFile(Path serealizedKnownGenePath) throws RuntimeException {
+        SerializationManager manager = new SerializationManager();
         try {
             return manager.deserializeKnownGeneList(serealizedKnownGenePath.toString());
         } catch (JannovarException je) {
