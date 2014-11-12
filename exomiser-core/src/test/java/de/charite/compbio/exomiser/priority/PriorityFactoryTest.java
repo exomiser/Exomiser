@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.priority;
 
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
-import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.*;
