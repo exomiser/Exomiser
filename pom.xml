@@ -142,13 +142,13 @@
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
                                             <!--yep, pretty low expectations here-->
-                                            <minimum>0.01</minimum>			
+                                            <minimum>0.00</minimum>			
                                         </limit>
                                         <limit> 
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
                                             <!--yep, pretty low expectations here-->
-                                            <minimum>0.01</minimum> 
+                                            <minimum>0.00</minimum> 
                                         </limit>
                                     </limits>
                                 </rule>
@@ -158,7 +158,5 @@
                 </executions>
             </plugin>
         </plugins>
-
     </build>
-    
 </project>
