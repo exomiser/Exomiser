@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache>
+    <diskStore path="java.io.tmpdir"/>
+
+    <!-- Caches. These caches contain a maximum in memory of N elements. 
+    The cache will not expire. The cache will evict entries according to the 
+    Least Frequently Used (LFU) policy once it reaches its limit.-->
+
+    <!--Pathogenicity cache-->
+    <cache name="pathogenicity" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU">
+    </cache>
+
+
+    <!--Frequency cache-->
+    <cache name="frequency" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+</ehcache>

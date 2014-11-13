@@ -65,7 +65,7 @@ public class OriginalHtmlResultsWriter extends HtmlResultsWriter implements Resu
             List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
 
             htmlWriter.writeHTMLFilterSummary(filterReports, priorityList);
-            VariantTypeCounter vtc = getVariantTypeCounter(sampleData.getVariantEvaluations());
+            VariantTypeCounter vtc = makeVariantTypeCounter(sampleData.getVariantEvaluations());
             htmlWriter.writeVariantDistributionTable(vtc, sampleData.getSampleNames());
 
             htmlWriter.writeHTMLBody(sampleData.getPedigree(), sampleData.getGenes());
