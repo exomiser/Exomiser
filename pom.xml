@@ -11,12 +11,12 @@
         <module>exomiser-core</module>
         <module>exomiser-cli</module>
         <module>exomiser-db</module>
-        <module>exomiser-sim</module>
         <module>exomiser-web</module>
     </modules>
     
     <properties>
         <spring.version>4.1.1.RELEASE</spring.version>
+        <log4j.version>2.1</log4j.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>     
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -77,6 +77,25 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
         </dependency>
+        <!-- Logging dependencies -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!--H2 is a very versatile and highly compatible pure java DB-->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -106,6 +125,15 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                </configuration>
+            </plugin>
+             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <skipTests>false</skipTests>
+                    <forkCount>1.5C</forkCount>
                 </configuration>
             </plugin>
             <plugin>
