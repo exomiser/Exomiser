@@ -61,6 +61,9 @@ public class VariantEvaluationTest {
     @Mock
     Variant variantInTwoGeneRegions;
     
+    @Mock
+    Variant variantWithNullGeneSymbol;
+    
     @Before
     public void setUp() {
         GenotypeCall genotypeCall = new GenotypeCall(HETEROZYGOUS, QUALITY, READ_DEPTH);
@@ -85,6 +88,7 @@ public class VariantEvaluationTest {
         Mockito.when(variantInTwoGeneRegions.getVariantPhredScore()).thenReturn(2.2f);
         Mockito.when(variantInTwoGeneRegions.getVariantReadDepth()).thenReturn(READ_DEPTH);
         
+        Mockito.when(variantWithNullGeneSymbol.getGeneSymbol()).thenReturn(null);
         
         instance = new VariantEvaluation(variant);
     }
@@ -114,6 +118,12 @@ public class VariantEvaluationTest {
     public void testGetGeneSymbolReturnsOnlyFirstGeneSymbol() {
         instance = new VariantEvaluation(variantInTwoGeneRegions);
         assertThat(instance.getGeneSymbol(), equalTo(GENE2_GENE_SYMBOL));
+    }
+    
+    @Test
+    public void testGetGeneSymbolReturnsADotIfVariantReturnsANull() {
+        instance = new VariantEvaluation(variantWithNullGeneSymbol);
+        assertThat(instance.getGeneSymbol(), equalTo("."));
     }
 
     @Test
