@@ -88,8 +88,8 @@ public class ResultsWriterUtilsTest {
     @Test
     public void canMakeFilterReportsFromSettingsAndVariantEvaluations(){
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().build();
-        SampleData sampleData = new SampleData(new ArrayList<String>(), null, new ArrayList<VariantEvaluation>());
-        
+        SampleData sampleData = new SampleData();
+        sampleData.setVariantEvaluations(new ArrayList<VariantEvaluation>());
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(settings, sampleData);
         
         for (FilterReport result : results) {
