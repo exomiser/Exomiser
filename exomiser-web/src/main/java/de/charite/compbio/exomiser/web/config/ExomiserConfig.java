@@ -5,29 +5,29 @@
  */
 package de.charite.compbio.exomiser.web.config;
 
+import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
+import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.Exomiser;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import jannovar.reference.Chromosome;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -40,6 +40,7 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 @PropertySource({"classpath:exomiser.properties"})
+@Import(CacheConfig.class)
 public class ExomiserConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserConfig.class);
@@ -121,16 +122,6 @@ public class ExomiserConfig {
     }
 
     @Bean
-    public FrequencyDao frequencyDao() {
-        return new FrequencyDao();
-    }
-
-    @Bean
-    public PathogenicityDao pathogenicityDao() {
-        return new PathogenicityDao();
-    }
-
-    @Bean
     public FilterFactory filterFactory() {
         return new FilterFactory();
     }
@@ -151,16 +142,24 @@ public class ExomiserConfig {
         return new Exomiser();
     }
     
+//cacheable beans
+    @Bean
+    public FrequencyDao frequencyDao() {
+        return new DefaultFrequencyDao();
+    }
+
+    @Bean
+    public PathogenicityDao pathogenicityDao() {
+        return new DefaultPathogenicityDao();
+    }
+
     @Bean 
     public SparseVariantFilterRunner sparseVariantFilterer() {
         return new SparseVariantFilterRunner();
     }
     
     @Bean
-    public VariantEvaluationDataFactory variantEvaluationDataFactory() {
-        Map<String, FrequencyData> frequencyDataCache = new HashMap<>();
-        Map<String, PathogenicityData> pathogenicityDataCache = new HashMap<>();
-        
-        return new VariantEvaluationDataFactory(frequencyDataCache, pathogenicityDataCache);
+    public VariantEvaluationDataService variantEvaluationDataService() {
+        return new VariantEvaluationDataService();
     }
 }
