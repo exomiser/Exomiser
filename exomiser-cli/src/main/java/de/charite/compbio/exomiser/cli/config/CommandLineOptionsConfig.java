@@ -9,25 +9,10 @@ import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.PedFileOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.VcfFileOptionMarshaller;
 import de.charite.compbio.exomiser.cli.CommandLineOptionsParser;
-import de.charite.compbio.exomiser.cli.options.BatchFileOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.CandidateGeneOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.DiseaseIdOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.ExomiserAllSpeciesOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.FrequencyDbSnpOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.FrequencyThresholdOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.FullAnalysisOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.GeneticIntervalOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.HpoIdsOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.InheritanceModeOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.NumGenesOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.OutFileOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.OutFormatOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.PathogenicityFilterCutOffOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.PrioritiserOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.QualityThresholdOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.SeedGenesOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.SettingsFileOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.TargetFilterOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.*;
+import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.writer.OutputFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -81,6 +66,7 @@ public class CommandLineOptionsConfig {
         desiredOptionMarshallers.add(new QualityThresholdOptionMarshaller());
         desiredOptionMarshallers.add(new PathogenicityFilterCutOffOptionMarshaller());
         desiredOptionMarshallers.add(new TargetFilterOptionMarshaller());
+        desiredOptionMarshallers.add(new GenesToKeepFilterOptionMarshaller());
 
         //prioritiser options
         desiredOptionMarshallers.add(new PrioritiserOptionMarshaller());

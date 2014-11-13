@@ -11,6 +11,7 @@ import de.charite.compbio.exomiser.resources.ResourceOperationStatus;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.junit.After;
@@ -65,7 +66,10 @@ public class MorbidMapParserTest {
         cache.parseResource(diseaseInheritanceResource, testResourceDir, testOutDir);
         Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
         //todo: add some stub data to stop the test failing...
-        
+        Set<Integer> geneIds = new HashSet<>();
+        geneIds.add(2263);
+        geneIds.add(2260);
+        mim2geneMap.put(176943, geneIds);
         MorbidMapParser instance = new MorbidMapParser(cache, mim2geneMap);
         ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
         instance.parseResource(testResource, testResourceDir, testOutDir);

@@ -107,5 +107,13 @@ public class PathogenicityScoreTest {
         assertThat(scores, equalTo(expected));
         
     }
+    
+    @Test(expected = NullPointerException.class)
+    public void comparingAPathogenicityScoreToANullThrowsANullPOinterException() {
+        PolyPhenScore polyPhenScore = new PolyPhenScore(1);
+        PolyPhenScore nullScore = null;
+        
+        polyPhenScore.compareTo(nullScore);
+    }
 
 }

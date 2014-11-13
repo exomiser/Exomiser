@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.filter;
 
-import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,10 +51,7 @@ public class SimpleVariantFilterRunner implements FilterRunner<VariantEvaluation
         public List<VariantEvaluation> usingSimpleFiltering() {
             logger.info("Filtering {} variants using non-destructive simple filtering", variantEvaluations.size());
             for (VariantEvaluation variantEvaluation : variantEvaluations) {
-                for (VariantFilter filter : variantFilters) {
-                    FilterResult filterResult = filter.runFilter(variantEvaluation);
-                    variantEvaluation.addFilterResult(filterResult);
-                }
+                runAllFiltersOverVariantEvaluation(variantFilters, variantEvaluation);
             }
             return variantEvaluations;
         }
@@ -66,12 +62,16 @@ public class SimpleVariantFilterRunner implements FilterRunner<VariantEvaluation
     public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
         logger.info("Filtering {} variants using non-destructive simple filtering", variantEvaluations.size());
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            for (VariantFilter filter : variantFilters) {
-                FilterResult filterResult = filter.runFilter(variantEvaluation);
-                variantEvaluation.addFilterResult(filterResult);
-            }
+            runAllFiltersOverVariantEvaluation(variantFilters, variantEvaluation);
         }
         return variantEvaluations;
+    }
+    
+    private static void runAllFiltersOverVariantEvaluation(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
+        for (VariantFilter filter : variantFilters) {
+            FilterResult filterResult = filter.runFilter(variantEvaluation);
+            variantEvaluation.addFilterResult(filterResult);
+        }
     }
 
 }

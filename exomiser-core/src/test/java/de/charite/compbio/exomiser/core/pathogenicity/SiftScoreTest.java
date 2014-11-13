@@ -85,6 +85,13 @@ public class SiftScoreTest {
         assertThat(sift.compareTo(equalScoreSift), equalTo(EQUALS));
     }
     
+    @Test(expected = NullPointerException.class)
+    public void testCompareToAfterAgainstANullSiftScoreThrowsANullPointer() {
+        SiftScore pathogenic = new SiftScore(SIFT_PATHOGENIC_SCORE);
+        SiftScore nonPathogenic = null;
+        assertThat(pathogenic.compareTo(nonPathogenic), equalTo(MORE_PATHOGENIC));
+    }
+    
     @Test
     public void testCompareToAfterAnotherPathogenicityScore() {
         PathogenicityScore sift = new SiftScore(0.999f);

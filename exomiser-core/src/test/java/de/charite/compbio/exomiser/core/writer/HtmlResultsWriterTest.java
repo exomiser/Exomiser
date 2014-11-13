@@ -31,7 +31,7 @@ public class HtmlResultsWriterTest {
     @Test
     public void testWrite() {
         SampleData sampleData = new SampleData();
-        sampleData.setGeneList(new ArrayList<Gene>());
+        sampleData.setGenes(new ArrayList<Gene>());
         sampleData.setVariantEvaluations(new ArrayList<VariantEvaluation>());
 
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite.html").build();

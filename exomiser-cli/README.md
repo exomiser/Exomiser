@@ -1,9 +1,11 @@
 The Exomiser - A Tool to Annotate and Prioritize Exome Variants: Command Line Executable
 ===============================================================
 
-## Change log (version numbers follow semantic versioning - semver.org)  
+## 4.0.1 2014-10-23
+- Fixed bug where OMIM prioritiser did not work when inheritance model was not specified
+- Adjustment of the exomiser-allspecies algorithm for PPI hits
 
-#### 4.0.0 2014-09-19
+## 4.0.0 2014-09-19
 - Changed FilterScores to FilterResults to encapsulate the pass/fail , score and filterTypes returned from the filters in various ways previously.
 - Changed Filter behaviour to simply return a FilterResult instead of altering the VariantEvaluation in inconsistent ways.
 - VariantEvaluation now hides a bit more of its inner workings regarding FilterResults.
@@ -48,7 +50,9 @@ The Exomiser - A Tool to Annotate and Prioritize Exome Variants: Command Line Ex
 
 ## Installation
 
-Unpack the exomiser-cli-${project.version}.zip and it's ready to go.
+1. Download and unzip exomiser-cli-4.0.1-distribution.zip
+2. Download exomiser-4.0.0.h2.db.zip from the h2_db_dumps folder and unzip in the exomiser-cli-4.0.1/data directory
+3. Run the example commands below from the exomiser-cli-4.0.1 directory
 
 ## Alternative set-up
 
@@ -77,17 +81,18 @@ with
 
 (b) Exomiser v1 - phenotype comparisons to mice with disruption of the gene
 
-    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=exomiser-mouse -I AD -F 1 -M -D OMIM:101600 -v data/Pfeiffer.vcf
+    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=exomiser-mouse -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
-Phenix - phenotype comparisons to known human disease genes
+(c) Phenix - phenotype comparisons to known human disease genes
 
     java -Xms5g -Xmx5g -jar exomiser-cli-${project.version}.jar --prioritiser=phenix -v data/Pfeiffer.vcf -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
 
-(c) ExomeWalker - prioritisation by proximity in interactome to the seed genes
+(d) ExomeWalker - prioritisation by proximity in interactome to the seed genes
 
     java -Xms5g -Xmx5g -jar exomiser-cli-${project.version}.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
 
-## Other useful params:
+
+# Other useful params:
 
 Multiple output formats:
 
@@ -140,5 +145,5 @@ defined in the outputDirectory fields for each fileSet of distribution.xml:
     ... from somewhere
 4. make the archive.
     tar -cvzf exomiser.tgz exomiser-cli-${project.version}.jar jdbc.properties log4j2.xml lib data 
-5. copy to the ftp site
+    # copy to the ftp site
     scp exomiser.tgz gen1:/nfs/disk69/ftp/pub/resources/software/exomiser/downloads/exomiser/ 

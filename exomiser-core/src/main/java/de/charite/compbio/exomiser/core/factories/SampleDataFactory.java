@@ -10,10 +10,8 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import jannovar.exception.JannovarException;
-import jannovar.exception.PedParseException;
 import jannovar.exception.VCFParseException;
 import jannovar.exome.Variant;
-import jannovar.io.PedFileParser;
 import jannovar.io.VCFReader;
 import jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
@@ -41,31 +39,89 @@ public class SampleDataFactory {
     @Autowired
     private VariantAnnotator variantAnnotator;
 
+    private final PedigreeFactory pedigreeFactory;
+    private final GeneFactory geneFactory;
+    
     public SampleDataFactory() {
+        pedigreeFactory = new PedigreeFactory();
+        geneFactory = new GeneFactory();
     }
 
-    public SampleData createSampleData(Path vcfFile, Path pedigreeFile) {
-        logger.info("Creating sample data from VCF and PED files: {}, {}", vcfFile, pedigreeFile);
+    public SampleData createSampleData(Path vcfFilePath, Path pedigreeFilePath) {
+        logger.info("Creating sample data from VCF and PED files: {}, {}", vcfFilePath, pedigreeFilePath);
+        
+        SampleData sampleData = parseSampleDataFromVcfFile(vcfFilePath);
+        sampleData.setVcfFilePath(vcfFilePath);
+        //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
+        List<Gene> geneList = geneFactory.createGenes(sampleData.getVariantEvaluations());
+        sampleData.setGenes(geneList);
 
-        VCFReader vcfParser = createVcfParser(vcfFile);
-
-        SampleData sampleData = parseVcfHeader(vcfParser);
-
-        Pedigree pedigree = createPedigreeData(pedigreeFile, sampleData);
+        Pedigree pedigree = pedigreeFactory.createPedigreeForSampleData(pedigreeFilePath, sampleData);
         sampleData.setPedigree(pedigree);
 
-        List<Variant> variantList = parseVcfBody(vcfParser);
+        return sampleData;
+    }
 
+    private SampleData parseSampleDataFromVcfFile(Path vcfFile) {
+        VCFReader vcfReader = createVcfParser(vcfFile);
+        SampleData sampleData = createSampleDataFromVcf(vcfReader);
+        
+        List<Variant> variantList = createVariants(vcfReader);
         //Now we've got all the basic bits of data sorted we'll need to fill-in the details needed for analysis
-        List<VariantEvaluation> variantEvaluationList = createVariantEvaluations(variantList);
-        sampleData.setVariantEvaluations(variantEvaluationList);
+        List<VariantEvaluation> variantEvaluations = createVariantEvaluations(variantList);
+        sampleData.setVariantEvaluations(variantEvaluations);
+                
+        return sampleData;
+    }
+       
+    private VCFReader createVcfParser(Path vcfFile) {
+        VCFReader vcfReader = null;
+        try {
+            vcfReader = new VCFReader(vcfFile.toString());
+        } catch (VCFParseException ex) {
+            String message = String.format("Could not create VCFReader for VCF file: '%s'", vcfFile);
+            logger.error(message, ex);
+            throw new SampleDataCreationException(message, ex);
+        }
+        return vcfReader;
+    }
+    
+    private SampleData createSampleDataFromVcf(VCFReader vcfReader) {
+        logger.info("Creating SampleData from VCF");
 
-        //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
-        List<Gene> geneList = GeneFactory.createGeneList(sampleData.getVariantEvaluations());
+        try {
+            vcfReader.inputVCFheader();
+        } catch (VCFParseException ex) {
+            String message = String.format("Unable to parse header information from VCF file: '%s'", vcfReader.getVCFFileName());
+            logger.error(message, ex);
+            throw new SampleDataCreationException(message, ex);
+        }
 
-        sampleData.setGeneList(geneList);
+        SampleData sampleData = new SampleData();
+        sampleData.setVcfHeader(vcfReader.get_vcf_header());
+        sampleData.setSampleNames(vcfReader.getSampleNames());
+        sampleData.setNumberOfSamples(vcfReader.getNumberOfSamples());
 
         return sampleData;
+    }
+
+    private List<Variant> createVariants(VCFReader vcfReader) {
+        List<Variant> variantList = new ArrayList<>();
+        logger.info("Parsing Variants from VCF");
+        try {
+
+            Iterator<Variant> variantIterator = vcfReader.getVariantIterator();
+            while (variantIterator.hasNext()) {
+                variantList.add(variantIterator.next());
+
+            }
+        } catch (JannovarException ex) {
+            String message = String.format("Error parsing Variants from VCF file '%s'", vcfReader.getVCFFileName());
+            logger.error(message, ex);
+            throw new SampleDataCreationException(message, ex);
+        }
+
+        return variantList;
     }
 
     private List<VariantEvaluation> createVariantEvaluations(List<Variant> variantList) {
@@ -82,144 +138,10 @@ public class SampleDataFactory {
         return variantEvaluations;
     }
 
-    private VCFReader createVcfParser(Path vcfFile) {
-        VCFReader parser;
-        try {
-            parser = new VCFReader(vcfFile.toString());
-        } catch (VCFParseException ve) {
-            logger.error("Could not create VCFReader for VCF file {}", vcfFile, ve);
-            return null;
+    public class SampleDataCreationException extends RuntimeException {
+
+        public SampleDataCreationException(String format, Exception e) {
+            super(format, e);
         }
-        return parser;
-    }
-
-    private List<Variant> parseVcfBody(VCFReader vcfParser) {
-        List<Variant> variantList = new ArrayList<>();
-        logger.info("Parsing Variants from VCF");
-        try {
-
-            Iterator<Variant> variantIterator = vcfParser.getVariantIterator();
-            while (variantIterator.hasNext()) {
-                variantList.add(variantIterator.next());
-
-            }
-        } catch (JannovarException ex) {
-            logger.error("Error parsing Variants from VCF file {}", vcfParser.getVCFFileName(), ex);
-        }
-
-        return variantList;
-    }
-
-    /**
-     * Input the VCF file using the VCFReader class. The method will initialize
-     * the snv_list, which contains one item for each variant in the VCF file,
-     * as well as the header, which contains a list of the header lines of the
-     * VCF file that will be used for printing the output filtered VCF. Note
-     * that the {@code VCFReader} class is from the jannovar library.
-     * <P>
-     * The {@code Variant} class is also from the Jannovar library, and it
-     * contains all of the relevant information about variants that can be
-     * obtained from the VCF file. The exomizer package has a class called
-     * {@link exomizer.exome.VariantEvaluation VariantEvaluation}, which is used
-     * to capture all of the evaluations (pathogenicity, frequency) etc., that
-     * are not represented in the VCF file itself.
-     *
-     * @param vcfParser
-     * @return a List of Variants
-     */
-    protected SampleData parseVcfHeader(VCFReader vcfParser) {
-        logger.info("Creating SampleData from VCF");
-
-        try {
-            vcfParser.inputVCFheader();
-        } catch (VCFParseException ex) {
-            logger.error("Unable to parser header information from VCF file {}", vcfParser.getVCFFileName(), ex);
-        }
-
-        SampleData sampleData = new SampleData();
-        sampleData.setVcfHeader(vcfParser.get_vcf_header());
-        sampleData.setSampleNames(vcfParser.getSampleNames());
-        sampleData.setNumberOfSamples(vcfParser.getNumberOfSamples());
-
-        return sampleData;
-    }
-
-    /**
-     * The Exomiser can perform filtering of VCF data according to pedigree
-     * data. If the VCF file contains multiple samples, then the Exomiser
-     * requires a corresponding PED file to be able to analyze the inheritance
-     * pattern of the variants. The PED file is parsed by the PEDFileParser
-     * class in jannovar. This results in a Pedigree object that is used to do
-     * the pedigree analysis. The VCF Parser from Jannovar creates Genotype
-     * objects for each variant in the VCF file, and these can be compared to
-     * the pedigree information. The {@link exomizer.exome.Gene Gene} class
-     * coordinates this analysis.
-     * <P>
-     * Note that for single-sample VCF files, a Pedigree object is still
-     * constructed, and we assume that the sample is from an affected person.
-     *
-     * @param pedigreeFilePath
-     * @param sampleData
-     * @return
-     */
-    protected Pedigree createPedigreeData(Path pedigreeFilePath, SampleData sampleData) {
-        logger.info("Processing pedigree data: {}", pedigreeFilePath);
-        Pedigree pedigree = null;
-        //yes, odd but necessary as the jannovar package explicitly demands an ArrayList
-        ArrayList<String> sampleNames = new ArrayList();
-        sampleNames.addAll(sampleData.getSampleNames());
-        logger.info("SampleData names: {}", sampleNames);
-        if (sampleData.getNumberOfSamples() == 1) {
-            String sample = "single sample";
-            if (!sampleNames.isEmpty()) {
-                sample = sampleNames.get(0);
-            }
-            pedigree = Pedigree.constructSingleSamplePedigree(sample);
-            logger.info("Created a single sample pedigree");
-        } else {
-            PedFileParser parser = new PedFileParser();
-            if (pedigreeFilePath == null) {
-                logger.error("VCF file has {} samples but no PED file available.", sampleData.getNumberOfSamples());
-                logger.error("PED file must be be provided for multi-sample VCF files.");
-                //terminate the program - we really need one of these.
-                throw new RuntimeException("Pedigree file path cannot be null.");
-            }
-            try {
-                pedigree = parser.parseFile(pedigreeFilePath.toString());
-                consolidateVCFandPedFileSamples(pedigree, sampleNames);
-                logger.info("Created a pedigree for {} people", pedigree.getPedigreeSize());
-            } catch (PedParseException e) {
-                logger.error("Unable to parse PED file: {}", pedigreeFilePath, e);
-            }
-        }
-        
-        if (pedigree == null) {
-            //we really need one of these so if we can't create one, fail early and hard.
-            //This will simply cause an NPE later on, so we might as well be explicit about the root cause of the problem.
-            throw new RuntimeException(String.format("Unable to create a Pedigree object from the path specified: %s", pedigreeFilePath));
-        }
-        return pedigree;
-    }
-
-    /**
-     * This function intends to check that PED file data is compatible to VCF
-     * sample names. That is, are the names in the PED file identical with the
-     * names in the VCF file? If there is a discrepancy, this function will
-     * throw an exception. If everything is OK there, this function will
-     * additional rearrange the order of the persons represented in the PED file
-     * so that it is identical to the order in the VCF file. This will make
-     * Pedigree analysis more efficient and the code more straightforward.
-     *
-     * @param pedigree
-     * @param sampleNames
-     */
-    private void consolidateVCFandPedFileSamples(Pedigree pedigree, ArrayList<String> sampleNames) {
-
-        try {
-            pedigree.adjustSampleOrderInPedFile(sampleNames);
-        } catch (PedParseException ppe) {
-            logger.error("Error incurred while re-ordering ped file: {}", ppe);
-        }
-
     }
 }

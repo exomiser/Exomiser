@@ -6,9 +6,6 @@
 
 package de.charite.compbio.exomiser.config;
 
-import de.charite.compbio.exomiser.io.PhenodigmDataDumper;
-import de.charite.compbio.exomiser.io.PhenodigmDataDumperTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**

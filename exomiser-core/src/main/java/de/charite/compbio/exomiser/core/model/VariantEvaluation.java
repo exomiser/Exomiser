@@ -57,8 +57,51 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         //why not set the frequency data too? Well, not having a null implies that
         //the data has been set from the database and if there is no data then 
         //it must be an extremely rare and therefore interesting variant. 
-        //This will then erroneously pass the frequency filter.   
+        //This will then erroneously pass the frequency filter.
         pathogenicityData = new PathogenicityData(null, null, null, null);
+    }
+
+    /**
+     * @return The original variant object resulting from the parse of the VCF
+     * file.
+     */
+    public Variant getVariant() {
+        return this.var;
+    }
+
+    /**
+     * @return the VariantType such as MISSENSE, FRAMESHIFT DELETION, etc.
+     */
+    public VariantType getVariantType() {
+        return this.var.getVariantTypeConstant();
+    }
+
+    /**
+     * @return the HGVS gene symbol associated with the variant.
+     */
+    public String getGeneSymbol() {
+        return parseGeneSymbol(var.getGeneSymbol());
+    }
+    /**
+     * Jannovar produces a string of comma-separated gene symbols if a variant is located in
+     * regions associated with more than one gene e.g. A variant located in an exon of
+     * GENE1 and an intron of GENE2 would have the gene symbol GENE1,GENE2. We
+     * are going to assign the variant to the gene in which it is most
+     * unfavourably located. By convention, Jannovar reports this as the first
+     * gene symbol.
+     */
+    private String parseGeneSymbol(String name) {
+        if (name.contains(",")) {
+            String nameParts[] = name.split(",");
+            String firstName = nameParts[0];
+            logger.debug("Variant found in multiple genes: {}. Assigning it to gene {}", nameParts, firstName);
+            return firstName;
+        }
+        return name;
+    }
+
+    public int getEntrezGeneID() {
+        return this.var.getEntrezGeneID();
     }
 
     /**
@@ -75,31 +118,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public String getAlt() {
         return this.var.get_alt();
-    }
-
-    /**
-     * Add a mutation from ClinVar or HGMD to {@link #mutationRefList}. Note
-     * that for now, we code this as cv|url or hd|url to save space.
-     *
-     * @param anch An HTML anchor element.
-     */
-    public void addMutationReference(String anch) {
-        if (this.mutationRefList == null) {
-            this.mutationRefList = new ArrayList<>();
-        }
-        this.mutationRefList.add(anch);
-    }
-
-    /**
-     * @return list of ClinVar and HGMD references for this position. Note, it
-     * returns an empty (but non-null) list if no mutations were found.
-     */
-    public List<String> getMutationReferenceList() {
-        if (this.mutationRefList == null) {
-            return new ArrayList<>();
-        } else {
-            return this.mutationRefList;
-        }
     }
 
     /**
@@ -187,13 +205,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * @return the HGVS gene symbol associated with the variant.
-     */
-    public String getGeneSymbol() {
-        return this.var.getGeneSymbol();
-    }
-
-    /**
      * @return a String such as chr6:g.29911092G>T
      */
     public String getChromosomalVariant() {
@@ -236,14 +247,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * @return The original variant object resulting from the parse of the VCF
-     * file.
-     */
-    public Variant getVariant() {
-        return this.var;
-    }
-
-    /**
      * @return an integer representing the chromosome. 1-22 are obvious,
      * chrX=23, ChrY=24, ChrM=25.
      */
@@ -260,6 +263,38 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public String getGenotypeAsString() {
         return this.var.getGenotypeAsString();
+    }
+
+    /**
+     * @return the number of individuals with a genotype at this variant.
+     */
+    public int getNumberOfIndividuals() {
+        return this.var.getGenotype().getNumberOfIndividuals();
+    }
+
+    /**
+     * Add a mutation from ClinVar or HGMD to {@link #mutationRefList}. Note
+     * that for now, we code this as cv|url or hd|url to save space.
+     *
+     * @param anch An HTML anchor element.
+     */
+    public void addMutationReference(String anch) {
+        if (this.mutationRefList == null) {
+            this.mutationRefList = new ArrayList<>();
+        }
+        this.mutationRefList.add(anch);
+    }
+
+    /**
+     * @return list of ClinVar and HGMD references for this position. Note, it
+     * returns an empty (but non-null) list if no mutations were found.
+     */
+    public List<String> getMutationReferenceList() {
+        if (this.mutationRefList == null) {
+            return new ArrayList<>();
+        } else {
+            return this.mutationRefList;
+        }
     }
 
     /**
@@ -284,20 +319,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     public Map<FilterType, FilterResult> getFilterResults() {
         return passedFilterResultsMap;
-    }
-
-    /**
-     * @return the number of individuals with a genotype at this variant.
-     */
-    public int getNumberOfIndividuals() {
-        return this.var.getGenotype().getNumberOfIndividuals();
-    }
-
-    /**
-     * @return the VariantType such as MISSENSE, FRAMESHIFT DELETION, etc.
-     */
-    public VariantType getVariantType() {
-        return this.var.getVariantTypeConstant();
     }
 
     /**
@@ -370,9 +391,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * Sort based on chromosome and position. If these are equal, sort based on
-     * the lexicographic order of the reference sequence. If this is equal, sort
-     * based on the lexicographic order of the alt sequence.
+     * Sort based on the variant score. Variant scores are ranked on a scale of
+     * 1 to 0. The comparator will rank the variants with a higher numerical
+     * value variant score before those with a lower value variant score.
+     *
+     * Note: this class has a natural ordering that is inconsistent with equals.
      */
     @Override
     public int compareTo(VariantEvaluation other) {

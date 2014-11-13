@@ -5,13 +5,15 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filter.Filter;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SimpleVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filter.FilterRunner;
+import de.charite.compbio.exomiser.core.filter.GeneFilter;
 import de.charite.compbio.exomiser.core.filter.SimpleGeneFilterRunner;
+import de.charite.compbio.exomiser.core.filter.VariantFilter;
 import de.charite.compbio.exomiser.core.util.GeneScorer;
 import de.charite.compbio.exomiser.core.util.InheritanceModeAnalyser;
 import de.charite.compbio.exomiser.core.writer.OutputFormat;
@@ -43,39 +45,80 @@ public class Exomiser {
     @Autowired
     private PriorityFactory priorityFactory;
     @Autowired
-    private VariantEvaluationDataFactory variantEvaluationFactory;
+    private VariantEvaluationDataService variantEvaluationFactory;
     @Autowired
     private SparseVariantFilterRunner sparseVariantFilterRunner;
-            
+
+    //TODO: this could be made more programmatically configuarable by also allowing
+    //the Filters and Prioritisers be passsed in / set so as to remove the dependency on ExomiserSettings
     public void analyse(SampleData sampleData, ExomiserSettings exomiserSettings) {
+        //don't change the order here - variants should ALWAYS be filtered before
+        //genes otherwise the inheritance mode will break leading to altered
+        //predictions downstream.
+        logger.info("MAKING VARIANT FILTERS");
+        List<VariantFilter> variantFilters = filterFactory.makeVariantFilters(exomiserSettings);
+        runVariantFilters(variantFilters, exomiserSettings, sampleData);
 
-        logger.info("MAKING FILTERS");
-        List<Filter> variantFilters = filterFactory.makeVariantFilters(exomiserSettings);
-        List<Filter> geneFilters = filterFactory.makeGeneFilters(exomiserSettings);
+        logger.info("MAKING GENE FILTERS");
+        List<GeneFilter> geneFilters = filterFactory.makeGeneFilters(exomiserSettings);
+        runGeneFilters(geneFilters, sampleData);
 
-        FilterRunner variantFilterRunner;
+        //Prioritisers should ALWAYS run last.
+        logger.info("MAKING PRIORITISERS");
+        List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
+        runPrioritisers(exomiserSettings, sampleData, priorityList);
+        
+        scoreGenes(exomiserSettings, sampleData);
+    }
+
+    private void runVariantFilters(List<VariantFilter> variantFilters, ExomiserSettings exomiserSettings, SampleData sampleData) {
         logger.info("FILTERING VARIANTS");
+        FilterRunner variantFilterRunner = prepareFilterRunner(exomiserSettings, sampleData);
+        variantFilterRunner.run(variantFilters, sampleData.getVariantEvaluations());
+    }
+
+    private FilterRunner prepareFilterRunner(ExomiserSettings exomiserSettings, SampleData sampleData) {
+        FilterRunner variantFilterRunner = new SimpleVariantFilterRunner();
         if (exomiserSettings.runFullAnalysis()) {
             setVariantFrequencyAndPathogenicityData(sampleData.getVariantEvaluations());
-            variantFilterRunner = new SimpleVariantFilterRunner();
         } else {
             //the sparseVariantFilterer will handle getting data when it needs it.
             variantFilterRunner = sparseVariantFilterRunner;
         }
-        variantFilterRunner.run(variantFilters, sampleData.getVariantEvaluations());
+        return variantFilterRunner;
+    }
 
+    private void setVariantFrequencyAndPathogenicityData(List<VariantEvaluation> variantEvaluations) {
+        logger.info("Setting variant frequency and pathogenicity data");
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            variantEvaluationFactory.setVariantFrequencyAndPathogenicityData(variantEvaluation);
+        }
+    }
+
+    private void runGeneFilters(List<GeneFilter> geneFilters, SampleData sampleData) {
+        // this is needed even if we don't have an inheritance gene filter set as the OMIM prioritiser relies on it
+        calculateInheritanceModesForGenesWhichPassedFilters(sampleData);
         if (!geneFilters.isEmpty()) {
             logger.info("FILTERING GENES");
-            calculateInheritanceModesForGenesWhichPassedFilters(sampleData);
-
             //Filter the resulting Genes for their inheritance mode
             FilterRunner geneFilterRunner = new SimpleGeneFilterRunner();
             geneFilterRunner.run(geneFilters, sampleData.getGenes());
-        }        
+        }
+    }
 
-        logger.info("MAKING PRIORITISERS");
-        List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
+    private void calculateInheritanceModesForGenesWhichPassedFilters(SampleData sampleData) {
+        logger.info("Calculating inheritance mode for genes which passed filters");
+        //check the inheritance mode for the genes
+        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(sampleData.getPedigree());
 
+        for (Gene gene : sampleData.getGenes()) {
+            if (gene.passedFilters()) {
+                gene.setInheritanceModes(inheritanceModeAnalyser.analyseInheritanceModesForGene(gene));
+            }
+        }
+    }
+
+    private void runPrioritisers(ExomiserSettings exomiserSettings, SampleData sampleData, List<Priority> priorityList) {
         logger.info("PRIORITISING GENES");
         //for VCF we need the priority scores for all genes, even those with no passed
         //variants. For other output formats we only need to do if for genes with at
@@ -85,6 +128,9 @@ public class Exomiser {
         } else {
             GenePrioritiser.prioritiseFilteredGenes(priorityList, sampleData.getGenes());
         }
+    }
+
+    private void scoreGenes(ExomiserSettings exomiserSettings, SampleData sampleData) {
         logger.info("SCORING GENES");
         //prioritser needs to provide the mode of scoring it requires. Mostly it is RAW_SCORE.
         //Either RANK_BASED or RAW_SCORE
@@ -94,23 +140,4 @@ public class Exomiser {
         GeneScorer.scoreGenes(sampleData.getGenes(), exomiserSettings.getModeOfInheritance(), sampleData.getPedigree(), scoreMode);
     }
 
-    private void setVariantFrequencyAndPathogenicityData(List<VariantEvaluation> variantEvaluations) {
-        logger.info("Setting variant frequency and pathogenicity data");
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            variantEvaluationFactory.addFrequencyData(variantEvaluation);
-            variantEvaluationFactory.addPathogenicityData(variantEvaluation);
-        }
-    }
-
-    private void calculateInheritanceModesForGenesWhichPassedFilters(SampleData sampleData) {
-        logger.info("Calculating inheritance mode for genes which passed filters");
-        //check the inheritance mode for the genes
-        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(sampleData.getPedigree());
-                
-        for (Gene gene : sampleData.getGenes()) {
-            if (gene.passedFilters()) {
-                gene.setInheritanceModes(inheritanceModeAnalyser.analyseInheritanceModesForGene(gene));
-            }          
-        }
-    }
 }

@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.priority;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,14 +38,7 @@ public class PriorityFactory {
     private DataMatrix randomWalkMatrix;
     @Autowired
     private Path phenomizerDataDirectory;
-    @Autowired
-    private Path hpoOntologyFilePath;
-    @Autowired
-    private Path hpoAnnotationFilePath;
     
-    public PriorityFactory() {
-    }
-
     public List<Priority> makePrioritisers(ExomiserSettings exomiserSettings) {
         
         String disease = exomiserSettings.getDiseaseId();
@@ -116,7 +110,8 @@ public class PriorityFactory {
 
     private void setPrioritiserConnection(Priority priority) {
         try {
-            priority.setConnection(dataSource.getConnection());
+            Connection connection = dataSource.getConnection();
+            priority.setConnection(connection);
         } catch (SQLException ex) {
             logger.error(null, ex);
         }

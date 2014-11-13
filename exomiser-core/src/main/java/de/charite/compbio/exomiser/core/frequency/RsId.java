@@ -7,7 +7,7 @@
 package de.charite.compbio.exomiser.core.frequency;
 
 /**
- * Class representing an NCBI dbSNP rsID.
+ * Class representing an NCBI dbSNP reference SNP rsID.
  * 
  * {@link http://www.ncbi.nlm.nih.gov/projects/SNP/index.html}
  * 
@@ -46,6 +46,6 @@ public class RsId {
 
     @Override
     public String toString() {
-        return "rsId" + id;
+        return "rs" + id;
     }
 }

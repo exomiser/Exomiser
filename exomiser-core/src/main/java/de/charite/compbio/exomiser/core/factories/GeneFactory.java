@@ -33,41 +33,26 @@ public class GeneFactory {
      * @param variantEvaluations
      * @return
      */
-    public static List<Gene> createGeneList(List<VariantEvaluation> variantEvaluations) {
+    public List<Gene> createGenes(List<VariantEvaluation> variantEvaluations) {
         //Record the genes we have seen before.
         Map<String, Gene> geneMap = new HashMap<>();
 
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            /*
-             * Jannovar  outputs multiple possible symbols for
-             * a variant e.g. where a variant is an exon in one gene and intron
-             * in another gene The order of these symbols can vary depending on
-             * the variant although the first one always refers to the most
-             * pathogenic. Therefore hash on this first symbol if multiple
-             */
-            String fullName = variantEvaluation.getGeneSymbol();
-            if (fullName != null && !".".equals(fullName)) {
+            String geneSymbol = variantEvaluation.getGeneSymbol();
+            if (geneSymbol != null && !".".equals(geneSymbol)) {
                 // Off target variants do not have gene-symbols.
                 // This if avoids null pointers
-                String geneName = parseGeneName(fullName);
-                if (geneMap.containsKey(geneName)) {
-                    Gene g = geneMap.get(geneName);
+                if (geneMap.containsKey(geneSymbol)) {
+                    Gene g = geneMap.get(geneSymbol);
                     g.addVariant(variantEvaluation);
                 } else {
                     Gene g = new Gene(variantEvaluation);
-                    geneMap.put(geneName, g);
+                    geneMap.put(geneSymbol, g);
                 }
             }
         }
         logger.info("Made {} genes from {} variants", geneMap.values().size(), variantEvaluations.size());
         return new ArrayList<>(geneMap.values());
     }
-
-    private static String parseGeneName(String name) {
-        if (name.contains(",")) {
-            String nameParts[] = name.split(",");
-            name = nameParts[0];
-        }
-        return name;
-    }
+    
 }
