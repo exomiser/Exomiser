@@ -12,10 +12,7 @@ import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.FilterReport;
-import de.charite.compbio.exomiser.core.filter.FilterReportFactory;
-import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.priority.Priority;
 import jannovar.exome.VariantTypeCounter;
 import java.io.BufferedWriter;
@@ -28,7 +25,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.TemplateMode;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
@@ -47,7 +43,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     
     public HtmlResultsWriter() {
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setTemplateMode(TemplateMode.HTML5);
+        templateResolver.setTemplateMode("HTML5");
         templateResolver.setPrefix("html/views/");
         templateResolver.setSuffix(".html");
         templateEngine = new TemplateEngine();
