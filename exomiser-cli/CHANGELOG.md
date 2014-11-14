@@ -1,5 +1,8 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 5.0.1 2014-11-14
+- No changes to exomiser-cli
+
 ## 5.0.0 2014-11-14
 - New filter option --genes-to-keep  Allows filtering by Entrez gene ID to keep only those genes specified.
 - Added caching options which may significantly increase performance at the expense of memory - see application.properties.
