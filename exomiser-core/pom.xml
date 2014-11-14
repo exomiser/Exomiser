@@ -22,7 +22,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar</artifactId>
-            <version>0.8-SNAPSHOT</version>
+            <version>0.9-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jblas</groupId>

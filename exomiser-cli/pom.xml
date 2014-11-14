@@ -25,11 +25,11 @@
             <version>${project.version}</version>
         </dependency>
         <!--Jannovar is used for providing known gene annotations on variants -->
-        <dependency>
+<!--        <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar</artifactId>
-            <version>0.8-SNAPSHOT</version>
-        </dependency>
+            <version>0.9-SNAPSHOT</version>
+        </dependency>-->
         <!--commons-cli used for parsing the command line -->
         <dependency>
             <groupId>commons-cli</groupId>
