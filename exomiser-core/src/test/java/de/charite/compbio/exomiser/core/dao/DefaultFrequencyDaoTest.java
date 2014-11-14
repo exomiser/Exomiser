@@ -30,7 +30,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = DaoTestConfig.class)
-@Sql(scripts = "file:src/test/resources/sql/frequencyDaoTestData.sql")
+@Sql(scripts = {"file:src/test/resources/sql/create_frequency.sql", "file:src/test/resources/sql/frequencyDaoTestData.sql"})
 public class DefaultFrequencyDaoTest {
 
     @Autowired

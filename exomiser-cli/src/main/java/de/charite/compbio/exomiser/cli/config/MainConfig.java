@@ -92,7 +92,7 @@ public class MainConfig {
     public Path dataPath() {
         String dataDirValue = getValueOfProperty("dataDir");
         Path dataPath = jarFilePath().resolve(dataDirValue);
-        logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
+        logger.debug("Root data source directory set to: {}", dataPath.toAbsolutePath());
 
         return dataPath;
     }
@@ -101,7 +101,7 @@ public class MainConfig {
     public Path ucscFilePath() {
         String ucscFileNameValue = getValueOfProperty("ucscFileName");
         Path ucscFilePath = dataPath().resolve(ucscFileNameValue);
-        logger.info("UCSC data file: {}", ucscFilePath.toAbsolutePath());
+        logger.debug("UCSC data file: {}", ucscFilePath.toAbsolutePath());
         return ucscFilePath;
     }
 
@@ -109,7 +109,7 @@ public class MainConfig {
     public Path phenomizerDataDirectory() {
         String phenomizerDataDirValue = getValueOfProperty("phenomizerDataDir");
         Path phenomizerDataDirectory = dataPath().resolve(phenomizerDataDirValue);
-        logger.info("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
+        logger.debug("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
         return phenomizerDataDirectory;
     }
 
@@ -117,7 +117,7 @@ public class MainConfig {
     public Path hpoOntologyFilePath() {
         String hpoOntologyFileValue = getValueOfProperty("hpoOntologyFile");
         Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(hpoOntologyFileValue);
-        logger.info("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
+        logger.debug("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
         return hpoOntologyFilePath;
     }
 
@@ -125,7 +125,7 @@ public class MainConfig {
     public Path hpoAnnotationFilePath() {
         String hpoAnnotationFileValue = getValueOfProperty("hpoAnnotationFile");
         Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(hpoAnnotationFileValue);
-        logger.info("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
+        logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
 

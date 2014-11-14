@@ -9,7 +9,6 @@ import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.jdbc.Sql;
 
 /**
  *
@@ -20,7 +19,7 @@ public class DaoTestConfig {
     
     @Bean
     public DataSource dataSource() {
-        String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;"; //INIT=runscript from 'src/test/resources/sql/frequencyDaoTestData.sql'
+        String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;";
         String user = "sa";
         String password = "sa";
         

@@ -43,11 +43,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final Set<FilterType> failedFilterTypes;
 
     private float variantScore = 1f;
-
     private List<String> mutationRefList = null;
-
     private FrequencyData frequencyData;
-
     private PathogenicityData pathogenicityData;
 
     public VariantEvaluation(Variant v) {
@@ -80,7 +77,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return the HGVS gene symbol associated with the variant.
      */
     public String getGeneSymbol() {
-        return parseGeneSymbol(var.getGeneSymbol());
+        String name = var.getGeneSymbol();
+        return (name == null) ? "." : parseGeneSymbol(name);
     }
     /**
      * Jannovar produces a string of comma-separated gene symbols if a variant is located in

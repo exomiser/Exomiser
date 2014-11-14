@@ -8,16 +8,12 @@ package de.charite.compbio.exomiser.core.dao;
 import de.charite.compbio.exomiser.core.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityScore;
 import de.charite.compbio.exomiser.core.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.pathogenicity.SiftScore;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import org.hamcrest.core.Is;
-import org.junit.Assert;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = DaoTestConfig.class)
-@Sql("file:src/test/resources/sql/pathogenicityDaoTestData.sql")
+@Sql(scripts = {"file:src/test/resources/sql/create_pathogenicity.sql","file:src/test/resources/sql/pathogenicityDaoTestData.sql"})
 public class DefaultPathogenicityDaoTest {
     
     @Autowired

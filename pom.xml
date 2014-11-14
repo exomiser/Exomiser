@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.charite.compbio</groupId>
     <artifactId>Exomiser</artifactId>
-    <version>4.0.1</version>
+    <version>5.0.0</version>
     <packaging>pom</packaging>
     <name>Exomiser</name>
 
@@ -11,15 +11,16 @@
         <module>exomiser-core</module>
         <module>exomiser-cli</module>
         <module>exomiser-db</module>
-        <module>exomiser-sim</module>
         <module>exomiser-web</module>
     </modules>
     
     <properties>
-        <spring-version>4.1.1.RELEASE</spring-version>
+        <spring.version>4.1.1.RELEASE</spring.version>
+        <log4j.version>2.1</log4j.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>     
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.organization>Genome Research Limited and Charité Universitätsmedizin Berlin</project.organization>
     </properties>
  
     <repositories>
@@ -38,17 +39,17 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${spring-version}</version>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
-            <version>${spring-version}</version>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${spring-version}</version>
+            <version>${spring.version}</version>
             <type>jar</type>
         </dependency>
         <!--Testing framework-->
@@ -61,7 +62,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${spring-version}</version>
+            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -74,7 +75,26 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
+            <version>1.7.7</version>
+        </dependency>
+        <!-- Logging dependencies -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
         </dependency>
         <!--H2 is a very versatile and highly compatible pure java DB-->
         <dependency>
@@ -108,9 +128,17 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.1.201405082137</version>
+                <version>0.7.2.201409121644</version>
                 <configuration>
                     <excludes>
                         <!--		 Application starter 
@@ -121,34 +149,32 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>pre-unit-test</id>
+                        <id>default-prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>post-unit-test</id>
-                        <phase>test</phase>
+                        <id>default-report</id>
+                        <phase>prepare-package</phase>
                         <goals>
-                            <goal>report</goal>		
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
                             <goal>check</goal>
                         </goals>
                         <configuration>
                             <rules>
-                                <rule> 
+                                <rule>
                                     <element>BUNDLE</element>
                                     <limits>
                                         <limit>
-                                            <counter>INSTRUCTION</counter>
-                                            <value>COVEREDRATIO</value>
-                                            <!--yep, pretty low expectations here-->
-                                            <minimum>0.01</minimum>			
-                                        </limit>
-                                        <limit> 
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <!--yep, pretty low expectations here-->
-                                            <minimum>0.01</minimum> 
+                                            <!--                                                <minimum>0.60</minimum>-->
                                         </limit>
                                     </limits>
                                 </rule>
@@ -158,7 +184,5 @@
                 </executions>
             </plugin>
         </plugins>
-
     </build>
-    
 </project>

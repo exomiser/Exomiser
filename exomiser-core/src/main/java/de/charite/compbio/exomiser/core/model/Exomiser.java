@@ -11,7 +11,9 @@ import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SimpleVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filter.FilterRunner;
+import de.charite.compbio.exomiser.core.filter.GeneFilter;
 import de.charite.compbio.exomiser.core.filter.SimpleGeneFilterRunner;
+import de.charite.compbio.exomiser.core.filter.VariantFilter;
 import de.charite.compbio.exomiser.core.util.GeneScorer;
 import de.charite.compbio.exomiser.core.util.InheritanceModeAnalyser;
 import de.charite.compbio.exomiser.core.writer.OutputFormat;
@@ -54,11 +56,11 @@ public class Exomiser {
         //genes otherwise the inheritance mode will break leading to altered
         //predictions downstream.
         logger.info("MAKING VARIANT FILTERS");
-        List<Filter> variantFilters = filterFactory.makeVariantFilters(exomiserSettings);
+        List<VariantFilter> variantFilters = filterFactory.makeVariantFilters(exomiserSettings);
         runVariantFilters(variantFilters, exomiserSettings, sampleData);
 
         logger.info("MAKING GENE FILTERS");
-        List<Filter> geneFilters = filterFactory.makeGeneFilters(exomiserSettings);
+        List<GeneFilter> geneFilters = filterFactory.makeGeneFilters(exomiserSettings);
         runGeneFilters(geneFilters, sampleData);
 
         //Prioritisers should ALWAYS run last.
@@ -69,7 +71,7 @@ public class Exomiser {
         scoreGenes(exomiserSettings, sampleData);
     }
 
-    private void runVariantFilters(List<Filter> variantFilters, ExomiserSettings exomiserSettings, SampleData sampleData) {
+    private void runVariantFilters(List<VariantFilter> variantFilters, ExomiserSettings exomiserSettings, SampleData sampleData) {
         logger.info("FILTERING VARIANTS");
         FilterRunner variantFilterRunner = prepareFilterRunner(exomiserSettings, sampleData);
         variantFilterRunner.run(variantFilters, sampleData.getVariantEvaluations());
@@ -93,7 +95,7 @@ public class Exomiser {
         }
     }
 
-    private void runGeneFilters(List<Filter> geneFilters, SampleData sampleData) {
+    private void runGeneFilters(List<GeneFilter> geneFilters, SampleData sampleData) {
         // this is needed even if we don't have an inheritance gene filter set as the OMIM prioritiser relies on it
         calculateInheritanceModesForGenesWhichPassedFilters(sampleData);
         if (!geneFilters.isEmpty()) {

@@ -47,87 +47,78 @@ public class SampleDataFactory {
         geneFactory = new GeneFactory();
     }
 
-    public SampleData createSampleData(Path vcfFile, Path pedigreeFile) {
-        logger.info("Creating sample data from VCF and PED files: {}, {}", vcfFile, pedigreeFile);
+    public SampleData createSampleData(Path vcfFilePath, Path pedigreeFilePath) {
+        logger.info("Creating sample data from VCF and PED files: {}, {}", vcfFilePath, pedigreeFilePath);
         
-        SampleData sampleData = parseSampleDataFromVcfFile(vcfFile);
+        SampleData sampleData = parseSampleDataFromVcfFile(vcfFilePath);
+        sampleData.setVcfFilePath(vcfFilePath);
+        //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
+        List<Gene> geneList = geneFactory.createGenes(sampleData.getVariantEvaluations());
+        sampleData.setGenes(geneList);
 
-        Pedigree pedigree = pedigreeFactory.createPedigreeForSampleData(pedigreeFile, sampleData);
+        Pedigree pedigree = pedigreeFactory.createPedigreeForSampleData(pedigreeFilePath, sampleData);
         sampleData.setPedigree(pedigree);
 
         return sampleData;
     }
 
     private SampleData parseSampleDataFromVcfFile(Path vcfFile) {
-        VCFReader vcfParser = createVcfParser(vcfFile);
-        SampleData sampleData = createSampleDataFromVcf(vcfParser);
-        List<Variant> variantList = createVariants(vcfParser);
+        VCFReader vcfReader = createVcfParser(vcfFile);
+        SampleData sampleData = createSampleDataFromVcf(vcfReader);
+        
+        List<Variant> variantList = createVariants(vcfReader);
         //Now we've got all the basic bits of data sorted we'll need to fill-in the details needed for analysis
         List<VariantEvaluation> variantEvaluations = createVariantEvaluations(variantList);
         sampleData.setVariantEvaluations(variantEvaluations);
-        
-        //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
-        List<Gene> geneList = geneFactory.createGenes(sampleData.getVariantEvaluations());
-        sampleData.setGenes(geneList);
-        
+                
         return sampleData;
     }
-
-        
+       
     private VCFReader createVcfParser(Path vcfFile) {
-        VCFReader parser = null;
+        VCFReader vcfReader = null;
         try {
-            parser = new VCFReader(vcfFile.toString());
-        } catch (VCFParseException ve) {
-            logger.error("Could not create VCFReader for VCF file {}", vcfFile, ve);
+            vcfReader = new VCFReader(vcfFile.toString());
+        } catch (VCFParseException ex) {
+            String message = String.format("Could not create VCFReader for VCF file: '%s'", vcfFile);
+            logger.error(message, ex);
+            throw new SampleDataCreationException(message, ex);
         }
-        return parser;
+        return vcfReader;
     }
     
-    /**
-     * Input the VCF file using the VCFReader class. The method will initialize
-     * the snv_list, which contains one item for each variant in the VCF file,
-     * as well as the header, which contains a list of the header lines of the
-     * VCF file that will be used for printing the output filtered VCF. Note
-     * that the {@code VCFReader} class is from the jannovar library.
-     * <P>
-     * The {@code Variant} class is also from the Jannovar library, and it
-     * contains all of the relevant information about variants that can be
-     * obtained from the VCF file. The exomizer package has a class called
-     * {@link exomizer.exome.VariantEvaluation VariantEvaluation}, which is used
-     * to capture all of the evaluations (pathogenicity, frequency) etc., that
-     * are not represented in the VCF file itself.
-     *
-     */
-    private SampleData createSampleDataFromVcf(VCFReader vcfParser) {
+    private SampleData createSampleDataFromVcf(VCFReader vcfReader) {
         logger.info("Creating SampleData from VCF");
 
         try {
-            vcfParser.inputVCFheader();
+            vcfReader.inputVCFheader();
         } catch (VCFParseException ex) {
-            logger.error("Unable to parser header information from VCF file {}", vcfParser.getVCFFileName(), ex);
+            String message = String.format("Unable to parse header information from VCF file: '%s'", vcfReader.getVCFFileName());
+            logger.error(message, ex);
+            throw new SampleDataCreationException(message, ex);
         }
 
         SampleData sampleData = new SampleData();
-        sampleData.setVcfHeader(vcfParser.get_vcf_header());
-        sampleData.setSampleNames(vcfParser.getSampleNames());
-        sampleData.setNumberOfSamples(vcfParser.getNumberOfSamples());
+        sampleData.setVcfHeader(vcfReader.get_vcf_header());
+        sampleData.setSampleNames(vcfReader.getSampleNames());
+        sampleData.setNumberOfSamples(vcfReader.getNumberOfSamples());
 
         return sampleData;
     }
 
-    private List<Variant> createVariants(VCFReader vcfParser) {
+    private List<Variant> createVariants(VCFReader vcfReader) {
         List<Variant> variantList = new ArrayList<>();
         logger.info("Parsing Variants from VCF");
         try {
 
-            Iterator<Variant> variantIterator = vcfParser.getVariantIterator();
+            Iterator<Variant> variantIterator = vcfReader.getVariantIterator();
             while (variantIterator.hasNext()) {
                 variantList.add(variantIterator.next());
 
             }
         } catch (JannovarException ex) {
-            logger.error("Error parsing Variants from VCF file {}", vcfParser.getVCFFileName(), ex);
+            String message = String.format("Error parsing Variants from VCF file '%s'", vcfReader.getVCFFileName());
+            logger.error(message, ex);
+            throw new SampleDataCreationException(message, ex);
         }
 
         return variantList;
@@ -147,4 +138,10 @@ public class SampleDataFactory {
         return variantEvaluations;
     }
 
+    public class SampleDataCreationException extends RuntimeException {
+
+        public SampleDataCreationException(String format, Exception e) {
+            super(format, e);
+        }
+    }
 }

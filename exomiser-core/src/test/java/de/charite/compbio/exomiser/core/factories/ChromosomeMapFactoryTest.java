@@ -21,5 +21,5 @@ public class ChromosomeMapFactoryTest {
         Path incorrectPath = Paths.get("wibble");
         ChromosomeMapFactory.deserializeKnownGeneData(incorrectPath);
     }
-    
+   
 }

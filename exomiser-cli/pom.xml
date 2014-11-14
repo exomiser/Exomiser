@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>4.0.1</version>
+        <version>5.0.0</version>
     </parent>
   
     <properties>
@@ -40,17 +40,17 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.0-rc1</version>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.0-rc1</version>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.0-rc1</version>
+            <version>${log4j.version}</version>
         </dependency>
         <!-- Test dependencies -->
         <dependency>
@@ -70,14 +70,6 @@
             </resource>
         </resources> 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.17</version>
-                <configuration>
-                    <skipTests>false</skipTests>
-                </configuration>
-            </plugin>
             <!-- Make an executable jar and specify the main class and classpath -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

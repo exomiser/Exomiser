@@ -82,27 +82,27 @@ public class FilterFactoryTest {
         
         ExomiserSettings settings = settingsBuilder.genesToKeepList(geneIdsToKeep).removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
 
-        List<Filter> expResult = new ArrayList<>();
+        List<VariantFilter> expResult = new ArrayList<>();
 
-        Filter geneIdFilter = new EntrezGeneIdFilter(geneIdsToKeep);
+        VariantFilter geneIdFilter = new EntrezGeneIdFilter(geneIdsToKeep);
         expResult.add(geneIdFilter);
 
-        Filter targetFilter = new TargetFilter();
+        VariantFilter targetFilter = new TargetFilter();
         expResult.add(targetFilter);
         
-        Filter frequencyFilter = new FrequencyFilter(0.25f, false);
+        VariantFilter frequencyFilter = new FrequencyFilter(0.25f, false);
         expResult.add(frequencyFilter);
         
-        Filter qualityFilter = new QualityFilter(2f);
+        VariantFilter qualityFilter = new QualityFilter(2f);
         expResult.add(qualityFilter);
         
-        Filter pathogenicityFilter = new PathogenicityFilter(true);
+        VariantFilter pathogenicityFilter = new PathogenicityFilter(true);
         expResult.add(pathogenicityFilter);
         
-        Filter intervalFilter = new IntervalFilter(interval);
+        VariantFilter intervalFilter = new IntervalFilter(interval);
         expResult.add(intervalFilter);
         
-        List<Filter> result = instance.makeVariantFilters(settings);
+        List<VariantFilter> result = instance.makeVariantFilters(settings);
         assertThat(result, equalTo(expResult));
     }
     
@@ -113,24 +113,24 @@ public class FilterFactoryTest {
                 //and a Inheritance GeneFilter
                 .modeOfInheritance(ModeOfInheritance.X_DOMINANT).build();
 
-        List<Filter> expResult = new ArrayList<>();
+        List<VariantFilter> expResult = new ArrayList<>();
 
-        Filter targetFilter = new TargetFilter();
+        VariantFilter targetFilter = new TargetFilter();
         expResult.add(targetFilter);
         
-        Filter frequencyFilter = new FrequencyFilter(0.25f, false);
+        VariantFilter frequencyFilter = new FrequencyFilter(0.25f, false);
         expResult.add(frequencyFilter);
         
-        Filter qualityFilter = new QualityFilter(2f);
+        VariantFilter qualityFilter = new QualityFilter(2f);
         expResult.add(qualityFilter);
         
-        Filter pathogenicityFilter = new PathogenicityFilter(true);
+        VariantFilter pathogenicityFilter = new PathogenicityFilter(true);
         expResult.add(pathogenicityFilter);
         
-        Filter intervalFilter = new IntervalFilter(interval);
+        VariantFilter intervalFilter = new IntervalFilter(interval);
         expResult.add(intervalFilter);
         
-        List<Filter> result = instance.makeVariantFilters(settings);
+        List<VariantFilter> result = instance.makeVariantFilters(settings);
         assertThat(result, equalTo(expResult));
     }
     
@@ -140,13 +140,13 @@ public class FilterFactoryTest {
         //make a new Settings object specifying an Inheritance GeneFilter
         ExomiserSettings settings = settingsBuilder.modeOfInheritance(modeOfInheritance).build();
 
-        List<Filter> expResult = new ArrayList<>();
+        List<GeneFilter> expResult = new ArrayList<>();
 
-        Filter inheritanceFilter = new InheritanceFilter(modeOfInheritance);
+        GeneFilter inheritanceFilter = new InheritanceFilter(modeOfInheritance);
         expResult.add(inheritanceFilter);
         
                 
-        List<Filter> result = instance.makeGeneFilters(settings);
+        List<GeneFilter> result = instance.makeGeneFilters(settings);
         assertThat(result, equalTo(expResult));
     }
 

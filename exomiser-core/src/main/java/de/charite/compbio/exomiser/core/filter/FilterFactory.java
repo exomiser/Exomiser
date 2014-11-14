@@ -30,8 +30,8 @@ public class FilterFactory {
      * @param settings
      * @return A list of {@code VariantFilter} objects
      */
-    public List<Filter> makeVariantFilters(ExomiserSettings settings) {
-        List<Filter> variantFilters = new ArrayList<>();
+    public List<VariantFilter> makeVariantFilters(ExomiserSettings settings) {
+        List<VariantFilter> variantFilters = new ArrayList<>();
 
         List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
@@ -71,8 +71,8 @@ public class FilterFactory {
      * @param settings
      * @return GeneFilters to run
      */
-    public List<Filter> makeGeneFilters(ExomiserSettings settings) {
-        List<Filter> geneFilters = new ArrayList<>();
+    public List<GeneFilter> makeGeneFilters(ExomiserSettings settings) {
+        List<GeneFilter> geneFilters = new ArrayList<>();
 
         List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
