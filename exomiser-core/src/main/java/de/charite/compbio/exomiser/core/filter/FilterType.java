@@ -14,6 +14,9 @@ public enum FilterType {
     /**
      * Flag for output of field representing the Quality filter for the VCF
      * entry
+     *//**
+     * Flag for output of field representing the Quality filter for the VCF
+     * entry
      */
     QUALITY_FILTER,
     /**
@@ -23,7 +26,7 @@ public enum FilterType {
     /**
      * Flag to represent filtering by a user entered set of genes
      */
-    GENE_LIST_FILTER,
+    ENTREZ_GENE_ID_FILTER,
     /**
      * Flag to output results of filtering against polyphen, SIFT, and mutation
      * taster.
@@ -47,7 +50,7 @@ public enum FilterType {
     @Override
     public String toString() {
         switch (this) {
-            case GENE_LIST_FILTER:
+            case ENTREZ_GENE_ID_FILTER:
                 return "Genes to keep";
             case QUALITY_FILTER:
                 return "Quality";

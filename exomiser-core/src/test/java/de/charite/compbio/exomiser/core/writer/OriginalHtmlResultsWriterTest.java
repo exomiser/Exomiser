@@ -30,7 +30,7 @@ public class OriginalHtmlResultsWriterTest {
     @Test
     public void testWrite() {
         SampleData sampleData = new SampleData();
-        sampleData.setGeneList(new ArrayList<Gene>());
+        sampleData.setGenes(new ArrayList<Gene>());
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWriteOriiginal.html").build();
         List<VariantFilter> filterList = new ArrayList<>();
         List<Priority> priorityList = new ArrayList<>();

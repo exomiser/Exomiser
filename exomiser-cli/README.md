@@ -1,61 +1,12 @@
-The Exomiser - Command Line Executable 
-===============================================================
-# Change log (version numbers follow semantic versioning - semver.org)  
+# The Exomiser - A Tool to Annotate and Prioritize Exome Variants: Command Line Executable
 
-## 4.0.1 2014-10-23
-- Fixed bug where OMIM prioritiser did not work when inheritance model was not specified
-- Adjustment of the exomiser-allspecies algorithm for PPI hits
+## Installation
 
-## 4.0.0 2014-09-19
-- Changed FilterScores to FilterResults to encapsulate the pass/fail , score and filterTypes returned from the filters in various ways previously.
-- Changed Filter behaviour to simply return a FilterResult instead of altering the VariantEvaluation in inconsistent ways.
-- VariantEvaluation now hides a bit more of its inner workings regarding FilterResults.
-- PathogenicityData will now return its own most pathogenic score instead of relying on something else to figure this out.
+1. Download and unzip exomiser-cli-${project.version}-distribution.zip
+2. Download exomiser-${project.version}.h2.db.zip from the h2_db_dumps folder and unzip in the exomiser-cli-${project.version}/data directory
+3. Run the example commands below from the exomiser-cli-${project.version} directory
 
-- Major changes to PathogenicityFilter behaviour - Missense variants will always pass the filter regardless of their predicted pathogenicity. Other variant types can now be filtered according to the cutoff score or allowed to pass irrespective of the score.  
-- Command line option changes:
-    -P --remove-path-filter-cutoff command line option added to allow all variant types through pathogenicity filter.
-    -P --keep-non-pathogenic-missense command line option removed.
-    -P option default changed from true to false! Sorry. Check your existing settings carefully!
-
-- Added GeneFilter functionality
-- Renamed Scorable interface to Score
-- Renamed VariantEvaluation variables and accessor methods:
-    getFilterScoreMap to getFilterResults to match how it is referred to in the code output.
-    getFailedFilters to getFailedFilterTypes
-    passesFilters to passedFilters
-
-- Bug-fixes 
-    - Prioritisers now release database connections when finished (affects batch-mode performance)
-    - Inheritance filter now performs correctly in all cases.
-
-## 3.0.2 2014-09-08
-- VCF output now contains original VCF INFO field with exomiser info appended onto this. 
-- Bug-fix for crash when Jannovar found no annotations for a variant.
-
-## 3.0.1 2014-09-04
-- Bug-fix for duplicate variants in Frequency table where the RSID was different.
-
-## 3.0.0 2014-08-22
-- Completely re-worked under the hood code
-- New extensible API
-- Simplified command-line usage
-- Multiple output formats
-- Batch mode analysis
-- Settings file input
-- Zero-config installation 
-
-## 2.1.0 2014-05-06
-- Embedded H2 database or PostgreSQL
-- Simplified set-up/installation
-
-# Installation
-
-1. Download and unzip exomiser-cli-4.0.1-distribution.zip
-2. Download exomiser-4.0.0.h2.db.zip from the h2_db_dumps folder and unzip in the exomiser-cli-4.0.1/data directory
-3. Run the example commands below from the exomiser-cli-4.0.1 directory
-
-# Alternative set-up
+## Alternative set-up
 
 If you want to run Exomiser using an H2 database from a location of your choosing edit the line in application.properties:
 
@@ -72,7 +23,7 @@ with
     (c) load into your postgres server: psql -h yourhost -U yourusername yourdatabase < exomiser_dump.pg
     (d) edit application.properties with the details of how to connect this new database
 
-# Usage
+## Usage
 
 (a) Exomiser v2 - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk 
 
@@ -126,7 +77,7 @@ Want help?
     java -jar exomiser-cli-${project.version}.jar --help
 
    
-# Project Build
+## Project Build
 
 This maven project is used to build the main exomiser jar for distribution. The 
 assembly plugin will produce a zip and tar.gz with an internal structure defined 
@@ -137,14 +88,14 @@ defined in the outputDirectory fields for each fileSet of distribution.xml:
 
     cd target
     mkdir data
-    # copy in the data made from the db build or run this now if you haven't already
+1. copy in the data made from the db build or run this now if you haven't already
     cp ../../exomiser-db/data/exomiser.h2.db data/.
     cp ../../exomiser-db/data/extracted/ucsc_hg19.ser data/.
-    # copy in the rw_string_9_05* data to data/
+2. copy in the rw_string_9_05* data to data/
     ... from somewhere
-    # copy in the extra phenix data to data/
+3. copy in the extra phenix data to data/
     ... from somewhere
-    # make the archive.
+4. make the archive.
     tar -cvzf exomiser.tgz exomiser-cli-${project.version}.jar jdbc.properties log4j2.xml lib data 
     # copy to the ftp site
     scp exomiser.tgz gen1:/nfs/disk69/ftp/pub/resources/software/exomiser/downloads/exomiser/ 

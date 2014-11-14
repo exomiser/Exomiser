@@ -26,6 +26,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests for non-bean (i.e. logic-containing) methods in
@@ -33,27 +37,59 @@ import org.junit.Test;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(MockitoJUnitRunner.class)
 public class VariantEvaluationTest {
 
     VariantEvaluation instance;
     private static final Integer QUALITY = 2;
     private static final Integer READ_DEPTH = 6;
     private static final Genotype HETEROZYGOUS = Genotype.HETEROZYGOUS;
-
+    private static final String GENE1_GENE_SYMBOL = "GENE1";
+    private static final int GENE1_ENTREZ_GENE_ID = 1234567;
+    
+    private static final String GENE2_GENE_SYMBOL = "GENE2";
+    private static final int GENE2_ENTREZ_GENE_ID = 7654321;
+    
     private static final FilterResult FAIL_FREQUENCY_RESULT = new FrequencyFilterResult(0.1f, FAIL);
     private static final FilterResult PASS_FREQUENCY_RESULT = new FrequencyFilterResult(0.1f, PASS);
 
     private static final FilterResult PASS_QUALITY_RESULT = new QualityFilterResult(0.45f, PASS);
 
-    public VariantEvaluationTest() {
-
-    }
-
+    @Mock
+    Variant variant;
+    
+    @Mock
+    Variant variantInTwoGeneRegions;
+    
+    @Mock
+    Variant variantWithNullGeneSymbol;
+    
     @Before
     public void setUp() {
         GenotypeCall genotypeCall = new GenotypeCall(HETEROZYGOUS, QUALITY, READ_DEPTH);
-        byte chr = 1;
-        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
+
+        Mockito.when(variant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
+        Mockito.when(variant.getEntrezGeneID()).thenReturn(GENE1_ENTREZ_GENE_ID);
+        Mockito.when(variant.getChromosomeAsByte()).thenReturn((byte) 1);
+        Mockito.when(variant.get_position()).thenReturn(1);
+        Mockito.when(variant.get_ref()).thenReturn("A");
+        Mockito.when(variant.get_alt()).thenReturn("T");
+        Mockito.when(variant.getGenotype()).thenReturn(genotypeCall);
+        Mockito.when(variant.getVariantPhredScore()).thenReturn(2.2f);
+        Mockito.when(variant.getVariantReadDepth()).thenReturn(READ_DEPTH);
+        
+        Mockito.when(variantInTwoGeneRegions.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL + "," + GENE1_GENE_SYMBOL);
+        Mockito.when(variantInTwoGeneRegions.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
+        Mockito.when(variantInTwoGeneRegions.getChromosomeAsByte()).thenReturn((byte) 1);
+        Mockito.when(variantInTwoGeneRegions.get_position()).thenReturn(1);
+        Mockito.when(variantInTwoGeneRegions.get_ref()).thenReturn("C");
+        Mockito.when(variantInTwoGeneRegions.get_alt()).thenReturn("G");
+        Mockito.when(variantInTwoGeneRegions.getGenotype()).thenReturn(genotypeCall);
+        Mockito.when(variantInTwoGeneRegions.getVariantPhredScore()).thenReturn(2.2f);
+        Mockito.when(variantInTwoGeneRegions.getVariantReadDepth()).thenReturn(READ_DEPTH);
+        
+        Mockito.when(variantWithNullGeneSymbol.getGeneSymbol()).thenReturn(null);
+        
         instance = new VariantEvaluation(variant);
     }
 
@@ -75,9 +111,26 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetGeneSymbol() {
+        assertThat(instance.getGeneSymbol(), equalTo(GENE1_GENE_SYMBOL));
+    }
+
+    @Test
+    public void testGetGeneSymbolReturnsOnlyFirstGeneSymbol() {
+        instance = new VariantEvaluation(variantInTwoGeneRegions);
+        assertThat(instance.getGeneSymbol(), equalTo(GENE2_GENE_SYMBOL));
+    }
+    
+    @Test
+    public void testGetGeneSymbolReturnsADotIfVariantReturnsANull() {
+        instance = new VariantEvaluation(variantWithNullGeneSymbol);
         assertThat(instance.getGeneSymbol(), equalTo("."));
     }
 
+    @Test
+    public void canGetEntrezGeneID() {
+        assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
+    }
+    
     @Test
     public void testGetVariantStartPosition() {
         assertThat(instance.getVariantStartPosition(), equalTo(1));
@@ -225,4 +278,21 @@ public class VariantEvaluationTest {
         assertThat(instance.passedFilter(filterType), is(false));
     }
 
+    @Test
+    public void testGetFilterResultOfFailedFilterIsNull() {
+        FilterType filterType = FAIL_FREQUENCY_RESULT.getFilterType();
+
+        instance.addFilterResult(FAIL_FREQUENCY_RESULT);
+
+        assertThat(instance.getFilterResult(filterType), nullValue());
+    }
+    
+    @Test
+    public void testGetFilterResultOfPassedFilter() {
+        FilterType filterType = PASS_FREQUENCY_RESULT.getFilterType();
+
+        instance.addFilterResult(PASS_FREQUENCY_RESULT);
+
+        assertThat(instance.getFilterResult(filterType), equalTo(PASS_FREQUENCY_RESULT));
+    }
 }

@@ -36,7 +36,7 @@ import org.junit.Test;
  */
 public class ExomiserSettingsTest {
 
-    SettingsBuilder builder;
+    SettingsBuilder vcfPathAndPrioritiserSetBuilder;
 
     //
     private static final String BUILD_VERSION_DEFAULT = "";
@@ -86,12 +86,14 @@ public class ExomiserSettingsTest {
 
     @Before
     public void setUp() {
-        builder = new SettingsBuilder();
+        vcfPathAndPrioritiserSetBuilder = new SettingsBuilder();
+        vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
+        vcfPathAndPrioritiserSetBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
     }
 
     @Test
     public void testThatTheBuilderProducesDefaultExomiserSettingsObject() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = new SettingsBuilder().build();
         assertThat(settings, instanceOf(ExomiserSettings.class));
         System.out.println(settings);
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH_NOT_SET));
@@ -117,27 +119,27 @@ public class ExomiserSettingsTest {
 
     @Test
     public void testBuildVersionDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getBuildVersion(), equalTo(BUILD_VERSION_DEFAULT));
     }
     
     @Test
     public void testThatBuildVersionCanBeSet() {
-        builder.buildVersion(BUILD_VERSION);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.buildVersion(BUILD_VERSION);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getBuildVersion(), equalTo(BUILD_VERSION));
     }
     
     @Test
     public void testBuildTimestampDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getBuildTimestamp(), equalTo(BUILD_TIMESTAMP_DEFAULT));
     }
     
     @Test
     public void testThatBuildTimestampCanBeSet() {
-        builder.buildTimestamp(BUILD_TIMESTAMP);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.buildTimestamp(BUILD_TIMESTAMP);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getBuildTimestamp(), equalTo(BUILD_TIMESTAMP));
     }
     
@@ -147,8 +149,8 @@ public class ExomiserSettingsTest {
     @Test
     public void testThatGetVcfPathReturnsAPath() {
 
-        builder.vcfFilePath(VCF_PATH);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
 
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH));
     }
@@ -158,35 +160,38 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatTheDefaultVcfPathIsNull() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = new SettingsBuilder().build();
         assertThat(settings.getVcfPath(), nullValue());
     }
 
     @Test
     public void testThatTheDefaultSettingsIsNotValid() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = new SettingsBuilder().build();
         assertThat(settings.isValid(), is(false));
     }
 
     @Test
     public void testThatJustSettingAFcvFileIsNotValid() {
-        builder.vcfFilePath(VCF_PATH);
-        ExomiserSettings settings = builder.build();
+        SettingsBuilder settingsBuilder = new SettingsBuilder();
+        settingsBuilder.vcfFilePath(VCF_PATH);
+        ExomiserSettings settings = settingsBuilder.build();
         assertThat(settings.isValid(), is(false));
     }
 
     @Test
     public void testThatJustSettingAPrioritiserIsNotValid() {
-        builder.usePrioritiser(PriorityType.OMIM_PRIORITY);
-        ExomiserSettings settings = builder.build();
+        SettingsBuilder settingsBuilder = new SettingsBuilder();
+        settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
+        ExomiserSettings settings = settingsBuilder.build();
         assertThat(settings.isValid(), is(false));
     }
 
     @Test
     public void testThatTheMinimumRequiredValidSettingsIsAFcvFileAndPrioritiser() {
-        builder.vcfFilePath(VCF_PATH);
-        builder.usePrioritiser(PriorityType.OMIM_PRIORITY);
-        ExomiserSettings settings = builder.build();
+        SettingsBuilder settingsBuilder = new SettingsBuilder();
+        settingsBuilder.vcfFilePath(VCF_PATH);
+        settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
+        ExomiserSettings settings = settingsBuilder.build();
         assertThat(settings.isValid(), is(true));
     }
 
@@ -196,8 +201,8 @@ public class ExomiserSettingsTest {
     @Test
     public void testThatGetPedPathReturnsAPath() {
 
-        builder.pedFilePath(PED_PATH);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.pedFilePath(PED_PATH);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
 
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
     }
@@ -207,7 +212,7 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesAnUndefinedPriorityTypeAsDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = new SettingsBuilder().build();
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NOT_SET));
     }
 
@@ -216,8 +221,8 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesTheSpecifiedPriorityType() {
-        builder.usePrioritiser(PriorityType.OMIM_PRIORITY);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
 
@@ -226,7 +231,7 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesMaximumFrequencyDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
     }
 
@@ -235,8 +240,8 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesMaximumFrequencySpecified() {
-        builder.maximumFrequency(MAXIMUM_FREQUENCY);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.maximumFrequency(MAXIMUM_FREQUENCY);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
     }
 
@@ -245,14 +250,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultMinimumQuality() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesMinimumQualitySpecified() {
-        builder.minimumQuality(MIMIMUM_QUALITY);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.minimumQuality(MIMIMUM_QUALITY);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY));
     }
 
@@ -261,14 +266,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesGeneticIntervalDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesGeneticIntervalSpecified() {
-        builder.geneticInterval(GENETIC_INTERVAL);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.geneticInterval(GENETIC_INTERVAL);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL));
     }
 
@@ -277,14 +282,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesIncludePathogenicDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesIncludePathogenicWhenSet() {
-        builder.removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
     }
 
@@ -293,14 +298,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesRemoveDbSnpDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesRemoveDbSnpWhenSet() {
-        builder.removeDbSnp(REMOVE_DBSNP);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.removeDbSnp(REMOVE_DBSNP);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP));
     }
 
@@ -309,14 +314,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsWhenSet() {
-        builder.removeOffTargetVariants(REMOVE_OFF_TARGET_VARIANTS);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.removeOffTargetVariants(REMOVE_OFF_TARGET_VARIANTS);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS));
     }
 
@@ -325,14 +330,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesCandidateGeneDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesCandidateGeneWhenSet() {
-        builder.candidateGene(CANDIDATE_GENE_NAME);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.candidateGene(CANDIDATE_GENE_NAME);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME));
     }
 
@@ -341,14 +346,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesGetModeOfInheritanceDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesGetModeOfInheritanceWhenSet() {
-        builder.modeOfInheritance(MODE_OF_INHERITANCE);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.modeOfInheritance(MODE_OF_INHERITANCE);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE));
     }
 
@@ -357,14 +362,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultEmptyDiseaseId() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesDiseaseIdWhenSet() {
-        builder.diseaseId(DISEASE_STRING);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.diseaseId(DISEASE_STRING);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING));
     }
 
@@ -373,14 +378,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultEmptyHpoIds() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesHpoIdsWhenSet() {
-        builder.hpoIdList(HPO_LIST);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.hpoIdList(HPO_LIST);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST));
     }
 
@@ -389,14 +394,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultEmptySeedGeneList() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesSeedGeneListWhenSet() {
-        builder.seedGeneList(SEED_GENE_LIST);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.seedGeneList(SEED_GENE_LIST);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST));
     }
 
@@ -405,14 +410,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultNumberOfGenesToShow() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesSetNumberOfGenesToShow() {
-        builder.numberOfGenesToShow(NUMBER_OF_GENES_TO_SHOW);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.numberOfGenesToShow(NUMBER_OF_GENES_TO_SHOW);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW));
     }
 
@@ -421,29 +426,29 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultOutFileName() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = new SettingsBuilder().build();
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileName() {
-        builder.vcfFilePath(VCF_PATH);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET));
     }
     
     @Test
     public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileNameAndBuildVersion() {
-        builder.vcfFilePath(VCF_PATH);
-        builder.buildVersion(BUILD_VERSION);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
+        vcfPathAndPrioritiserSetBuilder.buildVersion(BUILD_VERSION);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET));
     }
 
     @Test
     public void testThatBuilderProducesSetOutFileName() {
-        builder.outFileName(OUT_FILE_NAME);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.outFileName(OUT_FILE_NAME);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
     }
 
@@ -452,34 +457,34 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultOutputFormat() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesSetOutputFormat() {
-        builder.outputFormats(OUTPUT_FORMAT);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.outputFormats(OUTPUT_FORMAT);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
     }
     
     @Test
     public void testThatBuilderProducesRunFullAnalysisDefault() {
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
     }
     
     @Test
     public void testThatBuilderProducesRunFullAnalysisWhenDefined() {
-        builder.runFullAnalysis(RUN_FULL_ANALYSIS);
-        ExomiserSettings settings = builder.build();
+        vcfPathAndPrioritiserSetBuilder.runFullAnalysis(RUN_FULL_ANALYSIS);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
     }
 
     @Test
     public void testThatBuilderCanSetAllValues() {
 
-        builder.vcfFilePath(VCF_PATH)
+        vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH)
                 .pedFilePath(PED_PATH)
                 .usePrioritiser(PriorityType.OMIM_PRIORITY)
                 .maximumFrequency(MAXIMUM_FREQUENCY)
@@ -498,7 +503,7 @@ public class ExomiserSettingsTest {
                 .outputFormats(OUTPUT_FORMAT)
                 .runFullAnalysis(RUN_FULL_ANALYSIS);
 
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
 
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH));
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
@@ -524,7 +529,7 @@ public class ExomiserSettingsTest {
     @Test
     public void testThatBuilderCanSetSomeValuesAndOthersRemainAsDefault() {
 
-        builder.vcfFilePath(VCF_PATH)
+        vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH)
                 .pedFilePath(PED_PATH)
                 .usePrioritiser(PriorityType.OMIM_PRIORITY)
                 .maximumFrequency(MAXIMUM_FREQUENCY)
@@ -533,7 +538,7 @@ public class ExomiserSettingsTest {
                 .outFileName(OUT_FILE_NAME)
                 .outputFormats(OUTPUT_FORMAT);
 
-        ExomiserSettings settings = builder.build();
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
 
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH));
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
@@ -562,7 +567,7 @@ public class ExomiserSettingsTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        ExomiserSettings defaultSettings = builder.build();
+        ExomiserSettings defaultSettings = vcfPathAndPrioritiserSetBuilder.build();
         try {
             String jsonString = mapper.writeValueAsString(defaultSettings);
             System.out.println(jsonString);

@@ -7,8 +7,8 @@ package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.model.ExomiserSettings.GENES_TO_KEEP_OPTION;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.OptionBuilder;
@@ -38,9 +38,9 @@ public class GenesToKeepFilterOptionMarshaller extends AbstractOptionMarshaller 
         settingsBuilder.genesToKeepList(parseGenesToKeepList(values));
     }
     
-    private List<Integer> parseGenesToKeepList(String[] values) {
+    private Set<Integer> parseGenesToKeepList(String[] values) {
 
-        List<Integer> returnList = new ArrayList<>();
+        Set<Integer> returnList = new LinkedHashSet<>();
 
         if (values.length == 0) {
             return returnList;
