@@ -10,7 +10,7 @@
     <parent>
         <artifactId>Exomiser</artifactId>
         <groupId>de.charite.compbio</groupId>
-        <version>4.0.1</version>
+        <version>5.0.0</version>
     </parent>
 
     <properties>
@@ -21,8 +21,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>exomiser-core</artifactId>
-            <version>4.0.1</version>
-            <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
         <!--Spring framework-->
         <dependency>

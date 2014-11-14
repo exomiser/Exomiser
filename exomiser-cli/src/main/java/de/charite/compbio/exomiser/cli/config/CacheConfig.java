@@ -6,6 +6,10 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,20 +47,23 @@ public class CacheConfig {
         String cacheOption = env.getProperty("cache");
         //see http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html for how this works
         CacheManager cacheManager;
+        List<String> cacheNames = new ArrayList<>();
         switch (cacheOption) {
             case "none":
                 cacheManager = noOpCacheManager();
                 break;
             case "mem":
                 cacheManager = new ConcurrentMapCacheManager("pathogenicity", "frequency");
+                cacheNames.addAll(cacheManager.getCacheNames());
                 break;
             case "ehcache":
                 cacheManager = ehCacheCacheManager();
+                cacheNames.addAll(Arrays.asList(ehCacheCacheManager().getCacheManager().getCacheNames()));
                 break;
             default:
                 cacheManager = noOpCacheManager();
         }
-        logger.info("Set up {} caches: {}", cacheOption, cacheManager.getCacheNames());
+        logger.info("Set up {} caches: {}", cacheOption, cacheNames);
         return cacheManager;
     }
 

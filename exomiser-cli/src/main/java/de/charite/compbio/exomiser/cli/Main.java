@@ -51,9 +51,8 @@ public class Main {
         
     public static void main(String[] args) {
 
-        showSplash();
         setup();
-        logger.info("Running Exomiser build version {}", buildVersion);
+        showSplash();
 
         List<ExomiserSettings> sampleSettings = parseArgs(args);
 
@@ -66,7 +65,7 @@ public class Main {
 
     private static void showSplash() {
         String splash = 
-            "\n" +
+            "\n\n" +
             " Welcome to:               \n" +
             "  _____ _            _____                     _               \n" +
             " |_   _| |__   ___  | ____|_  _____  _ __ ___ (_)___  ___ _ __ \n" +
@@ -74,8 +73,8 @@ public class Main {
             "   | | | | | |  __/ | |___ >  < (_) | | | | | | \\__ \\  __/ |   \n" +
             "   |_| |_| |_|\\___| |_____/_/\\_\\___/|_| |_| |_|_|___/\\___|_|   \n" +
             "                                                               \n" + 
-            " A Tool to Annotate and Prioritize Exome Variants: Command Line Executable\n";
-        
+            " A Tool to Annotate and Prioritize Exome Variants     v"+ buildVersion +"\n";
+
         logger.info("{}", splash);
     }
 
@@ -111,7 +110,6 @@ public class Main {
 
     private static void runAnalysis(ExomiserSettings exomiserSettings) {
         //3) Get the VCF file path (this creates a List of Variants)
-        logger.info("SETTINGS RECEIVED " + exomiserSettings);
         Path vcfFile = exomiserSettings.getVcfPath();
         logger.info("Running analysis for {}", vcfFile);
         //4) Get the PED file path if the VCF file has multiple samples
