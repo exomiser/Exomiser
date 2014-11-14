@@ -6,3 +6,4 @@
 *.iml
 *.log
 nbactions.xml
+/target/
