@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.charite.compbio</groupId>
     <artifactId>Exomiser</artifactId>
-    <version>5.0.0</version>
+    <version>5.0.1</version>
     <packaging>pom</packaging>
     <name>Exomiser</name>
 

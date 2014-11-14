@@ -1,5 +1,8 @@
 # The Exomiser - Core Library Changelog
 
+## 5.0.1 2014-11-14
+- Changed Jannovar to version 0.9 to fix a null pointer caused by inability to translate certain variants.
+
 ## 5.0.0 2014-11-14
 - Focused on improving test coverage of the Factory and DAO packages in particular.
 - API changes:
