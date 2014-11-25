@@ -40,7 +40,7 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 @PropertySource({"classpath:exomiser.properties"})
-@Import(CacheConfig.class)
+@Import(value = {CacheConfig.class, DaoConfig.class})
 public class ExomiserConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserConfig.class);

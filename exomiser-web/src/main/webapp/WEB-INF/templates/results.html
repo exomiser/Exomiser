@@ -130,7 +130,7 @@ and open the template in the editor.
                                             <div class="col-md-6">
                                                 <dl th:each="priorityScore: ${gene.priorityScoreMap}">
                                                     <dt th:text="${priorityScore.key}"></dt>
-                                                    <dd th:each="result: ${priorityScore.value.filterResultList}" th:text="${result}"></dd>
+                                                    <dd th:each="result: ${priorityScore.value.filterResultList}" th:text="${result}">MGI Phenodigm: (81.760%)</dd>
                                                 </dl>
                                                 <ul class="list-unstyled" >
                                                     <li th:text="${result}">Phenotypic similarity 0.838 to mouse mutant involving FGFR2.</li>
