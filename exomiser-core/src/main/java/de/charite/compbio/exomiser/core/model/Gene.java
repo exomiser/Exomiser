@@ -382,8 +382,8 @@ public class Gene implements Comparable<Gene>, Filterable {
      */
     @Override
     public int compareTo(Gene other) {
-        float me = getCombinedScore();
-        float you = other.getCombinedScore();
+        float me = combinedScore;
+        float you = other.combinedScore;
         if (me < you) {
             return 1;
         }
