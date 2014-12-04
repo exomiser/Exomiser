@@ -104,15 +104,12 @@ public class GeneTest {
     }
     
     @Test
-    public void testGenesWithSameGeneSymbolsAreComparedByCombinedScoresAreEqual(){
+    public void testGenesWithSameGeneSymbolsAreComparedByCombinedScore(){
         Gene gene1 = new Gene(variantEvaluationGene1);
         Gene gene2 = new Gene(variantEvaluationGene1);
         
         gene1.setCombinedScore(0.0f);
         gene2.setCombinedScore(1.0f);
-        
-        System.out.println(gene1);
-        System.out.println(gene2);
         
         assertThat(gene1.compareTo(gene2), equalTo(AFTER));
         assertThat(gene2.compareTo(gene1), equalTo(BEFORE));    
