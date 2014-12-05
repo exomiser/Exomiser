@@ -7,26 +7,24 @@ package de.charite.compbio.exomiser.core.filter;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import jannovar.exome.Variant;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(MockitoJUnitRunner.class)
 public class QualityFilterTest {
     
-    QualityFilter instance;
+    private QualityFilter instance;
 
     private static final float MIN_QUAL_THRESHOLD = 3.0f;
     private static final float OVER_THRESHOLD = MIN_QUAL_THRESHOLD + 1.0f;
@@ -45,8 +43,6 @@ public class QualityFilterTest {
 
     @Before
     public void setUp() {
-
-        MockitoAnnotations.initMocks(this);
 
         Mockito.when(mockHighQualityVariant.getVariantPhredScore()).thenReturn(OVER_THRESHOLD);
         Mockito.when(mockLowQualityVariant.getVariantPhredScore()).thenReturn(UNDER_THRESHOLD);
