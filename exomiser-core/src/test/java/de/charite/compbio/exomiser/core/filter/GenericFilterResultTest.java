@@ -5,7 +5,10 @@
  */
 package de.charite.compbio.exomiser.core.filter;
 
+import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -77,12 +80,24 @@ public class GenericFilterResultTest {
     }
 
     @Test
-    public void testEquals() {
+    public void testNotEqualToNullObject() {
         Object obj = null;
         GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
-        boolean expResult = false;
-        boolean result = instance.equals(obj);
-        assertEquals(expResult, result);
+        assertThat(instance, not(equalTo(obj)));
+    }
+    
+    @Test
+    public void testNotEqualToDifferentFilterType() {
+        GenericFilterResult other = new GenericFilterResult(FilterType.BED_FILTER, 0.0f, FilterResultStatus.FAIL);
+        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
+        assertThat(instance, not(equalTo(other)));
+    }
+    
+    @Test
+    public void testEqualToOtherFilterResult() {
+        GenericFilterResult other = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
+        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
+        assertThat(instance, equalTo(other));
     }
 
     @Test

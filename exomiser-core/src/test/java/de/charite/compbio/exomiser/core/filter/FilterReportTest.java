@@ -122,6 +122,18 @@ public class FilterReportTest {
     }
 
     @Test
+    public void testNotEqualsOtherFilterReportWithDifferentFailedNumber() {
+        FilterReport other = new FilterReport(FilterType.FREQUENCY_FILTER, PASSED, PASSED);
+        assertThat(instance.equals(other), is(false));
+    }
+    
+    @Test
+    public void testNotEqualsOtherFilterReportOfDifferentFilterType() {
+        FilterReport other = new FilterReport(FilterType.INHERITANCE_FILTER, PASSED, FAILED);
+        assertThat(instance.equals(other), is(false));
+    }
+    
+    @Test
     public void testToString() {
         String expResult = String.format("FilterReport for %s: pass:%d fail:%d %s", FilterType.FREQUENCY_FILTER, PASSED, FAILED, new ArrayList<String>());
         assertThat(instance.toString(), equalTo(expResult));
