@@ -64,6 +64,9 @@ public class VariantEvaluationTest {
     @Mock
     Variant variantWithNullGeneSymbol;
     
+    @Mock
+    Variant unAnnotatedVariant;
+    
     @Before
     public void setUp() {
         GenotypeCall genotypeCall = new GenotypeCall(HETEROZYGOUS, QUALITY, READ_DEPTH);
@@ -77,6 +80,7 @@ public class VariantEvaluationTest {
         Mockito.when(variant.getGenotype()).thenReturn(genotypeCall);
         Mockito.when(variant.getVariantPhredScore()).thenReturn(2.2f);
         Mockito.when(variant.getVariantReadDepth()).thenReturn(READ_DEPTH);
+        Mockito.when(variant.getAnnotation()).thenReturn("variant annotations...");
         
         Mockito.when(variantInTwoGeneRegions.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL + "," + GENE1_GENE_SYMBOL);
         Mockito.when(variantInTwoGeneRegions.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
@@ -89,6 +93,9 @@ public class VariantEvaluationTest {
         Mockito.when(variantInTwoGeneRegions.getVariantReadDepth()).thenReturn(READ_DEPTH);
         
         Mockito.when(variantWithNullGeneSymbol.getGeneSymbol()).thenReturn(null);
+        
+        //This is hard-coding Jannovar's return values be aware this could change
+        Mockito.when(unAnnotatedVariant.getAnnotation()).thenReturn(".");
         
         instance = new VariantEvaluation(variant);
     }
@@ -294,5 +301,16 @@ public class VariantEvaluationTest {
         instance.addFilterResult(PASS_FREQUENCY_RESULT);
 
         assertThat(instance.getFilterResult(filterType), equalTo(PASS_FREQUENCY_RESULT));
+    }
+    
+    @Test
+    public void testHasAnnotationsIsFalse() {
+        VariantEvaluation varEvalWithNoVariantAnnotations = new VariantEvaluation(unAnnotatedVariant);
+        assertThat(varEvalWithNoVariantAnnotations.hasAnnotations(), is(false));
+    }
+    
+    @Test
+    public void testHasAnnotationsIsTrue() {
+        assertThat(instance.hasAnnotations(), is(true));
     }
 }

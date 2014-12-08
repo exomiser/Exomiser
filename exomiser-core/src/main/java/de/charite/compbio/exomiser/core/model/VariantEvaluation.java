@@ -162,6 +162,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return this.var.getAnnotationList();
     }
 
+    public boolean hasAnnotations() {
+        //this is a bit of a hack to flag up any variant evaluations which Jannovar
+        //failed to annotate and therefore will have not have passed and filters.
+        return !var.getAnnotation().equals(".");
+    }
     /**
      * This function returns a list of all of the
      * {@link jannovar.annotation.Annotation Annotation} objects that have been
