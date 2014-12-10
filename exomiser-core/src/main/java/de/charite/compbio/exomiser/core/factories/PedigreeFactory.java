@@ -61,8 +61,7 @@ public class PedigreeFactory {
     private ArrayList<String> createSampleNames(SampleData sampleData) {
         //yes, odd but necessary as the jannovar package explicitly demands an ArrayList
         List<String> sampleDataNames = sampleData.getSampleNames();
-        ArrayList<String> sampleNames = new ArrayList(sampleDataNames);
-        return sampleNames;
+        return new ArrayList(sampleDataNames);
     }
 
     private Pedigree createSingleSamplePedigree(ArrayList<String> sampleNames) {
@@ -84,7 +83,7 @@ public class PedigreeFactory {
         return pedigree;
     }
 
-    private Pedigree parsePedigreeFile(Path pedigreeFilePath, ArrayList<String> sampleNames) throws PedigreeCreationException {
+    private Pedigree parsePedigreeFile(Path pedigreeFilePath, ArrayList<String> sampleNames) {
         try {
             PedFileParser parser = new PedFileParser();
             Pedigree pedigree = parser.parseFile(pedigreeFilePath.toString());
@@ -113,7 +112,7 @@ public class PedigreeFactory {
         }
     }
 
-    private void checkPedigreeIsNotNull(Pedigree pedigree) throws PedigreeCreationException {
+    private void checkPedigreeIsNotNull(Pedigree pedigree) {
         if (pedigree == null) {
             //we really need one of these so if we can't create one, fail early and hard.
             //This will simply cause an NPE later on, so we might as well be explicit about the root cause of the problem.
