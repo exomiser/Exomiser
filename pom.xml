@@ -14,6 +14,13 @@
         <module>exomiser-web</module>
     </modules>
     
+    <licenses>
+        <license>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
+            <url>http://opensource.org/licenses/AGPL-3.0</url>
+        </license>
+    </licenses>
+    
     <properties>
         <spring.version>4.1.1.RELEASE</spring.version>
         <log4j.version>2.1</log4j.version>
@@ -21,6 +28,7 @@
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>Genome Research Limited and Charité Universitätsmedizin Berlin</project.organization>
+        <sonar.language>java</sonar.language>
     </properties>
  
     <repositories>
