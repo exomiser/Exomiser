@@ -103,7 +103,7 @@ public class HGMDParser {
 	     Integer id = this.id2DiseaseMap.get(disease);
 	     int i = disease.indexOf("|");
 	     if (i<0) {
-		 System.err.println("Could not parse HGMD disease/gene string: " + disease);
+		 logger.error("Could not parse HGMD disease/gene string: {}", disease);
 		 System.exit(1);
 	     }
 	     String dis = disease.substring(0,i);
@@ -125,7 +125,7 @@ public class HGMDParser {
      * @param path Path to the allmut.txt file of HGMD.
      */
     public void parseHGMDProFile(String path) {
-	System.out.println("[INFO] Parsing HGMD Pro File: " + path);
+	logger.info("Parsing HGMD Pro File: {}", path);
 	try{     
 	    /* The infile */
 	    FileInputStream fstr = new FileInputStream(path);
@@ -147,7 +147,7 @@ public class HGMDParser {
 	    int c = 0;
 	    int bad=0;
 	    int no_pmid=0;
-	    System.out.println("[INFO] Parsing HGMD Pro File ready " + br.ready() );
+	    logger.info("Parsing HGMD Pro File ready {}", br.ready() );
 	    while ((line = br.readLine()) != null)   {
 		//System.out.println(line);
 		String F[] = line.split("!");
@@ -185,7 +185,7 @@ public class HGMDParser {
 		}
 		    
 		if (diseasename==null || gensym == null) {
-		    System.out.println("[ERROR] Disease or gene sym null on line\n"+line+"\n");
+		    logger.error("Disease or gene sym null on line\n{}\n", line);
 		    continue;
 		}
 		Integer id = getDiseaseGeneID(diseasename,gensym);
@@ -194,14 +194,14 @@ public class HGMDParser {
 		out.write(s + "\n");
 		c++;
 		if (c % 5000 == 0)
-		    System.out.println("[INFO] Parsed " + c + " HGMD mutations");
+		    logger.info("Parsed {} HGMD mutations", c);
 	    }
 	    br.close();
 	    this.out.close();
-	    System.out.println("Parsed " + c + " mutations and skipped " + bad + " malformed lines, and did not find pmid for "+ no_pmid + " mutations");
+	    logger.info("Parsed {} mutations and skipped {} malformed lines, and did not find pmid for {} mutations", c, bad, no_pmid);
 	    outputDiseaseGeneDumpFile();
 	} catch (IOException e) {
-	    e.printStackTrace();
+	    logger.error("{}", e);
 	    System.exit(1);
 	}
 
