@@ -4,6 +4,7 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import jannovar.common.VariantType;
 import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ public class TargetFilter implements VariantFilter {
      * A set of off-target variant types such as Intergenic that we will
      * runFilter out from further consideration.
      */
-    private final EnumSet<VariantType> offTargetVariantTypes;
+    private final Set<VariantType> offTargetVariantTypes;
 
     /**
      * The constructor initializes the set of off-target
