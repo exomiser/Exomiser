@@ -165,15 +165,18 @@ public class HGMDParser {
 		end=F[17];
 		pmid=F[25];
 
-		if (chr.equals("X"))
-		    chr = "23";
-		else if (chr.equals("Y"))
-		    chr = "24";// = new Integer(Y_CHROMOSOME);  // i.e., 24
-		else if (chr.equals("M"))
-		    chr="25";//c = new Integer(M_CHROMOSOME);  // i.e., 25
+                switch (chr) {
+                    case "X":
+                        chr = "23";
+                        break;
+                    case "Y":
+                        chr = "24";
+                        break;
+                    case "M":
+                        chr="25";
+                        break;
+                }
 	
-
-
 		Integer pubmedInt = null;
 		try {
 		    pubmedInt = Integer.parseInt(pmid);
