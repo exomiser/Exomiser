@@ -44,17 +44,20 @@ public class SampleData {
      */
     private Pedigree pedigree;
 
-    private List<VariantEvaluation> variantList;
+    private List<VariantEvaluation> variantEvaluations;
 
-    private List<Gene> geneList;
+    private List<Gene> genes;
+
+    public SampleData() {
+        this.sampleNames = new ArrayList<>();
+        this.variantEvaluations = new ArrayList<>();
+        this.genes = new ArrayList<>();
+    }
         
     /**
      * @return List of Strings representing the sample names in the VCF file.
      */
     public List<String> getSampleNames() {
-        if (sampleNames == null){
-            sampleNames = new ArrayList<>();
-        }
         return sampleNames;
     }
     
@@ -90,11 +93,11 @@ public class SampleData {
     }
 
     public List<VariantEvaluation> getVariantEvaluations() {
-        return variantList;
+        return variantEvaluations;
     }
 
     public void setVariantEvaluations(List<VariantEvaluation> variantList) {
-        this.variantList = variantList;
+        this.variantEvaluations = variantList;
     }
 
     public Pedigree getPedigree() {
@@ -106,10 +109,20 @@ public class SampleData {
     }
 
     public List<Gene> getGenes() {
-        return geneList;
+        return genes;
     }
 
     public void setGenes(List<Gene> geneList) {
-        this.geneList = geneList;
+        this.genes = geneList;
     }    
+
+    public List<VariantEvaluation> getUnAnnotatedVariantEvaluations() {
+        List<VariantEvaluation> unannotatedList = new ArrayList<>();
+        for (VariantEvaluation  varEval : variantEvaluations) {
+            if (!varEval.hasAnnotations()) {
+                unannotatedList.add(varEval);
+            }
+        }  
+        return unannotatedList;
+    }
 }
