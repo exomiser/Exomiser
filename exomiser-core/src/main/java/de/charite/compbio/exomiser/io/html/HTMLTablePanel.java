@@ -9,6 +9,7 @@ import de.charite.compbio.exomiser.priority.PriorityScore;
 import jannovar.pedigree.Pedigree;
 import java.io.IOException;
 import java.io.Writer; 
+import java.util.Collections;
 import java.util.Iterator; 
 import java.util.List;
 import java.util.Map;
@@ -113,9 +114,9 @@ public class HTMLTablePanel extends HTMLTable {
 	out.write("<tbody>\n");
 	out.write("<tr><td>"+ omim +"</td><td>" + scoreString + "</td></tr>\n");	  
 
-	Iterator<VariantEvaluation> iter = gene.getVariantEvaluationIterator();
-	while(iter.hasNext()) {
-	    VariantEvaluation varev = iter.next();
+	List<VariantEvaluation> geneVariantEvaluations = gene.getVariantEvaluations();
+        Collections.sort(geneVariantEvaluations);
+        for (VariantEvaluation varev : geneVariantEvaluations) {
 	    String chrvar = varev.getChromosomalVariant();
 	    String annot = varev.getRepresentativeAnnotation(); 
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 

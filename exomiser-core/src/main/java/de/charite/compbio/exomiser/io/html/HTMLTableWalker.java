@@ -13,6 +13,7 @@ import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.priority.PriorityType;
+import java.util.Collections;
 
 
 /**
@@ -120,9 +121,10 @@ public class HTMLTableWalker extends HTMLTable {
 	} else {
 	    out.write("<tr><td colspan=\"2\">No first or second-degree interactions with seed genes</td></tr>\n");
 	}
-	Iterator<VariantEvaluation> iter = gene.getVariantEvaluationIterator();
-	while(iter.hasNext()) {
-	    VariantEvaluation varev = iter.next();
+	
+        List<VariantEvaluation> geneVariantEvaluations = gene.getVariantEvaluations();
+        Collections.sort(geneVariantEvaluations);
+        for (VariantEvaluation varev : geneVariantEvaluations) {
 	    String chrvar = varev.getChromosomalVariant();
 	    String annot = varev.getRepresentativeAnnotation(); 
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 
@@ -169,9 +171,9 @@ public class HTMLTableWalker extends HTMLTable {
 	out.write("<tbody>\n");
 	out.write("<tr><td>"+ omim +"</td><td>" + scoreString + "</td></tr>\n");	  
 
-	Iterator<VariantEvaluation> iter = gene.getVariantEvaluationIterator();
-	while(iter.hasNext()) {
-	    VariantEvaluation varev = iter.next();
+	List<VariantEvaluation> geneVariantEvaluations = gene.getVariantEvaluations();
+        Collections.sort(geneVariantEvaluations);
+        for (VariantEvaluation varev : geneVariantEvaluations) {
 	    String chrvar = varev.getChromosomalVariant();
 	    String annot = varev.getRepresentativeAnnotation(); 
 	    int n_annot = varev.getNumberOfAffectedTranscripts(); 
