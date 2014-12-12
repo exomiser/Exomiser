@@ -8,7 +8,6 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.util.VariantAnnotator;
 import jannovar.exome.Variant;
 import jannovar.io.VCFReader;
 import jannovar.pedigree.Pedigree;
