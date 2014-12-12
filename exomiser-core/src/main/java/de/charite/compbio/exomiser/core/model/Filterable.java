@@ -17,4 +17,5 @@ public interface Filterable {
     public boolean passedFilters();
     
     public boolean passedFilter(FilterType filterType);
+    
 }
