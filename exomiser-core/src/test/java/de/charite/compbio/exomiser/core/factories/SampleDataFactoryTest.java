@@ -5,10 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory.SampleDataCreationException;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.util.VariantAnnotator;
-import jannovar.exome.Variant;
 import jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,9 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -37,8 +32,8 @@ public class SampleDataFactoryTest {
     
     @Mock
     private VariantAnnotator variantAnnotator;
-
     
+
     @Before
     public void setUp() {
 //        Mockito.when(variantAnnotator.annotateVariant());
@@ -94,13 +89,13 @@ public class SampleDataFactoryTest {
         assertThat(sampleData.getGenes().isEmpty(), is(true));
     }
     
-    @Test(expected = SampleDataCreationException.class)
+    @Test(expected = RuntimeException.class)
     public void throwsErrorWithNonVcfPathAndNullPedFile() {
         Path vcfPath = Paths.get("");
         instance.createSampleData(vcfPath, null);
     }
 
-    @Test(expected = SampleDataCreationException.class)
+    @Test(expected = RuntimeException.class)
     public void throwsErrorWithNonVcfFileAndNullPedFile() {
         Path vcfPath = Paths.get("src/test/resources/invalidPedTestFile.ped");
         instance.createSampleData(vcfPath, null);

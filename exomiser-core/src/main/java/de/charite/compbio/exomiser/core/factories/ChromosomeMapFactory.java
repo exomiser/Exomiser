@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ChromosomeMapFactory {
 
-    public static final Logger logger = LoggerFactory.getLogger(ChromosomeMapFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChromosomeMapFactory.class);
+    
+    private ChromosomeMapFactory() {    
+    }
     
     /**
      * Jannovar makes a serialized file that represents a HashMap<String,
@@ -44,7 +47,7 @@ public class ChromosomeMapFactory {
         return Chromosome.constructChromosomeMapWithIntervalTree(transcriptModels);
     }
 
-    private static ArrayList<TranscriptModel> makeTranscriptModelsFromFile(Path serealizedKnownGenePath) throws RuntimeException {
+    private static ArrayList<TranscriptModel> makeTranscriptModelsFromFile(Path serealizedKnownGenePath) {
         SerializationManager manager = new SerializationManager();
         try {
             return manager.deserializeKnownGeneList(serealizedKnownGenePath.toString());

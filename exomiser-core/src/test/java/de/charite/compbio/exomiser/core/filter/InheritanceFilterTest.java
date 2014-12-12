@@ -8,10 +8,7 @@ package de.charite.compbio.exomiser.core.filter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import jannovar.common.ModeOfInheritance;
-import jannovar.exome.Variant;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
@@ -20,7 +17,6 @@ import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -36,9 +32,6 @@ public class InheritanceFilterTest {
 
     @Mock
     private VariantEvaluation variantEvaluation;
-
-    public InheritanceFilterTest() {
-    }
 
     @Before
     public void setUp() {
@@ -118,6 +111,23 @@ public class InheritanceFilterTest {
 
     }
 
+    @Test
+    public void testNotEqualOtherObject() {
+        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        String string = "string";
+        assertThat(instance.equals(string), is(false));
+        assertThat(string.equals(instance), is(false));
+
+    }
+    
+    @Test
+    public void testNotEqualNull() {
+        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        Object object = null;
+        
+        assertThat(instance.equals(object), is(false));
+    }
+    
     @Test
     public void testToString() {
         InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);

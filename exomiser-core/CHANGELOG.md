@@ -1,5 +1,11 @@
 # The Exomiser - Core Library Changelog
 
+## 5.1.0 2014-12-12
+- Added ability for the VariantEvaluation to report whether the Variant it is associated with has been annotated by Jannovar.
+- VCF output format will now indicate which, if any variants have not been annotated by Jannovar for whatever reason.
+- VariantEvaluation can now report a FilterStatus to indicate whether it has passed, failed or is unfiltered.
+- Further under the hood clean-ups and improved test coverage - now at ~30% 
+
 ## 5.0.1 2014-11-14
 - Changed Jannovar to version 0.9 to fix a null pointer caused by inability to translate certain variants.
 

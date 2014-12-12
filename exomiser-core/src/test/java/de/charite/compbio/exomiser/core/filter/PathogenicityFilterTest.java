@@ -219,4 +219,44 @@ public class PathogenicityFilterTest {
         assertThat(result, equalTo(expResult));
     }
 
+    @Test
+    public void testEqualToOtherPathogenicityFilter() {
+        instance = new PathogenicityFilter(false);
+        PathogenicityFilter other = new PathogenicityFilter(false);
+        assertThat(instance.equals(other), is(true));
+    }
+
+    @Test
+    public void testNotEqualToOtherPathogenicityFilter() {
+        instance = new PathogenicityFilter(false);
+        PathogenicityFilter other = new PathogenicityFilter(true);
+        assertThat(instance.equals(other), is(false));
+    }
+
+    @Test
+    public void testNotEqualToOtherFilterType() {
+        instance = new PathogenicityFilter(false);
+        Filter other = new FrequencyFilter(0.1f, true);
+        assertThat(instance.equals(other), is(false));
+    }
+
+    @Test
+    public void testNotEqualToObjectOfDifferentType() {
+        Object other = "a string";
+        assertThat(instance.equals(other), is(false));
+    }
+
+    @Test
+    public void testNotEqualToNullObject() {
+        Object other = null;
+        assertThat(instance.equals(other), is(false));
+    }
+
+    @Test
+    public void testHashCode() {
+        instance = new PathogenicityFilter(false);
+        PathogenicityFilter other = new PathogenicityFilter(false);
+        assertThat(instance.hashCode(), equalTo(other.hashCode()));
+    }
+
 }

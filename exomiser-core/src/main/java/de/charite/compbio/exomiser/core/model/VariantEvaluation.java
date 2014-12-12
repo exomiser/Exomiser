@@ -12,6 +12,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable {
 
-    public static final Logger logger = LoggerFactory.getLogger(VariantEvaluation.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantEvaluation.class);
     /**
      * An instance of this class encapsulates an object of the class
      * {@link jannovar.exome.Variant Variant} from the Jannovar library, and
@@ -80,13 +81,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         String name = var.getGeneSymbol();
         return (name == null) ? "." : parseGeneSymbol(name);
     }
+
     /**
-     * Jannovar produces a string of comma-separated gene symbols if a variant is located in
-     * regions associated with more than one gene e.g. A variant located in an exon of
-     * GENE1 and an intron of GENE2 would have the gene symbol GENE1,GENE2. We
-     * are going to assign the variant to the gene in which it is most
-     * unfavourably located. By convention, Jannovar reports this as the first
-     * gene symbol.
+     * Jannovar produces a string of comma-separated gene symbols if a variant
+     * is located in regions associated with more than one gene e.g. A variant
+     * located in an exon of GENE1 and an intron of GENE2 would have the gene
+     * symbol GENE1,GENE2. We are going to assign the variant to the gene in
+     * which it is most unfavourably located. By convention, Jannovar reports
+     * this as the first gene symbol.
      */
     private String parseGeneSymbol(String name) {
         if (name.contains(",")) {
@@ -160,6 +162,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     public List<String> getAnnotationList() {
         return this.var.getAnnotationList();
+    }
+
+    public boolean hasAnnotations() {
+        //this is a bit of a hack to flag up any variant evaluations which Jannovar
+        //failed to annotate and therefore will have not have passed and filters.
+        return !var.getAnnotation().equals(".");
     }
 
     /**
@@ -367,6 +375,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * {@link VariantEvaluation} has been filtered this will return true until
      * the {@link VariantEvaluation} has failed a filter.
      *
+     * Note: This may change so that passed/failed/unfiltered can only ever be
+     * true for one status.
+     *
      * @return
      */
     @Override
@@ -376,12 +387,21 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-//        if (filterResultsMap.containsKey(filterType)) {
-//            FilterResult filterResult = filterResultsMap.get(filterType);
-//            return filterResult.passedFilter();
-//        }
-//        return false;
         return !failedFilterTypes.contains(filterType) && passedFilterResultsMap.containsKey(filterType);
+    }
+
+    private boolean isUnFiltered() {
+        return (failedFilterTypes.isEmpty() && passedFilterResultsMap.isEmpty());
+    }
+
+    public FilterStatus getFilterStatus() {
+        if (isUnFiltered()) {
+            return FilterStatus.UNFILTERED;
+        }
+        if (passedFilters()) {
+            return FilterStatus.PASSED;
+        }
+        return FilterStatus.FAILED;
     }
 
     public FilterResult getFilterResult(FilterType filterType) {
@@ -407,6 +427,30 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return 0;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.var);
+        hash = 89 * hash + Float.floatToIntBits(this.variantScore);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final VariantEvaluation other = (VariantEvaluation) obj;
+        if (!Objects.equals(this.var, other.var)) {
+            return false;
+        }
+        return Float.floatToIntBits(this.variantScore) == Float.floatToIntBits(other.variantScore);
+    }
+
+    
     public FrequencyData getFrequencyData() {
         return frequencyData;
     }

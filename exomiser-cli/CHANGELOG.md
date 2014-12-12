@@ -1,5 +1,8 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 5.1.0 2014-12-12
+- No changes to exomiser-cli
+
 ## 5.0.1 2014-11-14
 - No changes to exomiser-cli
 

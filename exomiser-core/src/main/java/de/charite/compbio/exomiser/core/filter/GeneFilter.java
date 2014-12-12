@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core.filter;
 
 import de.charite.compbio.exomiser.core.model.Gene;
-import java.util.List;
 
 /**
  *

@@ -2,6 +2,7 @@ package de.charite.compbio.exomiser.reference;
 
 
 import jannovar.common.Constants;
+import java.util.Objects;
 
 
 
@@ -165,13 +166,50 @@ public class Frequency implements Comparable<Frequency> {
      * <LI>Alt sequence
      * </OL>
      */
+    @Override
     public int compareTo(Frequency f) {
-	if (this.chromosome != f.chromosome) return (this.chromosome - f.chromosome);
-	if (this.pos != f.pos) return (this.pos - f.pos);
-	if (! this.ref.equals(f.ref)) return this.ref.compareTo(f.ref);
+	if (this.chromosome != f.chromosome) {
+            return (this.chromosome - f.chromosome);
+        }
+	if (this.pos != f.pos) {
+            return (this.pos - f.pos);
+        }
+	if (! this.ref.equals(f.ref)) {
+            return this.ref.compareTo(f.ref);
+        }
 	return this.alt.compareTo(f.alt);
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + this.chromosome;
+        hash = 37 * hash + this.pos;
+        hash = 37 * hash + Objects.hashCode(this.ref);
+        hash = 37 * hash + Objects.hashCode(this.alt);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Frequency other = (Frequency) obj;
+        if (this.chromosome != other.chromosome) {
+            return false;
+        }
+        if (this.pos != other.pos) {
+            return false;
+        }
+        if (!Objects.equals(this.ref, other.ref)) {
+            return false;
+        }
+        return Objects.equals(this.alt, other.alt);
+    }
 
     /**
      * This method checks of the frequency object other ias located at the same

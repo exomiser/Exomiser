@@ -22,19 +22,7 @@ public interface Filter<T extends Filterable> {
     public FilterType getFilterType();
 
     /**
-     * Take a list of variants and apply the filter to each variant. If a
-     * variant does not pass the filter it is marked as having failed that
-     * filter.
-     *
-     * @param filterables
-     */
-    
-    //TODO: this needs to move into the FilterRunner class
-//    public void applyFilter(List<T> filterables);
-
-    /**
-     * True or false depending on whether the {@code VariantEvaluation} passes
- the runFilter or not.
+     * True or false depending on whether the {@code VariantEvaluation} passes the runFilter or not.
      *
      * @param filterable
      * @return true if the {@code VariantEvaluation} passes the runFilter.
