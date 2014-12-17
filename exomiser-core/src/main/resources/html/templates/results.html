@@ -27,9 +27,9 @@ and open the template in the editor.
             </h1>
             <ul class="nav nav-pills" id="tabs">
                 <li><a href="#settings" role="tab" data-toggle="tab"><h4>Analysis Settings</h4></a></li>
-                <li><a href="#filtering" role="tab" data-toggle="tab"><h4>Filtering summary</h4></a></li>
-                <li><a href="#distribution" role="tab" data-toggle="tab"><h4>Variant type distribution</h4></a></li>
-                <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4>Prioritised Variant List</h4></a></li>
+                <li><a href="#filtering" role="tab" data-toggle="tab"><h4>Filtering Summary</h4></a></li>
+                <li><a href="#distribution" role="tab" data-toggle="tab"><h4>Variant Type Distribution</h4></a></li>
+                <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4>Prioritised Genes</h4></a></li>
                 <li><a href="#about" role="tab" data-toggle="tab"><h4>About</h4></a></li>
             </ul>
             <div class="panel panel-default"  id="settings">
@@ -40,27 +40,7 @@ and open the template in the editor.
                     <pre th:text="${settings}">ExomiserSettings{vcfFilePath=Pfeiffer.vcf, pedFilePath=null, prioritiser=exomiser-mouse, maximumFrequency=1.0, minimumQuality=0.0, geneticInterval=null, removePathFilterCutOff=false, removeDbSnp=false, removeOffTargetVariants=true, candidateGene=, modeOfInheritance=AUTOSOMAL_DOMINANT, diseaseId=OMIM:101600, hpoIds=[], seedGeneList=[], numberOfGenesToShow=0, outFileName=results/Pfeiffer-exomiser-results, outputFormat=[HTML], diseaseGeneFamilyName=, buildVersion=, buildTimestamp=}</pre>               
                 </div>
             </div>
-            <div class="panel panel-default" id="errors" th:unless="${#lists.isEmpty(unAnalysedVarEvals)}">
-                <div class="panel-heading">
-                    <h3>Unanalysed Variants</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row" th:each="variantEvaluation: ${unAnalysedVarEvals}"> 
-                        <div class="col-sm-12">
-                            <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
-                            <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
-                            <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
-                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                                   th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
-                                </a>
-                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
-                                   th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)</a>
-                            </b>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            
             <div class="panel panel-default" id="filtering">
                 <div class="panel-heading">
                     <h3>Filtering Summary</h3>
@@ -93,7 +73,7 @@ and open the template in the editor.
             </div>
             <div class="panel panel-default" id="distribution">                
                 <div class="panel-heading">
-                    <h3>Variant type distribution</h3>
+                    <h3>Variant Type Distribution</h3>
                 </div>
                 <div class="panel-body">
                     <table class="table-striped table-condensed">
@@ -116,6 +96,27 @@ and open the template in the editor.
                     </table>
                 </div>
             </div>
+            <div class="panel panel-default" id="errors" th:unless="${#lists.isEmpty(unAnalysedVarEvals)}">
+                <div class="panel-heading">
+                    <h3>Unanalysed Variants</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row" th:each="variantEvaluation: ${unAnalysedVarEvals}"> 
+                        <div class="col-sm-12">
+                            <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
+                            <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
+                            <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
+                                   th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
+                                </a>
+                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
+                                   th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)</a>
+                            </b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!--/*-->
             <h2>Analyzed samples</h2>
             //if there is a multi-sample pedigree we want to see the analysis:
@@ -144,7 +145,7 @@ and open the template in the editor.
 
             <div class="panel panel-default" id="prioritisation">
                 <div class="panel-heading">
-                    <h3>Prioritised Variant List</h3>
+                    <h3>Prioritised Genes</h3>
                 </div>
                 <div class="panel-body">
                     <table class="table table-striped table-responsive table-condensed table-hover" id="details">
