@@ -12,6 +12,7 @@ import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.filter.FilterReport;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.io.html.HTMLWriter;
 import de.charite.compbio.exomiser.priority.Priority;
 import jannovar.exome.VariantTypeCounter;
@@ -65,7 +66,7 @@ public class OriginalHtmlResultsWriter extends HtmlResultsWriter implements Resu
             List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
 
             htmlWriter.writeHTMLFilterSummary(filterReports, priorityList);
-            VariantTypeCounter vtc = makeVariantTypeCounter(sampleData.getVariantEvaluations());
+            VariantTypeCounter vtc = ResultsWriterUtils.makeVariantTypeCounter(sampleData.getVariantEvaluations());
             htmlWriter.writeVariantDistributionTable(vtc, sampleData.getSampleNames());
 
             htmlWriter.writeHTMLBody(sampleData.getPedigree(), sampleData.getGenes());

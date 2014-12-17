@@ -13,7 +13,10 @@ import de.charite.compbio.exomiser.core.filter.FilterType;
 import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import jannovar.common.VariantType;
 import jannovar.exome.VariantTypeCounter;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 
@@ -51,7 +54,23 @@ public class ResultsWriterUtils {
      * @param variantEvaluations
      * @return 
      */
-    public static VariantTypeCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
+    public static List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
+        VariantTypeCounter variantTypeCounter = makeVariantTypeCounter(variantEvaluations);
+        
+        List<VariantTypeCount> variantTypeCounters = new ArrayList<>();
+        
+        Iterator<VariantType> iter = variantTypeCounter.getVariantTypeIterator();
+        while (iter.hasNext()) {
+            VariantType variantType = iter.next();
+            List<Integer> typeSpecificCounts = variantTypeCounter.getTypeSpecificCounts(variantType);
+            VariantTypeCount variantTypeCount = new VariantTypeCount(variantType, typeSpecificCounts);
+            variantTypeCounters.add(variantTypeCount);
+        }
+        
+        return variantTypeCounters;
+    }
+    
+    protected static VariantTypeCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
         
         if (variantEvaluations.isEmpty()) {
             return new VariantTypeCounter(0);

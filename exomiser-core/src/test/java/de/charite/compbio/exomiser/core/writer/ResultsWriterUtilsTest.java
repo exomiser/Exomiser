@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,9 +81,12 @@ public class ResultsWriterUtilsTest {
     @Test
     public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        VariantTypeCounter emptyVariantTypeCounter = ResultsWriterUtils.makeVariantTypeCounter(variantEvaluations);
+        List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
+        assertThat(variantTypeCounters.isEmpty(), is(false));
         
-        assertThat(emptyVariantTypeCounter.getTypeSpecificCounts(VariantType.UTR3), equalTo(new ArrayList<Integer>()));
+        VariantTypeCount firstVariantTypeCount = variantTypeCounters.get(0);
+        assertThat(firstVariantTypeCount.getVariantType(), notNullValue());
+        assertThat(firstVariantTypeCount.getSampleVariantTypeCounts().isEmpty(), is(true));
     }
     
     @Test

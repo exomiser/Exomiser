@@ -137,6 +137,10 @@ public class HtmlResultsWriterTest {
 
     private SampleData makeSampleData(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
         SampleData sampleData = new SampleData();
+        List<String> sampleNames = new ArrayList<>();
+        sampleNames.add("Slartibartfast");
+        sampleData.setSampleNames(sampleNames);
+        sampleData.setNumberOfSamples(1);
         sampleData.setGenes(genes);
         sampleData.setVariantEvaluations(variantEvaluations);
         return sampleData;
