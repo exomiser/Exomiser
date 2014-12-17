@@ -87,7 +87,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         }
         context.setVariable("settings", jsonSettings);
 
-        //make the userr aware of any unanalysed variants
+        //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
         
