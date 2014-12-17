@@ -22,7 +22,7 @@ public class ResultsWriterFactoryTest {
     public void testGetHtmlResultsWriter() {
         OutputFormat outputFormat = OutputFormat.HTML;
         ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
-        assertThat(result, instanceOf(OriginalHtmlResultsWriter.class));
+        assertThat(result, instanceOf(HtmlResultsWriter.class));
 
     }
     
