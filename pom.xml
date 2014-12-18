@@ -141,6 +141,13 @@
                 <version>2.17</version>
                 <configuration>
                     <skipTests>false</skipTests>
+                    <forkCount>3</forkCount> 
+                    <reuseForks>true</reuseForks> 
+                    <argLine>-Xms512m -Xmx1024m</argLine> 
+                    <systemPropertyVariables> 
+                        <user.language>en</user.language> 
+                        <user.region>EN</user.region> 
+                    </systemPropertyVariables> 
                 </configuration>
             </plugin>
             <plugin>
