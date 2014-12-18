@@ -1,5 +1,8 @@
 # The Exomiser - Core Library Changelog
 
+## 5.1.1 2014-12-18
+- New style HTML output
+
 ## 5.1.0 2014-12-12
 - Added ability for the VariantEvaluation to report whether the Variant it is associated with has been annotated by Jannovar.
 - VCF output format will now indicate which, if any variants have not been annotated by Jannovar for whatever reason.
