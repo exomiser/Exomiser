@@ -104,8 +104,7 @@ public class ExomiserConfig {
         Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
         return new VariantAnnotator(chromosomeMap);
     }
-
-//    
+    
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.

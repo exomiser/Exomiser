@@ -63,8 +63,8 @@ public class ResultControllerTest {
             .andExpect(content().string(containsString("Results")))
             .andExpect(content().string(containsString("Analysis Settings")))
             .andExpect(content().string(containsString("Filtering Summary")))
-            .andExpect(content().string(containsString("Variant type distribution")))
-            .andExpect(content().string(containsString("Prioritised Variant List")))
+            .andExpect(content().string(containsString("Variant Type Distribution")))
+            .andExpect(content().string(containsString("Prioritised Genes")))
 //            .andDo(print())
                     ;
     }

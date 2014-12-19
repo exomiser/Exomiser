@@ -22,8 +22,8 @@ and open the template in the editor.
                 <li><a href="#settings" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-cog"/> Analysis Settings</h4></a></li>
                 <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-filter"/> Filtering Summary</h4></a></li>
                 <li><a href="#distribution" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</h4></a></li>
-                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#distribution" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</h4></a></li>
-                <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-sort"/> Prioritized Genes</h4></a></li>
+                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</h4></a></li>
+                <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-sort"/> Prioritised Genes</h4></a></li>
                 <li><a href="#about" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-question-sign"/> About</h4></a></li>
             </ul>
             <div class="tab-content">
