@@ -40,7 +40,7 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 @PropertySource({"classpath:exomiser.properties"})
-@Import(CacheConfig.class)
+@Import(value = {CacheConfig.class, DaoConfig.class})
 public class ExomiserConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserConfig.class);
@@ -104,8 +104,7 @@ public class ExomiserConfig {
         Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
         return new VariantAnnotator(chromosomeMap);
     }
-
-//    
+    
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.

@@ -64,19 +64,27 @@ public class SubmitJobController {
     private Exomiser exomiser;
 
     @RequestMapping(value = "submit", method = RequestMethod.GET)
-    public String configure() {
+    public String configureExomiserJob(Model model) {
         return "submit";
     }
 
     @RequestMapping(value = "submit", method = RequestMethod.POST)
-    public String submit(@RequestParam("vcf") MultipartFile vcfFile,
-            @RequestParam("ped") MultipartFile pedFile,
-            @RequestParam("prioritiser") String prioritiser,
+    public String submit(
+            @RequestParam(value="vcf") MultipartFile vcfFile,
+            @RequestParam(value="ped", required = false) MultipartFile pedFile,
+
+            @RequestParam("disease") String diseaseId,
+            @RequestParam(value="phenotypes", required = false) List<String> phenotypes,
+            
+            @RequestParam(value="min-call-quality", required = false) Float minimumQuality,
+            @RequestParam(value="genetic-interval", required = false) String geneticInterval,
             @RequestParam("frequency") String frequency,
-            @RequestParam("remove-dbsnp") String removeDbSnp,
-            @RequestParam("remove-non-pathogenic") String removeNonPathogenic,
-            @RequestParam("remove-off-target") String removeOffTarget,
+            @RequestParam("remove-dbsnp") Boolean removeDbSnp,
+            @RequestParam("remove-non-pathogenic") Boolean removeNonPathogenic,
+            @RequestParam("remove-off-target") Boolean removeOffTarget,
             @RequestParam("inheritance") String modeOfInheritance,
+            
+            @RequestParam("prioritiser") String prioritiser,
             HttpSession session,
             Model model) {
 
@@ -84,21 +92,30 @@ public class SubmitJobController {
         Path vcfPath = createPathFromMultipartFile(vcfFile);
         Path pedPath = createPathFromMultipartFile(pedFile);
 
-        SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
-                
-        //TODO - get some actual user input for the settings 
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
+                //Upload Sample Files input
                 .vcfFilePath(vcfPath)
                 .pedFilePath(pedPath)
-                .usePrioritiser(PriorityType.valueOf(prioritiser))
+                //Enter Sample Phenotype input
+                .diseaseId(diseaseId)
+                .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
+                //Set Filtering Parameters
+                .minimumQuality(minimumQuality == null? 0 : minimumQuality)                
+                
+                .removeDbSnp(removeDbSnp)
+                .removeOffTargetVariants(removeOffTarget)
+                //make this work for nulls....
+//                .geneticInterval(GeneticInterval.parseString(geneticInterval))
+                .removePathFilterCutOff(removeNonPathogenic)
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
-                .removeDbSnp(Boolean.parseBoolean(removeDbSnp))
-                .removePathFilterCutOff(Boolean.valueOf(removeNonPathogenic))
-                .removeOffTargetVariants(Boolean.valueOf(removeOffTarget))
-                .diseaseId("OMIM:101600")
                 .maximumFrequency(Float.valueOf(frequency))
+                //Choose Prioritiser
+                .usePrioritiser(PriorityType.valueOf(prioritiser))
                 .build();
 
+        //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
+         
+        SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
         exomiser.analyse(sampleData, settings);
         
         ObjectMapper mapper = new ObjectMapper();
@@ -154,7 +171,7 @@ public class SubmitJobController {
         Path path = null;
         if (!multipartFile.isEmpty()) {
             logger.info("Uploading multipart file: {}", multipartFile.getOriginalFilename());
-            try{
+            try {
                 path = Paths.get(multipartFile.getOriginalFilename());
                 multipartFile.transferTo(path.toFile());
             } catch (IOException e) {
