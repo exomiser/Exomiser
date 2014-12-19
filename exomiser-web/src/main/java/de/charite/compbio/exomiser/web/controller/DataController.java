@@ -19,6 +19,7 @@ package de.charite.compbio.exomiser.web.controller;
 import de.charite.compbio.exomiser.web.model.SelectOption;
 import de.charite.compbio.exomiser.web.dao.ExomiserDao;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,7 @@ public class DataController {
                 matches.add(selectOption);
             }
         }
+        Collections.sort(matches);
         logger.info("Returning {}", matches);
         return matches;
     }

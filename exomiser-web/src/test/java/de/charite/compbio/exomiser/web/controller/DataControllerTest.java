@@ -93,13 +93,14 @@ public class DataControllerTest {
     @Test
     public void getDiseaseOptionsReturnsAllCommonMatches() throws Exception {
         String inputTerm = "syndrome";
-        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/disease?term=%s", inputTerm)))                .andExpect(status().isOk())
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/disease?term=%s", inputTerm)))
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].text").value("Mouse syndrome"))
-                .andExpect(jsonPath("$[0].value").value("OMIM:101200"))
-                .andExpect(jsonPath("$[1].text").value("Gruffalo syndrome"))
-                .andExpect(jsonPath("$[1].value").value("OMIM:101600"));
+                .andExpect(jsonPath("$[0].text").value("Gruffalo syndrome"))
+                .andExpect(jsonPath("$[0].value").value("OMIM:101600"))
+                .andExpect(jsonPath("$[1].text").value("Mouse syndrome"))
+                .andExpect(jsonPath("$[1].value").value("OMIM:101200"));
     }
 
     @Test
@@ -107,13 +108,15 @@ public class DataControllerTest {
         String inputTerm = "e";
 //        hpoTerms.put("HP:0001234", "Purple prickles");
 //        hpoTerms.put("HP:5678000", "Knobbly knees");
-        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/hpo?term=%s", inputTerm)))                .andExpect(status().isOk())
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/hpo?term=%s", inputTerm)))
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].text").value("Purple prickles"))
-                .andExpect(jsonPath("$[0].value").value("HP:0001234"))
-                .andExpect(jsonPath("$[1].text").value("Knobbly knees"))
-                .andExpect(jsonPath("$[1].value").value("HP:5678000"));    
+                .andExpect(jsonPath("$[0].text").value("Knobbly knees"))
+                .andExpect(jsonPath("$[0].value").value("HP:5678000"))
+                .andExpect(jsonPath("$[1].text").value("Purple prickles"))
+                .andExpect(jsonPath("$[1].value").value("HP:0001234"))
+                ;    
     }
     
     @Test
@@ -121,7 +124,8 @@ public class DataControllerTest {
         String inputTerm = "purple";
 //        hpoTerms.put("HP:0001234", "Purple prickles");
 //        hpoTerms.put("HP:5678000", "Knobbly knees");
-        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/hpo?term=%s", inputTerm)))                .andExpect(status().isOk())
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/hpo?term=%s", inputTerm)))
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].text").value("Purple prickles"))

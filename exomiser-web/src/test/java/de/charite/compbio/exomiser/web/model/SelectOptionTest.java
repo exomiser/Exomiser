@@ -16,8 +16,12 @@
  */
 package de.charite.compbio.exomiser.web.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -71,6 +75,38 @@ public class SelectOptionTest {
         assertThat(instance.equals(other), is(true));
     }
 
+    @Test
+    public void selectOptionsAreSortedByTextValue() {
+        SelectOption firstOption = new SelectOption("99999", "AAAA");
+        SelectOption secondOption = new SelectOption("00000", "ZZZZZ");
+
+        assertThat(firstOption.compareTo(secondOption), lessThan(0));
+        
+    }
+    
+    @Test
+    public void selectOptionsAreSortedByTextValueInLists() {
+        SelectOption firstOption = new SelectOption("99999", "AAAA");
+        SelectOption secondOption = new SelectOption("111111", "BBBBB");
+        SelectOption lastOption = new SelectOption("00000", "ZZZZZ");
+
+        List<SelectOption> expected = new ArrayList<>();
+        expected.add(firstOption);
+        expected.add(secondOption);
+        expected.add(lastOption);
+        
+        
+        List<SelectOption> sortedList = new ArrayList<>();
+        sortedList.add(lastOption);
+        sortedList.add(firstOption);
+        sortedList.add(secondOption);
+        
+        Collections.sort(sortedList);
+        
+        assertThat(sortedList, equalTo(expected));
+        
+    }
+    
     @Test
     public void testToString() {
         assertThat(instance.toString(), equalTo(String.format("{text=%s, value=%s}", text, value)));

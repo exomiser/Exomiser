@@ -23,7 +23,7 @@ import java.util.Objects;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SelectOption {
+public class SelectOption implements Comparable<SelectOption>{
 
     private final String text;
     private final String value;
@@ -62,6 +62,11 @@ public class SelectOption {
             return false;
         }
         return Objects.equals(this.value, other.value);
+    }
+
+    @Override
+    public int compareTo(SelectOption other) {
+        return this.text.compareTo(other.text);
     }
 
     @Override
