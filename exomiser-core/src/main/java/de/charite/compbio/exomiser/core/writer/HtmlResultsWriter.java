@@ -96,7 +96,13 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("filterReports", filterReports);
         //write out the variant type counters
         List<VariantTypeCount> variantTypeCounters = makeVariantTypeCounters(sampleData.getVariantEvaluations());
-        context.setVariable("sampleNames", sampleData.getSampleNames());
+        List<String> sampleNames= sampleData.getSampleNames();
+        String sampleName = "Anonymous";
+        if(!sampleNames.isEmpty()) {
+            sampleName = sampleNames.get(0);
+        }
+        context.setVariable("sampleName", sampleName);
+        context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
         
         List<Gene> passedGenes = new ArrayList<>();
