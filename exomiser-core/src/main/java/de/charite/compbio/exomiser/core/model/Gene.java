@@ -6,10 +6,8 @@ import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -94,14 +92,15 @@ public class Gene implements Comparable<Gene>, Filterable {
      */
     public Gene(VariantEvaluation variantEvaluation) {
         variantEvaluations = new ArrayList();
-        variantEvaluations.add(variantEvaluation);
+        addVariant(variantEvaluation);
+//        variantEvaluations.add(variantEvaluation);
         geneSymbol = variantEvaluation.getGeneSymbol();
         entrezGeneId = variantEvaluation.getEntrezGeneID();
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         failedFilterTypes = EnumSet.noneOf(FilterType.class);
         priorityScoreMap = new HashMap();
     }
-    
+
     /**
      * @return the number of {@link jannovar.exome.Variant Variant} objects for
      * this gene.
@@ -163,7 +162,7 @@ public class Gene implements Comparable<Gene>, Filterable {
      *
      * @param var A Variant affecting the current gene.
      */
-    public void addVariant(VariantEvaluation var) {
+    public final void addVariant(VariantEvaluation var) {
         variantEvaluations.add(var);
     }
 
@@ -172,7 +171,8 @@ public class Gene implements Comparable<Gene>, Filterable {
      * @param type the {@code PriorityType} which created the score
      */
     public void addPriorityScore(PriorityScore score, PriorityType type) {
-        this.priorityScoreMap.put(type, score);
+        //TODO: this should follow the same form as VariantEvaluation.addFilterResult
+        priorityScoreMap.put(type, score);
     }
 
     /**
@@ -180,7 +180,7 @@ public class Gene implements Comparable<Gene>, Filterable {
      * @return The score applied by that {@code PriorityType}.
      */
     public float getPriorityScore(PriorityType type) {
-        PriorityScore ir = this.priorityScoreMap.get(type);
+        PriorityScore ir = priorityScoreMap.get(type);
         if (ir == null) {
             return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
 
@@ -189,21 +189,29 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
+     * @return the map of {@code PriorityScore} objects that represent the
+     * result of filtering
+     */
+    public Map<PriorityType, PriorityScore> getPriorityScoreMap() {
+        return priorityScoreMap;
+    }
+
+    /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
     public List<VariantEvaluation> getVariantEvaluations() {
         return variantEvaluations;
     }
-    
+
     public List<VariantEvaluation> getPassedVariantEvaluations() {
         List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
-        
+
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilters()) {
                 passedVariantEvaluations.add(variantEvaluation);
             }
         }
-        
+
         return passedVariantEvaluations;
     }
 
@@ -231,14 +239,6 @@ public class Gene implements Comparable<Gene>, Filterable {
      */
     public int getEntrezGeneID() {
         return entrezGeneId;
-    }
-
-    /**
-     * @return the map of {@code PriorityScore} objects that represent the
-     * result of filtering
-     */
-    public Map<PriorityType, PriorityScore> getPriorityScoreMap() {
-        return priorityScoreMap;
     }
 
     /**
@@ -382,8 +382,8 @@ public class Gene implements Comparable<Gene>, Filterable {
      */
     @Override
     public int compareTo(Gene other) {
-        float me = getCombinedScore();
-        float you = other.getCombinedScore();
+        float me = combinedScore;
+        float you = other.combinedScore;
         if (me < you) {
             return 1;
         }
@@ -397,11 +397,10 @@ public class Gene implements Comparable<Gene>, Filterable {
         return 0;
     }
 
-    public Iterator<VariantEvaluation> getVariantEvaluationIterator() {
-        Collections.sort(this.variantEvaluations);
-        return this.variantEvaluations.iterator();
-    }
-
+    /**
+     * Returns true if at least one Variant associated with the Gene has passed
+     * all filters.
+     */
     @Override
     public boolean passedFilters() {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
@@ -414,6 +413,7 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public boolean passedFilter(FilterType filterType) {
+        //TODO: failedFilterTypes isn't actually written to....
         if (failedFilterTypes.contains(filterType)) {
             return false;
         }

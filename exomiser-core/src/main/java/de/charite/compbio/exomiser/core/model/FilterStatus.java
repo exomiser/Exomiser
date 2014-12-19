@@ -3,19 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterType;
-
 /**
- *
+ * Status of a Filterable - has it been filtered? Did it pass or fail?
+ * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface Filterable {
-    
-    public boolean passedFilters();
-    
-    public boolean passedFilter(FilterType filterType);
-    
+public enum FilterStatus {
+   
+    UNFILTERED, FAILED, PASSED;
 }

@@ -16,6 +16,10 @@
  */
 package de.charite.compbio.exomiser.web.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.filter.FilterReport;
 import de.charite.compbio.exomiser.core.model.Exomiser;
@@ -24,6 +28,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.writer.ResultsWriterUtils;
+import de.charite.compbio.exomiser.core.writer.VariantTypeCount;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.VariantTypeCounter;
@@ -112,19 +117,50 @@ public class SubmitJobController {
          
         SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
         exomiser.analyse(sampleData, settings);
-        model.addAttribute("settings", settings);
-        //TODO: remove priorityList - this should become another report
+        
+        ObjectMapper mapper = new ObjectMapper();
+        //required for correct output of Path types
+        mapper.registerModule(new Jdk7Module());
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+        String jsonSettings = "";
+        try {
+            jsonSettings = mapper.writeValueAsString(settings);
+        } catch (JsonProcessingException ex) {
+            logger.error("Unable to process JSON settings", ex);
+        }
+        model.addAttribute("settings", jsonSettings);
+        
+        //make the user aware of any unanalysed variants
+        List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
+        model.addAttribute("unAnalysedVarEvals", unAnalysedVarEvals);
+        
         //write out the filter reports section
         List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(settings, sampleData);
         List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();
         model.addAttribute("filterReports", filterReports);
         //write out the variant type counters
-        VariantTypeCounter vtc = ResultsWriterUtils.makeVariantTypeCounter(variantEvaluations);
-        model.addAttribute("variantTypeCounter", vtc);
+        List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
+        List<String> sampleNames= sampleData.getSampleNames();
+        String sampleName = "Anonymous";
+        if(!sampleNames.isEmpty()) {
+            sampleName = sampleNames.get(0);
+        }
+        model.addAttribute("sampleName", sampleName);
+        model.addAttribute("sampleNames", sampleNames);
+        model.addAttribute("variantTypeCounters", variantTypeCounters);
         List<Gene> passedGenes = new ArrayList<>();
+        int numGenesToShow = settings.getNumberOfGenesToShow();
+        if (numGenesToShow == 0) {
+            numGenesToShow = sampleData.getGenes().size();
+        } 
+        int genesShown = 0;
         for (Gene gene : sampleData.getGenes()) {
-            if (gene.passedFilters()) {
-                passedGenes.add(gene);
+            if(genesShown <= numGenesToShow) {
+                if (gene.passedFilters()) {
+                    passedGenes.add(gene);
+                    genesShown++;
+                }
             }
         }
         model.addAttribute("genes", passedGenes);

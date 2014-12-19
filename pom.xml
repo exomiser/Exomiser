@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.charite.compbio</groupId>
     <artifactId>Exomiser</artifactId>
-    <version>5.0.1</version>
+    <version>5.2.0</version>
     <packaging>pom</packaging>
     <name>Exomiser</name>
 
@@ -14,6 +14,13 @@
         <module>exomiser-web</module>
     </modules>
     
+    <licenses>
+        <license>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
+            <url>http://opensource.org/licenses/AGPL-3.0</url>
+        </license>
+    </licenses>
+    
     <properties>
         <spring.version>4.1.1.RELEASE</spring.version>
         <log4j.version>2.1</log4j.version>
@@ -21,6 +28,7 @@
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>Genome Research Limited and Charité Universitätsmedizin Berlin</project.organization>
+        <sonar.language>java</sonar.language>
     </properties>
  
     <repositories>
@@ -133,6 +141,13 @@
                 <version>2.17</version>
                 <configuration>
                     <skipTests>false</skipTests>
+                    <forkCount>3</forkCount> 
+                    <reuseForks>true</reuseForks> 
+                    <argLine>-Xms512m -Xmx1024m</argLine> 
+                    <systemPropertyVariables> 
+                        <user.language>en</user.language> 
+                        <user.region>EN</user.region> 
+                    </systemPropertyVariables> 
                 </configuration>
             </plugin>
             <plugin>

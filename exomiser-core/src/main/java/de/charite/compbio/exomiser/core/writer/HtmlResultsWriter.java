@@ -13,6 +13,7 @@ import de.charite.compbio.exomiser.core.model.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filter.FilterReport;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.priority.Priority;
 import jannovar.exome.VariantTypeCounter;
 import java.io.BufferedWriter;
@@ -21,6 +22,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +46,11 @@ public class HtmlResultsWriter implements ResultsWriter {
     public HtmlResultsWriter() {
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode("HTML5");
-        templateResolver.setPrefix("html/views/");
+        templateResolver.setPrefix("html/templates/");
         templateResolver.setSuffix(".html");
+        templateResolver.setCacheable(false);
         templateEngine = new TemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver);
+        templateEngine.setTemplateResolver(templateResolver);    
     }
 
     @Override
@@ -84,21 +87,46 @@ public class HtmlResultsWriter implements ResultsWriter {
         }
         context.setVariable("settings", jsonSettings);
 
+        //make the user aware of any unanalysed variants
+        List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
+        context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
+        
         //write out the filter reports section
         List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
         context.setVariable("filterReports", filterReports);
         //write out the variant type counters
-        VariantTypeCounter vtc = makeVariantTypeCounter(sampleData.getVariantEvaluations());
-        //TODO: make this simpler for templating engine to process.
-        context.setVariable("variantTypeCounter", vtc);
+        List<VariantTypeCount> variantTypeCounters = makeVariantTypeCounters(sampleData.getVariantEvaluations());
+        List<String> sampleNames= sampleData.getSampleNames();
+        String sampleName = "Anonymous";
+        if(!sampleNames.isEmpty()) {
+            sampleName = sampleNames.get(0);
+        }
+        context.setVariable("sampleName", sampleName);
+        context.setVariable("sampleNames", sampleNames);
+        context.setVariable("variantTypeCounters", variantTypeCounters);
         
+        List<Gene> passedGenes = new ArrayList<>();
+        int numGenesToShow = settings.getNumberOfGenesToShow();
+        if (numGenesToShow == 0) {
+            numGenesToShow = sampleData.getGenes().size();
+        } 
+        int genesShown = 0;
+        for (Gene gene : sampleData.getGenes()) {
+            if(genesShown <= numGenesToShow) {
+                if (gene.passedFilters()) {
+                    passedGenes.add(gene);
+                    genesShown++;
+                }
+            }
+        }
+        context.setVariable("genes", passedGenes);
         return templateEngine.process("results", context);
     }
 
-    protected VariantTypeCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
-        return ResultsWriterUtils.makeVariantTypeCounter(variantEvaluations);
+    protected List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
+        return ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
     }
-
+    
     protected List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {  
         return ResultsWriterUtils.makeFilterReports(settings, sampleData);   
     }

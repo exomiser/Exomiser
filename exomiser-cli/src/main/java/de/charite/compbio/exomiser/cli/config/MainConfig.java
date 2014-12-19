@@ -16,7 +16,7 @@ import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filter.FilterFactory;
 import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.Exomiser;
-import de.charite.compbio.exomiser.core.util.VariantAnnotator;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.priority.PriorityFactory;
 import de.charite.compbio.exomiser.priority.util.DataMatrix;
 import jannovar.reference.Chromosome;

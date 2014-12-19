@@ -26,6 +26,7 @@ import java.util.HashSet;
  * @author Peter Robinson
  * @version 0.02 (8 February, 2014)
  */
+@Deprecated
 public class OrphaParser { //extends PhenotypeAnnotationParser {
      /** Handle to the SQL database (postgreSQL) */
     private Connection connection = null;

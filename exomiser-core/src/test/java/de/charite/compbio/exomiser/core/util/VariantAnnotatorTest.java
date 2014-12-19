@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.util;
 
+import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import jannovar.annotation.Annotation;
 import jannovar.annotation.AnnotationList;
 import jannovar.common.VariantType;

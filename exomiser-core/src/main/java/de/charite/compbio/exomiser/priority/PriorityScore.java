@@ -17,13 +17,6 @@ import java.util.List;
 public interface PriorityScore extends Score {
 
     /**
-     * @return a numerical value representing the relevance of the gene. Should
-     * be between zero (no relevance) and an arbitrary real number (not
-     * necessarily 1.0f).
-     */
-//    public float getScore();
-
-    /**
      * Some of the prioritizers need to renormalize the score after they have
      * gotten a score for all genes, and can use this method to do so,
      *
