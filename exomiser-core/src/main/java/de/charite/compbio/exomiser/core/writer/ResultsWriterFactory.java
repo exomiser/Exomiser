@@ -27,8 +27,6 @@ public class ResultsWriterFactory {
     }
     
     protected static ResultsWriter getHtmlResultsWriter() {
-        //for the time being we're returning the original 
-//        return new OriginalHtmlResultsWriter();
         return new HtmlResultsWriter();
     }
 

@@ -14,10 +14,8 @@ and open the template in the editor.
         <link rel="stylesheet" type="text/css" media="all" href="../../resources/bootstrap-3.2.0/css/bootstrap.min.css" th:href="@{/resources/bootstrap-3.2.0/css/bootstrap.min.css}"/>
     </head>
     <body>
-        <div id="content" class="container">
-            <h1>
-                Exomiser Analysis Results for <th:block th:text="${sampleName}"> Slartibartfast</th:block>
-            </h1>
+            <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
             <ul class="nav nav-pills" id="tabs">
                 <li><a href="#settings" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-cog"/> Analysis Settings</h4></a></li>
                 <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-filter"/> Filtering Summary</h4></a></li>
@@ -26,6 +24,12 @@ and open the template in the editor.
                 <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-sort"/> Prioritised Genes</h4></a></li>
                 <li><a href="#about" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-question-sign"/> About</h4></a></li>
             </ul>
+            </div>
+          </nav>
+        <div id="content" class="container">
+            <h1>
+                Exomiser Analysis Results for <th:block th:text="${sampleName}"> Slartibartfast</th:block>
+            </h1>
             <div class="tab-content">
                 <div class="tab-pane fade" id="settings">
                     <p>Settings used for this analysis:</p>

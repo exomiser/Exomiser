@@ -143,7 +143,7 @@
                     <skipTests>false</skipTests>
                     <forkCount>3</forkCount> 
                     <reuseForks>true</reuseForks> 
-                    <argLine>-Xms512m -Xmx1024m</argLine> 
+                    <argLine>${argLine} -Xms512m -Xmx1024m</argLine> 
                     <systemPropertyVariables> 
                         <user.language>en</user.language> 
                         <user.region>EN</user.region> 
