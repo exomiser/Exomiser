@@ -142,12 +142,9 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <forkCount>3</forkCount> 
-                    <reuseForks>true</reuseForks> 
-                    <argLine>${argLine} -Xms512m -Xmx1024m</argLine> 
-                    <systemPropertyVariables> 
-                        <user.language>en</user.language> 
-                        <user.region>GB</user.region> 
-                    </systemPropertyVariables> 
+                    <reuseForks>true</reuseForks>
+                    <!--Add the user language and region in order that the string comparisons work in tests for numerical output-->
+                    <argLine>-Xms512m -Xmx1024m -Duser.language=en -Duser.country=GB -Dfile.encoding=UTF-8</argLine>
                 </configuration>
             </plugin>
             <plugin>
