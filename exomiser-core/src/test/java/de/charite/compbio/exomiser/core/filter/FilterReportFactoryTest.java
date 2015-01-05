@@ -16,12 +16,16 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.priority.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
+
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -165,6 +169,8 @@ public class FilterReportFactoryTest {
     
     @Test
     public void testMakeFrequencyFilterReportProducesCorrectStatistics() {
+    	// set locale to English. Otherwise test (and others) will fail for example on German computers.
+    	Locale.setDefault(Locale.ENGLISH);
         FilterType filterType = FilterType.FREQUENCY_FILTER;
 
         VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
