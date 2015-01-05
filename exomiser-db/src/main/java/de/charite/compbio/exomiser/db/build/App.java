@@ -107,7 +107,7 @@ public class App {
             logger.info("Migrating exomiser PostgreSQL database...");
             Flyway postgresqlFlyway = new Flyway();
             postgresqlFlyway.setDataSource(postGresDataSource);
-            postgresqlFlyway.setSchemas("EXOMISER");
+            postgresqlFlyway.setSchemas("exomiser");
             postgresqlFlyway.setLocations("db/migration/common", "db/migration/postgres");
             postgresqlFlyway.setPlaceholders(propertyPlaceHolders);
             postgresqlFlyway.clean();

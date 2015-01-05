@@ -86,7 +86,7 @@ public class DataSourceConfig {
         String url = String.format("jdbc:postgresql://%s:%d/%s", server, port, db);
 
         logger.info("Returning a new PostgreSQL DataSource to URL {} user: {}", url, user);
-        return dataSource;
+        return new PSQLDataSourceWrapper(dataSource);
     }
 
     private DataSource h2DataSource() {
