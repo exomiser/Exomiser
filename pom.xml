@@ -146,7 +146,7 @@
                     <argLine>${argLine} -Xms512m -Xmx1024m</argLine> 
                     <systemPropertyVariables> 
                         <user.language>en</user.language> 
-                        <user.region>EN</user.region> 
+                        <user.region>GB</user.region> 
                     </systemPropertyVariables> 
                 </configuration>
             </plugin>
