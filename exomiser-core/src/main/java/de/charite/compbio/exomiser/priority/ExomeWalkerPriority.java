@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.jblas.DoubleMatrix;
+import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +70,7 @@ public class ExomeWalkerPriority implements Priority {
      * This is the matrix of similarities between the seeed genes and all genes
      * in the network, i.e., p<sub>infinity</sub>.
      */
-    private DoubleMatrix combinedProximityVector;
+    private FloatMatrix combinedProximityVector;
 
     /**
      * Create a new instance of the {@link ExomeWalkerPriority}.
@@ -119,7 +120,7 @@ public class ExomeWalkerPriority implements Priority {
     private void addMatchedGenesToSeedGeneList(List<Integer> entrezSeedGenes) {
         for (Integer entrezId : entrezSeedGenes) {
 
-            if (randomWalkMatrix.getObjectid2idx().containsKey(entrezId)) {
+            if (randomWalkMatrix.getEntrezIdToRowIndex().containsKey(entrezId)) {
                 seedGenes.add(entrezId);
             } else {
                 logger.warn("Cannot use entrez-id {} as seed gene as it is not present in the DataMatrix provided.", entrezId);
@@ -153,7 +154,7 @@ public class ExomeWalkerPriority implements Priority {
      */
     private void computeDistanceAllNodesFromStartNodes() {
         boolean first = true;
-        DoubleMatrix combinedProximityVector = null;
+//        FloatMatrix combinedProximityVector = null;
         for (Integer seedGeneEntrezId : seedGenes) {
             //shouldn't happed as we've already thrown this in the constructor
 //	    if (this.randomWalkMatrix == null) {
@@ -164,7 +165,7 @@ public class ExomeWalkerPriority implements Priority {
 //		String e = "[GeneWanderer.java] Error: randomWalkMatrix.object2idx is null";
 //		throw new ExomizerInitializationException(e);
 //	    }
-            if (!randomWalkMatrix.getObjectid2idx().containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.getEntrezIdToRowIndex().containsKey(seedGeneEntrezId)) {
                 /* Note that the RW matrix does not have an entry for every
                  Entrez Gene. If the gene is not contained in the matrix, we
                  skip it. The gene will be given a (low) default score in 
@@ -172,10 +173,10 @@ public class ExomeWalkerPriority implements Priority {
                  */
                 continue;
             }
-            int indexOfGene = randomWalkMatrix.getObjectid2idx().get(seedGeneEntrezId);
+            int indexOfGene = randomWalkMatrix.getEntrezIdToRowIndex().get(seedGeneEntrezId);
 
             //    means the column we need, which has the distances of ALL genes to the current gene
-            DoubleMatrix column = randomWalkMatrix.getData().getColumn(indexOfGene);
+            FloatMatrix column = randomWalkMatrix.getMatrix().getColumn(indexOfGene);
 
             // for the first column/known gene we have to init the resulting vector
             if (first) {
@@ -186,7 +187,7 @@ public class ExomeWalkerPriority implements Priority {
             }
         }
         /* p_{\infty} */
-        this.combinedProximityVector = combinedProximityVector;
+//        this.combinedProximityVector = combinedProximityVector;
     }
 
     /**
@@ -221,7 +222,7 @@ public class ExomeWalkerPriority implements Priority {
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
             ExomeWalkerPriorityScore relScore = null;
-            if (randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID())) {
+            if (randomWalkMatrix.getEntrezIdToRowIndex().containsKey(gene.getEntrezGeneID())) {
                 double val = computeSimStartNodesToNode(gene);
                 if (val > max) {
                     max = val;
@@ -307,7 +308,7 @@ public class ExomeWalkerPriority implements Priority {
      * @param nodeToCompute Gene for which the RW score is to bee retrieved
      */
     private double computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.getObjectid2idx().get(nodeToCompute.getEntrezGeneID());
+        int idx = randomWalkMatrix.getEntrezIdToRowIndex().get(nodeToCompute.getEntrezGeneID());
         double val = combinedProximityVector.get(idx, 0);
         return val;
     }

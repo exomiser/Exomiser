@@ -10,9 +10,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import org.jblas.DoubleMatrix;
+import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,151 +21,155 @@ import org.slf4j.LoggerFactory;
  * Contains the random walk relationships and the entrez-id to index relations.
  *
  * @author sebastiankohler
- *
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class DataMatrix {
 
-    private final Logger logger = LoggerFactory.getLogger(DataMatrix.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataMatrix.class);
 
-    private Map<Integer, Integer> idx2objectid = new HashMap<>();
-    private Map<Integer, Integer> objectid2idx = new HashMap<>();
-    private DoubleMatrix data;
-    private String matrixName;
-    private static final Pattern splitPattern = Pattern.compile("\t");
+    private final Map<Integer, Integer> rowToEntrezIdIndex = new HashMap<>();
+    private Map<Integer, Integer> entrezIdToRowIndex = new HashMap<>();
+    private FloatMatrix matrix;
+    private String name = "";
+    private static final Pattern SPLIT_PATTERN = Pattern.compile("\t");
 
-    public DataMatrix(DoubleMatrix matrix, Map<Integer, Integer> id2index) {
-
-        this.data = matrix;
-        this.objectid2idx = id2index;
-        for (int id : id2index.keySet()) {
-            idx2objectid.put(id2index.get(id), id);
+    public DataMatrix(FloatMatrix matrix, Map<Integer, Integer> entrezIdToRowIndex) {
+        this.matrix = matrix;
+        this.entrezIdToRowIndex = entrezIdToRowIndex;
+        for (Entry<Integer, Integer> entrezIdToRow : entrezIdToRowIndex.entrySet()) {
+            rowToEntrezIdIndex.put(entrezIdToRow.getValue(), entrezIdToRow.getKey());
         }
     }
 
-    public DataMatrix(String matrixFileZip, String object2idxFileZip, boolean haveToExponentiate) {
-        try {
+    public DataMatrix(String matrixFileZip, String entrezId2indexFileZip, boolean shouldUseExponent) {
 
-            File file = new File(object2idxFileZip);
-            BufferedReader in = null;
-            // if the gz-file exists we try to create a BufferedReader for this file
-            if (file.exists()) {
-                InputStream is = new GZIPInputStream(new FileInputStream(file));
-                in = new BufferedReader(new InputStreamReader(is));
-            } else {
-                throw new RuntimeException("FATAL: file not found " + object2idxFileZip);
+        setUpIndexAndCreateEmptyMatrix(entrezId2indexFileZip);
+
+        fillMatrixfromFile(matrixFileZip, shouldUseExponent);
+
+        name = matrixFileZip;
+    }
+
+    private void setUpIndexAndCreateEmptyMatrix(String object2idxFileZip) throws RuntimeException {
+        File indexFile = new File(object2idxFileZip);
+        try (BufferedReader indexReader = gzippedFileBufferedReader(indexFile)) {
+            String line;
+            while ((line = indexReader.readLine()) != null) {
+                addLineDataToIndexes(line);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        setUpMatrix();
+    }
 
-            String line = null;
-            while ((line = in.readLine()) != null) {
+    private void addLineDataToIndexes(String line) throws NumberFormatException {
+        String[] split = SPLIT_PATTERN.split(line);
+        int objectId = Integer.parseInt(split[0]);
+        int idx = Integer.parseInt(split[1]);
+        rowToEntrezIdIndex.put(idx, objectId);
+        entrezIdToRowIndex.put(objectId, idx);
+    }
 
-                String[] split = splitPattern.split(line);
-                int objectId = Integer.parseInt(split[0]);
-                int idx = Integer.parseInt(split[1]);
-                idx2objectid.put(idx, objectId);
-                objectid2idx.put(objectId, idx);
-            }
-            in.close();
-
-            // set up matrix
-            int matrixSize = idx2objectid.size();
-            data = new DoubleMatrix(matrixSize, matrixSize);
-            // fill matrix with data
-            in = null;
-            file = new File(matrixFileZip);
-            // if the gz-file exists we try to create a BufferedReader for this file
-            if (file.exists()) {
-                InputStream is = new GZIPInputStream(new FileInputStream(file));
-                in = new BufferedReader(new InputStreamReader(is));
-            } else {
-                throw new RuntimeException("FATAL: file not found " + matrixFileZip);
-            }
-            line = null;
+    private void setUpMatrix() {
+        int matrixSize = rowToEntrezIdIndex.size();
+        matrix = new FloatMatrix(matrixSize, matrixSize);
+    }
+    
+    private void fillMatrixfromFile(String matrixFileZip, boolean shouldUseExponent) throws RuntimeException {
+        File matrixFile = new File(matrixFileZip);
+        try (BufferedReader in = gzippedFileBufferedReader(matrixFile)) {
             int i = 0;
+            String line;
             while ((line = in.readLine()) != null) {
-
-                if (i % 500 == 0) {
-                    logger.info("   -> read line {}", i);
-                }
-
-                String[] row = splitPattern.split(line);
-                for (int j = 0; j < matrixSize; j++) {
-
-                    double entry = Double.parseDouble(row[j]);
-                    if (haveToExponentiate) {
-                        entry = Math.exp(entry);
-                    }
-
-                    data.put(i, j, entry);
-                }
+                //just a nicety to stop you wondering if anything is going on - this stage takes a minute or two
+                logLineNumberIfMultipleOf500(i);
+                addLineDataToMatrixRow(line, i, shouldUseExponent);
                 i++;
             }
-            in.close();
-
-            // set the name of the matrix
-            matrixName = file.getName();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Map<Integer, Integer> getIdx2objectid() {
-        return idx2objectid;
+    private void logLineNumberIfMultipleOf500(int i) {
+        if (i % 500 == 0) {
+            logger.info("reading line {}", i);
+        }
     }
 
-    public Map<Integer, Integer> getObjectid2idx() {
-        return objectid2idx;
+    private void addLineDataToMatrixRow(String line, int i, boolean shouldUseExponent) throws NumberFormatException {
+        String[] row = SPLIT_PATTERN.split(line);
+        int matrixSize = matrix.rows;
+        for (int j = 0; j < matrixSize; j++) {
+            float entry = Float.parseFloat(row[j]);
+            if (shouldUseExponent) {
+                entry = (float) Math.exp(entry);
+            }
+            matrix.put(i, j, entry);
+        }
     }
 
-    public DoubleMatrix getData() {
-        return data;
+    private BufferedReader gzippedFileBufferedReader(File file) throws IOException, RuntimeException {
+        // if the gz-file exists we try to create a BufferedReader for this file
+        BufferedReader bufferedReader;
+        int bufferSizeInBytes = 2048;
+        if (file.exists()) {
+            InputStream inputStream = new GZIPInputStream(new FileInputStream(file), bufferSizeInBytes);
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        } else {
+            throw new RuntimeException("FATAL: file not found " + file.getName());
+        }
+        return bufferedReader;
     }
 
-    public String getMatrixName() {
-        return matrixName;
+    public Map<Integer, Integer> getRowToEntrezIdIndex() {
+        return rowToEntrezIdIndex;
     }
 
-    public void writeMatrix(DoubleMatrix walkMatrixAll, String file, Map<String, Integer> id2index, boolean doLogarithm) {
-        try {
-            BufferedWriter outMatrix = new BufferedWriter(new FileWriter(file));
-            BufferedWriter outIndexMap = new BufferedWriter(new FileWriter(file + "_id2index"));
+    public Map<Integer, Integer> getEntrezIdToRowIndex() {
+        return entrezIdToRowIndex;
+    }
 
-            for (String entrez : id2index.keySet()) {
-                outIndexMap.write(entrez + "\t" + id2index.get(entrez) + "\n");
+    public FloatMatrix getMatrix() {
+        return matrix;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public static void writeMatrix(FloatMatrix matrix, String file, Map<String, Integer> id2index, boolean doLogarithm) {
+        try (
+                BufferedWriter outMatrix = new BufferedWriter(new FileWriter(file));
+                BufferedWriter outIndexMap = new BufferedWriter(new FileWriter(file + "_id2index"))) {
+
+            for (String entrezId : id2index.keySet()) {
+                outIndexMap.write(entrezId + "\t" + id2index.get(entrezId) + "\n");
             }
 
-            for (int i = 0; i < walkMatrixAll.rows; i++) {
-
-                for (int j = 0; j < walkMatrixAll.columns; j++) {
-
+            for (int i = 0; i < matrix.rows; i++) {
+                for (int j = 0; j < matrix.columns; j++) {
                     if (j > 0) {
                         outMatrix.write("\t");
                     }
-
                     if (doLogarithm) {
-                        outMatrix.write(String.format("%.5f", Math.log(walkMatrixAll.get(i, j))));
+                        outMatrix.write(String.format("%.5f", Math.log(matrix.get(i, j))));
                     } else {
-                        outMatrix.write(String.format("%.5f", walkMatrixAll.get(i, j)));
-
+                        outMatrix.write(String.format("%.5f", matrix.get(i, j)));
                     }
                 }
-
                 outMatrix.write("\n");
             }
 
-            outMatrix.close();
-            outIndexMap.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void writeMatrixInclHeaderAndRowIDs(DoubleMatrix walkMatrixAll, String file, Map<String, Integer> id2index, boolean doLogarithm) {
-
-        try {
-
-            BufferedWriter outMatrix = new BufferedWriter(new FileWriter(file));
-
-            Map<Integer, String> index2id = new HashMap<Integer, String>();
+    public static void writeMatrixInclHeaderAndRowIDs(FloatMatrix matrix, String file, Map<String, Integer> id2index, boolean doLogarithm) {
+        try (BufferedWriter outMatrix = new BufferedWriter(new FileWriter(file))) {
+            Map<Integer, String> index2id = new HashMap<>();
             for (String s : id2index.keySet()) {
                 int idx = id2index.get(s);
                 index2id.put(idx, s);
@@ -175,26 +180,19 @@ public class DataMatrix {
             }
             outMatrix.write("\n");
 
-            for (int i = 0; i < walkMatrixAll.rows; i++) {
-
+            for (int i = 0; i < matrix.rows; i++) {
                 outMatrix.write(index2id.get(i));
-
-                for (int j = 0; j < walkMatrixAll.columns; j++) {
-
+                for (int j = 0; j < matrix.columns; j++) {
                     outMatrix.write(";");
-
                     if (doLogarithm) {
-                        outMatrix.write(String.format("%.5f", Math.log(walkMatrixAll.get(i, j))));
+                        outMatrix.write(String.format("%.5f", Math.log(matrix.get(i, j))));
                     } else {
-                        outMatrix.write(String.format("%.10f", walkMatrixAll.get(i, j)));
-
+                        outMatrix.write(String.format("%.10f", matrix.get(i, j)));
                     }
                 }
 
                 outMatrix.write("\n");
             }
-
-            outMatrix.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

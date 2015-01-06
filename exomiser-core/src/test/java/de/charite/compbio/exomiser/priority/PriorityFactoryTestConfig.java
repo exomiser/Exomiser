@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jblas.DoubleMatrix;
+import org.jblas.FloatMatrix;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -41,7 +42,7 @@ public class PriorityFactoryTestConfig {
     @Bean
     DataMatrix randomWalkMatrix() {
         Map<Integer, Integer> stubMatrixIndex = new HashMap<>();
-        return new DataMatrix(DoubleMatrix.EMPTY, stubMatrixIndex);
+        return new DataMatrix(FloatMatrix.EMPTY, stubMatrixIndex);
     }
     
     @Bean

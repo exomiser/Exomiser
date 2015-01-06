@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,22 +58,22 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * The random walk matrix object
      */
     private DataMatrix randomWalkMatrix = null;
-    private ArrayList<Integer> phenoGenes = new ArrayList<Integer>();
-    private ArrayList<String> phenoGeneSymbols = new ArrayList<String>();
+    private ArrayList<Integer> phenoGenes = new ArrayList<>();
+    private ArrayList<String> phenoGeneSymbols = new ArrayList<>();
     private List<String> hpoIds;
     private String candGene;
     private String disease;
-    private Map<Integer, Double> scores = new HashMap<Integer, Double>();
-    private Map<Integer, Double> mouseScores = new HashMap<Integer, Double>();
-    private Map<Integer, Double> humanScores = new HashMap<Integer, Double>();
-    private Map<Integer, Double> fishScores = new HashMap<Integer, Double>();
-    private Map<Integer, String> humanDiseases = new HashMap<Integer, String>();
-    private Map<Integer, String> mouseDiseases = new HashMap<Integer, String>();
-    private Map<Integer, String> fishDiseases = new HashMap<Integer, String>();
-    private Map<String, String> hpoTerms = new HashMap<String, String>();
-    private Map<String, String> mpoTerms = new HashMap<String, String>();
-    private Map<String, String> zpoTerms = new HashMap<String, String>();
-    private Map<String, String> diseaseTerms = new HashMap<String, String>();
+    private Map<Integer, Float> scores = new HashMap<>();
+    private Map<Integer, Double> mouseScores = new HashMap<>();
+    private Map<Integer, Double> humanScores = new HashMap<>();
+    private Map<Integer, Double> fishScores = new HashMap<>();
+    private Map<Integer, String> humanDiseases = new HashMap<>();
+    private Map<Integer, String> mouseDiseases = new HashMap<>();
+    private Map<Integer, String> fishDiseases = new HashMap<>();
+    private Map<String, String> hpoTerms = new HashMap<>();
+    private Map<String, String> mpoTerms = new HashMap<>();
+    private Map<String, String> zpoTerms = new HashMap<>();
+    private Map<String, String> diseaseTerms = new HashMap<>();
     private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpMpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
     private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpHpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
     private HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpZpMatches = new HashMap<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>>();
@@ -87,7 +88,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * This is the matrix of similarities between the seeed genes and all genes
      * in the network, i.e., p<sub>infinity</sub>.
      */
-    private DoubleMatrix combinedProximityVector;
+    private FloatMatrix combinedProximityVector;
 
     /**
      * Create a new instance of the {@link GenewandererPriority}.
@@ -419,7 +420,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                             phenoGeneSymbols.add(humanGene);
                         }
                         if (scores.get(entrez) == null || score > scores.get(entrez)) {
-                            scores.put(entrez, score);
+                            scores.put(entrez, (float) score);
                         }
                         if (species.equals("human") && (humanScores.get(entrez) == null || score > humanScores.get(entrez))) {
                             humanScores.put(entrez, score);
@@ -572,20 +573,19 @@ public class ExomiserAllSpeciesPriority implements Priority {
         }
         hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, "fish");
 
-        int rows = randomWalkMatrix.getData().getColumn(0).getRows();
+        int rows = randomWalkMatrix.getMatrix().getColumn(0).getRows();
         int cols = phenoGenes.size();
-        DoubleMatrix combinedProximityVector = DoubleMatrix.zeros(rows, cols);
+        FloatMatrix combinedProximityVector = FloatMatrix.zeros(rows, cols);
         int c = 0;
-        DoubleMatrix column = null;
         for (Integer seedGeneEntrezId : phenoGenes) {
-            if (!randomWalkMatrix.getObjectid2idx().containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.getEntrezIdToRowIndex().containsKey(seedGeneEntrezId)) {
                 c++;
                 continue;
             } else {
-                int indexOfGene = randomWalkMatrix.getObjectid2idx().get(seedGeneEntrezId);
-                column = randomWalkMatrix.getData().getColumn(indexOfGene);
+                int indexOfGene = randomWalkMatrix.getEntrezIdToRowIndex().get(seedGeneEntrezId);
+                FloatMatrix column = randomWalkMatrix.getMatrix().getColumn(indexOfGene);
                 // weight column by phenoScore 
-                double score = scores.get(seedGeneEntrezId);
+                float score = scores.get(seedGeneEntrezId);
                 column = column.mul(score);
                 combinedProximityVector.putColumn(c, column);
                 c++;
@@ -720,9 +720,9 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
                 ++PPIdataAvailable;
             } //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
-            if (ppi && randomWalkMatrix.getObjectid2idx().containsKey(gene.getEntrezGeneID()) && phenoGenes != null && phenoGenes.size() > 0) {
+            if (ppi && randomWalkMatrix.getEntrezIdToRowIndex().containsKey(gene.getEntrezGeneID()) && phenoGenes != null && phenoGenes.size() > 0) {
                 int col_idx = computeSimStartNodesToNode(gene);
-                int row_idx = randomWalkMatrix.getObjectid2idx().get(gene.getEntrezGeneID());
+                int row_idx = randomWalkMatrix.getEntrezIdToRowIndex().get(gene.getEntrezGeneID());
                 walkerScore = combinedProximityVector.get(row_idx, col_idx);
                 if (walkerScore <= 0.00001){
                     walkerScore = 0f;
@@ -937,12 +937,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * @param nodeToCompute Gene for which the RW score is to bee retrieved
      */
     private int computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.getObjectid2idx().get(nodeToCompute.getEntrezGeneID());
+        int idx = randomWalkMatrix.getEntrezIdToRowIndex().get(nodeToCompute.getEntrezGeneID());
         int c = 0;
         double val = 0;
         int bestHitIndex = 0;
         for (Integer seedGeneEntrezId : phenoGenes) {
-            if (!randomWalkMatrix.getObjectid2idx().containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.getEntrezIdToRowIndex().containsKey(seedGeneEntrezId)) {
                 c++;
                 continue;
             } else if (seedGeneEntrezId == nodeToCompute.getEntrezGeneID()) {//avoid self-hits now are testing genes with direct pheno-evidence as well
