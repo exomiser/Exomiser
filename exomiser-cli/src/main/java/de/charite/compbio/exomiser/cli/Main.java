@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -79,6 +80,9 @@ public class Main {
     }
 
     private static void setup() {
+        Locale.setDefault(Locale.UK);
+        logger.info("Locale set to {}", Locale.getDefault());
+        
         applicationContext = setUpApplicationContext();
         options = applicationContext.getBean(Options.class);
         buildVersion = (String) applicationContext.getBean("buildVersion");
