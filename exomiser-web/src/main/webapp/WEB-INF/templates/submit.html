@@ -60,7 +60,7 @@ and open the template in the editor.
                             <div class="form-group" id="disease-selector">
                                 <!--<input class="form-control" id="omimid"/>-->
 
-                                <select title="" class="chosen-select" data-placeholder="Pfeiffer syndrome" name="disease" id="omimid" >
+                                <select title="" class="chosen-select" data-placeholder="e.g. Pfeiffer syndrome" name="disease" id="omimid" >
                                     <option value=""></option>
                                     <!--<input class="mediumlong james {url:'/resources/databases/exomiser/query/form/autocomplete',varname:'term',minlength:1}" name="omimid" id="omimid" type="text" autocomplete="off" placeholder="PFEIFFER SYNDROME"/>-->
                                 </select>
@@ -92,7 +92,7 @@ and open the template in the editor.
                             <label for="quality">Minimum variant call quality:</label>
                             <div class="input-group">
                                 <span class="input-group-addon">Phred</span>
-                                <input class="form-control" type="text" name="quality" id="quality" placeholder="30.0"/>
+                                <input class="form-control" type="text" name="quality" id="quality" placeholder="e.g. 30.0"/>
                             </div>
 
                             <label for="remove-dbsnp">Remove all dbSNP variants: </label>
@@ -111,7 +111,7 @@ and open the template in the editor.
                             <label for="interval">Genetic interval:</label>
                             <div class="input-group">
                                 <span class="input-group-addon">Chr</span>
-                                <input class="form-control" type="text" name="interval" id="interval" placeholder="1:12339-3242525"/>
+                                <input class="form-control" type="text" name="interval" id="interval" placeholder="e.g. 1:12339-3242525"/>
                             </div>
 
                             <label for="remove-non-pathogenic">Remove non-pathogenic variants: </label>
@@ -146,17 +146,19 @@ and open the template in the editor.
                         <div class="col-sm-4">
                             <label for="prioritiser">Prioritise genes using:</label>
                             <select name="prioritiser" id="prioritiser_dropdown" class="chosen-select">
-                                <option selected="true" value="EXOMISER_MOUSE_PRIORITY">Exomiser (mouse only)</option>
-                                <option value="EXOMISER_ALLSPECIES_PRIORITY">Exomiser (all species)</option>
+                                <option selected="true" value="EXOMISER_ALLSPECIES_PRIORITY">Exomiser (compare phenotypes against all species)</option>
+                                <option value="EXOMISER_MOUSE_PRIORITY">Exomiser (compare phenotypes against mouse only)</option>
+                                <!--<option value="PHENIX_PRIORITY">Phenix (compare phenotypes against human only)</option>-->
+                                <!--<option value="EXOMEWALKER_PRIORITY">ExomeWalker (protein interaction)</option>-->
                             </select>
                         </div>
                     </div> 
                 </div>
                 <div>
-                    <button type="reset" class="btn btn-default" id="button_form_reset" name="reset" value="Reset">
+                    <button type="reset" class="btn btn-default" id="button_form_reset" name="reset">
                         <span class="glyphicon glyphicon-refresh"></span> Reset
                     </button>
-                    <button type="submit" class="btn btn-primary" id="button_form_submit" name="submit" value="Submit">
+                    <button type="submit" class="btn btn-primary" id="button_form_submit" name="submit" data-loading-text="Processing...">
                         <span class="glyphicon glyphicon-thumbs-up"></span> Submit
                     </button>
 
@@ -178,7 +180,14 @@ and open the template in the editor.
         <script type="text/javascript" src="resources/chosen_v1.2.0/ajax-chosen.min.js" th:href="@{resources/chosen_v1.2.0/ajax-chosen.min.js}"/>
 
         <!--<script type="text/javascript" src="resources/select2-3.5.2/select2.min.js" th:href="@{resources/select2-3.5.2/select2.min.js}"/>-->
-
+        <script>
+          $('#button_form_submit').on('click', function () {
+            console.log("submit button clicked");
+            var $btn = $(this).button('loading');
+            // business logic...
+            $btn.button('loading');
+          });
+        </script>
 
         <script>
             $(document).ready(function () {
