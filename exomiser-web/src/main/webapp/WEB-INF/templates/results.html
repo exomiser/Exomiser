@@ -14,18 +14,18 @@ and open the template in the editor.
         <link rel="stylesheet" type="text/css" media="all" href="../../resources/bootstrap-3.2.0/css/bootstrap.min.css" th:href="@{/resources/bootstrap-3.2.0/css/bootstrap.min.css}"/>
     </head>
     <body>
-            <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container">
-            <ul class="nav nav-pills" id="tabs">
-                <li><a href="#settings" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-cog"/> Analysis Settings</h4></a></li>
-                <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-filter"/> Filtering Summary</h4></a></li>
-                <li><a href="#distribution" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</h4></a></li>
-                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</h4></a></li>
-                <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-sort"/> Prioritised Genes</h4></a></li>
-                <li><a href="#about" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-question-sign"/> About</h4></a></li>
-            </ul>
+                <ul class="nav nav-pills" id="tabs">
+                    <li><a href="#settings" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-cog"/> Analysis Settings</h4></a></li>
+                    <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-filter"/> Filtering Summary</h4></a></li>
+                    <li><a href="#distribution" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</h4></a></li>
+                    <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</h4></a></li>
+                    <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-sort"/> Prioritised Genes</h4></a></li>
+                    <!--<li><a href="#about" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-question-sign"/> About</h4></a></li>-->
+                </ul>
             </div>
-          </nav>
+        </nav>
         <div id="content" class="container">
             <h1>
                 Exomiser Analysis Results for <th:block th:text="${sampleName}"> Slartibartfast</th:block>
@@ -90,10 +90,10 @@ and open the template in the editor.
                             <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
                             <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                                   th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
+                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
                                 </a>
                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
-                                   th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)</a>
+                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)</a>
                             </b>
                         </div>
                     </div>
@@ -101,8 +101,8 @@ and open the template in the editor.
                 <!--/*-->
 
                 <h2>Analyzed samples</h2>
-<!--                //if there is a multi-sample pedigree we want to see the analysis:
-                //HTMLTable.writePedigreeTable()-->
+                <!--                //if there is a multi-sample pedigree we want to see the analysis:
+                                //HTMLTable.writePedigreeTable()-->
                 <p>affected: red, parent of affected: light blue, unaffected: white</p>
                 <table class="pedigree">
                     <tr>
@@ -133,7 +133,7 @@ and open the template in the editor.
                                     <div class="row">
                                         <div class="col-sm-12">
                                             <h4>
-                                                <a th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${gene.entrezGeneID}|}" th:text="${gene.geneSymbol}">FGFR2</a>
+                                                <a th:href="@{|http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=${gene.geneSymbol}|}" th:text="${gene.geneSymbol}">FGFR2</a>
                                             </h4>
                                         </div>
                                     </div>
@@ -164,10 +164,10 @@ and open the template in the editor.
                                             <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
                                             <th:block th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                                                   th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
+                                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
                                                 </a>
                                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
-                                                   th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)</a>
+                                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)</a>
                                             </th:block>
                                         </div>
                                         <div class="col-sm-6" > 
