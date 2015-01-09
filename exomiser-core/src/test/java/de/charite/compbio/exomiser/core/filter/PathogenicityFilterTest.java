@@ -192,7 +192,8 @@ public class PathogenicityFilterTest {
     public void testCalculateScoreMissenseSiftPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS, null);
         VariantType type = VariantType.MISSENSE;
-        float expected = 1 - SIFT_PASS.getScore();
+        //float expected = 1 - SIFT_PASS.getScore();
+        float expected = 0.97f;//default for no CADD
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 
@@ -200,7 +201,8 @@ public class PathogenicityFilterTest {
     public void testCalculateScoreMissensePolyPhenAndSiftPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS, null);
         VariantType type = VariantType.MISSENSE;
-        float expected = 1 - SIFT_PASS.getScore();
+        //float expected = 1 - SIFT_PASS.getScore();
+        float expected = 0.97f;//default for no CADD
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 
@@ -208,7 +210,8 @@ public class PathogenicityFilterTest {
     public void testCalculateScoreMissensePolyPhenSiftAndMutTasterPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS, null);
         VariantType type = VariantType.MISSENSE;
-        float expected = MTASTER_PASS.getScore();
+        //float expected = MTASTER_PASS.getScore();
+        float expected = 0.97f;//default for no CADD
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 
