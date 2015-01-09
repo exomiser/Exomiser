@@ -20,6 +20,11 @@
     
     <dependencies>
         <dependency>
+            <groupId>org.seqdoop</groupId>
+            <artifactId>htsjdk</artifactId>
+            <version>1.118</version>
+        </dependency>
+        <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>exomiser-core</artifactId>
             <version>${project.version}</version>

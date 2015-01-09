@@ -13,6 +13,11 @@
     </parent>
         
     <dependencies>
+        <dependency>
+            <groupId>org.seqdoop</groupId>
+            <artifactId>htsjdk</artifactId>
+            <version>1.118</version>
+        </dependency>
         <!--Jannovar is used for providing known gene annotations on variants -->
         <dependency>
             <groupId>de.charite.compbio</groupId>
