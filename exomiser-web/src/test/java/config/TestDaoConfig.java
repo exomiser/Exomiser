@@ -54,6 +54,12 @@ public class TestDaoConfig {
         hpoTerms.put("HP:5678000", "Knobbly knees");
         when(mockExomiserDao.getHpoTerms()).thenReturn(hpoTerms);
         
+        Map<String, String> genes = new HashMap<>();
+        genes.put("2260", "FGFR1");
+        genes.put("2263", "FGFR2");
+        genes.put("124", "ADH1A");
+        when(mockExomiserDao.getGenes()).thenReturn(genes);
+        
         return mockExomiserDao;
     }
 }

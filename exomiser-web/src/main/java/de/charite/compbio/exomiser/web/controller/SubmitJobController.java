@@ -36,7 +36,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,20 +73,18 @@ public class SubmitJobController {
 
     @RequestMapping(value = "submit", method = RequestMethod.POST)
     public String submit(
-            @RequestParam(value="vcf") MultipartFile vcfFile,
-            @RequestParam(value="ped", required = false) MultipartFile pedFile,
-
-            @RequestParam("disease") String diseaseId,
-            @RequestParam(value="phenotypes", required = false) List<String> phenotypes,
-            
-            @RequestParam(value="min-call-quality", required = false) Float minimumQuality,
-            @RequestParam(value="genetic-interval", required = false) String geneticInterval,
+            @RequestParam(value = "vcf") MultipartFile vcfFile,
+            @RequestParam(value = "ped", required = false) MultipartFile pedFile,
+            @RequestParam(value = "disease", required = false) String diseaseId,
+            @RequestParam(value = "phenotypes", required = false) List<String> phenotypes,
+            @RequestParam(value = "min-call-quality", required = false) Float minimumQuality,
+            @RequestParam(value = "genetic-interval", required = false) String geneticInterval,
             @RequestParam("frequency") String frequency,
             @RequestParam("remove-dbsnp") Boolean removeDbSnp,
             @RequestParam("remove-non-pathogenic") Boolean removeNonPathogenic,
             @RequestParam("remove-off-target") Boolean removeOffTarget,
             @RequestParam("inheritance") String modeOfInheritance,
-            
+            @RequestParam(value = "genes-to-keep", required = false) List<String> genesToFilter,
             @RequestParam("prioritiser") String prioritiser,
             HttpSession session,
             Model model) {
@@ -92,6 +93,10 @@ public class SubmitJobController {
         Path vcfPath = createPathFromMultipartFile(vcfFile);
         Path pedPath = createPathFromMultipartFile(pedFile);
 
+        logger.info("Selected disease: {}", diseaseId);
+        logger.info("Selected phenotypes: {}", phenotypes);
+        Set<Integer> genesToKeep = makeGenesToKeep(genesToFilter);
+     
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
                 //Upload Sample Files input
                 .vcfFilePath(vcfPath)
@@ -100,24 +105,23 @@ public class SubmitJobController {
                 .diseaseId(diseaseId)
                 .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
                 //Set Filtering Parameters
-                .minimumQuality(minimumQuality == null? 0 : minimumQuality)                
-                
+                .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
                 .removeDbSnp(removeDbSnp)
                 .removeOffTargetVariants(removeOffTarget)
                 //make this work for nulls....
-//                .geneticInterval(GeneticInterval.parseString(geneticInterval))
+                //                .geneticInterval(GeneticInterval.parseString(geneticInterval))
                 .removePathFilterCutOff(removeNonPathogenic)
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .maximumFrequency(Float.valueOf(frequency))
+                .genesToKeepList(genesToKeep)
                 //Choose Prioritiser
                 .usePrioritiser(PriorityType.valueOf(prioritiser))
                 .build();
 
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
-         
         SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
         exomiser.analyse(sampleData, settings);
-        
+
         ObjectMapper mapper = new ObjectMapper();
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
@@ -130,33 +134,36 @@ public class SubmitJobController {
             logger.error("Unable to process JSON settings", ex);
         }
         model.addAttribute("settings", jsonSettings);
-        
+
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
         model.addAttribute("unAnalysedVarEvals", unAnalysedVarEvals);
-        
+
         //write out the filter reports section
         List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(settings, sampleData);
-        List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();
         model.addAttribute("filterReports", filterReports);
-        //write out the variant type counters
+        
+        List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();
         List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
-        List<String> sampleNames= sampleData.getSampleNames();
+        model.addAttribute("variantTypeCounters", variantTypeCounters);
+        
+        //write out the variant type counters
+        List<String> sampleNames = sampleData.getSampleNames();
         String sampleName = "Anonymous";
-        if(!sampleNames.isEmpty()) {
+        if (!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
         }
         model.addAttribute("sampleName", sampleName);
         model.addAttribute("sampleNames", sampleNames);
-        model.addAttribute("variantTypeCounters", variantTypeCounters);
+        
         List<Gene> passedGenes = new ArrayList<>();
         int numGenesToShow = settings.getNumberOfGenesToShow();
         if (numGenesToShow == 0) {
             numGenesToShow = sampleData.getGenes().size();
-        } 
+        }
         int genesShown = 0;
         for (Gene gene : sampleData.getGenes()) {
-            if(genesShown <= numGenesToShow) {
+            if (genesShown <= numGenesToShow) {
                 if (gene.passedFilters()) {
                     passedGenes.add(gene);
                     genesShown++;
@@ -164,7 +171,26 @@ public class SubmitJobController {
             }
         }
         model.addAttribute("genes", passedGenes);
+        
         return "results";
+    }
+
+    private Set<Integer> makeGenesToKeep(List<String> genesToFilter) {
+        logger.info("Genes to filter: {}", genesToFilter);
+        if (genesToFilter == null) {
+            return new HashSet<>();
+        }
+        Set<Integer> genesToKeep = new TreeSet<>();
+        for (String geneId : genesToFilter) {
+            try {
+                Integer entrezId = Integer.parseInt(geneId);
+                logger.info("Adding gene {} to genesToFilter", entrezId);
+                genesToKeep.add(entrezId);
+            } catch (NumberFormatException ex) {
+                logger.error("'{}' not added to genesToKeep as this is not a number.", geneId);
+            }
+        }
+        return genesToKeep;
     }
 
     private Path createPathFromMultipartFile(MultipartFile multipartFile) {

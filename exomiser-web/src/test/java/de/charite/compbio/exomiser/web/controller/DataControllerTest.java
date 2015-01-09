@@ -131,4 +131,36 @@ public class DataControllerTest {
                 .andExpect(jsonPath("$[0].text").value("Purple prickles"))
                 .andExpect(jsonPath("$[0].value").value("HP:0001234"));    
     }
+    
+    @Test
+    public void getGeneIsValidEndPoint() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/data/gene?term="))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(3)));
+    }
+    
+    @Test
+    public void getGeneOptionReturnsAllCommonMatches() throws Exception {
+        String inputTerm = "fgf";
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/gene?term=%s", inputTerm)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].text").value("FGFR1"))
+                .andExpect(jsonPath("$[0].value").value("2260"))
+                .andExpect(jsonPath("$[1].text").value("FGFR2"))
+                .andExpect(jsonPath("$[1].value").value("2263"));
+    }
+  
+    @Test
+    public void getGeneOptionReturnsExactMatch() throws Exception {
+        String inputTerm = "ADH1A";
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/gene?term=%s", inputTerm)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].text").value("ADH1A"))
+                .andExpect(jsonPath("$[0].value").value("124"));
+    }
 }

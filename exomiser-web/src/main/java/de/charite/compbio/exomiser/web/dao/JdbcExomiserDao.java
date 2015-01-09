@@ -56,11 +56,6 @@ public class JdbcExomiserDao implements ExomiserDao {
         return new HashMap<>();
     }
 
-    private PreparedStatement createPreparedStatement(Connection connection, String query) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        return preparedStatement;
-    }
-
     @Override
     public Map<String, String> getHpoTerms() {
         String query = "select id, lcname from hpo";
@@ -76,6 +71,28 @@ public class JdbcExomiserDao implements ExomiserDao {
         }
 
         return new HashMap<>();
+    }
+    
+    @Override
+    public Map<String, String> getGenes() {
+        String query = "select entrez_id, human_gene_symbol from human2mouse_orthologs";
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement preparedStatement = createPreparedStatement(connection, query);
+                ResultSet rs = preparedStatement.executeQuery()) {
+
+            return processGetHpoTermsResults(rs);
+
+        } catch (SQLException e) {
+            logger.error("Error executing getGenes query: ", e);
+        }
+
+        return new HashMap<>();
+    }
+
+    private PreparedStatement createPreparedStatement(Connection connection, String query) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        return preparedStatement;
     }
 
     private Map<String, String> processGetDiseasesResults(ResultSet rs) throws SQLException {

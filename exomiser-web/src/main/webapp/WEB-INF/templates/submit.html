@@ -58,23 +58,17 @@ and open the template in the editor.
                         <div class="col-sm-6">
                             <label for="omimid">Phenotypes associated with Mendelian disease:</label>
                             <div class="form-group" id="disease-selector">
-                                <!--<input class="form-control" id="omimid"/>-->
-
                                 <select title="" class="chosen-select" data-placeholder="e.g. Pfeiffer syndrome" name="disease" id="omimid" >
                                     <option value=""></option>
                                     <!--<input class="mediumlong james {url:'/resources/databases/exomiser/query/form/autocomplete',varname:'term',minlength:1}" name="omimid" id="omimid" type="text" autocomplete="off" placeholder="PFEIFFER SYNDROME"/>-->
                                 </select>
                             </div>
                         </div>
-                        <!--                        <div class="col-sm-4">
-                                                    <label><em>OR</em></label>
-                                                </div>-->
+                        
                         <div class="col-sm-6">
                             <label for="hpo">Clinical phenotypes:</label>
                             <div class="form-group">
-                                <select data-placeholder="Choose some phenotype terms..." class="chosen-select" multiple="true" tabindex="4" name="phenotypes" id="hpo">
-                                    <option value=""></option>
-                                    <!--<option th:each="hpoTerm : ${hpoTerms}" value="${hpoTerm.key}" th:text="${hpoTerm.value}">Craniosynostosis</option>-->
+                                <select data-placeholder=" e.g. Craniosynostosis, Malar flattening, Wide nasal bridge" class="chosen-select" multiple="true" tabindex="4" name="phenotypes" id="hpo">
                                 </select>
                                 <!--<input class="form-control" type="text" name="hpo" id="hpo" placeholder="Craniosynostosis, Malar flattening, Wide nasal bridge"></input>
                                         <input name="hpo" id="hpo" type="text" autocomplete="off" class="medium james {url:'/resources/databases/exomiser/query/form/autocomplete2',varname:'term',restricted:1,minlength:1,multiple:1,keydelay:100}" placeholder="Craniosynostosis, Malar flattening, Wide nasal bridge"/>-->
@@ -135,6 +129,11 @@ and open the template in the editor.
                                 <input class="form-control" type="text" name="frequency" id="frequency" value="1.0"/>
                                 <span class="input-group-addon">%</span>
                             </div>
+                            <label for="gene-filter">Filter for genes:</label>
+                            <div class="form-group">
+                                <select data-placeholder=" e.g. FGFR2" class="chosen-select" multiple="true" tabindex="3" name="genes-to-keep" id="gene-filter">
+                                </select>
+                            </div>
                         </div>  
                     </div> 
                 </div>
@@ -165,12 +164,12 @@ and open the template in the editor.
                     <p class="help-block">Need more info? Try the <a href="/resources/databases/exomiser/query/public/Tutorial.pdf">Tutorial</a></p>
                 </div>
             </form>
-<!--            <div class="progress">
-                <div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-                    <span class="sr-only">45% Complete</span>
-                    Running analysis...
-                </div>
-            </div>-->
+            <!--            <div class="progress">
+                            <div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                                <span class="sr-only">45% Complete</span>
+                                Running analysis...
+                            </div>
+                        </div>-->
         </div>
         <script type="text/javascript" src="resources/bootstrap-3.2.0/js/jquery-2.1.1.min.js" th:href="@{resources/bootstrap-3.2.0/js/jquery-2.1.1.min}"/>
         <script type="text/javascript" src="resources/bootstrap-3.2.0/js/bootstrap.min.js" th:href="@{resources/bootstrap-3.2.0/js/bootstrap.min.js}"/>
@@ -181,12 +180,12 @@ and open the template in the editor.
 
         <!--<script type="text/javascript" src="resources/select2-3.5.2/select2.min.js" th:href="@{resources/select2-3.5.2/select2.min.js}"/>-->
         <script>
-          $('#button_form_submit').on('click', function () {
-            console.log("submit button clicked");
-            var $btn = $(this).button('loading');
-            // business logic...
-            $btn.button('loading');
-          });
+            $('#button_form_submit').on('click', function () {
+                console.log("submit button clicked");
+                var $btn = $(this).button('loading');
+                // business logic...
+                $btn.button('loading');
+            });
         </script>
 
         <script>
@@ -221,6 +220,23 @@ and open the template in the editor.
             $("#hpo").ajaxChosen({
                 type: 'GET',
                 url: 'data/hpo',
+                dataType: 'json'
+            }, function (data) {
+
+                var results = [];
+
+                $.each(data, function (i, val) {
+                    results.push({value: val.value, text: val.text});
+                });
+                results.push({value: "", text: ""});
+                console.log(results);
+                return results;
+            });
+        </script>
+        <script>
+            $("#gene-filter").ajaxChosen({
+                type: 'GET',
+                url: 'data/gene',
                 dataType: 'json'
             }, function (data) {
 

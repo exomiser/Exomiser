@@ -53,6 +53,9 @@ public class DataController {
     private Map<String, String> diseases;
     private Set<SelectOption> diseaseSelectOptions;
     
+    private Map<String, String> genes;
+    private Set<SelectOption> geneSelectOptions;
+    
     @PostConstruct
     private void setUp() {
         hpoTerms = exomiserDao.getHpoTerms();
@@ -61,7 +64,10 @@ public class DataController {
         diseases = exomiserDao.getDiseases();
         diseaseSelectOptions = makeSelectOptionsFromMap(diseases);
         
-        logger.info("Loaded {} HPO and {} disease terms", hpoSelectOptions.size(), diseaseSelectOptions.size());
+        genes = exomiserDao.getGenes();
+        geneSelectOptions = makeSelectOptionsFromMap(genes);
+        
+        logger.info("Loaded {} HPO, {} disease and {} gene select options", hpoSelectOptions.size(), diseaseSelectOptions.size(), geneSelectOptions.size());
     }
 
     private Set<SelectOption> makeSelectOptionsFromMap(Map<String, String> inputMap) {
@@ -84,6 +90,13 @@ public class DataController {
         return findSelectOptionContainingTerm(term, hpoSelectOptions);
     }
 
+    @RequestMapping(value = "gene", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody List<SelectOption> getGeneOptionsContainingTerm(@RequestParam(value="term") String term) {
+        logger.info("Searching for gene name '{}'", term);
+        return findSelectOptionContainingTerm(term, geneSelectOptions);
+    }
+
+    
     private List<SelectOption> findSelectOptionContainingTerm(String term, Set<SelectOption> selectOptions) {
         List<SelectOption> matches = new ArrayList<>();
         

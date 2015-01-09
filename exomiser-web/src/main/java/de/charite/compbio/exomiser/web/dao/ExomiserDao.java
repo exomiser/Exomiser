@@ -27,5 +27,7 @@ public interface ExomiserDao {
     public Map<String, String> getDiseases();
     
     public Map<String, String> getHpoTerms();
-    
+
+    public Map<String, String> getGenes();
+
 }
