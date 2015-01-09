@@ -1,3 +1,5 @@
+/exomiser-cli/target/
+/exomiser-web/target/
 /exomiser-db/target/
 /exomiser-core/target/
 /exomiser-db/data/
