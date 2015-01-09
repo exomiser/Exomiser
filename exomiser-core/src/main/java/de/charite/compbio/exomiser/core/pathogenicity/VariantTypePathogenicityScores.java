@@ -65,7 +65,7 @@ public abstract class VariantTypePathogenicityScores {
 
 
 
-    public static final float getDefaultPathogenicityScoreOf(VariantType variantType) {
+    public static final float getPathogenicityScoreOf(VariantType variantType) {
         if (!variantType.isTopPriorityVariant()) {
             return NON_PATHOGENIC_SCORE;
         }

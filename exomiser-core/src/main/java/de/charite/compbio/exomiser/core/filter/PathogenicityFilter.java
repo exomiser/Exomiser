@@ -88,7 +88,7 @@ public class PathogenicityFilter implements VariantFilter {
             // returns default scores based on averages for each variant type in CADD
 //            if (VariantTypePathogenicityScores.getDefaultPathogenicityScoreOf(variantType) > 0.5)   
 //                logger.info("HAVING TO USE DEFAULT FOR PATHOGENIC VARIANT " + variantType);
-            return VariantTypePathogenicityScores.getDefaultPathogenicityScoreOf(variantType);
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantType);
         }
     }
 
