@@ -135,9 +135,16 @@ public class AppConfig {
     }
 
     @Bean
-    public boolean migrateDatabases() {
-        boolean migrateDatabases = Boolean.parseBoolean(env.getProperty("migrateDatabases")); 
-        logger.info("Setting application to migrate databases: {}", migrateDatabases);
-        return migrateDatabases;    
+    public boolean migratePostgres() {
+        boolean migratePostgres = Boolean.parseBoolean(env.getProperty("migratePostgres")); 
+        logger.info("Setting application to migrate PostgreSQL database: {}", migratePostgres);
+        return migratePostgres;    
+    }
+
+    @Bean
+    public boolean migrateH2() {
+        boolean migrateH2 = Boolean.parseBoolean(env.getProperty("migrateH2")); 
+        logger.info("Setting application to migrate H2 database: {}", migrateH2);
+        return migrateH2;    
     }
 }
