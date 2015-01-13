@@ -167,36 +167,6 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
-     * @param score Result of a prioritization algorithm
-     * @param type the {@code PriorityType} which created the score
-     */
-    public void addPriorityScore(PriorityScore score, PriorityType type) {
-        //TODO: this should follow the same form as VariantEvaluation.addFilterResult
-        priorityScoreMap.put(type, score);
-    }
-
-    /**
-     * @param type {@code PriorityType} representing the priority type
-     * @return The score applied by that {@code PriorityType}.
-     */
-    public float getPriorityScore(PriorityType type) {
-        PriorityScore ir = priorityScoreMap.get(type);
-        if (ir == null) {
-            return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
-
-        }
-        return ir.getScore();
-    }
-
-    /**
-     * @return the map of {@code PriorityScore} objects that represent the
-     * result of filtering
-     */
-    public Map<PriorityType, PriorityScore> getPriorityScoreMap() {
-        return priorityScoreMap;
-    }
-
-    /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
     public List<VariantEvaluation> getVariantEvaluations() {
@@ -213,24 +183,6 @@ public class Gene implements Comparable<Gene>, Filterable {
         }
 
         return passedVariantEvaluations;
-    }
-
-    /**
-     * This is possible through the current API without having to have a
-     * convenience method here which is only used by a single other class.
-     *
-     * @param type
-     * @param newval
-     * @deprecated
-     */
-    @Deprecated
-    public void resetPriorityScore(PriorityType type, float newval) {
-        PriorityScore priorityScore = this.priorityScoreMap.get(type);
-        if (priorityScore == null) {
-            return;/* This should never happen. */
-
-        }
-        priorityScore.setScore(newval);
     }
 
     /**
@@ -331,6 +283,15 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
+     * @param score Result of a prioritization algorithm
+     * @param type the {@code PriorityType} which created the score
+     */
+    public void addPriorityScore(PriorityScore score, PriorityType type) {
+        //TODO: this should follow the same form as VariantEvaluation.addFilterResult
+        priorityScoreMap.put(type, score);
+    }
+
+    /**
      * Calculate the priority score of this gene based on the relevance of the
      * gene (priorityScore)
      * <P>
@@ -342,6 +303,45 @@ public class Gene implements Comparable<Gene>, Filterable {
      */
     public float getPriorityScore() {
         return priorityScore;
+    }
+
+    /**
+     * @param type {@code PriorityType} representing the priority type
+     * @return The score applied by that {@code PriorityType}.
+     */
+    public float getPriorityScore(PriorityType type) {
+        PriorityScore ir = priorityScoreMap.get(type);
+        if (ir == null) {
+            return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
+
+        }
+        return ir.getScore();
+    }
+
+    /**
+     * @return the map of {@code PriorityScore} objects that represent the
+     * result of filtering
+     */
+    public Map<PriorityType, PriorityScore> getPriorityScoreMap() {
+        return priorityScoreMap;
+    }
+
+    /**
+     * This is possible through the current API without having to have a
+     * convenience method here which is only used by a single other class.
+     *
+     * @param type
+     * @param newval
+     * @deprecated
+     */
+    @Deprecated
+    public void resetPriorityScore(PriorityType type, float newval) {
+        PriorityScore priorityScore = this.priorityScoreMap.get(type);
+        if (priorityScore == null) {
+            return;/* This should never happen. */
+
+        }
+        priorityScore.setScore(newval);
     }
 
     /**
