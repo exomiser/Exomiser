@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.priority.util;
 import java.util.Map;
 import java.util.TreeMap;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import org.jblas.FloatMatrix;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,6 +80,17 @@ public class DataMatrixTest {
     public void testGetMatrixName() {
         assertThat(instance.getName(), equalTo(""));
     }
+    
+    @Test
+    public void testContainsGeneIsTrue() {
+        assertThat(instance.containsGene(0000), is(true));
+    }
+    
+    @Test
+    public void testContainsGeneIsFalse() {
+        assertThat(instance.containsGene(9999), is(false));
+    }
+    
 //
 //    @Test
 //    public void testWriteMatrix() {

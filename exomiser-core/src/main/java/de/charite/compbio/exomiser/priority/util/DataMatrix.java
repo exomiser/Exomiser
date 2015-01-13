@@ -139,6 +139,10 @@ public class DataMatrix {
         return name;
     }
 
+    public boolean containsGene(Integer entrezGeneId) {
+        return entrezIdToRowIndex.containsKey(entrezGeneId);
+    }
+    
     public static void writeMatrix(FloatMatrix matrix, String file, Map<String, Integer> id2index, boolean doLogarithm) {
         try (
                 BufferedWriter outMatrix = new BufferedWriter(new FileWriter(file));
