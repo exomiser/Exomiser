@@ -1,11 +1,8 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
-
 import jannovar.common.VariantType;
 import java.util.Objects;
 import org.slf4j.Logger;

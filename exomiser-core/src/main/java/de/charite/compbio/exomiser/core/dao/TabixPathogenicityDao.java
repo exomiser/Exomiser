@@ -5,17 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import com.sun.jndi.toolkit.ctx.Continuation;
-import de.charite.compbio.exomiser.core.pathogenicity.CaddScore;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import htsjdk.tribble.readers.TabixReader;
 import jannovar.exome.Variant;
-import java.util.Iterator;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-import htsjdk.tribble.readers.TabixReader;
-import java.io.IOException;
 
 /**
  *
