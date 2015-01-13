@@ -2,14 +2,14 @@ package de.charite.compbio.exomiser.db.build;
 
 import com.googlecode.flyway.core.Flyway;
 import com.googlecode.flyway.core.api.FlywayException;
-import de.charite.compbio.exomiser.config.AppConfig;
-import de.charite.compbio.exomiser.config.DataSourceConfig;
-import de.charite.compbio.exomiser.config.ResourceConfig;
-import de.charite.compbio.exomiser.io.PhenodigmDataDumper;
-import de.charite.compbio.exomiser.resources.Resource;
-import de.charite.compbio.exomiser.resources.ResourceDownloadHandler;
-import de.charite.compbio.exomiser.resources.ResourceExtractionHandler;
-import de.charite.compbio.exomiser.resources.ResourceParserHandler;
+import de.charite.compbio.exomiser.db.build.config.AppConfig;
+import de.charite.compbio.exomiser.db.build.config.DataSourceConfig;
+import de.charite.compbio.exomiser.db.build.config.ResourceConfig;
+import de.charite.compbio.exomiser.db.build.io.PhenodigmDataDumper;
+import de.charite.compbio.exomiser.db.build.resources.Resource;
+import de.charite.compbio.exomiser.db.build.resources.ResourceDownloadHandler;
+import de.charite.compbio.exomiser.db.build.resources.ResourceExtractionHandler;
+import de.charite.compbio.exomiser.db.build.resources.ResourceParserHandler;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,13 +109,12 @@ public class App {
         if (migrateH2) {  
             DataSource h2DataSource = dataSourceConfig.exomiserH2DataSource();
             migrateH2Database(h2DataSource, propertyPlaceHolders);
-
         } else {
             logger.info("Skipping migration of H2 database.");
         }
     }
 
-    private static void migratePostgreSqlDatabase(DataSource dataSource, Map<String, String> propertyPlaceHolders) throws FlywayException {
+    private static void migratePostgreSqlDatabase(DataSource dataSource, Map<String, String> propertyPlaceHolders) {
         logger.info("Migrating exomiser PostgreSQL database...");
         Flyway postgresqlFlyway = new Flyway();
         postgresqlFlyway.setDataSource(dataSource);
@@ -126,7 +125,7 @@ public class App {
         postgresqlFlyway.migrate();
     }
 
-    private static void migrateH2Database(DataSource h2DataSource, Map<String, String> propertyPlaceHolders) throws FlywayException {
+    private static void migrateH2Database(DataSource h2DataSource, Map<String, String> propertyPlaceHolders) {
         logger.info("Migrating exomiser H2 database...");
         Flyway h2Flyway = new Flyway();
         h2Flyway.setDataSource(h2DataSource);

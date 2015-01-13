@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.model.ExomiserSettings.EXOMISER2_PARAMS_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.EXOMISER2_PARAMS_OPTION;
 import org.apache.commons.cli.Option;
 
 /**

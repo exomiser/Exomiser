@@ -5,9 +5,9 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.model.ExomiserSettings.PRIORITISER_OPTION;
-import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.PRIORITISER_OPTION;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.OptionBuilder;
@@ -50,7 +50,7 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
      * There is a lot of messing about needed to get the Prioritiser option
      * description sorted, but this will now automatically change to reflect
      * changes in any names or types which are added to the
-     * {@link de.charite.compbio.exomiser.priority.PriorityType}
+     * {@link de.charite.compbio.exomiser.core.prioritisers.PriorityType}
      *
      * @param prioritiserLongOpt
      * @return

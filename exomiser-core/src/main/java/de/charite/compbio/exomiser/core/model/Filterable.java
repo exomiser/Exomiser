@@ -6,7 +6,7 @@
 
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 
 /**
  *

@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.model.ExomiserSettings.GENES_TO_KEEP_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.GENES_TO_KEEP_OPTION;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Matcher;

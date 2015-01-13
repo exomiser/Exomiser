@@ -1,8 +1,8 @@
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.priority.PriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Set;
  * in the exome. Additionally, the Gene objects get prioritized for their
  * biomedical relevance to the disease in question, and each such prioritization
  * results in an
- * {@link de.charite.compbio.exomiser.priority.PriorityScore PriorityScore}
+ * {@link de.charite.compbio.exomiser.core.prioritisers.PriorityScore PriorityScore}
  * object.
  * <P>
  * There are additionally some prioritization procedures that only can be
@@ -37,7 +37,7 @@ import java.util.Set;
  * disease genes. Additionally, filtering for autosomal recessive or dominant
  * patterns in the data is done with this class. This kind of prioritization is
  * done by classes that implement
- * {@link de.charite.compbio.exomiser.priority.Priority Priority}. Recently, the
+ * {@link de.charite.compbio.exomiser.core.prioritisers.Priority Priority}. Recently, the
  * ability to downweight genes with too many variants (now hardcoded to 5) was
  * added).
  *

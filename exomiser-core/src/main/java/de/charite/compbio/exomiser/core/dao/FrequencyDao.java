@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import jannovar.exome.Variant;
 
 /**
