@@ -152,7 +152,7 @@ and open the template in the editor.
                                         <div class="col-sm-12">
                                             <dl th:each="priorityScore: ${gene.priorityScoreMap}">
                                                 <dt th:text="|${priorityScore.key} prioritiser:|">Omim prioritiser:</dt>
-                                                <dd th:each="result: ${priorityScore.value.filterResultList}" th:text="${result}"><a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a></dd>
+                                                <dd th:each="result: ${priorityScore.value.HTMLCode}" th:utext="${result}"><a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a></dd>
                                             </dl>
                                         </div>
                                     </div>
