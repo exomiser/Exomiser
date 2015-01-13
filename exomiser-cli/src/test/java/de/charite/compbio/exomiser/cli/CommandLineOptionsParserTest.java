@@ -6,10 +6,10 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import de.charite.compbio.exomiser.core.writer.OutputFormat;
-import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.writers.OutputFormat;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;

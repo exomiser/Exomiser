@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.model.ExomiserSettings.SEED_GENES_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.SEED_GENES_OPTION;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;

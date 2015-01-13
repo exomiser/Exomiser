@@ -5,14 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterResult;
-import static de.charite.compbio.exomiser.core.filter.FilterResultStatus.FAIL;
-import static de.charite.compbio.exomiser.core.filter.FilterResultStatus.PASS;
-import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filter.QualityFilterResult;
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
+import static de.charite.compbio.exomiser.core.filters.FilterResultStatus.FAIL;
+import static de.charite.compbio.exomiser.core.filters.FilterResultStatus.PASS;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filters.QualityFilterResult;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import jannovar.common.Genotype;
 import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;

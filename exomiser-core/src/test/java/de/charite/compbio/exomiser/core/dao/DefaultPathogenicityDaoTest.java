@@ -5,11 +5,11 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.pathogenicity.CaddScore;
-import de.charite.compbio.exomiser.core.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.pathogenicity.PolyPhenScore;
-import de.charite.compbio.exomiser.core.pathogenicity.SiftScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import static org.hamcrest.CoreMatchers.equalTo;

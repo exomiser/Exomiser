@@ -17,7 +17,7 @@ import de.charite.compbio.exomiser.cli.options.OutFileOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.OutFormatOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.PedFileOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.VcfFileOptionMarshaller;
-import static de.charite.compbio.exomiser.core.model.ExomiserSettings.*;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
 import java.util.Map;
 import javax.annotation.Resource;
 import org.apache.commons.cli.Option;

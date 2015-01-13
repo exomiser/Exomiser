@@ -1,14 +1,15 @@
 package de.charite.compbio.exomiser.db.build;
 
 import com.googlecode.flyway.core.Flyway;
-import de.charite.compbio.exomiser.config.AppConfig;
-import de.charite.compbio.exomiser.config.DataSourceConfig;
-import de.charite.compbio.exomiser.config.ResourceConfig;
-import de.charite.compbio.exomiser.io.PhenodigmDataDumper;
-import de.charite.compbio.exomiser.resources.Resource;
-import de.charite.compbio.exomiser.resources.ResourceDownloadHandler;
-import de.charite.compbio.exomiser.resources.ResourceExtractionHandler;
-import de.charite.compbio.exomiser.resources.ResourceParserHandler;
+import com.googlecode.flyway.core.api.FlywayException;
+import de.charite.compbio.exomiser.db.build.config.AppConfig;
+import de.charite.compbio.exomiser.db.build.config.DataSourceConfig;
+import de.charite.compbio.exomiser.db.build.config.ResourceConfig;
+import de.charite.compbio.exomiser.db.build.io.PhenodigmDataDumper;
+import de.charite.compbio.exomiser.db.build.resources.Resource;
+import de.charite.compbio.exomiser.db.build.resources.ResourceDownloadHandler;
+import de.charite.compbio.exomiser.db.build.resources.ResourceExtractionHandler;
+import de.charite.compbio.exomiser.db.build.resources.ResourceParserHandler;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +31,7 @@ public class App {
     public static void main(String[] args) {
         //Get Spring to sort it's shit out... 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class, ResourceConfig.class, DataSourceConfig.class);
-        //create variables which would otherwise be injected manually from the context
-        DataSourceConfig dataSourceConfig = context.getBean(DataSourceConfig.class);
-        
-        DataSource h2DataSource = dataSourceConfig.exomiserH2DataSource();
-        DataSource postGresDataSource = dataSourceConfig.exomiserPostgresDataSource();
-        
+                
         AppConfig appConfig = context.getBean(AppConfig.class);
         //set the Paths
         Path dataPath = appConfig.dataPath();
@@ -94,37 +90,49 @@ public class App {
             logger.info("Skipping making Phenodigm data dump files.");
         }
 
-        //now load the database using Flyway we're going to create an enbedded H2
-        //and a PostgreSQL database. TODO: This should be parallelizable.
-        boolean migrateDatabases = appConfig.migrateDatabases();
-        if (migrateDatabases) {
-            logger.info("Migrating exomiser databases...");
-            //define where the data import path is otherwise everyrhing will fail
-            Map<String, String> propertyPlaceHolders = new HashMap<>();
-            propertyPlaceHolders.put("import.path", dataPath.toString());
-            
-            // Do the PostgreSQL migration            
-            logger.info("Migrating exomiser PostgreSQL database...");
-            Flyway postgresqlFlyway = new Flyway();
-            postgresqlFlyway.setDataSource(postGresDataSource);
-            postgresqlFlyway.setSchemas("EXOMISER");
-            postgresqlFlyway.setLocations("db/migration/common", "db/migration/postgres");
-            postgresqlFlyway.setPlaceholders(propertyPlaceHolders);
-            postgresqlFlyway.clean();
-            postgresqlFlyway.migrate();
-            
-            //Do the H2 migration 
-            logger.info("Migrating exomiser H2 database...");
-            Flyway h2Flyway = new Flyway();
-            h2Flyway.setDataSource(h2DataSource);
-            h2Flyway.setSchemas("EXOMISER");
-            h2Flyway.setLocations("db/migration/common", "db/migration/h2");
-            h2Flyway.setPlaceholders(propertyPlaceHolders);
-            h2Flyway.clean();
-            h2Flyway.migrate();
-
+        //create variables which would otherwise be injected manually from the context
+        DataSourceConfig dataSourceConfig = context.getBean(DataSourceConfig.class);
+        logger.info("Migrating exomiser databases...");
+        //define where the data import path is otherwise everything will fail
+        Map<String, String> propertyPlaceHolders = new HashMap<>();
+        propertyPlaceHolders.put("import.path", dataPath.toString());
+        
+        boolean migratePostgres = appConfig.migratePostgres();
+        if (migratePostgres) { 
+            DataSource postgresDataSource = dataSourceConfig.exomiserPostgresDataSource();
+            migratePostgreSqlDatabase(postgresDataSource, propertyPlaceHolders);
         } else {
-            logger.info("Skipping migration of database.");
+            logger.info("Skipping migration of PostgreSQL database.");
         }
+        
+        boolean migrateH2 = appConfig.migrateH2();
+        if (migrateH2) {  
+            DataSource h2DataSource = dataSourceConfig.exomiserH2DataSource();
+            migrateH2Database(h2DataSource, propertyPlaceHolders);
+        } else {
+            logger.info("Skipping migration of H2 database.");
+        }
+    }
+
+    private static void migratePostgreSqlDatabase(DataSource dataSource, Map<String, String> propertyPlaceHolders) {
+        logger.info("Migrating exomiser PostgreSQL database...");
+        Flyway postgresqlFlyway = new Flyway();
+        postgresqlFlyway.setDataSource(dataSource);
+        postgresqlFlyway.setSchemas("EXOMISER");
+        postgresqlFlyway.setLocations("db/migration/common", "db/migration/postgres");
+        postgresqlFlyway.setPlaceholders(propertyPlaceHolders);
+        postgresqlFlyway.clean();
+        postgresqlFlyway.migrate();
+    }
+
+    private static void migrateH2Database(DataSource h2DataSource, Map<String, String> propertyPlaceHolders) {
+        logger.info("Migrating exomiser H2 database...");
+        Flyway h2Flyway = new Flyway();
+        h2Flyway.setDataSource(h2DataSource);
+        h2Flyway.setSchemas("EXOMISER");
+        h2Flyway.setLocations("db/migration/common", "db/migration/h2");
+        h2Flyway.setPlaceholders(propertyPlaceHolders);
+        h2Flyway.clean();
+        h2Flyway.migrate();
     }
 }

@@ -5,9 +5,9 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.model.ExomiserSettings.OUT_FORMAT_OPTION;
-import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
-import de.charite.compbio.exomiser.core.writer.OutputFormat;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.OUT_FORMAT_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;

@@ -5,13 +5,13 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterResult;
-import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filter.TargetFilterResult;
-import de.charite.compbio.exomiser.priority.OMIMPriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
+import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.Genotype;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;

@@ -1,8 +1,8 @@
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.priority.PriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Set;
  * in the exome. Additionally, the Gene objects get prioritized for their
  * biomedical relevance to the disease in question, and each such prioritization
  * results in an
- * {@link de.charite.compbio.exomiser.priority.PriorityScore PriorityScore}
+ * {@link de.charite.compbio.exomiser.core.prioritisers.PriorityScore PriorityScore}
  * object.
  * <P>
  * There are additionally some prioritization procedures that only can be
@@ -37,7 +37,7 @@ import java.util.Set;
  * disease genes. Additionally, filtering for autosomal recessive or dominant
  * patterns in the data is done with this class. This kind of prioritization is
  * done by classes that implement
- * {@link de.charite.compbio.exomiser.priority.Priority Priority}. Recently, the
+ * {@link de.charite.compbio.exomiser.core.prioritisers.Priority Priority}. Recently, the
  * ability to downweight genes with too many variants (now hardcoded to 5) was
  * added).
  *
@@ -167,36 +167,6 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
-     * @param score Result of a prioritization algorithm
-     * @param type the {@code PriorityType} which created the score
-     */
-    public void addPriorityScore(PriorityScore score, PriorityType type) {
-        //TODO: this should follow the same form as VariantEvaluation.addFilterResult
-        priorityScoreMap.put(type, score);
-    }
-
-    /**
-     * @param type {@code PriorityType} representing the priority type
-     * @return The score applied by that {@code PriorityType}.
-     */
-    public float getPriorityScore(PriorityType type) {
-        PriorityScore ir = priorityScoreMap.get(type);
-        if (ir == null) {
-            return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
-
-        }
-        return ir.getScore();
-    }
-
-    /**
-     * @return the map of {@code PriorityScore} objects that represent the
-     * result of filtering
-     */
-    public Map<PriorityType, PriorityScore> getPriorityScoreMap() {
-        return priorityScoreMap;
-    }
-
-    /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
     public List<VariantEvaluation> getVariantEvaluations() {
@@ -213,24 +183,6 @@ public class Gene implements Comparable<Gene>, Filterable {
         }
 
         return passedVariantEvaluations;
-    }
-
-    /**
-     * This is possible through the current API without having to have a
-     * convenience method here which is only used by a single other class.
-     *
-     * @param type
-     * @param newval
-     * @deprecated
-     */
-    @Deprecated
-    public void resetPriorityScore(PriorityType type, float newval) {
-        PriorityScore priorityScore = this.priorityScoreMap.get(type);
-        if (priorityScore == null) {
-            return;/* This should never happen. */
-
-        }
-        priorityScore.setScore(newval);
     }
 
     /**
@@ -331,6 +283,15 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
+     * @param score Result of a prioritization algorithm
+     * @param type the {@code PriorityType} which created the score
+     */
+    public void addPriorityScore(PriorityScore score, PriorityType type) {
+        //TODO: this should follow the same form as VariantEvaluation.addFilterResult
+        priorityScoreMap.put(type, score);
+    }
+
+    /**
      * Calculate the priority score of this gene based on the relevance of the
      * gene (priorityScore)
      * <P>
@@ -342,6 +303,45 @@ public class Gene implements Comparable<Gene>, Filterable {
      */
     public float getPriorityScore() {
         return priorityScore;
+    }
+
+    /**
+     * @param type {@code PriorityType} representing the priority type
+     * @return The score applied by that {@code PriorityType}.
+     */
+    public float getPriorityScore(PriorityType type) {
+        PriorityScore ir = priorityScoreMap.get(type);
+        if (ir == null) {
+            return 0f; /* This should never happen, but if there is no relevance score, just return 0. */
+
+        }
+        return ir.getScore();
+    }
+
+    /**
+     * @return the map of {@code PriorityScore} objects that represent the
+     * result of filtering
+     */
+    public Map<PriorityType, PriorityScore> getPriorityScoreMap() {
+        return priorityScoreMap;
+    }
+
+    /**
+     * This is possible through the current API without having to have a
+     * convenience method here which is only used by a single other class.
+     *
+     * @param type
+     * @param newval
+     * @deprecated
+     */
+    @Deprecated
+    public void resetPriorityScore(PriorityType type, float newval) {
+        PriorityScore priorityScore = this.priorityScoreMap.get(type);
+        if (priorityScore == null) {
+            return;/* This should never happen. */
+
+        }
+        priorityScore.setScore(newval);
     }
 
     /**

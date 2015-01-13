@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.charite.compbio</groupId>
     <artifactId>Exomiser</artifactId>
-    <version>5.2.0</version>
+    <version>6.0.0</version>
     <packaging>pom</packaging>
     <name>Exomiser</name>
 
@@ -143,8 +143,7 @@
                     <skipTests>false</skipTests>
                     <forkCount>3</forkCount> 
                     <reuseForks>true</reuseForks>
-                    <!--Add the user language and region in order that the string comparisons work in tests for numerical output-->
-                    <argLine>-Xms512m -Xmx1024m -Duser.language=en -Duser.country=GB -Dfile.encoding=UTF-8</argLine>
+                    <argLine>-Xms512m -Xmx1024m ${argLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>

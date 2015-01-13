@@ -8,9 +8,9 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import jannovar.exome.Variant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

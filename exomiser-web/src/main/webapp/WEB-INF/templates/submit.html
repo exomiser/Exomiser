@@ -14,7 +14,6 @@ and open the template in the editor.
         <link rel="stylesheet" type="text/css" media="all" href="../../resources/bootstrap-3.2.0/css/bootstrap.min.css" th:href="@{resources/bootstrap-3.2.0/css/bootstrap.min.css}"/>
         <link rel="stylesheet" type="text/css" media="all" href="../../resources/chosen_v1.2.0/chosen.css" th:href="@{resources/chosen_v1.2.0/chosen.css}"/>
         <link rel="stylesheet" type="text/css" media="all" href="../../resources/chosen_v1.2.0/chosen-bootstrap.css" th:href="@{resources/chosen_v1.2.0/chosen-bootstrap.css}"/>
-        <!--<link rel="stylesheet" type="text/css" media="all" href="../../resources/select2-3.5.2/select2-bootstrap.css" th:href="@{resources/select2-3.5.2/select2-bootstrap.css}"/>-->
     </head>
 
     <body>
@@ -173,12 +172,10 @@ and open the template in the editor.
         </div>
         <script type="text/javascript" src="resources/bootstrap-3.2.0/js/jquery-2.1.1.min.js" th:href="@{resources/bootstrap-3.2.0/js/jquery-2.1.1.min}"/>
         <script type="text/javascript" src="resources/bootstrap-3.2.0/js/bootstrap.min.js" th:href="@{resources/bootstrap-3.2.0/js/bootstrap.min.js}"/>
-        <script type="text/javascript" src="resources/bootstrap-3.2.0/js/typeahead.bundle.min.js" th:href="@{resources/bootstrap-3.2.0/js/typeahead.bundle.min.js}"/>
 
         <script type="text/javascript" src="resources/chosen_v1.2.0/chosen.jquery.js" th:href="@{resources/chosen_v1.2.0/chosen.jquery.js}"/>
         <script type="text/javascript" src="resources/chosen_v1.2.0/ajax-chosen.min.js" th:href="@{resources/chosen_v1.2.0/ajax-chosen.min.js}"/>
 
-        <!--<script type="text/javascript" src="resources/select2-3.5.2/select2.min.js" th:href="@{resources/select2-3.5.2/select2.min.js}"/>-->
         <script>
             $('#button_form_submit').on('click', function () {
                 console.log("submit button clicked");
@@ -250,35 +247,5 @@ and open the template in the editor.
                 return results;
             });
         </script>
-        <!--        <script>
-        //            var diseases = ['Pfeiffer Syndrome Type 1', 'Pfeiffer Syndrome', 'Pfeiffer Syndrome Type 1'];
-        
-                    // constructs the suggestion engine
-                    var diseases = new Bloodhound({
-                        datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
-                        queryTokenizer: Bloodhound.tokenizers.whitespace,
-                        limit: 10,
-                        prefetch: 'http://localhost:8084/exomiser/data/diseases.json'
-                    });
-        
-        // kicks off the loading/processing of `local` and `prefetch`
-                    diseases.initialize();
-                    console.log(diseases.JS);
-                    $(document).ready(function () {
-        
-                        $('#omimid').typeahead({
-                            hint: true,
-                            highlight: true,
-                            minLength: 1
-                        },
-                        {
-                            name: 'diseases',
-                            displayKey: 'value',
-                            // `ttAdapter` wraps the suggestion engine in an adapter that
-                            // is compatible with the typeahead jQuery plugin
-                            source: diseases.ttAdapter()
-                        });
-                    });
-                </script>-->
     </body>
 </html>

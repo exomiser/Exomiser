@@ -18,8 +18,8 @@ package de.charite.compbio.exomiser.web.controller;
 
 import config.TestDaoConfig;
 import config.TestExomiserConfig;
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
-import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.web.config.WebAppConfig;
 import java.nio.file.Files;
 import java.nio.file.Paths;

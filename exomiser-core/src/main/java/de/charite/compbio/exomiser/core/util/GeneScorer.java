@@ -7,9 +7,9 @@ package de.charite.compbio.exomiser.core.util;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.priority.PriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.ScoringMode;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import jannovar.common.ModeOfInheritance;
 import jannovar.genotype.GenotypeCall;
 import jannovar.pedigree.Pedigree;
