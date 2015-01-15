@@ -110,10 +110,19 @@
             <artifactId>h2</artifactId>
             <version>1.3.174</version>
         </dependency>
+        <!--https://github.com/brettwooldridge/HikariCP/wiki/FAQ#q-how-to-i-properly-enable-preparedstatement-caching-for-postgresql-->
         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.1-901.jdbc4</version>
+            <groupId>com.impossibl.pgjdbc-ng</groupId>
+            <artifactId>pgjdbc-ng</artifactId>
+            <version>0.4</version>
+        </dependency>
+        <!--HikariCP is a "zero-overhead" production ready JDBC connection pool.
+        https://github.com/brettwooldridge/HikariCP -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP-java6</artifactId>
+            <version>2.2.5</version>
+            <scope>compile</scope>
         </dependency>
         <!--Ehcache for caching-->
         <dependency>
@@ -143,7 +152,7 @@
                     <skipTests>false</skipTests>
                     <forkCount>3</forkCount> 
                     <reuseForks>true</reuseForks>
-                    <argLine>-Xms512m -Xmx1024m ${argLine}</argLine>
+                    <!--<argLine>-Xms512m -Xmx1024m ${argLine}</argLine>-->
                 </configuration>
             </plugin>
             <plugin>
