@@ -8,7 +8,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class ExomeWalkerPriorityScore implements PriorityScore {
+public class ExomeWalkerPriorityResult implements PriorityResult {
 
     /**
      * The Random walk similarity score.
@@ -20,7 +20,7 @@ public class ExomeWalkerPriorityScore implements PriorityScore {
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public ExomeWalkerPriorityScore(double score) {
+    public ExomeWalkerPriorityResult(double score) {
         this.score = score;
         this.rawScore = score;
     }
@@ -45,9 +45,9 @@ public class ExomeWalkerPriorityScore implements PriorityScore {
      * {@link exomizer.priority.Priority Priority}. basically as a kind of
      * uniform prior.
      */
-    public static ExomeWalkerPriorityScore noPPIDataScore() {
+    public static ExomeWalkerPriorityResult noPPIDataScore() {
         float nodatascore = 0f;
-        ExomeWalkerPriorityScore grs = new ExomeWalkerPriorityScore(nodatascore);
+        ExomeWalkerPriorityResult grs = new ExomeWalkerPriorityResult(nodatascore);
         return grs;
     }
 
@@ -78,7 +78,6 @@ public class ExomeWalkerPriorityScore implements PriorityScore {
      *
      * @param newscore new value for relevance score
      */
-    @Override
     public void setScore(float newscore) {
         this.score = newscore;
         if (this.scaledByMaxScore == -10) {

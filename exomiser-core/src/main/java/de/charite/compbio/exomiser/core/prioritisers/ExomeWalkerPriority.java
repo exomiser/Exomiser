@@ -221,7 +221,7 @@ public class ExomeWalkerPriority implements Priority {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
-            ExomeWalkerPriorityScore relScore = null;
+            ExomeWalkerPriorityResult relScore = null;
             if (randomWalkMatrix.getEntrezIdToRowIndex().containsKey(gene.getEntrezGeneID())) {
                 double val = computeSimStartNodesToNode(gene);
                 if (val > max) {
@@ -230,19 +230,19 @@ public class ExomeWalkerPriority implements Priority {
                 if (val < min) {
                     min = val;
                 }
-                relScore = new ExomeWalkerPriorityScore(val);
+                relScore = new ExomeWalkerPriorityResult(val);
                 ++PPIdataAvailable;
             } else {
-                relScore = ExomeWalkerPriorityScore.noPPIDataScore();
+                relScore = ExomeWalkerPriorityResult.noPPIDataScore();
             }
-            gene.addPriorityScore(relScore, priorityType);
+            gene.addPriorityResult(relScore);
         }
 
 //        float factor = 1f / (float) max;
 //        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
 //
 //        for (Gene gene : geneList) {
-//            float scr = gene.getPriorityScore(EXOMEWALKER_PRIORITY);
+//            float scr = gene.getPriorityResult(EXOMEWALKER_PRIORITY);
 //            float newscore = factor * (scr - (float) min);
 //            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
 //            newscore = factorMaxPossible * (scr - (float) min);

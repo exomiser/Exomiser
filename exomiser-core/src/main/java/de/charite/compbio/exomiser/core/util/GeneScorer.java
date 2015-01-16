@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.core.util;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import jannovar.common.ModeOfInheritance;
@@ -125,7 +125,7 @@ public class GeneScorer {
     }
 
     private static float setGenePriorityScore(Gene gene) {
-        float priorityScore = calculatePriorityScore(gene.getPriorityScoreMap().values());
+        float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
         gene.setPriorityScore(priorityScore);
         return priorityScore;
     }
@@ -136,16 +136,16 @@ public class GeneScorer {
      * @param priorityScores of the gene
      * @return
      */
-    protected static float calculatePriorityScore(Collection<PriorityScore> priorityScores) {
+    protected static float calculatePriorityScore(Collection<PriorityResult> priorityScores) {
         float finalPriorityScore = 1f;
-        for (PriorityScore priorityScore : priorityScores) {
+        for (PriorityResult priorityScore : priorityScores) {
             finalPriorityScore *= priorityScore.getScore();
         }
         return finalPriorityScore;
     }
 
     private static void setGeneCombinedScore(float filterScore, float priorityScore, Gene gene) {
-        float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityScoreMap().keySet());
+        float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityResults().keySet());
         gene.setCombinedScore(combinedScore);
     }
 

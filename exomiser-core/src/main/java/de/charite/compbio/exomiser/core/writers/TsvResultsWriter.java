@@ -6,13 +6,13 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.prioritisers.Priority;
-import de.charite.compbio.exomiser.core.prioritisers.ExomiserAllSpeciesRelevanceScore;
+import de.charite.compbio.exomiser.core.prioritisers.ExomiserAllSpeciesPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -79,20 +79,20 @@ public class TsvResultsWriter implements ResultsWriter {
         float exomiser2Score = 0f;
         float omimScore = 0f;
         // priority score calculation
-        for (PriorityType i : gene.getPriorityScoreMap().keySet()) {
-            PriorityScore priorityScore = gene.getPriorityScoreMap().get(i);
-            if (i == PriorityType.EXOMISER_ALLSPECIES_PRIORITY) {
-                ExomiserAllSpeciesRelevanceScore phenoScore = (ExomiserAllSpeciesRelevanceScore) priorityScore;
+        for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
+            PriorityType type = prioritiserResult.getPriorityType();
+            if (type == PriorityType.EXOMISER_ALLSPECIES_PRIORITY) {
+                ExomiserAllSpeciesPriorityResult phenoScore = (ExomiserAllSpeciesPriorityResult) prioritiserResult;
                 exomiser2Score = phenoScore.getScore();
                 humanPhenScore = phenoScore.getHumanScore();
                 mousePhenScore = phenoScore.getMouseScore();
                 fishPhenScore = phenoScore.getFishScore();
                 walkerScore = phenoScore.getWalkerScore();
-            } else if (i == PriorityType.OMIM_PRIORITY) {
-                omimScore = priorityScore.getScore();
-            } else if (i == PriorityType.EXOMEWALKER_PRIORITY) {
-                ExomeWalkerPriorityScore wandererScore = (ExomeWalkerPriorityScore) priorityScore;
-                walkerScore = priorityScore.getScore();
+            } else if (type == PriorityType.OMIM_PRIORITY) {
+                omimScore = prioritiserResult.getScore();
+            } else if (type == PriorityType.EXOMEWALKER_PRIORITY) {
+                ExomeWalkerPriorityResult wandererScore = (ExomeWalkerPriorityResult) prioritiserResult;
+                walkerScore = prioritiserResult.getScore();
                 rawWalkerScore = (float) wandererScore.getRawScore();
                 scaledMaxScore = (float) wandererScore.getScaledScore();
             }

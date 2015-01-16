@@ -21,8 +21,8 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import de.charite.compbio.exomiser.core.prioritisers.ExomiserMousePriorityScore;
-import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityScore;
+import de.charite.compbio.exomiser.core.prioritisers.ExomiserMousePriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.Genotype;
 import jannovar.common.VariantType;
@@ -122,13 +122,13 @@ public class HtmlResultsWriterTest {
         gene1 = new Gene(missenseVariantEvaluation);
         gene2 = new Gene(indelVariantEvaluation);
     
-        gene1.addPriorityScore(new ExomiserMousePriorityScore("MGI:12345", "Gene1", 0.99f), PriorityType.EXOMISER_MOUSE_PRIORITY);
-        gene2.addPriorityScore(new ExomiserMousePriorityScore("MGI:54321", "Gene2", 0.98f), PriorityType.EXOMISER_MOUSE_PRIORITY);
+        gene1.addPriorityResult(new ExomiserMousePriorityResult("MGI:12345", "Gene1", 0.99f));
+        gene2.addPriorityResult(new ExomiserMousePriorityResult("MGI:54321", "Gene2", 0.98f));
         
-        OMIMPriorityScore gene1PriorityScore = new OMIMPriorityScore();
+        OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
         gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
-        gene1.addPriorityScore(gene1PriorityScore, PriorityType.OMIM_PRIORITY);
-        gene2.addPriorityScore(new OMIMPriorityScore(), PriorityType.OMIM_PRIORITY);
+        gene1.addPriorityResult(gene1PriorityScore);
+        gene2.addPriorityResult(new OMIMPriorityResult());
 
     }
     @After

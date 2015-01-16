@@ -20,7 +20,7 @@ import java.util.List;
  * @author Damian Smedley
  * @version 0.06 (April 22, 2013).
  */
-public class ExomiserMousePriorityScore implements PriorityScore {
+public class ExomiserMousePriorityResult implements PriorityResult {
     /** The phenodigm score as calculated by OWLsim. This score indicates the 
      * similarity between a humam disease and the phenotype of a genetically
      * modified mouse model.*/
@@ -46,7 +46,7 @@ public class ExomiserMousePriorityScore implements PriorityScore {
      * @param gene The corresponding gene symbol, e.g., Gfl1
      * @param PHENODIGM_MGI the phenodigm score for this gene.
      */
-    public ExomiserMousePriorityScore(String mgi_id, String gene, float PHENODIGM_MGI) {
+    public ExomiserMousePriorityResult(String mgi_id, String gene, float PHENODIGM_MGI) {
 	this.MGI_ID = mgi_id;
 	this.geneSymbol = gene;
 	this.MGI_Phenodigm = PHENODIGM_MGI;
@@ -57,9 +57,9 @@ public class ExomiserMousePriorityScore implements PriorityScore {
 	initialized. The purpose of this is so that we do not throuw away Variants if 
 	there is no data about them in our database -- presumably, these are really rare.
     */
-   public static ExomiserMousePriorityScore createNoDataRelevanceObject()
+   public static ExomiserMousePriorityResult createNoDataRelevanceObject()
     {
-	ExomiserMousePriorityScore rscore = new ExomiserMousePriorityScore(null,null, Constants.UNINITIALIZED_FLOAT);
+	ExomiserMousePriorityResult rscore = new ExomiserMousePriorityResult(null,null, Constants.UNINITIALIZED_FLOAT);
 	return rscore;
     }
     
@@ -129,8 +129,5 @@ public class ExomiserMousePriorityScore implements PriorityScore {
 	String anchor = String.format("<a href=\"%s\">%s</a>",url,this.geneSymbol);
 	return anchor;
     }
-
-    @Override public void setScore(float newscore){ /* not implemented */ }
-
 
 }

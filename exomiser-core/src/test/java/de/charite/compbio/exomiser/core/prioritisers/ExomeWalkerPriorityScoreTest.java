@@ -17,12 +17,12 @@ import static org.junit.Assert.*;
  */
 public class ExomeWalkerPriorityScoreTest {
     
-    private ExomeWalkerPriorityScore instance;
+    private ExomeWalkerPriorityResult instance;
     private final float score = 1.0f;
     
     @Before
     public void setUp() {
-        instance =  new ExomeWalkerPriorityScore(score);
+        instance =  new ExomeWalkerPriorityResult(score);
     }
 
     @Test
@@ -37,7 +37,7 @@ public class ExomeWalkerPriorityScoreTest {
 
     @Test
     public void testNoPPIDataScoreHasScoreOfZero() {
-        ExomeWalkerPriorityScore noInteractionScore = ExomeWalkerPriorityScore.noPPIDataScore();
+        ExomeWalkerPriorityResult noInteractionScore = ExomeWalkerPriorityResult.noPPIDataScore();
         assertThat(noInteractionScore.getScore(), equalTo(0.0f));
     }
 

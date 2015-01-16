@@ -89,8 +89,8 @@ public class OMIMPriority implements Priority {
     @Override
     public void prioritizeGenes(List<Gene> gene_list) {
         for (Gene g : gene_list) {
-            OMIMPriorityScore mimrel = retrieve_omim_data(g);
-            g.addPriorityScore(mimrel, PriorityType.OMIM_PRIORITY);
+            OMIMPriorityResult mimrel = retrieve_omim_data(g);
+            g.addPriorityResult(mimrel);
         }
         closeConnection();
     }
@@ -103,17 +103,16 @@ public class OMIMPriority implements Priority {
      *
      * @param g The gene which is being evaluated.
      */
-    private OMIMPriorityScore retrieve_omim_data(Gene g) {
-        OMIMPriorityScore rel = new OMIMPriorityScore();
+    private OMIMPriorityResult retrieve_omim_data(Gene g) {
+        OMIMPriorityResult rel = new OMIMPriorityResult();
         int entrez = g.getEntrezGeneID();
         if (entrez < 0) {
             return rel; /* Return an empty relevance score object. */
 
         }
         try {
-            ResultSet rs = null;
             this.omimQuery.setInt(1, entrez);
-            rs = omimQuery.executeQuery();
+            ResultSet rs = omimQuery.executeQuery();
 
             while (rs.next()) { /* The way the db was constructed, there is just one line for each such query. */
 
@@ -129,26 +128,51 @@ public class OMIMPriority implements Priority {
                 rel.addRow(phenmim, genemim, disease, typ, inheritance, factor);
             }
             rs.close();
-            rs = null;
         } catch (SQLException e) {
             logger.error("Error executing OMIM query", e);
         }
         // Now try to get the Orphanet data 
         try {
-            ResultSet rs2 = null;
-            this.orphanetQuery.setInt(1, entrez);
-            rs2 = orphanetQuery.executeQuery();
-            while (rs2.next()) {
-                String orphanum = rs2.getString(1);
-                String disease = rs2.getString(2);
+            orphanetQuery.setInt(1, entrez);
+            ResultSet rs = orphanetQuery.executeQuery();
+            while (rs.next()) {
+                String orphanum = rs.getString(1);
+                String disease = rs.getString(2);
                 rel.addOrphanetRow(orphanum, disease);
             }
-
+            rs.close();
         } catch (SQLException e) {
             logger.error("Exception caused by Orphanet query!", e);
         }
 
         return rel;
+    }
+
+    /**
+     * Prepare the SQL query statements required for this filter.
+     * <p>
+     * SELECT phenmim,genemim,diseasename,type</br>
+     * FROM omim</br>
+     * WHERE gene_id = ? </br>
+     */
+    private void setUpSQLPreparedStatement() {
+        String query = "SELECT disease_id, omim_gene_id, diseasename, type, inheritance "
+                + "FROM disease "
+                + "WHERE disease_id LIKE '%OMIM%' AND gene_id = ?";
+        try {
+            omimQuery = connection.prepareStatement(query);
+        } catch (SQLException e) {
+            logger.error("Problem setting up OMIM SQL query: {}", query, e);
+        }
+        /* Now the same for Orphanet. */
+        query = "SELECT disease_id, diseasename "
+                + "FROM disease "
+                + "WHERE disease_id LIKE '%ORPHA%' AND gene_id = ?";
+        try {
+            orphanetQuery = connection.prepareStatement(query);
+        } catch (SQLException e) {
+            logger.error("Problem setting up Orphanet SQL query: {}", query, e);
+        }
     }
 
     /**
@@ -188,33 +212,6 @@ public class OMIMPriority implements Priority {
 
         } else {
             return 0.5f;
-        }
-    }
-
-    /**
-     * Prepare the SQL query statements required for this filter.
-     * <p>
-     * SELECT phenmim,genemim,diseasename,type</br>
-     * FROM omim</br>
-     * WHERE gene_id = ? </br>
-     */
-    private void setUpSQLPreparedStatement() {
-        String query = "SELECT disease_id,omim_gene_id,diseasename,type,inheritance "
-                + "FROM disease "
-                + "WHERE disease_id LIKE '%OMIM%' AND gene_id = ?";
-        try {
-            this.omimQuery = connection.prepareStatement(query);
-        } catch (SQLException e) {
-            logger.error("Problem setting up OMIM SQL query: {}", query, e);
-        }
-        /* Now the same for Orphanet. */
-        query = "SELECT disease_id,diseasename "
-                + "FROM disease "
-                + "WHERE disease_id LIKE '%ORPHA%' AND gene_id = ?";
-        try {
-            this.orphanetQuery = connection.prepareStatement(query);
-        } catch (SQLException e) {
-            logger.error("Problem setting up Orphanet SQL query: {}", query, e);
         }
     }
 
