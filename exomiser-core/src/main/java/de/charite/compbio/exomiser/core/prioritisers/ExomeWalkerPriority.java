@@ -33,7 +33,7 @@ public class ExomeWalkerPriority implements Priority {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 
-    private final PriorityType GENEWANDERER_PRIORITY = PriorityType.EXOMEWALKER_PRIORITY;
+    private final PriorityType priorityType = PriorityType.EXOMEWALKER_PRIORITY;
 
     /**
      * A list of error-messages
@@ -145,7 +145,7 @@ public class ExomeWalkerPriority implements Priority {
      */
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.EXOMEWALKER_PRIORITY;
+        return priorityType;
     }
 
     /**
@@ -235,7 +235,7 @@ public class ExomeWalkerPriority implements Priority {
             } else {
                 relScore = ExomeWalkerPriorityScore.noPPIDataScore();
             }
-            gene.addPriorityScore(relScore, GENEWANDERER_PRIORITY);
+            gene.addPriorityScore(relScore, priorityType);
         }
 
 //        float factor = 1f / (float) max;
