@@ -46,14 +46,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * elsewhere.
      */
     private ArrayList<String> messages = new ArrayList<String>();
-    /**
-     * Number of variants considered by this filter
-     */
-    private int n_before = 0;
-    /**
-     * Number of variants after applying this filter.
-     */
-    private int n_after = 0;
+
     /**
      * The random walk matrix object
      */
@@ -415,13 +408,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
             hpInput = hpInput + (String.format("%s (%s), ", hpTerm, hp));
         }
         //this.messages.add(hpInput);// now display all HPO terms on results no need for this
-        this.n_before = totalGenes;
-        this.n_after = totalGenes;
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            logger.error("{}", e);
-        }
+        closeConnection();
     }
 
     private String makeDiseaseLink(String diseaseId, String diseaseTerm) {
@@ -836,20 +823,6 @@ public class ExomiserAllSpeciesPriority implements Priority {
     }
 
     /**
-     * Get number of variants before filter was applied.
-     */
-    public int getBefore() {
-        return this.n_before;
-    }
-
-    /**
-     * Get number of variants after filter was applied.
-     */
-    public int getAfter() {
-        return this.n_after;
-    }
-
-    /**
      * This function retrieves the random walk similarity score for the gene
      *
      * @param gene for which the random walk score is to be retrieved
@@ -885,7 +858,6 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * @param connection A connection to a postgreSQL database from the exomizer
      * or tomcat.
      */
-    @Override
     public void setConnection(Connection connection) {
         this.connection = connection;
         setUpOntologyCaches();
@@ -994,7 +966,6 @@ public class ExomiserAllSpeciesPriority implements Priority {
         return hpoIdList;
     }
 
-    @Override
     public void closeConnection() {
         try {
             connection.close();

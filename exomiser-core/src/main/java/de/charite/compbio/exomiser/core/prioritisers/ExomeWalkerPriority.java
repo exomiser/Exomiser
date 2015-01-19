@@ -47,15 +47,6 @@ public class ExomeWalkerPriority implements Priority {
     private List<String> messages = new ArrayList<>();
 
     /**
-     * Number of variants considered by this filter
-     */
-    private int n_before = 0;
-    /**
-     * Number of variants after applying this filter.
-     */
-    private int n_after = 0;
-
-    /**
      * The random walk matrix object
      */
     private DataMatrix randomWalkMatrix;
@@ -248,8 +239,6 @@ public class ExomeWalkerPriority implements Priority {
 //        }
         String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
                 PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
-        this.n_before = totalGenes;
-        this.n_after = PPIdataAvailable;
         this.messages.add(s);
         StringBuilder sb = new StringBuilder();
         sb.append("Seed genes:");
@@ -287,20 +276,6 @@ public class ExomeWalkerPriority implements Priority {
     }
 
     /**
-     * Get number of variants before filter was applied.
-     */
-    public int getBefore() {
-        return this.n_before;
-    }
-
-    /**
-     * Get number of variants after filter was applied.
-     */
-    public int getAfter() {
-        return this.n_after;
-    }
-
-    /**
      * This function retrieves the random walk similarity score for the gene
      *
      * @param nodeToCompute Gene for which the RW score is to bee retrieved
@@ -310,20 +285,5 @@ public class ExomeWalkerPriority implements Priority {
         double val = combinedProximityVector.get(idx, 0);
         return val;
     }
-
-    /**
-     * This class does not need a database connection, this function only there
-     * to satisfy the interface.
-     *
-     * @param connection An SQL (postgres) connection that was initialized
-     * elsewhere.
-     */
-    @Override
-    public void setConnection(Connection connection) { /* no-op */ }
-
-    @Override
-    public void closeConnection() {
-        //not-implemented - there is no connection to close.
-    }
-
+    
 }

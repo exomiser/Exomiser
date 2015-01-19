@@ -250,35 +250,4 @@ public class UberphenoPriority implements Priority {
         return "";
     }
 
-    /**
-     * Get number of variants before filter was applied TODO
-     */
-    @Override
-    public int getBefore() {
-        return 0;
-    }
-
-    /**
-     * Get number of variants after filter was applied TODO
-     */
-    @Override
-    public int getAfter() {
-        return 0;
-    }
-
-    /**
-     * This class does not need a database connection, this function only there
-     * to satisfy the interface.
-     *
-     * @param connection An SQL (postgres) connection that was initialized
-     * elsewhere.
-     */
-    @Override
-    public void setConnection(Connection connection) { /* no-op */ }
-
-    @Override
-    public void closeConnection() {
-        //not implemented - nothing to close
-    }
-
 }

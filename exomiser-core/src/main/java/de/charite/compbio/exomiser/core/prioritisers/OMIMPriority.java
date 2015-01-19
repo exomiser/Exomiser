@@ -222,14 +222,12 @@ public class OMIMPriority implements Priority {
      * @param connection A connection to a postgreSQL database from the exomizer
      * or tomcat.
      */
-    @Override
     public void setConnection(Connection connection) {
         this.connection = connection;
         setUpSQLPreparedStatement();
     }
 
-    @Override
-    public void closeConnection() {
+    protected void closeConnection() {
         try {
             connection.close();
         } catch (SQLException ex) {
@@ -251,20 +249,6 @@ public class OMIMPriority implements Priority {
     @Override
     public String getHTMLCode() {
         return "";
-    }
-
-    /**
-     * Get number of variants before filter was applied TODO
-     */
-    public int getBefore() {
-        return 0;
-    }
-
-    /**
-     * Get number of variants after filter was applied TODO
-     */
-    public int getAfter() {
-        return 0;
     }
 
 }

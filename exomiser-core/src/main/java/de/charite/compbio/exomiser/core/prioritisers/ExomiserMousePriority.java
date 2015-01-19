@@ -75,14 +75,6 @@ public class ExomiserMousePriority implements Priority {
      * necessarily scaled to [0..1]
      */
     private float MGI_PHENODIGM_SCORE;
-    /**
-     * Number of variants considered by this filter
-     */
-    private int n_before = 0;
-    /**
-     * Number of variants after applying this filter.
-     */
-    private int n_after = 0;
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
@@ -174,13 +166,11 @@ public class ExomiserMousePriority implements Priority {
     public void prioritizeGenes(List<Gene> gene_list) {
 
         this.found_data_for_mgi_phenodigm = 0;
-        this.n_before = gene_list.size();
         retrieve_score_data(gene_list);
 //	for (Gene g : gene_list) {
 //            ExomiserMousePriorityResult rscore = retrieve_score_data(g);
 //            g.addPriorityResult(rscore, priorityType);          
 //	}
-        this.n_after = gene_list.size();
         this.messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", gene_list.size()));
         closeConnection();
     }
@@ -475,14 +465,12 @@ public class ExomiserMousePriority implements Priority {
      * @param connection A connection to a postgreSQL database from the exomizer
      * or tomcat.
      */
-    @Override
     public void setConnection(Connection connection) {
         this.connection = connection;
         setUpSQLPreparedStatements();
     }
 
-    @Override
-    public void closeConnection() {
+    protected void closeConnection() {
         try {
             connection.close();
         } catch (SQLException ex) {
@@ -513,20 +501,6 @@ public class ExomiserMousePriority implements Priority {
         }
         sb.append("</ul>\n");
         return sb.toString();
-    }
-
-    /**
-     * Get number of variants before filter was applied
-     */
-    public int getBefore() {
-        return this.n_before;
-    }
-
-    /**
-     * Get number of variants after filter was applied
-     */
-    public int getAfter() {
-        return this.n_after;
     }
 
 }
