@@ -34,6 +34,7 @@
                 <include>application.properties</include>
                 <include>example.settings</include>
                 <include>log4j2.xml</include>
+                <include>ehcache.xml</include>
             </includes>
         </fileSet>
         <fileSet>
