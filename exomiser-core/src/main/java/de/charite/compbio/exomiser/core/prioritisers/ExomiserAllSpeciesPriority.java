@@ -257,7 +257,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 ++PPIdataAvailable;
             } //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
             if (runPpi && randomWalkMatrix.containsGene(entrezGeneId) && !phenoGenes.isEmpty()) {
-                int col_idx = computeSimStartNodesToNode(gene);
+                int col_idx = getColumnIndexOfMostPhenotypicallySimilarGene(gene, phenoGenes);
                 int row_idx = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
                 walkerScore = weightedHighQualityMatrix.get(row_idx, col_idx);
                 if (walkerScore <= 0.00001) {
@@ -759,7 +759,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
     }
 
-    //todo: If this returned a DataMatrix thongs might be a bit more convienent later on... 
+    //todo: If this returned a DataMatrix things might be a bit more convienent later on... 
     private FloatMatrix makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(List<Integer> phenoGenes, Map<Integer, Float> scores) {
         int rows = randomWalkMatrix.getMatrix().getRows();
         int cols = phenoGenes.size();
@@ -776,6 +776,35 @@ public class ExomiserAllSpeciesPriority implements Priority {
             c++;
         }
         return highQualityPpiMatrix;
+    }
+
+    /**
+     * This function retrieves the random walk similarity score for the gene
+     *
+     * @param gene for which the random walk score is to be retrieved
+     */
+    private int getColumnIndexOfMostPhenotypicallySimilarGene(Gene gene, List<Integer> phenotypicallySimilarGeneIds) {
+        int geneIndex = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
+        int columnIndex = 0;
+        double bestScore = 0;
+        int bestHitIndex = 0;
+        for (Integer similarGeneEntrezId : phenotypicallySimilarGeneIds) {
+            if (!randomWalkMatrix.containsGene(similarGeneEntrezId)) {
+                columnIndex++;
+                continue;
+            } else if (similarGeneEntrezId == gene.getEntrezGeneID()) {//avoid self-hits now are testing genes with direct pheno-evidence as well
+                columnIndex++;
+                continue;
+            } else {
+                double cellScore = weightedHighQualityMatrix.get(geneIndex, columnIndex);
+                if (cellScore > bestScore) {
+                    bestScore = cellScore;
+                    bestHitIndex = columnIndex;
+                }
+                columnIndex++;
+            }
+        }
+        return bestHitIndex;
     }
 
     /**
@@ -820,35 +849,6 @@ public class ExomiserAllSpeciesPriority implements Priority {
             sb.append("</ul>\n");
             return sb.toString();
         }
-    }
-
-    /**
-     * This function retrieves the random walk similarity score for the gene
-     *
-     * @param gene for which the random walk score is to be retrieved
-     */
-    private int computeSimStartNodesToNode(Gene gene) {
-        int idx = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
-        int c = 0;
-        double val = 0;
-        int bestHitIndex = 0;
-        for (Integer seedGeneEntrezId : phenoGenes) {
-            if (!randomWalkMatrix.containsGene(seedGeneEntrezId)) {
-                c++;
-                continue;
-            } else if (seedGeneEntrezId == gene.getEntrezGeneID()) {//avoid self-hits now are testing genes with direct pheno-evidence as well
-                c++;
-                continue;
-            } else {
-                double cellVal = weightedHighQualityMatrix.get(idx, c);
-                if (cellVal > val) {
-                    val = cellVal;
-                    bestHitIndex = c;
-                }
-                c++;
-            }
-        }
-        return bestHitIndex;
     }
 
     /**
