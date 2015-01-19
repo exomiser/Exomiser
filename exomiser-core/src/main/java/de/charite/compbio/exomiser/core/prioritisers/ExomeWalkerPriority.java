@@ -120,7 +120,7 @@ public class ExomeWalkerPriority implements Priority {
     private void addMatchedGenesToSeedGeneList(List<Integer> entrezSeedGenes) {
         for (Integer entrezId : entrezSeedGenes) {
 
-            if (randomWalkMatrix.getEntrezIdToRowIndex().containsKey(entrezId)) {
+            if (randomWalkMatrix.containsGene(entrezId)) {
                 seedGenes.add(entrezId);
             } else {
                 logger.warn("Cannot use entrez-id {} as seed gene as it is not present in the DataMatrix provided.", entrezId);
@@ -165,7 +165,7 @@ public class ExomeWalkerPriority implements Priority {
 //		String e = "[GeneWanderer.java] Error: randomWalkMatrix.object2idx is null";
 //		throw new ExomizerInitializationException(e);
 //	    }
-            if (!randomWalkMatrix.getEntrezIdToRowIndex().containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.containsGene(seedGeneEntrezId)) {
                 /* Note that the RW matrix does not have an entry for every
                  Entrez Gene. If the gene is not contained in the matrix, we
                  skip it. The gene will be given a (low) default score in 
@@ -173,10 +173,8 @@ public class ExomeWalkerPriority implements Priority {
                  */
                 continue;
             }
-            int indexOfGene = randomWalkMatrix.getEntrezIdToRowIndex().get(seedGeneEntrezId);
-
-            //    means the column we need, which has the distances of ALL genes to the current gene
-            FloatMatrix column = randomWalkMatrix.getMatrix().getColumn(indexOfGene);
+            //Get the column we need, this has the distances of ALL genes to the current gene
+            FloatMatrix column = randomWalkMatrix.getColumnMatrixForGene(seedGeneEntrezId);
 
             // for the first column/known gene we have to init the resulting vector
             if (first) {
@@ -222,7 +220,7 @@ public class ExomeWalkerPriority implements Priority {
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
             ExomeWalkerPriorityResult relScore = null;
-            if (randomWalkMatrix.getEntrezIdToRowIndex().containsKey(gene.getEntrezGeneID())) {
+            if (randomWalkMatrix.containsGene(gene.getEntrezGeneID())) {
                 double val = computeSimStartNodesToNode(gene);
                 if (val > max) {
                     max = val;
@@ -308,7 +306,7 @@ public class ExomeWalkerPriority implements Priority {
      * @param nodeToCompute Gene for which the RW score is to bee retrieved
      */
     private double computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.getEntrezIdToRowIndex().get(nodeToCompute.getEntrezGeneID());
+        int idx = randomWalkMatrix.getRowIndexForGene(nodeToCompute.getEntrezGeneID());
         double val = combinedProximityVector.get(idx, 0);
         return val;
     }

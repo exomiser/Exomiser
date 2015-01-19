@@ -123,10 +123,6 @@ public class DataMatrix {
         return bufferedReader;
     }
 
-    public Map<Integer, Integer> getRowToEntrezIdIndex() {
-        return rowToEntrezIdIndex;
-    }
-
     public Map<Integer, Integer> getEntrezIdToRowIndex() {
         return entrezIdToRowIndex;
     }
@@ -141,6 +137,15 @@ public class DataMatrix {
 
     public boolean containsGene(Integer entrezGeneId) {
         return entrezIdToRowIndex.containsKey(entrezGeneId);
+    }
+    
+    public Integer getRowIndexForGene(int entrezGeneId) {
+        return entrezIdToRowIndex.get(entrezGeneId);
+    }
+    
+    public FloatMatrix getColumnMatrixForGene(int entrezGeneId) {
+        Integer rowIndex = entrezIdToRowIndex.get(entrezGeneId);
+        return matrix.getColumn(rowIndex);
     }
     
     public static void writeMatrix(FloatMatrix matrix, String file, Map<String, Integer> id2index, boolean doLogarithm) {
@@ -201,4 +206,5 @@ public class DataMatrix {
             throw new RuntimeException(e);
         }
     }
+
 }

@@ -82,14 +82,14 @@ public class OMIMPriority implements Priority {
      * method to implement a Phenomizer-type prioritization at a later time
      * point.
      *
-     * @param gene_list A list of the {@link exomizer.exome.Gene Gene} objects
+     * @param genes A list of the {@link exomizer.exome.Gene Gene} objects
      * that have suvived the filtering (i.e., have rare, potentially pathogenic
      * variants).
      */
     @Override
-    public void prioritizeGenes(List<Gene> gene_list) {
-        for (Gene g : gene_list) {
-            OMIMPriorityResult mimrel = retrieve_omim_data(g);
+    public void prioritizeGenes(List<Gene> genes) {
+        for (Gene g : genes) {
+            OMIMPriorityResult mimrel = retrieveOmimData(g);
             g.addPriorityResult(mimrel);
         }
         closeConnection();
@@ -103,7 +103,7 @@ public class OMIMPriority implements Priority {
      *
      * @param g The gene which is being evaluated.
      */
-    private OMIMPriorityResult retrieve_omim_data(Gene g) {
+    private OMIMPriorityResult retrieveOmimData(Gene g) {
         OMIMPriorityResult rel = new OMIMPriorityResult();
         int entrez = g.getEntrezGeneID();
         if (entrez < 0) {

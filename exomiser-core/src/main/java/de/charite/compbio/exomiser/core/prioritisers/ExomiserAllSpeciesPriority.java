@@ -95,7 +95,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * This is the matrix of similarities between the seeed genes and all genes
      * in the network, i.e., p<sub>infinity</sub>.
      */
-    private FloatMatrix combinedProximityVector;
+    private FloatMatrix weightedHighQualityMatrix;
 
     /**
      * Create a new instance of the {@link GenewandererPriority}.
@@ -263,10 +263,10 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
                 ++PPIdataAvailable;
             } //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
-            if (runPpi && randomWalkMatrix.getEntrezIdToRowIndex().containsKey(gene.getEntrezGeneID()) && !phenoGenes.isEmpty()) {
+            if (runPpi && randomWalkMatrix.containsGene(gene.getEntrezGeneID()) && !phenoGenes.isEmpty()) {
                 int col_idx = computeSimStartNodesToNode(gene);
-                int row_idx = randomWalkMatrix.getEntrezIdToRowIndex().get(gene.getEntrezGeneID());
-                walkerScore = combinedProximityVector.get(row_idx, col_idx);
+                int row_idx = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
+                walkerScore = weightedHighQualityMatrix.get(row_idx, col_idx);
                 if (walkerScore <= 0.00001) {
                     walkerScore = 0f;
                 } else {
@@ -769,18 +769,17 @@ public class ExomiserAllSpeciesPriority implements Priority {
         }
         hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, Species.FISH);
 
-        this.combinedProximityVector = makeProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
+        weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
     }
 
-    private FloatMatrix makeProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(List<Integer> phenoGenes, Map<Integer, Float> scores) {
-        int rows = randomWalkMatrix.getMatrix().getColumn(0).getRows();
+    private FloatMatrix makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(List<Integer> phenoGenes, Map<Integer, Float> scores) {
+        int rows = randomWalkMatrix.getMatrix().getRows();
         int cols = phenoGenes.size();
         FloatMatrix highQualityPpiMatrix = FloatMatrix.zeros(rows, cols);
         int c = 0;
         for (Integer seedGeneEntrezId : phenoGenes) {
             if (randomWalkMatrix.containsGene(seedGeneEntrezId)) {
-                int indexOfGene = randomWalkMatrix.getEntrezIdToRowIndex().get(seedGeneEntrezId);
-                FloatMatrix column = randomWalkMatrix.getMatrix().getColumn(indexOfGene);
+                FloatMatrix column = randomWalkMatrix.getColumnMatrixForGene(seedGeneEntrezId);
                 // weight column by phenoScore 
                 float score = scores.get(seedGeneEntrezId);
                 column = column.mul(score);
@@ -852,22 +851,22 @@ public class ExomiserAllSpeciesPriority implements Priority {
     /**
      * This function retrieves the random walk similarity score for the gene
      *
-     * @param nodeToCompute Gene for which the RW score is to bee retrieved
+     * @param gene for which the random walk score is to be retrieved
      */
-    private int computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.getEntrezIdToRowIndex().get(nodeToCompute.getEntrezGeneID());
+    private int computeSimStartNodesToNode(Gene gene) {
+        int idx = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
         int c = 0;
         double val = 0;
         int bestHitIndex = 0;
         for (Integer seedGeneEntrezId : phenoGenes) {
-            if (!randomWalkMatrix.getEntrezIdToRowIndex().containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.containsGene(seedGeneEntrezId)) {
                 c++;
                 continue;
-            } else if (seedGeneEntrezId == nodeToCompute.getEntrezGeneID()) {//avoid self-hits now are testing genes with direct pheno-evidence as well
+            } else if (seedGeneEntrezId == gene.getEntrezGeneID()) {//avoid self-hits now are testing genes with direct pheno-evidence as well
                 c++;
                 continue;
             } else {
-                double cellVal = combinedProximityVector.get(idx, c);
+                double cellVal = weightedHighQualityMatrix.get(idx, c);
                 if (cellVal > val) {
                     val = cellVal;
                     bestHitIndex = c;
