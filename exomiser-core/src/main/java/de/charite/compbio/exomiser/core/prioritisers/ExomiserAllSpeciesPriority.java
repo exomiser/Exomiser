@@ -4,12 +4,12 @@ import java.util.ArrayList;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserService;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.Map.Entry;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -437,117 +437,93 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * seed genes given by the user.
      */
     private void computeDistanceAllNodesFromStartNodes(List<String> hpoIds) {
-        
+        //TODO: check how runHuman not being run affects mouse and fish as the best score is set by this...
         // Human
-        String mapping_query = String.format("SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?");
-        PreparedStatement findMappingStatement = null;
-        try {
-            findMappingStatement = connection.prepareStatement(mapping_query);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + mapping_query;
-            logger.error(error, e);
+        if (runHuman) {
+            String mappingQuery = "SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?";
+            String annotationQuery = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
+            hpHpMatches = runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.HUMAN);
+        } else {
+            hpHpMatches = Collections.EMPTY_MAP;
         }
-        PreparedStatement findAnnotationStatement = null;
-        String annotation = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
-        try {
-            findAnnotationStatement = connection.prepareStatement(annotation);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + annotation;
-            logger.error(error, e);
-        }
-        hpHpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, Species.HUMAN);
         
-        // Mouse
-        mapping_query = String.format("SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?");
-        findMappingStatement = null;
-        try {
-            findMappingStatement = connection.prepareStatement(mapping_query);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + mapping_query;
-            logger.error(error, e);
+        if (runMouse) {
+            // Mouse
+            String mappingQuery = "SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?";
+            String annotationQuery = "SELECT mouse_model_id, mp_id, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
+            hpMpMatches = runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.MOUSE);
+        } else {
+            hpMpMatches = Collections.EMPTY_MAP;
         }
-        annotation = String.format("SELECT mouse_model_id, mp_id, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'");
-        try {
-            findAnnotationStatement = connection.prepareStatement(annotation);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + annotation;
-            logger.error(error, e);
-        }
-        hpMpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, Species.MOUSE);
-
+        
         // Fish
-        mapping_query = String.format("SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?");
-        try {
-            findMappingStatement = connection.prepareStatement(mapping_query);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + mapping_query;
-            logger.error(error, e);
+        if (runFish) {
+            String mappingQuery = "SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?";
+            String annotationQuery = "SELECT zfin_model_id, zp_id, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
+            hpZpMatches = runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.FISH);
+        } else {
+            hpZpMatches = Collections.EMPTY_MAP;
         }
-        annotation = String.format("SELECT zfin_model_id, zp_id, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'");
-        try {
-            findAnnotationStatement = connection.prepareStatement(annotation);
-        } catch (SQLException e) {
-            String error = "Problem setting up SQL query:" + annotation;
-            logger.error(error, e);
-        }
-        hpZpMatches = runDynamicQuery(findMappingStatement, findAnnotationStatement, hpoIds, Species.FISH);
         
         logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
         weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
     }
 
-    private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> runDynamicQuery(PreparedStatement findMappingStatement, PreparedStatement findAnnotationStatement, List<String> hps_initial, Species species) {
+    private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> runDynamicQuery(String mappingQuery, String findAnnotationQuery, List<String> hpoIds, Species species) {
 
-        ArrayList<String> hp_list = new ArrayList<>();
-        HashMap<String, Float> mapped_terms = new HashMap<>();
-        HashMap<String, Float> best_mapped_term_score = new HashMap<>();
-        HashMap<String, String> best_mapped_term_mpid = new HashMap<>();
-        HashMap<String, Integer> knownMps = new HashMap<>();
-        for (String hpid : hps_initial) {
+        Set<String> hpIdsWithPhenotypeMatch = new LinkedHashSet<>();
+        Map<String, Float> best_mapped_term_score = new HashMap<>();
+        Map<String, String> best_mapped_term_mpid = new HashMap<>();
+        Map<String, Integer> knownMps = new HashMap<>();
+        
+        Map<String, Float> mapped_terms = new HashMap<>();
+        for (String hpId : hpoIds) {
             try {
-                findMappingStatement.setString(1, hpid);
+                PreparedStatement findMappingStatement = connection.prepareStatement(mappingQuery);
+                findMappingStatement.setString(1, hpId);
                 ResultSet rs = findMappingStatement.executeQuery();
-                int found = 0;
                 while (rs.next()) {
-                    String mp_id = rs.getString(1);
-                    knownMps.put(mp_id, 1);
+                    String mpId = rs.getString(1);
+                    knownMps.put(mpId, 1);
                     StringBuilder hashKey = new StringBuilder();
-                    hashKey.append(hpid);
-                    hashKey.append(mp_id);
+                    hashKey.append(hpId);
+                    hashKey.append(mpId);
                     float score = rs.getFloat(2);
                     mapped_terms.put(hashKey.toString(), score);
-                    if (species == Species.HUMAN && hpid.equals(mp_id)) {
-                        addBestMappedTerm(best_mapped_term_score, hpid, score, best_mapped_term_mpid, mp_id);
-                        found = 1;//for some hp terms e.g. HP we won't have the self hit but still want to flag found
+                    
+                    if (species == Species.HUMAN && hpId.equals(mpId)) {
+                        addBestMappedTerm(best_mapped_term_score, hpId, score, best_mapped_term_mpid, mpId);
+                        hpIdsWithPhenotypeMatch.add(hpId);//for some hp terms e.g. HP we won't have the self hit but still want to flag found
                     } else {
-                        if (best_mapped_term_score.containsKey(hpid)) {
-                            if (score > best_mapped_term_score.get(hpid)) {
-                                addBestMappedTerm(best_mapped_term_score, hpid, score, best_mapped_term_mpid, mp_id);
+                        if (best_mapped_term_score.containsKey(hpId)) {
+                            if (score > best_mapped_term_score.get(hpId)) {
+                                addBestMappedTerm(best_mapped_term_score, hpId, score, best_mapped_term_mpid, mpId);
                             }
                         } else {
-                            addBestMappedTerm(best_mapped_term_score, hpid, score, best_mapped_term_mpid, mp_id);
-                            found = 1;
+                            addBestMappedTerm(best_mapped_term_score, hpId, score, best_mapped_term_mpid, mpId);
+                            hpIdsWithPhenotypeMatch.add(hpId);
                         }
                     }
-                }
-                if (found == 1) {
-                    hp_list.add(hpid);
                 }
             } catch (SQLException e) {
                 String error = "Problem setting up SQL query:";
                 logger.error(error, e);
             }
         }
-        String[] hps = new String[hp_list.size()];
-        hp_list.toArray(hps);
+        logger.info("Phenotype matches {} for {}", mapped_terms, species);
+        for (Entry<String, String> bestMappedHpIdToOtherId : best_mapped_term_mpid.entrySet()) {
+            String hpId = bestMappedHpIdToOtherId.getKey();
+            logger.info("Best match: {}-{}={}", hpId, bestMappedHpIdToOtherId.getValue(), best_mapped_term_score.get(hpId));
+        }
+        
         // calculate perfect model scores for human
         if (species == Species.HUMAN) {
             float sum_best_score = 0f;
             int best_hit_counter = 0;
             // loop over each hp id should start here
-            for (String hpid : hps) {
-                if (best_mapped_term_score.get(hpid) != null) {
-                    float hp_score = best_mapped_term_score.get(hpid);
+            for (String hpId : hpIdsWithPhenotypeMatch) {
+                if (best_mapped_term_score.containsKey(hpId)) {
+                    float hp_score = best_mapped_term_score.get(hpId);
                     // add in scores for best match for the HP term                                                                                                                                                
                     sum_best_score += hp_score;
 
@@ -557,12 +533,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
                     }
                     //logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
                     // add in MP-HP hits                                                                                                                                                                           
-                    String mpid = best_mapped_term_mpid.get(hpid);
+                    String mpId = best_mapped_term_mpid.get(hpId);
                     float best_score = 0f;
-                    for (String hpid2 : hps) {
+                    for (String hpId2 : hpIdsWithPhenotypeMatch) {
                         StringBuilder hashKey = new StringBuilder();
-                        hashKey.append(hpid2);
-                        hashKey.append(mpid);
+                        hashKey.append(hpId2);
+                        hashKey.append(mpId);
                         if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
                             best_score = mapped_terms.get(hashKey.toString());
                         }
@@ -577,23 +553,24 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
             }
             //this.best_avg_score = sum_best_score / best_hit_counter;
-            this.best_avg_score = sum_best_score / (2 * hps.length);
+            this.best_avg_score = sum_best_score / (2 * hpIdsWithPhenotypeMatch.size());
         }
-        
-        if (species == Species.HUMAN && !runHuman) {
-            return Collections.EMPTY_MAP;
-        }
-        if (species == Species.MOUSE && !runMouse) {
-            return Collections.EMPTY_MAP;
-        }
-        if (species == Species.FISH && !runFish) {
-            return Collections.EMPTY_MAP;
-        }
+        //TODO: needed here or do before? 
+//        if (species == Species.HUMAN && !runHuman) {
+//            return Collections.EMPTY_MAP;
+//        }
+//        if (species == Species.MOUSE && !runMouse) {
+//            return Collections.EMPTY_MAP;
+//        }
+//        if (species == Species.FISH && !runFish) {
+//            return Collections.EMPTY_MAP;
+//        }
 
         // calculate score for this gene
         Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpMatches = new HashMap<>();
         try {
             logger.info("Fetching disease/model phenotype annotations and human model organism gene orthologs");
+            PreparedStatement findAnnotationStatement = connection.prepareStatement(findAnnotationQuery);
             ResultSet rs = findAnnotationStatement.executeQuery();
             while (rs.next()) {
                 String hit = rs.getString(1);
@@ -601,7 +578,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 int entrezId = rs.getInt(3);
                 String humanGeneSymbol = rs.getString(4);
                 String[] mp_initial = mp_ids.split(",");
-                ArrayList<String> mp_list = new ArrayList<>();
+                List<String> mp_list = new ArrayList<>();
                 for (String mpid : mp_initial) {
                     if (knownMps.get(mpid) != null) {
                         mp_list.add(mpid);
@@ -610,11 +587,11 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 String[] mps = new String[mp_list.size()];
                 mp_list.toArray(mps);
 
-                int row_column_count = hps.length + mps.length;
+                int row_column_count = hpIdsWithPhenotypeMatch.size() + mps.length;
                 float max_score = 0f;
                 float sum_best_hit_rows_columns_score = 0f;
 
-                for (String hpid : hps) {
+                for (String hpid : hpIdsWithPhenotypeMatch) {
                     float best_score = 0f;
                     for (String mpid : mps) {
                         StringBuilder hashKey = new StringBuilder();
@@ -657,7 +634,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 // Reciprocal hits                                                                                                                                                                                 
                 for (String mpid : mps) {
                     float best_score = 0f;
-                    for (String hpid : hps) {
+                    for (String hpid : hpIdsWithPhenotypeMatch) {
                         StringBuilder hashKey = new StringBuilder();
                         hashKey.append(hpid);
                         hashKey.append(mpid);
@@ -753,7 +730,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         return hpMatches;
     }
 
-    private void addBestMappedTerm(HashMap<String, Float> best_mapped_term_score, String hpid, float score, HashMap<String, String> best_mapped_term_mpid, String mp_id) {
+    private void addBestMappedTerm(Map<String, Float> best_mapped_term_score, String hpid, float score, Map<String, String> best_mapped_term_mpid, String mp_id) {
         best_mapped_term_score.put(hpid, score);
         best_mapped_term_mpid.put(hpid, mp_id);
     }
