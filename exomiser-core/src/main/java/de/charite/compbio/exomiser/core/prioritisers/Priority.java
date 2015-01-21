@@ -65,26 +65,4 @@ public interface Priority {
 
     public List<String> getMessages();
 
-    /**
-     * Get number of variants before filter was applied
-     * @return 
-     */
-    public int getBefore();
-
-    /**
-     * Get number of variants after filter was applied
-     * @return 
-     */
-    public int getAfter();
-
-    /**
-     * @param connection An SQL connection that was initialized elsewhere.
-     */
-    public void setConnection(Connection connection);
-
-    /**
-     * Close the database connection.
-     */
-    public void closeConnection();
-
 }

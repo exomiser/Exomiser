@@ -206,8 +206,8 @@ public class UberphenoPriority implements Priority {
 
         for (Gene gene : gene_list) {
             try {
-                UberphenoPriorityScore uberphenoRelScore = scoreVariantUberpheno(gene);
-                gene.addPriorityScore(uberphenoRelScore, PriorityType.UBERPHENO_PRIORITY);
+                UberphenoPriorityResult uberphenoRelScore = scoreVariantUberpheno(gene);
+                gene.addPriorityResult(uberphenoRelScore);
             } catch (Exception e) {
                 error_record.add(e.toString());
             }
@@ -223,16 +223,16 @@ public class UberphenoPriority implements Priority {
      * @param g A {@link exomizer.exome.Gene Gene} whose score is to be
      * determined.
      */
-    private UberphenoPriorityScore scoreVariantUberpheno(Gene g) {
+    private UberphenoPriorityResult scoreVariantUberpheno(Gene g) {
 
         int entrezGeneId = g.getEntrezGeneID();
         Set<Term> terms = uberphenoAnnotationContainer.getAnnotationsOfGene(entrezGeneId);
         if (terms == null || terms.size() < 1) {
-            return new UberphenoPriorityScore(Constants.UNINITIALIZED_FLOAT);
+            return new UberphenoPriorityResult(Constants.UNINITIALIZED_FLOAT);
         }
         ArrayList<Term> termsAl = new ArrayList<Term>(terms);
         double similarityScore = similarityMeasure.computeObjectSimilarity(annotationsOfDisease, termsAl);
-        return new UberphenoPriorityScore(similarityScore);
+        return new UberphenoPriorityResult(similarityScore);
     }
 
     /**
@@ -248,37 +248,6 @@ public class UberphenoPriority implements Priority {
     @Override
     public String getHTMLCode() {
         return "";
-    }
-
-    /**
-     * Get number of variants before filter was applied TODO
-     */
-    @Override
-    public int getBefore() {
-        return 0;
-    }
-
-    /**
-     * Get number of variants after filter was applied TODO
-     */
-    @Override
-    public int getAfter() {
-        return 0;
-    }
-
-    /**
-     * This class does not need a database connection, this function only there
-     * to satisfy the interface.
-     *
-     * @param connection An SQL (postgres) connection that was initialized
-     * elsewhere.
-     */
-    @Override
-    public void setConnection(Connection connection) { /* no-op */ }
-
-    @Override
-    public void closeConnection() {
-        //not implemented - nothing to close
     }
 
 }

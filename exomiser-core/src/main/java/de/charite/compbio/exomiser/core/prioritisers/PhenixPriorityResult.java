@@ -9,7 +9,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.05 (6 January, 2014).
  */
-public class PhenixPriorityScore implements PriorityScore {
+public class PhenixPriorityResult implements PriorityResult {
 
     /**
      * The semantic similarity score as implemented in Phenomizer. Note that
@@ -31,11 +31,11 @@ public class PhenixPriorityScore implements PriorityScore {
     /**
      * @param negLogPVal The negative logarithm of the p-val
      */
-    public PhenixPriorityScore(double negLogPVal) {
+    public PhenixPriorityResult(double negLogPVal) {
         this.negativeLogPval = negLogPVal;
     }
 
-    public PhenixPriorityScore(double negLogPVal, double semScore) {
+    public PhenixPriorityResult(double negLogPVal, double semScore) {
         this.negativeLogPval = negLogPVal;
         this.hpoSemSimScore = semScore;
         String s = String.format("Semantic similarity score: %.2f (neg. log of p-value: %.2f)",
@@ -65,12 +65,6 @@ public class PhenixPriorityScore implements PriorityScore {
         return String.format("<ul><li>Phenomizer: Semantic similarity score: %.2f (p-value: %f)</li></ul>",
                 this.hpoSemSimScore, Math.exp(-1 * this.negativeLogPval));
     }
-
-    /**
-     * This method not needed for this derived class.
-     */
-    @Override
-    public void setScore(float newscore) { /* not implemented */ }
 
     private String getFilterResultSummary() {
         return String.format("Phenomizer semantic similarity score: %.2f (p-value: %f)",

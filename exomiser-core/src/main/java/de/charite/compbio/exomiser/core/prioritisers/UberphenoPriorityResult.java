@@ -11,14 +11,14 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.02 (April 2, 2013).
  */
-public class UberphenoPriorityScore implements PriorityScore {
+public class UberphenoPriorityResult implements PriorityResult {
 
     private double uberphenoScore;
 
     /**
      * @param uberphenoSemSimScore
      */
-    public UberphenoPriorityScore(double uberphenoSemSimScore) {
+    public UberphenoPriorityResult(double uberphenoSemSimScore) {
         this.uberphenoScore = uberphenoSemSimScore;
     }
 
@@ -42,9 +42,6 @@ public class UberphenoPriorityScore implements PriorityScore {
     public String getHTMLCode() {
         return "";
     }
-
-    @Override
-    public void setScore(float newscore) { /* not implemented */ }
 
     /**
      * @return A list with detailed results of filtering. Not yet implemented

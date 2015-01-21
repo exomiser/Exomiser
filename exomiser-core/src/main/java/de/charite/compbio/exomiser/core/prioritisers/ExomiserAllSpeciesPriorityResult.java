@@ -8,7 +8,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class ExomiserAllSpeciesRelevanceScore implements PriorityScore {
+public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
     /**
      * The Random walk similarity score.
      */
@@ -25,7 +25,7 @@ public class ExomiserAllSpeciesRelevanceScore implements PriorityScore {
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public ExomiserAllSpeciesRelevanceScore(double score, String evidence, String humanPhenotypeEvidence,
+    public ExomiserAllSpeciesPriorityResult(double score, String evidence, String humanPhenotypeEvidence,
             String mousePhenotypeEvidence, String fishPhenotypeEvidence, double humanScore, double mouseScore, double fishScore, double walkerScore) {
         this.genewandererScore = score;
         this.evidence = evidence;
@@ -58,9 +58,9 @@ public class ExomiserAllSpeciesRelevanceScore implements PriorityScore {
      * {@link exomizer.priority.IPriority IPriority}. basically as a kind of
      * uniform prior.
      */
-    public static ExomiserAllSpeciesRelevanceScore noPPIDataScore() {
+    public static ExomiserAllSpeciesPriorityResult noPPIDataScore() {
         float nodatascore = 0f;
-        ExomiserAllSpeciesRelevanceScore grs = new ExomiserAllSpeciesRelevanceScore(nodatascore, "", "", "", "", 0, 0, 0, 0);
+        ExomiserAllSpeciesPriorityResult grs = new ExomiserAllSpeciesPriorityResult(nodatascore, "", "", "", "", 0, 0, 0, 0);
         return grs;
     }
 

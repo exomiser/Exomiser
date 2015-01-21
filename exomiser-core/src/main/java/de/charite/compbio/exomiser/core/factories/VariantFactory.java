@@ -24,6 +24,7 @@ public class VariantFactory {
     
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
 
+    // jannovar.cli.AnnotateVCFCommand
     public VCFReader createVcfReader(Path vcfFilePath) {
         VCFReader vcfReader = null;
         
@@ -46,6 +47,10 @@ public class VariantFactory {
         return vcfReader;    
     }
 
+    //Jannovar 0.11 uses HTSJDK VariantContext jannovar.cli.AnnotatePositionCommand -> GenomeChange
+    //Variant ~= VariantContext
+    //VariantType -> now moved to jannovar-core jannovar.annotation.VariantType
+    //
     public List<Variant> createVariants(VCFReader vcfReader) {
         List<Variant> variants = new ArrayList<>();
         logger.info("Parsing Variants from VCF");

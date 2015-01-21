@@ -11,7 +11,7 @@ import java.util.List;
  * @author Peter N Robinson
  * @version 0.08 (9 February, 2014).
  */
-public class OMIMPriorityScore implements PriorityScore {
+public class OMIMPriorityResult implements PriorityResult {
 
     /**
      * A list of all diseases in OMIM that are associated with the gene affected
@@ -149,7 +149,7 @@ public class OMIMPriorityScore implements PriorityScore {
         mimEntryList.add(href);
     }
 
-    public OMIMPriorityScore() {
+    public OMIMPriorityResult() {
         this.mimEntryList = new ArrayList<String>();
     }
 
@@ -174,8 +174,5 @@ public class OMIMPriorityScore implements PriorityScore {
         sb.append("</ul>\n");
         return sb.toString();
     }
-
-    @Override
-    public void setScore(float newscore) { /* not implemented */ }
 
 }

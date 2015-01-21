@@ -33,7 +33,7 @@ public class ExomeWalkerPriority implements Priority {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 
-    private final PriorityType GENEWANDERER_PRIORITY = PriorityType.EXOMEWALKER_PRIORITY;
+    private final PriorityType priorityType = PriorityType.EXOMEWALKER_PRIORITY;
 
     /**
      * A list of error-messages
@@ -45,15 +45,6 @@ public class ExomeWalkerPriority implements Priority {
      * elsewhere.
      */
     private List<String> messages = new ArrayList<>();
-
-    /**
-     * Number of variants considered by this filter
-     */
-    private int n_before = 0;
-    /**
-     * Number of variants after applying this filter.
-     */
-    private int n_after = 0;
 
     /**
      * The random walk matrix object
@@ -120,7 +111,7 @@ public class ExomeWalkerPriority implements Priority {
     private void addMatchedGenesToSeedGeneList(List<Integer> entrezSeedGenes) {
         for (Integer entrezId : entrezSeedGenes) {
 
-            if (randomWalkMatrix.getEntrezIdToRowIndex().containsKey(entrezId)) {
+            if (randomWalkMatrix.containsGene(entrezId)) {
                 seedGenes.add(entrezId);
             } else {
                 logger.warn("Cannot use entrez-id {} as seed gene as it is not present in the DataMatrix provided.", entrezId);
@@ -145,7 +136,7 @@ public class ExomeWalkerPriority implements Priority {
      */
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.EXOMEWALKER_PRIORITY;
+        return priorityType;
     }
 
     /**
@@ -165,7 +156,7 @@ public class ExomeWalkerPriority implements Priority {
 //		String e = "[GeneWanderer.java] Error: randomWalkMatrix.object2idx is null";
 //		throw new ExomizerInitializationException(e);
 //	    }
-            if (!randomWalkMatrix.getEntrezIdToRowIndex().containsKey(seedGeneEntrezId)) {
+            if (!randomWalkMatrix.containsGene(seedGeneEntrezId)) {
                 /* Note that the RW matrix does not have an entry for every
                  Entrez Gene. If the gene is not contained in the matrix, we
                  skip it. The gene will be given a (low) default score in 
@@ -173,10 +164,8 @@ public class ExomeWalkerPriority implements Priority {
                  */
                 continue;
             }
-            int indexOfGene = randomWalkMatrix.getEntrezIdToRowIndex().get(seedGeneEntrezId);
-
-            //    means the column we need, which has the distances of ALL genes to the current gene
-            FloatMatrix column = randomWalkMatrix.getMatrix().getColumn(indexOfGene);
+            //Get the column we need, this has the distances of ALL genes to the current gene
+            FloatMatrix column = randomWalkMatrix.getColumnMatrixForGene(seedGeneEntrezId);
 
             // for the first column/known gene we have to init the resulting vector
             if (first) {
@@ -221,8 +210,8 @@ public class ExomeWalkerPriority implements Priority {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
-            ExomeWalkerPriorityScore relScore = null;
-            if (randomWalkMatrix.getEntrezIdToRowIndex().containsKey(gene.getEntrezGeneID())) {
+            ExomeWalkerPriorityResult relScore = null;
+            if (randomWalkMatrix.containsGene(gene.getEntrezGeneID())) {
                 double val = computeSimStartNodesToNode(gene);
                 if (val > max) {
                     max = val;
@@ -230,19 +219,19 @@ public class ExomeWalkerPriority implements Priority {
                 if (val < min) {
                     min = val;
                 }
-                relScore = new ExomeWalkerPriorityScore(val);
+                relScore = new ExomeWalkerPriorityResult(val);
                 ++PPIdataAvailable;
             } else {
-                relScore = ExomeWalkerPriorityScore.noPPIDataScore();
+                relScore = ExomeWalkerPriorityResult.noPPIDataScore();
             }
-            gene.addPriorityScore(relScore, GENEWANDERER_PRIORITY);
+            gene.addPriorityResult(relScore);
         }
 
 //        float factor = 1f / (float) max;
 //        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
 //
 //        for (Gene gene : geneList) {
-//            float scr = gene.getPriorityScore(EXOMEWALKER_PRIORITY);
+//            float scr = gene.getPriorityResult(EXOMEWALKER_PRIORITY);
 //            float newscore = factor * (scr - (float) min);
 //            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
 //            newscore = factorMaxPossible * (scr - (float) min);
@@ -250,8 +239,6 @@ public class ExomeWalkerPriority implements Priority {
 //        }
         String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
                 PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
-        this.n_before = totalGenes;
-        this.n_after = PPIdataAvailable;
         this.messages.add(s);
         StringBuilder sb = new StringBuilder();
         sb.append("Seed genes:");
@@ -289,43 +276,14 @@ public class ExomeWalkerPriority implements Priority {
     }
 
     /**
-     * Get number of variants before filter was applied.
-     */
-    public int getBefore() {
-        return this.n_before;
-    }
-
-    /**
-     * Get number of variants after filter was applied.
-     */
-    public int getAfter() {
-        return this.n_after;
-    }
-
-    /**
      * This function retrieves the random walk similarity score for the gene
      *
      * @param nodeToCompute Gene for which the RW score is to bee retrieved
      */
     private double computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.getEntrezIdToRowIndex().get(nodeToCompute.getEntrezGeneID());
+        int idx = randomWalkMatrix.getRowIndexForGene(nodeToCompute.getEntrezGeneID());
         double val = combinedProximityVector.get(idx, 0);
         return val;
     }
-
-    /**
-     * This class does not need a database connection, this function only there
-     * to satisfy the interface.
-     *
-     * @param connection An SQL (postgres) connection that was initialized
-     * elsewhere.
-     */
-    @Override
-    public void setConnection(Connection connection) { /* no-op */ }
-
-    @Override
-    public void closeConnection() {
-        //not-implemented - there is no connection to close.
-    }
-
+    
 }

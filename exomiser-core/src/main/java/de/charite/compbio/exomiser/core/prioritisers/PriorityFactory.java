@@ -70,9 +70,14 @@ public class PriorityFactory {
     }
 
     public Priority getOmimPrioritizer() {
-        Priority priority = new OMIMPriority();
-
-        setPrioritiserConnection(priority);
+        OMIMPriority priority = new OMIMPriority();
+        //todo: move this into a DAO which uses the connection pool properly 
+        try {
+            Connection connection = dataSource.getConnection();
+            priority.setConnection(connection);
+        }catch (SQLException ex) {
+            logger.error(null, ex);
+        }
 
         logger.info("Made new OMIM Priority: {}", priority);
         return priority;
@@ -89,8 +94,13 @@ public class PriorityFactory {
     }
 
     public Priority getExomiserMousePrioritiser(List<String> hpoIds,String disease) {
-        Priority priority = new ExomiserMousePriority(hpoIds,disease);
-        setPrioritiserConnection(priority);
+        ExomiserMousePriority priority = new ExomiserMousePriority(hpoIds,disease);
+        try {
+            Connection connection = dataSource.getConnection();
+            priority.setConnection(connection);
+        }catch (SQLException ex) {
+            logger.error(null, ex);
+        }
         logger.info("Made new DynamicPhenodigm Priority: {}", priority);
         return priority;
     }
@@ -102,19 +112,10 @@ public class PriorityFactory {
     }
     
     public Priority getExomiserAllSpeciesPrioritiser(List<String> hpoIds, String candGene, String disease, String exomiser2Params) {
-        Priority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, exomiser2Params, randomWalkMatrix);
-        setPrioritiserConnection(priority);
-        logger.info("Made new DynamicPhenoWanderer Priority: {}", priority);
+        ExomiserAllSpeciesPriority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, exomiser2Params, randomWalkMatrix);
+        priority.setDataSource(dataSource);
+        logger.info("Made new ExomiserAllSpeciesPriority Priority: {}", priority);
         return priority;
-    }
-
-    private void setPrioritiserConnection(Priority priority) {
-        try {
-            Connection connection = dataSource.getConnection();
-            priority.setConnection(connection);
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
     }
 
 }
