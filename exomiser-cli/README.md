@@ -27,13 +27,13 @@ with
 
 (a) Exomiser v2 - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk 
 
-    java -Xms5g -Xmx5g -jar exomiser-cli-${project.version}.jar --prioritiser=exomiser-allspecies -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf 
+    java -Xms5g -Xmx5g -jar exomiser-cli-${project.version}.jar --prioritiser=phive-allspecies -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf 
 
-    java -Xms5g -Xmx5g -jar exomiser-cli-${project.version}.jar --prioritiser=exomiser-allspecies -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304 -v data/Pfeiffer.vcf
+    java -Xms5g -Xmx5g -jar exomiser-cli-${project.version}.jar --prioritiser=phive-allspecies -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304 -v data/Pfeiffer.vcf
 
 (b) Exomiser v1 - phenotype comparisons to mice with disruption of the gene
 
-    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=exomiser-mouse -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
+    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=phive-mouse -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
 (c) Phenix - phenotype comparisons to known human disease genes
 
