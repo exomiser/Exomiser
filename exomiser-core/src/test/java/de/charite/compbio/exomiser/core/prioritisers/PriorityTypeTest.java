@@ -46,7 +46,7 @@ public class PriorityTypeTest {
     @Test
     public void testToString() {
         PriorityType instance = PriorityType.EXOMISER_MOUSE_PRIORITY;
-        String expResult = "exomiser-mouse";
+        String expResult = "phive-mouse";
         String result = instance.toString();
         assertEquals(expResult, result);
     }

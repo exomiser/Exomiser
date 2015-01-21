@@ -16,7 +16,7 @@ import org.apache.commons.cli.Option;
 public class PathogenicityFilterCutOffOptionMarshaller extends AbstractOptionMarshaller {
 
     public PathogenicityFilterCutOffOptionMarshaller() {
-        option = new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, true, "Filter variants to include all missense variants regardless of predicted pathogenicity. Default: true");
+        option = new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, true, "Keep all variants, regardless of predicted pathogenicity or variant type. Default: false");
     }
 
     @Override

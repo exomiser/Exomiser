@@ -23,7 +23,7 @@ public enum PriorityType {
      * and dynamic human and mouse phenotypes
      */
 
-    EXOMISER_ALLSPECIES_PRIORITY("exomiser-allspecies", ScoringMode.RAW_SCORE),
+    EXOMISER_ALLSPECIES_PRIORITY("phive-allspecies", ScoringMode.RAW_SCORE),
 
     /**
      * Flag to represent results of annotating against OMIM data
@@ -36,7 +36,7 @@ public enum PriorityType {
     /**
      * Flag for dynamic phenodigm filter.
      */
-    EXOMISER_MOUSE_PRIORITY("exomiser-mouse", ScoringMode.RAW_SCORE),
+    EXOMISER_MOUSE_PRIORITY("phive-mouse", ScoringMode.RAW_SCORE),
     
     /**
      * Not set type - default for when things go wrong.

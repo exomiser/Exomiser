@@ -29,7 +29,7 @@ and open the template in the editor.
                 <li><a href="#settings" role="tab" data-toggle="tab"><h4>Analysis Settings</h4></a></li>
                 <li><a href="#filtering" role="tab" data-toggle="tab"><h4>Filtering Summary</h4></a></li>
                 <li><a href="#distribution" role="tab" data-toggle="tab"><h4>Variant Type Distribution</h4></a></li>
-                
+                <li><a href="#errors" role="tab" data-toggle="tab"><h4>Unanalysed Variants</h4></a></li>
                 <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4>Prioritised Genes</h4></a></li>
                 <li><a href="#about" role="tab" data-toggle="tab"><h4>About</h4></a></li>
             </ul>
@@ -57,7 +57,7 @@ and open the template in the editor.
   &quot;seed-genes&quot; : [ ],
   &quot;exomiser2-params&quot; : &quot;&quot;,
   &quot;num-genes&quot; : 0,
-  &quot;out-file&quot; : &quot;testWrite.html&quot;,
+  &quot;out-file&quot; : &quot;testWriteTemplateWithUnAnnotatedVariantData.html&quot;,
   &quot;out-format&quot; : [ &quot;HTML&quot; ],
   &quot;vcf&quot; : null,
   &quot;ped&quot; : null
@@ -83,22 +83,22 @@ and open the template in the editor.
                             <tr>
                                 <td><b>Target Filter</b></td>
                                 <td>
-                                    <ul>Removed a total of 0 off-target variants from further consideration</ul>
+                                    <ul>Removed a total of 2 off-target variants from further consideration</ul>
                                     <ul>Off target variants are defined as synonymous, intergenic, intronic but not in splice sequences</ul>
                                 </td>
                                 <td>0</td>
-                                <td>0</td>
+                                <td>2</td>
                             </tr>
                             <tr>
                                 <td><b>Frequency Filter</b></td>
                                 <td>
                                     <ul>Allele frequency &lt; 100.00 %</ul>
-                                    <ul>Frequency Data available in dbSNP (for 1000 Genomes Phase I) for 0 variants (NaN%)</ul>
-                                    <ul>dbSNP &quot;rs&quot; id available for 0 variants (NaN%)</ul>
-                                    <ul>Data available in Exome Server Project for 0 variants (NaN%)</ul>
+                                    <ul>Frequency Data available in dbSNP (for 1000 Genomes Phase I) for 0 variants (0.0%)</ul>
+                                    <ul>dbSNP &quot;rs&quot; id available for 0 variants (0.0%)</ul>
+                                    <ul>Data available in Exome Server Project for 0 variants (0.0%)</ul>
                                 </td>
                                 <td>0</td>
-                                <td>0</td>
+                                <td>2</td>
                             </tr>
                             <tr>
                                 <td><b>Pathogenicity Filter</b></td>
@@ -106,7 +106,7 @@ and open the template in the editor.
                                     <ul>Retained all non-pathogenic missense variants</ul>
                                 </td>
                                 <td>0</td>
-                                <td>0</td>
+                                <td>2</td>
                             </tr>
                         </tbody>
                     </table>
@@ -130,120 +130,196 @@ and open the template in the editor.
                             <tr>
                                 <td>SV_DELETION</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>SV_INSERTION</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>SV_SUBSTITUTION</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>SV_INVERSION</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>MISSENSE</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>STOPGAIN</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>SPLICING</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>FS_DELETION</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>FS_INSERTION</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>FS_SUBSTITUTION</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>NON_FS_DELETION</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>NON_FS_INSERTION</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>NON_FS_SUBSTITUTION</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>STOPLOSS</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>FS_DUPLICATION</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>NON_FS_DUPLICATION</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>START_LOSS</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>ncRNA_EXONIC</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>ncRNA_SPLICING</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>UTR3</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>UTR5</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>SYNONYMOUS</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>INTRONIC</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>ncRNA_INTRONIC</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>UPSTREAM</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>DOWNSTREAM</td>
+                                
+                                    <td>0</td>
                                 
                             </tr>
                             <tr>
                                 <td>INTERGENIC</td>
                                 
+                                    <td>0</td>
+                                
                             </tr>
                             <tr>
                                 <td>ERROR</td>
+                                
+                                    <td>2</td>
                                 
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            
+            <div class="panel panel-default" id="errors">
+                <div class="panel-heading">
+                    <h3>Unanalysed Variants</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row"> 
+                        <div class="col-sm-12">
+                            <span class="label label-danger">ERROR</span>
+                            <b>chr1:g.1A&gt;T [0/1]</b>
+                            
+                        </div>
+                    </div>
+                    <div class="row"> 
+                        <div class="col-sm-12">
+                            <span class="label label-danger">ERROR</span>
+                            <b>chr2:g.2T&gt;AAA [0/1]</b>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             
 
