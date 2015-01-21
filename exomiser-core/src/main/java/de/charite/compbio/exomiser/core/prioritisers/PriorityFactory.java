@@ -113,12 +113,7 @@ public class PriorityFactory {
     
     public Priority getExomiserAllSpeciesPrioritiser(List<String> hpoIds, String candGene, String disease, String exomiser2Params) {
         ExomiserAllSpeciesPriority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, exomiser2Params, randomWalkMatrix);
-        try {
-            Connection connection = dataSource.getConnection();
-            priority.setConnection(connection);
-        }catch (SQLException ex) {
-            logger.error(null, ex);
-        }
+        priority.setDataSource(dataSource);
         logger.info("Made new ExomiserAllSpeciesPriority Priority: {}", priority);
         return priority;
     }

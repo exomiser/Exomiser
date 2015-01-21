@@ -10,34 +10,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
+import javax.sql.DataSource;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filter genes according to the random walk proximity in the protein-protein
- * interaction network.
- * <P>
- * The files required for the constructor of this filter should be downloaded
- * from:
- * http://compbio.charite.de/hudson/job/randomWalkMatrix/lastSuccessfulBuild/artifact/
- * <P>
- * This class coordinates random walk analysis as described in the paper <a
- * hred="http://www.ncbi.nlm.nih.gov/pubmed/18371930"> Walking the interactome
- * for prioritization of candidate disease genes</a>.
+ * Filter genes according phenotypic similarity and to the random walk proximity
+ * in the protein-protein interaction network.
  *
- * @see <a
- * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">RandomWalk
- * Hudson page</a>
- * @author Sebastian Koehler
- * @version 0.09 (3 November, 2013)
+ * @author Damian Smedley <damian.smedley@sanger.ac.uk>
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class ExomiserAllSpeciesPriority implements Priority {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserAllSpeciesPriority.class);
 
-    private Connection connection = null;
-    
+    private DataSource dataSource;
+
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
@@ -48,37 +38,36 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * The random walk matrix object
      */
     private final DataMatrix randomWalkMatrix;
-    
+
 //    private final PrioritiserService prioritiserService;
-    
     private List<Integer> phenoGenes = new ArrayList<>();
     private List<String> phenoGeneSymbols = new ArrayList<>();
     private List<String> hpoIds;
     private String candidateGeneSymbol;
     private String diseaseId;
-    
+
     private Map<Integer, Float> scores = new HashMap<>();
     private Map<Integer, Double> mouseScores = new HashMap<>();
     private Map<Integer, Double> humanScores = new HashMap<>();
     private Map<Integer, Double> fishScores = new HashMap<>();
-    
+
     private Map<Integer, String> humanDiseases = new HashMap<>();
     private Map<Integer, String> mouseDiseases = new HashMap<>();
     private Map<Integer, String> fishDiseases = new HashMap<>();
-    
+
     //TODO: move into external caches
     private Map<String, String> hpoTerms = new HashMap<>();
     private Map<String, String> mpoTerms = new HashMap<>();
     private Map<String, String> zpoTerms = new HashMap<>();
     private Map<String, String> diseaseTerms = new HashMap<>();
-    
+
     private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpMpMatches = new HashMap<>();
     private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpHpMatches = new HashMap<>();
     private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpZpMatches = new HashMap<>();
-    
+
     private float best_max_score = 0f;
     private float best_avg_score = 0f;
-    
+
     private boolean runPpi = false;
     private boolean runHuman = false;
     private boolean runMouse = false;
@@ -88,20 +77,14 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * This is the matrix of similarities between the seeed genes and all genes
      * in the network, i.e., p<sub>infinity</sub>.
      */
-    private FloatMatrix weightedHighQualityMatrix;
+    private FloatMatrix weightedHighQualityMatrix = new FloatMatrix();
 
     /**
-     * Create a new instance of the {@link GenewandererPriority}.
-     *
-     * Assumes the list of seed genes (Entrez gene IDs) has been set!! This
-     * happens with the method {@link #setParameters}.
      *
      * @param hpoIds
      * @param candidateGene
      * @param disease
      * @param randomWalkMatrix
-     * @see <a href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
-     * Hudson page</a>
      */
     public ExomiserAllSpeciesPriority(List<String> hpoIds, String candidateGene, String disease, String exomiser2Params, DataMatrix randomWalkMatrix) {
         this.hpoIds = hpoIds;
@@ -109,18 +92,16 @@ public class ExomiserAllSpeciesPriority implements Priority {
         this.diseaseId = disease;
         this.randomWalkMatrix = randomWalkMatrix;
         parseParams(exomiser2Params);
-        //logger.info("PPI"+ppi+":"+"HUMAN"+human+":"+"MOUSE"+mouse+":"+"FISH"+fish);
-        //logger.info("Using randomWalkMatrix: {}", randomWalkMatrix);
     }
 
     private void parseParams(String exomiser2Params) {
-        //logger.info("Params are " + exomiser2Params);
         if (exomiser2Params.isEmpty()) {
             this.runPpi = true;
             this.runHuman = true;
             this.runMouse = true;
             this.runFish = true;
         } else {
+            logger.info("Received extra params: " + exomiser2Params);
             String[] paramsArray = exomiser2Params.split(",");
             for (String param : paramsArray) {
                 if (param.equals("ppi")) {
@@ -136,17 +117,11 @@ public class ExomiserAllSpeciesPriority implements Priority {
         }
     }
 
-    /**
-     * @see exomizer.priority.IPriority#getPriorityName()
-     */
     @Override
     public String getPriorityName() {
         return "Phenotypic analysis";
     }
 
-    /**
-     * Flag to output results of filtering against Genewanderer.
-     */
     @Override
     public PriorityType getPriorityType() {
         return PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
@@ -156,24 +131,30 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      * <P>
-     * You have to call {@link #setParameters} before running this function.
      *
      * @param genes List of candidate genes.
-     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
     public void prioritizeGenes(List<Gene> genes) {
+
+        setUpOntologyCaches();
 
         if (diseaseId != null && !diseaseId.isEmpty() && hpoIds.isEmpty()) {
             logger.info("Setting HPO IDs using disease annotations for {}", diseaseId);
             hpoIds = getHpoIdsForDisease(diseaseId);
         }
-        
-        computeDistanceAllNodesFromStartNodes(hpoIds);
-        
+
+        hpHpMatches = makeHpHpMatches(hpoIds);
+        hpMpMatches = makeHpMpMatches(hpoIds);
+        hpZpMatches = makeHpZpMatches(hpoIds);
+
+        if (runPpi) {
+            weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
+        }
+
         int PPIdataAvailable = 0;
         int totalGenes = genes.size();
-        
+
         logger.info("Scoring genes...");
         for (Gene gene : genes) {
             String evidence = "";
@@ -414,7 +395,6 @@ public class ExomiserAllSpeciesPriority implements Priority {
             hpInput = hpInput + (String.format("%s (%s), ", hpTerm, hp));
         }
         //this.messages.add(hpInput);// now display all HPO terms on results no need for this
-        closeConnection();
     }
 
     private String makeDiseaseLink(String diseaseId, String diseaseTerm) {
@@ -426,47 +406,45 @@ public class ExomiserAllSpeciesPriority implements Priority {
             return "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseTerm + "</a>";
         }
     }
-    
+
     //TODO - this shouldn' exist. runDynamicQuery should have two variants - one for human the other for non-human
     private enum Species {
+
         HUMAN, MOUSE, FISH;
     }
- 
-    /**
-     * Compute the distance of all genes in the Random Walk matrix to the set of
-     * seed genes given by the user.
-     */
-    private void computeDistanceAllNodesFromStartNodes(List<String> hpoIds) {
-        //TODO: check how runHuman not being run affects mouse and fish as the best score is set by this...
+
+    private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> makeHpHpMatches(List<String> hpoIds) {
+        //TODO: this must always run in order that the best score is set - refactor this so that the behaviour of runDynamicQuery
+        //is consistent with the mouse and fish
         // Human
-        if (runHuman) {
-            String mappingQuery = "SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?";
-            String annotationQuery = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
-            hpHpMatches = runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.HUMAN);
-        } else {
-            hpHpMatches = Collections.EMPTY_MAP;
-        }
-        
+        logger.info("Fetching HP-HP scores...");
+        String mappingQuery = "SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?";
+        String annotationQuery = String.format("SELECT H.disease_id, hp_id, gene_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id");
+        return runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.HUMAN);
+    }
+
+    private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> makeHpMpMatches(List<String> hpoIds) {
+        // Mouse
         if (runMouse) {
-            // Mouse
+            logger.info("Fetching HP-MP scores...");
             String mappingQuery = "SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?";
             String annotationQuery = "SELECT mouse_model_id, mp_id, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
-            hpMpMatches = runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.MOUSE);
+            return runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.MOUSE);
         } else {
-            hpMpMatches = Collections.EMPTY_MAP;
+            return Collections.EMPTY_MAP;
         }
-        
+    }
+
+    private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> makeHpZpMatches(List<String> hpoIds) {
         // Fish
         if (runFish) {
+            logger.info("Fetching HP-ZP scores...");
             String mappingQuery = "SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?";
             String annotationQuery = "SELECT zfin_model_id, zp_id, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
-            hpZpMatches = runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.FISH);
+            return runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.FISH);
         } else {
-            hpZpMatches = Collections.EMPTY_MAP;
+            return Collections.EMPTY_MAP;
         }
-        
-        logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
-        weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
     }
 
     private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> runDynamicQuery(String mappingQuery, String findAnnotationQuery, List<String> hpoIds, Species species) {
@@ -475,10 +453,10 @@ public class ExomiserAllSpeciesPriority implements Priority {
         Map<String, Float> best_mapped_term_score = new HashMap<>();
         Map<String, String> best_mapped_term_mpid = new HashMap<>();
         Map<String, Integer> knownMps = new HashMap<>();
-        
+
         Map<String, Float> mapped_terms = new HashMap<>();
         for (String hpId : hpoIds) {
-            try {
+            try (Connection connection = dataSource.getConnection()) {
                 PreparedStatement findMappingStatement = connection.prepareStatement(mappingQuery);
                 findMappingStatement.setString(1, hpId);
                 ResultSet rs = findMappingStatement.executeQuery();
@@ -490,7 +468,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                     hashKey.append(mpId);
                     float score = rs.getFloat(2);
                     mapped_terms.put(hashKey.toString(), score);
-                    
+
                     if (species == Species.HUMAN && hpId.equals(mpId)) {
                         addBestMappedTerm(best_mapped_term_score, hpId, score, best_mapped_term_mpid, mpId);
                         hpIdsWithPhenotypeMatch.add(hpId);//for some hp terms e.g. HP we won't have the self hit but still want to flag found
@@ -506,8 +484,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                     }
                 }
             } catch (SQLException e) {
-                String error = "Problem setting up SQL query:";
-                logger.error(error, e);
+                logger.error("Problem setting up SQL query: {}", mappingQuery, e);
             }
         }
         logger.info("Phenotype matches {} for {}", mapped_terms, species);
@@ -515,61 +492,19 @@ public class ExomiserAllSpeciesPriority implements Priority {
             String hpId = bestMappedHpIdToOtherId.getKey();
             logger.info("Best match: {}-{}={}", hpId, bestMappedHpIdToOtherId.getValue(), best_mapped_term_score.get(hpId));
         }
-        
-        // calculate perfect model scores for human
-        if (species == Species.HUMAN) {
-            float sum_best_score = 0f;
-            int best_hit_counter = 0;
-            // loop over each hp id should start here
-            for (String hpId : hpIdsWithPhenotypeMatch) {
-                if (best_mapped_term_score.containsKey(hpId)) {
-                    float hp_score = best_mapped_term_score.get(hpId);
-                    // add in scores for best match for the HP term                                                                                                                                                
-                    sum_best_score += hp_score;
 
-                    best_hit_counter++;
-                    if (hp_score > best_max_score) {
-                        this.best_max_score = hp_score;
-                    }
-                    //logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
-                    // add in MP-HP hits                                                                                                                                                                           
-                    String mpId = best_mapped_term_mpid.get(hpId);
-                    float best_score = 0f;
-                    for (String hpId2 : hpIdsWithPhenotypeMatch) {
-                        StringBuilder hashKey = new StringBuilder();
-                        hashKey.append(hpId2);
-                        hashKey.append(mpId);
-                        if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
-                            best_score = mapped_terms.get(hashKey.toString());
-                        }
-                    }
-                    // add in scores for best match for the MP term                                                                                                                                                
-                    sum_best_score += best_score;
-                    //logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + best_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
-                    best_hit_counter++;
-                    if (best_score > best_max_score) {
-                        this.best_max_score = best_score;
-                    }
-                }
-            }
-            //this.best_avg_score = sum_best_score / best_hit_counter;
-            this.best_avg_score = sum_best_score / (2 * hpIdsWithPhenotypeMatch.size());
+        if (species == Species.HUMAN) {
+            calculateBestScoresFromHumanPhenotypes(hpIdsWithPhenotypeMatch, best_mapped_term_score, best_mapped_term_mpid, mapped_terms);
         }
         //TODO: needed here or do before? 
-//        if (species == Species.HUMAN && !runHuman) {
-//            return Collections.EMPTY_MAP;
-//        }
-//        if (species == Species.MOUSE && !runMouse) {
-//            return Collections.EMPTY_MAP;
-//        }
-//        if (species == Species.FISH && !runFish) {
-//            return Collections.EMPTY_MAP;
-//        }
+        if (species == Species.HUMAN && !runHuman) {
+            return Collections.EMPTY_MAP;
+        }
 
         // calculate score for this gene
         Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpMatches = new HashMap<>();
-        try {
-            logger.info("Fetching disease/model phenotype annotations and human model organism gene orthologs");
+        logger.info("Fetching disease/model phenotype annotations and human model organism gene orthologs");
+        try (Connection connection = dataSource.getConnection()) {
             PreparedStatement findAnnotationStatement = connection.prepareStatement(findAnnotationQuery);
             ResultSet rs = findAnnotationStatement.executeQuery();
             while (rs.next()) {
@@ -724,10 +659,49 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 }
             }//end of rs
         } catch (SQLException e) {
-            String error = "Problem setting up SQL query:";
-            logger.error(error, e);
+            logger.error("Problem setting up SQL query: {}", findAnnotationQuery, e);
         }
         return hpMatches;
+    }
+
+    private void calculateBestScoresFromHumanPhenotypes(Set<String> hpIdsWithPhenotypeMatch, Map<String, Float> best_mapped_term_score, Map<String, String> best_mapped_term_mpid, Map<String, Float> mapped_terms) {
+        // calculate perfect model scores for human
+        float sum_best_score = 0f;
+        int best_hit_counter = 0;
+        // loop over each hp id should start here
+        for (String hpId : hpIdsWithPhenotypeMatch) {
+            if (best_mapped_term_score.containsKey(hpId)) {
+                float hp_score = best_mapped_term_score.get(hpId);
+                // add in scores for best match for the HP term
+                sum_best_score += hp_score;
+
+                best_hit_counter++;
+                if (hp_score > best_max_score) {
+                    this.best_max_score = hp_score;
+                }
+                    //logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
+                // add in MP-HP hits
+                String mpId = best_mapped_term_mpid.get(hpId);
+                float best_score = 0f;
+                for (String hpId2 : hpIdsWithPhenotypeMatch) {
+                    StringBuilder hashKey = new StringBuilder();
+                    hashKey.append(hpId2);
+                    hashKey.append(mpId);
+                    if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
+                        best_score = mapped_terms.get(hashKey.toString());
+                    }
+                }
+                // add in scores for best match for the MP term
+                sum_best_score += best_score;
+                //logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + best_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
+                best_hit_counter++;
+                if (best_score > best_max_score) {
+                    this.best_max_score = best_score;
+                }
+            }
+        }
+        //this.best_avg_score = sum_best_score / best_hit_counter;
+        this.best_avg_score = sum_best_score / (2 * hpIdsWithPhenotypeMatch.size());
     }
 
     private void addBestMappedTerm(Map<String, Float> best_mapped_term_score, String hpid, float score, Map<String, String> best_mapped_term_mpid, String mp_id) {
@@ -742,8 +716,9 @@ public class ExomiserAllSpeciesPriority implements Priority {
         }
     }
 
-   //todo: If this returned a DataMatrix things might be a bit more convienent later on... 
+    //todo: If this returned a DataMatrix things might be a bit more convienent later on... 
     private FloatMatrix makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(List<Integer> phenoGenes, Map<Integer, Float> scores) {
+        logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
         int rows = randomWalkMatrix.getMatrix().getRows();
         int cols = phenoGenes.size();
         FloatMatrix highQualityPpiMatrix = FloatMatrix.zeros(rows, cols);
@@ -828,99 +803,66 @@ public class ExomiserAllSpeciesPriority implements Priority {
         }
     }
 
-    /**
-     * Initialize the database connection and call
-     * {@link #setUpSQLPreparedStatements}
-     *
-     * @param connection A connection to a postgreSQL database from the exomizer
-     * or tomcat.
-     */
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-        setUpOntologyCaches();
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     private void setUpOntologyCaches() {
-        setUpDiseaseTermsCache();
-        setUpHpoTermsCache();
-        setUpMpoTermsCache();
-        setUpZpoTermsCache();
+        hpoTerms = getHpoTermsCache();
+        mpoTerms = getMpoTermsCache();
+        zpoTerms = getZpoTermsCache();
+        diseaseTerms = getDiseaseTermsCache();
     }
 
-    private void setUpZpoTermsCache() {
-        try {
-            PreparedStatement zpoTermsStatement = connection.prepareStatement("SELECT zp_id, zp_term FROM zp");
-            ResultSet rs = zpoTermsStatement.executeQuery();
-            while (rs.next()) {
-                String zpId = rs.getString(1);
-                String zpTerm = rs.getString(2);
-                zpId = zpId.trim();
-                zpoTerms.put(zpId, zpTerm);
-            }
-        } catch (SQLException e) {
-            logger.error("Unable to fetch ZPO terms", e);
-        }
-        logger.info("ZPO cache initialised with {} terms", zpoTerms.size());
+    private Map<String, String> getHpoTermsCache() {
+        Map<String, String> termsCache = makeGenericOntologyTermCache("select id, lcname from hpo");
+        logger.info("HPO cache initialised with {} terms", termsCache.size());
+        return termsCache;
     }
 
-    private void setUpMpoTermsCache() {
-        try {
-            PreparedStatement mpoTermsStatement = connection.prepareStatement("SELECT mp_id, mp_term FROM mp");
-            ResultSet rs = mpoTermsStatement.executeQuery();
-            while (rs.next()) {
-                String mpId = rs.getString(1);
-                String mpTerm = rs.getString(2);
-                mpId = mpId.trim();
-                mpoTerms.put(mpId, mpTerm);
-            }
-        } catch (SQLException e) {
-            logger.error("Unable to fetch MPO terms", e);
-        }
-        logger.info("MPO cache initialised with {} terms", mpoTerms.size());
+    private Map<String, String> getMpoTermsCache() {
+        Map<String, String> termsCache = makeGenericOntologyTermCache("SELECT mp_id, mp_term FROM mp");
+        logger.info("MPO cache initialised with {} terms", termsCache.size());
+        return termsCache;
     }
 
-    private void setUpHpoTermsCache() {
-        // retrieve hp and mp id to term mappings
-        try {
-            PreparedStatement hpoTermsStatement = connection.prepareStatement("select id, lcname from hpo");
-            ResultSet rs = hpoTermsStatement.executeQuery();
-            while (rs.next()) {
-                String hpId = rs.getString(1);
-                String hpTerm = rs.getString(2);
-                hpId = hpId.trim();
-                hpoTerms.put(hpId, hpTerm);
-            }
-            
-        } catch (SQLException e) {
-            logger.error("Unable to retrieve HPO terms", e);
-        }
-        logger.info("HPO cache initialised with {} terms", hpoTerms.size());
+    private Map<String, String> getZpoTermsCache() {
+        Map<String, String> termsCache = makeGenericOntologyTermCache("SELECT zp_id, zp_term FROM zp");
+        logger.info("ZPO cache initialised with {} terms", termsCache.size());
+        return termsCache;
     }
 
-    private void setUpDiseaseTermsCache() {
-        // retrieve disease id to term mappings
-        try {
-            PreparedStatement diseaseTermsStatement = connection.prepareStatement("SELECT disease_id, diseasename FROM disease");
-            ResultSet rs = diseaseTermsStatement.executeQuery();
-            while (rs.next()) {
-                String diseaseId = rs.getString(1);
-                String diseaseTerm = rs.getString(2);
-                diseaseId = diseaseId.trim();
-                diseaseTerms.put(diseaseId, diseaseTerm);
-            }
-            
-        } catch (SQLException e) {
-            logger.error("Unable to fetch disease terms", e);
-        }
-        logger.info("Disease cache initialised with {} terms", diseaseTerms.size());
+    private Map<String, String> getDiseaseTermsCache() {
+        Map<String, String> termsCache = makeGenericOntologyTermCache("SELECT disease_id, diseasename FROM disease");
+        logger.info("Disease cache initialised with {} terms", termsCache.size());
+        return termsCache;
     }
-    
+
+    private Map<String, String> makeGenericOntologyTermCache(String selectZpoQuery) {
+        Map<String, String> termsCache = new HashMap();
+        try {
+            try (Connection connection = dataSource.getConnection()) {
+                PreparedStatement ontologyTermsStatement = connection.prepareStatement(selectZpoQuery);
+                ResultSet rs = ontologyTermsStatement.executeQuery();
+                while (rs.next()) {
+                    String id = rs.getString(1);
+                    String term = rs.getString(2);
+                    id = id.trim();
+                    termsCache.put(id, term);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Unable to execute query '{}' for ontology terms cache", selectZpoQuery, e);
+        }
+        return termsCache;
+    }
+
     /**
      * Set hpo_ids variable based on the entered disease
      */
     private List<String> getHpoIdsForDisease(String disease) {
         String hpoListString = "";
-        try {
+        try (Connection connection = dataSource.getConnection()) {
             PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
             hpoIdsStatement.setString(1, disease);
             ResultSet rs = hpoIdsStatement.executeQuery();
@@ -933,7 +875,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), disease, diseaseHpoIds);
         return diseaseHpoIds;
     }
-    
+
     private List<String> parseHpoIdListFromString(String hpoIdsString) {
         String[] hpoArray = hpoIdsString.split(",");
         List<String> hpoIdList = new ArrayList<>();
@@ -943,11 +885,4 @@ public class ExomiserAllSpeciesPriority implements Priority {
         return hpoIdList;
     }
 
-    public void closeConnection() {
-        try {
-            connection.close();
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
-    }
 }
