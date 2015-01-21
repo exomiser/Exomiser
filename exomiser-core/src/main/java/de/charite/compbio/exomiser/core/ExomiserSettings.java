@@ -91,7 +91,7 @@ public class ExomiserSettings {
     public static final String SEED_GENES_OPTION = "seed-genes";
     public static final String DISEASE_ID_OPTION = "disease-id";
     public static final String MODE_OF_INHERITANCE_OPTION = "inheritance-mode";
-    public static final String EXOMISER2_PARAMS_OPTION = "exomiser2-params";
+    public static final String EXOMISER2_PARAMS_OPTION = "phive-allspecies-params";
 
     //PRIORITISER variables
     //candidate-gene (command-line was: candidate_gene, refered to variable: candidateGene)
