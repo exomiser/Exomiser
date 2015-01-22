@@ -26,6 +26,8 @@ public class ExomiserAllSpeciesPriority implements Priority {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserAllSpeciesPriority.class);
 
+    private static final PriorityType PRIORITY_TYPE = PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
+    
     private DataSource dataSource;
 
     /**
@@ -119,12 +121,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
 
     @Override
     public String getPriorityName() {
-        return "Phenotypic analysis";
+        return PRIORITY_TYPE.getCommandLineValue();
     }
 
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
+        return PRIORITY_TYPE;
     }
 
     /**
@@ -487,10 +489,10 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 logger.error("Problem setting up SQL query: {}", mappingQuery, e);
             }
         }
-        logger.info("Phenotype matches {} for {}", mapped_terms, species);
+        logger.debug("Phenotype matches {} for {}", mapped_terms, species);
         for (Entry<String, String> bestMappedHpIdToOtherId : best_mapped_term_mpid.entrySet()) {
             String hpId = bestMappedHpIdToOtherId.getKey();
-            logger.info("Best match: {}-{}={}", hpId, bestMappedHpIdToOtherId.getValue(), best_mapped_term_score.get(hpId));
+            logger.debug("Best match: {}-{}={}", hpId, bestMappedHpIdToOtherId.getValue(), best_mapped_term_score.get(hpId));
         }
 
         if (species == Species.HUMAN) {
