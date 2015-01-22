@@ -171,11 +171,8 @@ and open the template in the editor.
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-sm-12">
-                                            <dl th:each="priorityResult: ${gene.priorityResults}">
-                                                <dt th:text="|${priorityResult.key} prioritiser:|">Omim prioritiser:</dt>
-                                                <dd th:each="result: ${priorityResult.value.filterResultList}" th:text="${result}"><a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a></dd>
-                                            </dl>
+                                        <div class="col-sm-12"> 
+                                            <th:block th:each="priorityResult: ${gene.priorityResults}" th:utext="${priorityResult.value.HTMLCode}"><a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a></th:block>
                                         </div>
                                     </div>
                                     <div class="row"
