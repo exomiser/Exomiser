@@ -102,8 +102,8 @@ public class DataSourceConfig {
         }else {
             //in this case it hasn't been manually set, so we'll use the default location
             //the placeholders are not visible in the url string hence we replace the 'file:'
-            String h2Filepath = String.format("h2:%s", dataPath);
-            url = env.getProperty("h2.url").replace("h2:", h2Filepath);
+            String h2Filepath = String.format("file:%s", dataPath);
+            url = env.getProperty("h2.url").replace("file:", h2Filepath);
         }
         
         HikariConfig config = new HikariConfig();
