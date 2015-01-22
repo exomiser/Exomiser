@@ -8,8 +8,6 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -71,14 +69,7 @@ public class PriorityFactory {
 
     public Priority getOmimPrioritizer() {
         OMIMPriority priority = new OMIMPriority();
-        //todo: move this into a DAO which uses the connection pool properly 
-        try {
-            Connection connection = dataSource.getConnection();
-            priority.setConnection(connection);
-        }catch (SQLException ex) {
-            logger.error(null, ex);
-        }
-
+        priority.setDataSource(dataSource);
         logger.info("Made new OMIM Priority: {}", priority);
         return priority;
     }
@@ -95,12 +86,7 @@ public class PriorityFactory {
 
     public Priority getExomiserMousePrioritiser(List<String> hpoIds,String disease) {
         ExomiserMousePriority priority = new ExomiserMousePriority(hpoIds,disease);
-        try {
-            Connection connection = dataSource.getConnection();
-            priority.setConnection(connection);
-        }catch (SQLException ex) {
-            logger.error(null, ex);
-        }
+        priority.setDataSource(dataSource);
         logger.info("Made new DynamicPhenodigm Priority: {}", priority);
         return priority;
     }

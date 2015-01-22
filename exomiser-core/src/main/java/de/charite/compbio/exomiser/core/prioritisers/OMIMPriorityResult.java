@@ -159,19 +159,19 @@ public class OMIMPriorityResult implements PriorityResult {
      */
     @Override
     public String getHTMLCode() {
+        StringBuilder sb = new StringBuilder("<dl>");
         if (is_empty()) {
-            return "<ul><li>No known disease</ul></li>";
+            return "<dt>No known disease</dt>";
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("<ul><li>Known diseases</li></ul>");
+        sb.append("<dt>Known diseases");
         if (this.score < 1f && this.score != DEFAULT_SCORE) {
-            sb.append("Observed variants not compatible with mode of inheritance:");
+            sb.append(" Observed variants not compatible with mode of inheritance:");
         }
-        sb.append("<ul>\n");
+        sb.append("</dt>");
         for (String s : this.mimEntryList) {
-            sb.append("<li>" + s + "</li>\n");
+            sb.append("<dd>" + s + "</dd>\n");
         }
-        sb.append("</ul>\n");
+        sb.append("</dl>");
         return sb.toString();
     }
 
