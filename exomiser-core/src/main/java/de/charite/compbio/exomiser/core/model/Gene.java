@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -95,7 +96,7 @@ public class Gene implements Comparable<Gene>, Filterable {
         entrezGeneId = variantEvaluation.getEntrezGeneID();
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         failedFilterTypes = EnumSet.noneOf(FilterType.class);
-        priorityResultsMap = new HashMap();
+        priorityResultsMap = new LinkedHashMap();
     }
 
     /**
