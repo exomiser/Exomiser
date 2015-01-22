@@ -13,6 +13,8 @@ import jannovar.common.Constants;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.List;
+import java.util.logging.Level;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +39,7 @@ public class ExomiserMousePriority implements Priority {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserMousePriority.class);
 
-    private static final PriorityType priorityType = PriorityType.EXOMISER_MOUSE_PRIORITY;
+    private static final PriorityType PRIORITY_TYPE = PriorityType.EXOMISER_MOUSE_PRIORITY;
 
     /**
      * Threshold for filtering. Retain only those variants whose score is below
@@ -52,7 +54,8 @@ public class ExomiserMousePriority implements Priority {
     /**
      * Database handle to the postgreSQL database used by this application.
      */
-    private Connection connection = null;
+    private Connection connection;
+    private DataSource dataSource;
     /**
      * A prepared SQL statement for mgi phenodigm score.
      */
@@ -132,7 +135,7 @@ public class ExomiserMousePriority implements Priority {
      */
     @Override
     public String getPriorityName() {
-        return priorityType.getCommandLineValue();
+        return PRIORITY_TYPE.getCommandLineValue();
     }
 
     /**
@@ -140,7 +143,7 @@ public class ExomiserMousePriority implements Priority {
      */
     @Override
     public PriorityType getPriorityType() {
-        return priorityType;
+        return PRIORITY_TYPE;
     }
 
     /**
@@ -169,7 +172,7 @@ public class ExomiserMousePriority implements Priority {
         retrieve_score_data(gene_list);
 //	for (Gene g : gene_list) {
 //            ExomiserMousePriorityResult rscore = retrieve_score_data(g);
-//            g.addPriorityResult(rscore, priorityType);          
+//            g.addPriorityResult(rscore, PRIORITY_TYPE);          
 //	}
         this.messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", gene_list.size()));
         closeConnection();
@@ -178,9 +181,9 @@ public class ExomiserMousePriority implements Priority {
     /**
      * Set hpo_ids variable based on the entered disease
      */
-    private void setHPOfromDisease(String disease) {
+    private List<String> getHpoIdsForDisease(String disease) {
         String hpoListString = "";
-        try {
+        try (Connection connection = dataSource.getConnection()) {
             PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
             hpoIdsStatement.setString(1, disease);
             ResultSet rs = hpoIdsStatement.executeQuery();
@@ -189,18 +192,17 @@ public class ExomiserMousePriority implements Priority {
         } catch (SQLException e) {
             logger.error("Unable to retrieve HPO terms for disease {}", disease, e);
         }
-        hpoIds = parseHpoIdListFromString(hpoListString);
-        logger.info("{} HPO ids retrieved for disease {} - {}", hpoIds.size(), disease, hpoIds);
+        List<String> diseaseHpoIds = parseHpoIdListFromString(hpoListString);
+        logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), disease, diseaseHpoIds);
+        return diseaseHpoIds;
     }
 
     private List<String> parseHpoIdListFromString(String hpoIdsString) {
-        logger.info("Attempting to create HPO ID list from string: {} ", hpoIdsString);
         String[] hpoArray = hpoIdsString.split(",");
         List<String> hpoIdList = new ArrayList<>();
         for (String string : hpoArray) {
             hpoIdList.add(string.trim());
         }
-        logger.info("Made list: {}", hpoIdList);
         return hpoIdList;
     }
 
@@ -213,7 +215,7 @@ public class ExomiserMousePriority implements Priority {
 
         if (disease != null && !disease.isEmpty() && hpoIds.isEmpty()) {
             logger.info("Setting HPO IDs using disease annotations for {}", disease);
-            setHPOfromDisease(disease);
+            hpoIds = getHpoIdsForDisease(disease);
         }
 
         HashMap<String, Float> mapped_terms = new HashMap<>();
@@ -423,9 +425,9 @@ public class ExomiserMousePriority implements Priority {
      * for each pair of OMIM diseases and MGI genes.
      */
     private void setUpSQLPreparedStatements() {
-        String mapping_query = String.format("SELECT mp_id, score "
+        String mapping_query = "SELECT mp_id, score "
                 + "FROM hp_mp_mappings M "
-                + "WHERE M.hp_id = ?");
+                + "WHERE M.hp_id = ?";
 
         try {
             this.findMappingStatement = connection.prepareStatement(mapping_query);
@@ -434,9 +436,9 @@ public class ExomiserMousePriority implements Priority {
             logger.error("Problem setting up SQL query: {}", mapping_query, e);
         }
 
-        String mouse_annotation = String.format("SELECT mouse_model_id, mp_id, M.mgi_gene_id, M.mgi_gene_symbol "
+        String mouse_annotation = "SELECT mouse_model_id, mp_id, M.mgi_gene_id, M.mgi_gene_symbol "
                 + "FROM mgi_mp M, human2mouse_orthologs H "
-                + "WHERE M.mgi_gene_id=H.mgi_gene_id AND human_gene_symbol = ?");
+                + "WHERE M.mgi_gene_id=H.mgi_gene_id AND human_gene_symbol = ?";
 
         try {
             this.findMouseAnnotationStatement = connection.prepareStatement(mouse_annotation);
@@ -445,10 +447,10 @@ public class ExomiserMousePriority implements Priority {
             logger.error("Problem setting up SQL query: {}", mouse_annotation, e);
         }
 
-        String test_gene_query = String.format("SELECT human_gene_symbol "
+        String test_gene_query = "SELECT human_gene_symbol "
                 + "FROM mgi_mp, human2mouse_orthologs "
                 + "WHERE mgi_mp.mgi_gene_id=human2mouse_orthologs.mgi_gene_id "
-                + "AND human_gene_symbol = ? LIMIT 1");
+                + "AND human_gene_symbol = ? LIMIT 1";
         try {
             this.testGeneStatement = connection.prepareStatement(test_gene_query);
 
@@ -458,19 +460,7 @@ public class ExomiserMousePriority implements Priority {
 
     }
 
-    /**
-     * Initialize the database connection and call
-     * {@link #setUpSQLPreparedStatements}
-     *
-     * @param connection A connection to a postgreSQL database from the exomizer
-     * or tomcat.
-     */
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-        setUpSQLPreparedStatements();
-    }
-
-    protected void closeConnection() {
+    private void closeConnection() {
         try {
             connection.close();
         } catch (SQLException ex) {
@@ -501,6 +491,16 @@ public class ExomiserMousePriority implements Priority {
         }
         sb.append("</ul>\n");
         return sb.toString();
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+        try {
+            this.connection = dataSource.getConnection();
+        } catch (SQLException ex) {
+            logger.error("Unable to get connection from datasource", ex);
+        }
+        setUpSQLPreparedStatements();
     }
 
 }

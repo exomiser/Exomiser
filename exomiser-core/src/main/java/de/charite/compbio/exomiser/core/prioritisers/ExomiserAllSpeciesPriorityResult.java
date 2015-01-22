@@ -12,7 +12,7 @@ public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
     /**
      * The Random walk similarity score.
      */
-    private double genewandererScore;
+    private double score;
     private double humanScore;
     private double fishScore;
     private double mouseScore;
@@ -27,7 +27,7 @@ public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
      */
     public ExomiserAllSpeciesPriorityResult(double score, String evidence, String humanPhenotypeEvidence,
             String mousePhenotypeEvidence, String fishPhenotypeEvidence, double humanScore, double mouseScore, double fishScore, double walkerScore) {
-        this.genewandererScore = score;
+        this.score = score;
         this.evidence = evidence;
         this.humanPhenotypeEvidence = humanPhenotypeEvidence;
         this.mousePhenotypeEvidence = mousePhenotypeEvidence;
@@ -48,7 +48,7 @@ public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
      */
     @Override
     public float getScore() {
-        return (float) genewandererScore;
+        return (float) score;
     }
 
     /**
@@ -121,7 +121,7 @@ public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
      * @param newscore new value for relevance score
      */
     public void setScore(float newscore) {
-        this.genewandererScore = newscore;
+        this.score = newscore;
     }
 
     /**
