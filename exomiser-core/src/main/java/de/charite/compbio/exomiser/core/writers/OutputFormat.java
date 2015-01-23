@@ -12,7 +12,7 @@ package de.charite.compbio.exomiser.core.writers;
  */
 public enum OutputFormat {
 
-    HTML("html"), VCF("vcf"), TSV("tsv");
+    HTML("html"), VCF("vcf"), TSV_GENE("_genes.tsv"), TSV_VARIANT("_variants.tsv");
 
     private final String fileExtension;
 

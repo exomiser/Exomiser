@@ -17,8 +17,10 @@ public class ResultsWriterFactory {
         switch (outputFormat){
             case HTML:
                 return getHtmlResultsWriter();
-            case TSV:
-                return getTsvResultsWriter();
+            case TSV_GENE:
+                return getTsvGeneResultsWriter();
+            case TSV_VARIANT:
+                return getTsvVariantResultsWriter();
             case VCF:
                 return getVcfResultsWriter();
             default:
@@ -30,8 +32,12 @@ public class ResultsWriterFactory {
         return new HtmlResultsWriter();
     }
 
-    protected static ResultsWriter getTsvResultsWriter() {
-        return new TsvResultsWriter();
+    protected static ResultsWriter getTsvGeneResultsWriter() {
+        return new TsvGeneResultsWriter();
+    }
+    
+    protected static ResultsWriter getTsvVariantResultsWriter() {
+        return new TsvVariantResultsWriter();
     }
 
     protected static ResultsWriter getVcfResultsWriter() {

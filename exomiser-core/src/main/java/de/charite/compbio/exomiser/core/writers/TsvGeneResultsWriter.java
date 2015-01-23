@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TsvResultsWriter implements ResultsWriter {
+public class TsvGeneResultsWriter implements ResultsWriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(TsvResultsWriter.class);
+    private static final Logger logger = LoggerFactory.getLogger(TsvGeneResultsWriter.class);
 
-    private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV;
+    private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;
 
     @Override
     public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {

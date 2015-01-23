@@ -582,7 +582,7 @@ public class CommandLineOptionsParserTest {
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        Set<OutputFormat> expected = EnumSet.of(OutputFormat.TSV);
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.TSV_GENE);
 
         assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));
     }
@@ -608,7 +608,7 @@ public class CommandLineOptionsParserTest {
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF, OutputFormat.TSV);
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF, OutputFormat.TSV_GENE);
 
         assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));
     }
