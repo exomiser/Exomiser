@@ -577,12 +577,12 @@ public class CommandLineOptionsParserTest {
     @Test
     public void shouldProduceSettingsWithTABOutputFormatWhenSpecified() {
         String option = "--out-format";
-        String value = "TAB";
+        String value = "TAB-GENE";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive-mouse", option, value);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        Set<OutputFormat> expected = EnumSet.of(OutputFormat.TSV);
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.TSV_GENE);
 
         assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));
     }
@@ -603,12 +603,12 @@ public class CommandLineOptionsParserTest {
     @Test
     public void shouldProduceSettingsWithTSVAndVCFOutputFormatWhenSpecified() {
         String option = "--out-format";
-        String value = "TAB,VCF";
+        String value = "TAB-GENE,VCF";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive-mouse", option, value);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF, OutputFormat.TSV);
+        Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF, OutputFormat.TSV_GENE);
 
         assertThat(exomiserSettings.getOutputFormats(), equalTo(expected));
     }
