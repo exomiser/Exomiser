@@ -2,9 +2,11 @@
 
 ## Installation
 
-1. Download and unzip exomiser-cli-${project.version}-distribution.zip
-2. Download exomiser-${project.version}.h2.db.zip from the h2_db_dumps folder and unzip in the exomiser-cli-${project.version}/data directory
-3. Run the example commands below from the exomiser-cli-${project.version} directory
+1. Download and unzip exomiser-cli-${project.version}-distribution.gz
+2. Download exomiser-${project.version}.h2.db.gz from the h2_db_dumps folder 
+3. Unzip in the exomiser-cli-6.0.0/data directory 
+4. mv exomiser-${project.version}.h2.db exomiser.h2.db
+5. Run the example commands below from the exomiser-cli-${project.version} directory
 
 ## Alternative set-up
 
