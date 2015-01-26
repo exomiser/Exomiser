@@ -33,6 +33,10 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvGeneResultsWriter.class);
 
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;
+    private static final String HEADER_LINE = "#GENE_SYMBOL	ENTREZ_GENE_ID	"
+            + "EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE	"
+            + "HUMAN_PHENO_SCORE	MOUSE_PHENO_SCORE	FISH_PHENO_SCORE	WALKER_RAW_SCORE	WALKER_SCALED_MAX_SCORE	WALKER_SCORE	"
+            + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE\n";
 
     @Override
     public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
@@ -53,6 +57,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         //this is either empty or has a gene name
         String candidateGene = settings.getCandidateGene();
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(HEADER_LINE);
         for (Gene gene : sampleData.getGenes()) {
             if (gene.passedFilters()) {
                 stringBuilder.append(makeGeneLine(gene, candidateGene));
@@ -74,16 +79,16 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         float mousePhenScore = 0f;
         float fishPhenScore = 0f;
         float rawWalkerScore = 0f;
-        float scaledMaxScore = 0f;
+        float walkerScaledMaxScore = 0f;
         float walkerScore = 0f;
-        float exomiser2Score = 0f;
+        float phiveAllSpeciesScore = 0f;
         float omimScore = 0f;
         // priority score calculation
         for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
             PriorityType type = prioritiserResult.getPriorityType();
             if (type == PriorityType.EXOMISER_ALLSPECIES_PRIORITY) {
                 ExomiserAllSpeciesPriorityResult phenoScore = (ExomiserAllSpeciesPriorityResult) prioritiserResult;
-                exomiser2Score = phenoScore.getScore();
+                phiveAllSpeciesScore = phenoScore.getScore();
                 humanPhenScore = phenoScore.getHumanScore();
                 mousePhenScore = phenoScore.getMouseScore();
                 fishPhenScore = phenoScore.getFishScore();
@@ -94,7 +99,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 ExomeWalkerPriorityResult wandererScore = (ExomeWalkerPriorityResult) prioritiserResult;
                 walkerScore = prioritiserResult.getScore();
                 rawWalkerScore = (float) wandererScore.getRawScore();
-                scaledMaxScore = (float) wandererScore.getScaledScore();
+                walkerScaledMaxScore = (float) wandererScore.getScaledScore();
             }
         }
         //flag to indicate if the gene matches the candidate gene specified by the user
@@ -113,9 +118,9 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 mousePhenScore,
                 fishPhenScore,
                 rawWalkerScore,
-                scaledMaxScore,
+                walkerScaledMaxScore,
                 walkerScore,
-                exomiser2Score,
+                phiveAllSpeciesScore,
                 omimScore,
                 matchesCandidateGene);
     }

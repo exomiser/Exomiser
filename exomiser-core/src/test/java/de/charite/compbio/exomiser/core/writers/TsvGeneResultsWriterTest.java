@@ -34,6 +34,7 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  *
@@ -41,14 +42,27 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogeni
  */
 public class TsvGeneResultsWriterTest {
 
-    private final Gene gene;
-    private final TsvGeneResultsWriter instance;
+    private Gene gene;
+    private TsvGeneResultsWriter instance;
+    private static final String HEADER = "#GENE_SYMBOL	ENTREZ_GENE_ID	"
+            + "EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE	"
+            + "HUMAN_PHENO_SCORE	MOUSE_PHENO_SCORE	FISH_PHENO_SCORE	WALKER_RAW_SCORE	WALKER_SCALED_MAX_SCORE	WALKER_SCORE	"
+            + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE\n";
+    
     private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0\n";
     private SampleData sampleData;
     
-    public TsvGeneResultsWriterTest() {
+    @Before
+    public void before() {
         instance = new TsvGeneResultsWriter();
-        
+        sampleData = new SampleData();
+        List<Gene> geneList = new ArrayList();
+        gene = new Gene(getStubVariantEvaluation());
+        geneList.add(gene);
+        sampleData.setGenes(geneList);
+    }
+    
+    private VariantEvaluation getStubVariantEvaluation() {
         GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, Integer.SIZE);
         byte chr = 1;
         
@@ -69,15 +83,9 @@ public class TsvGeneResultsWriterTest {
         variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null)); 
         variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
         
-        gene = new Gene(variantEval);
+        return variantEval;
     }
 
-    @Before
-    public void before() {
-        sampleData = new SampleData();
-        sampleData.setGenes(new ArrayList<Gene>());
-    }
-    
     @Test
     public void testWrite() {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
@@ -88,12 +96,17 @@ public class TsvGeneResultsWriterTest {
     
     @Test
     public void testWriteString() {
-        List<Gene> geneList = new ArrayList();
-        geneList.add(gene);
-        sampleData.setGenes(geneList);
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
         String outString = instance.writeString(sampleData, settings, null);
-        assertThat(outString, equalTo(GENE_STRING));
+        assertThat(outString, equalTo(HEADER + GENE_STRING));
+    }
+    
+    @Test
+    public void testWriteStringStartsWithAHeaderLine() {
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
+        String outString = instance.writeString(sampleData, settings, null);
+        String[] lines = outString.split("\n");
+        assertThat(lines[0] + "\n", equalTo(HEADER));
     }
 
     @Test
