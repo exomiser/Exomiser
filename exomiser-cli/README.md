@@ -22,7 +22,8 @@ with
   
     (a) download exomiser_dump.pg.gz
     (b) gunzip exomiser_dump.pg.gz
-    (c) load into your postgres server: psql -h yourhost -U yourusername yourdatabase < exomiser_dump.pg
+    (c) load into your postgres server: pg_restore -h yourhost -d yourdatabase -U youruser < exomiser_dump.pg
+    You can do (b) and (c) at once by using: gunzip -c exomiser_dump.pg.gz | pg_restore -h yourhost -d yourdatabase -U youruser
     (d) edit application.properties with the details of how to connect this new database
 
 ## Usage
