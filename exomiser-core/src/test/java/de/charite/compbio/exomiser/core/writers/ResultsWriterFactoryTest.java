@@ -9,7 +9,7 @@ package de.charite.compbio.exomiser.core.writers;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.TsvResultsWriter;
+import de.charite.compbio.exomiser.core.writers.TsvGeneResultsWriter;
 import de.charite.compbio.exomiser.core.writers.HtmlResultsWriter;
 import de.charite.compbio.exomiser.core.writers.VcfResultsWriter;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -34,9 +34,9 @@ public class ResultsWriterFactoryTest {
     
     @Test
     public void testGetTsvlResultsWriter() {
-        OutputFormat outputFormat = OutputFormat.TSV;
+        OutputFormat outputFormat = OutputFormat.TSV_GENE;
         ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
-        assertThat(result, instanceOf(TsvResultsWriter.class));
+        assertThat(result, instanceOf(TsvGeneResultsWriter.class));
     }
     
     @Test

@@ -30,7 +30,7 @@ public class OutFormatOptionMarshaller extends AbstractOptionMarshaller {
                 .withArgName("type")
                 .withType(OutputFormat.class)
                 .withValueSeparator(',')
-                .withDescription("Comma separated list of format options: HTML, VCF or TAB. Defaults to HTML if not specified. e.g. --out-format=TAB or --out-format=TAB,HTML,VCF")
+                .withDescription("Comma separated list of format options: HTML, VCF, TAB-GENE or TAB-VARIANT,. Defaults to HTML if not specified. e.g. --out-format=TAB-VARIANT or --out-format=TAB-GENE,TAB-VARIANT,HTML,VCF")
                 .withLongOpt(OUT_FORMAT_OPTION)
                 .create("f");
     }
@@ -49,17 +49,23 @@ public class OutFormatOptionMarshaller extends AbstractOptionMarshaller {
                 case "HTML":
                     outputFormats.add(OutputFormat.HTML);
                     break;
-                case "TAB":
-                    outputFormats.add(OutputFormat.TSV);
+                case "TAB-GENE":
+                    outputFormats.add(OutputFormat.TSV_GENE);
                     break;
-                case "TSV":
-                    outputFormats.add(OutputFormat.TSV);
+                case "TSV-GENE":
+                    outputFormats.add(OutputFormat.TSV_GENE);
+                    break;
+                case "TAB-VARIANT":
+                    outputFormats.add(OutputFormat.TSV_VARIANT);
+                    break;
+                case "TSV-VARIANT":
+                    outputFormats.add(OutputFormat.TSV_VARIANT);
                     break;
                 case "VCF":
                     outputFormats.add(OutputFormat.VCF);
                     break;
                 default:
-                    logger.info("{} is not a recognised output format. Please choose one or more of HTML, TAB, VCF - defaulting to HTML", outputFormatString);
+                    logger.info("{} is not a recognised output format. Please choose one or more of HTML, TAB-GENE, TAB-VARIANT, VCF - defaulting to HTML", outputFormatString);
                     outputFormats.add(OutputFormat.HTML);
                     break;
             }

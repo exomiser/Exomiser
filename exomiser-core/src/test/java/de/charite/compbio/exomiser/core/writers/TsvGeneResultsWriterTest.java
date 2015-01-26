@@ -5,19 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.TsvResultsWriter;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import jannovar.annotation.Annotation;
 import jannovar.annotation.AnnotationList;
 import jannovar.common.Genotype;
@@ -25,28 +15,39 @@ import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;
 import jannovar.reference.TranscriptModel;
+
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TsvResultsWriterTest {
+public class TsvGeneResultsWriterTest {
 
     private final Gene gene;
-    private final TsvResultsWriter instance;
+    private final TsvGeneResultsWriter instance;
     private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0\n";
     private SampleData sampleData;
     
-    public TsvResultsWriterTest() {
-        instance = new TsvResultsWriter();
+    public TsvGeneResultsWriterTest() {
+        instance = new TsvGeneResultsWriter();
         
         GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, Integer.SIZE);
         byte chr = 1;
@@ -79,10 +80,10 @@ public class TsvResultsWriterTest {
     
     @Test
     public void testWrite() {
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV)).build();
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
         instance.writeFile(sampleData, settings, null);
-        assertTrue(Paths.get("testWrite.tsv").toFile().exists());
-        assertTrue(Paths.get("testWrite.tsv").toFile().delete());
+        assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());
+        assertTrue(Paths.get("testWrite.genes.tsv").toFile().delete());
     }
     
     @Test
@@ -90,7 +91,7 @@ public class TsvResultsWriterTest {
         List<Gene> geneList = new ArrayList();
         geneList.add(gene);
         sampleData.setGenes(geneList);
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV)).build();
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
         String outString = instance.writeString(sampleData, settings, null);
         assertThat(outString, equalTo(GENE_STRING));
     }

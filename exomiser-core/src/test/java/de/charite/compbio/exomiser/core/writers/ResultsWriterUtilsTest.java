@@ -45,7 +45,7 @@ public class ResultsWriterUtilsTest {
 
     @Test
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
-        OutputFormat testedFormat = OutputFormat.TSV;
+        OutputFormat testedFormat = OutputFormat.TSV_GENE;
         ExomiserSettings settings = settingsbuilder.build();
         String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
