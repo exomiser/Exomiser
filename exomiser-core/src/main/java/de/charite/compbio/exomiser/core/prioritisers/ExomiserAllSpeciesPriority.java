@@ -34,7 +34,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private ArrayList<String> messages = new ArrayList<String>();
+    private List<String> messages = new ArrayList<String>();
 
     /**
      * The random walk matrix object
@@ -67,8 +67,8 @@ public class ExomiserAllSpeciesPriority implements Priority {
     private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpHpMatches = new HashMap<>();
     private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> hpZpMatches = new HashMap<>();
 
-    private float best_max_score = 0f;
-    private float best_avg_score = 0f;
+    private float bestMaxScore = 0f;
+    private float bestAvgScore = 0f;
 
     private boolean runPpi = false;
     private boolean runHuman = false;
@@ -86,6 +86,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * @param hpoIds
      * @param candidateGene
      * @param disease
+     * @param exomiser2Params
      * @param randomWalkMatrix
      */
     public ExomiserAllSpeciesPriority(List<String> hpoIds, String candidateGene, String disease, String exomiser2Params, DataMatrix randomWalkMatrix) {
@@ -167,10 +168,8 @@ public class ExomiserAllSpeciesPriority implements Priority {
          * PPI with them to a linear range
          */
         logger.info("Adjusting gene scores for non-pheno hits with protein-protein interactions");
-        TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<Float, List<Gene>>();
+        TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<>();
         for (Gene g : genes) {
-            //if (randomWalkMatrix.getObjectid2idx().containsKey(g.getEntrezGeneID())) {// Only do for PPI hits
-            //float geneScore = g.getPriorityResult(PriorityType.EXOMISER_ALLSPECIES_PRIORITY);
             float geneScore = ((ExomiserAllSpeciesPriorityResult) g.getPriorityResult(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)).getWalkerScore();
             if (geneScore == 0f) {
                 continue;
@@ -179,13 +178,13 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
                 geneScoreGeneList.add(g);
             } else {
-                List<Gene> geneScoreGeneList = new ArrayList<Gene>();
+                List<Gene> geneScoreGeneList = new ArrayList<>();
                 geneScoreGeneList.add(g);
                 geneScoreMap.put(geneScore, geneScoreGeneList);
             }
-            //}
         }
-        float rank = 0;//changed so when have only 2 genes say in filtered set 1st one will get 0.6 and second 0.3 rather than 0.3 and 0
+        //changed so when have only 2 genes say in filtered set 1st one will get 0.6 and second 0.3 rather than 0.3 and 0
+        float rank = 0;
         for (Float score : geneScoreMap.descendingKeySet()) {
             List<Gene> geneScoreGeneList = geneScoreMap.get(score);
             int sharedHits = geneScoreGeneList.size();
@@ -193,7 +192,6 @@ public class ExomiserAllSpeciesPriority implements Priority {
             if (sharedHits > 1) {
                 adjustedRank = rank + (sharedHits / 2);
             }
-            //float newScore = 0.65f - 0.65f * (adjustedRank / gene_list.size());
             float newScore = 0.6f - 0.6f * (adjustedRank / genes.size());
             rank = rank + sharedHits;
             for (Gene gene : geneScoreGeneList) {
@@ -241,26 +239,25 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 String diseaseTerm = diseaseTerms.get(diseaseId);
                 String diseaseLink = makeDiseaseLink(diseaseId, diseaseTerm);
                 evidence = evidence + String.format("<dl><dt>Phenotypic similarity %.3f to %s associated with %s.</dt>", humanScores.get(gene.getEntrezGeneID()), diseaseLink, gene.getGeneSymbol());
-                humanPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, diseaseId, hpoIds, hpoTerms, hpoTerms, hpHpMatches);
+                humanPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, humanDiseases, hpoIds, hpoTerms, hpoTerms, hpHpMatches);
                 evidence = evidence + humanPhenotypeEvidence + "</dl>";
             }
             // MOUSE
             if (mouseScores.containsKey(entrezGeneId)) {
                 evidence = evidence + String.format("<dl><dt>Phenotypic similarity %.3f to mouse mutant involving <a href=\"http://www.informatics.jax.org/searchtool/Search.do?query=%s\">%s</a>.</dt>", mouseScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
                 mouseScore = mouseScores.get(entrezGeneId);
-                String mouseModel = mouseDiseases.get(entrezGeneId);
-                mousePhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, mouseModel, hpoIds, hpoTerms, mpoTerms, hpMpMatches);
+                mousePhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, mouseDiseases, hpoIds, hpoTerms, mpoTerms, hpMpMatches);
                 evidence = evidence + mousePhenotypeEvidence + "</dl>";
             }
             // FISH
             if (fishScores.containsKey(entrezGeneId)) {
                 evidence = evidence + String.format("<dl><dt>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>.</dt>", fishScores.get(gene.getEntrezGeneID()), gene.getGeneSymbol(), gene.getGeneSymbol());
-                String fishModel = fishDiseases.get(entrezGeneId);
                 fishScore = fishScores.get(entrezGeneId);
-                fishPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, fishModel, hpoIds, hpoTerms, zpoTerms, hpZpMatches);
+                fishPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, fishDiseases, hpoIds, hpoTerms, zpoTerms, hpZpMatches);
                 evidence = evidence + fishPhenotypeEvidence + "</dl>";
             }
-        } //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
+        } 
+        //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
         if (runPpi && randomWalkMatrix.containsGene(entrezGeneId) && !phenoGenes.isEmpty()) {
                 int col_idx = getColumnIndexOfMostPhenotypicallySimilarGene(gene, phenoGenes);
                 int row_idx = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
@@ -282,35 +279,34 @@ public class ExomiserAllSpeciesPriority implements Priority {
                         String diseaseTerm = diseaseTerms.get(diseaseId);
                         String diseaseLink = makeDiseaseLink(diseaseId, diseaseTerm);
                         evidence = evidence + String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> with score %s and phenotypic similarity to %s associated with %s.</dt>", stringDbLink, closestGene, humanPPIScore, diseaseLink, closestGene);
-                        humanPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, diseaseId, hpoIds, hpoTerms, hpoTerms, hpHpMatches);
+                        humanPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, humanDiseases, hpoIds, hpoTerms, hpoTerms, hpHpMatches);
                         evidence = evidence + humanPhenotypeEvidence + "</dl>";
                     }
                     // MOUSE
                     if (mouseScores.containsKey(entrezGeneId)) {
                         evidence = evidence + String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to mouse mutant of %s.</dt>", stringDbLink, closestGene, closestGene);
-                        String mouseModel = mouseDiseases.get(entrezGeneId);
-                        mousePhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, mouseModel, hpoIds, hpoTerms, mpoTerms, hpMpMatches);
+                        mousePhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, mouseDiseases, hpoIds, hpoTerms, mpoTerms, hpMpMatches);
                         evidence = evidence + mousePhenotypeEvidence + "</dl>";
 
                     }
                     // FISH
                     if (fishScores.containsKey(entrezGeneId)) {
                         evidence = evidence + String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.</dt><dt>Best Phenotype Matches:</dt>", stringDbLink, closestGene, closestGene);
-                        String fishModel = fishDiseases.get(entrezGeneId);
-                        fishPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, fishModel, hpoIds, hpoTerms, zpoTerms, hpZpMatches);
+                        fishPhenotypeEvidence = makeBestPhenotypeMatchesHtml(entrezGeneId, fishDiseases, hpoIds, hpoTerms, zpoTerms, hpZpMatches);
                         evidence = evidence + fishPhenotypeEvidence + "</dl>";
                     }
                 }
-        } // NO PHENO HIT OR PPI INTERACTION
-        if (evidence.equals("")) {
+        } 
+        // NO PHENO HIT OR PPI INTERACTION
+        if (evidence.isEmpty()) {
             evidence = "<dl><dt>No phenotype or PPI evidence</dt></dl>";
         }
-        ExomiserAllSpeciesPriorityResult relScore = new ExomiserAllSpeciesPriorityResult(score, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence,
+        return new ExomiserAllSpeciesPriorityResult(score, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence,
                 fishPhenotypeEvidence, humanScore, mouseScore, fishScore, walkerScore);
-        return relScore;
     }
 
-    private String makeBestPhenotypeMatchesHtml(int entrezGeneId, String model, List<String> hpoIds, Map<String, String> hpoTerms, Map<String, String> otherTerms, Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> phenotypeMatches) {
+    private String makeBestPhenotypeMatchesHtml(int entrezGeneId, Map<Integer, String> models, List<String> hpoIds, Map<String, String> hpoTerms, Map<String, String> otherTerms, Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> phenotypeMatches) {
+        String model = models.get(entrezGeneId);
         StringBuilder stringBuilder = new StringBuilder("<dt>Best Phenotype Matches:</dt>");
         if (phenotypeMatches.containsKey(entrezGeneId) && phenotypeMatches.get(entrezGeneId).containsKey(model)) {
             for (String hpId : hpoIds) {
@@ -331,18 +327,18 @@ public class ExomiserAllSpeciesPriority implements Priority {
     }
 
     private String makeDiseaseLink(String diseaseId, String diseaseTerm) {
-        if (diseaseId.split(":")[0].equals("OMIM")) {
-            diseaseId = diseaseId.split(":")[1];
-            return "<a href=\"http://www.omim.org/" + diseaseId + "\">" + diseaseTerm + "</a>";
+        String[] databaseNameAndIdentifier = diseaseId.split(":");
+        String databaseName = databaseNameAndIdentifier[0];
+        String id = databaseNameAndIdentifier[1];
+        if (databaseName.equals("OMIM")) {
+            return "<a href=\"http://www.omim.org/" + id + "\">" + diseaseTerm + "</a>";
         } else {
-            diseaseId = diseaseId.split(":")[1];
-            return "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + diseaseId + "\">" + diseaseTerm + "</a>";
+            return "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + id + "\">" + diseaseTerm + "</a>";
         }
     }
 
     //TODO - this shouldn' exist. runDynamicQuery should have two variants - one for human the other for non-human
     private enum Species {
-
         HUMAN, MOUSE, FISH;
     }
 
@@ -364,7 +360,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
             String annotationQuery = "SELECT mouse_model_id, mp_id, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
             return runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.MOUSE);
         } else {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
     }
 
@@ -376,18 +372,18 @@ public class ExomiserAllSpeciesPriority implements Priority {
             String annotationQuery = "SELECT zfin_model_id, zp_id, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
             return runDynamicQuery(mappingQuery, annotationQuery, hpoIds, Species.FISH);
         } else {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
     }
 
     private Map<Integer, HashMap<String, HashMap<String, HashMap<Float, String>>>> runDynamicQuery(String mappingQuery, String findAnnotationQuery, List<String> hpoIds, Species species) {
 
         Set<String> hpIdsWithPhenotypeMatch = new LinkedHashSet<>();
-        Map<String, Float> best_mapped_term_score = new HashMap<>();
-        Map<String, String> best_mapped_term_mpid = new HashMap<>();
+        Map<String, Float> bestMappedTermScore = new HashMap<>();
+        Map<String, String> bestMappedTermMpId = new HashMap<>();
         Map<String, Integer> knownMps = new HashMap<>();
 
-        Map<String, Float> mapped_terms = new HashMap<>();
+        Map<String, Float> mappedTerms = new HashMap<>();
         for (String hpId : hpoIds) {
             try (Connection connection = dataSource.getConnection()) {
                 PreparedStatement findMappingStatement = connection.prepareStatement(mappingQuery);
@@ -399,19 +395,19 @@ public class ExomiserAllSpeciesPriority implements Priority {
                     StringBuilder hashKey = new StringBuilder();
                     hashKey.append(hpId);
                     hashKey.append(mpId);
-                    float score = rs.getFloat(2);
-                    mapped_terms.put(hashKey.toString(), score);
-
+                    float score = rs.getFloat("score");
+                    mappedTerms.put(hashKey.toString(), score);
                     if (species == Species.HUMAN && hpId.equals(mpId)) {
-                        addBestMappedTerm(best_mapped_term_score, hpId, score, best_mapped_term_mpid, mpId);
-                        hpIdsWithPhenotypeMatch.add(hpId);//for some hp terms e.g. HP we won't have the self hit but still want to flag found
+                        addBestMappedTerm(bestMappedTermScore, hpId, score, bestMappedTermMpId, mpId);
+                        //for some hp terms e.g. HP we won't have the self hit but still want to flag found
+                        hpIdsWithPhenotypeMatch.add(hpId);
                     } else {
-                        if (best_mapped_term_score.containsKey(hpId)) {
-                            if (score > best_mapped_term_score.get(hpId)) {
-                                addBestMappedTerm(best_mapped_term_score, hpId, score, best_mapped_term_mpid, mpId);
+                        if (bestMappedTermScore.containsKey(hpId)) {
+                            if (score > bestMappedTermScore.get(hpId)) {
+                                addBestMappedTerm(bestMappedTermScore, hpId, score, bestMappedTermMpId, mpId);
                             }
                         } else {
-                            addBestMappedTerm(best_mapped_term_score, hpId, score, best_mapped_term_mpid, mpId);
+                            addBestMappedTerm(bestMappedTermScore, hpId, score, bestMappedTermMpId, mpId);
                             hpIdsWithPhenotypeMatch.add(hpId);
                         }
                     }
@@ -420,18 +416,18 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 logger.error("Problem setting up SQL query: {}", mappingQuery, e);
             }
         }
-        logger.debug("Phenotype matches {} for {}", mapped_terms, species);
-        for (Entry<String, String> bestMappedHpIdToOtherId : best_mapped_term_mpid.entrySet()) {
+        logger.debug("Phenotype matches {} for {}", mappedTerms, species);
+        for (Entry<String, String> bestMappedHpIdToOtherId : bestMappedTermMpId.entrySet()) {
             String hpId = bestMappedHpIdToOtherId.getKey();
-            logger.debug("Best match: {}-{}={}", hpId, bestMappedHpIdToOtherId.getValue(), best_mapped_term_score.get(hpId));
+            logger.debug("Best match: {}-{}={}", hpId, bestMappedHpIdToOtherId.getValue(), bestMappedTermScore.get(hpId));
         }
 
         if (species == Species.HUMAN) {
-            calculateBestScoresFromHumanPhenotypes(hpIdsWithPhenotypeMatch, best_mapped_term_score, best_mapped_term_mpid, mapped_terms);
+            calculateBestScoresFromHumanPhenotypes(hpIdsWithPhenotypeMatch, bestMappedTermScore, bestMappedTermMpId, mappedTerms);
         }
         //TODO: needed here or do before? 
         if (species == Species.HUMAN && !runHuman) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
 
         // calculate score for this gene
@@ -442,112 +438,108 @@ public class ExomiserAllSpeciesPriority implements Priority {
             ResultSet rs = findAnnotationStatement.executeQuery();
             while (rs.next()) {
                 String hit = rs.getString(1);
-                String mp_ids = rs.getString(2);
+                String mpIds = rs.getString(2);
                 int entrezId = rs.getInt(3);
                 String humanGeneSymbol = rs.getString(4);
-                String[] mp_initial = mp_ids.split(",");
-                List<String> mp_list = new ArrayList<>();
-                for (String mpid : mp_initial) {
+                String[] mpInitial = mpIds.split(",");
+                List<String> mpList = new ArrayList<>();
+                for (String mpid : mpInitial) {
                     if (knownMps.get(mpid) != null) {
-                        mp_list.add(mpid);
+                        mpList.add(mpid);
                     }
                 }
-                String[] mps = new String[mp_list.size()];
-                mp_list.toArray(mps);
+                String[] mps = new String[mpList.size()];
+                mpList.toArray(mps);
 
-                int row_column_count = hpIdsWithPhenotypeMatch.size() + mps.length;
-                float max_score = 0f;
-                float sum_best_hit_rows_columns_score = 0f;
+                int rowColumnCount = hpIdsWithPhenotypeMatch.size() + mps.length;
+                float maxScore = 0f;
+                float sumBestHitRowsColumnsScore = 0f;
 
-                for (String hpid : hpIdsWithPhenotypeMatch) {
-                    float best_score = 0f;
-                    for (String mpid : mps) {
-                        StringBuilder hashKey = new StringBuilder();
-                        hashKey.append(hpid);
-                        hashKey.append(mpid);
-                        if (mapped_terms.get(hashKey.toString()) != null) {
-                            float score = mapped_terms.get(hashKey.toString());
+                for (String hpId : hpIdsWithPhenotypeMatch) {
+                    float bestScore = 0f;
+                    for (String mpId : mps) {
+                        String hashKey = hpId + mpId;
+                        if (mappedTerms.containsKey(hashKey)) {
+                            float score = mappedTerms.get(hashKey);
                             // identify best match                                                                                                                                                                 
-                            if (score > best_score) {
-                                best_score = score;
+                            if (score > bestScore) {
+                                bestScore = score;
                             }
                             if (score > 0) {
                                 if (hpMatches.get(entrezId) == null) {
                                     hpMatches.put(entrezId, new HashMap<String, HashMap<String, HashMap<Float, String>>>());
                                     hpMatches.get(entrezId).put(hit, new HashMap<String, HashMap<Float, String>>());
-                                    hpMatches.get(entrezId).get(hit).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
+                                    hpMatches.get(entrezId).get(hit).put(hpId, new HashMap<Float, String>());
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
                                 } else if (hpMatches.get(entrezId).get(hit) == null) {
                                     hpMatches.get(entrezId).put(hit, new HashMap<String, HashMap<Float, String>>());
-                                    hpMatches.get(entrezId).get(hit).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrezId).get(hit).get(hpid) == null) {
-                                    hpMatches.get(entrezId).get(hit).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrezId).get(hit).get(hpid).keySet().iterator().next() < score) {
-                                    hpMatches.get(entrezId).get(hit).get(hpid).clear();
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
+                                    hpMatches.get(entrezId).get(hit).put(hpId, new HashMap<Float, String>());
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
+                                } else if (hpMatches.get(entrezId).get(hit).get(hpId) == null) {
+                                    hpMatches.get(entrezId).get(hit).put(hpId, new HashMap<Float, String>());
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
+                                } else if (hpMatches.get(entrezId).get(hit).get(hpId).keySet().iterator().next() < score) {
+                                    hpMatches.get(entrezId).get(hit).get(hpId).clear();
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
                                 }
                             }
                         }
                     }
-                    if (best_score != 0) {
-                        sum_best_hit_rows_columns_score += best_score;
+                    if (bestScore != 0) {
+                        sumBestHitRowsColumnsScore += bestScore;
 
-                        if (best_score > max_score) {
-                            max_score = best_score;
+                        if (bestScore > maxScore) {
+                            maxScore = bestScore;
                         }
                     }
                 }
                 // Reciprocal hits                                                                                                                                                                                 
-                for (String mpid : mps) {
-                    float best_score = 0f;
-                    for (String hpid : hpIdsWithPhenotypeMatch) {
-                        StringBuilder hashKey = new StringBuilder();
-                        hashKey.append(hpid);
-                        hashKey.append(mpid);
-                        if (mapped_terms.get(hashKey.toString()) != null) {
-                            float score = mapped_terms.get(hashKey.toString());
+                for (String mpId : mps) {
+                    float bestScore = 0f;
+                    for (String hpId : hpIdsWithPhenotypeMatch) {
+                        String hashKey = hpId + mpId;
+                        if (mappedTerms.containsKey(hashKey)) {
+                            float score = mappedTerms.get(hashKey);
                             // identify best match                                                                                                                                                                 
-                            if (score > best_score) {
-                                best_score = score;
+                            if (score > bestScore) {
+                                bestScore = score;
                             }
                             if (score > 0) {
                                 if (hpMatches.get(entrezId) == null) {
                                     hpMatches.put(entrezId, new HashMap<String, HashMap<String, HashMap<Float, String>>>());
                                     hpMatches.get(entrezId).put(hit, new HashMap<String, HashMap<Float, String>>());
-                                    hpMatches.get(entrezId).get(hit).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
+                                    hpMatches.get(entrezId).get(hit).put(hpId, new HashMap<Float, String>());
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
                                 } else if (hpMatches.get(entrezId).get(hit) == null) {
                                     hpMatches.get(entrezId).put(hit, new HashMap<String, HashMap<Float, String>>());
-                                    hpMatches.get(entrezId).get(hit).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrezId).get(hit).get(hpid) == null) {
-                                    hpMatches.get(entrezId).get(hit).put(hpid, new HashMap<Float, String>());
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
-                                } else if (hpMatches.get(entrezId).get(hit).get(hpid).keySet().iterator().next() < score) {
-                                    hpMatches.get(entrezId).get(hit).get(hpid).clear();
-                                    hpMatches.get(entrezId).get(hit).get(hpid).put(score, mpid);
+                                    hpMatches.get(entrezId).get(hit).put(hpId, new HashMap<Float, String>());
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
+                                } else if (hpMatches.get(entrezId).get(hit).get(hpId) == null) {
+                                    hpMatches.get(entrezId).get(hit).put(hpId, new HashMap<Float, String>());
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
+                                } else if (hpMatches.get(entrezId).get(hit).get(hpId).keySet().iterator().next() < score) {
+                                    hpMatches.get(entrezId).get(hit).get(hpId).clear();
+                                    hpMatches.get(entrezId).get(hit).get(hpId).put(score, mpId);
                                 }
                             }
                         }
                     }
-                    if (best_score != 0) {
-                        sum_best_hit_rows_columns_score += best_score;
-                        if (best_score > max_score) {
-                            max_score = best_score;
+                    if (bestScore != 0) {
+                        sumBestHitRowsColumnsScore += bestScore;
+                        if (bestScore > maxScore) {
+                            maxScore = bestScore;
                         }
                     }
                 }
                 // calculate combined score
-                if (sum_best_hit_rows_columns_score != 0) {
-                    double avg_best_hit_rows_columns_score = sum_best_hit_rows_columns_score / row_column_count;
-                    double combined_score = 50 * (max_score / best_max_score
-                            + avg_best_hit_rows_columns_score / best_avg_score);
-                    if (combined_score > 100) {
-                        combined_score = 100;
+                if (sumBestHitRowsColumnsScore != 0) {
+                    double avgBestHitRowsColumnsScore = sumBestHitRowsColumnsScore / rowColumnCount;
+                    double combinedScore = 50 * (maxScore / bestMaxScore
+                            + avgBestHitRowsColumnsScore / bestAvgScore);
+                    if (combinedScore > 100) {
+                        combinedScore = 100;
                     }
-                    double score = combined_score / 100;
+                    double score = combinedScore / 100;
                     /*
                      * Adjust human score as a hit that is 60% of the perfect
                      * (identical) HPO match is a much better match than
@@ -572,7 +564,8 @@ public class ExomiserAllSpeciesPriority implements Priority {
 //                        }
                     } else {
                         // normal behaviour when not trying to exclude candidate gene to simulate novel gene disovery in benchmarking
-                        if (score > 0.6) {// only build PPI network for high qual hits
+                        // only build PPI network for high qual hits
+                        if (score > 0.6) {
                             phenoGenes.add(entrezId);
                             phenoGeneSymbols.add(humanGeneSymbol);
                         }
@@ -590,7 +583,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                         }
                     }
                 }
-            }//end of rs
+            }
         } catch (SQLException e) {
             logger.error("Problem setting up SQL query: {}", findAnnotationQuery, e);
         }
@@ -600,19 +593,16 @@ public class ExomiserAllSpeciesPriority implements Priority {
     private void calculateBestScoresFromHumanPhenotypes(Set<String> hpIdsWithPhenotypeMatch, Map<String, Float> best_mapped_term_score, Map<String, String> best_mapped_term_mpid, Map<String, Float> mapped_terms) {
         // calculate perfect model scores for human
         float sum_best_score = 0f;
-        int best_hit_counter = 0;
         // loop over each hp id should start here
         for (String hpId : hpIdsWithPhenotypeMatch) {
             if (best_mapped_term_score.containsKey(hpId)) {
                 float hp_score = best_mapped_term_score.get(hpId);
                 // add in scores for best match for the HP term
                 sum_best_score += hp_score;
-
-                best_hit_counter++;
-                if (hp_score > best_max_score) {
-                    this.best_max_score = hp_score;
+                if (hp_score > bestMaxScore) {
+                    bestMaxScore = hp_score;
                 }
-                    //logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
+                //logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
                 // add in MP-HP hits
                 String mpId = best_mapped_term_mpid.get(hpId);
                 float best_score = 0f;
@@ -627,14 +617,12 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 // add in scores for best match for the MP term
                 sum_best_score += best_score;
                 //logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + best_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
-                best_hit_counter++;
-                if (best_score > best_max_score) {
-                    this.best_max_score = best_score;
+                if (best_score > bestMaxScore) {
+                    bestMaxScore = best_score;
                 }
             }
         }
-        //this.best_avg_score = sum_best_score / best_hit_counter;
-        this.best_avg_score = sum_best_score / (2 * hpIdsWithPhenotypeMatch.size());
+        bestAvgScore = sum_best_score / (2 * hpIdsWithPhenotypeMatch.size());
     }
 
     private void addBestMappedTerm(Map<String, Float> best_mapped_term_score, String hpid, float score, Map<String, String> best_mapped_term_mpid, String mp_id) {
@@ -702,8 +690,8 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * @return list of messages representing process, result, and if any, errors
      * of score filtering.
      */
-    public ArrayList<String> getMessages() {
-
+    @Override
+    public List<String> getMessages() {
         return this.messages;
     }
 
