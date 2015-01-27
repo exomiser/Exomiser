@@ -32,7 +32,7 @@ and open the template in the editor.
                                 <input type="file" draggable="true" name="vcf" id="vcf"/>
 
                                 <p class="help-block"><em>Required.</em> Upload exome sequencing results in VCF format. 
-                                    <a href="/resources/databases/exomiser/query/public/Pfeiffer.vcf">Example file</a> with causative FGFR2 
+                                    <a href="resources/Pfeiffer.vcf">Example file</a> with causative FGFR2 
                                     variant for the autosomal dominant Pfeiffer syndrome added to exome of a
                                     <a href="http://manuelcorpas.com/2012/02/06/my-personal-exome-analysis-part-i-first-findings">healthy individual</a>
                                 </p>
@@ -63,7 +63,7 @@ and open the template in the editor.
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="col-sm-6">
                             <label for="hpo">Clinical phenotypes:</label>
                             <div class="form-group">
@@ -160,7 +160,7 @@ and open the template in the editor.
                         <span class="glyphicon glyphicon-thumbs-up"></span> Submit
                     </button>
 
-                    <p class="help-block">Need more info? Try the <a href="/resources/databases/exomiser/query/public/Tutorial.pdf">Tutorial</a></p>
+                    <!--<p class="help-block">Need more info? Try the <a href="/resources/databases/exomiser/query/public/Tutorial.pdf">Tutorial</a></p>-->
                 </div>
             </form>
             <!--            <div class="progress">
@@ -176,7 +176,7 @@ and open the template in the editor.
         <script type="text/javascript" src="resources/chosen_v1.2.0/chosen.jquery.js" th:href="@{resources/chosen_v1.2.0/chosen.jquery.js}"/>
         <script type="text/javascript" src="resources/chosen_v1.2.0/ajax-chosen.min.js" th:href="@{resources/chosen_v1.2.0/ajax-chosen.min.js}"/>
 
-        <script>
+        <script type="text/javascript" >
             $('#button_form_submit').on('click', function () {
                 console.log("submit button clicked");
                 var $btn = $(this).button('loading');
@@ -185,7 +185,7 @@ and open the template in the editor.
             });
         </script>
 
-        <script>
+        <script type="text/javascript" >
             $(document).ready(function () {
                 $(".chosen-select").chosen({
                     disable_search_threshold: 10,
@@ -194,7 +194,7 @@ and open the template in the editor.
                 });
             });
         </script>
-        <script>
+        <script type="text/javascript" >
             $("#omimid").ajaxChosen({
                 type: 'GET',
                 url: 'data/disease',
@@ -213,7 +213,7 @@ and open the template in the editor.
             });
         </script>
 
-        <script>
+        <script type="text/javascript" >
             $("#hpo").ajaxChosen({
                 type: 'GET',
                 url: 'data/hpo',
@@ -230,7 +230,7 @@ and open the template in the editor.
                 return results;
             });
         </script>
-        <script>
+        <script type="text/javascript" >
             $("#gene-filter").ajaxChosen({
                 type: 'GET',
                 url: 'data/gene',

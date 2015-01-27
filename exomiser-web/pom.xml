@@ -16,13 +16,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--path to where the database and other resources are found in exomiser.properties-->
-        <data.dir>C:/Users/jj8/Documents/exomiser-3.0.1/data</data.dir>
+        <data.dir>C:/Users/jj8/Documents/exomiser-4.0.0/data</data.dir>
         <warName>resources#exomiser</warName>
     </properties>
 
     <profiles>
         <profile>
-            <id>prod</id>
+            <id>sanger</id>
             <properties>
                 <data.dir>/www/data/exomizer</data.dir>
                 <warName>resources#exomiser</warName>
@@ -145,6 +145,17 @@
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <warName>${warName}</warName>
+                    <webResources>
+                        <resource>
+                            <!-- this is relative to the pom.xml directory -->
+                            <directory>src/test/resources</directory>
+                            <includes>
+                                <include>Pfeiffer.vcf</include>
+                            </includes>
+                            <!-- override the destination directory for this resource -->
+                            <targetPath>resources</targetPath>
+                        </resource>
+                    </webResources>
                 </configuration>
             </plugin>
         </plugins>
