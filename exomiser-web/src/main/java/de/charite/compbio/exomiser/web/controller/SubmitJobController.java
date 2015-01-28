@@ -97,31 +97,21 @@ public class SubmitJobController {
         logger.info("Selected phenotypes: {}", phenotypes);
         Set<Integer> genesToKeep = makeGenesToKeep(genesToFilter);
      
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
-                //Upload Sample Files input
-                .vcfFilePath(vcfPath)
-                .pedFilePath(pedPath)
-                //Enter Sample Phenotype input
-                .diseaseId(diseaseId)
-                .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
-                //Set Filtering Parameters
-                .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
-                .removeDbSnp(removeDbSnp)
-                .removeOffTargetVariants(removeOffTarget)
-                //make this work for nulls....
-                //                .geneticInterval(GeneticInterval.parseString(geneticInterval))
-                .removePathFilterCutOff(removeNonPathogenic)
-                .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
-                .maximumFrequency(Float.valueOf(frequency))
-                .genesToKeepList(genesToKeep)
-                //Choose Prioritiser
-                .usePrioritiser(PriorityType.valueOf(prioritiser))
-                .build();
+        ExomiserSettings settings = buildSettings(vcfPath, pedPath, diseaseId, phenotypes, minimumQuality, removeDbSnp, removeOffTarget, removeNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
 
+        if (!settings.isValid()) {
+            return "submit";
+        }
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
         SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
         exomiser.analyse(sampleData, settings);
 
+        buildResultsModel(model, settings, sampleData);
+        
+        return "results";
+    }
+
+    private void buildResultsModel(Model model, ExomiserSettings settings, SampleData sampleData) {
         ObjectMapper mapper = new ObjectMapper();
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
@@ -171,8 +161,30 @@ public class SubmitJobController {
             }
         }
         model.addAttribute("genes", passedGenes);
-        
-        return "results";
+    }
+
+    private ExomiserSettings buildSettings(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, Float minimumQuality, Boolean removeDbSnp, Boolean removeOffTarget, Boolean removeNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
+                //Upload Sample Files input
+                .vcfFilePath(vcfPath)
+                .pedFilePath(pedPath)
+                //Enter Sample Phenotype input
+                .diseaseId(diseaseId)
+                .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
+                //Set Filtering Parameters
+                .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
+                .removeDbSnp(removeDbSnp)
+                .removeOffTargetVariants(removeOffTarget)
+                //make this work for nulls....
+                //                .geneticInterval(GeneticInterval.parseString(geneticInterval))
+                .removePathFilterCutOff(removeNonPathogenic)
+                .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
+                .maximumFrequency(Float.valueOf(frequency))
+                .genesToKeepList(genesToKeep)
+                //Choose Prioritiser
+                .usePrioritiser(PriorityType.valueOf(prioritiser))
+                .build();
+        return settings;
     }
 
     private Set<Integer> makeGenesToKeep(List<String> genesToFilter) {
