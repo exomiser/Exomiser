@@ -62,7 +62,7 @@ public class HomeControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
             .andExpect(status().isOk())
             .andExpect(view().name("index"))
-            .andExpect(content().string(containsString("The Exome Wobbler")))
+            .andExpect(content().string(containsString("The Exomiser")))
 //            .andDo(print())
                     ;
     }
