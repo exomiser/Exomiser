@@ -22,16 +22,16 @@ and open the template in the editor.
     </head>
     <body>
         <div id="content" class="container">
-            <h1>
+            <h2>
                 Exomiser Analysis Results for <th:block th:text="${sampleName}"> Slartibartfast</th:block>
-            </h1>
+            </h2>
             <ul class="nav nav-pills" id="tabs">
-                <li><a href="#settings" role="tab" data-toggle="tab"><h4>Analysis Settings</h4></a></li>
-                <li><a href="#filtering" role="tab" data-toggle="tab"><h4>Filtering Summary</h4></a></li>
-                <li><a href="#distribution" role="tab" data-toggle="tab"><h4>Variant Type Distribution</h4></a></li>
-                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><h4>Unanalysed Variants</h4></a></li>
-                <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4>Prioritised Genes</h4></a></li>
-                <li><a href="#about" role="tab" data-toggle="tab"><h4>About</h4></a></li>
+                <li><a href="#settings" role="tab" data-toggle="tab"><b>Analysis Settings</b></a></li>
+                <li><a href="#filtering" role="tab" data-toggle="tab"><b>Filtering Summary</b></a></li>
+                <li><a href="#distribution" role="tab" data-toggle="tab"><b>Variant Type Distribution</b></a></li>
+                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b>Unanalysed Variants</b></a></li>
+                <li><a href="#prioritisation" role="tab" data-toggle="tab"><b>Prioritised Genes</b></a></li>
+                <li><a href="#about" role="tab" data-toggle="tab"><b>About</b></a></li>
             </ul>
             <div class="panel panel-default"  id="settings">
                 <div  class="panel-heading">
