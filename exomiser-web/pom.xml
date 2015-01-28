@@ -145,14 +145,17 @@
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <warName>${warName}</warName>
+                    <!--if you're trying to develop html templates on a running 
+                    server in NetBeans comment the webResources section out and 
+                    the templates will be automatically deployed -->
                     <webResources>
                         <resource>
-                            <!-- this is relative to the pom.xml directory -->
+                             <!--this is relative to the pom.xml directory--> 
                             <directory>src/test/resources</directory>
                             <includes>
                                 <include>Pfeiffer.vcf</include>
                             </includes>
-                            <!-- override the destination directory for this resource -->
+                             <!--override the destination directory for this resource--> 
                             <targetPath>resources</targetPath>
                         </resource>
                     </webResources>
