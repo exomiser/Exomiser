@@ -159,7 +159,13 @@ and open the template in the editor.
                     </button>
                     <button type="submit" class="btn btn-primary" id="button_form_submit" name="submit" data-loading-text="Processing...">
                         <span class="glyphicon glyphicon-thumbs-up"></span> Submit
-                    </button> <p class="help-block">(Please be patient - this could take a minute or two depending on the size of the sample)</p>
+                    </button> 
+                    <p class="help-block">
+                        Please be patient and do not mash the submit button - the anaylsis could take a minute or two depending on the size of the sample and load on the server. 
+                        No data submitted or returned (VCF file, sequence data, phenotype data and results) are written to disk at any stage or stored in memory for longer than the HTTP session.
+                        If you require the Exomiser for analysing multiple samples we <em>strongly</em> suggest you download and run the offline version available via <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/">FTP</a>. 
+                        The Exomiser is freely available for academic users or for private use. Other users are requested to contact us to obtain a license.
+                    </p>
 
                     <!--<p class="help-block">Need more info? Try the <a href="/resources/databases/exomiser/query/public/Tutorial.pdf">Tutorial</a></p>-->
                 </div>

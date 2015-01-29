@@ -26,11 +26,11 @@ To do this you will need to:
         validationQuery="select 1" 
         testOnBorrow="true" 
         logAbandoned="true"
-        url="jdbc:h2:file:{$path_to_h2_database};MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_ON_EXIT=TRUE"/>
+        url="jdbc:h2:file:{$path_to_h2_database};MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_ON_EXIT=TRUE;AUTO_SERVER=TRUE;"/>
     
 3. Add this snippet to the context.xml of the WAR file (this is already done, but if you change the name, you'll need to change this):
         
     <ResourceLink global="jdbc/exomiserDataSource" name="jdbc/exomiserDataSource" type="javax.sql.DataSource"/>
 
-
+4. If you're using a pre-built war file change the path of dataDir in WEB-INF/classes/exomiser.properties to point to the location of these files on your webserver.
 

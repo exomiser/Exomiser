@@ -24,8 +24,8 @@
         <profile>
             <id>sanger</id>
             <properties>
-                <data.dir>/www/data/exomizer</data.dir>
-                <warName>resources#exomiser</warName>
+                <data.dir>/www/data/exomiser</data.dir>
+                <warName>resources#software#exomiser</warName>
             </properties>  
         </profile>
     </profiles>
@@ -150,12 +150,10 @@
                     the templates will be automatically deployed -->
                     <webResources>
                         <resource>
-                             <!--this is relative to the pom.xml directory--> 
                             <directory>src/test/resources</directory>
                             <includes>
                                 <include>Pfeiffer.vcf</include>
                             </includes>
-                             <!--override the destination directory for this resource--> 
                             <targetPath>resources</targetPath>
                         </resource>
                     </webResources>

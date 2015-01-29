@@ -61,8 +61,8 @@ public class HomeControllerTest {
     public void testIndex() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
             .andExpect(status().isOk())
-            .andExpect(view().name("index"))
-            .andExpect(content().string(containsString("The Exomiser")))
+            .andExpect(view().name("submit"))
+            .andExpect(content().string(containsString("Exomiser")))
 //            .andDo(print())
                     ;
     }
