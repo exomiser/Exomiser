@@ -40,12 +40,12 @@ public class VcfResultsWriter implements ResultsWriter {
     private static final String NEWLINE = System.lineSeparator();
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
         String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-            writer.write(writeString(sampleData, settings, priorityList));
+            writer.write(writeString(sampleData, settings));
             writer.close();
 
         } catch (IOException ex) {
@@ -55,7 +55,7 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public String writeString(SampleData sampleData, ExomiserSettings settings) {
         StringBuilder stringBuilder = new StringBuilder();
         addHeader(stringBuilder);
         addUnAnnotatedVariants(sampleData, stringBuilder);

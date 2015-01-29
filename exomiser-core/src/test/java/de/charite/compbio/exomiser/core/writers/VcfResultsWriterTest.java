@@ -15,7 +15,6 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilterResult;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.annotation.AnnotationList;
@@ -166,7 +165,7 @@ public class VcfResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outFileName("testWrite")
                 .build();
-        instance.writeFile(sampleData, settings, null);
+        instance.writeFile(sampleData, settings);
         assertTrue(Paths.get("testWrite.vcf").toFile().exists());
         assertTrue(Paths.get("testWrite.vcf").toFile().delete());
     }
@@ -188,32 +187,32 @@ public class VcfResultsWriterTest {
 
     @Test
     public void testWritePassVariant() {
-        String vcf = instance.writeString(sampleData, settings, null);
+        String vcf = instance.writeString(sampleData, settings);
         System.out.println(vcf);
         assertThat(vcf, containsString(passVariantVcfString));
     }
 
     @Test
     public void testWriteFailVariant() {
-        String vcf = instance.writeString(sampleData, settings, null);
+        String vcf = instance.writeString(sampleData, settings);
         assertThat(vcf, containsString(failOneFilterVariantVcfString));
     }
     
     @Test
     public void testWriteFailTwoFiltersVariant() {
-        String vcf = instance.writeString(sampleData, settings, null);
+        String vcf = instance.writeString(sampleData, settings);
         assertThat(vcf, containsString(failTwoFilterVariantVcfString));
     }
     
     @Test
     public void writesUnAnnotatedVariants() {
-        String vcf = instance.writeString(sampleData, settings, null);
+        String vcf = instance.writeString(sampleData, settings);
         assertThat(vcf, containsString(unannotatedVariantVcfString));
     }
               
     @Test
     public void writesUnFilteredVariants() {
-        String vcf = instance.writeString(sampleData, settings, null);
+        String vcf = instance.writeString(sampleData, settings);
         assertThat(vcf, containsString(unFilteredVariantVcfString));
     }
     

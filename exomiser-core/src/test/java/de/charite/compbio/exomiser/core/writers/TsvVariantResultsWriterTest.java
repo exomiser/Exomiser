@@ -82,7 +82,7 @@ public class TsvVariantResultsWriterTest {
 	@Test
 	public void testWrite() {
 		ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT)).build();
-		instance.writeFile(sampleData, settings, null);
+		instance.writeFile(sampleData, settings);
 		assertTrue(Paths.get("testWrite.variants.tsv").toFile().exists());
 		assertTrue(Paths.get("testWrite.variants.tsv").toFile().delete());
 	}
@@ -93,7 +93,7 @@ public class TsvVariantResultsWriterTest {
 		geneList.add(gene);
 		sampleData.setGenes(geneList);
 		ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT)).build();
-		String outString = instance.writeString(sampleData, settings, null);
+		String outString = instance.writeString(sampleData, settings);
 		assertThat(outString, equalTo(VARIANT_STRING));
 	}
 

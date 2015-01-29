@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.HtmlResultsWriter;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
@@ -23,7 +22,6 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.prioritisers.ExomiserMousePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.Genotype;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
@@ -152,7 +150,7 @@ public class HtmlResultsWriterTest {
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFileName).build();
 
-        instance.writeFile(sampleData, settings, null);
+        instance.writeFile(sampleData, settings);
         
         assertTrue(Paths.get(testOutFileName).toFile().exists());
     }
@@ -166,7 +164,7 @@ public class HtmlResultsWriterTest {
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
 
-        instance.writeFile(sampleData, settings, null);
+        instance.writeFile(sampleData, settings);
 
         File input = new File(testOutFilename);
         Document doc = Jsoup.parse(input, "UTF-8", "http://example.com/");
@@ -188,7 +186,7 @@ public class HtmlResultsWriterTest {
         SampleData sampleData = makeSampleData(genes, variantData);
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
 
-        instance.writeFile(sampleData, settings, null);
+        instance.writeFile(sampleData, settings);
         assertTrue(Paths.get(testOutFilename).toFile().exists());
 
     }

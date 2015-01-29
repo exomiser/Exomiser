@@ -55,6 +55,7 @@ public class Exomiser {
     //TODO: this could be made more programmatically configuarable by also allowing
     //the Filters and Prioritisers be passsed in / set so as to remove the dependency on ExomiserSettings
     public void analyse(SampleData sampleData, ExomiserSettings exomiserSettings) {
+        logger.info("STARTING ANALYSIS...");
         //don't change the order here - variants should ALWAYS be filtered before
         //genes otherwise the inheritance mode will break leading to altered
         //predictions downstream.
@@ -72,6 +73,7 @@ public class Exomiser {
         runPrioritisers(priorityList, exomiserSettings, sampleData);
         
         scoreGenes(exomiserSettings, sampleData);
+        logger.info("FINISHED ANALYSIS");
     }
 
     private void runVariantFilters(List<VariantFilter> variantFilters, ExomiserSettings exomiserSettings, SampleData sampleData) {

@@ -133,9 +133,7 @@ public class Main {
 
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
             ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outFormat);
-            //TODO: remove priorityList - this should become another report
-            List<Priority> priorityList = new ArrayList<>();
-            resultsWriter.writeFile(sampleData, exomiserSettings, priorityList);
+            resultsWriter.writeFile(sampleData, exomiserSettings);
         }
 
         logger.info("Finished analysis");

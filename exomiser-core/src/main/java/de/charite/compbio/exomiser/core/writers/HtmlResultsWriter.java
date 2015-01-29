@@ -18,6 +18,7 @@ import de.charite.compbio.exomiser.core.prioritisers.Priority;
 import jannovar.exome.VariantTypeCounter;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,14 +55,14 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
 
         String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
 
-            writer.write(writeString(sampleData, settings, priorityList));
+            writer.write(writeString(sampleData, settings));
 
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
@@ -71,7 +72,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public String writeString(SampleData sampleData, ExomiserSettings settings) {
         Context context = new Context();
         //write the settings
         ObjectMapper mapper = new ObjectMapper();

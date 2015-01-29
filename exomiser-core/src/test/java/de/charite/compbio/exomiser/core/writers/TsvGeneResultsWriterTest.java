@@ -89,7 +89,7 @@ public class TsvGeneResultsWriterTest {
     @Test
     public void testWrite() {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
-        instance.writeFile(sampleData, settings, null);
+        instance.writeFile(sampleData, settings);
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().delete());
     }
@@ -97,14 +97,14 @@ public class TsvGeneResultsWriterTest {
     @Test
     public void testWriteString() {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
-        String outString = instance.writeString(sampleData, settings, null);
+        String outString = instance.writeString(sampleData, settings);
         assertThat(outString, equalTo(HEADER + GENE_STRING));
     }
     
     @Test
     public void testWriteStringStartsWithAHeaderLine() {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
-        String outString = instance.writeString(sampleData, settings, null);
+        String outString = instance.writeString(sampleData, settings);
         String[] lines = outString.split("\n");
         assertThat(lines[0] + "\n", equalTo(HEADER));
     }

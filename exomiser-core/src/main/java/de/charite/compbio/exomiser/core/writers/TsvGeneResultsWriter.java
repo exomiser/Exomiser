@@ -39,12 +39,12 @@ public class TsvGeneResultsWriter implements ResultsWriter {
             + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE\n";
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
         String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-            writer.write(writeString(sampleData, settings, priorityList));
+            writer.write(writeString(sampleData, settings));
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -53,7 +53,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public String writeString(SampleData sampleData, ExomiserSettings settings) {
         //this is either empty or has a gene name
         String candidateGene = settings.getCandidateGene();
         StringBuilder stringBuilder = new StringBuilder();

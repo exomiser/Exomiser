@@ -52,12 +52,12 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 	private CSVPrinter printer;
 
 	@Override
-	public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+	public void writeFile(SampleData sampleData, ExomiserSettings settings) {
 		String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
 		Path outFile = Paths.get(outFileName);
 		try {
 			this.printer = new CSVPrinter(new BufferedWriter(new FileWriter(outFile.toFile())), format);
-			write(sampleData, settings, priorityList);
+			write(sampleData, settings);
 			this.printer.close();
 		} catch (IOException ex) {
 			logger.error("Unable to write results to file {}.", outFileName, ex);
@@ -66,7 +66,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
 	}
 
-	private void write(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) throws IOException {
+	private void write(SampleData sampleData, ExomiserSettings settings) throws IOException {
 		for (Gene gene : sampleData.getGenes()) {
 			writeVariantsOfGene(gene);
 		}
@@ -214,7 +214,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 	}
 
 	@Override
-	public String writeString(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+	public String writeString(SampleData sampleData, ExomiserSettings settings) {
 		StringBuilder output = new StringBuilder(Joiner.on(format.getDelimiter()).join(format.getHeader()));
 		for (Gene gene : sampleData.getGenes()) {
 			for (VariantEvaluation ve : gene.getVariantEvaluations()) {
