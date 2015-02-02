@@ -12,6 +12,7 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,10 @@ import org.slf4j.LoggerFactory;
 public class FilterReportFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(FilterReportFactory.class);
+
+    public FilterReportFactory() {
+        Locale.setDefault(Locale.UK);
+    }
 
     /**
      * Makes a List of {@code FilterReport} for the {@code FilterType} specified.

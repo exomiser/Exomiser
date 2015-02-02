@@ -8,7 +8,6 @@ package de.charite.compbio.exomiser.core.writers;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import jannovar.exome.Variant;
@@ -18,7 +17,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +37,10 @@ public class VcfResultsWriter implements ResultsWriter {
     private static final String VCF_COLUMN_LINE = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tGENOTYPE\n";
     private static final String VCF_COLUMN_DELIMITER = "\t";
     private static final String NEWLINE = System.lineSeparator();
+
+    public VcfResultsWriter() {
+        Locale.setDefault(Locale.UK);
+    }
 
     @Override
     public void writeFile(SampleData sampleData, ExomiserSettings settings) {

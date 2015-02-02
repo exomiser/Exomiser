@@ -82,15 +82,6 @@ public class PriorityFactoryTest {
         assertOmimAndOtherSpecifiedPrioritiserPresent(prioritisers, type);
     }
 
-    @Test
-    public void testmakePrioritisersForInheritancePriorityReturnsJustOmimPrioritiser() {
-        PriorityType type = PriorityType.INHERITANCE_MODE_PRIORITY;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
-
-        List<Priority> prioritisers = instance.makePrioritisers(settings);
-        assertJustOmimPrioritiserPresent(prioritisers);
-    }
-
     @Test(expected = RuntimeException.class)
     public void testmakePrioritisersForPhenixPriorityThrowsRuntimeExceptionDueToMissingPhenixData() {
         PriorityType type = PriorityType.PHENIX_PRIORITY;

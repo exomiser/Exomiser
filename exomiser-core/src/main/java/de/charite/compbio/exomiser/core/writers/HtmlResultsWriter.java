@@ -14,17 +14,15 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
-import jannovar.exome.VariantTypeCounter;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -45,6 +43,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.HTML;
     
     public HtmlResultsWriter() {
+        Locale.setDefault(Locale.UK);
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setTemplateMode("HTML5");
         templateResolver.setPrefix("html/templates/");

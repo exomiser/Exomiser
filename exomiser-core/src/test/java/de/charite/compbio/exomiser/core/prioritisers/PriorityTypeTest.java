@@ -23,8 +23,8 @@ public class PriorityTypeTest {
      */
     @Test
     public void testValueOfCommandLine() {
-        String value = "inheritance-mode";
-        PriorityType expResult = PriorityType.INHERITANCE_MODE_PRIORITY;
+        String value = "omim";
+        PriorityType expResult = PriorityType.OMIM_PRIORITY;
         PriorityType result = PriorityType.valueOfCommandLine(value);
         assertEquals(expResult, result);
     }
@@ -46,7 +46,7 @@ public class PriorityTypeTest {
     @Test
     public void testToString() {
         PriorityType instance = PriorityType.EXOMISER_MOUSE_PRIORITY;
-        String expResult = "phive-mouse";
+        String expResult = "phive";
         String result = instance.toString();
         assertEquals(expResult, result);
     }

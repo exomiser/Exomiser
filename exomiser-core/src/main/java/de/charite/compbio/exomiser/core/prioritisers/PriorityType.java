@@ -2,45 +2,29 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 /**
  *
- * @author Jules Jacobse <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum PriorityType {
    
-    /**
-     * Flag to represent results of filtering against an inheritance pattern.
-     */
-    INHERITANCE_MODE_PRIORITY("inheritance-mode", ScoringMode.RAW_SCORE),
-    /**
-     * Flag to represent results of filtering against phenotype data (Uberpheno)
-     */
-    UBERPHENO_PRIORITY("uber-pheno", ScoringMode.RAW_SCORE),
-    /**
-     * Flag to represent results of filtering against PPI-RandomWalk-proximity
-     */
+    //Prioritises against PPI-RandomWalk-proximity and dynamic human, mouse and fish phenotypes
+    EXOMISER_ALLSPECIES_PRIORITY("hiphive", ScoringMode.RAW_SCORE),
+
+    //Prioritises against PPI-RandomWalk-proximity
     EXOMEWALKER_PRIORITY("exomewalker", ScoringMode.RAW_SCORE),
-    /**
-     * Flag to represent results of filtering against PPI-RandomWalk-proximity
-     * and dynamic human and mouse phenotypes
-     */
-
-    EXOMISER_ALLSPECIES_PRIORITY("phive-allspecies", ScoringMode.RAW_SCORE),
-
-    /**
-     * Flag to represent results of annotating against OMIM data
-     */
-    OMIM_PRIORITY("omim", ScoringMode.RAW_SCORE),
-    /**
-     * Flag for phenomizer prioritizer
-     */
-    PHENIX_PRIORITY("phenix", ScoringMode.RAW_SCORE),
-    /**
-     * Flag for dynamic phenodigm filter.
-     */
-    EXOMISER_MOUSE_PRIORITY("phive-mouse", ScoringMode.RAW_SCORE),
     
-    /**
-     * Not set type - default for when things go wrong.
-     */
+    //Prioritises against human phenotypes
+    PHENIX_PRIORITY("phenix", ScoringMode.RAW_SCORE),
+
+    //Prioritises against human-mouse phenotype similarities
+    EXOMISER_MOUSE_PRIORITY("phive", ScoringMode.RAW_SCORE),
+
+    //Prioritises against OMIM data
+    OMIM_PRIORITY("omim", ScoringMode.RAW_SCORE),
+    
+    //Prioritises  against phenotype data (Uberpheno)
+    UBERPHENO_PRIORITY("uber-pheno", ScoringMode.RAW_SCORE),
+
+    //Not set type - default for when things go wrong.
     NOT_SET("", ScoringMode.RAW_SCORE);
     
     /**
