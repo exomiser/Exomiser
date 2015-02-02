@@ -58,7 +58,7 @@ public class ExomeWalkerPriorityResult implements PriorityResult {
      */
     @Override
     public String getHTMLCode() {
-        return String.format("<ul><li>Random walk similarity score: %.3f</li></ul>", this.score);
+        return String.format("<dl><dt>Random walk similarity score: %.3f</dt></dl>", this.score);
     }
 
     public double getRawScore() {

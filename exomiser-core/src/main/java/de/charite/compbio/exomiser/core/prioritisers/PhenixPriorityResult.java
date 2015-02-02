@@ -12,17 +12,17 @@ import java.util.List;
 public class PhenixPriorityResult implements PriorityResult {
 
     /**
-     * The semantic similarity score as implemented in Phenomizer. Note that
-     * this is not the p-value methodology in that paper, but merely the simple
-     * semantic similarity score.
+     * The semantic similarity score as implemented in PhenIX (also know as
+     * Phenomizer). Note that this is not the p-value methodology in that paper,
+     * but merely the simple semantic similarity score.
      */
     private double hpoSemSimScore;
     /**
      * The negative logarithm of the p-value. e.g., 10 means p=10^{-10}
      */
-    private double negativeLogPval;
+    private final double negativeLogPval;
 
-    static double NORMALIZATION_FACTOR = 1f;
+    private static double NORMALIZATION_FACTOR = 1f;
 
     public static void setNormalizationFactor(double factor) {
         NORMALIZATION_FACTOR = factor;
@@ -38,9 +38,6 @@ public class PhenixPriorityResult implements PriorityResult {
     public PhenixPriorityResult(double negLogPVal, double semScore) {
         this.negativeLogPval = negLogPVal;
         this.hpoSemSimScore = semScore;
-        String s = String.format("Semantic similarity score: %.2f (neg. log of p-value: %.2f)",
-                this.hpoSemSimScore, this.negativeLogPval);
-        //System.out.println(s);
     }
 
     @Override
@@ -62,12 +59,7 @@ public class PhenixPriorityResult implements PriorityResult {
      */
     @Override
     public String getHTMLCode() {
-        return String.format("<ul><li>Phenomizer: Semantic similarity score: %.2f (p-value: %f)</li></ul>",
-                this.hpoSemSimScore, Math.exp(-1 * this.negativeLogPval));
-    }
-
-    private String getFilterResultSummary() {
-        return String.format("Phenomizer semantic similarity score: %.2f (p-value: %f)",
+        return String.format("<dl><dt>PhenIX semantic similarity score: %.2f (p-value: %f)</dt></dl>",
                 this.hpoSemSimScore, Math.exp(-1 * this.negativeLogPval));
     }
 
