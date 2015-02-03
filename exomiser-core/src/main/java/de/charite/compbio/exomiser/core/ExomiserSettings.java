@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -91,7 +92,7 @@ public class ExomiserSettings {
     public static final String SEED_GENES_OPTION = "seed-genes";
     public static final String DISEASE_ID_OPTION = "disease-id";
     public static final String MODE_OF_INHERITANCE_OPTION = "inheritance-mode";
-    public static final String EXOMISER2_PARAMS_OPTION = "phive-allspecies-params";
+    public static final String EXOMISER2_PARAMS_OPTION = "hiphive-params";
 
     //PRIORITISER variables
     //candidate-gene (command-line was: candidate_gene, refered to variable: candidateGene)
@@ -496,6 +497,113 @@ public class ExomiserSettings {
         return buildTimestamp;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 13 * hash + Objects.hashCode(this.vcfFilePath);
+        hash = 13 * hash + Objects.hashCode(this.pedFilePath);
+        hash = 13 * hash + Objects.hashCode(this.prioritiserType);
+        hash = 13 * hash + (this.runFullAnalysis ? 1 : 0);
+        hash = 13 * hash + Float.floatToIntBits(this.maximumFrequency);
+        hash = 13 * hash + Float.floatToIntBits(this.minimumQuality);
+        hash = 13 * hash + Objects.hashCode(this.geneticInterval);
+        hash = 13 * hash + (this.removePathFilterCutOff ? 1 : 0);
+        hash = 13 * hash + (this.removeDbSnp ? 1 : 0);
+        hash = 13 * hash + (this.removeOffTargetVariants ? 1 : 0);
+        hash = 13 * hash + Objects.hashCode(this.genesToKeep);
+        hash = 13 * hash + Objects.hashCode(this.candidateGene);
+        hash = 13 * hash + Objects.hashCode(this.modeOfInheritance);
+        hash = 13 * hash + Objects.hashCode(this.diseaseId);
+        hash = 13 * hash + Objects.hashCode(this.hpoIds);
+        hash = 13 * hash + Objects.hashCode(this.seedGeneList);
+        hash = 13 * hash + Objects.hashCode(this.exomiser2Params);
+        hash = 13 * hash + this.numberOfGenesToShow;
+        hash = 13 * hash + Objects.hashCode(this.outFileName);
+        hash = 13 * hash + Objects.hashCode(this.outputFormats);
+        hash = 13 * hash + Objects.hashCode(this.diseaseGeneFamilyName);
+        hash = 13 * hash + (this.isValid ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ExomiserSettings other = (ExomiserSettings) obj;
+        if (!Objects.equals(this.vcfFilePath, other.vcfFilePath)) {
+            return false;
+        }
+        if (!Objects.equals(this.pedFilePath, other.pedFilePath)) {
+            return false;
+        }
+        if (this.prioritiserType != other.prioritiserType) {
+            return false;
+        }
+        if (this.runFullAnalysis != other.runFullAnalysis) {
+            return false;
+        }
+        if (Float.floatToIntBits(this.maximumFrequency) != Float.floatToIntBits(other.maximumFrequency)) {
+            return false;
+        }
+        if (Float.floatToIntBits(this.minimumQuality) != Float.floatToIntBits(other.minimumQuality)) {
+            return false;
+        }
+        if (!Objects.equals(this.geneticInterval, other.geneticInterval)) {
+            return false;
+        }
+        if (this.removePathFilterCutOff != other.removePathFilterCutOff) {
+            return false;
+        }
+        if (this.removeDbSnp != other.removeDbSnp) {
+            return false;
+        }
+        if (this.removeOffTargetVariants != other.removeOffTargetVariants) {
+            return false;
+        }
+        if (!Objects.equals(this.genesToKeep, other.genesToKeep)) {
+            return false;
+        }
+        if (!Objects.equals(this.candidateGene, other.candidateGene)) {
+            return false;
+        }
+        if (this.modeOfInheritance != other.modeOfInheritance) {
+            return false;
+        }
+        if (!Objects.equals(this.diseaseId, other.diseaseId)) {
+            return false;
+        }
+        if (!Objects.equals(this.hpoIds, other.hpoIds)) {
+            return false;
+        }
+        if (!Objects.equals(this.seedGeneList, other.seedGeneList)) {
+            return false;
+        }
+        if (!Objects.equals(this.exomiser2Params, other.exomiser2Params)) {
+            return false;
+        }
+        if (this.numberOfGenesToShow != other.numberOfGenesToShow) {
+            return false;
+        }
+        if (!Objects.equals(this.outFileName, other.outFileName)) {
+            return false;
+        }
+        if (!Objects.equals(this.outputFormats, other.outputFormats)) {
+            return false;
+        }
+        if (!Objects.equals(this.diseaseGeneFamilyName, other.diseaseGeneFamilyName)) {
+            return false;
+        }
+        if (this.isValid != other.isValid) {
+            return false;
+        }
+        return true;
+    }
+
+    
     @Override
     public String toString() {
         return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", removePathFilterCutOff=" + removePathFilterCutOff + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outFileName + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
