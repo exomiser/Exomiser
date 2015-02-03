@@ -16,9 +16,9 @@ ped=
 max-freq=100.00
 restrict-interval=
 min-qual=0
-keep-non-pathogenic-missense=true
+keep-non-pathogenic=true
 remove-dbsnp=false
-remove-off-target-syn=true
+keep-off-target=false
 full-analysis=true
 
 #PRIORITISER OPTIONS

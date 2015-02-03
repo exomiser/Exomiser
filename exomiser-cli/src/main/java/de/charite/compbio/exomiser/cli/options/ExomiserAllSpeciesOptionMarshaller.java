@@ -7,8 +7,6 @@ package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.EXOMISER2_PARAMS_OPTION;
-import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -21,10 +19,10 @@ public class ExomiserAllSpeciesOptionMarshaller extends AbstractOptionMarshaller
         option = OptionBuilder
                 .hasOptionalArgs()
                 .withArgName("type")
-                .withType(OutputFormat.class)
+                .withType(String.class)
                 .withValueSeparator(',')
                 .withDescription(
-                        String.format("Comma separated list of Optional parameters for phive-allspecies: human, mouse, fish, ppi. "
+                        String.format("Comma separated list of optional parameters for phive-allspecies: human, mouse, fish, ppi. "
                                 + "e.g. --%s=human or --%s=human,mouse,ppi", EXOMISER2_PARAMS_OPTION, EXOMISER2_PARAMS_OPTION))
                 .withLongOpt(EXOMISER2_PARAMS_OPTION)
                 .create("E");

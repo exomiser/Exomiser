@@ -27,6 +27,11 @@ public class ExomiserAllSpeciesOptionMarshallerTest {
     }
     
     @Test
+    public void testCommandLineValue() {
+        assertThat(instance.getCommandLineParameter(), equalTo("hiphive-params"));
+    }
+    
+    @Test
     public void testThatOptionAcceptsMultipleValues() {
         Option option = instance.option;
         assertThat(option.hasOptionalArg(), is(true));

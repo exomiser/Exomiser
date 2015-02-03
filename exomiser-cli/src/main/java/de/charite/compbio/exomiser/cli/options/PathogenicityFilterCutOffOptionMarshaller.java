@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
-import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 
 /**
  *
@@ -16,17 +16,24 @@ import org.apache.commons.cli.Option;
 public class PathogenicityFilterCutOffOptionMarshaller extends AbstractOptionMarshaller {
 
     public PathogenicityFilterCutOffOptionMarshaller() {
-        option = new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, false, 
-                "Keep all variants, regardless of predicted pathogenicity or variant type.");
+        option = OptionBuilder
+                .hasOptionalArg()
+                .withType(Boolean.class)
+                .withArgName("true/false")
+                .withDescription("Keep all variants, regardless of predicted pathogenicity or variant type.")
+                .withLongOpt(REMOVE_PATHOGENICITY_FILTER_CUTOFF) 
+                .create("P");
     }
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
         if (values == null) {
             //default is to remove the non-pathogenic variants, so this should be false
-            settingsBuilder.removePathFilterCutOff(false);
+            settingsBuilder.removePathFilterCutOff(true);
+        } else {
+            //but the json/properties file specifies true or false, hence the optionArg
+            settingsBuilder.removePathFilterCutOff(Boolean.parseBoolean(values[0]));
         }
-        settingsBuilder.removePathFilterCutOff(true);
     }
 
 }

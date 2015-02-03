@@ -34,7 +34,6 @@ public class VcfFileOptionMarshallerTest {
 
     @Test
     public void testGetCommandLineParameter() {
-        
         assertThat(instance.getCommandLineParameter(), equalTo("vcf"));
     }
 

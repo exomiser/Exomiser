@@ -7,12 +7,14 @@ package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -116,17 +118,37 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void should_produce_valid_settings_when_a_valid_settings_file_is_provided() {
+    public void shouldProduceValidSettingsWhenValidSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testValidSettings.properties";
-
+        SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder.vcfFilePath(Paths.get("sampleData.vcf"));
+        settingsBuilder.pedFilePath(Paths.get(""));
+        settingsBuilder.usePrioritiser(PriorityType.EXOMISER_MOUSE_PRIORITY);
+        settingsBuilder.maximumFrequency(0.01f);
+        settingsBuilder.minimumQuality(0f);
+        settingsBuilder.removePathFilterCutOff(false);
+        settingsBuilder.removeDbSnp(true);
+        settingsBuilder.removeOffTargetVariants(true);
+        settingsBuilder.candidateGene("FGFR2");
+        settingsBuilder.hpoIdList(Arrays.asList("HP:0000001","HP:0000002","HP:0000003"));
+        settingsBuilder.seedGeneList(Arrays.asList(12345,2345,3456,1234567));
+        settingsBuilder.diseaseId("OMIM:101500");
+        settingsBuilder.modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        settingsBuilder.numberOfGenesToShow(345);
+        settingsBuilder.outFileName("target/test-output/");
+        settingsBuilder.outputFormats(EnumSet.of(OutputFormat.VCF));
+        
+        ExomiserSettings expectedSettings = settingsBuilder.build();
+        
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.isValid(), is(true));
+        assertThat(exomiserSettings, equalTo(expectedSettings));
     }
 
     @Test
-    public void should_produce_valid_default_settings_when_an_incomplete_settings_file_is_provided() {
+    public void shouldProduceValidSettingsWhenIncompleteSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testIncompleteSettings.properties";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
@@ -137,7 +159,7 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void should_produce_settings_when_a_settings_file_is_indicated_and_overwrite_values_when_a_command_line_option_is_specified() {
+    public void shouldProduceWhenSettingsFileIsIndicatedAndOverwriteValuesWhenCommandLineOptionIsSpecified() {
         String input = " --max-freq=0.1 --settings-file src/test/resources/exomiserSettings.properties";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);

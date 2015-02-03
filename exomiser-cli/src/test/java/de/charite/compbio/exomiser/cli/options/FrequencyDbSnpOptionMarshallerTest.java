@@ -14,21 +14,20 @@ import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TargetFilterOptionMarshallerTest {
+public class FrequencyDbSnpOptionMarshallerTest {
     
-    private TargetFilterOptionMarshaller instance;
+    private FrequencyDbSnpOptionMarshaller instance;
     private Option option;
     private ExomiserSettings.SettingsBuilder settingsBuilder;
     
     @Before
     public void setUp() {
-        instance = new TargetFilterOptionMarshaller();
+        instance = new FrequencyDbSnpOptionMarshaller();
         option = instance.getOption();
         settingsBuilder = new ExomiserSettings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
@@ -37,26 +36,26 @@ public class TargetFilterOptionMarshallerTest {
 
     @Test
     public void testOptionCommandLineParameter() {
-        assertThat(instance.getCommandLineParameter(), equalTo("keep-off-target"));
+        assertThat(instance.getCommandLineParameter(), equalTo("remove-dbsnp"));
     }
     
     @Test
     public void testThatOptionHasOptionalArgument() {
         assertThat(option.hasOptionalArg(), is(true));
     }
+    
+    @Test
+    public void testSettingsRemoveDbSnpIsFalseByDefault() {
+        ExomiserSettings settings = settingsBuilder.build();        
+        assertThat(settings.removeDbSnp(), is(false));
+    }
 
     @Test
-    public void testSettingsBuilderAppliesFalseWhenSetWithNullValue() {
+    public void testSettingsBuilderAppliesTrueWhenSetWithNullValue() {
         instance.applyValuesToSettingsBuilder(null, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
         
-        assertThat(settings.removeOffTargetVariants(), is(false));
-    }
-    
-    @Test
-    public void testSettingsRemoveOffTargetVariantsIsTrueByDefault() {
-        ExomiserSettings settings = settingsBuilder.build();        
-        assertThat(settings.removeOffTargetVariants(), is(true));
+        assertThat(settings.removeDbSnp(), is(true));
     }
     
     @Test
@@ -65,7 +64,7 @@ public class TargetFilterOptionMarshallerTest {
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
         
-        assertThat(settings.removeOffTargetVariants(), is(false));
+        assertThat(settings.removeDbSnp(), is(false));
     }
     
     @Test
@@ -74,7 +73,7 @@ public class TargetFilterOptionMarshallerTest {
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
         
-        assertThat(settings.removeOffTargetVariants(), is(true));
+        assertThat(settings.removeDbSnp(), is(true));
     }
-    
+
 }

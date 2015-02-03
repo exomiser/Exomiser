@@ -7,7 +7,9 @@ package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_DBSNP_OPTION;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 
 /**
  *
@@ -16,14 +18,20 @@ import org.apache.commons.cli.Option;
 public class FrequencyDbSnpOptionMarshaller extends AbstractOptionMarshaller {
 
     public FrequencyDbSnpOptionMarshaller() {
-        option = new Option(null, REMOVE_DBSNP_OPTION, false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).  Default: false");
+        option = OptionBuilder
+                .hasOptionalArg()
+                .withType(Boolean.class)
+                .withArgName("true/false")
+                .withDescription("Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).")
+                .withLongOpt(REMOVE_DBSNP_OPTION) 
+                .create();
     }
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
-        if (values == null || values.length == 0 || values[0].isEmpty()) {
-            //default is false
-            //the command line is just a switch
+        if (values == null) {
+            //default is not to remove variants with a DbSNP rsId
+            //having this triggered from the command line is the same as saying values[0] == true
             settingsBuilder.removeDbSnp(true);
         } else {
             //but the json/properties file specify true or false
