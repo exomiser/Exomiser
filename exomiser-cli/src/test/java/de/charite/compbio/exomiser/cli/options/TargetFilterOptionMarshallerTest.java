@@ -46,17 +46,16 @@ public class TargetFilterOptionMarshallerTest {
     }
 
     @Test
-    public void testSettingsBuilderAppliesFalseWhenSetWithNullValue() {
-        instance.applyValuesToSettingsBuilder(null, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
-        
-        assertThat(settings.removeOffTargetVariants(), is(false));
+    public void testSettingsKeepOffTargetVariantsIsFalseByDefault() {
+        ExomiserSettings settings = settingsBuilder.build();        
+        assertThat(settings.keepOffTargetVariants(), is(false));
     }
     
     @Test
-    public void testSettingsRemoveOffTargetVariantsIsTrueByDefault() {
-        ExomiserSettings settings = settingsBuilder.build();        
-        assertThat(settings.removeOffTargetVariants(), is(true));
+    public void testSettingsBuilderAppliesFalseWhenSetWithNullValue() {
+        instance.applyValuesToSettingsBuilder(null, settingsBuilder);
+        ExomiserSettings settings = settingsBuilder.build();
+        assertThat(settings.keepOffTargetVariants(), is(true));
     }
     
     @Test
@@ -64,8 +63,7 @@ public class TargetFilterOptionMarshallerTest {
         String[] args = {"false"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
-        
-        assertThat(settings.removeOffTargetVariants(), is(false));
+        assertThat(settings.keepOffTargetVariants(), is(false));
     }
     
     @Test
@@ -73,8 +71,7 @@ public class TargetFilterOptionMarshallerTest {
         String[] args = {"true"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
-        
-        assertThat(settings.removeOffTargetVariants(), is(true));
+        assertThat(settings.keepOffTargetVariants(), is(true));
     }
     
 }

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,8 +59,8 @@ public class ExomiserSettingsTest {
     private static final boolean REMOVE_PATHOGENIC_FILTER_CUTOFF = true;
     private static final boolean REMOVE_DBSNP_DEFAULT = false;
     private static final boolean REMOVE_DBSNP = true;
-    private static final boolean REMOVE_OFF_TARGET_VARIANTS_DEFAULT = true;
-    private static final boolean REMOVE_OFF_TARGET_VARIANTS = false;
+    private static final boolean KEEP_OFF_TARGET_VARIANTS_DEFAULT = false;
+    private static final boolean KEEP_OFF_TARGET_VARIANTS = true;
     private static final String CANDIDATE_GENE_NAME_DEFAULT = "";
     private static final String CANDIDATE_GENE_NAME = "ADH1";
     private static final ModeOfInheritance MODE_OF_INHERITANCE = ModeOfInheritance.AUTOSOMAL_DOMINANT;
@@ -106,7 +105,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING_DEFAULT));
@@ -312,19 +311,19 @@ public class ExomiserSettingsTest {
     }
 
     /**
-     * Test of removeOffTargetVariants method, of class ExomiserSettings.
+     * Test of keepOffTargetVariants method, of class ExomiserSettings.
      */
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsDefault() {
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsWhenSet() {
-        vcfPathAndPrioritiserSetBuilder.removeOffTargetVariants(REMOVE_OFF_TARGET_VARIANTS);
+        vcfPathAndPrioritiserSetBuilder.keepOffTargetVariants(KEEP_OFF_TARGET_VARIANTS);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS));
     }
 
     /**
@@ -494,7 +493,7 @@ public class ExomiserSettingsTest {
                 .geneticInterval(GENETIC_INTERVAL)
                 .removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF)
                 .removeDbSnp(REMOVE_DBSNP)
-                .removeOffTargetVariants(REMOVE_OFF_TARGET_VARIANTS)
+                .keepOffTargetVariants(KEEP_OFF_TARGET_VARIANTS)
                 .candidateGene(CANDIDATE_GENE_NAME)
                 .modeOfInheritance(MODE_OF_INHERITANCE)
                 .diseaseId(DISEASE_STRING)
@@ -515,7 +514,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL));
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP));
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME));
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE));
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING));
@@ -550,7 +549,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
         assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING_DEFAULT));

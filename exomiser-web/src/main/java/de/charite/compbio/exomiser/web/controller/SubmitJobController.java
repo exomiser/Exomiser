@@ -31,7 +31,6 @@ import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
 import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.ModeOfInheritance;
-import jannovar.exome.VariantTypeCounter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,7 +81,7 @@ public class SubmitJobController {
             @RequestParam("frequency") String frequency,
             @RequestParam("remove-dbsnp") Boolean removeDbSnp,
             @RequestParam("remove-non-pathogenic") Boolean removeNonPathogenic,
-            @RequestParam("remove-off-target") Boolean removeOffTarget,
+            @RequestParam("keep-off-target") Boolean keepOffTarget,
             @RequestParam("inheritance") String modeOfInheritance,
             @RequestParam(value = "genes-to-keep", required = false) List<String> genesToFilter,
             @RequestParam("prioritiser") String prioritiser,
@@ -97,7 +96,7 @@ public class SubmitJobController {
         logger.info("Selected phenotypes: {}", phenotypes);
         Set<Integer> genesToKeep = makeGenesToKeep(genesToFilter);
      
-        ExomiserSettings settings = buildSettings(vcfPath, pedPath, diseaseId, phenotypes, minimumQuality, removeDbSnp, removeOffTarget, removeNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
+        ExomiserSettings settings = buildSettings(vcfPath, pedPath, diseaseId, phenotypes, minimumQuality, removeDbSnp, keepOffTarget, removeNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
 
         if (!settings.isValid()) {
             return "submit";
@@ -163,7 +162,7 @@ public class SubmitJobController {
         model.addAttribute("genes", passedGenes);
     }
 
-    private ExomiserSettings buildSettings(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, Float minimumQuality, Boolean removeDbSnp, Boolean removeOffTarget, Boolean removeNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
+    private ExomiserSettings buildSettings(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean removeNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
                 //Upload Sample Files input
                 .vcfFilePath(vcfPath)
@@ -174,7 +173,7 @@ public class SubmitJobController {
                 //Set Filtering Parameters
                 .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
                 .removeDbSnp(removeDbSnp)
-                .removeOffTargetVariants(removeOffTarget)
+                .keepOffTargetVariants(keepOffTarget)
                 //make this work for nulls....
                 //                .geneticInterval(GeneticInterval.parseString(geneticInterval))
                 .removePathFilterCutOff(removeNonPathogenic)

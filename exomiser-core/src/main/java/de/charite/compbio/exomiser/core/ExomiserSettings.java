@@ -66,7 +66,7 @@ public class ExomiserSettings {
     public static final String GENETIC_INTERVAL_OPTION = "restrict-interval";
     public static final String REMOVE_PATHOGENICITY_FILTER_CUTOFF = "keep-non-pathogenic";
     public static final String REMOVE_DBSNP_OPTION = "remove-dbsnp";
-    public static final String REMOVE_OFF_TARGET_OPTION = "keep-off-target";
+    public static final String KEEP_OFF_TARGET_OPTION = "keep-off-target";
     public static final String GENES_TO_KEEP_OPTION = "genes-to-keep";
     
     //FILTER variables
@@ -150,7 +150,7 @@ public class ExomiserSettings {
         private GeneticInterval geneticInterval = null;
         private boolean removePathFilterCutOff = false;
         private boolean removeDbSnp = false;
-        private boolean removeOffTargetVariants = true;
+        private boolean keepOffTargetVariants = false;
         private Set<Integer> geneIdsToKeep = new LinkedHashSet();    
 
         //PRIORITISER options
@@ -234,9 +234,9 @@ public class ExomiserSettings {
             return this;
         }
 
-        @JsonSetter(REMOVE_OFF_TARGET_OPTION)
-        public SettingsBuilder removeOffTargetVariants(boolean value) {
-            removeOffTargetVariants = value;
+        @JsonSetter(KEEP_OFF_TARGET_OPTION)
+        public SettingsBuilder keepOffTargetVariants(boolean value) {
+            keepOffTargetVariants = value;
             return this;
         }
 
@@ -339,7 +339,7 @@ public class ExomiserSettings {
         geneticInterval = builder.geneticInterval;
         removePathFilterCutOff = builder.removePathFilterCutOff;
         removeDbSnp = builder.removeDbSnp;
-        removeOffTargetVariants = builder.removeOffTargetVariants;
+        removeOffTargetVariants = builder.keepOffTargetVariants;
         genesToKeep = builder.geneIdsToKeep;
         
         //PRIORITISER options
@@ -432,8 +432,8 @@ public class ExomiserSettings {
         return removeDbSnp;
     }
 
-    @JsonProperty(REMOVE_OFF_TARGET_OPTION)
-    public boolean removeOffTargetVariants() {
+    @JsonProperty(KEEP_OFF_TARGET_OPTION)
+    public boolean keepOffTargetVariants() {
         return removeOffTargetVariants;
     }
 

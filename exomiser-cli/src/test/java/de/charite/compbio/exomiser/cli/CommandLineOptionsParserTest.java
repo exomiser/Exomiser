@@ -128,7 +128,7 @@ public class CommandLineOptionsParserTest {
         settingsBuilder.minimumQuality(0f);
         settingsBuilder.removePathFilterCutOff(false);
         settingsBuilder.removeDbSnp(true);
-        settingsBuilder.removeOffTargetVariants(true);
+        settingsBuilder.keepOffTargetVariants(true);
         settingsBuilder.candidateGene("FGFR2");
         settingsBuilder.hpoIdList(Arrays.asList("HP:0000001","HP:0000002","HP:0000003"));
         settingsBuilder.seedGeneList(Arrays.asList(12345,2345,3456,1234567));
@@ -321,17 +321,17 @@ public class CommandLineOptionsParserTest {
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removeOffTargetVariants(), is(false));
+        assertThat(exomiserSettings.keepOffTargetVariants(), is(true));
     }
 
     @Test
-    public void shouldProduceSettingsWithRemoveOffTargetDefaultWhenNotSet() {
+    public void shouldProduceSettingsWithKeepOffTargetDefaultWhenNotSet() {
         String option = "--keep-off-target";
         String input = "-v 123.vcf --prioritiser=phive";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removeOffTargetVariants(), is(true));
+        assertThat(exomiserSettings.keepOffTargetVariants(), is(false));
     }
 
     @Test

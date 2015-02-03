@@ -101,7 +101,7 @@ public class FilterFactory {
             filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
         }
 
-        if (settings.removeOffTargetVariants()) {
+        if (!settings.keepOffTargetVariants()) {
             filtersToRun.add(FilterType.TARGET_FILTER);
         }
         filtersToRun.add(FilterType.FREQUENCY_FILTER);
