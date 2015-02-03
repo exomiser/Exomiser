@@ -16,13 +16,17 @@ import org.apache.commons.cli.Option;
 public class PathogenicityFilterCutOffOptionMarshaller extends AbstractOptionMarshaller {
 
     public PathogenicityFilterCutOffOptionMarshaller() {
-        option = new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, true, "Keep all variants, regardless of predicted pathogenicity or variant type. Default: false");
+        option = new Option("P", REMOVE_PATHOGENICITY_FILTER_CUTOFF, false, 
+                "Keep all variants, regardless of predicted pathogenicity or variant type.");
     }
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
-        //default is true
-        settingsBuilder.removePathFilterCutOff(Boolean.parseBoolean(values[0]));
+        if (values == null) {
+            //default is to remove the non-pathogenic variants, so this should be false
+            settingsBuilder.removePathFilterCutOff(false);
+        }
+        settingsBuilder.removePathFilterCutOff(true);
     }
 
 }

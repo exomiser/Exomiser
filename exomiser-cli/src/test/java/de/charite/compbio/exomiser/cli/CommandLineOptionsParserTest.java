@@ -254,13 +254,12 @@ public class CommandLineOptionsParserTest {
     @Test
     public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsTrueWhenSet() {
         String option = ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
-        boolean value = true;
-        String input = String.format("-v 123.vcf --%s=%s --prioritiser=phive", option, value);
+        String input = String.format("-v 123.vcf --%s --prioritiser=phive", option);
         System.out.println(input);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removePathFilterCutOff(), equalTo(value));
+        assertThat(exomiserSettings.removePathFilterCutOff(), equalTo(true));
     }
 
     @Test
@@ -294,8 +293,8 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void should_produce_settings_when_remove_off_target_syn_is_set() {
-        String option = "--remove-off-target-syn";
+    public void shouldProduceSettingsWithRemoveOffTargetWhenSet() {
+        String option = "--keep-off-target";
         String input = String.format("-v 123.vcf %s --prioritiser=phive", option);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
@@ -304,8 +303,8 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void should_produce_settings_with_remove_off_target_syn_default_when_not_set() {
-        String option = "--remove-off-target-syn";
+    public void shouldProduceSettingsWithRemoveOffTargetDefaultWhenNotSet() {
+        String option = "--keep-off-target";
         String input = "-v 123.vcf --prioritiser=phive";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);

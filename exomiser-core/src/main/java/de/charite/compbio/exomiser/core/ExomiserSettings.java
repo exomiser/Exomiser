@@ -63,9 +63,9 @@ public class ExomiserSettings {
     public static final String MAX_FREQ_OPTION = "max-freq";
     public static final String MIN_QUAL_OPTION = "min-qual";
     public static final String GENETIC_INTERVAL_OPTION = "restrict-interval";
-    public static final String REMOVE_PATHOGENICITY_FILTER_CUTOFF = "remove-path-filter-cutoff";
+    public static final String REMOVE_PATHOGENICITY_FILTER_CUTOFF = "keep-non-pathogenic";
     public static final String REMOVE_DBSNP_OPTION = "remove-dbsnp";
-    public static final String REMOVE_OFF_TARGET_OPTION = "remove-off-target-syn";
+    public static final String REMOVE_OFF_TARGET_OPTION = "keep-off-target";
     public static final String GENES_TO_KEEP_OPTION = "genes-to-keep";
     
     //FILTER variables

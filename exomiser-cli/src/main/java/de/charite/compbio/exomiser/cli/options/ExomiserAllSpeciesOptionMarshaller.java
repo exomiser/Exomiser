@@ -19,7 +19,7 @@ public class ExomiserAllSpeciesOptionMarshaller extends AbstractOptionMarshaller
 
     public ExomiserAllSpeciesOptionMarshaller() {
         option = OptionBuilder
-                .hasArgs()
+                .hasOptionalArgs()
                 .withArgName("type")
                 .withType(OutputFormat.class)
                 .withValueSeparator(',')

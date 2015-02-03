@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -30,7 +29,7 @@ public class ExomiserAllSpeciesOptionMarshallerTest {
     @Test
     public void testThatOptionAcceptsMultipleValues() {
         Option option = instance.option;
-        assertThat(option.hasArgs(), is(true));
+        assertThat(option.hasOptionalArg(), is(true));
         assertThat(option.getValueSeparator(), equalTo(','));
     }
     
