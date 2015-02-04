@@ -1,0 +1,4 @@
+test-hiphive.settings
+test-phive.settings
+test-walker.settings
+test-phenix.settings
