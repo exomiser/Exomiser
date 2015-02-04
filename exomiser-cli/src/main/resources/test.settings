@@ -16,10 +16,10 @@ ped=
 max-freq=1.0
 restrict-interval=
 min-qual=0
-keep-non-pathogenic=true
+keep-non-pathogenic=false
 remove-dbsnp=false
 keep-off-target=false
-full-analysis=true
+full-analysis=false
 
 #PRIORITISER OPTIONS
 candidate-gene=FGFR2

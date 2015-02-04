@@ -126,7 +126,7 @@ public class CommandLineOptionsParserTest {
         settingsBuilder.usePrioritiser(PriorityType.EXOMISER_MOUSE_PRIORITY);
         settingsBuilder.maximumFrequency(0.01f);
         settingsBuilder.minimumQuality(0f);
-        settingsBuilder.removePathFilterCutOff(false);
+        settingsBuilder.removePathFilterCutOff(true);
         settingsBuilder.removeDbSnp(true);
         settingsBuilder.keepOffTargetVariants(true);
         settingsBuilder.candidateGene("FGFR2");
