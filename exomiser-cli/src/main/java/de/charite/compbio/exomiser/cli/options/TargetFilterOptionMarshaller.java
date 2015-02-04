@@ -20,7 +20,9 @@ public class TargetFilterOptionMarshaller extends AbstractOptionMarshaller {
                 .hasOptionalArg()
                 .withType(Boolean.class)
                 .withArgName("true/false")
-                .withDescription("Keep off-target variants. These are defined as intergenic, intronic, upstream, downstream, synonymous or intronic ncRNA variants.")
+                .withDescription("Keep the off-target variants that are normally removed by default. "
+                        + "These are defined as intergenic, intronic, upstream, downstream or intronic ncRNA variants. "
+                        + "This setting can optionally take a true/false argument. Not including the argument is equivalent to specifying 'true'.")
                 .withLongOpt(KEEP_OFF_TARGET_OPTION) 
                 .create("T");
     }
