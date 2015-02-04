@@ -122,10 +122,9 @@
                                     <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
                                     <filtering>true</filtering>
                                     <includes>
+                                        <include>*.settings</include>
+                                        <include>test-batchFiles.txt</include>
                                         <include>application.properties</include>
-                                        <include>example.settings</include>
-                                        <include>test.settings</include>
-                                        <include>test-multisample.settings</include>
                                         <include>log4j2.xml</include>
                                         <include>ehcache.xml</include>
                                     </includes> 
