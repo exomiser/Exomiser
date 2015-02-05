@@ -1,9 +1,22 @@
-/exomiser-db/target/
-/exomiser-core/target/
-/exomiser-db/data/
-/exomiser/target/
+# Maven stuff
+/*/target
+  /*/bin
+
+# NetBeans stuff
+nbactions.xml
+
+# IntelliJ stuff
 /.idea
 *.iml
 *.log
-nbactions.xml
-/target/
+
+# Vim stuff
+*.sw?
+
+# Emacs stuff
+*~
+
+# Eclipse stuff
+.project
+.settings
+.classpath
