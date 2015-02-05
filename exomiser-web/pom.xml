@@ -148,7 +148,7 @@
                     <!--if you're trying to develop html templates on a running 
                     server in NetBeans comment the webResources section out and 
                     the templates will be automatically deployed -->
-                    <webResources>
+<!--                    <webResources>
                         <resource>
                             <directory>src/test/resources</directory>
                             <includes>
@@ -156,7 +156,7 @@
                             </includes>
                             <targetPath>resources</targetPath>
                         </resource>
-                    </webResources>
+                    </webResources>-->
                 </configuration>
             </plugin>
         </plugins>

@@ -80,7 +80,7 @@ public class SubmitJobController {
             @RequestParam(value = "genetic-interval", required = false) String geneticInterval,
             @RequestParam("frequency") String frequency,
             @RequestParam("remove-dbsnp") Boolean removeDbSnp,
-            @RequestParam("remove-non-pathogenic") Boolean removeNonPathogenic,
+            @RequestParam("keep-non-pathogenic") Boolean keepNonPathogenic,
             @RequestParam("keep-off-target") Boolean keepOffTarget,
             @RequestParam("inheritance") String modeOfInheritance,
             @RequestParam(value = "genes-to-keep", required = false) List<String> genesToFilter,
@@ -96,7 +96,7 @@ public class SubmitJobController {
         logger.info("Selected phenotypes: {}", phenotypes);
         Set<Integer> genesToKeep = makeGenesToKeep(genesToFilter);
      
-        ExomiserSettings settings = buildSettings(vcfPath, pedPath, diseaseId, phenotypes, minimumQuality, removeDbSnp, keepOffTarget, removeNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
+        ExomiserSettings settings = buildSettings(vcfPath, pedPath, diseaseId, phenotypes, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
 
         if (!settings.isValid()) {
             return "submit";
@@ -162,7 +162,7 @@ public class SubmitJobController {
         model.addAttribute("genes", passedGenes);
     }
 
-    private ExomiserSettings buildSettings(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean removeNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
+    private ExomiserSettings buildSettings(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
                 //Upload Sample Files input
                 .vcfFilePath(vcfPath)
@@ -176,7 +176,7 @@ public class SubmitJobController {
                 .keepOffTargetVariants(keepOffTarget)
                 //make this work for nulls....
                 //                .geneticInterval(GeneticInterval.parseString(geneticInterval))
-                .removePathFilterCutOff(removeNonPathogenic)
+                .removePathFilterCutOff(keepNonPathogenic)
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .maximumFrequency(Float.valueOf(frequency))
                 .genesToKeepList(genesToKeep)
