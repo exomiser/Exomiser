@@ -6,23 +6,26 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
-import jannovar.common.VariantType;
+import java.util.Collection;
+
+import de.charite.compbio.jannovar.annotation.PutativeImpact;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 /**
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 public abstract class VariantTypePathogenicityScores {
-    
+
     /**
-     * This is the pathogenicity value we will give to missense (nonsynonymous)
-     * variants for which we cannot find values for mutationTaster, polyphen2,
-     * or SIFT.
+     * This is the pathogenicity value we will give to missense (nonsynonymous) variants for which we cannot find values
+     * for mutationTaster, polyphen2, or SIFT.
      */
     public static final float DEFAULT_MISSENSE_SCORE = 0.6f;
     /**
-     * Pathogenicity score for a mutation class such as INTERGENIC where we are
-     * entirely sure it is nonpathogenic (for the purposes of this software).
+     * Pathogenicity score for a mutation class such as INTERGENIC where we are entirely sure it is nonpathogenic (for
+     * the purposes of this software).
      */
     public static final float NON_PATHOGENIC_SCORE = 0.00f;
     /**
@@ -50,47 +53,48 @@ public abstract class VariantTypePathogenicityScores {
      */
     public static final float STOPLOSS_SCORE = 0.70f;
     /**
-     * Assumed pathogenicity score for a variant that causes the start codon to
-     * be lost.
+     * Assumed pathogenicity score for a variant that causes the start codon to be lost.
      */
     public static final float STARTLOSS_SCORE = 0.95f;
 
+    public static final float getPathogenicityScoreOf(Collection<VariantEffect> effects) {
+        if (effects.isEmpty())
+            return NON_PATHOGENIC_SCORE; // no effect annotated
+        VariantEffect variantEffect = effects.iterator().next(); // highest priority effect
 
+        // guard against the case that the highest-impact effect is neither high nor moderate
+        if (variantEffect.getImpact().ordinal() > PutativeImpact.MODERATE.ordinal())
+            return NON_PATHOGENIC_SCORE; // neither HIGH nor MODERATE
 
-    public static final float getPathogenicityScoreOf(VariantType variantType) {
-        if (!variantType.isTopPriorityVariant()) {
-            return NON_PATHOGENIC_SCORE;
-        }
-        switch (variantType) {
-            case MISSENSE:
+        switch (variantEffect) {
+            case MISSENSE_VARIANT:
                 return DEFAULT_MISSENSE_SCORE;
-            case FS_DELETION:
+            case SYNONYMOUS_VARIANT:
+                return SYNONYMOUS_SCORE;
+            case DISRUPTIVE_INFRAME_DELETION:
+            case DISRUPTIVE_INFRAME_INSERTION:
+            case FRAMESHIFT_ELONGATION:
+            case FRAMESHIFT_TRUNCATION:
+            case FRAMESHIFT_VARIANT:
                 return FRAMESHIFT_SCORE;
-            case FS_INSERTION:
-                return FRAMESHIFT_SCORE;
-            case NON_FS_SUBSTITUTION:
+            case MNV:
+            case FEATURE_TRUNCATION:
+            case INFRAME_DELETION:
+            case INFRAME_INSERTION:
+            case INTERNAL_FEATURE_ELONGATION:
+            case COMPLEX_SUBSTITUTION:
                 return NONFRAMESHIFT_INDEL_SCORE;
-            case FS_SUBSTITUTION:
-                return FRAMESHIFT_SCORE;
-            case NON_FS_DELETION:
-                return NONFRAMESHIFT_INDEL_SCORE;
-            case NON_FS_INSERTION:
-                return NONFRAMESHIFT_INDEL_SCORE;
-            case SPLICING:
+            case SPLICE_ACCEPTOR_VARIANT:
+            case SPLICE_DONOR_VARIANT:
+            case SPLICE_REGION_VARIANT:
                 return SPLICING_SCORE;
-            case STOPGAIN:
-                return NONSENSE_SCORE;
-            case STOPLOSS:
-                return STOPLOSS_SCORE;
-            //Note, the frameshift duplication get the FRAMESHIFT default score
-            case FS_DUPLICATION:
-                return FRAMESHIFT_SCORE;
-            case NON_FS_DUPLICATION:
-                return NONFRAMESHIFT_INDEL_SCORE;
-            case START_LOSS:
+            case START_LOST:
                 return STARTLOSS_SCORE;
+            case STOP_LOST:
+                return STOPLOSS_SCORE;
+            case STOP_GAINED:
+                return NONSENSE_SCORE;
             default:
-                //(the remainder should be the ).
                 return NON_PATHOGENIC_SCORE;
         }
     }

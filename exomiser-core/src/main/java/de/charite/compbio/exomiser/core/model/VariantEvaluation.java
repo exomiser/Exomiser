@@ -5,8 +5,10 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,16 +71,18 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * @return the VariantType such as MISSENSE, FRAMESHIFT DELETION, etc.
+     * @return the most prevalent {@link VariantEffect} such as {@link VariantEffect#MISSENSE_VARIANT},
+     *         {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code> if there is no annotated effect.
      */
-    public VariantType getVariantType() {
-        return this.var.getVariantTypeConstant();
+    public VariantEffect getVariantEffect() {
+        return this.var.getHighestImpactEffect();
     }
 
     /**
      * @return the HGVS gene symbol associated with the variant.
      */
     public String getGeneSymbol() {
+        final Annotation anno = var.getHighestImpactAnnotation();
         String name = var.getGeneSymbol();
         return (name == null) ? "." : parseGeneSymbol(name);
     }

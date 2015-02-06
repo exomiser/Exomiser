@@ -2,7 +2,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import java.util.ArrayList;
 
-import jannovar.common.Constants;
+import de.charite.compbio.exomiser.core.Constants;
 import java.util.List;
 
 /**

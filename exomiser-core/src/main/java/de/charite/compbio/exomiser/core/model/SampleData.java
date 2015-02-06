@@ -7,6 +7,8 @@
 package de.charite.compbio.exomiser.core.model;
 
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import htsjdk.variant.vcf.VCFHeader;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +26,9 @@ public class SampleData {
     private Path vcfFilePath;
     
     /**
-     * Store lines of header of VCF file, in case we want to print them out
-     * again.
+     * Header of the VCF file.
      */
-    private List<String> vcfHeader;
+    private VCFHeader vcfHeader;
 
     /**
      * Total number of samples (sequenced persons) in the input VCF file.
@@ -84,11 +85,11 @@ public class SampleData {
         this.vcfFilePath = vcfFilePath;
     }
 
-    public List<String> getVcfHeader() {
+    public VCFHeader getVcfHeader() {
         return vcfHeader;
     }
 
-    public void setVcfHeader(List<String> vcfHeader) {
+    public void setVcfHeader(VCFHeader vcfHeader) {
         this.vcfHeader = vcfHeader;
     }
 

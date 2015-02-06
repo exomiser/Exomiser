@@ -35,10 +35,6 @@ public class VariantAnnotator {
     /** tool for obtaining annotations for the {@link VariantContext} objects */
     private final VariantContextAnnotator annotator;
 
-    //TODO: Jannovar 0.11
-//    final JannovarData data = new JannovarDataSerializer(this.options.dataFile).load();
-//    final VariantAnnotator annotator = new VariantAnnotator(data.refDict, data.chromosomes); 
-    
     public VariantAnnotator(JannovarData jannovarData) {
         this.annotator = new VariantContextAnnotator(jannovarData.refDict, jannovarData.chromosomes);
     }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
 
-import jannovar.common.Constants;
+import de.charite.compbio.exomiser.core.Constants;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.LinkedHashSet;

@@ -39,12 +39,39 @@ public class Variant {
         else
             this.change = annotations.entries.get(0).change;
     }
-    
-    public VariantEffect getVariantTypeConstant() {
-        if (this.annotations.entries.isEmpty() || this.annotations.entries.get(0).effects.isEmpty())
-            return null;
-        else
-            return this.annotations.entries.get(0).effects.first();
+
+    /**
+     * Shortcut to <code>change.pos.chr</code>
+     * 
+     * @return <code>int</code> representation of chromosome
+     */
+    public int getChromosome() {
+        return change.pos.chr;
+    }
+
+    /**
+     * Shortcut to <code>change.pos.pos + 1</code>.
+     * 
+     * Returns a 1-based coordinate (as used in the Exomiser) instead of the 0-based coordinates from Jannovar.
+     * 
+     * @return one-based position
+     */
+    public int getPosition() {
+        return change.pos.pos + 1;
+    }
+
+    /**
+     * @return Highest-impact {@link VariantEffect} or <code>null</code> if there is none.
+     */
+    public VariantEffect getHighestImpactEffect() {
+        return annotations.getHighestImpactEffect();
+    }
+
+    /**
+     * @return Highest-impact {@link Variant} or <code>null</code> if there is none.
+     */
+    public Variant getHighestImpactVariant() {
+        return annotations.getHighestImpactAnnotation();
     }
 
 }
