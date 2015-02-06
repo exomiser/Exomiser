@@ -1,6 +1,9 @@
 # Maven stuff
 /*/target
-  /*/bin
+/*/bin
+
+# Test output
+*/test*.html
 
 # NetBeans stuff
 nbactions.xml
