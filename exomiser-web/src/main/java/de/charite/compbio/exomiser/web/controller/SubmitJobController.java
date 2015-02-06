@@ -109,6 +109,7 @@ public class SubmitJobController {
         exomiser.analyse(sampleData, settings);
 
         buildResultsModel(model, settings, sampleData);
+        
         logger.info("Returning {} results to user", vcfPath.getFileName());
         cleanUpSampleFiles(vcfPath, pedPath);
         return "results";
@@ -178,7 +179,7 @@ public class SubmitJobController {
                 }
             }
         }
-        logger.info("Returning {} of a total of {} genes for display", passedGenes, genes);
+        logger.info("Returning {} of a total of {} genes for display", passedGenes.size(), genes.size());
         return passedGenes;
     }
 
