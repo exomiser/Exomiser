@@ -84,58 +84,73 @@ and open the template in the editor.
                     <div class="panel-body">
                         <div class="col-sm-4">
                             <label for="quality">Minimum variant call quality:</label>
-                            <div class="input-group">
-                                <span class="input-group-addon">Phred</span>
-                                <input class="form-control" type="text" name="quality" id="quality" placeholder="e.g. 30.0"/>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Phred</span>
+                                    <input class="form-control" type="text" name="quality" id="quality" placeholder="e.g. 30.0"/>
+                                </div>
                             </div>
 
                             <label for="remove-dbsnp">Remove all dbSNP variants: </label>
-                            <select name="remove-dbsnp" id="remove-dbsnp" data-toggle="dropdown" class="chosen-select">
-                                <option selected="true" value="false">False</option>
-                                <option value="true">True</option>                               
-                            </select>
+                            <div class="form-group">
+                                <select name="remove-dbsnp" id="remove-dbsnp" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="false">False</option>
+                                    <option value="true">True</option>                               
+                                </select>
+                            </div>
 
                             <label for="keep-off-target">Keep off-target variants: </label>
-                            <select name="keep-off-target" id="keep-off-target" data-toggle="dropdown" class="chosen-select">
-                                <option selected="true" value="false">False</option>
-                                <option value="true">True</option>                               
-                            </select>
+                            <div class="form-group">
+                                <select name="keep-off-target" id="keep-off-target" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="false">False</option>
+                                    <option value="true">True</option>                               
+                                </select>
+                            </div>
                         </div>
                         <div class="col-sm-4">  
                             <label for="interval">Genetic interval:</label>
-                            <div class="input-group">
-                                <span class="input-group-addon">Chr</span>
-                                <input class="form-control" type="text" name="interval" id="interval" placeholder="e.g. 1:12339-3242525"/>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Chr</span>
+                                    <input class="form-control" type="text" name="interval" id="interval" placeholder="e.g. 1:12339-3242525"/>
+                                </div>
                             </div>
 
                             <label for="keep-non-pathogenic">Keep non-pathogenic variants: </label>
-                            <select name="keep-non-pathogenic" id="keep-non-pathogenic" data-toggle="dropdown" class="chosen-select">
-                                <option selected="true" value="false">False</option>
-                                <option value="true">True</option>                                
-                            </select>
+                            <div class="form-group">
+                                <select name="keep-non-pathogenic" id="keep-non-pathogenic" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="false">False</option>
+                                    <option value="true">True</option>                                
+                                </select>
+                            </div>
 
                             <label for="inheritance">Inheritance model: </label>
-                            <select name="inheritance" id="inheritance" data-toggle="dropdown" class="chosen-select">
-                                <option selected="true" value="UNINITIALIZED">None</option>
-                                <option value="AUTOSOMAL_DOMINANT">Autosomal dominant</option>
-                                <option value="AUTOSOMAL_RECESSIVE">Autosomal recessive</option>
-                                <option value="X_RECESSIVE">X-linked</option>
-                            </select>
+                            <div class="form-group">
+                                <select name="inheritance" id="inheritance" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="UNINITIALIZED">None</option>
+                                    <option value="AUTOSOMAL_DOMINANT">Autosomal dominant</option>
+                                    <option value="AUTOSOMAL_RECESSIVE">Autosomal recessive</option>
+                                    <option value="X_RECESSIVE">X-linked</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="col-sm-4">  
                             <label for="frequency">Maximum minor allele frequency:</label>
-                            <div class="input-group">
-                                <span class="input-group-addon">MAF</span>
-                                <input class="form-control" type="text" name="frequency" id="frequency" value="1.0"/>
-                                <span class="input-group-addon">%</span>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">MAF</span>
+                                    <input class="form-control" type="text" name="frequency" id="frequency" value="1.0"/>
+                                    <span class="input-group-addon">%</span>
+                                </div>
                             </div>
+
                             <label for="gene-filter">Filter for genes:</label>
                             <div class="form-group">
                                 <select data-placeholder=" e.g. FGFR2" class="chosen-select" multiple="true" tabindex="3" name="genes-to-keep" id="gene-filter">
                                 </select>
                             </div>
-                        </div>  
-                    </div> 
+                        </div> 
+                    </div>
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
@@ -162,8 +177,9 @@ and open the template in the editor.
                     </button> 
                     <p class="help-block">
                         Please be patient and do not mash the submit button - the anaylsis could take a minute or two depending on the size of the sample and load on the server. 
-                        No data submitted or returned (VCF file, sequence data, phenotype data and results) are written to disk at any stage or stored in memory for longer than the HTTP session.
-                        If you require the Exomiser for analysing multiple samples we <em>strongly</em> suggest you download and run the offline version available via <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/">FTP</a>. 
+                        VCF files are stored as temporary files on our server and deleted following analysis. For performance reasons only the top 100 genes are returned. 
+                        If you require the Exomiser for analysing large samples or batches of multiple samples we <em>strongly</em> suggest you download and run the 
+                        offline version available from the <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/">FTP site</a>. 
                         The Exomiser is freely available for academic users or for private use. Other users are requested to contact us to obtain a license.
                     </p>
 

@@ -150,6 +150,20 @@ public class SubmitJobController {
         if (numGenesToShow == 0) {
             numGenesToShow = sampleData.getGenes().size();
         }
+        model.addAttribute("geneResultsTruncated", false);
+        if (numGenesToShow < sampleData.getGenes().size()) {
+            model.addAttribute("geneResultsTruncated", true);
+            model.addAttribute("numGenesShown", numGenesToShow);
+            int numCandidateGenes = 0;
+            for (Gene gene : sampleData.getGenes()) {
+                    if (gene.passedFilters()) {
+                        passedGenes.add(gene);
+                        numCandidateGenes++;
+                }
+            }
+            model.addAttribute("numCandidateGenes", numCandidateGenes);
+            model.addAttribute("totalGenes", sampleData.getGenes().size());
+        }
         int genesShown = 0;
         for (Gene gene : sampleData.getGenes()) {
             if (genesShown <= numGenesToShow) {
@@ -180,6 +194,8 @@ public class SubmitJobController {
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .maximumFrequency(Float.valueOf(frequency))
                 .genesToKeepList(genesToKeep)
+                //we're hardcoding this value as more than this will put undue strain on the server for displaying the results.
+                .numberOfGenesToShow(100)
                 //Choose Prioritiser
                 .usePrioritiser(PriorityType.valueOf(prioritiser))
                 .build();
@@ -209,7 +225,7 @@ public class SubmitJobController {
         if (!multipartFile.isEmpty()) {
             logger.info("Uploading multipart file: {}", multipartFile.getOriginalFilename());
             try {
-                path = Paths.get(multipartFile.getOriginalFilename());
+                path = Paths.get(System.getProperty("java.io.tmpdir"), multipartFile.getOriginalFilename());
                 multipartFile.transferTo(path.toFile());
             } catch (IOException e) {
                 logger.error("Failed to upload file {}", multipartFile.getOriginalFilename(), e);
