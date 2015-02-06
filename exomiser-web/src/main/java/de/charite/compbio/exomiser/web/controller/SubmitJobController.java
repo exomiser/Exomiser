@@ -30,7 +30,7 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
 import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;

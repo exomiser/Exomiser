@@ -5,12 +5,11 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import jannovar.annotation.Annotation;
-import jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
 import jannovar.common.VariantType;
 import jannovar.exception.AnnotationException;
 import jannovar.exome.Variant;
-import jannovar.reference.Chromosome;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

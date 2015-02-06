@@ -13,7 +13,7 @@ import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import jannovar.exome.VariantTypeCounter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -59,11 +59,11 @@ public class ResultsWriterUtils {
         
         List<VariantTypeCount> variantTypeCounters = new ArrayList<>();
         
-        Iterator<VariantType> iter = variantTypeCounter.getVariantTypeIterator();
+        Iterator<VariantEffect> iter = variantTypeCounter.getVariantTypeIterator();
         while (iter.hasNext()) {
-            VariantType variantType = iter.next();
-            List<Integer> typeSpecificCounts = variantTypeCounter.getTypeSpecificCounts(variantType);
-            VariantTypeCount variantTypeCount = new VariantTypeCount(variantType, typeSpecificCounts);
+            VariantEffect variantEffect = iter.next();
+            List<Integer> typeSpecificCounts = variantTypeCounter.getTypeSpecificCounts(variantEffect);
+            VariantTypeCount variantTypeCount = new VariantTypeCount(variantEffect, typeSpecificCounts);
             variantTypeCounters.add(variantTypeCount);
         }
         

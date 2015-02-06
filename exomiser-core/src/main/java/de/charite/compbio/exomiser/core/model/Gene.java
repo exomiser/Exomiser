@@ -3,7 +3,7 @@ package de.charite.compbio.exomiser.core.model;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.util.ArrayList;
 import java.util.Collection;

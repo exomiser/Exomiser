@@ -10,14 +10,17 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import jannovar.common.Constants;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.exomiser.core.Constants;
+import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +45,8 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
         //if a variant is not classified as missense then we don't need to hit 
         //the database as we're going to assign it a constant pathogenicity score.
-        VariantType variantType = variant.getVariantTypeConstant();
-        if (variantType != VariantType.MISSENSE) {
+        VariantEffect variantType = variant.getVariantTypeConstant();
+        if (variantType != VariantEffect.MISSENSE_VARIANT) {
             return new PathogenicityData(null, null, null, null);
         }
 
@@ -68,18 +71,15 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
                 + "AND position = ? "
                 + "AND ref = ? "
                 + "AND alt = ? ");
-
         PreparedStatement ps = connection.prepareStatement(query);
-        int chrom = variant.get_chromosome();
-        int position = variant.get_position();
-        // Note: when we get here, we have tested above that we have a nonsynonymous substitution
-        char ref = variant.get_ref().charAt(0);
-        char alt = variant.get_alt().charAt(0);
 
-        ps.setInt(1, chrom);
-        ps.setInt(2, position);
-        ps.setString(3, Character.toString(ref));
-        ps.setString(4, Character.toString(alt));
+        // FIXME(holtgrewe): See my comment in {@link DefaultFrequencyDao.createPreparedStatement}.
+
+        // Note: when we get here, we have tested above that we have a nonsynonymous substitution
+        ps.setInt(1, variant.change.pos.chr);
+        ps.setInt(2, variant.change.pos.pos + 1);
+        ps.setString(3, variant.change.ref.substring(0, 1));
+        ps.setString(4, variant.change.alt.substring(0, 1));
 
         return ps;
     }

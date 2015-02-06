@@ -22,7 +22,7 @@ import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

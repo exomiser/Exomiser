@@ -7,8 +7,8 @@ package de.charite.compbio.exomiser.core.model;
 
 import jannovar.exception.PedParseException;
 import jannovar.exome.Variant;
-import jannovar.pedigree.Pedigree;
-import jannovar.pedigree.Person;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Person;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;

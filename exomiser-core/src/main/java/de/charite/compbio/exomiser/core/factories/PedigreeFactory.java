@@ -8,7 +8,7 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import jannovar.exception.PedParseException;
 import jannovar.io.PedFileParser;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;

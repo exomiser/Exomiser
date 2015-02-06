@@ -5,14 +5,13 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import jannovar.exception.JannovarException;
-import jannovar.exception.VCFParseException;
-import jannovar.exome.Variant;
-import jannovar.io.VCFReader;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,58 +20,19 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class VariantFactory {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
 
-    // jannovar.cli.AnnotateVCFCommand
-    public VCFReader createVcfReader(Path vcfFilePath) {
-        VCFReader vcfReader = null;
-        
-        try {
-            vcfReader = new VCFReader(vcfFilePath.toString());
-        } catch (VCFParseException ex) {
-            String message = String.format("Could not create VCFReader for VCF file: '%s'", vcfFilePath);
-            logger.error(message, ex);
-            throw new VcfParseException(message, ex);
-        }
-        
-        try {
-            vcfReader.inputVCFheader();
-        } catch (VCFParseException ex) {
-            String message = String.format("Unable to parse header information from VCF file: '%s'", vcfReader.getVCFFileName());
-            logger.error(message, ex);
-            throw new VcfParseException(message, ex);
-        }
-        
-        return vcfReader;    
+    public VCFFileReader createVcfReader(Path vcfFilePath) {
+        return new VCFFileReader(vcfFilePath.toFile(), false); // false => do not require index
     }
 
-    //Jannovar 0.11 uses HTSJDK VariantContext jannovar.cli.AnnotatePositionCommand -> GenomeChange
-    //Variant ~= VariantContext
-    //VariantType -> now moved to jannovar-core jannovar.annotation.VariantType
-    //
-    public List<Variant> createVariants(VCFReader vcfReader) {
-        List<Variant> variants = new ArrayList<>();
-        logger.info("Parsing Variants from VCF");
-        try {
-            Iterator<Variant> variantIterator = vcfReader.getVariantIterator();
-            while (variantIterator.hasNext()) {
-                variants.add(variantIterator.next());
-            }
-        } catch (JannovarException ex) {
-            String message = String.format("Error parsing Variants from VCF file '%s'", vcfReader.getVCFFileName());
-            logger.error(message, ex);
-            throw new VcfParseException(message, ex);
-        }
+    public List<VariantContext> createVariants(VCFFileReader vcfReader) {
+        List<VariantContext> variants = new ArrayList<>();
+        logger.info("Parsing records from VCF");
+        for (VariantContext vc : vcfReader)
+            variants.add(vc);
         return variants;
     }
- 
-    
-    public class VcfParseException extends RuntimeException {
 
-        public VcfParseException(String format, Exception e) {
-            super(format, e);
-        }
-    }
-    
 }

@@ -8,13 +8,13 @@ package de.charite.compbio.exomiser.core.writers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import jannovar.annotation.Annotation;
-import jannovar.annotation.AnnotationList;
-import jannovar.common.Genotype;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.pedigree.Genotype;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;
-import jannovar.reference.TranscriptModel;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;

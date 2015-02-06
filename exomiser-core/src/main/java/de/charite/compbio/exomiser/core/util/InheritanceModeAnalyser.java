@@ -7,9 +7,9 @@ package de.charite.compbio.exomiser.core.util;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import jannovar.exome.Variant;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;

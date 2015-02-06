@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
