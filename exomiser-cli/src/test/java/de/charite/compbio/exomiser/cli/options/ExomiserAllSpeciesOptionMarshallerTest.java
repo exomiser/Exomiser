@@ -34,7 +34,7 @@ public class ExomiserAllSpeciesOptionMarshallerTest {
     @Test
     public void testThatOptionAcceptsMultipleValues() {
         Option option = instance.option;
-        assertThat(option.hasOptionalArg(), is(true));
+        assertThat(option.hasArgs(), is(true));
         assertThat(option.getValueSeparator(), equalTo(','));
     }
     
