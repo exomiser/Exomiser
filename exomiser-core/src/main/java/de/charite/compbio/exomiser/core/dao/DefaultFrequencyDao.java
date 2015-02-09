@@ -72,8 +72,8 @@ public class DefaultFrequencyDao implements FrequencyDao {
         // converting from the 0-based positions in new Jannovar's GenomeChange to 1-based for Exomisers (which is what
         // the old Janovar used). Also, the reference is "" in the case of deletions and alt is "" in the case of
         // insertions. The old representation for either was "-". Changing this will probably
-        ps.setInt(1, variant.change.pos.chr);
-        ps.setInt(2, variant.change.pos.pos + 1);
+        ps.setInt(1, variant.getGenomePosition().chr);
+        ps.setInt(2, variant.getGenomePosition().pos + 1);
         ps.setString(3, variant.change.ref);
         ps.setString(4, variant.change.alt);
 

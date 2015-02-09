@@ -76,8 +76,8 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         // FIXME(holtgrewe): See my comment in {@link DefaultFrequencyDao.createPreparedStatement}.
 
         // Note: when we get here, we have tested above that we have a nonsynonymous substitution
-        ps.setInt(1, variant.change.pos.chr);
-        ps.setInt(2, variant.change.pos.pos + 1);
+        ps.setInt(1, variant.getGenomePosition().chr);
+        ps.setInt(2, variant.getGenomePosition().pos + 1);
         ps.setString(3, variant.change.ref.substring(0, 1));
         ps.setString(4, variant.change.alt.substring(0, 1));
 

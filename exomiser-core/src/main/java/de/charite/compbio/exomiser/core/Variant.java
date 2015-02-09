@@ -10,6 +10,7 @@ import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeChange;
+import de.charite.compbio.jannovar.reference.GenomePosition;
 import htsjdk.variant.variantcontext.VariantContext;
 
 /**
@@ -45,6 +46,13 @@ public class Variant {
             this.change = null;
         else
             this.change = annotations.entries.get(0).change;
+    }
+
+    /**
+     * @return forward strand {@link GenomePosition}
+     */
+    public GenomePosition getGenomePosition() {
+        return change.pos.withStrand('+');
     }
 
     /**
