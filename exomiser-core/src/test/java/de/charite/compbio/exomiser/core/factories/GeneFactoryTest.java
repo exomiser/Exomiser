@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.exome.Variant;
 import java.util.ArrayList;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;

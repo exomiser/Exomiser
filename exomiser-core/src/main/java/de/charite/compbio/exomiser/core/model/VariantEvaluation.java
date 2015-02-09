@@ -92,12 +92,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
 
     public int getEntrezGeneID() {
-        final Annotation anno = var.getHighestImpactAnnotation();
-        if (anno == null || anno.transcript == null || anno.transcript.geneID == null)
-            return -1;
-        // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
-        // for UCSC. At this point, there is a hard dependency on using the UCSC database.
-        return Integer.parseInt(anno.transcript.geneID.substring("ENTREZ".length()));
+        return var.getEntrezGeneID();
     }
 
     /**

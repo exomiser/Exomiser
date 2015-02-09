@@ -14,8 +14,6 @@ import static de.charite.compbio.exomiser.core.ExomiserSettings.DEFAULT_OUTPUT_D
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
-import jannovar.exome.VariantTypeCounter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;

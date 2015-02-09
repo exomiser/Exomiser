@@ -5,16 +5,19 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -49,23 +52,23 @@ public class DefaultFrequencyDaoTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(variantNotInDatabase.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(variantNotInDatabase.get_chromosome()).thenReturn(0);
-        Mockito.when(variantNotInDatabase.get_position()).thenReturn(0);
-        Mockito.when(variantNotInDatabase.get_ref()).thenReturn("T");
-        Mockito.when(variantNotInDatabase.get_alt()).thenReturn("G");
+        Mockito.when(variantNotInDatabase.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(variantNotInDatabase.getChromosome()).thenReturn(0);
+        Mockito.when(variantNotInDatabase.getPosition()).thenReturn(0);
+        Mockito.when(variantNotInDatabase.getRef()).thenReturn("T");
+        Mockito.when(variantNotInDatabase.getAlt()).thenReturn("G");
 
-        Mockito.when(variantInDatabaseWithRsId.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(variantInDatabaseWithRsId.get_chromosome()).thenReturn(10);
-        Mockito.when(variantInDatabaseWithRsId.get_position()).thenReturn(123256215);
-        Mockito.when(variantInDatabaseWithRsId.get_ref()).thenReturn("T");
-        Mockito.when(variantInDatabaseWithRsId.get_alt()).thenReturn("G");
+        Mockito.when(variantInDatabaseWithRsId.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(variantInDatabaseWithRsId.getChromosome()).thenReturn(10);
+        Mockito.when(variantInDatabaseWithRsId.getPosition()).thenReturn(123256215);
+        Mockito.when(variantInDatabaseWithRsId.getRef()).thenReturn("T");
+        Mockito.when(variantInDatabaseWithRsId.getAlt()).thenReturn("G");
         //this is a duplicate without frequency data 
-        Mockito.when(variantInDatabaseWithRsId.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(variantInDatabaseWithRsId.get_chromosome()).thenReturn(10);
-        Mockito.when(variantInDatabaseWithRsId.get_position()).thenReturn(123256215);
-        Mockito.when(variantInDatabaseWithRsId.get_ref()).thenReturn("T");
-        Mockito.when(variantInDatabaseWithRsId.get_alt()).thenReturn("G");
+        Mockito.when(variantInDatabaseWithRsId.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(variantInDatabaseWithRsId.getChromosome()).thenReturn(10);
+        Mockito.when(variantInDatabaseWithRsId.getPosition()).thenReturn(123256215);
+        Mockito.when(variantInDatabaseWithRsId.getRef()).thenReturn("T");
+        Mockito.when(variantInDatabaseWithRsId.getAlt()).thenReturn("G");
 
     }
 

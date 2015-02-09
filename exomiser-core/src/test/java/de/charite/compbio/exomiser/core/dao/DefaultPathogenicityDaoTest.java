@@ -5,16 +5,17 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,18 +52,18 @@ public class DefaultPathogenicityDaoTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         
-        Mockito.when(nonMissenseVariant.getVariantTypeConstant()).thenReturn(VariantType.DOWNSTREAM);
-        Mockito.when(missenseVariantNotInDatabase.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(missenseVariantNotInDatabase.get_chromosome()).thenReturn(0);
-        Mockito.when(missenseVariantNotInDatabase.get_position()).thenReturn(0);
-        Mockito.when(missenseVariantNotInDatabase.get_ref()).thenReturn("T");
-        Mockito.when(missenseVariantNotInDatabase.get_alt()).thenReturn("G");
+        Mockito.when(nonMissenseVariant.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
+        Mockito.when(missenseVariantNotInDatabase.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(missenseVariantNotInDatabase.getChromosome()).thenReturn(0);
+        Mockito.when(missenseVariantNotInDatabase.getPosition()).thenReturn(0);
+        Mockito.when(missenseVariantNotInDatabase.getRef()).thenReturn("T");
+        Mockito.when(missenseVariantNotInDatabase.getAlt()).thenReturn("G");
         
-        Mockito.when(missenseVariantInDatabase.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(missenseVariantInDatabase.get_chromosome()).thenReturn(10);
-        Mockito.when(missenseVariantInDatabase.get_position()).thenReturn(123256215);
-        Mockito.when(missenseVariantInDatabase.get_ref()).thenReturn("T");
-        Mockito.when(missenseVariantInDatabase.get_alt()).thenReturn("G");
+        Mockito.when(missenseVariantInDatabase.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(missenseVariantInDatabase.getChromosome()).thenReturn(10);
+        Mockito.when(missenseVariantInDatabase.getChromosome()).thenReturn(123256215);
+        Mockito.when(missenseVariantInDatabase.getRef()).thenReturn("T");
+        Mockito.when(missenseVariantInDatabase.getAlt()).thenReturn("G");
         
     }
 

@@ -5,21 +5,24 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.TargetFilter;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,11 +66,11 @@ public class TargetFilterTest {
         
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(downstreamVariant.getVariantTypeConstant()).thenReturn(VariantType.DOWNSTREAM);
-        Mockito.when(synonymousVariant.getVariantTypeConstant()).thenReturn(VariantType.SYNONYMOUS);
-        Mockito.when(upstreamVariant.getVariantTypeConstant()).thenReturn(VariantType.UPSTREAM);
-        Mockito.when(intergenicVariant.getVariantTypeConstant()).thenReturn(VariantType.INTERGENIC);
+        Mockito.when(missenseVariant.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(downstreamVariant.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
+        Mockito.when(synonymousVariant.getVariantEffect()).thenReturn(VariantEffect.SYNONYMOUS_VARIANT);
+        Mockito.when(upstreamVariant.getVariantEffect()).thenReturn(VariantEffect.UPSTREAM_GENE_VARIANT);
+        Mockito.when(intergenicVariant.getVariantEffect()).thenReturn(VariantEffect.INTERGENIC_VARIANT);
 
         missensePassesFilter = new VariantEvaluation(missenseVariant);
         downstreamFailsFilter = new VariantEvaluation(downstreamVariant);
