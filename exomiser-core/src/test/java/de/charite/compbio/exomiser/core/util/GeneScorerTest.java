@@ -6,6 +6,7 @@
 
 package de.charite.compbio.exomiser.core.util;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
@@ -15,15 +16,16 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import jannovar.exome.Variant;
-import jannovar.genotype.GenotypeCall;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 

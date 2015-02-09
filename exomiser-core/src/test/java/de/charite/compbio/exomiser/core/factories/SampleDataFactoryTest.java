@@ -36,7 +36,7 @@ public class SampleDataFactoryTest {
 
     @Before
     public void setUp() {
-//        Mockito.when(variantAnnotator.annotateVariant());
+        // Mockito.when(variantAnnotator.annotateVariant());
     }
 
     @Test(expected = NullPointerException.class)
@@ -60,8 +60,7 @@ public class SampleDataFactoryTest {
         assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
-        assertThat(sampleData.getPedigree().getSingleSampleName(), equalTo(pedigree.getSingleSampleName()));
-        assertThat(sampleData.getVcfHeader().isEmpty(), is(false));
+        assertThat(sampleData.getPedigree().members.get(0), equalTo(pedigree.members.get(0)));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(false));
         assertThat(sampleData.getVariantEvaluations().size(), equalTo(37709));
         assertThat(sampleData.getGenes().isEmpty(), is(true));
@@ -82,8 +81,7 @@ public class SampleDataFactoryTest {
         assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
-        assertThat(sampleData.getPedigree().getSingleSampleName(), equalTo(pedigree.getSingleSampleName()));
-        assertThat(sampleData.getVcfHeader().isEmpty(), is(false));
+        assertThat(sampleData.getPedigree().members.get(0), equalTo(pedigree.members.get(0)));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(true));
         assertThat(sampleData.getVariantEvaluations().size(), equalTo(0));
         assertThat(sampleData.getGenes().isEmpty(), is(true));

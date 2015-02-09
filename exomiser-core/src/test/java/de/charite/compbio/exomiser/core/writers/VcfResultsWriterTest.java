@@ -17,18 +17,19 @@ import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.annotation.AnnotationList;
-import jannovar.common.Genotype;
-import jannovar.exception.AnnotationException;
-import jannovar.exome.Variant;
-import jannovar.genotype.GenotypeCall;
+import de.charite.compbio.jannovar.annotation.AnnotationException;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

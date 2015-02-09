@@ -30,7 +30,7 @@ public class QualityFilter implements VariantFilter {
      * Threshold for filtering. Retain only those variants whose PHRED variant
      * call quality is at least as good. The default is 1.
      */
-    private float mimimumQualityThreshold = 1.0f;
+    private double mimimumQualityThreshold = 1.0f;
     /**
      * Minimum number of reads supporting the ALT call. There must be at least
      * this number of reads in each direction.
@@ -48,7 +48,7 @@ public class QualityFilter implements VariantFilter {
      * @param mimimumQualityThreshold The minimum PHRED quality threshold (e.g.
      * 30) under which a variant will be filtered out.
      */
-    public QualityFilter(float mimimumQualityThreshold) {
+    public QualityFilter(double mimimumQualityThreshold) {
         if (mimimumQualityThreshold <= 0f) {
             throw new IllegalArgumentException(String.format("Illegal value for minimum quality threshold: %2f. Minimum quality threshold must be greater than 0.0", mimimumQualityThreshold));
         }

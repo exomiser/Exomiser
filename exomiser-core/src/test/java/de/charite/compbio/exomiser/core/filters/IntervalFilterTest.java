@@ -6,21 +6,24 @@
 
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.exome.Variant;
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 
