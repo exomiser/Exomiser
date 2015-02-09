@@ -66,7 +66,7 @@ public class PriorityFactoryTest {
 
     @Test
     public void testmakePrioritisersForExomiserAllSpeciesPriorityReturnsThatAndOmimPrioritisers() {
-        PriorityType type = PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
+        PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
         ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         List<Priority> prioritisers = instance.makePrioritisers(settings);
@@ -75,7 +75,7 @@ public class PriorityFactoryTest {
 
     @Test
     public void testmakePrioritisersForExomiserMousePriorityReturnsThatAndOmimPrioritisers() {
-        PriorityType type = PriorityType.EXOMISER_MOUSE_PRIORITY;
+        PriorityType type = PriorityType.PHIVE_PRIORITY;
         ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         List<Priority> prioritisers = instance.makePrioritisers(settings);

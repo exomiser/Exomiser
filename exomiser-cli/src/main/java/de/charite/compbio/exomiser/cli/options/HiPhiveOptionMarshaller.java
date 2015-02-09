@@ -14,9 +14,9 @@ import org.apache.commons.cli.OptionBuilder;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExomiserAllSpeciesOptionMarshaller extends AbstractOptionMarshaller {
+public class HiPhiveOptionMarshaller extends AbstractOptionMarshaller {
 
-    public ExomiserAllSpeciesOptionMarshaller() {
+    public HiPhiveOptionMarshaller() {
         option = OptionBuilder
                 .hasArgs()
                 .withArgName("type")
@@ -24,7 +24,7 @@ public class ExomiserAllSpeciesOptionMarshaller extends AbstractOptionMarshaller
                 .withValueSeparator(',')
                 .withDescription(
                         String.format("Comma separated list of optional parameters for %s: human, mouse, fish, ppi. "
-                                + "e.g. --%s=human or --%s=human,mouse,ppi", PriorityType.EXOMISER_ALLSPECIES_PRIORITY, EXOMISER2_PARAMS_OPTION, EXOMISER2_PARAMS_OPTION))
+                                + "e.g. --%s=human or --%s=human,mouse,ppi", PriorityType.HI_PHIVE_PRIORITY, EXOMISER2_PARAMS_OPTION, EXOMISER2_PARAMS_OPTION))
                 .withLongOpt(EXOMISER2_PARAMS_OPTION)
                 .create("E");
     }

@@ -20,7 +20,7 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import de.charite.compbio.exomiser.core.prioritisers.ExomiserMousePriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import jannovar.common.Genotype;
 import jannovar.common.VariantType;
@@ -120,8 +120,8 @@ public class HtmlResultsWriterTest {
         gene1 = new Gene(missenseVariantEvaluation);
         gene2 = new Gene(indelVariantEvaluation);
     
-        gene1.addPriorityResult(new ExomiserMousePriorityResult("MGI:12345", "Gene1", 0.99f));
-        gene2.addPriorityResult(new ExomiserMousePriorityResult("MGI:54321", "Gene2", 0.98f));
+        gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
+        gene2.addPriorityResult(new PhivePriorityResult("MGI:54321", "Gene2", 0.98f));
         
         OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
         gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);

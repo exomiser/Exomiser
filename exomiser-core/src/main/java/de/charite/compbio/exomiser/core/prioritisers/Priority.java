@@ -3,7 +3,6 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import java.util.List;
 
 import de.charite.compbio.exomiser.core.model.Gene;
-import java.sql.Connection;
 
 /**
  * This interface is implemented by classes that perform prioritization of genes

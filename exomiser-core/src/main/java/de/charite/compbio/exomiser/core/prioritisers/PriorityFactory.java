@@ -53,11 +53,11 @@ public class PriorityFactory {
             case PHENIX_PRIORITY:
                 genePriorityList.add(getPhenixPrioritiser(hpoIds));
                 break;
-            case EXOMISER_ALLSPECIES_PRIORITY:
-                genePriorityList.add(getExomiserAllSpeciesPrioritiser(hpoIds, candidateGene, disease, exomiser2Params));
+            case HI_PHIVE_PRIORITY:
+                genePriorityList.add(getHiPhivePrioritiser(hpoIds, candidateGene, disease, exomiser2Params));
                 break;  
-            case EXOMISER_MOUSE_PRIORITY:
-                genePriorityList.add(getExomiserMousePrioritiser(hpoIds,disease));
+            case PHIVE_PRIORITY:
+                genePriorityList.add(getPhivePrioritiser(hpoIds,disease));
                 break;
             case EXOMEWALKER_PRIORITY:
                 genePriorityList.add(getExomeWalkerPrioritiser(entrezSeedGenes));
@@ -84,10 +84,10 @@ public class PriorityFactory {
         return priority;
     }
 
-    public Priority getExomiserMousePrioritiser(List<String> hpoIds,String disease) {
-        ExomiserMousePriority priority = new ExomiserMousePriority(hpoIds,disease);
+    public Priority getPhivePrioritiser(List<String> hpoIds,String disease) {
+        PhivePriority priority = new PhivePriority(hpoIds,disease);
         priority.setDataSource(dataSource);
-        logger.info("Made new DynamicPhenodigm Priority: {}", priority);
+        logger.info("Made new PHIVE Priority: {}", priority);
         return priority;
     }
 
@@ -97,10 +97,10 @@ public class PriorityFactory {
         return priority;
     }
     
-    public Priority getExomiserAllSpeciesPrioritiser(List<String> hpoIds, String candGene, String disease, String exomiser2Params) {
-        ExomiserAllSpeciesPriority priority = new ExomiserAllSpeciesPriority(hpoIds, candGene, disease, exomiser2Params, randomWalkMatrix);
+    public Priority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
+        HiPhivePriority priority = new HiPhivePriority(hpoIds, candGene, disease, hiPhiveParams, randomWalkMatrix);
         priority.setDataSource(dataSource);
-        logger.info("Made new ExomiserAllSpeciesPriority Priority: {}", priority);
+        logger.info("Made new HiPHIVE Priority: {}", priority);
         return priority;
     }
 

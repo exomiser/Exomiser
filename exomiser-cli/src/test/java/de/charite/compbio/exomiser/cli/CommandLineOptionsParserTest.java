@@ -123,7 +123,7 @@ public class CommandLineOptionsParserTest {
         SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("sampleData.vcf"));
         settingsBuilder.pedFilePath(Paths.get(""));
-        settingsBuilder.usePrioritiser(PriorityType.EXOMISER_MOUSE_PRIORITY);
+        settingsBuilder.usePrioritiser(PriorityType.PHIVE_PRIORITY);
         settingsBuilder.maximumFrequency(0.01f);
         settingsBuilder.minimumQuality(0f);
         settingsBuilder.removePathFilterCutOff(true);
@@ -212,7 +212,7 @@ public class CommandLineOptionsParserTest {
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertEquals(PriorityType.EXOMISER_MOUSE_PRIORITY, exomiserSettings.getPrioritiserType());
+        assertEquals(PriorityType.PHIVE_PRIORITY, exomiserSettings.getPrioritiserType());
     }
 
     @Test(expected = NumberFormatException.class)

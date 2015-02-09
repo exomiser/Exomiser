@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.prioritisers.Priority;
-import de.charite.compbio.exomiser.core.prioritisers.ExomiserAllSpeciesPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
@@ -91,8 +91,8 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         // priority score calculation
         for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
             PriorityType type = prioritiserResult.getPriorityType();
-            if (type == PriorityType.EXOMISER_ALLSPECIES_PRIORITY) {
-                ExomiserAllSpeciesPriorityResult phenoScore = (ExomiserAllSpeciesPriorityResult) prioritiserResult;
+            if (type == PriorityType.HI_PHIVE_PRIORITY) {
+                HiPhivePriorityResult phenoScore = (HiPhivePriorityResult) prioritiserResult;
                 phiveAllSpeciesScore = phenoScore.getScore();
                 humanPhenScore = phenoScore.getHumanScore();
                 mousePhenScore = phenoScore.getMouseScore();
