@@ -13,14 +13,14 @@ public class HiPhivePriorityResult implements PriorityResult {
      * The Random walk similarity score.
      */
     private double score;
-    private double humanScore;
-    private double fishScore;
-    private double mouseScore;
-    private double walkerScore;
-    private String evidence;
-    private String humanPhenotypeEvidence;
-    private String mousePhenotypeEvidence;
-    private String fishPhenotypeEvidence;
+    private final double humanScore;
+    private final double fishScore;
+    private final double mouseScore;
+    private final double walkerScore;
+    private final String evidence;
+    private final String humanPhenotypeEvidence;
+    private final String mousePhenotypeEvidence;
+    private final String fishPhenotypeEvidence;
 
     /**
      * @param score The similarity score assigned by the random walk.
