@@ -149,6 +149,9 @@ public class Main {
             if (commandLine.hasOption("help")) {
                 printHelp();
             }
+            if (args.length == 0) {
+                printHelp();
+            }
             //check the args for a batch file first as this option is otherwise ignored 
             if (commandLine.hasOption("batch-file")) {
                 Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
