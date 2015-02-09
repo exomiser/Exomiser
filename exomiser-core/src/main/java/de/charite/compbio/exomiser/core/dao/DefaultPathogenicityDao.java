@@ -45,8 +45,8 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
         //if a variant is not classified as missense then we don't need to hit 
         //the database as we're going to assign it a constant pathogenicity score.
-        VariantEffect variantType = variant.getVariantTypeConstant();
-        if (variantType != VariantEffect.MISSENSE_VARIANT) {
+        VariantEffect variantEffect = variant.getVariantEffect();
+        if (variantEffect != VariantEffect.MISSENSE_VARIANT) {
             return new PathogenicityData(null, null, null, null);
         }
 

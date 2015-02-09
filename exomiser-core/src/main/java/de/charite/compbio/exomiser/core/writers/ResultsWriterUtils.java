@@ -14,11 +14,20 @@ import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import jannovar.exome.VariantTypeCounter;
+
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.FilenameUtils;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  *
@@ -55,34 +64,40 @@ public class ResultsWriterUtils {
      * @return 
      */
     public static List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
-        VariantTypeCounter variantTypeCounter = makeVariantTypeCounter(variantEvaluations);
+        VariantEffectCounter variantTypeCounter = makeVariantTypeCounter(variantEvaluations);
+
+        final ImmutableList<ImmutableMap<VariantEffect, Integer>> freqMaps = variantTypeCounter.getFrequencyMap();
+
+        int numIndividuals = 0;
+        if (!variantEvaluations.isEmpty())
+            numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
+
+        List<VariantTypeCount> result = new ArrayList<VariantTypeCount>();
+        Set<VariantEffect> effects = new HashSet<VariantEffect>();
+        for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx)
+            for (VariantEffect effect : freqMaps.get(sampleIdx).keySet())
+                effects.add(effect);
         
-        List<VariantTypeCount> variantTypeCounters = new ArrayList<>();
-        
-        Iterator<VariantEffect> iter = variantTypeCounter.getVariantTypeIterator();
-        while (iter.hasNext()) {
-            VariantEffect variantEffect = iter.next();
-            List<Integer> typeSpecificCounts = variantTypeCounter.getTypeSpecificCounts(variantEffect);
-            VariantTypeCount variantTypeCount = new VariantTypeCount(variantEffect, typeSpecificCounts);
-            variantTypeCounters.add(variantTypeCount);
+        for (VariantEffect effect : effects) {
+            List<Integer> typeSpecificCounts = new ArrayList<Integer>();
+            for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx)
+                typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
+            result.add(new VariantTypeCount(effect, typeSpecificCounts));
         }
         
-        return variantTypeCounters;
+        return result;
     }
     
-    protected static VariantTypeCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
-        
-        if (variantEvaluations.isEmpty()) {
-            return new VariantTypeCounter(0);
-        }
+    protected static VariantEffectCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
+        if (variantEvaluations.isEmpty())
+            return new VariantEffectCounter(0);
         
         int numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
-        VariantTypeCounter vtypeCounter = new VariantTypeCounter(numIndividuals);
+        VariantEffectCounter effectCounter = new VariantEffectCounter(numIndividuals);
 
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            vtypeCounter.incrementCount(variantEvaluation.getVariant());
-        }
-        return vtypeCounter;
+        for (VariantEvaluation variantEvaluation : variantEvaluations)
+            effectCounter.put(variantEvaluation.getVariant());
+        return effectCounter;
     }
 
     public static List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {

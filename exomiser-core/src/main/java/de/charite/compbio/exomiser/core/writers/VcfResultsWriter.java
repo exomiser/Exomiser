@@ -9,8 +9,9 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import jannovar.exome.Variant;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -19,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,15 +98,15 @@ public class VcfResultsWriter implements ResultsWriter {
     private void buildVariantLine(VariantEvaluation varEval, StringBuilder sb, Gene gene) {
         Variant variant = varEval.getVariant();
         //CHROM\t
-        addColumnField(sb, variant.get_chromosome_as_string());
+        addColumnField(sb, variant.getChromosomeStr());
         //POS\t
-        addColumnField(sb, String.valueOf(variant.get_position()));
+        addColumnField(sb, String.valueOf(variant.getPosition()));
         //ID\t
         addColumnField(sb, ".");
         //REF\t
-        addColumnField(sb, variant.get_ref());
+        addColumnField(sb, variant.getRef());
         //ALT\t
-        addColumnField(sb, variant.get_alt());
+        addColumnField(sb, variant.getAlt());
         //QUAL\t
         addColumnField(sb, String.valueOf(variant.getVariantPhredScore()));
         //FILTER\t
@@ -152,7 +154,7 @@ public class VcfResultsWriter implements ResultsWriter {
     //TODO: Add in the settings used and other data for Will and Orion here
     //(Issue #26 https://bitbucket.org/exomiser/exomiser/issue/26/vcf-output-format-requirements)
     private String makeInfoField(VariantEvaluation ve, Gene gene) {
-        String existingVcfInfoField = ve.getVariant().get_info();
+        String existingVcfInfoField = ve.getVariant().vc.getCommonInfo().toString();
         if (ve.hasAnnotations() && gene != null) {
             return String.format("%s;EXOMISER_GENE=%s;EXOMISER_VARIANT_SCORE=%s;EXOMISER_GENE_PHENO_SCORE=%s;EXOMISER_GENE_VARIANT_SCORE=%s;EXOMISER_GENE_COMBINED_SCORE=%s", existingVcfInfoField, gene.getGeneSymbol(), ve.getVariantScore(), gene.getPriorityScore(), gene.getFilterScore(), gene.getCombinedScore());
         }

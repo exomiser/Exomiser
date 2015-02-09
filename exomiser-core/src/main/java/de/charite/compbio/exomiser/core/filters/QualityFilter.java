@@ -1,9 +1,10 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import jannovar.exome.Variant;
-
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public class QualityFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         Variant v = variantEvaluation.getVariant();
-        float phredScore = v.getVariantPhredScore();
+        double phredScore = v.getVariantPhredScore();
         if (overQualityThreshold(phredScore)) {
             return passedFilterResult;
         }
@@ -73,7 +74,7 @@ public class QualityFilter implements VariantFilter {
         return failedFilterResult;
     }
 
-    protected boolean overQualityThreshold(float qualityScore) {
+    protected boolean overQualityThreshold(double qualityScore) {
         return qualityScore >= mimimumQualityThreshold;
     }
 

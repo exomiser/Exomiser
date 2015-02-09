@@ -5,23 +5,26 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import jannovar.common.VariantType;
 import java.util.List;
+
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
+// TODO(holtgrew): Rename to VariantEffectCount etc.
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class VariantTypeCount {
-    private final VariantType variantType;
+    private final VariantEffect variantType;
     private final List<Integer> sampleVariantTypeCounts;
 
-    public VariantTypeCount(VariantType variantType, List<Integer> sampleVariantTypeCounts) {
+    public VariantTypeCount(VariantEffect variantType, List<Integer> sampleVariantTypeCounts) {
         this.variantType = variantType;
         this.sampleVariantTypeCounts = sampleVariantTypeCounts;
     }
     
-    public VariantType getVariantType() {
+    public VariantEffect getVariantType() {
         return variantType;
     }
 

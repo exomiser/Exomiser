@@ -8,6 +8,7 @@ import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import htsjdk.variant.variantcontext.Genotype;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -83,30 +84,20 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     public String getGeneSymbol() {
         final Annotation anno = var.getHighestImpactAnnotation();
-        String name = var.getGeneSymbol();
-        return (name == null) ? "." : parseGeneSymbol(name);
+        if (anno == null || anno.transcript == null)
+            return ".";
+        else
+            return anno.transcript.geneSymbol;
     }
 
-    /**
-     * Jannovar produces a string of comma-separated gene symbols if a variant
-     * is located in regions associated with more than one gene e.g. A variant
-     * located in an exon of GENE1 and an intron of GENE2 would have the gene
-     * symbol GENE1,GENE2. We are going to assign the variant to the gene in
-     * which it is most unfavourably located. By convention, Jannovar reports
-     * this as the first gene symbol.
-     */
-    private String parseGeneSymbol(String name) {
-        if (name.contains(",")) {
-            String nameParts[] = name.split(",");
-            String firstName = nameParts[0];
-            logger.debug("Variant found in multiple genes: {}. Assigning it to gene {}", nameParts, firstName);
-            return firstName;
-        }
-        return name;
-    }
 
     public int getEntrezGeneID() {
-        return this.var.getEntrezGeneID();
+        final Annotation anno = var.getHighestImpactAnnotation();
+        if (anno == null || anno.transcript == null || anno.transcript.geneID == null)
+            return -1;
+        // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
+        // for UCSC. At this point, there is a hard dependency on using the UCSC database.
+        return Integer.parseInt(anno.transcript.geneID.substring("ENTREZ".length()));
     }
 
     /**
@@ -118,20 +109,21 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public String getRef() {
-        return this.var.get_ref();
+        return this.var.getRef();
     }
 
     public String getAlt() {
-        return this.var.get_alt();
+        return this.var.getAlt();
     }
 
     /**
      * @return true if this variant is not a frameshift.
      */
     public boolean isSNV() {
-        if (this.var.get_ref() == "-") {
+        // TODO(holtgrew): Assumption of "-" for empty string, currently true because of Variant implementation
+        if (this.getRef() == "-") {
             return false;
-        } else if (this.var.get_alt() == "-") {
+        } else if (this.getAlt() == "-") {
             return false;
         } else {
             return true;
@@ -170,9 +162,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public boolean hasAnnotations() {
-        //this is a bit of a hack to flag up any variant evaluations which Jannovar
-        //failed to annotate and therefore will have not have passed and filters.
-        return !var.getAnnotation().equals(".");
+        return !var.annotations.entries.isEmpty();
     }
 
     /**
@@ -191,8 +181,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * {@link #getRepresentativeAnnotation}.
      */
     public List<String> getAnnotationListWithoutGeneSymbols() {
-        @SuppressWarnings("unchecked")
-        List<String> lst = (List<String>) this.var.getAnnotationList().clone();
+        List<String> lst = (List<String>) this.var.getAnnotationList();
         for (String s : lst) {
             int i = s.indexOf("(");
             if (i < 0) {
@@ -219,30 +208,28 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return a String such as chr6:g.29911092G>T
      */
     public String getChromosomalVariant() {
-        return this.var.get_chromosomal_variant();
+        return this.var.change.toString();
     }
 
     /**
      * @return a string such as "chr4"
      */
     public String getChromosomeAsString() {
-        return this.var.get_chromosome_as_string();
+        return this.var.change.pos.refDict.contigName.get(this.var.change.pos.chr);
     }
 
     /**
      * @return the start position of the variant on the chromosome
      */
     public int getVariantStartPosition() {
-        return this.var.get_position();
+        return this.var.change.getGenomeInterval().beginPos + 1;
     }
 
     /**
      * @return the end position of the variant on the chromosome
      */
     public int getVariantEndPosition() {
-        int x = var.get_ref().length(); /* size of variant */
-
-        return this.var.get_position() + x - 1;
+        return this.var.change.getGenomeInterval().endPos;
     }
 
     /**
@@ -250,11 +237,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * variant.
      */
     public int getNumberOfAffectedTranscripts() {
-        return this.var.getTranscriptAnnotations().size();
+        return this.var.annotations.entries.size();
     }
 
     public List<String> getGenotypeList() {
-        return this.var.getGenotypeList();
+        ArrayList<String> gl = new ArrayList<String>();
+        for (Genotype gt : var.vc.getGenotypes())
+            gl.add(gt.toBriefString());
+        return gl;
     }
 
     /**
@@ -262,25 +252,25 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * chrX=23, ChrY=24, ChrM=25.
      */
     public int getChromosomeAsInteger() {
-        return this.var.get_chromosome();
+        return this.var.change.getChr();
     }
 
     /**
      * @return Return the start position of the variant on its chromosome.
      */
     public int getPosition() {
-        return this.var.get_position();
+        return getVariantStartPosition();
     }
 
     public String getGenotypeAsString() {
-        return this.var.getGenotypeAsString();
+        return this.var.vc.getGenotype(0).toBriefString();
     }
 
     /**
      * @return the number of individuals with a genotype at this variant.
      */
     public int getNumberOfIndividuals() {
-        return this.var.getGenotype().getNumberOfIndividuals();
+        return this.var.vc.getNSamples();
     }
 
     /**

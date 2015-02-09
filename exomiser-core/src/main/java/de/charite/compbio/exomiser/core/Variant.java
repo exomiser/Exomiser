@@ -1,5 +1,12 @@
 package de.charite.compbio.exomiser.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
+
+import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeChange;
@@ -50,6 +57,13 @@ public class Variant {
     }
 
     /**
+     * @return name of chromosome
+     */
+    public String getChromosomeStr() {
+        return change.pos.refDict.contigName.get(change.pos.chr);
+    }
+
+    /**
      * Shortcut to <code>change.pos.pos + 1</code>.
      * 
      * Returns a 1-based coordinate (as used in the Exomiser) instead of the 0-based coordinates from Jannovar.
@@ -61,6 +75,26 @@ public class Variant {
     }
 
     /**
+     * Shortcut to {@link #change.ref}, returning "-" in case of insertions.
+     */
+    public String getRef() {
+        if (change.ref.equals(""))
+            return "-";
+        else
+            return change.ref;
+    }
+
+    /**
+     * Shortcut to {@link #change.alt}, returning "-" in case of deletions.
+     */
+    public String getAlt() {
+        if (change.ref.equals(""))
+            return "-";
+        else
+            return change.alt;
+    }
+
+    /**
      * @return Highest-impact {@link VariantEffect} or <code>null</code> if there is none.
      */
     public VariantEffect getHighestImpactEffect() {
@@ -68,10 +102,96 @@ public class Variant {
     }
 
     /**
-     * @return Highest-impact {@link Variant} or <code>null</code> if there is none.
+     * @return Highest-impact {@link Annotation} or <code>null</code> if there is none.
      */
-    public Variant getHighestImpactVariant() {
+    public Annotation getHighestImpactAnnotation() {
         return annotations.getHighestImpactAnnotation();
+    }
+
+    /**
+     * @return <code>true</code> if the variant is neither exonic nor splicing
+     */
+    public boolean isOffExomeTarget() {
+        Annotation anno = annotations.getHighestImpactAnnotation();
+        if (anno == null || anno.effects.isEmpty())
+            return true;
+        for (VariantEffect eff : anno.effects) {
+            if (eff.isSplicing())
+                return false;
+            else if (eff.isIntronic())
+                return true;
+        }
+        return false;
+    }
+
+    public int getVariantReadDepth() {
+        // FIXME: alleleID != sample ID!
+        return vc.getGenotype(altAlleleID).getDP();
+    }
+
+    /**
+     * @return annotation of the most pathogenic annotation
+     */
+    public String getRepresentativeAnnotation() {
+        Annotation anno = annotations.getHighestImpactAnnotation();
+        if (anno == null)
+            return "?";
+        else
+            return anno.getSymbolAndAnnotation();
+    }
+    
+    /**
+     * @return list of all annotation strings
+     */
+    public List<String> getAnnotationList() {
+        ArrayList<String> result = new ArrayList<String>();
+        for (Annotation anno : annotations.entries)
+            result.add(anno.getSymbolAndAnnotation());
+        return result;
+    }
+
+    /**
+     * @return list of all annotation strings with type prepended
+     */
+    public List<String> getAnnotationListWithAnnotationClass() {
+        ArrayList<String> result = new ArrayList<String>();
+        for (Annotation anno : annotations.entries)
+            result.add(anno.getMostPathogenicVarType() + "|" + anno.getSymbolAndAnnotation());
+        return result;
+    }
+
+    public boolean isXChromosomal() {
+        return getChromosome() == change.pos.refDict.contigID.get("X").intValue();
+    }
+
+    public boolean isYChromosomal() {
+        return getChromosome() == change.pos.refDict.contigID.get("Y").intValue();
+    }
+
+    /**
+     * @return most pathogenic {@link VariantEffect}
+     */
+    public VariantEffect getVariantEffect() {
+        final Annotation anno = annotations.getHighestImpactAnnotation();
+        if (anno == null)
+            return null;
+        return anno.getMostPathogenicVarType();
+    }
+
+    public double getVariantPhredScore() {
+        return vc.getPhredScaledQual();
+    }
+
+    public String getGeneSymbol() {
+        final Annotation anno = annotations.getHighestImpactAnnotation();
+        if (anno == null)
+            return ".";
+        else
+            return anno.getGeneSymbol();
+    }
+
+    public String getGenotypeAsString() {
+        return vc.getGenotype(0).toBriefString();
     }
 
 }

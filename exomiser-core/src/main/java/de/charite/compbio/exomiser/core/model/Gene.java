@@ -1,10 +1,11 @@
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import jannovar.exome.Variant;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -254,7 +255,7 @@ public class Gene implements Comparable<Gene>, Filterable {
         }
         VariantEvaluation ve = this.variantEvaluations.get(0);
         Variant v = ve.getVariant();
-        return v.is_X_chromosomal();
+        return v.isXChromosomal();
     }
 
     public boolean isYChromosomal() {
@@ -263,7 +264,7 @@ public class Gene implements Comparable<Gene>, Filterable {
         }
         VariantEvaluation ve = this.variantEvaluations.get(0);
         Variant v = ve.getVariant();
-        return v.is_Y_chromosomal();
+        return v.isYChromosomal();
     }
 
     /**
