@@ -63,7 +63,7 @@ public class FrequencyFilterTest {
 
     @Before
     public void setUp() throws Exception {
-        testVariant = new TestVariantFactory().construct(6, 1000000, "CC", "CT", Genotype.HETEROZYGOUS, 30, 0);
+        testVariant = new TestVariantFactory().constructVariant(6, 1000000, "CC", "CT", Genotype.HETEROZYGOUS, 30, 0);
 
         boolean filterOutAllKnownVariants = false;
 

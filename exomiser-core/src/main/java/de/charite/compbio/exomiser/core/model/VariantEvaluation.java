@@ -160,7 +160,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public boolean hasAnnotations() {
-        return !var.annotations.entries.isEmpty();
+        return !getAnnotationList().isEmpty();
     }
 
     /**

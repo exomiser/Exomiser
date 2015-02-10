@@ -22,7 +22,7 @@ public class TestJannovarDataFactory {
     }
 
     private JannovarData buildJannovarData() {
-        return new JannovarData(refDict, ImmutableList.of(new TestVariantFactory().buildTM()));
+        return new JannovarData(refDict, ImmutableList.of(new TestVariantFactory().buildTMForFGFR2()));
     }
 
 }

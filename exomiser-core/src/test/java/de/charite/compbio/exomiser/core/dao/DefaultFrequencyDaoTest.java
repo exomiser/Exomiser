@@ -56,8 +56,8 @@ public class DefaultFrequencyDaoTest {
 
     @Before
     public void setUp() {
-        this.variantNotInDatabase = new TestVariantFactory().construct(1, 123, "CT", "CG", Genotype.HOMOZYGOUS_ALT, 30, 1);
-        this.variantInDatabaseWithRsId = new TestVariantFactory().construct(10, 123256213, "CA", "CC",
+        this.variantNotInDatabase = new TestVariantFactory().constructVariant(1, 123, "CT", "CG", Genotype.HOMOZYGOUS_ALT, 30, 1);
+        this.variantInDatabaseWithRsId = new TestVariantFactory().constructVariant(10, 123256213, "CA", "CC",
                 Genotype.HOMOZYGOUS_ALT, 30, 1);
     }
 

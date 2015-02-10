@@ -11,6 +11,7 @@ import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
+import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 
 /**
@@ -213,6 +214,16 @@ public class Variant {
 
     public GenomeChange getGenomeChange() {
         return change;
+    }
+
+    public Genotype getGenotype() {
+        return vc.getGenotype(0);
+    }
+
+    @Override
+    public String toString() {
+        return "Variant [vc=" + vc + ", altAlleleID=" + altAlleleID + ", annotations=" + annotations + ", change="
+                + change + "]";
     }
 
 }
