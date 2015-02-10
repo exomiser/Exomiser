@@ -125,6 +125,9 @@ public class GeneScorer {
     }
 
     private static float setGenePriorityScore(Gene gene) {
+        if (gene.getPriorityResults().isEmpty()) {
+            return 0f;
+        }
         float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
         gene.setPriorityScore(priorityScore);
         return priorityScore;

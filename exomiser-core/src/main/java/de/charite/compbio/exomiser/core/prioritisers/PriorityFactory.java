@@ -9,6 +9,7 @@ import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,7 @@ public class PriorityFactory {
     @Lazy
     private DataMatrix randomWalkMatrix;
     @Autowired
-    private Path phenomizerDataDirectory;
+    private Path phenixDataDirectory;
     
     public List<Priority> makePrioritisers(ExomiserSettings exomiserSettings) {
         
@@ -44,12 +45,19 @@ public class PriorityFactory {
         List<String> hpoIds = exomiserSettings.getHpoIds();
         List<Integer> entrezSeedGenes = exomiserSettings.getSeedGeneList();
         String exomiser2Params = exomiserSettings.getExomiser2Params();
+        
+        PriorityType priorityType = exomiserSettings.getPrioritiserType();
+        if (priorityType == PriorityType.NONE) {
+            return Collections.emptyList();
+        }
+        
         List<Priority> genePriorityList = new ArrayList<>();
         //TODO: OmimPrioritizer is specified implicitly - perhaps they should be different types of ExomiserSettings?
         //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. These might be badly named as the OMIM proritiser is currently the default.
+        //always run OMIM unless the user specified what they really don't want to run any prioritisers
         genePriorityList.add(getOmimPrioritizer());
         
-        switch (exomiserSettings.getPrioritiserType()) {
+        switch (priorityType) {
             case PHENIX_PRIORITY:
                 genePriorityList.add(getPhenixPrioritiser(hpoIds));
                 break;
@@ -67,37 +75,37 @@ public class PriorityFactory {
         return genePriorityList;
     }
 
-    public Priority getOmimPrioritizer() {
+    public OMIMPriority getOmimPrioritizer() {
         OMIMPriority priority = new OMIMPriority();
         priority.setDataSource(dataSource);
         logger.info("Made new OMIM Priority: {}", priority);
         return priority;
     }
 
-    public Priority getPhenixPrioritiser(List<String> hpoIds) {
+    public PhenixPriority getPhenixPrioritiser(List<String> hpoIds) {
         Set<String> hpoIDset = new HashSet<>();
         hpoIDset.addAll(hpoIds);
         
         boolean symmetric = false;
-        Priority priority = new PhenixPriority(phenomizerDataDirectory.toString(), hpoIDset, symmetric);
-        logger.info("Made new Phenomizer Priority: {}", priority);
+        PhenixPriority priority = new PhenixPriority(phenixDataDirectory.toString(), hpoIDset, symmetric);
+        logger.info("Made new PhenIX Priority: {}", priority);
         return priority;
     }
 
-    public Priority getPhivePrioritiser(List<String> hpoIds,String disease) {
+    public PhivePriority getPhivePrioritiser(List<String> hpoIds,String disease) {
         PhivePriority priority = new PhivePriority(hpoIds,disease);
         priority.setDataSource(dataSource);
         logger.info("Made new PHIVE Priority: {}", priority);
         return priority;
     }
 
-    public Priority getExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
-        Priority priority = new ExomeWalkerPriority(randomWalkMatrix, entrezSeedGenes);
+    public ExomeWalkerPriority getExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
+        ExomeWalkerPriority priority = new ExomeWalkerPriority(randomWalkMatrix, entrezSeedGenes);
         logger.info("Made new GeneWanderer Priority: {}", priority);
         return priority;
     }
     
-    public Priority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
+    public HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
         HiPhivePriority priority = new HiPhivePriority(hpoIds, candGene, disease, hiPhiveParams, randomWalkMatrix);
         priority.setDataSource(dataSource);
         logger.info("Made new HiPHIVE Priority: {}", priority);
