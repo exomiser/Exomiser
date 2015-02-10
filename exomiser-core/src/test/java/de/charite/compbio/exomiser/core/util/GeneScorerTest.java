@@ -34,44 +34,34 @@ import org.junit.Test;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class GeneScorerTest {
-    
+
     private VariantEvaluation failedFrequency;
     private VariantEvaluation failedPathogenicity;
     private VariantEvaluation failedFrequencyPassedPathogenicity;
     private VariantEvaluation passedFrequencyPassedPathogenicity;
-    
+
     public GeneScorerTest() {
     }
-    
-    @Before
-     public void setUp() {
-     failedFrequency = getNewTestVariantEvaluation();
-     failedFrequency.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
-    
-     failedPathogenicity = getNewTestVariantEvaluation();
-     failedPathogenicity.addFilterResult(new PathogenicityFilterResult(0f, FilterResultStatus.FAIL));
-    
-     failedFrequencyPassedPathogenicity = getNewTestVariantEvaluation();
-     failedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
-     failedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(1f, FilterResultStatus.PASS));
-     //these are set up so that failedFrequencyPassedPathogenicity has a higher
-     //pathogenicity score (1.0)than passedFrequencyPassedPathogenicity (0.75) to ensure that the scoring only
-     includes variants
-     //which have actually passed all the filters
-     passedFrequencyPassedPathogenicity = getNewTestVariantEvaluation();
-     passedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0.75f, FilterResultStatus.PASS));
-     passedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(0.75f,
-     FilterResultStatus.PASS));
-     }
 
-    private VariantEvaluation getNewTestVariantEvaluation() {
-        // these are just a bunch of numbers required to get a stubbed VariantEvaluation
-        int testQuality = 2;
-        int testDepth = 7;
-        GenotypeCall testGenotypeCall = new GenotypeCall(Genotype.UNINITIALIZED, testQuality, testDepth);
-        byte testChr = 1;
-        Variant testVariant = new Variant(testChr, 1, "A", "T", testGenotypeCall, 2.2f, "");
-        return new VariantEvaluation(testVariant);
+    @Before
+    public void setUp() {
+        failedFrequency = new VariantEvaluation(null);
+        failedFrequency.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
+
+        failedPathogenicity = new VariantEvaluation(null);
+        failedPathogenicity.addFilterResult(new PathogenicityFilterResult(0f, FilterResultStatus.FAIL));
+
+        failedFrequencyPassedPathogenicity = new VariantEvaluation(null);
+        failedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
+        failedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(1f, FilterResultStatus.PASS));
+        // these are set up so that failedFrequencyPassedPathogenicity has a higher
+        // pathogenicity score (1.0)than passedFrequencyPassedPathogenicity (0.75) to ensure that the scoring only
+        // includes variants
+        // which have actually passed all the filters
+        passedFrequencyPassedPathogenicity = new VariantEvaluation(null);
+        passedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0.75f, FilterResultStatus.PASS));
+        passedFrequencyPassedPathogenicity
+                .addFilterResult(new PathogenicityFilterResult(0.75f, FilterResultStatus.PASS));
     }
 
     @Test
@@ -181,7 +171,7 @@ public class GeneScorerTest {
     // fail("The test case is a prototype.");
     // }
     //
-//
+    //
     // @Test
     // public void testCalculateCombinedScore() {
     // System.out.println("calculateCombinedScore");
@@ -194,5 +184,5 @@ public class GeneScorerTest {
     // // TODO review the generated test code and remove the default call to fail.
     // fail("The test case is a prototype.");
     // }
-    
+
 }
