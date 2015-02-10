@@ -38,19 +38,22 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * basically combines this Variant with a list of variant evaluation objects
      * ({@link exomizer.filter.VariantScore}).
      */
-    private final Variant var;
+    private Variant var;
 
     /**
      * A map of the results of filtering. The key to the map is an integer
      * constant as defined in {@link exomizer.common.FilterType FilterType}.
      */
-    private final Map<FilterType, FilterResult> passedFilterResultsMap;
-    private final Set<FilterType> failedFilterTypes;
+    private Map<FilterType, FilterResult> passedFilterResultsMap;
+    private Set<FilterType> failedFilterTypes;
 
     private float variantScore = 1f;
     private List<String> mutationRefList = null;
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
+
+    private VariantEvaluation() { /* I'm mockable! */
+    }
 
     public VariantEvaluation(Variant v) {
         var = v;
@@ -203,28 +206,28 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return a String such as chr6:g.29911092G>T
      */
     public String getChromosomalVariant() {
-        return this.var.change.toString();
+        return this.var.getGenomeChange().toString();
     }
 
     /**
      * @return a string such as "chr4"
      */
     public String getChromosomeAsString() {
-        return this.var.change.pos.refDict.contigName.get(this.var.change.pos.chr);
+        return this.var.getGenomeChange().pos.refDict.contigName.get(this.var.getGenomeChange().pos.chr);
     }
 
     /**
      * @return the start position of the variant on the chromosome
      */
     public int getVariantStartPosition() {
-        return this.var.change.getGenomeInterval().beginPos + 1;
+        return this.var.getGenomeChange().getGenomeInterval().beginPos + 1;
     }
 
     /**
      * @return the end position of the variant on the chromosome
      */
     public int getVariantEndPosition() {
-        return this.var.change.getGenomeInterval().endPos;
+        return this.var.getGenomeChange().getGenomeInterval().endPos;
     }
 
     /**
@@ -247,7 +250,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * chrX=23, ChrY=24, ChrM=25.
      */
     public int getChromosomeAsInteger() {
-        return this.var.change.getChr();
+        return this.var.getGenomeChange().getChr();
     }
 
     /**

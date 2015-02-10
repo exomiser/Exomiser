@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableList;
@@ -47,17 +48,12 @@ public class PathogenicityFilterTest {
     private static final boolean PASS_ALL_VARIANTS = true;
 
     @Mock
-    Variant mockNonPathogenicVariant;
-    @Mock
-    Variant mockPathogenicNonMissense;
-    @Mock
-    Variant mockMissensePassesFilterVariant;
-    @Mock
-    Variant mockMissenseFailsFilterVariant;
-
     VariantEvaluation downstreamFailsFilter;
+    @Mock
     VariantEvaluation stopGainPassesFilter;
+    @Mock
     VariantEvaluation missensePassesFilter;
+    @Mock
     VariantEvaluation predictedNonPathogenicMissense;
 
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
@@ -84,32 +80,25 @@ public class PathogenicityFilterTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        //set-up the methods to mock-out having to construct mentally heavy Variant objects just to get the variant type
-        Mockito.when(mockMissensePassesFilterVariant.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(mockMissenseFailsFilterVariant.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(mockNonPathogenicVariant.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
-        Mockito.when(mockPathogenicNonMissense.getVariantEffect()).thenReturn(VariantEffect.STOP_GAINED);
 
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
-        //make the variant evaluations
-        missensePassesFilter = new VariantEvaluation(mockMissensePassesFilterVariant);
+        // make the variant evaluations
         PathogenicityData missensePassPathData = new PathogenicityData(null, null, SIFT_PASS, null);
-        missensePassesFilter.setPathogenicityData(missensePassPathData);
-
-        predictedNonPathogenicMissense = new VariantEvaluation(mockMissenseFailsFilterVariant);
         PathogenicityData missenseFailPathData = new PathogenicityData(POLYPHEN_FAIL, null, null, null);
-        predictedNonPathogenicMissense.setPathogenicityData(missenseFailPathData);
-
-        downstreamFailsFilter = new VariantEvaluation(mockNonPathogenicVariant);
         PathogenicityData downstreamPathData = new PathogenicityData(null, null, null, null);
-        downstreamFailsFilter.setPathogenicityData(downstreamPathData);
-
-        stopGainPassesFilter = new VariantEvaluation(mockPathogenicNonMissense);
         PathogenicityData stopGainPathData = new PathogenicityData(null, null, null, null);
-        stopGainPassesFilter.setPathogenicityData(stopGainPathData);
 
+        // set-up the methods to mock-out having to construct mentally heavy Variant objects just to get the variant
+        // type
+        Mockito.when(missensePassesFilter.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(missensePassesFilter.getPathogenicityData()).thenReturn(missensePassPathData);
+        Mockito.when(predictedNonPathogenicMissense.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(predictedNonPathogenicMissense.getPathogenicityData()).thenReturn(missenseFailPathData);
+        Mockito.when(downstreamFailsFilter.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
+        Mockito.when(downstreamFailsFilter.getPathogenicityData()).thenReturn(downstreamPathData);
+        Mockito.when(stopGainPassesFilter.getVariantEffect()).thenReturn(VariantEffect.STOP_GAINED);
+        Mockito.when(stopGainPassesFilter.getPathogenicityData()).thenReturn(stopGainPathData);
     }
 
     @Test

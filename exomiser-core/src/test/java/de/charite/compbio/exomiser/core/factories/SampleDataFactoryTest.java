@@ -5,20 +5,35 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.dao.TestJannovarDataFactory;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import htsjdk.variant.variantcontext.VariantContext;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import static org.mockito.Matchers.*;
+
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 /**
  *
@@ -32,11 +47,18 @@ public class SampleDataFactoryTest {
     
     @Mock
     private VariantAnnotator variantAnnotator;
-    
 
     @Before
     public void setUp() {
-        // Mockito.when(variantAnnotator.annotateVariant());
+        // variantAnnotator to return dummy Variant objects
+        Mockito.when(variantAnnotator.annotateVariantContext(isNotNull(VariantContext.class))).thenAnswer(
+                new Answer<List<Variant>>() {
+            public List<Variant> answer(InvocationOnMock invocation) {
+                Variant v = new Variant((VariantContext) invocation.getArguments()[0], 0,
+                        new AnnotationList(new ArrayList<Annotation>()));
+                        return Arrays.asList(v);
+            }
+        });
     }
 
     @Test(expected = NullPointerException.class)

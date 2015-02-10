@@ -33,7 +33,7 @@ public class Variant {
     public final AnnotationList annotations;
 
     /** shortcut to the {@link GenomeChange} in the first element of {@link #annotations}, or null. */
-    public final GenomeChange change;
+    private final GenomeChange change;
 
     /**
      * Initialize the object with the given values.
@@ -209,6 +209,10 @@ public class Variant {
         // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
         // for UCSC. At this point, there is a hard dependency on using the UCSC database.
         return Integer.parseInt(anno.transcript.geneID.substring("ENTREZ".length()));
+    }
+
+    public GenomeChange getGenomeChange() {
+        return change;
     }
 
 }

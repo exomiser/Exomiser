@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
@@ -8,6 +9,7 @@ import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.jannovar.pedigree.Genotype;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -15,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -33,8 +36,7 @@ public class FrequencyFilterTest {
 
     private VariantEvaluation nullFrequencyVariant;
 
-    @Mock
-    Variant mockVariant;
+    Variant testVariant;
 
     private static final float FREQ_THRESHOLD = 0.1f;
     private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
@@ -61,32 +63,31 @@ public class FrequencyFilterTest {
 
     @Before
     public void setUp() throws Exception {
-
-        MockitoAnnotations.initMocks(this);
+        testVariant = new TestVariantFactory().construct(6, 1000000, "CC", "CT", Genotype.HETEROZYGOUS, 30, 0);
 
         boolean filterOutAllKnownVariants = false;
 
         instance = new FrequencyFilter(FREQ_THRESHOLD, filterOutAllKnownVariants);
 
-        passesEspAllFrequency = new VariantEvaluation(mockVariant);
+        passesEspAllFrequency = new VariantEvaluation(testVariant);
         passesEspAllFrequency.setFrequencyData(espAllPassData);
 
-        passesEspAAFrequency = new VariantEvaluation(mockVariant);
+        passesEspAAFrequency = new VariantEvaluation(testVariant);
         passesEspAAFrequency.setFrequencyData(espAaPassData);
 
-        passesEspEAFrequency = new VariantEvaluation(mockVariant);
+        passesEspEAFrequency = new VariantEvaluation(testVariant);
         passesEspEAFrequency.setFrequencyData(espEaPassData);
 
-        passesDbsnpFrequency = new VariantEvaluation(mockVariant);
+        passesDbsnpFrequency = new VariantEvaluation(testVariant);
         passesDbsnpFrequency.setFrequencyData(dbSnpPassData);
 
-        failsFrequency = new VariantEvaluation(mockVariant);
+        failsFrequency = new VariantEvaluation(testVariant);
         failsFrequency.setFrequencyData(espAllFailData);
 
-        passesNoFrequencyData = new VariantEvaluation(mockVariant);
+        passesNoFrequencyData = new VariantEvaluation(testVariant);
         passesNoFrequencyData.setFrequencyData(noFreqData);
 
-        nullFrequencyVariant = new VariantEvaluation(mockVariant);
+        nullFrequencyVariant = new VariantEvaluation(testVariant);
     }
 
     @Test

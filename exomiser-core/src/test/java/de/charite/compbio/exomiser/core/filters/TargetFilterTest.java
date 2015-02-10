@@ -40,22 +40,16 @@ public class TargetFilterTest {
 
     private TargetFilter instance;
     
-    private static VariantEvaluation missensePassesFilter;
-    private static VariantEvaluation downstreamFailsFilter;
-    private static VariantEvaluation synonymousFailsFilter;
-    private static VariantEvaluation upstreamFailsFilter;
-    private static VariantEvaluation intergenicFailsFilter;
-
     @Mock
-    Variant missenseVariant;
+    VariantEvaluation missensePassesFilter;
     @Mock
-    Variant downstreamVariant;
+    VariantEvaluation downstreamFailsFilter;
     @Mock
-    Variant synonymousVariant;
+    VariantEvaluation synonymousFailsFilter;
     @Mock
-    Variant upstreamVariant;
+    VariantEvaluation upstreamFailsFilter;
     @Mock
-    Variant intergenicVariant;
+    VariantEvaluation intergenicFailsFilter;
 
     public TargetFilterTest() {
     }
@@ -64,19 +58,11 @@ public class TargetFilterTest {
     public void setUp() {
         instance = new TargetFilter();
         
-        MockitoAnnotations.initMocks(this);
-
-        Mockito.when(missenseVariant.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(downstreamVariant.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
-        Mockito.when(synonymousVariant.getVariantEffect()).thenReturn(VariantEffect.SYNONYMOUS_VARIANT);
-        Mockito.when(upstreamVariant.getVariantEffect()).thenReturn(VariantEffect.UPSTREAM_GENE_VARIANT);
-        Mockito.when(intergenicVariant.getVariantEffect()).thenReturn(VariantEffect.INTERGENIC_VARIANT);
-
-        missensePassesFilter = new VariantEvaluation(missenseVariant);
-        downstreamFailsFilter = new VariantEvaluation(downstreamVariant);
-        synonymousFailsFilter = new VariantEvaluation(synonymousVariant);
-        upstreamFailsFilter = new VariantEvaluation(upstreamVariant);
-        intergenicFailsFilter = new VariantEvaluation(intergenicVariant);
+        Mockito.when(missensePassesFilter.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(downstreamFailsFilter.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
+        Mockito.when(synonymousFailsFilter.getVariantEffect()).thenReturn(VariantEffect.SYNONYMOUS_VARIANT);
+        Mockito.when(upstreamFailsFilter.getVariantEffect()).thenReturn(VariantEffect.UPSTREAM_GENE_VARIANT);
+        Mockito.when(intergenicFailsFilter.getVariantEffect()).thenReturn(VariantEffect.INTERGENIC_VARIANT);
     }
 
     @Test
@@ -97,6 +83,7 @@ public class TargetFilterTest {
         
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
     }
+
     @Test
     public void testIntergenicVariantFailsFilter() {
         FilterResult filterResult = instance.runFilter(intergenicFailsFilter);

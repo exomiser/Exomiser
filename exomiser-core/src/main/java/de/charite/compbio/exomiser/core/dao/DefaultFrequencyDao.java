@@ -74,8 +74,8 @@ public class DefaultFrequencyDao implements FrequencyDao {
         // insertions. The old representation for either was "-". Changing this will probably
         ps.setInt(1, variant.getGenomePosition().chr);
         ps.setInt(2, variant.getGenomePosition().pos + 1);
-        ps.setString(3, variant.change.ref);
-        ps.setString(4, variant.change.alt);
+        ps.setString(3, variant.getGenomeChange().ref);
+        ps.setString(4, variant.getGenomeChange().alt);
 
         return ps;
     }
