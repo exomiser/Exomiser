@@ -76,125 +76,123 @@ public class HtmlResultsWriterTest {
     private Gene gene1;
     private Gene gene2;
     
-    // FIXME(holtgrew): uncomment lines again
+    @Before
+    public void setUp() {
+        instance = new HtmlResultsWriter();
 
-    // @Before
-    // public void setUp() {
-    // instance = new HtmlResultsWriter();
-    //
-    // GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, 30, 6);
-    //
-    // Variant unannotatedVariant1 = new Variant((byte)1, 1, "A", "T", genotypeCall, 2.2f, "Unannotated variant");
-    // unAnnotatedVariantEvaluation1 = new VariantEvaluation(unannotatedVariant1);
-    //
-    // Variant unannotatedVariant2 = new Variant((byte)2, 2, "T", "AAA", genotypeCall, 2.2f, "Unannotated variant");
-    // unAnnotatedVariantEvaluation2 = new VariantEvaluation(unannotatedVariant2);
-    //
-    //
-    // Mockito.when(missenseVariant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-    // Mockito.when(missenseVariant.getEntrezGeneID()).thenReturn(GENE1_ENTREZ_GENE_ID);
-    // Mockito.when(missenseVariant.getChromosomeAsByte()).thenReturn((byte) 1);
-    // Mockito.when(missenseVariant.get_position()).thenReturn(1);
-    // Mockito.when(missenseVariant.get_ref()).thenReturn("A");
-    // Mockito.when(missenseVariant.get_alt()).thenReturn("T");
-    // Mockito.when(missenseVariant.getGenotype()).thenReturn(genotypeCall);
-    // Mockito.when(missenseVariant.getVariantPhredScore()).thenReturn(2.2f);
-    // Mockito.when(missenseVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-    // Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-    // missenseVariantEvaluation = new VariantEvaluation(missenseVariant);
-    // missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f), new
-    // Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f)));
-    // missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f), new
-    // MutationTasterScore(1f), new SiftScore(0f), new CaddScore(1f)));
-    // missenseVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
-    // missenseVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
-    //
-    // Mockito.when(indelVariant.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL);
-    // Mockito.when(indelVariant.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
-    // Mockito.when(indelVariant.getChromosomeAsByte()).thenReturn((byte) 2);
-    // Mockito.when(indelVariant.get_position()).thenReturn(2);
-    // Mockito.when(indelVariant.get_ref()).thenReturn("C");
-    // Mockito.when(indelVariant.get_alt()).thenReturn("GCT");
-    // Mockito.when(indelVariant.getGenotype()).thenReturn(genotypeCall);
-    // Mockito.when(indelVariant.getVariantPhredScore()).thenReturn(2.2f);
-    // Mockito.when(indelVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-    // Mockito.when(indelVariant.getVariantTypeConstant()).thenReturn(VariantType.FS_INSERTION);
-    // indelVariantEvaluation = new VariantEvaluation(indelVariant);
-    // indelVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
-    // indelVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
-    //
-    // gene1 = new Gene(missenseVariantEvaluation);
-    // gene2 = new Gene(indelVariantEvaluation);
-    //
-    // gene1.addPriorityResult(new ExomiserMousePriorityResult("MGI:12345", "Gene1", 0.99f));
-    // gene2.addPriorityResult(new ExomiserMousePriorityResult("MGI:54321", "Gene2", 0.98f));
-    //
-    // OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
-    // gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
-    // gene1.addPriorityResult(gene1PriorityScore);
-    // gene2.addPriorityResult(new OMIMPriorityResult());
-    //
-    // }
-    // @After
-    // public void tearDown() {
-    // // Paths.get(testOutFileName).toFile().delete();
-    // }
-    //
-    // private SampleData makeSampleData(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
-    // SampleData sampleData = new SampleData();
-    // List<String> sampleNames = new ArrayList<>();
-    // sampleNames.add("Slartibartfast");
-    // sampleData.setSampleNames(sampleNames);
-    // sampleData.setNumberOfSamples(1);
-    // sampleData.setGenes(genes);
-    // sampleData.setVariantEvaluations(variantEvaluations);
-    // return sampleData;
-    // }
-    //
-    // @Test
-    // public void testWriteTemplateWithEmptyData() {
-    // SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
-    // ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFileName).build();
-    //
-    // instance.writeFile(sampleData, settings);
-    //
-    // assertTrue(Paths.get(testOutFileName).toFile().exists());
-    // }
-    //
-    // @Test
-    // public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
-    // String testOutFilename = "testWriteTemplateWithUnAnnotatedVariantData.html";
-    // List<VariantEvaluation> variantData = new ArrayList<>();
-    // variantData.add(unAnnotatedVariantEvaluation1);
-    // variantData.add(unAnnotatedVariantEvaluation2);
-    // SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
-    // ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
-    //
-    // instance.writeFile(sampleData, settings);
-    //
-    // File input = new File(testOutFilename);
-    // Document doc = Jsoup.parse(input, "UTF-8", "http://example.com/");
-    // System.out.println(doc.toString());
-    // // assertTrue(doc.contains("Unanalysed Variants"));
-    // }
-    //
-    // @Test
-    // public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
-    // String testOutFilename = "testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html";
-    // List<VariantEvaluation> variantData = new ArrayList<>();
-    // variantData.add(unAnnotatedVariantEvaluation1);
-    // variantData.add(unAnnotatedVariantEvaluation2);
-    //
-    // List<Gene> genes = new ArrayList<>();
-    // genes.add(gene1);
-    // genes.add(gene2);
-    //
-    // SampleData sampleData = makeSampleData(genes, variantData);
-    // ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
-    //
-    // instance.writeFile(sampleData, settings);
-    // assertTrue(Paths.get(testOutFilename).toFile().exists());
-    //
-    // }
+        GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, 30, 6);
+
+        Variant unannotatedVariant1 = new Variant((byte) 1, 1, "A", "T", genotypeCall, 2.2f, "Unannotated variant");
+        unAnnotatedVariantEvaluation1 = new VariantEvaluation(unannotatedVariant1);
+
+        Variant unannotatedVariant2 = new Variant((byte) 2, 2, "T", "AAA", genotypeCall, 2.2f, "Unannotated variant");
+        unAnnotatedVariantEvaluation2 = new VariantEvaluation(unannotatedVariant2);
+
+        Mockito.when(missenseVariant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
+        Mockito.when(missenseVariant.getEntrezGeneID()).thenReturn(GENE1_ENTREZ_GENE_ID);
+        Mockito.when(missenseVariant.getChromosomeAsByte()).thenReturn((byte) 1);
+        Mockito.when(missenseVariant.get_position()).thenReturn(1);
+        Mockito.when(missenseVariant.get_ref()).thenReturn("A");
+        Mockito.when(missenseVariant.get_alt()).thenReturn("T");
+        Mockito.when(missenseVariant.getGenotype()).thenReturn(genotypeCall);
+        Mockito.when(missenseVariant.getVariantPhredScore()).thenReturn(2.2f);
+        Mockito.when(missenseVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
+        Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
+        missenseVariantEvaluation = new VariantEvaluation(missenseVariant);
+        missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f),
+                new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f)));
+        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f),
+                new MutationTasterScore(1f), new SiftScore(0f), new CaddScore(1f)));
+        missenseVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
+        missenseVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
+
+        Mockito.when(indelVariant.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL);
+        Mockito.when(indelVariant.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
+        Mockito.when(indelVariant.getChromosomeAsByte()).thenReturn((byte) 2);
+        Mockito.when(indelVariant.get_position()).thenReturn(2);
+        Mockito.when(indelVariant.get_ref()).thenReturn("C");
+        Mockito.when(indelVariant.get_alt()).thenReturn("GCT");
+        Mockito.when(indelVariant.getGenotype()).thenReturn(genotypeCall);
+        Mockito.when(indelVariant.getVariantPhredScore()).thenReturn(2.2f);
+        Mockito.when(indelVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
+        Mockito.when(indelVariant.getVariantTypeConstant()).thenReturn(VariantType.FS_INSERTION);
+        indelVariantEvaluation = new VariantEvaluation(indelVariant);
+        indelVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
+        indelVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
+
+        gene1 = new Gene(missenseVariantEvaluation);
+        gene2 = new Gene(indelVariantEvaluation);
+
+        gene1.addPriorityResult(new ExomiserMousePriorityResult("MGI:12345", "Gene1", 0.99f));
+        gene2.addPriorityResult(new ExomiserMousePriorityResult("MGI:54321", "Gene2", 0.98f));
+
+        OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
+        gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
+        gene1.addPriorityResult(gene1PriorityScore);
+        gene2.addPriorityResult(new OMIMPriorityResult());
+
+    }
+
+    @After
+    public void tearDown() {
+        // Paths.get(testOutFileName).toFile().delete();
+    }
+
+    private SampleData makeSampleData(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
+        SampleData sampleData = new SampleData();
+        List<String> sampleNames = new ArrayList<>();
+        sampleNames.add("Slartibartfast");
+        sampleData.setSampleNames(sampleNames);
+        sampleData.setNumberOfSamples(1);
+        sampleData.setGenes(genes);
+        sampleData.setVariantEvaluations(variantEvaluations);
+        return sampleData;
+    }
+
+    @Test
+    public void testWriteTemplateWithEmptyData() {
+        SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFileName).build();
+
+        instance.writeFile(sampleData, settings);
+
+        assertTrue(Paths.get(testOutFileName).toFile().exists());
+    }
+
+    @Test
+    public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
+        String testOutFilename = "testWriteTemplateWithUnAnnotatedVariantData.html";
+        List<VariantEvaluation> variantData = new ArrayList<>();
+        variantData.add(unAnnotatedVariantEvaluation1);
+        variantData.add(unAnnotatedVariantEvaluation2);
+        SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
+
+        instance.writeFile(sampleData, settings);
+
+        File input = new File(testOutFilename);
+        Document doc = Jsoup.parse(input, "UTF-8", "http://example.com/");
+        System.out.println(doc.toString());
+        // assertTrue(doc.contains("Unanalysed Variants"));
+    }
+
+    @Test
+    public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
+        String testOutFilename = "testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html";
+        List<VariantEvaluation> variantData = new ArrayList<>();
+        variantData.add(unAnnotatedVariantEvaluation1);
+        variantData.add(unAnnotatedVariantEvaluation2);
+
+        List<Gene> genes = new ArrayList<>();
+        genes.add(gene1);
+        genes.add(gene2);
+
+        SampleData sampleData = makeSampleData(genes, variantData);
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
+
+        instance.writeFile(sampleData, settings);
+        assertTrue(Paths.get(testOutFilename).toFile().exists());
+
+    }
 
 }

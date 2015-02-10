@@ -49,77 +49,73 @@ public class TsvGeneResultsWriterTest {
     private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0\n";
     private SampleData sampleData;
     
-    // FIXME(holtgrew): uncomment lines again
+    @Before
+    public void before() {
+        instance = new TsvGeneResultsWriter();
+        sampleData = new SampleData();
+        List<Gene> geneList = new ArrayList();
+        gene = new Gene(getStubVariantEvaluation());
+        geneList.add(gene);
+        sampleData.setGenes(geneList);
+    }
 
-    // @Before
-    // public void before() {
-    // instance = new TsvGeneResultsWriter();
-    // sampleData = new SampleData();
-    // List<Gene> geneList = new ArrayList();
-    // gene = new Gene(getStubVariantEvaluation());
-    // geneList.add(gene);
-    // sampleData.setGenes(geneList);
-    // }
+     private VariantEvaluation getStubVariantEvaluation() {
+        GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, Integer.SIZE);
+        byte chr = 1;
+
+        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
+
+        Annotation annotation = new Annotation(TranscriptModel.createTranscriptModel(),
+                "KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q", VariantType.UTR3);
+        annotation.setGeneSymbol("FGFR2");
+        ArrayList<Annotation> annotations = new ArrayList<>();
+        annotations.add(annotation);
+        AnnotationList annotationList = new AnnotationList(annotations);
+        annotationList.setMostPathogenicVariantType(VariantType.STOPGAIN);
+        variant.setAnnotation(annotationList);
+
+        VariantEvaluation variantEval = new VariantEvaluation(variant);
+        variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores
+                .getPathogenicityScoreOf(VariantType.STOPGAIN), FilterResultStatus.PASS));
+        variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
+
+        variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
+        variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
+
+        return variantEval;
+    }
+
+    @Test
+    public void testWrite() {
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite")
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
+        instance.writeFile(sampleData, settings);
+        assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());
+        assertTrue(Paths.get("testWrite.genes.tsv").toFile().delete());
+    }
+
+    @Test
+    public void testWriteString() {
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(
+                EnumSet.of(OutputFormat.TSV_GENE)).build();
+        String outString = instance.writeString(sampleData, settings);
+        assertThat(outString, equalTo(HEADER + GENE_STRING));
+    }
+
+    @Test
+    public void testWriteStringStartsWithAHeaderLine() {
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(
+                EnumSet.of(OutputFormat.TSV_GENE)).build();
+        String outString = instance.writeString(sampleData, settings);
+        String[] lines = outString.split("\n");
+        assertThat(lines[0] + "\n", equalTo(HEADER));
+    }
     
-
-    // private VariantEvaluation getStubVariantEvaluation() {
-    // GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, Integer.SIZE);
-    // byte chr = 1;
-    //
-    // Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
-    //
-    // Annotation annotation = new Annotation(TranscriptModel.createTranscriptModel(),
-    // "KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q", VariantType.UTR3);
-    // annotation.setGeneSymbol("FGFR2");
-    // ArrayList<Annotation> annotations = new ArrayList<>();
-    // annotations.add(annotation);
-    // AnnotationList annotationList = new AnnotationList(annotations);
-    // annotationList.setMostPathogenicVariantType(VariantType.STOPGAIN);
-    // variant.setAnnotation(annotationList);
-    //
-    // VariantEvaluation variantEval = new VariantEvaluation(variant);
-    // variantEval.addFilterResult(new
-    // PathogenicityFilterResult(VariantTypePathogenicityScores.getPathogenicityScoreOf(VariantType.STOPGAIN),
-    // FilterResultStatus.PASS));
-    // variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
-    //
-    // variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
-    // variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
-    //
-    // return variantEval;
-    // }
-    //
-    // @Test
-    // public void testWrite() {
-    // ExomiserSettings settings = new
-    // ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
-    // instance.writeFile(sampleData, settings);
-    // assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());
-    // assertTrue(Paths.get("testWrite.genes.tsv").toFile().delete());
-    // }
-    //
-    // @Test
-    // public void testWriteString() {
-    // ExomiserSettings settings = new
-    // ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
-    // String outString = instance.writeString(sampleData, settings);
-    // assertThat(outString, equalTo(HEADER + GENE_STRING));
-    // }
-    //
-    // @Test
-    // public void testWriteStringStartsWithAHeaderLine() {
-    // ExomiserSettings settings = new
-    // ExomiserSettings.SettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
-    // String outString = instance.writeString(sampleData, settings);
-    // String[] lines = outString.split("\n");
-    // assertThat(lines[0] + "\n", equalTo(HEADER));
-    // }
-    //
-    // @Test
-    // public void testMakeGeneLine() {
-    // String candidateGene = "";
-    // String result = instance.makeGeneLine(gene, candidateGene);
-    // assertThat(result, equalTo(GENE_STRING));
-    // }
+    @Test
+    public void testMakeGeneLine() {
+        String candidateGene = "";
+        String result = instance.makeGeneLine(gene, candidateGene);
+        assertThat(result, equalTo(GENE_STRING));
+    }
 
 }
