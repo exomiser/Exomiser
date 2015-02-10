@@ -24,6 +24,9 @@ public enum PriorityType {
     //Prioritises  against phenotype data (Uberpheno)
     UBERPHENO_PRIORITY("uber-pheno", ScoringMode.RAW_SCORE),
 
+    //None - for whe you don't want to run any prioritisation
+    NONE("none", ScoringMode.RAW_SCORE),
+    
     //Not set type - default for when things go wrong.
     NOT_SET("", ScoringMode.RAW_SCORE);
     

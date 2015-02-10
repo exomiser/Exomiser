@@ -6,6 +6,7 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -15,9 +16,6 @@ import static org.junit.Assert.*;
  */
 public class PriorityTypeTest {
     
-    public PriorityTypeTest() {
-    }
-
     /**
      * Test of valueOfCommandLine method, of class PriorityType.
      */
@@ -49,5 +47,11 @@ public class PriorityTypeTest {
         String expResult = "phive";
         String result = instance.toString();
         assertEquals(expResult, result);
+    }
+    
+    @Test
+    public void testHasANoneTypePrioritiser() {
+        PriorityType instance = PriorityType.NONE;
+        assertThat(instance, equalTo(PriorityType.valueOfCommandLine("none")));
     }
 }
