@@ -80,7 +80,7 @@ public class Variant {
      * @return one-based position
      */
     public int getPosition() {
-        return change.pos.pos + 1;
+        return change.pos.withStrand('+').pos + 1;
     }
 
     /**
