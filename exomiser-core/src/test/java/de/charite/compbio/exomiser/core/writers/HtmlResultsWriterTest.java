@@ -28,6 +28,8 @@ import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import jannovar.genotype.GenotypeCall;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +59,7 @@ public class HtmlResultsWriterTest {
     
     private static TemplateEngine templateEngine;
     
-    private final String testOutFileName = "testWrite.html";
+    private String testOutFileName;
     
     private static final Integer QUALITY = 2;
     private static final Integer READ_DEPTH = 6;
@@ -170,36 +172,38 @@ public class HtmlResultsWriterTest {
     }
 
     @Test
-    public void testWriteTemplateWithEmptyData() {
+    public void testWriteTemplateWithEmptyData() throws Exception{
+        testOutFileName = "testWrite.html";
+        
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
         ExomiserSettings settings = getSettingsBuilder()
                 .outFileName(testOutFileName).build();
 
         instance.writeFile(sampleData, settings);
+        Path testOutFile = Paths.get(testOutFileName);
+        assertTrue(testOutFile.toFile().exists());
         
-        assertTrue(Paths.get(testOutFileName).toFile().exists());
     }
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
-        String testOutFilename = "testWriteTemplateWithUnAnnotatedVariantData.html";
+        testOutFileName = "testWriteTemplateWithUnAnnotatedVariantData.html";
         List<VariantEvaluation> variantData = new ArrayList<>();
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
-        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFilename).build();
+        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFileName).build();
 
         instance.writeFile(sampleData, settings);
-
-        File input = new File(testOutFilename);
-        Document doc = Jsoup.parse(input, "UTF-8", "http://example.com/");
-        System.out.println(doc.toString());
-//        assertTrue(doc.contains("Unanalysed Variants"));
+        
+        Path testOutFile = Paths.get(testOutFileName);
+        assertTrue(testOutFile.toFile().exists());
+        
     }
     
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
-        String testOutFilename = "testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html";
+        testOutFileName = "testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html";
         List<VariantEvaluation> variantData = new ArrayList<>();
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
@@ -209,11 +213,12 @@ public class HtmlResultsWriterTest {
         genes.add(gene2);
         
         SampleData sampleData = makeSampleData(genes, variantData);
-        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFilename).build();
+        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFileName).build();
 
         instance.writeFile(sampleData, settings);
-        assertTrue(Paths.get(testOutFilename).toFile().exists());
-
+        Path testOutFile = Paths.get(testOutFileName);
+        assertTrue(testOutFile.toFile().exists());
+        
     }
 
     private static ExomiserSettings.SettingsBuilder getSettingsBuilder() {
