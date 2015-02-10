@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
@@ -47,78 +48,32 @@ import org.mockito.runners.MockitoJUnitRunner;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class HtmlResultsWriterTest {
 
     HtmlResultsWriter instance;
 
     private final String testOutFileName = "testWrite.html";
-    
-    private static final Integer QUALITY = 2;
-    private static final Integer READ_DEPTH = 6;
-    private static final Genotype HETEROZYGOUS = Genotype.HETEROZYGOUS;
-    private static final String GENE1_GENE_SYMBOL = "GENE1";
-    private static final int GENE1_ENTREZ_GENE_ID = 1234567;
 
-    private static final String GENE2_GENE_SYMBOL = "GENE2";
-    private static final int GENE2_ENTREZ_GENE_ID = 7654321;
-    
+    private VariantEvaluation missenseVariantEvaluation;
+    private VariantEvaluation indelVariantEvaluation;
+
     private VariantEvaluation unAnnotatedVariantEvaluation1;
     private VariantEvaluation unAnnotatedVariantEvaluation2;
-    
-    @Mock
-    private Variant missenseVariant;
-    private VariantEvaluation missenseVariantEvaluation;
-    @Mock
-    private Variant indelVariant;
-    private VariantEvaluation indelVariantEvaluation;
 
     private Gene gene1;
     private Gene gene2;
-    
+
     @Before
     public void setUp() {
         instance = new HtmlResultsWriter();
 
-        GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, 30, 6);
+        TestVariantFactory varFactory = new TestVariantFactory();
+        Variant missenseVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0,
+                2.2);
+        Variant indelVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
-        Variant unannotatedVariant1 = new Variant((byte) 1, 1, "A", "T", genotypeCall, 2.2f, "Unannotated variant");
-        unAnnotatedVariantEvaluation1 = new VariantEvaluation(unannotatedVariant1);
-
-        Variant unannotatedVariant2 = new Variant((byte) 2, 2, "T", "AAA", genotypeCall, 2.2f, "Unannotated variant");
-        unAnnotatedVariantEvaluation2 = new VariantEvaluation(unannotatedVariant2);
-
-        Mockito.when(missenseVariant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-        Mockito.when(missenseVariant.getEntrezGeneID()).thenReturn(GENE1_ENTREZ_GENE_ID);
-        Mockito.when(missenseVariant.getChromosomeAsByte()).thenReturn((byte) 1);
-        Mockito.when(missenseVariant.get_position()).thenReturn(1);
-        Mockito.when(missenseVariant.get_ref()).thenReturn("A");
-        Mockito.when(missenseVariant.get_alt()).thenReturn("T");
-        Mockito.when(missenseVariant.getGenotype()).thenReturn(genotypeCall);
-        Mockito.when(missenseVariant.getVariantPhredScore()).thenReturn(2.2f);
-        Mockito.when(missenseVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
         missenseVariantEvaluation = new VariantEvaluation(missenseVariant);
-        missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f),
-                new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f)));
-        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f),
-                new MutationTasterScore(1f), new SiftScore(0f), new CaddScore(1f)));
-        missenseVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
-        missenseVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
-
-        Mockito.when(indelVariant.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL);
-        Mockito.when(indelVariant.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
-        Mockito.when(indelVariant.getChromosomeAsByte()).thenReturn((byte) 2);
-        Mockito.when(indelVariant.get_position()).thenReturn(2);
-        Mockito.when(indelVariant.get_ref()).thenReturn("C");
-        Mockito.when(indelVariant.get_alt()).thenReturn("GCT");
-        Mockito.when(indelVariant.getGenotype()).thenReturn(genotypeCall);
-        Mockito.when(indelVariant.getVariantPhredScore()).thenReturn(2.2f);
-        Mockito.when(indelVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(indelVariant.getVariantTypeConstant()).thenReturn(VariantType.FS_INSERTION);
         indelVariantEvaluation = new VariantEvaluation(indelVariant);
-        indelVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
-        indelVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
 
         gene1 = new Gene(missenseVariantEvaluation);
         gene2 = new Gene(indelVariantEvaluation);
@@ -131,6 +86,9 @@ public class HtmlResultsWriterTest {
         gene1.addPriorityResult(gene1PriorityScore);
         gene2.addPriorityResult(new OMIMPriorityResult());
 
+        Variant unannotatedVariant = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        unAnnotatedVariantEvaluation1 = new VariantEvaluation(unannotatedVariant);
+        unAnnotatedVariantEvaluation2 = new VariantEvaluation(unannotatedVariant);
     }
 
     @After

@@ -10,18 +10,23 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
@@ -46,43 +51,28 @@ public class TsvGeneResultsWriterTest {
             + "HUMAN_PHENO_SCORE	MOUSE_PHENO_SCORE	FISH_PHENO_SCORE	WALKER_RAW_SCORE	WALKER_SCALED_MAX_SCORE	WALKER_SCORE	"
             + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE\n";
     
-    private static final String GENE_STRING = "FGFR2	-10	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0\n";
+    private static final String GENE_STRING = "FGFR2	2263	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0\n";
     private SampleData sampleData;
     
     @Before
-    public void before() {
+    public void setUp() {
         instance = new TsvGeneResultsWriter();
-        sampleData = new SampleData();
-        List<Gene> geneList = new ArrayList();
-        gene = new Gene(getStubVariantEvaluation());
-        geneList.add(gene);
-        sampleData.setGenes(geneList);
-    }
 
-     private VariantEvaluation getStubVariantEvaluation() {
-        GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, Integer.SIZE);
-        byte chr = 1;
-
-        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
-
-        Annotation annotation = new Annotation(TranscriptModel.createTranscriptModel(),
-                "KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q", VariantType.UTR3);
-        annotation.setGeneSymbol("FGFR2");
-        ArrayList<Annotation> annotations = new ArrayList<>();
-        annotations.add(annotation);
-        AnnotationList annotationList = new AnnotationList(annotations);
-        annotationList.setMostPathogenicVariantType(VariantType.STOPGAIN);
-        variant.setAnnotation(annotationList);
+        TestVariantFactory varFactory = new TestVariantFactory();
+        Variant variant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
 
         VariantEvaluation variantEval = new VariantEvaluation(variant);
         variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores
-                .getPathogenicityScoreOf(VariantType.STOPGAIN), FilterResultStatus.PASS));
+                .getPathogenicityScoreOf(EnumSet.of(VariantEffect.STOP_GAINED)), FilterResultStatus.PASS));
         variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
 
         variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
         variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
 
-        return variantEval;
+        gene = new Gene(variantEval);
+
+        sampleData = new SampleData();
+        sampleData.setGenes(Arrays.asList(gene));
     }
 
     @Test
@@ -99,7 +89,8 @@ public class TsvGeneResultsWriterTest {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(
                 EnumSet.of(OutputFormat.TSV_GENE)).build();
         String outString = instance.writeString(sampleData, settings);
-        assertThat(outString, equalTo(HEADER + GENE_STRING));
+        Assert.assertEquals(HEADER + GENE_STRING, outString);
+        // assertThat(outString, equalTo(HEADER + GENE_STRING));
     }
 
     @Test

@@ -8,8 +8,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -103,7 +101,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // COVERAGE
         record.add(var.vc.getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
-        record.add(var.annotations.getHighestImpactEffect());
+        record.add(var.annotations.getHighestImpactEffect().getSequenceOntologyTerm());
 
         // HGVS
         record.add(var.getRepresentativeAnnotation());

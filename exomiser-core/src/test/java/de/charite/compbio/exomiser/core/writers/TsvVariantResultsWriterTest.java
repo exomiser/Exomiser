@@ -14,10 +14,13 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
@@ -27,6 +30,8 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.pedigree.Genotype;
 
 /**
  *
@@ -34,42 +39,29 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogeni
  */
 public class TsvVariantResultsWriterTest {
 
-    // private final Gene gene;
-    // private final TsvVariantResultsWriter instance;
+    private Gene gene;
+    private TsvVariantResultsWriter instance;
 	private static final String VARIANT_STRING = "#CHROM	POS	REF	ALT	QUAL	FILTER	GENOTYPE	COVERAGE	FUNCTIONAL_CLASS	HGVS	EXOMISER_GENE	CADD(>0.483)	POLYPHEN(>0.956|>0.446)	MUTATIONTASTER(>0.94)	SIFT(<0.06)	DBSNP_ID	MAX_FREQUENCY	DBSNP_FREQUENCY	EVS_EA_FREQUENCY	EVS_AA_FREQUENCY	EXOMISER_VARIANT_SCORE	EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE\n"
-			+ "chr1	1	A	T	2.2	PASS	0/1	0	STOPGAIN	FGFR2:KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q	FGFR2	.	.	.	.	.	0.0	.	.	.	0.0	0.0	0.0	0.0";
+            + "10	123353298	C	G	2.2	PASS	0/1	0	missense_variant	FGFR2:uc021pzz.1:c.34C>G:p.Leu12Val	FGFR2	.	.	.	.	.	0.0	.	.	.	0.0	0.0	0.0	0.0";
 	private SampleData sampleData;
 
-    public TsvVariantResultsWriterTest() {
+    @Before
+    public void setUp() {
         instance = new TsvVariantResultsWriter();
 
-        GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, Integer.SIZE);
-        byte chr = 1;
-
-        Variant variant = new Variant(chr, 1, "A", "T", genotypeCall, 2.2f, "");
-
-        Annotation annotation = new Annotation(TranscriptModel.createTranscriptModel(),
-                "KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q", VariantType.UTR3);
-        annotation.setGeneSymbol("FGFR2");
-        ArrayList<Annotation> annotations = new ArrayList<>();
-        annotations.add(annotation);
-        AnnotationList annotationList = new AnnotationList(annotations);
-        annotationList.setMostPathogenicVariantType(VariantType.STOPGAIN);
-        variant.setAnnotation(annotationList);
+        TestVariantFactory varFactory = new TestVariantFactory();
+        Variant variant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
 
         VariantEvaluation variantEval = new VariantEvaluation(variant);
         variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores
-                .getPathogenicityScoreOf(VariantType.STOPGAIN), FilterResultStatus.PASS));
+                .getPathogenicityScoreOf(EnumSet.of(VariantEffect.STOP_GAINED)), FilterResultStatus.PASS));
         variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
 
         variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
         variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
 
         gene = new Gene(variantEval);
-    }
 
-    @Before
-    public void before() {
         sampleData = new SampleData();
         sampleData.setGenes(new ArrayList<Gene>());
     }
@@ -91,7 +83,7 @@ public class TsvVariantResultsWriterTest {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(
                 EnumSet.of(OutputFormat.TSV_VARIANT)).build();
         String outString = instance.writeString(sampleData, settings);
-        assertThat(outString, equalTo(VARIANT_STRING));
+        Assert.assertEquals(VARIANT_STRING, outString);
     }
 
 }

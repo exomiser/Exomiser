@@ -8,6 +8,7 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import java.util.Arrays;
 
 import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.InvalidGenomeChange;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderDispatcher;
@@ -57,9 +58,12 @@ public class TestVariantFactory {
      *            depth the read depth to use
      * @param altAlleleID
      *            alternative allele ID
+     * @param qual
+     *            phred-scale quality
      * @return {@link Variant} with the setting
      */
-    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {
+    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID,
+            double qual) {
         // build annotation list (for the one transcript we have below only)
         final GenomePosition gPos = new GenomePosition(refDict, '+', chrom, pos, PositionType.ZERO_BASED);
         final GenomeChange change = new GenomeChange(gPos, ref, alt);
@@ -74,15 +78,28 @@ public class TestVariantFactory {
             dispatcher = new AnnotationBuilderDispatcher(null, change, new AnnotationBuilderOptions());
         final AnnotationList annotations;
         try {
-            annotations = new AnnotationList(Arrays.asList(dispatcher.build()));
+            Annotation anno = dispatcher.build();
+            if (anno != null)
+                annotations = new AnnotationList(Arrays.asList(anno));
+            else
+                annotations = new AnnotationList(Arrays.<Annotation> asList());
         } catch (InvalidGenomeChange e) {
             throw new RuntimeException("Problem building annotation", e);
         }
 
-        return new Variant(constructVariantContext(chrom, pos, ref, alt, gt, rd), altAlleleID, annotations);
+        return new Variant(constructVariantContext(chrom, pos, ref, alt, gt, rd, qual), altAlleleID, annotations);
+    }
+
+    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {
+        return constructVariant(chrom, pos, ref, alt, gt, rd, 0, 20.0);
     }
 
     public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int rd) {
+        return constructVariantContext(chrom, pos, ref, alt, gt, rd, 20.0);
+    }
+
+    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int rd,
+            double qual) {
         Allele refAllele = Allele.create(ref, true);
         Allele altAllele = Allele.create(alt);
         VariantContextBuilder vcBuilder = new VariantContextBuilder();
@@ -98,6 +115,7 @@ public class TestVariantFactory {
         vcBuilder.alleles(Arrays.asList(refAllele, altAllele));
         vcBuilder.genotypes(gtBuilder.make());
         vcBuilder.attribute("RD", rd);
+        vcBuilder.log10PError(-0.1 * qual);
         // System.err.println(vcBuilder.make().toString());
 
         return vcBuilder.make();

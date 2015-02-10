@@ -84,8 +84,12 @@ public class VariantEffectCounter {
                     counters2.put(entry.getKey(), entry.getValue());
 
             ImmutableMap.Builder<VariantEffect, Integer> builder2 = new ImmutableMap.Builder<VariantEffect, Integer>();
-            for (Map.Entry<VariantEffect, Integer> entry : counters2.entrySet())
-                builder2.put(entry.getKey(), map.get(entry.getKey()));
+            for (Map.Entry<VariantEffect, Integer> entry : counters2.entrySet()) {
+                if (map.get(entry.getKey()) == null)
+                    builder2.put(entry.getKey(), 0);
+                else
+                    builder2.put(entry.getKey(), map.get(entry.getKey()));
+            }
             builder.add(builder2.build());
         }
         return builder.build();

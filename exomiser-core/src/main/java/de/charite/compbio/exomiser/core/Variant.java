@@ -11,6 +11,7 @@ import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
+import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 
@@ -154,8 +155,11 @@ public class Variant {
      */
     public List<String> getAnnotationList() {
         ArrayList<String> result = new ArrayList<String>();
-        for (Annotation anno : annotations.entries)
-            result.add(anno.getSymbolAndAnnotation());
+        for (Annotation anno : annotations.entries) {
+            String annoS = anno.getSymbolAndAnnotation();
+            if (annoS != null)
+                result.add(annoS);
+        }
         return result;
     }
 
@@ -200,7 +204,13 @@ public class Variant {
     }
 
     public String getGenotypeAsString() {
-        return vc.getGenotype(0).toBriefString();
+        StringBuilder builder = new StringBuilder();
+        for (Allele allele : vc.getGenotype(0).getAlleles()) {
+            if (builder.length() > 0)
+                builder.append('/');
+            builder.append(allele.isReference() ? "0" : "1");
+        }
+        return builder.toString();
     }
 
     public int getEntrezGeneID() {
