@@ -127,6 +127,10 @@ public class PhenixPriority implements Priority {
      */
     public PhenixPriority(String scoreDistributionFolder, Set<String> hpoQueryTermIds, boolean symmetric) {
 
+        if (hpoQueryTermIds.isEmpty()) {
+            throw new PhenixException("Please supply some HPO terms. PhenIX is unable to prioritise genes without these.");
+        }
+
         if (!scoreDistributionFolder.endsWith(File.separatorChar + "")) {
             scoreDistributionFolder += File.separatorChar;
         }
@@ -135,7 +139,7 @@ public class PhenixPriority implements Priority {
         String hpoAnnotationFile = String.format("%s%s", scoreDistributionFolder, "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt");
         parseData(hpoOboFile, hpoAnnotationFile);
 
-        HashSet<Term> hpoQueryTermsHS = new HashSet<Term>();
+        HashSet<Term> hpoQueryTermsHS = new HashSet<Term>();        
         for (String termIdString : hpoQueryTermIds) {
             Term t = hpo.getTermIncludingAlternatives(termIdString);
             if (t != null) {
@@ -485,6 +489,13 @@ public class PhenixPriority implements Priority {
 
         logger.info("WARNING: Frequency of {} terms was zero!! Set IC of these to : {}", frequencyZeroCounter, ICzeroCountTerms);
         return term2informationContent;
+    }
+
+    private static class PhenixException extends RuntimeException {
+
+        private PhenixException(String message) {
+            super(message);
+        }
     }
 
 }
