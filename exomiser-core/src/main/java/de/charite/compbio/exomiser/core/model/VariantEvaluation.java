@@ -83,14 +83,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * @return the HGVS gene symbol associated with the variant.
+     * @return the gene symbol associated with the variant.
      */
     public String getGeneSymbol() {
-        final Annotation anno = var.getHighestImpactAnnotation();
-        if (anno == null || anno.transcript == null)
+        String symbols = var.getGeneSymbol();
+        if (symbols == null)
             return ".";
-        else
-            return anno.transcript.geneSymbol;
+        String[] tokens = symbols.split(",");
+        return tokens[0];
     }
 
 

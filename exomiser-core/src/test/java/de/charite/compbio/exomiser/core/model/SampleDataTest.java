@@ -8,10 +8,12 @@ package de.charite.compbio.exomiser.core.model;
 import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.Person;
+import htsjdk.variant.vcf.VCFHeader;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -46,8 +48,8 @@ public class SampleDataTest {
         instance = new SampleData();
 
         // This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(mockAnnotatedVariant.getAnnotation()).thenReturn("Lots of lovely annotations");
-        Mockito.when(mockUnAnnotatedVariant.getAnnotation()).thenReturn(".");
+        Mockito.when(mockAnnotatedVariant.getAnnotationList()).thenReturn(Arrays.asList("Lots of lovely annotations"));
+        Mockito.when(mockUnAnnotatedVariant.getAnnotationList()).thenReturn(Arrays.<String> asList());
     }
 
     @Test
@@ -79,7 +81,7 @@ public class SampleDataTest {
 
     @Test
     public void testCanSetAndGetVcfHeader() {
-        List<String> vcfHeader = new ArrayList<>();
+        VCFHeader vcfHeader = new VCFHeader();
         instance.setVcfHeader(vcfHeader);
         assertThat(instance.getVcfHeader(), equalTo(vcfHeader));
     }
@@ -92,8 +94,8 @@ public class SampleDataTest {
     }
 
     @Test
-    public void testCanSetAndGetPedigree() throws PedParseException {
-        Pedigree pedigree = new Pedigree(new ArrayList<Person>(), "Family Robinson");
+    public void testCanSetAndGetPedigree() {
+        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Individual");
         instance.setPedigree(pedigree);
         assertThat(instance.getPedigree(), equalTo(pedigree));
     }
