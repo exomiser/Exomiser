@@ -22,6 +22,7 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.Genotype;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
@@ -36,10 +37,14 @@ import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
  *
@@ -48,8 +53,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class HtmlResultsWriterTest {
 
-    HtmlResultsWriter instance;
-
+    private HtmlResultsWriter instance;
+    
+    private static TemplateEngine templateEngine;
+    
     private final String testOutFileName = "testWrite.html";
     
     private static final Integer QUALITY = 2;
@@ -74,10 +81,27 @@ public class HtmlResultsWriterTest {
     private Gene gene1;
     private Gene gene2;
     
+    @BeforeClass
+    public static void makeTemplateEngine() {
+        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setPrefix("html/templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setCacheable(true);
+        templateEngine = new TemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+    }
+    
     @Before
     public void setUp() {
-        instance = new HtmlResultsWriter();
         
+        instance = new HtmlResultsWriter(templateEngine);
+        
+        setUpVariants();
+
+    }
+
+    private void setUpVariants() {
         GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, 30, 6);
     
         Variant unannotatedVariant1 = new Variant((byte)1, 1, "A", "T", genotypeCall, 2.2f, "Unannotated variant");
@@ -127,11 +151,11 @@ public class HtmlResultsWriterTest {
         gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
         gene1.addPriorityResult(gene1PriorityScore);
         gene2.addPriorityResult(new OMIMPriorityResult());
-
     }
+    
     @After
     public void tearDown() {
-//        Paths.get(testOutFileName).toFile().delete();
+        Paths.get(testOutFileName).toFile().delete();
     }
 
     private SampleData makeSampleData(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
@@ -148,7 +172,8 @@ public class HtmlResultsWriterTest {
     @Test
     public void testWriteTemplateWithEmptyData() {
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFileName).build();
+        ExomiserSettings settings = getSettingsBuilder()
+                .outFileName(testOutFileName).build();
 
         instance.writeFile(sampleData, settings);
         
@@ -162,7 +187,7 @@ public class HtmlResultsWriterTest {
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
+        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFilename).build();
 
         instance.writeFile(sampleData, settings);
 
@@ -184,11 +209,17 @@ public class HtmlResultsWriterTest {
         genes.add(gene2);
         
         SampleData sampleData = makeSampleData(genes, variantData);
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName(testOutFilename).build();
+        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFilename).build();
 
         instance.writeFile(sampleData, settings);
         assertTrue(Paths.get(testOutFilename).toFile().exists());
 
+    }
+
+    private static ExomiserSettings.SettingsBuilder getSettingsBuilder() {
+        return new ExomiserSettings.SettingsBuilder()
+                .vcfFilePath(Paths.get(System.getProperty("java.io.tmpdir"), "temp.vcf"))
+                .usePrioritiser(PriorityType.NONE);
     }
 
 }

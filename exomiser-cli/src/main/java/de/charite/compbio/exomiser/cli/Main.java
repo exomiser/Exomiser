@@ -130,9 +130,10 @@ public class Main {
         exomiser.analyse(sampleData, exomiserSettings);
 
         logger.info("Writing results");
-
+        ResultsWriterFactory resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
+        
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outFormat);
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
             resultsWriter.writeFile(sampleData, exomiserSettings);
         }
 

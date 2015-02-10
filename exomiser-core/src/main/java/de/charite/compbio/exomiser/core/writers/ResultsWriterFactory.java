@@ -6,14 +6,22 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.thymeleaf.TemplateEngine;
+
 /**
  * Provides an entry point for getting a ResultsWriter for a specific format.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class ResultsWriterFactory {
-
-    public static ResultsWriter getResultsWriter(OutputFormat outputFormat) {
+    
+    @Autowired
+    private TemplateEngine templateEngine;
+    
+    public ResultsWriter getResultsWriter(OutputFormat outputFormat) {
         switch (outputFormat){
             case HTML:
                 return getHtmlResultsWriter();
@@ -28,19 +36,19 @@ public class ResultsWriterFactory {
         }
     }
     
-    protected static ResultsWriter getHtmlResultsWriter() {
-        return new HtmlResultsWriter();
+    protected ResultsWriter getHtmlResultsWriter() {
+        return new HtmlResultsWriter(templateEngine);
     }
 
-    protected static ResultsWriter getTsvGeneResultsWriter() {
+    protected ResultsWriter getTsvGeneResultsWriter() {
         return new TsvGeneResultsWriter();
     }
     
-    protected static ResultsWriter getTsvVariantResultsWriter() {
+    protected ResultsWriter getTsvVariantResultsWriter() {
         return new TsvVariantResultsWriter();
     }
 
-    protected static ResultsWriter getVcfResultsWriter() {
+    protected ResultsWriter getVcfResultsWriter() {
         return new VcfResultsWriter();
     }
     

@@ -207,7 +207,24 @@ public class MainConfig {
         return new VariantEvaluationDataService();
     }
        
-
+    @Bean
+    public TemplateEngine templateEngine() {
+        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setPrefix("html/templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setCacheable(true);
+        TemplateEngine templateEngine = new TemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+        
+        return templateEngine;
+    }
+    
+    @Bean
+    public ResultsWriterFactory resultsWriterFactory() {
+        return new ResultsWriterFactory();
+    }
+    
     protected String getValueOfProperty(String property) throws PropertyNotFoundException {
         String value = env.getProperty(property);
         if (value == null) {

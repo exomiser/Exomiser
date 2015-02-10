@@ -6,43 +6,47 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.ResultsWriter;
-import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
-import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.TsvGeneResultsWriter;
-import de.charite.compbio.exomiser.core.writers.HtmlResultsWriter;
-import de.charite.compbio.exomiser.core.writers.VcfResultsWriter;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ResultsWriterFactoryTest {
     
-    public ResultsWriterFactoryTest() {
-    }
+    @InjectMocks
+    private ResultsWriterFactory instance;
 
     @Test
     public void testGetHtmlResultsWriter() {
         OutputFormat outputFormat = OutputFormat.HTML;
-        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(HtmlResultsWriter.class));
-
     }
     
     @Test
-    public void testGetTsvlResultsWriter() {
+    public void testGetTsvGeneResultsWriter() {
         OutputFormat outputFormat = OutputFormat.TSV_GENE;
-        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(TsvGeneResultsWriter.class));
+    }
+    
+    @Test
+    public void testGetTsvVariantResultsWriter() {
+        OutputFormat outputFormat = OutputFormat.TSV_VARIANT;
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        assertThat(result, instanceOf(TsvVariantResultsWriter.class));
     }
     
     @Test
     public void testGetVcfResultsWriter() {
         OutputFormat outputFormat = OutputFormat.VCF;
-        ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(VcfResultsWriter.class));
     }
     

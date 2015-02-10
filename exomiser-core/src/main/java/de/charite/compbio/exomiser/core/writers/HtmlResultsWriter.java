@@ -27,8 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
  *
@@ -38,19 +36,13 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HtmlResultsWriter.class);
 
-    private static TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
     
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.HTML;
     
-    public HtmlResultsWriter() {
+    public HtmlResultsWriter(TemplateEngine templateEngine) {
         Locale.setDefault(Locale.UK);
-        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setTemplateMode("HTML5");
-        templateResolver.setPrefix("html/templates/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setCacheable(false);
-        templateEngine = new TemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver);    
+        this.templateEngine = templateEngine;
     }
 
     @Override
