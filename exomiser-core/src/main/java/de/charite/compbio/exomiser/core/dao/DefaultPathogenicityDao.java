@@ -39,7 +39,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
     @Autowired
     private DataSource dataSource;
 
-    @Cacheable(value="pathogenicity", key="#variant.chromosomalVariant")
+    @Cacheable(value = "pathogenicity", key = "#variant.change")
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
 

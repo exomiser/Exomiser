@@ -71,8 +71,8 @@
         <!--Other libraries-->
         <dependency>
             <groupId>de.charite.compbio</groupId>
-            <artifactId>jannovar</artifactId>
-            <version>0.6-SNAPSHOT</version>
+            <artifactId>jannovar-core</artifactId>
+            <version>0.13-SNAPSHOT</version>
         </dependency>
         <!--YamlBeans is a java <-> yml library-->
         <dependency>

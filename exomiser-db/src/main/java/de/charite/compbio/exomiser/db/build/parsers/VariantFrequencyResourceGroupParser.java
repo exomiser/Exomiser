@@ -9,12 +9,15 @@ package de.charite.compbio.exomiser.db.build.parsers;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceGroup;
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,9 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
     public static final String NAME = "VARIANT";
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFrequencyResourceGroupParser.class);
+
+    // FIXME(holtgrewe): Somehow set from the outside, use @Autowired?
+    private ReferenceDictionary refDict = null;
 
     Resource dbSnpResource;
     Resource espResource;
@@ -57,7 +63,7 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         //this is the Frequency List we're going to populate and the write out to file
         ArrayList<Frequency> frequencyList = new ArrayList<>();
         //provide it to the DbSnpFrequencyParser along with the UCSC data
-        DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(ucscHgResource, inDir, frequencyList);
+        DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(refDict, ucscHgResource, inDir, frequencyList);
         dbSnpParser.parseResource(dbSnpResource, inDir, outDir);
 
         if (frequencyList.isEmpty()) {
@@ -65,7 +71,7 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         }
         // Now parseResource the ESP data using the frequency information generated
         // from the dbSNP and UCSC known gene data.
-        EspFrequencyParser espParser = new EspFrequencyParser(frequencyList);
+        EspFrequencyParser espParser = new EspFrequencyParser(refDict, frequencyList);
         logger.info("Parsing the ESP data");
         espParser.parseResource(espResource, inDir, outDir);
 //        /* Remove duplicates */
@@ -109,6 +115,14 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         }
         
         return true; 
+    }
+
+    public ReferenceDictionary getRefDict() {
+        return refDict;
+    }
+
+    public void setRefDict(ReferenceDictionary refDict) {
+        this.refDict = refDict;
     }
     
 }

@@ -6,14 +6,26 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
+import htsjdk.variant.vcf.VCFHeader;
+
 /**
  * Provides an entry point for getting a ResultsWriter for a specific format.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 public class ResultsWriterFactory {
 
-    public static ResultsWriter getResultsWriter(OutputFormat outputFormat) {
+    /**
+     * Build {@link ResultsWriter} for the given {@link VCFReader} and {@link OutputFormat}.
+     * 
+     * @param header
+     *            from the input file, to base output header upon
+     * @param outputFormat
+     *            the format to use for the output
+     * @return the constructed {@link ResultsWriter} implementation
+     */
+    public static ResultsWriter getResultsWriter(VCFHeader header, OutputFormat outputFormat) {
         switch (outputFormat){
             case HTML:
                 return getHtmlResultsWriter();
@@ -22,7 +34,7 @@ public class ResultsWriterFactory {
             case TSV_VARIANT:
                 return getTsvVariantResultsWriter();
             case VCF:
-                return getVcfResultsWriter();
+                return getVcfResultsWriter(header);
             default:
                 return getHtmlResultsWriter();
         }
@@ -40,8 +52,8 @@ public class ResultsWriterFactory {
         return new TsvVariantResultsWriter();
     }
 
-    protected static ResultsWriter getVcfResultsWriter() {
-        return new VcfResultsWriter();
+    protected static ResultsWriter getVcfResultsWriter(VCFHeader header) {
+        return new VcfResultsWriter(header);
     }
     
 }

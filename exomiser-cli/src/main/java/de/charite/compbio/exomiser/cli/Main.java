@@ -132,7 +132,7 @@ public class Main {
         logger.info("Writing results");
 
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outFormat);
+            ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(sampleData.getVcfHeader(), outFormat);
             resultsWriter.writeFile(sampleData, exomiserSettings);
         }
 

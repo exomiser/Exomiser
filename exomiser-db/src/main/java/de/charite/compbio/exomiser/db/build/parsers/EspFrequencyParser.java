@@ -1,9 +1,11 @@
 package de.charite.compbio.exomiser.db.build.parsers;
 
+import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
-import jannovar.common.Constants;
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +38,9 @@ import org.slf4j.LoggerFactory;
 public class EspFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(EspFrequencyParser.class);
+
+    /** The frequencey parse to use */
+    private final VCF2FrequencyParser vcf2FreqParser;
 
     /**
      * List of objects that encapsulate information about the frequency of a
@@ -61,15 +67,18 @@ public class EspFrequencyParser implements ResourceParser {
     /**
      * The constructor initialized the file output stream.
      *
-     * @param frequencyList A previous list of Frequency objects (will have
-     * dbSNP information). This is sorted here as it is a requirement for the
-     * binary search.
+     * @param refDict
+     *            the reference dictionary to use for chromosome name to id conversion
+     * @param frequencyList
+     *            A previous list of Frequency objects (will have dbSNP information). This is sorted here as it is a
+     *            requirement for the binary search.
      */
-    public EspFrequencyParser(List<Frequency> frequencyList) {
+    public EspFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList) {
         logger.info("Sorting variant frequency list ({} variants)", frequencyList.size());
+        this.vcf2FreqParser = new VCF2FrequencyParser(refDict);
         Collections.sort(frequencyList);
         this.frequencyList = frequencyList;
-        //list for adding new Frequencies from the ESP files
+        // list for adding new Frequencies from the ESP files
         espFrequencyList = new ArrayList<>();
     }
 
@@ -147,7 +156,7 @@ public class EspFrequencyParser implements ResourceParser {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                Frequency frequency = VCF2FrequencyParser.parseVCFline(line);
+                Frequency frequency = vcf2FreqParser.parseVCFline(line);
                 parseEspDataFromVCFInfoField(frequency);
             }
         } catch (IOException e) {
