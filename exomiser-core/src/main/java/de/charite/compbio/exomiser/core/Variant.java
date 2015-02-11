@@ -3,6 +3,9 @@ package de.charite.compbio.exomiser.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.thymeleaf.util.StringUtils;
+
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 
@@ -71,6 +74,18 @@ public class Variant {
      */
     public String getChromosomeStr() {
         return change.pos.refDict.contigName.get(change.pos.chr);
+    }
+
+    /**
+     * @return String representation of {@link #change}/
+     */
+    public String getChromosomalVariant() {
+        // Change can be null for unknown references. In this case, we hack together something from the Variant Context.
+        if (change != null)
+            return change.toString();
+        else
+            return StringUtils.concat(vc.getChr(), ":g.", vc.getStart(), vc.getReference(), ">",
+                    vc.getAlternateAllele(altAlleleID));
     }
 
     /**
@@ -234,6 +249,10 @@ public class Variant {
     public String toString() {
         return "Variant [vc=" + vc + ", altAlleleID=" + altAlleleID + ", annotations=" + annotations + ", change="
                 + change + "]";
+    }
+
+    public GenomeChange getChange() {
+        return change;
     }
 
 }

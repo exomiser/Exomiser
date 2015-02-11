@@ -14,6 +14,7 @@ import de.charite.compbio.jannovar.pedigree.GenotypeListBuilder;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.PedigreeDiseaseCompatibilityDecorator;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
 import htsjdk.variant.variantcontext.Allele;
 
 import java.util.ArrayList;
@@ -77,7 +78,11 @@ public class InheritanceModeAnalyser {
         PedigreeDiseaseCompatibilityDecorator checker = new PedigreeDiseaseCompatibilityDecorator(pedigree);
         
         // Build list of genotypes from the given variants.
-        GenotypeListBuilder builder = new GenotypeListBuilder(null, null, ImmutableList.copyOf(variantList.get(0).vc
+        String geneID = variantList.get(0).getGeneSymbol();
+        // Use interval of transcript of first region, only used for the chromosome information anyway.
+        GenomeInterval geneInterval = variantList.get(0).annotations.entries.get(0).transcript.txRegion;
+        GenotypeListBuilder builder = new GenotypeListBuilder(geneID, geneInterval, ImmutableList.copyOf(variantList
+                .get(0).vc
                 .getSampleNames()));
         for (Variant var : variantList) {
             final int altAlleleID = var.altAlleleID;

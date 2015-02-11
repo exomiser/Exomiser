@@ -101,11 +101,13 @@ public class SampleDataFactory {
     private List<VariantEvaluation> createVariantEvaluations(List<VariantContext> vcfRecords) {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>(vcfRecords.size());
 
+        // TODO(holtgrewe): For now, we throw out variants on unknown references.
         logger.info("Creating sample VariantEvaluations");
         // build VariantEvaluation objects from Variants
         for (VariantContext vc : vcfRecords)
             for (Variant variant : variantAnnotator.annotateVariantContext(vc))
-                variantEvaluations.add(new VariantEvaluation(variant));
+                if (variant.getChange() != null) // FIXME: handle this case and write through unprocessed?
+                    variantEvaluations.add(new VariantEvaluation(variant));
 
         return variantEvaluations;
     }

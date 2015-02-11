@@ -7,9 +7,11 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.dao.TestJannovarDataFactory;
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.variantcontext.VariantContext;
 
@@ -54,9 +56,8 @@ public class SampleDataFactoryTest {
         Mockito.when(variantAnnotator.annotateVariantContext(isNotNull(VariantContext.class))).thenAnswer(
                 new Answer<List<Variant>>() {
             public List<Variant> answer(InvocationOnMock invocation) {
-                Variant v = new Variant((VariantContext) invocation.getArguments()[0], 0,
-                        new AnnotationList(new ArrayList<Annotation>()));
-                        return Arrays.asList(v);
+                        return Arrays.asList(new TestVariantFactory().constructVariant(10, 123256213, "CA", "CT",
+                                Genotype.HETEROZYGOUS, 22, 0));
             }
         });
     }
@@ -69,7 +70,7 @@ public class SampleDataFactoryTest {
     
     @Test
     public void createsSampleDataWithSingleSampleVcfAndNoPedFile() {
-        Path vcfPath = Paths.get("src/test/resources/Pfeiffer.vcf");
+        Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         SampleData sampleData = instance.createSampleData(vcfPath, null);
         
         String sampleName = "manuel"; 
@@ -84,8 +85,8 @@ public class SampleDataFactoryTest {
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
         assertThat(sampleData.getPedigree().members.get(0), equalTo(pedigree.members.get(0)));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(false));
-        assertThat(sampleData.getVariantEvaluations().size(), equalTo(37709));
-        assertThat(sampleData.getGenes().isEmpty(), is(true));
+        assertThat(sampleData.getVariantEvaluations().size(), equalTo(3));
+        assertThat(sampleData.getGenes().isEmpty(), is(false));
     }
     
     @Test

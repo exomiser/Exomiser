@@ -37,7 +37,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
     @Autowired
     private DataSource dataSource;
 
-    @Cacheable(value = "frequency", key = "#variant.change")
+    @Cacheable(value = "frequency", key = "#variant.chromosomalVariant")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
 
