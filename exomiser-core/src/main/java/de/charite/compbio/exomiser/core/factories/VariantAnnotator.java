@@ -23,6 +23,10 @@ public class VariantAnnotator {
 
     private final Map<Byte, Chromosome> chromosomeMap;
 
+    //TODO: Jannovar 0.11
+//    final JannovarData data = new JannovarDataSerializer(this.options.dataFile).load();
+//    final VariantAnnotator annotator = new VariantAnnotator(data.refDict, data.chromosomes); 
+    
     public VariantAnnotator(Map<Byte, Chromosome> chromosomeMap) {
         this.chromosomeMap = chromosomeMap;
     }

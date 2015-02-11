@@ -1,10 +1,10 @@
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.filter.FilterResult;
-import de.charite.compbio.exomiser.core.filter.FilterType;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import java.util.ArrayList;

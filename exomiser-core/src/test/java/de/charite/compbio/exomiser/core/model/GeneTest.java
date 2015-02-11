@@ -5,13 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filter.FilterResult;
-import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filter.TargetFilterResult;
-import de.charite.compbio.exomiser.priority.OMIMPriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityType;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
+import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.Genotype;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
@@ -124,7 +125,7 @@ public class GeneTest {
         assertThat(instance.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
 
         assertThat(instance.passedFilters(), is(true));
-        assertThat(instance.getPriorityScoreMap().isEmpty(), is(true));
+        assertThat(instance.getPriorityResults().isEmpty(), is(true));
 
         assertThat(instance.getFilterScore(), equalTo(0f));
         assertThat(instance.getPriorityScore(), equalTo(0f));
@@ -239,14 +240,15 @@ public class GeneTest {
     }
     
     @Test
-    public void testCanAddAndRetrievePriorityScore() {
-        PriorityScore priorityScore = new OMIMPriorityScore();
+    public void testCanAddAndRetrievePriorityScoreByPriorityType() {
+        PriorityResult omimPriorityResult = new OMIMPriorityResult();
         PriorityType priorityType = PriorityType.OMIM_PRIORITY;
         
         instance = new Gene(variantEvaluation1Gene1);
-        instance.addPriorityScore(priorityScore, priorityType);
+        instance.addPriorityResult(omimPriorityResult);
+        instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
         //TODO: this is odd shouldn't it actually return the Object, not the value?
-        assertThat(instance.getPriorityScore(priorityType), equalTo(priorityScore.getScore()));
+        assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
     }
     
     @Test

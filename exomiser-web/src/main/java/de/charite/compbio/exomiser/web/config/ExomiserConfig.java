@@ -12,12 +12,12 @@ import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
-import de.charite.compbio.exomiser.core.filter.FilterFactory;
-import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.model.Exomiser;
+import de.charite.compbio.exomiser.core.filters.FilterFactory;
+import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
-import de.charite.compbio.exomiser.priority.PriorityFactory;
-import de.charite.compbio.exomiser.priority.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import jannovar.reference.Chromosome;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,7 +40,7 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 @PropertySource({"classpath:exomiser.properties"})
-@Import(CacheConfig.class)
+@Import(value = {CacheConfig.class, DaoConfig.class})
 public class ExomiserConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserConfig.class);
@@ -71,22 +71,22 @@ public class ExomiserConfig {
     }
 
     @Bean
-    public Path phenomizerDataDirectory() {
-        Path phenomizerDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
-        logger.info("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
-        return phenomizerDataDirectory;
+    public Path phenixDataDirectory() {
+        Path phenixDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
+        logger.info("phenixDataDirectory: {}", phenixDataDirectory.toAbsolutePath());
+        return phenixDataDirectory;
     }
 
     @Bean
     public Path hpoOntologyFilePath() {
-        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
+        Path hpoOntologyFilePath = phenixDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
         logger.info("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
         return hpoOntologyFilePath;
     }
 
     @Bean
     public Path hpoAnnotationFilePath() {
-        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
+        Path hpoAnnotationFilePath = phenixDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
         logger.info("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
@@ -104,8 +104,7 @@ public class ExomiserConfig {
         Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
         return new VariantAnnotator(chromosomeMap);
     }
-
-//    
+    
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.

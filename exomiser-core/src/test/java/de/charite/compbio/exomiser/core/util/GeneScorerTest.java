@@ -6,13 +6,13 @@
 
 package de.charite.compbio.exomiser.core.util;
 
-import de.charite.compbio.exomiser.core.filter.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filter.FilterType;
-import de.charite.compbio.exomiser.core.filter.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filter.PathogenicityFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.priority.ScoringMode;
+import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import jannovar.common.Genotype;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;

@@ -7,14 +7,14 @@ package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.model.Exomiser;
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
-import de.charite.compbio.exomiser.core.model.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.writer.OutputFormat;
-import de.charite.compbio.exomiser.core.writer.ResultsWriter;
-import de.charite.compbio.exomiser.core.writer.ResultsWriterFactory;
-import de.charite.compbio.exomiser.priority.Priority;
+import de.charite.compbio.exomiser.core.writers.OutputFormat;
+import de.charite.compbio.exomiser.core.writers.ResultsWriter;
+import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
+import de.charite.compbio.exomiser.core.prioritisers.Priority;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -79,6 +80,9 @@ public class Main {
     }
 
     private static void setup() {
+        Locale.setDefault(Locale.UK);
+        logger.info("Locale set to {}", Locale.getDefault());
+        
         applicationContext = setUpApplicationContext();
         options = applicationContext.getBean(Options.class);
         buildVersion = (String) applicationContext.getBean("buildVersion");
@@ -126,12 +130,11 @@ public class Main {
         exomiser.analyse(sampleData, exomiserSettings);
 
         logger.info("Writing results");
-
+        ResultsWriterFactory resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
+        
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outFormat);
-            //TODO: remove priorityList - this should become another report
-            List<Priority> priorityList = new ArrayList<>();
-            resultsWriter.writeFile(sampleData, exomiserSettings, priorityList);
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
+            resultsWriter.writeFile(sampleData, exomiserSettings);
         }
 
         logger.info("Finished analysis");
@@ -145,6 +148,9 @@ public class Main {
             Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);
             if (commandLine.hasOption("help")) {
+                printHelp();
+            }
+            if (args.length == 0) {
                 printHelp();
             }
             //check the args for a batch file first as this option is otherwise ignored 

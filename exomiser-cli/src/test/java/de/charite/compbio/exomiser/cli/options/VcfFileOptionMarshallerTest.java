@@ -5,11 +5,13 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
 import java.nio.file.Paths;
+import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -32,19 +34,17 @@ public class VcfFileOptionMarshallerTest {
 
     @Test
     public void testGetCommandLineParameter() {
-        
         assertThat(instance.getCommandLineParameter(), equalTo("vcf"));
     }
 
     @Test
-    public void testHasAnOption() {
-
-        assertThat(instance.getOption(), is(notNullValue()));
+    public void testOptionTakesAnArgument() {
+        Option option = instance.getOption();
+        assertThat(option.hasArg(), is(true));
     }
-
+    
     @Test
     public void testApplyValuesToSettingsBuilderSetsVcfValue() {
-        System.out.println("applyValuesToSettingsBuilder");
         String vcfFileName = "123.vcf";
         String[] values = {vcfFileName};
         

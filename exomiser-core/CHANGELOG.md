@@ -1,6 +1,10 @@
 # The Exomiser - Core Library Changelog
 
-## 5.1.1 2014-12-18
+## 6.0.0
+- API changes:
+    - Package tidy-up, which triggered the full version bump. 
+
+## 5.2.0 2014-12-18
 - New style HTML output
 
 ## 5.1.0 2014-12-12

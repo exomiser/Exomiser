@@ -13,12 +13,13 @@ import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
-import de.charite.compbio.exomiser.core.filter.FilterFactory;
-import de.charite.compbio.exomiser.core.filter.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.model.Exomiser;
+import de.charite.compbio.exomiser.core.filters.FilterFactory;
+import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
-import de.charite.compbio.exomiser.priority.PriorityFactory;
-import de.charite.compbio.exomiser.priority.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import jannovar.reference.Chromosome;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -34,6 +35,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
  * Provides configuration details from the settings.properties file located in
@@ -106,17 +110,17 @@ public class MainConfig {
     }
 
     @Bean
-    public Path phenomizerDataDirectory() {
-        String phenomizerDataDirValue = getValueOfProperty("phenomizerDataDir");
-        Path phenomizerDataDirectory = dataPath().resolve(phenomizerDataDirValue);
-        logger.debug("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
-        return phenomizerDataDirectory;
+    public Path phenixDataDirectory() {
+        String phenixDataDirValue = getValueOfProperty("phenomizerDataDir");
+        Path phenixDataDirectory = dataPath().resolve(phenixDataDirValue);
+        logger.debug("phenixDataDirectory: {}", phenixDataDirectory.toAbsolutePath());
+        return phenixDataDirectory;
     }
 
     @Bean
     public Path hpoOntologyFilePath() {
         String hpoOntologyFileValue = getValueOfProperty("hpoOntologyFile");
-        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(hpoOntologyFileValue);
+        Path hpoOntologyFilePath = phenixDataDirectory().resolve(hpoOntologyFileValue);
         logger.debug("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
         return hpoOntologyFilePath;
     }
@@ -124,7 +128,7 @@ public class MainConfig {
     @Bean
     public Path hpoAnnotationFilePath() {
         String hpoAnnotationFileValue = getValueOfProperty("hpoAnnotationFile");
-        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(hpoAnnotationFileValue);
+        Path hpoAnnotationFilePath = phenixDataDirectory().resolve(hpoAnnotationFileValue);
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
@@ -203,6 +207,23 @@ public class MainConfig {
         return new VariantEvaluationDataService();
     }
        
+    @Bean
+    public TemplateEngine templateEngine() {
+        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setPrefix("html/templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setCacheable(true);
+        TemplateEngine templateEngine = new TemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+        
+        return templateEngine;
+    }
+    
+    @Bean
+    public ResultsWriterFactory resultsWriterFactory() {
+        return new ResultsWriterFactory();
+    }
     
     protected String getValueOfProperty(String property) throws PropertyNotFoundException {
         String value = env.getProperty(property);

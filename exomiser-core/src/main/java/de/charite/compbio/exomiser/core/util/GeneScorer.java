@@ -7,9 +7,9 @@ package de.charite.compbio.exomiser.core.util;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.priority.PriorityScore;
-import de.charite.compbio.exomiser.priority.PriorityType;
-import de.charite.compbio.exomiser.priority.ScoringMode;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import jannovar.common.ModeOfInheritance;
 import jannovar.genotype.GenotypeCall;
 import jannovar.pedigree.Pedigree;
@@ -125,7 +125,10 @@ public class GeneScorer {
     }
 
     private static float setGenePriorityScore(Gene gene) {
-        float priorityScore = calculatePriorityScore(gene.getPriorityScoreMap().values());
+        if (gene.getPriorityResults().isEmpty()) {
+            return 0f;
+        }
+        float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
         gene.setPriorityScore(priorityScore);
         return priorityScore;
     }
@@ -136,16 +139,16 @@ public class GeneScorer {
      * @param priorityScores of the gene
      * @return
      */
-    protected static float calculatePriorityScore(Collection<PriorityScore> priorityScores) {
+    protected static float calculatePriorityScore(Collection<PriorityResult> priorityScores) {
         float finalPriorityScore = 1f;
-        for (PriorityScore priorityScore : priorityScores) {
+        for (PriorityResult priorityScore : priorityScores) {
             finalPriorityScore *= priorityScore.getScore();
         }
         return finalPriorityScore;
     }
 
     private static void setGeneCombinedScore(float filterScore, float priorityScore, Gene gene) {
-        float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityScoreMap().keySet());
+        float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityResults().keySet());
         gene.setCombinedScore(combinedScore);
     }
 
@@ -162,7 +165,7 @@ public class GeneScorer {
     protected static float calculateCombinedScore(float filterScore, float priorityScore, Set<PriorityType> prioritiesRun) {
 
         //TODO: what if we ran all of these? It *is* *possible* to do so. 
-        if (prioritiesRun.contains(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)) {
+        if (prioritiesRun.contains(PriorityType.HI_PHIVE_PRIORITY)) {
             double logitScore = 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * filterScore)));
             return (float) logitScore;
         } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {

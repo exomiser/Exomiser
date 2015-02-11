@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.model.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.model.ExomiserSettings.MAX_FREQ_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.MAX_FREQ_OPTION;
 import org.apache.commons.cli.Option;
 
 /**

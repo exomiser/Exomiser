@@ -30,10 +30,11 @@
             <directory>${project.build.directory}/resources</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>test.settings</include>
+                <include>*.settings</include>
+                <include>test-batchFiles.txt</include>
                 <include>application.properties</include>
-                <include>example.settings</include>
                 <include>log4j2.xml</include>
+                <include>ehcache.xml</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -41,6 +42,8 @@
             <outputDirectory>/data</outputDirectory>
             <includes>
                 <include>Pfeiffer.vcf</include>
+                <include>Pfeiffer-quartet.vcf</include>
+                <include>Pfeiffer-quartet.ped</include>
                 <include>ucsc_hg19.ser</include>
                 <include>rw_string_9_05.gz</include>
                 <include>rw_string_9_05_id2index.gz</include>

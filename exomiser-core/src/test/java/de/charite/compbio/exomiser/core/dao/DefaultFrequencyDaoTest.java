@@ -5,9 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.frequency.Frequency;
-import de.charite.compbio.exomiser.core.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.frequency.RsId;
+import de.charite.compbio.exomiser.core.model.frequency.Frequency;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
 import static org.hamcrest.CoreMatchers.equalTo;
