@@ -11,7 +11,7 @@ import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.EnumSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

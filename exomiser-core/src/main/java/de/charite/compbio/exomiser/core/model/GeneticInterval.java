@@ -5,10 +5,12 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import jannovar.common.Constants;
 import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
 
 /**
  * A simple genetic interval defined as "The spatial continuous physical entity
@@ -23,11 +25,11 @@ public class GeneticInterval {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneticInterval.class);
 
-    private final byte chromosome;
+    private final int chromosome;
     private final int start;
     private final int end;
 
-    public GeneticInterval(byte chromosome, int start, int end) {
+    public GeneticInterval(int chromosome, int start, int end) {
         if (start > end) {
             throw new IllegalArgumentException(String.format("Start %d position defined as occurring after end position %d. Please check your positions", start, end));
         }
@@ -43,7 +45,7 @@ public class GeneticInterval {
      * @param interval
      * @return
      */
-    public static GeneticInterval parseString(String interval) {
+    public static GeneticInterval parseString(ReferenceDictionary refDict, String interval) {
 
         String intervalPattern = "chr[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y,M]:[0-9]+-[0-9]+";
         if (!Pattern.matches(intervalPattern, interval)) {
@@ -51,24 +53,7 @@ public class GeneticInterval {
         }
 
         String[] intervalSections = interval.split(":");
-        String chr = intervalSections[0];
-
-        byte localChr;
-
-        switch (chr) {
-            case "chrX":
-                localChr = Constants.X_CHROMOSOME; // 23
-                break;
-            case "chrY":
-                localChr = Constants.Y_CHROMOSOME; // 24
-                break;
-            case "chrM":
-                localChr = Constants.M_CHROMOSOME; // 25
-                break;
-            default:
-                localChr = Byte.parseByte(chr.substring(3));// remove leading "chr"
-                break;
-        }
+        int localChr = refDict.contigID.get(intervalSections[0]).intValue();
 
         String positions = intervalSections[1];
         String[] startEnd = positions.split("-");
@@ -79,7 +64,7 @@ public class GeneticInterval {
         return new GeneticInterval(localChr, localStart, localEnd);
     }
 
-    public byte getChromosome() {
+    public int getChromosome() {
         return chromosome;
     }
 

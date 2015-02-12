@@ -5,20 +5,37 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.dao.TestJannovarDataFactory;
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import htsjdk.variant.variantcontext.VariantContext;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import static org.mockito.Matchers.*;
+
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 /**
  *
@@ -32,11 +49,17 @@ public class SampleDataFactoryTest {
     
     @Mock
     private VariantAnnotator variantAnnotator;
-    
 
     @Before
     public void setUp() {
-//        Mockito.when(variantAnnotator.annotateVariant());
+        // variantAnnotator to return dummy Variant objects
+        Mockito.when(variantAnnotator.annotateVariantContext(isNotNull(VariantContext.class))).thenAnswer(
+                new Answer<List<Variant>>() {
+            public List<Variant> answer(InvocationOnMock invocation) {
+                        return Arrays.asList(new TestVariantFactory().constructVariant(10, 123256213, "CA", "CT",
+                                Genotype.HETEROZYGOUS, 22, 0));
+            }
+        });
     }
 
     @Test(expected = NullPointerException.class)
@@ -47,7 +70,7 @@ public class SampleDataFactoryTest {
     
     @Test
     public void createsSampleDataWithSingleSampleVcfAndNoPedFile() {
-        Path vcfPath = Paths.get("src/test/resources/Pfeiffer.vcf");
+        Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         SampleData sampleData = instance.createSampleData(vcfPath, null);
         
         String sampleName = "manuel"; 
@@ -60,11 +83,10 @@ public class SampleDataFactoryTest {
         assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
-        assertThat(sampleData.getPedigree().getSingleSampleName(), equalTo(pedigree.getSingleSampleName()));
-        assertThat(sampleData.getVcfHeader().isEmpty(), is(false));
+        assertThat(sampleData.getPedigree().members.get(0), equalTo(pedigree.members.get(0)));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(false));
-        assertThat(sampleData.getVariantEvaluations().size(), equalTo(37709));
-        assertThat(sampleData.getGenes().isEmpty(), is(true));
+        assertThat(sampleData.getVariantEvaluations().size(), equalTo(3));
+        assertThat(sampleData.getGenes().isEmpty(), is(false));
     }
     
     @Test
@@ -82,8 +104,7 @@ public class SampleDataFactoryTest {
         assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
-        assertThat(sampleData.getPedigree().getSingleSampleName(), equalTo(pedigree.getSingleSampleName()));
-        assertThat(sampleData.getVcfHeader().isEmpty(), is(false));
+        assertThat(sampleData.getPedigree().members.get(0), equalTo(pedigree.members.get(0)));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(true));
         assertThat(sampleData.getVariantEvaluations().size(), equalTo(0));
         assertThat(sampleData.getGenes().isEmpty(), is(true));

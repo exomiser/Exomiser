@@ -1,7 +1,9 @@
 package de.charite.compbio.exomiser.db.build.parsers;
 
+import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
-import jannovar.common.Constants;
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,19 +26,32 @@ public class VCF2FrequencyParser {
 
     private static final Logger logger = LoggerFactory.getLogger(VCF2FrequencyParser.class);
 
+    /** The reference dictionary to use for chromosome to name conversion */
+    private final ReferenceDictionary refDict;
+
     /**
-     * This method parses a standard VCF line of a population frequency VCF file
-     * from ESP or dbSNP
-     * This is an example of the format:
-     * #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
-     * 1       10019   rs376643643     TA      T       .       .       RS=376643643;RSPOS=10020;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000200;WGT=1;VC=DIV;R5;OTHERKG
-     * 1       10054   rs373328635     CAA     C,CA    .       .       RS=373328635;RSPOS=10055;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000210;WGT=1;VC=DIV;R5;OTHERKG;NOC
-     * 1       10109   rs376007522     A       T       .       .       RS=376007522;RSPOS=10109;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000100;WGT=1;VC=SNV;R5;OTHERKG
+     * Initialize object with the given <code>refDict</code>.
+     * 
+     * @param refDict
+     *            reference dictionary to use for chromosome name conversion
+     */
+    public VCF2FrequencyParser(ReferenceDictionary refDict) {
+        this.refDict = refDict;
+    }
+
+    /**
+     * This method parses a standard VCF line of a population frequency VCF file from ESP or dbSNP This is an example of
+     * the format: #CHROM POS ID REF ALT QUAL FILTER INFO 1 10019 rs376643643 TA T . .
+     * RS=376643643;RSPOS=10020;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000200;WGT=1;VC=DIV;R5;OTHERKG 1
+     * 10054 rs373328635 CAA C,CA . .
+     * RS=373328635;RSPOS=10055;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000210;WGT=1;VC=DIV;R5;OTHERKG;NOC 1
+     * 10109 rs376007522 A T . .
+     * RS=376007522;RSPOS=10109;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000100;WGT=1;VC=SNV;R5;OTHERKG
      * 
      * @param line
      * @return a <code>Frequency</code> object created from the input line.
      */
-    public static Frequency parseVCFline(String line) {
+    public Frequency parseVCFline(String line) {
         
         String fields[] = line.split("\t");
         
@@ -74,7 +89,7 @@ public class VCF2FrequencyParser {
      * should be used once for each VCF line and should be called only from the
      * method {@link #parseVCFline}.
      */
-    private static void transformVCF2AnnovarCoordinates(String ref, String alt, int pos) {
+    private void transformVCF2AnnovarCoordinates(String ref, String alt, int pos) {
         if (ref.length() == 1 && alt.length() == 1) {
             /* i.e., single nucleotide variant */
             /* In this case, no changes are needed. */
@@ -109,7 +124,7 @@ public class VCF2FrequencyParser {
      * e.g., rs200118651;rs202059104 (then just take last id)
      * @return int value of id with the 'rs' removed
      */
-    private static int rsIdToInt(String rsId) {
+    private int rsIdToInt(String rsId) {
         String A[] = rsId.split(";");
         if (A.length > 1) {
             return rsIdToInt(A[A.length - 1]);
@@ -125,24 +140,8 @@ public class VCF2FrequencyParser {
      * Gets a byte representation of chromosome. Note that the dbSNP file does
      * not use "chr"
      */
-    private static byte chromosomeStringToByte(String chrom) {
-
-        byte chr;
-        switch (chrom) {
-            case "X":
-                chr = Constants.X_CHROMOSOME;
-                break;
-            case "Y":
-                chr = Constants.Y_CHROMOSOME;
-                break;
-            case "MT":
-                chr = Constants.M_CHROMOSOME;
-                break;
-            default:
-                chr = Byte.parseByte(chrom);
-                break;
-        }
-        return chr;
+    private byte chromosomeStringToByte(String chrom) {
+        return (byte) refDict.contigID.get(chrom).intValue();
     }
 
 }

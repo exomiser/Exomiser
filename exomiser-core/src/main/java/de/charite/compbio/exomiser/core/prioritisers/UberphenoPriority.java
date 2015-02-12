@@ -13,7 +13,7 @@ import similarity.concepts.ResnikSimilarity;
 import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
 
-import jannovar.common.Constants;
+import de.charite.compbio.exomiser.core.Constants;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;

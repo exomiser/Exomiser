@@ -5,21 +5,24 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.TargetFilter;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,22 +40,16 @@ public class TargetFilterTest {
 
     private TargetFilter instance;
     
-    private static VariantEvaluation missensePassesFilter;
-    private static VariantEvaluation downstreamFailsFilter;
-    private static VariantEvaluation synonymousFailsFilter;
-    private static VariantEvaluation upstreamFailsFilter;
-    private static VariantEvaluation intergenicFailsFilter;
-
     @Mock
-    Variant missenseVariant;
+    VariantEvaluation missensePassesFilter;
     @Mock
-    Variant downstreamVariant;
+    VariantEvaluation downstreamFailsFilter;
     @Mock
-    Variant synonymousVariant;
+    VariantEvaluation synonymousFailsFilter;
     @Mock
-    Variant upstreamVariant;
+    VariantEvaluation upstreamFailsFilter;
     @Mock
-    Variant intergenicVariant;
+    VariantEvaluation intergenicFailsFilter;
 
     public TargetFilterTest() {
     }
@@ -61,19 +58,11 @@ public class TargetFilterTest {
     public void setUp() {
         instance = new TargetFilter();
         
-        MockitoAnnotations.initMocks(this);
-
-        Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(downstreamVariant.getVariantTypeConstant()).thenReturn(VariantType.DOWNSTREAM);
-        Mockito.when(synonymousVariant.getVariantTypeConstant()).thenReturn(VariantType.SYNONYMOUS);
-        Mockito.when(upstreamVariant.getVariantTypeConstant()).thenReturn(VariantType.UPSTREAM);
-        Mockito.when(intergenicVariant.getVariantTypeConstant()).thenReturn(VariantType.INTERGENIC);
-
-        missensePassesFilter = new VariantEvaluation(missenseVariant);
-        downstreamFailsFilter = new VariantEvaluation(downstreamVariant);
-        synonymousFailsFilter = new VariantEvaluation(synonymousVariant);
-        upstreamFailsFilter = new VariantEvaluation(upstreamVariant);
-        intergenicFailsFilter = new VariantEvaluation(intergenicVariant);
+        Mockito.when(missensePassesFilter.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
+        Mockito.when(downstreamFailsFilter.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
+        Mockito.when(synonymousFailsFilter.getVariantEffect()).thenReturn(VariantEffect.SYNONYMOUS_VARIANT);
+        Mockito.when(upstreamFailsFilter.getVariantEffect()).thenReturn(VariantEffect.UPSTREAM_GENE_VARIANT);
+        Mockito.when(intergenicFailsFilter.getVariantEffect()).thenReturn(VariantEffect.INTERGENIC_VARIANT);
     }
 
     @Test
@@ -94,6 +83,7 @@ public class TargetFilterTest {
         
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
     }
+
     @Test
     public void testIntergenicVariantFailsFilter() {
         FilterResult filterResult = instance.runFilter(intergenicFailsFilter);

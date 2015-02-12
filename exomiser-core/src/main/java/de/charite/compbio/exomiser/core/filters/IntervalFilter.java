@@ -2,7 +2,7 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.exome.Variant;
+import de.charite.compbio.exomiser.core.Variant;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,10 +60,10 @@ public class IntervalFilter implements VariantFilter {
     }
 
     private boolean variantIsNotWithinInterval(Variant variant) {
-        if (variantNotOnSameChromosomeAsInterval(variant.get_chromosome())) {
+        if (variantNotOnSameChromosomeAsInterval(variant.getChromosome()))
             return true;
-        }
-        return variantPositionOutsideOfIntervalBounds(variant.get_position());
+        else
+            return variantPositionOutsideOfIntervalBounds(variant.getPosition());
     }
 
     private boolean variantNotOnSameChromosomeAsInterval(int variantChromosome) {

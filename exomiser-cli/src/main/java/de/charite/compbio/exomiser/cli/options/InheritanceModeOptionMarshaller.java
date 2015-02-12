@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.MODE_OF_INHERITANCE_OPTION;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,17 +5,27 @@
  */
 package de.charite.compbio.exomiser.core.util;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.ModeOfInheritance;
-import jannovar.exome.Variant;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.CompatibilityCheckerException;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+import de.charite.compbio.jannovar.pedigree.GenotypeListBuilder;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.PedigreeDiseaseCompatibilityDecorator;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import htsjdk.variant.variantcontext.Allele;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  *
@@ -50,7 +60,7 @@ public class InheritanceModeAnalyser {
      * @return 
      */
     public Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations) {
-        Set inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         
         ArrayList<Variant> variantList = new ArrayList<>();
         
@@ -63,17 +73,50 @@ public class InheritanceModeAnalyser {
     }
 
     public Set<ModeOfInheritance> analyseInheritanceModes(ArrayList<Variant> variantList) {
-        Set inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+        Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+        
+        PedigreeDiseaseCompatibilityDecorator checker = new PedigreeDiseaseCompatibilityDecorator(pedigree);
+        
+        // Build list of genotypes from the given variants.
+        String geneID = variantList.get(0).getGeneSymbol();
+        // Use interval of transcript of first region, only used for the chromosome information anyway.
+        GenomeInterval geneInterval = variantList.get(0).annotations.entries.get(0).transcript.txRegion;
+        GenotypeListBuilder builder = new GenotypeListBuilder(geneID, geneInterval, ImmutableList.copyOf(variantList
+                .get(0).vc
+                .getSampleNames()));
+        for (Variant var : variantList) {
+            final int altAlleleID = var.altAlleleID;
+            final int numSamples = var.vc.getNSamples();
+            ImmutableList.Builder<Genotype> gtBuilder = new ImmutableList.Builder<Genotype>();
+            for (int i = 0; i < numSamples; ++i) {
+                final List<Allele> alleles = var.vc.getGenotype(i).getAlleles();
+                if (alleles.size() != 2) {
+                    gtBuilder.add(Genotype.NOT_OBSERVED);
+                    continue;
+                }
+                
+                final boolean isAlt0 = alleles.get(0).basesMatch(var.vc.getAlternateAllele(altAlleleID));
+                final boolean isAlt1 = alleles.get(1).basesMatch(var.vc.getAlternateAllele(altAlleleID));
+                if (!isAlt0 && !isAlt1)
+                    gtBuilder.add(Genotype.HOMOZYGOUS_REF);
+                else if ((isAlt0 && !isAlt1) || (!isAlt0 && isAlt1))
+                    gtBuilder.add(Genotype.HETEROZYGOUS);
+                else 
+                    gtBuilder.add(Genotype.HOMOZYGOUS_ALT);
+            }
+            builder.addGenotypes(gtBuilder.build());
+        }
 
-        if (pedigree.isCompatibleWithAutosomalRecessive(variantList)) {
-            inheritanceModes.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        }
-        if (pedigree.isCompatibleWithAutosomalDominant(variantList)) {
-            inheritanceModes.add(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        }
-        if (pedigree.isCompatibleWithXChromosomalRecessive(variantList)) {
-            inheritanceModes.add(ModeOfInheritance.X_RECESSIVE);
-        }
+        // FIXME: there are more modes of inheritance implemented in Jannovar
+        final ImmutableList<ModeOfInheritance> toCheck = ImmutableList.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE,
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_RECESSIVE);
+        for (ModeOfInheritance mode : toCheck)
+            try {
+                if (checker.isCompatibleWith(builder.build(), mode))
+                    inheritanceModes.add(mode);
+            } catch (CompatibilityCheckerException e) {
+                throw new RuntimeException("Problem in the mode of inheritance checks!", e);
+            }
 
         return inheritanceModes;
     }

@@ -13,7 +13,7 @@ import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumSet;

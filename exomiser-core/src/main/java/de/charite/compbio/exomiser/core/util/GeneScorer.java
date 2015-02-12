@@ -10,9 +10,8 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
-import jannovar.common.ModeOfInheritance;
-import jannovar.genotype.GenotypeCall;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -268,11 +267,7 @@ public class GeneScorer {
     }
 
     private static boolean variantIsHomozygous(VariantEvaluation ve, Pedigree pedigree) {
-        GenotypeCall gc = ve.getVariant().getGenotype();
-        if (pedigree.containsCompatibleHomozygousVariant(gc)) {
-            return true;
-        }
-        return false;
+        return ve.getVariant().vc.getGenotype(0).isHom();
     }
 
     private static void sortFilterScoresInDecendingOrder(List<Float> filterScores) {

@@ -1,7 +1,5 @@
 package de.charite.compbio.exomiser.core.writers;
 
-import jannovar.exome.Variant;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,8 +8,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -21,11 +17,13 @@ import org.slf4j.LoggerFactory;
 import com.impossibl.postgres.utils.guava.Joiner;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.AbstractPathogenicityScore;
+
 import java.util.Locale;
 
 /**
@@ -87,13 +85,13 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     private List<Object> getRecordOfVariant(Variant var, VariantEvaluation ve, Gene gene) {
         List<Object> record = new ArrayList<Object>();
         // CHROM
-        record.add(var.get_chromosome_as_string());
+        record.add(var.getChromosomeStr());
         // POS
-        record.add(var.get_position());
+        record.add(var.getPosition());
         // REF
-        record.add(var.get_ref());
+        record.add(var.getRef());
         // ALT
-        record.add(var.get_alt());
+        record.add(var.getAlt());
         // QUAL
         record.add(var.getVariantPhredScore());
         // FILTER
@@ -101,15 +99,9 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // GENOTYPE
         record.add(var.getGenotypeAsString());
         // COVERAGE
-        Pattern pat = Pattern.compile(".*DP=([0-9]+).*");
-        Matcher m = pat.matcher(var.get_info());
-        if (m.matches()) {
-            record.add(m.group(1));
-        } else {
-            record.add("0");
-        }
+        record.add(var.vc.getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
-        record.add(var.get_variant_type_as_string());
+        record.add(var.annotations.getHighestImpactEffect().getSequenceOntologyTerm());
 
         // HGVS
         record.add(var.getRepresentativeAnnotation());

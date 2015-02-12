@@ -10,13 +10,17 @@ import de.charite.compbio.exomiser.db.build.parsers.NSFP2SQLDumpParser;
 import de.charite.compbio.exomiser.db.build.reference.VariantPathogenicity;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -50,7 +54,7 @@ public class NSFP2SQLDumpParserTest {
     @Test
     public void testGetTotalNsfpLines() {
         System.out.println("getTotalNsfpLines");
-        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser();
+        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
         int expResult = 0;
         int result = instance.getTotalNsfpLines();
         assertEquals(expResult, result);
@@ -62,7 +66,7 @@ public class NSFP2SQLDumpParserTest {
     @Test
     public void testGetVariantCount() {
         System.out.println("getVariantCount");
-        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser();
+        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
         int expResult = 0;
         int result = instance.getVariantCount();
         assertEquals(expResult, result);
@@ -74,7 +78,7 @@ public class NSFP2SQLDumpParserTest {
     @Test
     public void testGetGeneCount() {
         System.out.println("getGeneCount");
-        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser();
+        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
         int expResult = 0;
         int result = instance.getGeneCount();
         assertEquals(expResult, result);

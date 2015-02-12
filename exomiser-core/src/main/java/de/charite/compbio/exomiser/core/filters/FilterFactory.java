@@ -7,10 +7,12 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

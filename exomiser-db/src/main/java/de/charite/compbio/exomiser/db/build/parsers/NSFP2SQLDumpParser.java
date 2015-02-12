@@ -1,9 +1,11 @@
 package de.charite.compbio.exomiser.db.build.parsers;
 
+import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.exomiser.db.build.reference.VariantPathogenicity;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
-import jannovar.common.Constants;
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -17,6 +19,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,6 +192,9 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      */
     private int n_total_genes = 0;
 
+    /** the reference dictionary to use for chromosome name to numeric id conversion */
+    private final ReferenceDictionary refDict;
+
     /**
      * Get count of all lines parsed from all of the dbNSFP files (Header lines
      * are not counted).
@@ -214,9 +220,12 @@ public class NSFP2SQLDumpParser implements ResourceParser {
 
     /**
      * The constructor initializes the File output streams.
+     * 
+     * @param refDict
+     *            the {@link ReferenceDictionary} to use for converting contig names to numeric ids
      */
-    public NSFP2SQLDumpParser() {
-
+    public NSFP2SQLDumpParser(ReferenceDictionary refDict) {
+        this.refDict = refDict;
     }
 
     @Override
@@ -287,21 +296,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
 //            logger.info("Chromsome {} line {} ({})", chr, totalLinesCount, genename);
 //        }
 
-        int c;
-        switch (chr) {
-            case "X":
-                c = Constants.X_CHROMOSOME; // i.e., 23
-                break;
-            case "Y":
-                c = Constants.Y_CHROMOSOME;  // i.e., 24
-                break;
-            case "M":
-                c = Constants.M_CHROMOSOME;  // i.e., 25
-                break;
-            default:
-                c = Integer.parseInt(chr);
-                break;
-        }
+        int c = refDict.contigID.get(chr);
 
         int pos = Integer.parseInt(fields[POS]);
         char ref = fields[REF].charAt(0);
@@ -621,21 +616,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
                 }
 
                 String chr = A[CHR];
-                Integer c;
-                switch (chr) {
-                    case "X":
-                        c = new Integer(Constants.X_CHROMOSOME); // i.e., 23
-                        break;
-                    case "Y":
-                        c = new Integer(Constants.Y_CHROMOSOME);  // i.e., 24
-                        break;
-                    case "M":
-                        c = new Integer(Constants.M_CHROMOSOME);  // i.e., 25
-                        break;
-                    default:
-                        c = Integer.parseInt(A[0]);
-                        break;
-                }
+                Integer c = refDict.contigID.get(chr);
                 Integer pos = Integer.parseInt(A[POS]);
                 char ref = A[REF].charAt(0);
                 char alt = A[ALT].charAt(0);

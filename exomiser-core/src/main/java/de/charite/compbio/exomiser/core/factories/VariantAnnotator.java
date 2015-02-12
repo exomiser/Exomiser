@@ -5,15 +5,26 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import jannovar.annotation.AnnotationList;
-import jannovar.exception.AnnotationException;
-import jannovar.exome.Variant;
-import jannovar.reference.Chromosome;
+import htsjdk.variant.variantcontext.VariantContext;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
+
+import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
+import de.charite.compbio.jannovar.io.JannovarData;
+
 /**
+ * Given a {@link VariantAnnotator}, build a {@link Variant} for each alternative allele.
+ *
+ * Uses the {@link VariantContextAnnotator} class of the Jannovar-HTSJDK bridge.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -21,48 +32,24 @@ public class VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantAnnotator.class);
 
-    private final Map<Byte, Chromosome> chromosomeMap;
+    /** tool for obtaining annotations for the {@link VariantContext} objects */
+    private final VariantContextAnnotator annotator;
 
-    //TODO: Jannovar 0.11
-//    final JannovarData data = new JannovarDataSerializer(this.options.dataFile).load();
-//    final VariantAnnotator annotator = new VariantAnnotator(data.refDict, data.chromosomes); 
-    
-    public VariantAnnotator(Map<Byte, Chromosome> chromosomeMap) {
-        this.chromosomeMap = chromosomeMap;
+    public VariantAnnotator(JannovarData jannovarData) {
+        this.annotator = new VariantContextAnnotator(jannovarData.refDict, jannovarData.chromosomes);
     }
 
-    public Variant annotateVariant(Variant variant) {
-        AnnotationList annotations = getVariantAnnotations(variant);
-        if (annotations != null) {
-            variant.setAnnotation(annotations);
-        }
-        return variant;
-    }
-
-    private AnnotationList getVariantAnnotations(Variant variant) {
-        Chromosome chromosome = getChromosomeForVariant(variant);
-        if (chromosome == null) {
-            logger.error("Could not identify chromosome {}", variant.getChromosomeAsByte());
-            return null;
-        }
-    
-        return getVariantAnnotationsFromChromosome(variant, chromosome);
-    }
-
-    private Chromosome getChromosomeForVariant(Variant variant) {
-        return chromosomeMap.get(variant.getChromosomeAsByte());
+    /**
+     * @param vc
+     *            {@link VariantContext} to get {@link Variant} objects for
+     * @return one {@link Variant} object for each alternative allele in vc.
+     */
+    public List<Variant> annotateVariantContext(VariantContext vc) {
+        ImmutableList<AnnotationList> lst = annotator.buildAnnotationList(vc);
+        List<Variant> result = new ArrayList<Variant>();
+        for (int i = 0; i < vc.getAlternateAlleles().size(); ++i)
+            result.add(new Variant(vc, i, lst.get(i)));
+        return result;
     }
     
-    private AnnotationList getVariantAnnotationsFromChromosome(Variant variant, Chromosome chromosome) {
-        try {
-            int pos = variant.get_position();
-            String ref = variant.get_ref();
-            String alt = variant.get_alt();
-            
-            return chromosome.getAnnotationList(pos, ref, alt);           
-        } catch (AnnotationException ae) {
-            logger.error("Unable to annotate variant {}", variant.getChromosomalVariant(), ae);
-        }
-        return null;
-    }  
 }

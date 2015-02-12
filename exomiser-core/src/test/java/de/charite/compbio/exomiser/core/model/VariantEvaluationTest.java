@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import static de.charite.compbio.exomiser.core.filters.FilterResultStatus.FAIL;
 import static de.charite.compbio.exomiser.core.filters.FilterResultStatus.PASS;
@@ -13,16 +14,25 @@ import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.QualityFilterResult;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import jannovar.common.Genotype;
-import jannovar.exome.Variant;
-import jannovar.genotype.GenotypeCall;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+import de.charite.compbio.jannovar.pedigree.GenotypeList;
+import de.charite.compbio.jannovar.reference.GenomeChange;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import de.charite.compbio.jannovar.reference.PositionType;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.GenotypeBuilder;
+
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,33 +79,40 @@ public class VariantEvaluationTest {
 
     @Before
     public void setUp() {
-        GenotypeCall genotypeCall = new GenotypeCall(HETEROZYGOUS, QUALITY, READ_DEPTH);
+        // build HTSJDK genotype call to return
+        GenotypeBuilder gtBuilder = new GenotypeBuilder();
+        gtBuilder.alleles(Arrays.asList(Allele.create("C", true), Allele.create("T", false)));
 
+        final GenomePosition gPos = new GenomePosition(HG19RefDictBuilder.build(), '+', 1, 1, PositionType.ONE_BASED);
+        final GenomeChange change = new GenomeChange(gPos, "C", "T");
+        
         Mockito.when(variant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
         Mockito.when(variant.getEntrezGeneID()).thenReturn(GENE1_ENTREZ_GENE_ID);
-        Mockito.when(variant.getChromosomeAsByte()).thenReturn((byte) 1);
-        Mockito.when(variant.get_position()).thenReturn(1);
-        Mockito.when(variant.get_ref()).thenReturn("A");
-        Mockito.when(variant.get_alt()).thenReturn("T");
-        Mockito.when(variant.getGenotype()).thenReturn(genotypeCall);
-        Mockito.when(variant.getVariantPhredScore()).thenReturn(2.2f);
+        Mockito.when(variant.getChromosome()).thenReturn(1);
+        Mockito.when(variant.getPosition()).thenReturn(1);
+        Mockito.when(variant.getRef()).thenReturn("A");
+        Mockito.when(variant.getAlt()).thenReturn("T");
+        Mockito.when(variant.getGenotype()).thenReturn(gtBuilder.make());
+        Mockito.when(variant.getGenomeChange()).thenReturn(change);
+        Mockito.when(variant.getVariantPhredScore()).thenReturn(2.2);
         Mockito.when(variant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(variant.getAnnotation()).thenReturn("variant annotations...");
+        Mockito.when(variant.getAnnotationList()).thenReturn(Arrays.asList("variant annotations..."));
 
         Mockito.when(variantInTwoGeneRegions.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL + "," + GENE1_GENE_SYMBOL);
         Mockito.when(variantInTwoGeneRegions.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
-        Mockito.when(variantInTwoGeneRegions.getChromosomeAsByte()).thenReturn((byte) 1);
-        Mockito.when(variantInTwoGeneRegions.get_position()).thenReturn(1);
-        Mockito.when(variantInTwoGeneRegions.get_ref()).thenReturn("C");
-        Mockito.when(variantInTwoGeneRegions.get_alt()).thenReturn("G");
-        Mockito.when(variantInTwoGeneRegions.getGenotype()).thenReturn(genotypeCall);
-        Mockito.when(variantInTwoGeneRegions.getVariantPhredScore()).thenReturn(2.2f);
+        Mockito.when(variantInTwoGeneRegions.getChromosome()).thenReturn(1);
+        Mockito.when(variantInTwoGeneRegions.getPosition()).thenReturn(1);
+        Mockito.when(variantInTwoGeneRegions.getRef()).thenReturn("C");
+        Mockito.when(variantInTwoGeneRegions.getAlt()).thenReturn("G");
+        Mockito.when(variantInTwoGeneRegions.getGenotype()).thenReturn(gtBuilder.make());
+        Mockito.when(variantInTwoGeneRegions.getGenomeChange()).thenReturn(change);
+        Mockito.when(variantInTwoGeneRegions.getVariantPhredScore()).thenReturn(2.2);
         Mockito.when(variantInTwoGeneRegions.getVariantReadDepth()).thenReturn(READ_DEPTH);
 
         Mockito.when(variantWithNullGeneSymbol.getGeneSymbol()).thenReturn(null);
 
-        //This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(unAnnotatedVariant.getAnnotation()).thenReturn(".");
+        // This is hard-coding Jannovar's return values be aware this could change
+        Mockito.when(unAnnotatedVariant.getAnnotationList()).thenReturn(Arrays.<String> asList());
 
         instance = new VariantEvaluation(variant);
     }
@@ -170,7 +187,7 @@ public class VariantEvaluationTest {
 
         assertThat(instance.getVariantScore(), equalTo(1.0f));
 
-        //adding a FilterResult also updates the score of the VariantEvaluation 
+        // adding a FilterResult also updates the score of the VariantEvaluation
         instance.addFilterResult(PASS_QUALITY_RESULT);
 
         assertThat(instance.getFilterResults().size(), equalTo(1));
@@ -186,7 +203,7 @@ public class VariantEvaluationTest {
 
         expectedScore *= PASS_QUALITY_RESULT.getScore();
         expectedScore *= PASS_FREQUENCY_RESULT.getScore();
-        //adding a FilterResult also updates the score of the VariantEvaluation 
+        // adding a FilterResult also updates the score of the VariantEvaluation
         instance.addFilterResult(PASS_QUALITY_RESULT);
         instance.addFilterResult(PASS_FREQUENCY_RESULT);
 
@@ -203,11 +220,11 @@ public class VariantEvaluationTest {
 
         expectedScore *= PASS_QUALITY_RESULT.getScore();
         expectedScore *= FAIL_FREQUENCY_RESULT.getScore();
-        //adding a FilterResult also updates the score of the VariantEvaluation 
+        // adding a FilterResult also updates the score of the VariantEvaluation
         instance.addFilterResult(PASS_QUALITY_RESULT);
         instance.addFilterResult(FAIL_FREQUENCY_RESULT);
 
-//        assertThat(instance.getFilterResults().size(), equalTo(2));
+        // assertThat(instance.getFilterResults().size(), equalTo(2));
         assertThat(instance.getVariantScore(), equalTo(expectedScore));
     }
 
@@ -247,13 +264,13 @@ public class VariantEvaluationTest {
     @Test
     public void testVariantScoreIsUpdatedWhenPassedAndFailedFilterResultAdded() {
         float qualScore = PASS_QUALITY_RESULT.getScore();
-        //adding a FilterResult also updates the score of the VariantEvaluation 
+        // adding a FilterResult also updates the score of the VariantEvaluation
         instance.addFilterResult(PASS_QUALITY_RESULT);
         assertThat(instance.getVariantScore(), equalTo(qualScore));
 
         float freqScore = 0.1f;
         FilterResult frequencyScore = new FrequencyFilterResult(freqScore, FAIL);
-        //adding a failed FilterResult also updates the score of the VariantEvaluation         
+        // adding a failed FilterResult also updates the score of the VariantEvaluation
         instance.addFilterResult(frequencyScore);
 
         assertThat(instance.getVariantScore(), equalTo(qualScore * freqScore));

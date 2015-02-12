@@ -9,7 +9,6 @@ import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
-import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
@@ -18,10 +17,13 @@ import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import jannovar.reference.Chromosome;
+import de.charite.compbio.jannovar.io.JannovarDataSerializer;
+import de.charite.compbio.jannovar.io.SerializationException;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,8 +103,11 @@ public class ExomiserConfig {
     @Bean
     @Lazy
     public VariantAnnotator variantAnnotator() {
-        Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
-        return new VariantAnnotator(chromosomeMap);
+        try {
+            return new VariantAnnotator(new JannovarDataSerializer(ucscFilePath().toString()).load());
+        } catch (SerializationException e) {
+            throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
+        }
     }
     
     /**

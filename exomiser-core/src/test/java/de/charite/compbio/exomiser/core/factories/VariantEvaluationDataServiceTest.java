@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
@@ -16,10 +17,10 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import jannovar.exome.Variant;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +52,7 @@ public class VariantEvaluationDataServiceTest {
 
     @Before
     public void setUp() {
-        variant = new Variant((byte) 1, 1, "C", "A", null, 5f, null);
+        variant = null; // new Variant((byte) 1, 1, "C", "A", null, 5f, null);
         varEval = new VariantEvaluation(variant);
         
         MockitoAnnotations.initMocks(this);
