@@ -70,7 +70,7 @@ public class CommandLineOptionsConfig {
         desiredOptionMarshallers.add(new SeedGenesOptionMarshaller());
         desiredOptionMarshallers.add(new DiseaseIdOptionMarshaller());
         desiredOptionMarshallers.add(new CandidateGeneOptionMarshaller());
-        desiredOptionMarshallers.add(new ExomiserAllSpeciesOptionMarshaller());
+        desiredOptionMarshallers.add(new HiPhiveOptionMarshaller());
 
         //output options
         desiredOptionMarshallers.add(new NumGenesOptionMarshaller());

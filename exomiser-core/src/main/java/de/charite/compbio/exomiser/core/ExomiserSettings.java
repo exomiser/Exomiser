@@ -387,16 +387,26 @@ public class ExomiserSettings {
         return isValid;
     }
 
-    @JsonProperty(VCF_OPTION)
+    @JsonIgnore
     public Path getVcfPath() {
         return vcfFilePath;
     }
 
-    @JsonProperty(PED_OPTION)
+    @JsonProperty(VCF_OPTION)
+    public Path vcfFileName() {
+        return vcfFilePath.getFileName();
+    }
+    
+    @JsonIgnore
     public Path getPedPath() {
         return pedFilePath;
     }
-
+    
+    @JsonProperty(PED_OPTION)
+    public Path getPedFileName() {
+        return ((pedFilePath == null)? null : pedFilePath.getFileName());
+    }
+    
     @JsonProperty(RUN_FULL_ANALYSIS_OPTION)
     public boolean runFullAnalysis() {
         return runFullAnalysis;

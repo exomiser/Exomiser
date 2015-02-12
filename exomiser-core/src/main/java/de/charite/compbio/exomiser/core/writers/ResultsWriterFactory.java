@@ -7,6 +7,9 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import htsjdk.variant.vcf.VCFHeader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.thymeleaf.TemplateEngine;
 
 /**
  * Provides an entry point for getting a ResultsWriter for a specific format.
@@ -14,7 +17,11 @@ import htsjdk.variant.vcf.VCFHeader;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
+@Component
 public class ResultsWriterFactory {
+
+    @Autowired
+    private TemplateEngine templateEngine;
 
     /**
      * Build {@link ResultsWriter} for the given {@link VCFReader} and {@link OutputFormat}.
@@ -25,7 +32,7 @@ public class ResultsWriterFactory {
      *            the format to use for the output
      * @return the constructed {@link ResultsWriter} implementation
      */
-    public static ResultsWriter getResultsWriter(VCFHeader header, OutputFormat outputFormat) {
+    public ResultsWriter getResultsWriter(VCFHeader header, OutputFormat outputFormat) {
         switch (outputFormat){
             case HTML:
                 return getHtmlResultsWriter();
@@ -40,15 +47,15 @@ public class ResultsWriterFactory {
         }
     }
     
-    protected static ResultsWriter getHtmlResultsWriter() {
-        return new HtmlResultsWriter();
+    protected ResultsWriter getHtmlResultsWriter() {
+        return new HtmlResultsWriter(templateEngine);
     }
 
-    protected static ResultsWriter getTsvGeneResultsWriter() {
+    protected ResultsWriter getTsvGeneResultsWriter() {
         return new TsvGeneResultsWriter();
     }
     
-    protected static ResultsWriter getTsvVariantResultsWriter() {
+    protected ResultsWriter getTsvVariantResultsWriter() {
         return new TsvVariantResultsWriter();
     }
 

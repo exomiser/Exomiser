@@ -46,7 +46,7 @@ public class PriorityFactoryTestConfig {
     }
     
     @Bean
-    Path phenomizerDataDirectory() {
-        return Paths.get("stubPhenomiserDataDir");
+    Path phenixDataDirectory() {
+        return Paths.get("stubPhenixDataDir");
     }
 }

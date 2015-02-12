@@ -30,8 +30,8 @@ import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.ExomiserMousePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 
@@ -135,8 +135,8 @@ public class VcfResultsWriterTest {
         gene1 = new Gene(missenseVariantEvaluation);
         gene2 = new Gene(indelVariantEvaluation);
 
-        gene1.addPriorityResult(new ExomiserMousePriorityResult("MGI:12345", "Gene1", 0.99f));
-        gene2.addPriorityResult(new ExomiserMousePriorityResult("MGI:54321", "Gene2", 0.98f));
+        gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
+        gene2.addPriorityResult(new PhivePriorityResult("MGI:54321", "Gene2", 0.98f));
 
         OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
         gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);

@@ -16,6 +16,7 @@ import de.charite.compbio.exomiser.core.writers.VcfResultsWriter;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -23,14 +24,21 @@ import org.junit.Test;
  */
 public class ResultsWriterFactoryTest {
     
+    private ResultsWriterFactory instance;
+
     public ResultsWriterFactoryTest() {
+    }
+
+    @Before
+    public void setUp() {
+        instance = new ResultsWriterFactory();
     }
 
     @Test
     public void testGetHtmlResultsWriter() {
         VCFHeader header = null;
         OutputFormat outputFormat = OutputFormat.HTML;
-        ResultsWriter result = ResultsWriterFactory.getResultsWriter(header, outputFormat);
+        ResultsWriter result = instance.getResultsWriter(header, outputFormat);
         assertThat(result, instanceOf(HtmlResultsWriter.class));
 
     }
@@ -39,7 +47,7 @@ public class ResultsWriterFactoryTest {
     public void testGetTsvlResultsWriter() {
         VCFHeader header = null;
         OutputFormat outputFormat = OutputFormat.TSV_GENE;
-        ResultsWriter result = ResultsWriterFactory.getResultsWriter(header, outputFormat);
+        ResultsWriter result = instance.getResultsWriter(header, outputFormat);
         assertThat(result, instanceOf(TsvGeneResultsWriter.class));
     }
     
@@ -47,7 +55,7 @@ public class ResultsWriterFactoryTest {
     public void testGetVcfResultsWriter() {
         VCFHeader header = null;
         OutputFormat outputFormat = OutputFormat.VCF;
-        ResultsWriter result = ResultsWriterFactory.getResultsWriter(header, outputFormat);
+        ResultsWriter result = instance.getResultsWriter(header, outputFormat);
         assertThat(result, instanceOf(VcfResultsWriter.class));
     }
     

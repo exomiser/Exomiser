@@ -54,6 +54,12 @@ public class PriorityFactoryTest {
         List<Priority> prioritisers = instance.makePrioritisers(settings);
         assertJustOmimPrioritiserPresent(prioritisers);
     }
+    
+    @Test
+    public void testGetOmimPrioritizer() {
+        OMIMPriority prioritiser = instance.getOmimPrioritizer();
+        assertThat(prioritiser, isA(OMIMPriority.class));
+    }
 
     @Test
     public void testmakePrioritisersForExomeWalkerPriorityReturnsThatAndOmimPrioritisers() {
@@ -66,7 +72,7 @@ public class PriorityFactoryTest {
 
     @Test
     public void testmakePrioritisersForExomiserAllSpeciesPriorityReturnsThatAndOmimPrioritisers() {
-        PriorityType type = PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
+        PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
         ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         List<Priority> prioritisers = instance.makePrioritisers(settings);
@@ -75,7 +81,7 @@ public class PriorityFactoryTest {
 
     @Test
     public void testmakePrioritisersForExomiserMousePriorityReturnsThatAndOmimPrioritisers() {
-        PriorityType type = PriorityType.EXOMISER_MOUSE_PRIORITY;
+        PriorityType type = PriorityType.PHIVE_PRIORITY;
         ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         List<Priority> prioritisers = instance.makePrioritisers(settings);
@@ -111,6 +117,15 @@ public class PriorityFactoryTest {
         assertThat(prioritisers.get(1).getPriorityType(), equalTo(type));
     }
 
+    @Test
+    public void testmakePrioritisersForNonePriorityReturnsEmptyList() {
+        PriorityType type = PriorityType.NONE;
+        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+
+        List<Priority> prioritisers = instance.makePrioritisers(settings);
+        assertThat(prioritisers.isEmpty(), is(true));
+    }
+    
     private ExomiserSettings buildValidSettingsWithPrioritiser(PriorityType priorityType) {
         settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
         settingsBuilder.usePrioritiser(priorityType);

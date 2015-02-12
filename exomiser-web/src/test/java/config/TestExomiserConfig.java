@@ -67,22 +67,22 @@ public class TestExomiserConfig {
     }
 
     @Bean
-    public Path phenomizerDataDirectory() {
-        Path phenomizerDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
-        logger.debug("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
-        return phenomizerDataDirectory;
+    public Path phenixDataDirectory() {
+        Path phenixDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
+        logger.info("phenixDataDirectory: {}", phenixDataDirectory.toAbsolutePath());
+        return phenixDataDirectory;
     }
 
     @Bean
     public Path hpoOntologyFilePath() {
-        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
+        Path hpoOntologyFilePath = phenixDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
         logger.debug("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
         return hpoOntologyFilePath;
     }
 
     @Bean
     public Path hpoAnnotationFilePath() {
-        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
+        Path hpoAnnotationFilePath = phenixDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }

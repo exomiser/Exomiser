@@ -8,24 +8,24 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
+public class HiPhivePriorityResult implements PriorityResult {
     /**
      * The Random walk similarity score.
      */
     private double score;
-    private double humanScore;
-    private double fishScore;
-    private double mouseScore;
-    private double walkerScore;
-    private String evidence;
-    private String humanPhenotypeEvidence;
-    private String mousePhenotypeEvidence;
-    private String fishPhenotypeEvidence;
+    private final double humanScore;
+    private final double fishScore;
+    private final double mouseScore;
+    private final double walkerScore;
+    private final String evidence;
+    private final String humanPhenotypeEvidence;
+    private final String mousePhenotypeEvidence;
+    private final String fishPhenotypeEvidence;
 
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public ExomiserAllSpeciesPriorityResult(double score, String evidence, String humanPhenotypeEvidence,
+    public HiPhivePriorityResult(double score, String evidence, String humanPhenotypeEvidence,
             String mousePhenotypeEvidence, String fishPhenotypeEvidence, double humanScore, double mouseScore, double fishScore, double walkerScore) {
         this.score = score;
         this.evidence = evidence;
@@ -40,7 +40,7 @@ public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
 
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
+        return PriorityType.HI_PHIVE_PRIORITY;
     }
 
     /**
@@ -58,9 +58,9 @@ public class ExomiserAllSpeciesPriorityResult implements PriorityResult {
      * {@link exomizer.priority.IPriority IPriority}. basically as a kind of
      * uniform prior.
      */
-    public static ExomiserAllSpeciesPriorityResult noPPIDataScore() {
+    public static HiPhivePriorityResult noPPIDataScore() {
         float nodatascore = 0f;
-        ExomiserAllSpeciesPriorityResult grs = new ExomiserAllSpeciesPriorityResult(nodatascore, "", "", "", "", 0, 0, 0, 0);
+        HiPhivePriorityResult grs = new HiPhivePriorityResult(nodatascore, "", "", "", "", 0, 0, 0, 0);
         return grs;
     }
 

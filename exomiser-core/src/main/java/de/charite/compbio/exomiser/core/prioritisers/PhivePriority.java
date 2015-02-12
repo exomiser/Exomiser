@@ -37,11 +37,11 @@ import org.slf4j.LoggerFactory;
  * @author Damian Smedley
  * @version 0.05 (April 6, 2013)
  */
-public class ExomiserMousePriority implements Priority {
+public class PhivePriority implements Priority {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExomiserMousePriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(PhivePriority.class);
 
-    private static final PriorityType PRIORITY_TYPE = PriorityType.EXOMISER_MOUSE_PRIORITY;
+    private static final PriorityType PRIORITY_TYPE = PriorityType.PHIVE_PRIORITY;
 
     /**
      * Threshold for filtering. Retain only those variants whose score is below
@@ -83,7 +83,7 @@ public class ExomiserMousePriority implements Priority {
      */
     private int foundDataForMgiPhenodigm;
 
-    public ExomiserMousePriority(List<String> hpoIds, String disease) {
+    public PhivePriority(List<String> hpoIds, String disease) {
         this.hpoIds = hpoIds;
         this.disease = disease;
         messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
@@ -143,7 +143,7 @@ public class ExomiserMousePriority implements Priority {
         this.foundDataForMgiPhenodigm = 0;
         retrieveScoreData(genes);
 //	for (Gene g : gene_list) {
-//            ExomiserMousePriorityResult rscore = retrieve_score_data(g);
+//            PhivePriorityResult rscore = retrieve_score_data(g);
 //            g.addPriorityResult(rscore, PRIORITY_TYPE);          
 //	}
         this.messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", genes.size()));
@@ -365,7 +365,7 @@ public class ExomiserMousePriority implements Priority {
                     mgiScore = Constants.NOPARSE_FLOAT;//use to indicate there is no phenotyped mouse model in MGI
                 }
                 rs2.close();
-                ExomiserMousePriorityResult rscore = new ExomiserMousePriorityResult(mgiGeneId, mgiGeneSymbol, mgiScore);
+                PhivePriorityResult rscore = new PhivePriorityResult(mgiGeneId, mgiGeneSymbol, mgiScore);
                 g.addPriorityResult(rscore);
             } catch (SQLException e) {
                 logger.error("Error executing Phenodigm query: ", e);

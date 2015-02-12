@@ -68,7 +68,7 @@ public class ResultsWriterUtilsTest {
         String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
         assertThat(result, equalTo(expResult));
     }
-
+    
     @Test
     public void testDefaultOutputFormatIsNotDestroyedByIncorrectFileExtensionDetection() {
         OutputFormat testedFormat = OutputFormat.HTML;

@@ -7,23 +7,24 @@ package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.EXOMISER2_PARAMS_OPTION;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExomiserAllSpeciesOptionMarshaller extends AbstractOptionMarshaller {
+public class HiPhiveOptionMarshaller extends AbstractOptionMarshaller {
 
-    public ExomiserAllSpeciesOptionMarshaller() {
+    public HiPhiveOptionMarshaller() {
         option = OptionBuilder
-                .hasOptionalArgs()
+                .hasArgs()
                 .withArgName("type")
                 .withType(String.class)
                 .withValueSeparator(',')
                 .withDescription(
-                        String.format("Comma separated list of optional parameters for phive-allspecies: human, mouse, fish, ppi. "
-                                + "e.g. --%s=human or --%s=human,mouse,ppi", EXOMISER2_PARAMS_OPTION, EXOMISER2_PARAMS_OPTION))
+                        String.format("Comma separated list of optional parameters for %s: human, mouse, fish, ppi. "
+                                + "e.g. --%s=human or --%s=human,mouse,ppi", PriorityType.HI_PHIVE_PRIORITY, EXOMISER2_PARAMS_OPTION, EXOMISER2_PARAMS_OPTION))
                 .withLongOpt(EXOMISER2_PARAMS_OPTION)
                 .create("E");
     }

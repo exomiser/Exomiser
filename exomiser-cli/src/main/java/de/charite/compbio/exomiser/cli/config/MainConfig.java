@@ -21,11 +21,11 @@ import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.jannovar.io.JannovarDataSerializer;
 import de.charite.compbio.jannovar.io.SerializationException;
 
+import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +36,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
  * Provides configuration details from the settings.properties file located in
@@ -108,17 +111,17 @@ public class MainConfig {
     }
 
     @Bean
-    public Path phenomizerDataDirectory() {
-        String phenomizerDataDirValue = getValueOfProperty("phenomizerDataDir");
-        Path phenomizerDataDirectory = dataPath().resolve(phenomizerDataDirValue);
-        logger.debug("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
-        return phenomizerDataDirectory;
+    public Path phenixDataDirectory() {
+        String phenixDataDirValue = getValueOfProperty("phenomizerDataDir");
+        Path phenixDataDirectory = dataPath().resolve(phenixDataDirValue);
+        logger.debug("phenixDataDirectory: {}", phenixDataDirectory.toAbsolutePath());
+        return phenixDataDirectory;
     }
 
     @Bean
     public Path hpoOntologyFilePath() {
         String hpoOntologyFileValue = getValueOfProperty("hpoOntologyFile");
-        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(hpoOntologyFileValue);
+        Path hpoOntologyFilePath = phenixDataDirectory().resolve(hpoOntologyFileValue);
         logger.debug("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
         return hpoOntologyFilePath;
     }
@@ -126,7 +129,7 @@ public class MainConfig {
     @Bean
     public Path hpoAnnotationFilePath() {
         String hpoAnnotationFileValue = getValueOfProperty("hpoAnnotationFile");
-        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(hpoAnnotationFileValue);
+        Path hpoAnnotationFilePath = phenixDataDirectory().resolve(hpoAnnotationFileValue);
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
@@ -208,6 +211,23 @@ public class MainConfig {
         return new VariantEvaluationDataService();
     }
        
+    @Bean
+    public TemplateEngine templateEngine() {
+        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setPrefix("html/templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setCacheable(true);
+        TemplateEngine templateEngine = new TemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+        
+        return templateEngine;
+    }
+    
+    @Bean
+    public ResultsWriterFactory resultsWriterFactory() {
+        return new ResultsWriterFactory();
+    }
     
     protected String getValueOfProperty(String property) throws PropertyNotFoundException {
         String value = env.getProperty(property);

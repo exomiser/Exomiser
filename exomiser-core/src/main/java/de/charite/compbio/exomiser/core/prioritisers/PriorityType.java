@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 public enum PriorityType {
    
     //Prioritises against PPI-RandomWalk-proximity and dynamic human, mouse and fish phenotypes
-    EXOMISER_ALLSPECIES_PRIORITY("hiphive", ScoringMode.RAW_SCORE),
+    HI_PHIVE_PRIORITY("hiphive", ScoringMode.RAW_SCORE),
 
     //Prioritises against PPI-RandomWalk-proximity
     EXOMEWALKER_PRIORITY("exomewalker", ScoringMode.RAW_SCORE),
@@ -16,7 +16,7 @@ public enum PriorityType {
     PHENIX_PRIORITY("phenix", ScoringMode.RAW_SCORE),
 
     //Prioritises against human-mouse phenotype similarities
-    EXOMISER_MOUSE_PRIORITY("phive", ScoringMode.RAW_SCORE),
+    PHIVE_PRIORITY("phive", ScoringMode.RAW_SCORE),
 
     //Prioritises against OMIM data
     OMIM_PRIORITY("omim", ScoringMode.RAW_SCORE),
@@ -24,6 +24,9 @@ public enum PriorityType {
     //Prioritises  against phenotype data (Uberpheno)
     UBERPHENO_PRIORITY("uber-pheno", ScoringMode.RAW_SCORE),
 
+    //None - for whe you don't want to run any prioritisation
+    NONE("none", ScoringMode.RAW_SCORE),
+    
     //Not set type - default for when things go wrong.
     NOT_SET("", ScoringMode.RAW_SCORE);
     

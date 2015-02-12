@@ -124,6 +124,9 @@ public class GeneScorer {
     }
 
     private static float setGenePriorityScore(Gene gene) {
+        if (gene.getPriorityResults().isEmpty()) {
+            return 0f;
+        }
         float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
         gene.setPriorityScore(priorityScore);
         return priorityScore;
@@ -161,7 +164,7 @@ public class GeneScorer {
     protected static float calculateCombinedScore(float filterScore, float priorityScore, Set<PriorityType> prioritiesRun) {
 
         //TODO: what if we ran all of these? It *is* *possible* to do so. 
-        if (prioritiesRun.contains(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)) {
+        if (prioritiesRun.contains(PriorityType.HI_PHIVE_PRIORITY)) {
             double logitScore = 1 / (1 + Math.exp(-(-13.28813 + 10.39451 * priorityScore + 9.18381 * filterScore)));
             return (float) logitScore;
         } else if (prioritiesRun.contains(PriorityType.EXOMEWALKER_PRIORITY)) {

@@ -32,6 +32,7 @@ import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,12 +103,15 @@ public class SubmitJobController {
         if (!settings.isValid()) {
             return "submit";
         }
+        logger.info("New analysis using settings {}", settings);
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
         SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
         exomiser.analyse(sampleData, settings);
 
         buildResultsModel(model, settings, sampleData);
         
+        logger.info("Returning {} results to user", vcfPath.getFileName());
+        cleanUpSampleFiles(vcfPath, pedPath);
         return "results";
     }
 
@@ -145,13 +150,28 @@ public class SubmitJobController {
         model.addAttribute("sampleName", sampleName);
         model.addAttribute("sampleNames", sampleNames);
         
-        List<Gene> passedGenes = new ArrayList<>();
+        List<Gene> sampleGenes = sampleData.getGenes();
         int numGenesToShow = settings.getNumberOfGenesToShow();
         if (numGenesToShow == 0) {
             numGenesToShow = sampleData.getGenes().size();
         }
+        model.addAttribute("geneResultsTruncated", false);
+        if (numGenesToShow < sampleGenes.size()) {
+            model.addAttribute("geneResultsTruncated", true);
+            model.addAttribute("numGenesShown", numGenesToShow);
+            int numCandidateGenes = numGenesPassedFilters(sampleGenes);
+            model.addAttribute("numCandidateGenes", numCandidateGenes);
+            model.addAttribute("totalGenes", sampleGenes.size());
+        }
+        
+        List<Gene> passedGenes = getPassedGenes(sampleGenes, numGenesToShow);
+        model.addAttribute("genes", passedGenes);
+    }
+
+    private List<Gene> getPassedGenes(List<Gene> genes, int numGenesToShow) {
+        List<Gene> passedGenes = new ArrayList<>();
         int genesShown = 0;
-        for (Gene gene : sampleData.getGenes()) {
+        for (Gene gene : genes) {
             if (genesShown <= numGenesToShow) {
                 if (gene.passedFilters()) {
                     passedGenes.add(gene);
@@ -159,7 +179,29 @@ public class SubmitJobController {
                 }
             }
         }
-        model.addAttribute("genes", passedGenes);
+        logger.info("Returning {} of a total of {} genes for display", passedGenes.size(), genes.size());
+        return passedGenes;
+    }
+
+    private int numGenesPassedFilters(List<Gene> genes) {
+        int numCandidateGenes = 0;
+        for (Gene gene : genes) {
+            if (gene.passedFilters()) {
+                numCandidateGenes++;
+            }
+        }
+        return numCandidateGenes;
+    }
+
+    private void cleanUpSampleFiles(Path vcfPath, Path pedPath) {
+        try {
+            Files.deleteIfExists(vcfPath);
+            if (pedPath != null) {
+                Files.deleteIfExists(pedPath);
+            }
+        } catch (IOException ex) {
+            logger.error(null, ex);
+        }
     }
 
     private ExomiserSettings buildSettings(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
@@ -180,6 +222,8 @@ public class SubmitJobController {
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .maximumFrequency(Float.valueOf(frequency))
                 .genesToKeepList(genesToKeep)
+                //we're hardcoding this value as more than this will put undue strain on the server for displaying the results.
+                .numberOfGenesToShow(200)
                 //Choose Prioritiser
                 .usePrioritiser(PriorityType.valueOf(prioritiser))
                 .build();
@@ -209,7 +253,7 @@ public class SubmitJobController {
         if (!multipartFile.isEmpty()) {
             logger.info("Uploading multipart file: {}", multipartFile.getOriginalFilename());
             try {
-                path = Paths.get(multipartFile.getOriginalFilename());
+                path = Paths.get(System.getProperty("java.io.tmpdir"), multipartFile.getOriginalFilename());
                 multipartFile.transferTo(path.toFile());
             } catch (IOException e) {
                 logger.error("Failed to upload file {}", multipartFile.getOriginalFilename(), e);

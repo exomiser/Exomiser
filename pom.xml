@@ -27,7 +27,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>     
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.organization>Genome Research Limited and Charité Universitätsmedizin Berlin</project.organization>
+        <project.organization>Genome Research Limited and CharitÃ© UniversitÃ¤tsmedizin Berlin</project.organization>
         <sonar.language>java</sonar.language>
     </properties>
  

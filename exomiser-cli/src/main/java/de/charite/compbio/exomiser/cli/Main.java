@@ -130,9 +130,10 @@ public class Main {
         exomiser.analyse(sampleData, exomiserSettings);
 
         logger.info("Writing results");
-
+        ResultsWriterFactory resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
+        
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(sampleData.getVcfHeader(), outFormat);
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(sampleData.getVcfHeader(), outFormat);
             resultsWriter.writeFile(sampleData, exomiserSettings);
         }
 
@@ -147,6 +148,9 @@ public class Main {
             Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);
             if (commandLine.hasOption("help")) {
+                printHelp();
+            }
+            if (args.length == 0) {
                 printHelp();
             }
             //check the args for a batch file first as this option is otherwise ignored 

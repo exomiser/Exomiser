@@ -22,11 +22,11 @@ import org.slf4j.LoggerFactory;
  * @author Damian Smedley <damian.smedley@sanger.ac.uk>
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExomiserAllSpeciesPriority implements Priority {
+public class HiPhivePriority implements Priority {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExomiserAllSpeciesPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(HiPhivePriority.class);
 
-    private static final PriorityType PRIORITY_TYPE = PriorityType.EXOMISER_ALLSPECIES_PRIORITY;
+    private static final PriorityType PRIORITY_TYPE = PriorityType.HI_PHIVE_PRIORITY;
     
     private DataSource dataSource;
 
@@ -89,7 +89,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
      * @param exomiser2Params
      * @param randomWalkMatrix
      */
-    public ExomiserAllSpeciesPriority(List<String> hpoIds, String candidateGene, String disease, String exomiser2Params, DataMatrix randomWalkMatrix) {
+    public HiPhivePriority(List<String> hpoIds, String candidateGene, String disease, String exomiser2Params, DataMatrix randomWalkMatrix) {
         this.hpoIds = hpoIds;
         this.candidateGeneSymbol = candidateGene;
         this.diseaseId = disease;
@@ -155,10 +155,10 @@ public class ExomiserAllSpeciesPriority implements Priority {
             weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
         }
 
-        List<ExomiserAllSpeciesPriorityResult> priorityResults = new ArrayList<>(genes.size());
+        List<HiPhivePriorityResult> priorityResults = new ArrayList<>(genes.size());
         logger.info("Scoring genes...");
         for (Gene gene : genes) {
-            ExomiserAllSpeciesPriorityResult priorityResult = makePrioritiserResultForGene(gene);
+            HiPhivePriorityResult priorityResult = makePrioritiserResultForGene(gene);
             gene.addPriorityResult(priorityResult);
             priorityResults.add(priorityResult);
         }
@@ -170,7 +170,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         logger.info("Adjusting gene scores for non-pheno hits with protein-protein interactions");
         TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<>();
         for (Gene g : genes) {
-            float geneScore = ((ExomiserAllSpeciesPriorityResult) g.getPriorityResult(PriorityType.EXOMISER_ALLSPECIES_PRIORITY)).getWalkerScore();
+            float geneScore = ((HiPhivePriorityResult) g.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY)).getWalkerScore();
             if (geneScore == 0f) {
                 continue;
             }
@@ -196,7 +196,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
             rank = rank + sharedHits;
             for (Gene gene : geneScoreGeneList) {
                 //i.e. only overwrite phenotype-based score if PPI score is larger
-                ExomiserAllSpeciesPriorityResult result = (ExomiserAllSpeciesPriorityResult) gene.getPriorityResult(PriorityType.EXOMISER_ALLSPECIES_PRIORITY);
+                HiPhivePriorityResult result = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY);
                 if (newScore > result.getScore()) {
                     result.setScore(newScore);
                 }
@@ -206,9 +206,9 @@ public class ExomiserAllSpeciesPriority implements Priority {
         messages.add(message);
     }
 
-    private String makeStatsMessage(List<ExomiserAllSpeciesPriorityResult> priorityResults, List<Gene> genes) {
+    private String makeStatsMessage(List<HiPhivePriorityResult> priorityResults, List<Gene> genes) {
         int numGenesWithPhenotypeOrPpiData = 0;
-        for (ExomiserAllSpeciesPriorityResult priorityResult : priorityResults) {
+        for (HiPhivePriorityResult priorityResult : priorityResults) {
             if (priorityResult.getWalkerScore() > 0 || priorityResult.getHumanScore() > 0 || priorityResult.getMouseScore() > 0|| priorityResult.getFishScore() > 0 ) {
                 numGenesWithPhenotypeOrPpiData++;
             }
@@ -218,7 +218,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
                 numGenesWithPhenotypeOrPpiData, totalGenes, 100f * (numGenesWithPhenotypeOrPpiData / (float) totalGenes));
     }
 
-    private ExomiserAllSpeciesPriorityResult makePrioritiserResultForGene(Gene gene) {
+    private HiPhivePriorityResult makePrioritiserResultForGene(Gene gene) {
         String evidence = "";
         String humanPhenotypeEvidence = "";
         String mousePhenotypeEvidence = "";
@@ -301,7 +301,7 @@ public class ExomiserAllSpeciesPriority implements Priority {
         if (evidence.isEmpty()) {
             evidence = "<dl><dt>No phenotype or PPI evidence</dt></dl>";
         }
-        return new ExomiserAllSpeciesPriorityResult(score, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence,
+        return new HiPhivePriorityResult(score, evidence, humanPhenotypeEvidence, mousePhenotypeEvidence,
                 fishPhenotypeEvidence, humanScore, mouseScore, fishScore, walkerScore);
     }
 

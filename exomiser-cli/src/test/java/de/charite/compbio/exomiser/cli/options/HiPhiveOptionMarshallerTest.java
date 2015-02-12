@@ -17,13 +17,13 @@ import static org.junit.Assert.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExomiserAllSpeciesOptionMarshallerTest {
+public class HiPhiveOptionMarshallerTest {
     
-    private ExomiserAllSpeciesOptionMarshaller instance;
+    private HiPhiveOptionMarshaller instance;
     
     @Before
     public void setUp() {
-        instance = new ExomiserAllSpeciesOptionMarshaller();
+        instance = new HiPhiveOptionMarshaller();
     }
     
     @Test
@@ -34,7 +34,7 @@ public class ExomiserAllSpeciesOptionMarshallerTest {
     @Test
     public void testThatOptionAcceptsMultipleValues() {
         Option option = instance.option;
-        assertThat(option.hasOptionalArg(), is(true));
+        assertThat(option.hasArgs(), is(true));
         assertThat(option.getValueSeparator(), equalTo(','));
     }
     

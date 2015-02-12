@@ -21,7 +21,7 @@ import java.util.List;
  * @author Damian Smedley
  * @version 0.06 (April 22, 2013).
  */
-public class ExomiserMousePriorityResult implements PriorityResult {
+public class PhivePriorityResult implements PriorityResult {
 
     /**
      * The phenodigm score as calculated by OWLsim. This score indicates the
@@ -48,7 +48,7 @@ public class ExomiserMousePriorityResult implements PriorityResult {
      * @param geneSymbol The corresponding gene symbol, e.g., Gfl1
      * @param phenodigmScore the phenodigm score for this gene.
      */
-    public ExomiserMousePriorityResult(String mgiGeneId, String geneSymbol, float phenodigmScore) {
+    public PhivePriorityResult(String mgiGeneId, String geneSymbol, float phenodigmScore) {
         this.mgiId = mgiGeneId;
         this.geneSymbol = geneSymbol;
         this.phenodigmScore = phenodigmScore;
@@ -56,7 +56,7 @@ public class ExomiserMousePriorityResult implements PriorityResult {
 
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.EXOMISER_MOUSE_PRIORITY;
+        return PriorityType.PHIVE_PRIORITY;
     }
 
     /**
