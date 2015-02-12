@@ -1,8 +1,19 @@
 # The Exomiser - Core Library Changelog
 
-## 6.0.0
+## 6.0.0 2015-01-12
 - API changes:
-    - Package tidy-up, which triggered the full version bump. 
+    - Package tidy-up - all packages are now use their maven package name as the root package for that project.
+    - PhenixPriority now dies immediately and with an informative message if no HPO terms are supplied. 
+    - Added NONE PriorityType for when you really don't want to run any prioritiser.
+    - Re-named the ExomiserMouse and ExomiserAllSpecies prioritisers to their published Phive and HiPhive names.
+    - Removed unused List<Priority> requirement from writers. 
+    - TSV output now comes in TSV_GENE and TSV_VARIANT flavours.
+    - Removed unused getBefore and getAfter methods from Priority interface.
+    - Removed getConnection and setConnection from Priority interface as these were only used by some prioritisers.
+    - Prioritisers requiring database access now use a DataSource rather than a direct connection.
+    - Added getRowIndexForGene(entrezGeneId) and getColumnMatrixForGene(entrezGeneId) methods to DataMatrix.
+    - Removed getRowToEntrezIdIndex from DataMatrix. 
+    - Refactored ExomeWalkerPriority and ExomiserAllSpeciesPriority to use new DataMatrix methods.
 
 ## 5.2.0 2014-12-18
 - New style HTML output
