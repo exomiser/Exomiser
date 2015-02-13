@@ -1,5 +1,0 @@
-This file was created in github - should have lf line endings.
-This is a change from netbeans - 
-My gitconfig is thus:
-git config --global core.autocrlf false
-The last 4 lines were created and committed in NB on Windows. Push is via GitShell.

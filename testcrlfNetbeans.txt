@@ -1,2 +1,0 @@
-This file was made in netbeans on windows.
-Hopefully this ends up in the repo with lf endings.
