@@ -147,8 +147,12 @@ public class EspFrequencyParser implements ResourceParser {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                Frequency frequency = VCF2FrequencyParser.parseVCFline(line);
-                parseEspDataFromVCFInfoField(frequency);
+                ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */;
+                for (Frequency frequency : frequencyPerLine) {
+                    parseEspDataFromVCFInfoField(frequency);
+                }
+                //Frequency frequency = VCF2FrequencyParser.parseVCFline(line);
+                //parseEspDataFromVCFInfoField(frequency);
             }
         } catch (IOException e) {
             logger.error("{} - Error parsing ESP file: {}", ResourceOperationStatus.FAILURE, espFile, e.getMessage());

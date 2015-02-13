@@ -2,6 +2,7 @@ package de.charite.compbio.exomiser.db.build.parsers;
 
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import jannovar.common.Constants;
+import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +37,10 @@ public class VCF2FrequencyParser {
      * @param line
      * @return a <code>Frequency</code> object created from the input line.
      */
-    public static Frequency parseVCFline(String line) {
+    public static ArrayList<Frequency> parseVCFline(String line) {
         
+        ArrayList<Frequency> frequencyList = new ArrayList<>();
+
         String fields[] = line.split("\t");
         
         byte chrom = 0;
@@ -56,14 +59,51 @@ public class VCF2FrequencyParser {
         /* Uppercasing shouldn't be necessary acccording to the VCF standard, but occasionally
          one sees VCF files with lower case for part of the sequences, e.g., to show indels. */
         String ref = fields[3].toUpperCase();
-        String alt = fields[4].toUpperCase();
-        
         String info = fields[7];
-        // VCF files and Annovar-style annotations use different nomenclature for
-        // indel variants. We use Annovar.
-        transformVCF2AnnovarCoordinates(ref, alt, pos);
         
-        return new Frequency(chrom, pos, ref, alt, rsId, info);
+        /* dbSNP has introduced the concept of multiple minor alleles on the same VCF line with their
+         * frequencies reported in same order in the INFO field in the CAF section
+         * Because of this had to introduce a loop and move the dbSNP freq parsing to here. 
+         * Not ideal as ESP processing also goes through this method but does not use the 
+         * CAF field so should be skipped
+         */
+        
+        //String alt = fields[4].toUpperCase();
+        String alts[] = fields[4].toUpperCase().split(",");
+
+        ArrayList<String> minorFreqs = new ArrayList();
+        String A[] = info.split(";");
+        for (String a : A) {
+            // format has changed in latest field to ;CAF=[0.9812,.,0.01882]; where major allele is 1st followed by minor alleles in order of alt line
+            if (a.startsWith("CAF=")) {
+                String parts[] = a.split(",");
+                for (String part : parts){
+                    part = part.replace("]", "");
+                    minorFreqs.add(part);                    
+                }
+            }
+        }
+        
+        int minorAlleleCounter = 1;
+        for (String alt : alts) {
+            // VCF files and Annovar-style annotations use different nomenclature for
+            // indel variants. We use Annovar.
+            transformVCF2AnnovarCoordinates(ref, alt, pos);
+            float maf = Constants.UNINITIALIZED_FLOAT;
+            if (minorFreqs.size() > 0){
+                if (! minorFreqs.get(minorAlleleCounter).equals(".")){
+                    maf = Float.parseFloat(minorFreqs.get(minorAlleleCounter));
+                    /* NOTE that the dnSNP maf are given as proportion, whereas the ESP MAF
+                     are given as percent. In order not to loose numerical accurary, we will
+                     convert all to percent for the database. */
+                    maf = maf * 100f;
+                }
+            }
+            Frequency freq =  new Frequency(chrom, pos, ref, alt, rsId, maf, info);
+            frequencyList.add(freq);
+            minorAlleleCounter++;
+        }
+        return frequencyList;
     }
 
 

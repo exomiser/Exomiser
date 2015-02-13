@@ -190,10 +190,11 @@ public class DbSnpFrequencyParser implements ResourceParser {
                     continue; // comment.
                 }
                 vcount++;
-                Frequency frequency = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */
-
-                checkVariantForExomalLocationAndOutput(frequency);
-
+                //Frequency frequency = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */
+                ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */;
+                for (Frequency frequency : frequencyPerLine) {
+                    checkVariantForExomalLocationAndOutput(frequency);
+                }
                 long now = System.currentTimeMillis();
                 if (now - startTime > 2000) {
                     long filePosition = fc.position();
@@ -244,11 +245,11 @@ public class DbSnpFrequencyParser implements ResourceParser {
             if (c2e.variantIsLocatedInExonicSequence(pos, endpos)) {
                 //System.out.println(chromosome + ":" + pos + ":" + id + ":" + ref + ":" + alt + ":" + info);
 //                Frequency freq = new Frequency(this.chrom, this.pos, this.ref, this.alt, rs);
-                float maf = getMinorAlleleFrequencyFromVCFInfoField(frequency.getInfo());
-
-                if (maf >= 0f) {
-                    frequency.setDbSnpGmaf(maf);
-                }
+//                float maf = getMinorAlleleFrequencyFromVCFInfoField(frequency.getInfo());
+//
+//                if (maf >= 0f) {
+//                    frequency.setDbSnpGmaf(maf);
+//                }
 
                 if (previous != null && previous.isIdenticalSNP(frequency)) {
                     float x = previous.getMaximumFrequency();
@@ -294,27 +295,27 @@ public class DbSnpFrequencyParser implements ResourceParser {
      * @param info the Info field of a VCF line.
      * @return float of the minor allele frequency
      */
-    protected static float getMinorAlleleFrequencyFromVCFInfoField(String info) {
-        String A[] = info.split(";");
-        for (String a : A) {
-            // format has changed in latest field to CAF=[0.9812,0.01882]
-            //if (a.startsWith("GMAF=")) {
-            if (a.startsWith("CAF=")) {
-                //System.out.println(info);
-                String parts[] = a.split(",");
-                String parts2[] = parts[1].split("]");
-                if (!parts2[0].equals(".")) {
-                    float maf = Float.parseFloat(parts2[0]);
-                    /* NOTE that the dnSNP maf are given as proportion, whereas the ESP MAF
-                     are given as percent. In order not to loose numerical accurary, we will
-                     convert all to percent for the database. */
-                    maf = maf * 100f;
-                    return maf;
-                }
-            }
-        }
-        return Constants.NOPARSE_FLOAT;
-    }
+//    protected static float getMinorAlleleFrequencyFromVCFInfoField(String info) {
+//        String A[] = info.split(";");
+//        for (String a : A) {
+//            // format has changed in latest field to CAF=[0.9812,0.01882]
+//            //if (a.startsWith("GMAF=")) {
+//            if (a.startsWith("CAF=")) {
+//                //System.out.println(info);
+//                String parts[] = a.split(",");
+//                String parts2[] = parts[1].split("]");
+//                if (!parts2[0].equals(".")) {
+//                    float maf = Float.parseFloat(parts2[0]);
+//                    /* NOTE that the dnSNP maf are given as proportion, whereas the ESP MAF
+//                     are given as percent. In order not to loose numerical accurary, we will
+//                     convert all to percent for the database. */
+//                    maf = maf * 100f;
+//                    return maf;
+//                }
+//            }
+//        }
+//        return Constants.NOPARSE_FLOAT;
+//    }
 
     /**
      * This class is used to represent all of the exons on a chromosome.

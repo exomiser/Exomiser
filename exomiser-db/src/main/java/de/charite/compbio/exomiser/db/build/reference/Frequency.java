@@ -66,6 +66,19 @@ public class Frequency implements Comparable<Frequency> {
 	this.espAA = Constants.UNINITIALIZED_FLOAT;
 	this.espAll = Constants.UNINITIALIZED_FLOAT;
     }
+    
+    public Frequency(byte chromosome, int position, String ref, String alt, int rsId, float maf, String info) {
+	this.chromosome = chromosome;
+	this.pos = position;
+	this.ref = ref;
+	this.alt = alt;
+	this.rsId = rsId; 
+        this.info = info;
+	this.dbSNPmaf = maf;
+	this.espEA = Constants.UNINITIALIZED_FLOAT;
+	this.espAA = Constants.UNINITIALIZED_FLOAT;
+	this.espAll = Constants.UNINITIALIZED_FLOAT;
+    }
 
     public byte getChromosome() {
         return chromosome;
