@@ -81,15 +81,14 @@ public class InheritanceModeAnalyser {
         String geneID = variantList.get(0).getGeneSymbol();
         // Use interval of transcript of first region, only used for the chromosome information anyway.
         GenomeInterval geneInterval = variantList.get(0).annotations.entries.get(0).transcript.txRegion;
-        GenotypeListBuilder builder = new GenotypeListBuilder(geneID, geneInterval, ImmutableList.copyOf(variantList
-                .get(0).vc
-                .getSampleNames()));
+        GenotypeListBuilder builder = new GenotypeListBuilder(geneID, geneInterval, pedigree.getNames());
         for (Variant var : variantList) {
             final int altAlleleID = var.altAlleleID;
             final int numSamples = var.vc.getNSamples();
             ImmutableList.Builder<Genotype> gtBuilder = new ImmutableList.Builder<Genotype>();
             for (int i = 0; i < numSamples; ++i) {
-                final List<Allele> alleles = var.vc.getGenotype(i).getAlleles();
+                final String name = pedigree.members.get(i).name;
+                final List<Allele> alleles = var.vc.getGenotype(name).getAlleles();
                 if (alleles.size() != 2) {
                     gtBuilder.add(Genotype.NOT_OBSERVED);
                     continue;
