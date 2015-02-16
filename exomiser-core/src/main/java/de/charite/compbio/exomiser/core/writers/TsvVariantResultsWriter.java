@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,8 @@ public class TsvVariantResultsWriter implements ResultsWriter {
                     "CADD(>0.483)", "POLYPHEN(>0.956|>0.446)", "MUTATIONTASTER(>0.94)", "SIFT(<0.06)", "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
                     "EXOMISER_VARIANT_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_GENE_COMBINED_SCORE");
     private CSVPrinter printer;
+
+    private final DecimalFormat formatter = new DecimalFormat(".##");
 
     public TsvVariantResultsWriter() {
         Locale.setDefault(Locale.UK);
@@ -93,7 +96,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // ALT
         record.add(var.getAlt());
         // QUAL
-        record.add(var.getVariantPhredScore());
+        record.add(formatter.format(var.getVariantPhredScore()));
         // FILTER
         record.add(makeFiltersField(ve));
         // GENOTYPE
@@ -101,7 +104,8 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // COVERAGE
         record.add(var.vc.getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
-        record.add(var.annotations.getHighestImpactEffect().getSequenceOntologyTerm());
+        // FIXME: use new terms (use .toSequenceOntologyTerm() instead)!
+        record.add(var.annotations.getHighestImpactEffect().getLegacyTerm());
 
         // HGVS
         record.add(var.getRepresentativeAnnotation());

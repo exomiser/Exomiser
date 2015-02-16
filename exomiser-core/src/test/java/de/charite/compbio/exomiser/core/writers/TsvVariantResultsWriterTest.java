@@ -42,7 +42,7 @@ public class TsvVariantResultsWriterTest {
     private Gene gene;
     private TsvVariantResultsWriter instance;
 	private static final String VARIANT_STRING = "#CHROM	POS	REF	ALT	QUAL	FILTER	GENOTYPE	COVERAGE	FUNCTIONAL_CLASS	HGVS	EXOMISER_GENE	CADD(>0.483)	POLYPHEN(>0.956|>0.446)	MUTATIONTASTER(>0.94)	SIFT(<0.06)	DBSNP_ID	MAX_FREQUENCY	DBSNP_FREQUENCY	EVS_EA_FREQUENCY	EVS_AA_FREQUENCY	EXOMISER_VARIANT_SCORE	EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE\n"
-            + "10	123353298	G	C	2.2	PASS	0/1	0	missense_variant	FGFR2:uc021pzz.1:c.34C>G:p.Leu12Val	FGFR2	.	.	.	.	.	0.0	.	.	.	0.0	0.0	0.0	0.0";
+            + "chr10	123353298	G	C	2.2	PASS	0/1	0	MISSENSE	FGFR2:uc021pzz.1:exon2:c.34C>G:p.Leu12Val	FGFR2	.	.	.	.	.	0.0	.	.	.	0.0	0.0	0.0	0.0";
 	private SampleData sampleData;
 
     @Before

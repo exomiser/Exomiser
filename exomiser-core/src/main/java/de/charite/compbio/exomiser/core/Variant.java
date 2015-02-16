@@ -11,6 +11,7 @@ import com.google.common.collect.Sets;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
@@ -73,7 +74,7 @@ public class Variant {
      * @return name of chromosome
      */
     public String getChromosomeStr() {
-        return change.pos.refDict.contigName.get(change.pos.chr);
+        return vc.getChr();
     }
 
     /**
@@ -96,7 +97,10 @@ public class Variant {
      * @return one-based position
      */
     public int getPosition() {
-        return change.pos.withStrand('+').pos + 1;
+        if (change.ref.equals(""))
+            return change.pos.withStrand('+').pos;
+        else
+            return change.pos.withStrand('+').pos + 1;
     }
 
     /**
@@ -113,7 +117,7 @@ public class Variant {
      * Shortcut to {@link #change.alt}, returning "-" in case of deletions.
      */
     public String getAlt() {
-        if (change.ref.equals(""))
+        if (change.alt.equals(""))
             return "-";
         else
             return change.alt;
@@ -143,7 +147,7 @@ public class Variant {
         for (VariantEffect eff : anno.effects) {
             if (eff.isSplicing())
                 return false;
-            else if (eff.isIntronic())
+            else if (eff.isIntronic() || eff.isOffTranscript())
                 return true;
         }
         return false;
@@ -161,8 +165,16 @@ public class Variant {
         Annotation anno = annotations.getHighestImpactAnnotation();
         if (anno == null)
             return "?";
-        else
-            return anno.getSymbolAndAnnotation();
+
+        String exonIntron = null;
+        if (anno.annoLoc != null && anno.annoLoc.rankType == AnnotationLocation.RankType.EXON)
+            exonIntron = StringUtils.concat("exon", anno.annoLoc.rank + 1);
+        else if (anno.annoLoc != null && anno.annoLoc.rankType == AnnotationLocation.RankType.INTRON)
+            exonIntron = StringUtils.concat("intron", anno.annoLoc.rank + 1);
+
+        final Joiner joiner = Joiner.on(":").skipNulls();
+        return joiner.join(anno.getGeneSymbol(), anno.transcript.accession, exonIntron, anno.ntHGVSDescription,
+                anno.aaHGVSDescription);
     }
     
     /**
@@ -220,10 +232,23 @@ public class Variant {
 
     public String getGenotypeAsString() {
         StringBuilder builder = new StringBuilder();
-        for (Allele allele : vc.getGenotype(0).getAlleles()) {
+        for (Genotype gt : vc.getGenotypes()) {
             if (builder.length() > 0)
-                builder.append('/');
-            builder.append(allele.isReference() ? "0" : "1");
+                builder.append(':');
+            boolean firstAllele = true;
+            for (Allele allele : gt.getAlleles()) {
+                if (firstAllele)
+                    firstAllele = false;
+                else
+                    builder.append('/');
+
+                if (allele.isNoCall())
+                    builder.append('.');
+                else if (allele.equals(vc.getAlternateAllele(altAlleleID)))
+                    builder.append('1');
+                else
+                    builder.append('0');
+            }
         }
         return builder.toString();
     }
