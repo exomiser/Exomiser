@@ -71,14 +71,14 @@ public abstract class VariantTypePathogenicityScores {
                 return DEFAULT_MISSENSE_SCORE;
             case SYNONYMOUS_VARIANT:
                 return SYNONYMOUS_SCORE;
-            case DISRUPTIVE_INFRAME_DELETION:
-            case DISRUPTIVE_INFRAME_INSERTION:
             case FRAMESHIFT_ELONGATION:
             case FRAMESHIFT_TRUNCATION:
             case FRAMESHIFT_VARIANT:
                 return FRAMESHIFT_SCORE;
             case MNV:
             case FEATURE_TRUNCATION:
+            case DISRUPTIVE_INFRAME_DELETION:
+            case DISRUPTIVE_INFRAME_INSERTION:
             case INFRAME_DELETION:
             case INFRAME_INSERTION:
             case INTERNAL_FEATURE_ELONGATION:

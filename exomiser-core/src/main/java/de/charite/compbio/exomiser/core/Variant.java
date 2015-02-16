@@ -110,7 +110,7 @@ public class Variant {
         if (change.ref.equals(""))
             return "-";
         else
-            return change.ref;
+            return change.withStrand('+').ref;
     }
 
     /**
@@ -120,7 +120,7 @@ public class Variant {
         if (change.alt.equals(""))
             return "-";
         else
-            return change.alt;
+            return change.withStrand('+').alt;
     }
 
     /**

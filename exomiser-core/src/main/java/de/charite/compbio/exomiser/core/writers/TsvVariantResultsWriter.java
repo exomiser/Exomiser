@@ -87,6 +87,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
     private List<Object> getRecordOfVariant(Variant var, VariantEvaluation ve, Gene gene) {
         List<Object> record = new ArrayList<Object>();
+        // TODO(holtgrewe): Return data as in original VCF file? currently includes shifting and trimming!
         // CHROM
         record.add(var.getChromosomeStr());
         // POS
