@@ -66,6 +66,12 @@ public class SubmitJobController {
 
     @Autowired
     private Exomiser exomiser;
+    
+    @Autowired
+    private int maxVariants;
+    
+    @Autowired
+    private int maxGenes;
 
     @RequestMapping(value = "submit", method = RequestMethod.GET)
     public String configureExomiserJob(Model model) {
@@ -106,6 +112,14 @@ public class SubmitJobController {
         logger.info("New analysis using settings {}", settings);
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
         SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
+        int numVariantsInSample = sampleData.getVariantEvaluations().size();
+        if (numVariantsInSample > maxVariants) {
+            logger.info("{} contains {} variants - this is more than the allowed maximum of {}."
+                    + "Returning user to submit page", sampleData.getVcfFilePath(), numVariantsInSample, maxVariants);
+            cleanUpSampleFiles(vcfPath, pedPath);
+            model.addAttribute("numVariants", numVariantsInSample);
+            return "resubmitWithFewerVariants";
+        }
         exomiser.analyse(sampleData, settings);
 
         buildResultsModel(model, settings, sampleData);
@@ -151,20 +165,16 @@ public class SubmitJobController {
         model.addAttribute("sampleNames", sampleNames);
         
         List<Gene> sampleGenes = sampleData.getGenes();
-        int numGenesToShow = settings.getNumberOfGenesToShow();
-        if (numGenesToShow == 0) {
-            numGenesToShow = sampleData.getGenes().size();
-        }
         model.addAttribute("geneResultsTruncated", false);
-        if (numGenesToShow < sampleGenes.size()) {
+        int numCandidateGenes = numGenesPassedFilters(sampleGenes);
+        if (numCandidateGenes > maxGenes) {
+            logger.info("Truncating number of genes returned - {} ");
             model.addAttribute("geneResultsTruncated", true);
-            model.addAttribute("numGenesShown", numGenesToShow);
-            int numCandidateGenes = numGenesPassedFilters(sampleGenes);
             model.addAttribute("numCandidateGenes", numCandidateGenes);
             model.addAttribute("totalGenes", sampleGenes.size());
         }
         
-        List<Gene> passedGenes = getPassedGenes(sampleGenes, numGenesToShow);
+        List<Gene> passedGenes = getPassedGenes(sampleGenes, maxGenes);
         model.addAttribute("genes", passedGenes);
     }
 
@@ -172,7 +182,7 @@ public class SubmitJobController {
         List<Gene> passedGenes = new ArrayList<>();
         int genesShown = 0;
         for (Gene gene : genes) {
-            if (genesShown <= numGenesToShow) {
+            if (genesShown < numGenesToShow) {
                 if (gene.passedFilters()) {
                     passedGenes.add(gene);
                     genesShown++;
@@ -223,7 +233,7 @@ public class SubmitJobController {
                 .maximumFrequency(Float.valueOf(frequency))
                 .genesToKeepList(genesToKeep)
                 //we're hardcoding this value as more than this will put undue strain on the server for displaying the results.
-                .numberOfGenesToShow(200)
+                .numberOfGenesToShow(maxGenes)
                 //Choose Prioritiser
                 .usePrioritiser(PriorityType.valueOf(prioritiser))
                 .build();

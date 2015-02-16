@@ -32,7 +32,7 @@ and open the template in the editor.
                                 <label for="vcf">VCF file:</label>
                                 <input type="file" draggable="true" name="vcf" id="vcf"/>
 
-                                <p class="help-block"><em>Required.</em> Upload exome sequencing results in VCF format. 
+                                <p class="help-block"><em>Required.</em> Upload exome sequencing results in VCF format. We can only accept files containing up to <span th:text="${@maxVariants}">100000</span> variants.
                                     <a href="resources/Pfeiffer.vcf">Example file</a> with causative FGFR2 
                                     variant for the autosomal dominant Pfeiffer syndrome added to exome of a
                                     <a href="http://manuelcorpas.com/2012/02/06/my-personal-exome-analysis-part-i-first-findings">healthy individual</a>
@@ -172,12 +172,13 @@ and open the template in the editor.
                     <button type="reset" class="btn btn-default" id="button_form_reset" name="reset">
                         <span class="glyphicon glyphicon-refresh"></span> Reset
                     </button>
-                    <button type="submit" class="btn btn-primary" id="button_form_submit" name="submit" data-loading-text="Processing...">
+                    <button type="submit" class="btn btn-primary" id="button_form_submit" name="submit" data-loading-text="Processing..."
+                            data-toggle="popover" title="Popover title" data-content="And here's some amazing content. It's very engaging. Right?">
                         <span class="glyphicon glyphicon-thumbs-up"></span> Submit
                     </button> 
                     <p class="help-block">
                         Please be patient and do not mash the submit button - the anaylsis could take a minute or two depending on the size of the sample and load on the server. 
-                        VCF files are stored as temporary files on our server and deleted following analysis. For performance reasons only the top 200 genes are returned. 
+                        VCF files are stored as temporary files on our server and deleted following analysis. For performance reasons only the top <span th:text="${@maxGenes}">100</span> genes are returned. 
                         If you require the Exomiser for analysing large samples or batches of multiple samples we <em>strongly</em> suggest you download and run the 
                         offline version available from the <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/">FTP site</a>. 
                         The Exomiser is freely available for academic users or for private use. Other users are requested to contact us to obtain a license.

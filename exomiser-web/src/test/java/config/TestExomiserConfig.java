@@ -58,6 +58,20 @@ public class TestExomiserConfig {
         
         return dataPath;
     }
+    
+    @Bean
+    public int maxVariants() {
+        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
+        logger.info("Set max variants to {}", maxVariants);
+        return maxVariants;
+    }
+    
+    @Bean
+    public int maxGenes() {
+        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
+        logger.info("Set max genes to {}", maxGenes);
+        return maxGenes;
+    }
 
     @Bean
     public Path ucscFilePath() {

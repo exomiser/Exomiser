@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="en" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Analysis Settings</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../../resources/chosen_v1.2.0/chosen.css" th:href="@{resources/chosen_v1.2.0/chosen.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../../resources/chosen_v1.2.0/chosen-bootstrap.css" th:href="@{resources/chosen_v1.2.0/chosen-bootstrap.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../../resources/bootstrap-3.2.0/css/bootstrap.min.css" th:href="@{resources/bootstrap-3.2.0/css/bootstrap.min.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../../resources/css/sanger-pagesmith-shim.css" th:href="@{resources/css/sanger-pagesmith-shim.css}"/>
+    </head>
+
+    <body>
+        <div class="alert alert-danger" role="alert">
+            For performance reasons we are unable to process VCF files containing more than <span th:text="${@maxVariants}">100000</span> variants - your file contains 
+            <span th:text="${numVariants}">99999</span> variants. Please <a href="submit" class="alert-link">go back</a> and reduce the number of variants you submit.
+
+            Alternatively, if you want to run the original file, please try the offline version which you can 
+            <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/" class="alert-link">download from the FTP site</a>. 
+        </div>
+    </body>
+</html>
