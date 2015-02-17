@@ -231,11 +231,11 @@ public class Variant {
     }
 
     public String getGenotypeAsString() {
-        StringBuilder builder = new StringBuilder();
+        // collect genotype string list
+        ArrayList<String> gtStrings = new ArrayList<String>();
         for (Genotype gt : vc.getGenotypes()) {
-            if (builder.length() > 0)
-                builder.append(':');
             boolean firstAllele = true;
+            StringBuilder builder = new StringBuilder();
             for (Allele allele : gt.getAlleles()) {
                 if (firstAllele)
                     firstAllele = false;
@@ -249,8 +249,14 @@ public class Variant {
                 else
                     builder.append('0');
             }
+            gtStrings.add(builder.toString());
         }
-        return builder.toString();
+
+        // normalize 1/0 to 0/1 and join genotype strings with colon
+        for (int i = 0; i < gtStrings.size(); ++i)
+            if (gtStrings.get(i).equals("1/0"))
+                gtStrings.set(i, "0/1");
+        return Joiner.on(":").join(gtStrings);
     }
 
     public int getEntrezGeneID() {
