@@ -261,7 +261,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public String getGenotypeAsString() {
-        return this.var.vc.getGenotype(0).toBriefString();
+        return this.var.getGenotypeAsString();
     }
 
     /**
