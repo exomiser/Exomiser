@@ -179,7 +179,7 @@ and open the template in the editor.
                                          th:each="variantEvaluation: ${gene.variantEvaluations}" 
                                          th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
                                         <div class="col-sm-12">
-                                            <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
+                                            <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
                                             <b th:text=" |chr${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
                                             <th:block th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
