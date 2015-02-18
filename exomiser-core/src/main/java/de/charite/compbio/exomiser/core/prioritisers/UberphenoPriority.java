@@ -13,11 +13,8 @@ import similarity.concepts.ResnikSimilarity;
 import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
 
-import de.charite.compbio.exomiser.core.Constants;
-
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
-import java.sql.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -228,7 +225,7 @@ public class UberphenoPriority implements Priority {
         int entrezGeneId = g.getEntrezGeneID();
         Set<Term> terms = uberphenoAnnotationContainer.getAnnotationsOfGene(entrezGeneId);
         if (terms == null || terms.size() < 1) {
-            return new UberphenoPriorityResult(Constants.UNINITIALIZED_FLOAT);
+            return new UberphenoPriorityResult(-10.0f);
         }
         ArrayList<Term> termsAl = new ArrayList<Term>(terms);
         double similarityScore = similarityMeasure.computeObjectSimilarity(annotationsOfDisease, termsAl);
