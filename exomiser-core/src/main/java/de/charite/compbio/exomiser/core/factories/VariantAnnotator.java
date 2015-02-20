@@ -22,7 +22,8 @@ import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.io.JannovarData;
 
 /**
- * Given a {@link VariantAnnotator}, build a {@link Variant} for each alternative allele.
+ * Given a {@link VariantAnnotator}, build a {@link Variant} for each
+ * alternative allele.
  *
  * Uses the {@link VariantContextAnnotator} class of the Jannovar-HTSJDK bridge.
  *
@@ -32,7 +33,9 @@ public class VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantAnnotator.class);
 
-    /** tool for obtaining annotations for the {@link VariantContext} objects */
+    /**
+     * tool for obtaining annotations for the {@link VariantContext} objects
+     */
     private final VariantContextAnnotator annotator;
 
     public VariantAnnotator(JannovarData jannovarData) {
@@ -40,16 +43,18 @@ public class VariantAnnotator {
     }
 
     /**
-     * @param vc
-     *            {@link VariantContext} to get {@link Variant} objects for
+     * @param vc {@link VariantContext} to get {@link Variant} objects for
      * @return one {@link Variant} object for each alternative allele in vc.
      */
     public List<Variant> annotateVariantContext(VariantContext vc) {
+        //builds one annotation list for each alternative allele
         ImmutableList<AnnotationList> lst = annotator.buildAnnotationList(vc);
-        List<Variant> result = new ArrayList<Variant>();
-        for (int i = 0; i < vc.getAlternateAlleles().size(); ++i)
+        List<Variant> result = new ArrayList<>();
+        //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
+        for (int i = 0; i < vc.getAlternateAlleles().size(); ++i) {
             result.add(new Variant(vc, i, lst.get(i)));
+        }
         return result;
     }
-    
+
 }

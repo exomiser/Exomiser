@@ -125,6 +125,8 @@ public class VcfResultsWriter implements ResultsWriter {
      */
     private void writeRecord(VariantEvaluation ve, VariantContextWriter writer, Gene gene) {
         // create a new VariantContextBuilder, based on the original line
+        // n.b. variantContexts with alternative alleles will be shared between 
+        // the alternative allele variant objects - Exomiser works on a 1 Variant = 1 Allele principle 
         VariantContextBuilder builder = new VariantContextBuilder(ve.getVariant().vc);
         // update filter and info fields and write out to writer.
         updateFilterField(builder, ve);

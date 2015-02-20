@@ -40,7 +40,7 @@ public class SampleDataFactory {
 
     private final PedigreeFactory pedigreeFactory;
     private final GeneFactory geneFactory;
-    
+
     public SampleDataFactory() {
         pedigreeFactory = new PedigreeFactory();
         geneFactory = new GeneFactory();
@@ -48,9 +48,9 @@ public class SampleDataFactory {
 
     public SampleData createSampleData(Path vcfFilePath, Path pedigreeFilePath) {
         logger.info("Creating sample data from VCF and PED files: {}, {}", vcfFilePath, pedigreeFilePath);
-        
+
         SampleData sampleData = createSampleDataFromVcf(vcfFilePath);
-        
+
         //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
         List<Gene> geneList = geneFactory.createGenes(sampleData.getVariantEvaluations());
         sampleData.setGenes(geneList);
@@ -76,15 +76,16 @@ public class SampleDataFactory {
         List<VariantEvaluation> variantEvaluations = createVariantEvaluations(vcfRecords);
         sampleData.setVariantEvaluations(variantEvaluations);
         sampleData.setVcfFilePath(vcfFilePath);
-        
+
         return sampleData;
     }
 
     private List<VariantContext> loadVariantsFromVcf(VCFFileReader vcfReader) {
         logger.info("Loading and annotating VCF");
         List<VariantContext> records = new ArrayList<>();
-        for (VariantContext vc : vcfReader)
+        for (VariantContext vc : vcfReader) {
             records.add(vc);
+        }
         vcfReader.close();
         return records;
     }
@@ -104,10 +105,14 @@ public class SampleDataFactory {
         // TODO(holtgrewe): For now, we throw out variants on unknown references.
         logger.info("Creating sample VariantEvaluations");
         // build VariantEvaluation objects from Variants
-        for (VariantContext vc : vcfRecords)
-            for (Variant variant : variantAnnotator.annotateVariantContext(vc))
-                if (variant.getChange() != null) // FIXME: handle this case and write through unprocessed?
+        for (VariantContext vc : vcfRecords) {
+            for (Variant variant : variantAnnotator.annotateVariantContext(vc)) {
+                if (variant.getGenomeChange() != null) {
+                    // FIXME: handle this case and write through unprocessed?
                     variantEvaluations.add(new VariantEvaluation(variant));
+                }
+            }
+        }
 
         return variantEvaluations;
     }

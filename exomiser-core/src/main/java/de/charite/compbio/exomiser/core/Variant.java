@@ -20,38 +20,41 @@ import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 
 /**
- * Collects information about one allele in a VCF variant, together with its Jannovar Annotation.
- * 
+ * Collects information about one allele in a VCF variant, together with its
+ * Jannovar Annotation.
+ *
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 public class Variant {
 
-    /** HTSJDK {@link VariantContext} instance of this allele */
+    // HTSJDK {@link VariantContext} instance of this allele
     public final VariantContext vc;
 
-    /** numeric index of the alternative allele in {@link #vc}. */
+    // numeric index of the alternative allele in {@link #vc}.
     public final int altAlleleID;
 
     /**
-     * list of {@link Annotation}s for this variant context, one for each affected transcript, and sorted by predicted
-     * impact, highest first.
+     * list of {@link Annotation}s for this variant context, one for each
+     * affected transcript, and sorted by predicted impact, highest first.
      */
     public final AnnotationList annotations;
 
-    /** shortcut to the {@link GenomeChange} in the first element of {@link #annotations}, or null. */
+    /**
+     * shortcut to the {@link GenomeChange} in the first element of
+     * {@link #annotations}, or null.
+     */
     private final GenomeChange change;
 
-    /**
-     * Initialize the object with the given values.
-     */
     public Variant(VariantContext vc, int altAlleleID, AnnotationList annotations) {
         this.vc = vc;
         this.altAlleleID = altAlleleID;
         this.annotations = annotations;
-        if (annotations.entries.isEmpty())
+        if (annotations.entries.isEmpty()) {
+            //TODO: change should never be null - it should be constructed from the VariantContext 
             this.change = null;
-        else
+        } else {
             this.change = annotations.entries.get(0).change;
+        }
     }
 
     /**
@@ -63,7 +66,7 @@ public class Variant {
 
     /**
      * Shortcut to <code>change.pos.chr</code>
-     * 
+     *
      * @return <code>int</code> representation of chromosome
      */
     public int getChromosome() {
@@ -82,56 +85,64 @@ public class Variant {
      */
     public String getChromosomalVariant() {
         // Change can be null for unknown references. In this case, we hack together something from the Variant Context.
-        if (change != null)
+        //TODO: change should never be null - it should be constructed from the VariantContext 
+        if (change != null) {
             return change.toString();
-        else
+        } else {
             return StringUtils.concat(vc.getChr(), ":g.", vc.getStart(), vc.getReference(), ">",
                     vc.getAlternateAllele(altAlleleID));
+        }
     }
 
     /**
      * Shortcut to <code>change.pos.pos + 1</code>.
-     * 
-     * Returns a 1-based coordinate (as used in the Exomiser) instead of the 0-based coordinates from Jannovar.
-     * 
+     *
+     * Returns a 1-based coordinate (as used in the Exomiser) instead of the
+     * 0-based coordinates from Jannovar.
+     *
      * @return one-based position
      */
     public int getPosition() {
-        if (change.ref.equals(""))
+        if (change.ref.equals("")) {
             return change.pos.withStrand('+').pos;
-        else
+        } else {
             return change.pos.withStrand('+').pos + 1;
+        }
     }
 
     /**
      * Shortcut to {@link #change.ref}, returning "-" in case of insertions.
      */
     public String getRef() {
-        if (change.ref.equals(""))
+        if (change.ref.equals("")) {
             return "-";
-        else
+        } else {
             return change.withStrand('+').ref;
+        }
     }
 
     /**
      * Shortcut to {@link #change.alt}, returning "-" in case of deletions.
      */
     public String getAlt() {
-        if (change.alt.equals(""))
+        if (change.alt.equals("")) {
             return "-";
-        else
+        } else {
             return change.withStrand('+').alt;
+        }
     }
 
     /**
-     * @return Highest-impact {@link VariantEffect} or <code>null</code> if there is none.
+     * @return Highest-impact {@link VariantEffect} or <code>null</code> if
+     * there is none.
      */
     public VariantEffect getHighestImpactEffect() {
         return annotations.getHighestImpactEffect();
     }
 
     /**
-     * @return Highest-impact {@link Annotation} or <code>null</code> if there is none.
+     * @return Highest-impact {@link Annotation} or <code>null</code> if there
+     * is none.
      */
     public Annotation getHighestImpactAnnotation() {
         return annotations.getHighestImpactAnnotation();
@@ -142,13 +153,15 @@ public class Variant {
      */
     public boolean isOffExomeTarget() {
         Annotation anno = annotations.getHighestImpactAnnotation();
-        if (anno == null || anno.effects.isEmpty())
+        if (anno == null || anno.effects.isEmpty()) {
             return true;
+        }
         for (VariantEffect eff : anno.effects) {
-            if (eff.isSplicing())
+            if (eff.isSplicing()) {
                 return false;
-            else if (eff.isIntronic() || eff.isOffTranscript())
+            } else if (eff.isIntronic() || eff.isOffTranscript()) {
                 return true;
+            }
         }
         return false;
     }
@@ -163,20 +176,22 @@ public class Variant {
      */
     public String getRepresentativeAnnotation() {
         Annotation anno = annotations.getHighestImpactAnnotation();
-        if (anno == null)
+        if (anno == null) {
             return "?";
+        }
 
         String exonIntron = null;
-        if (anno.annoLoc != null && anno.annoLoc.rankType == AnnotationLocation.RankType.EXON)
+        if (anno.annoLoc != null && anno.annoLoc.rankType == AnnotationLocation.RankType.EXON) {
             exonIntron = StringUtils.concat("exon", anno.annoLoc.rank + 1);
-        else if (anno.annoLoc != null && anno.annoLoc.rankType == AnnotationLocation.RankType.INTRON)
+        } else if (anno.annoLoc != null && anno.annoLoc.rankType == AnnotationLocation.RankType.INTRON) {
             exonIntron = StringUtils.concat("intron", anno.annoLoc.rank + 1);
+        }
 
         final Joiner joiner = Joiner.on(":").skipNulls();
         return joiner.join(anno.getGeneSymbol(), anno.transcript.accession, exonIntron, anno.ntHGVSDescription,
                 anno.aaHGVSDescription);
     }
-    
+
     /**
      * @return list of all annotation strings
      */
@@ -184,8 +199,9 @@ public class Variant {
         ArrayList<String> result = new ArrayList<String>();
         for (Annotation anno : annotations.entries) {
             String annoS = anno.getSymbolAndAnnotation();
-            if (annoS != null)
+            if (annoS != null) {
                 result.add(annoS);
+            }
         }
         return result;
     }
@@ -194,9 +210,10 @@ public class Variant {
      * @return list of all annotation strings with type prepended
      */
     public List<String> getAnnotationListWithAnnotationClass() {
-        ArrayList<String> result = new ArrayList<String>();
-        for (Annotation anno : annotations.entries)
+        List<String> result = new ArrayList<>();
+        for (Annotation anno : annotations.entries) {
             result.add(anno.getMostPathogenicVarType() + "|" + anno.getSymbolAndAnnotation());
+        }
         return result;
     }
 
@@ -213,8 +230,9 @@ public class Variant {
      */
     public VariantEffect getVariantEffect() {
         final Annotation anno = annotations.getHighestImpactAnnotation();
-        if (anno == null)
+        if (anno == null) {
             return null;
+        }
         return anno.getMostPathogenicVarType();
     }
 
@@ -224,30 +242,34 @@ public class Variant {
 
     public String getGeneSymbol() {
         final Annotation anno = annotations.getHighestImpactAnnotation();
-        if (anno == null)
+        if (anno == null) {
             return ".";
-        else
+        } else {
             return anno.getGeneSymbol();
+        }
     }
 
     public String getGenotypeAsString() {
         StringBuilder builder = new StringBuilder();
         for (Genotype gt : vc.getGenotypes()) {
-            if (builder.length() > 0)
+            if (builder.length() > 0) {
                 builder.append(':');
+            }
             boolean firstAllele = true;
             for (Allele allele : gt.getAlleles()) {
-                if (firstAllele)
+                if (firstAllele) {
                     firstAllele = false;
-                else
+                } else {
                     builder.append('/');
+                }
 
-                if (allele.isNoCall())
+                if (allele.isNoCall()) {
                     builder.append('.');
-                else if (allele.equals(vc.getAlternateAllele(altAlleleID)))
+                } else if (allele.equals(vc.getAlternateAllele(altAlleleID))) {
                     builder.append('1');
-                else
+                } else {
                     builder.append('0');
+                }
             }
         }
         return builder.toString();
@@ -255,8 +277,9 @@ public class Variant {
 
     public int getEntrezGeneID() {
         final Annotation anno = getHighestImpactAnnotation();
-        if (anno == null || anno.transcript == null || anno.transcript.geneID == null)
+        if (anno == null || anno.transcript == null || anno.transcript.geneID == null) {
             return -1;
+        }
         // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
         // for UCSC. At this point, there is a hard dependency on using the UCSC database.
         return Integer.parseInt(anno.transcript.geneID.substring("ENTREZ".length()));
@@ -275,9 +298,4 @@ public class Variant {
         return "Variant [vc=" + vc + ", altAlleleID=" + altAlleleID + ", annotations=" + annotations + ", change="
                 + change + "]";
     }
-
-    public GenomeChange getChange() {
-        return change;
-    }
-
 }

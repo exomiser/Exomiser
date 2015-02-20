@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
@@ -16,19 +15,17 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.EnumSet;
+import java.util.Map;
 
 /**
  *
@@ -39,9 +36,9 @@ public class ResultsWriterUtils {
     private static final FilterReportFactory filterReportFactory = new FilterReportFactory();
 
     /**
-     * Determines the correct file extension for a file given what was specified in the
-     * {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
-     * 
+     * Determines the correct file extension for a file given what was specified
+     * in the {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
+     *
      * @param outFileName
      * @param outputFormat
      * @return
@@ -60,17 +57,17 @@ public class ResultsWriterUtils {
     }
 
     /**
-     * Make a {@code VariantTypeCounter} object from the list of {@code VariantEvaluation}. We use this to print out a
-     * table of variant class distribution.
-     * 
+     * Make a {@code VariantTypeCounter} object from the list of
+     * {@code VariantEvaluation}. We use this to print out a table of variant
+     * class distribution.
+     *
      * @param variantEvaluations
      * @return
      */
     public static List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
-        VariantEffectCounter variantTypeCounter = makeVariantTypeCounter(variantEvaluations);
 
         // all used Jannovar VariantEffects
-        final ImmutableSet<VariantEffect> listEffects = ImmutableSet.of(VariantEffect.FRAMESHIFT_ELONGATION,
+        final Set<VariantEffect> variantEffects = ImmutableSet.of(VariantEffect.FRAMESHIFT_ELONGATION,
                 VariantEffect.FRAMESHIFT_TRUNCATION, VariantEffect.FRAMESHIFT_VARIANT,
                 VariantEffect.INTERNAL_FEATURE_ELONGATION, VariantEffect.FEATURE_TRUNCATION, VariantEffect.MNV,
                 VariantEffect.STOP_GAINED, VariantEffect.STOP_LOST, VariantEffect.START_LOST,
@@ -84,25 +81,29 @@ public class ResultsWriterUtils {
                 VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT,
                 VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT,
                 VariantEffect.DOWNSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT);
-        final ImmutableList<ImmutableMap<VariantEffect, Integer>> freqMaps = variantTypeCounter
-                .getFrequencyMap(listEffects);
+        
+        VariantEffectCounter variantTypeCounter = makeVariantTypeCounter(variantEvaluations);
+        final List<Map<VariantEffect, Integer>> freqMaps = variantTypeCounter.getFrequencyMap(variantEffects);
 
         int numIndividuals = 0;
-        if (!variantEvaluations.isEmpty())
+        if (!variantEvaluations.isEmpty()) {
             numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
+        }
 
-        List<VariantTypeCount> result = new ArrayList<VariantTypeCount>();
-        Set<VariantEffect> effects = new HashSet<VariantEffect>();
-        for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx)
-            for (VariantEffect effect : freqMaps.get(sampleIdx).keySet())
-                effects.add(effect);
-        if (variantEvaluations.isEmpty())
-            effects = listEffects;
+        List<VariantTypeCount> result = new ArrayList<>();
+        Set<VariantEffect> effects = EnumSet.noneOf(VariantEffect.class);
+        for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
+            effects.addAll(freqMaps.get(sampleIdx).keySet());
+        }
+        if (variantEvaluations.isEmpty()) {
+            effects.addAll(variantEffects);
+        }
 
         for (VariantEffect effect : effects) {
-            List<Integer> typeSpecificCounts = new ArrayList<Integer>();
-            for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx)
+            List<Integer> typeSpecificCounts = new ArrayList<>();
+            for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
                 typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
+            }
             result.add(new VariantTypeCount(effect, typeSpecificCounts));
         }
 
@@ -110,14 +111,16 @@ public class ResultsWriterUtils {
     }
 
     protected static VariantEffectCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
-        if (variantEvaluations.isEmpty())
+        if (variantEvaluations.isEmpty()) {
             return new VariantEffectCounter(0);
+        }
 
         int numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
         VariantEffectCounter effectCounter = new VariantEffectCounter(numIndividuals);
 
-        for (VariantEvaluation variantEvaluation : variantEvaluations)
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
             effectCounter.put(variantEvaluation.getVariant());
+        }
         return effectCounter;
     }
 

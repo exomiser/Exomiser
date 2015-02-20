@@ -52,9 +52,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
 
-    private VariantEvaluation() { /* I'm mockable! */
-    }
-
     public VariantEvaluation(Variant v) {
         var = v;
         passedFilterResultsMap = new LinkedHashMap<>();
@@ -76,7 +73,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     /**
      * @return the most prevalent {@link VariantEffect} such as {@link VariantEffect#MISSENSE_VARIANT},
-     *         {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code> if there is no annotated effect.
+     *         {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code>
+     * if there is no annotated effect.
      */
     public VariantEffect getVariantEffect() {
         return this.var.getHighestImpactEffect();
@@ -87,12 +85,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     public String getGeneSymbol() {
         String symbols = var.getGeneSymbol();
-        if (symbols == null)
+        if (symbols == null) {
             return ".";
+        }
         String[] tokens = symbols.split(",");
         return tokens[0];
     }
-
 
     public int getEntrezGeneID() {
         return var.getEntrezGeneID();
@@ -119,9 +117,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     public boolean isSNV() {
         // TODO(holtgrew): Assumption of "-" for empty string, currently true because of Variant implementation
-        if (this.getRef() == "-") {
+        if (this.getRef().equals("-")) {
             return false;
-        } else if (this.getAlt() == "-") {
+        } else if (this.getAlt().equals("-")) {
             return false;
         } else {
             return true;
@@ -179,7 +177,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * {@link #getRepresentativeAnnotation}.
      */
     public List<String> getAnnotationListWithoutGeneSymbols() {
-        List<String> lst = (List<String>) this.var.getAnnotationList();
+        List<String> lst = this.var.getAnnotationList();
         for (String s : lst) {
             int i = s.indexOf("(");
             if (i < 0) {
@@ -239,10 +237,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public List<String> getGenotypeList() {
-        ArrayList<String> gl = new ArrayList<String>();
-        for (Genotype gt : var.vc.getGenotypes())
-            gl.add(gt.toBriefString());
-        return gl;
+        List<String> genotypes = new ArrayList<>();
+        for (Genotype gt : var.vc.getGenotypes()) {
+            genotypes.add(gt.toBriefString());
+        }
+        return genotypes;
     }
 
     /**
@@ -443,7 +442,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return Float.floatToIntBits(this.variantScore) == Float.floatToIntBits(other.variantScore);
     }
 
-    
     public FrequencyData getFrequencyData() {
         return frequencyData;
     }
