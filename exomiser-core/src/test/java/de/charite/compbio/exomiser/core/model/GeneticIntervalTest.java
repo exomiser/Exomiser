@@ -33,13 +33,22 @@ public class GeneticIntervalTest {
     }
 
     @Test
-    public void testParseStringNumericChromosome() {
+    public void testParseStringNumericChromosomeSingleDigit() {
         String interval = "chr3:123-456";
         GeneticInterval expResult = new GeneticInterval((byte) 3, 123, 456);
         GeneticInterval result = GeneticInterval.parseString(interval);
         
         assertThat(result, equalTo(expResult));
         
+    }
+    
+    @Test
+    public void testParseStringNumericChromosomeDoubleDigit() {
+        String interval = "chr14:123-456";
+        GeneticInterval expResult = new GeneticInterval((byte) 14, 123, 456);
+        GeneticInterval result = GeneticInterval.parseString(interval);
+        
+        assertThat(result, equalTo(expResult));
     }
     
     @Test
