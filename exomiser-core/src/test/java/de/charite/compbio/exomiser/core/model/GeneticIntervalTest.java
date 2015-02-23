@@ -40,9 +40,9 @@ public class GeneticIntervalTest {
     }
 
     @Test
-    public void testParseStringNumericChromosome() {
+    public void testParseStringNumericChromosomeSingleDigit() {
         String interval = "chr3:123-456";
-        GeneticInterval expResult = new GeneticInterval((byte) 3, 123, 456);
+        GeneticInterval expResult = new GeneticInterval(3, 123, 456);
         GeneticInterval result = GeneticInterval.parseString(refDict, interval);
         
         assertThat(result, equalTo(expResult));
@@ -50,9 +50,18 @@ public class GeneticIntervalTest {
     }
     
     @Test
+    public void testParseStringNumericChromosomeDoubleDigit() {
+        String interval = "chr14:123-456";
+        GeneticInterval expResult = new GeneticInterval(14, 123, 456);
+        GeneticInterval result = GeneticInterval.parseString(refDict, interval);
+        
+        assertThat(result, equalTo(expResult));
+    }
+    
+    @Test
     public void testParseStringChromosomeX() {
         String interval = "chrX:123-456";
-        GeneticInterval expResult = new GeneticInterval((byte) 23, 123, 456);
+        GeneticInterval expResult = new GeneticInterval(23, 123, 456);
         GeneticInterval result = GeneticInterval.parseString(refDict, interval);
         
         assertThat(result, equalTo(expResult));
@@ -62,7 +71,7 @@ public class GeneticIntervalTest {
     @Test
     public void testParseStringChromosomeY() {
         String interval = "chrY:123-456";
-        GeneticInterval expResult = new GeneticInterval((byte) 24, 123, 456);
+        GeneticInterval expResult = new GeneticInterval(24, 123, 456);
         GeneticInterval result = GeneticInterval.parseString(refDict, interval);
         
         assertThat(result, equalTo(expResult));
@@ -72,7 +81,7 @@ public class GeneticIntervalTest {
     @Test
     public void testParseStringChromosomeM() {
         String interval = "chrM:123-456";
-        GeneticInterval expResult = new GeneticInterval((byte) 25, 123, 456);
+        GeneticInterval expResult = new GeneticInterval(25, 123, 456);
         GeneticInterval result = GeneticInterval.parseString(refDict, interval);
         
         assertThat(result, equalTo(expResult));
