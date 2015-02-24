@@ -24,9 +24,10 @@ import de.charite.compbio.jannovar.reference.TranscriptModelBuilder;
 
 /**
  * Helper class for constructing {@link Variant} objects for tests.
- * 
- * The construction of {@link Variant} objects is quite complex but for tests, we would ideally have them for testing
- * our data sets. This class helps us with the construction.
+ *
+ * The construction of {@link Variant} objects is quite complex but for tests,
+ * we would ideally have them for testing our data sets. This class helps us
+ * with the construction.
  */
 public class TestVariantFactory {
 
@@ -47,63 +48,55 @@ public class TestVariantFactory {
 
     /**
      * Construct a new {@link Variant} object with the given values.
-     * 
-     * @param chrom
-     *            numeric chromosome id
-     * @param pos
-     *            zero-based position of the variant
-     * @param ref
-     *            reference string
-     * @param alt
-     *            alt string
-     * @param gt
-     *            the Genotype to use
-     * @param read
-     *            depth the read depth to use
-     * @param altAlleleID
-     *            alternative allele ID
-     * @param qual
-     *            phred-scale quality
+     *
+     * @param chrom numeric chromosome id
+     * @param pos zero-based position of the variant
+     * @param ref reference string
+     * @param alt alt string
+     * @param gt the Genotype to use
+     * @param readDepth depth the read depth to use
+     * @param altAlleleID alternative allele ID
+     * @param qual phred-scale quality
      * @return {@link Variant} with the setting
      */
-    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID,
-            double qual) {
+    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
         // build annotation list (for the one transcript we have below only)
         final GenomePosition gPos = new GenomePosition(refDict, '+', chrom, pos, PositionType.ZERO_BASED);
         final GenomeChange change = new GenomeChange(gPos, ref, alt);
         final AnnotationBuilderDispatcher dispatcher;
         final TranscriptModel tmFGFR2 = buildTMForFGFR2();
         final TranscriptModel tmSHH = buildTMForSHH();
-        if (tmFGFR2.txRegion.contains(gPos))
+        if (tmFGFR2.txRegion.contains(gPos)) {
             dispatcher = new AnnotationBuilderDispatcher(tmFGFR2, change, new AnnotationBuilderOptions());
-        else if (tmSHH.txRegion.contains(gPos))
+        } else if (tmSHH.txRegion.contains(gPos)) {
             dispatcher = new AnnotationBuilderDispatcher(tmSHH, change, new AnnotationBuilderOptions());
-        else
+        } else {
             dispatcher = new AnnotationBuilderDispatcher(null, change, new AnnotationBuilderOptions());
+        }
         final AnnotationList annotations;
         try {
             Annotation anno = dispatcher.build();
-            if (anno != null)
+            if (anno != null) {
                 annotations = new AnnotationList(Arrays.asList(anno));
-            else
-                annotations = new AnnotationList(Arrays.<Annotation> asList());
+            } else {
+                annotations = new AnnotationList(Arrays.<Annotation>asList());
+            }
         } catch (InvalidGenomeChange e) {
             throw new RuntimeException("Problem building annotation", e);
         }
 
-        return new Variant(constructVariantContext(chrom, pos, ref, alt, gt, rd, qual), altAlleleID, annotations);
+        return new Variant(constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual), altAlleleID, annotations);
     }
 
     public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {
-        return constructVariant(chrom, pos, ref, alt, gt, rd, 0, 20.0);
+        return constructVariant(chrom, pos, ref, alt, gt, rd, altAlleleID, 20.0);
     }
 
-    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int rd) {
-        return constructVariantContext(chrom, pos, ref, alt, gt, rd, 20.0);
+    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth) {
+        return constructVariantContext(chrom, pos, ref, alt, gt, readDepth, 20.0);
     }
 
-    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int rd,
-            double qual) {
+    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, double qual) {
         Allele refAllele = Allele.create(ref, true);
         Allele altAllele = Allele.create(alt);
         VariantContextBuilder vcBuilder = new VariantContextBuilder();
@@ -111,14 +104,14 @@ public class TestVariantFactory {
         // build Genotype
         GenotypeBuilder gtBuilder = new GenotypeBuilder("sample");
         setGenotype(gtBuilder, refAllele, altAllele, gt);
-        gtBuilder.attribute("RD", rd);
+        gtBuilder.attribute("RD", readDepth);
         // System.err.println(gtBuilder.make().toString());
 
         // build VariantContext
         vcBuilder.loc("chr" + chrom, pos + 1, pos + ref.length());
         vcBuilder.alleles(Arrays.asList(refAllele, altAllele));
         vcBuilder.genotypes(gtBuilder.make());
-        vcBuilder.attribute("RD", rd);
+        vcBuilder.attribute("RD", readDepth);
         vcBuilder.log10PError(-0.1 * qual);
         // System.err.println(vcBuilder.make().toString());
 
@@ -165,7 +158,7 @@ public class TestVariantFactory {
 
     /**
      * GNRHR2 overlaps with RBM8A.
-     * 
+     *
      * @return {@link TranscriptModel} for gene GNRHR2.
      */
     public TranscriptModel buildTMForGNRHR2A() {
@@ -178,7 +171,7 @@ public class TestVariantFactory {
 
     /**
      * RBM8A overlaps with GNRHR2.
-     * 
+     *
      * @return {@link TranscriptModel} for gene RBM8A.
      */
     public TranscriptModel buildTMForRBM8A() {
