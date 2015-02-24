@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -51,6 +52,7 @@ public class FilterReportFactoryTest {
 
     @Before
     public void setUp() {
+        initMocks();
         instance = new FilterReportFactory();
         settings = new SettingsBuilder()
                 .vcfFilePath(Paths.get("testVcf.vcf"))
@@ -61,6 +63,10 @@ public class FilterReportFactoryTest {
         sampleData = new SampleData();
         sampleData.setVariantEvaluations(variantEvaluations);
         sampleData.setGenes(genes);
+    }
+
+    private void initMocks() {
+        Mockito.when(mockVariant.getGeneSymbol()).thenReturn("GENE1");
     }
 
     private VariantEvaluation makeFailedFilterVariantEvaluation(FilterType filterType) {
@@ -77,13 +83,15 @@ public class FilterReportFactoryTest {
     
     private Gene makeFailedFilterGene(FilterType filterType) {
         VariantEvaluation failedFilterVariantEvaluation = makeFailedFilterVariantEvaluation(filterType);
-        Gene failedFilterGene = new Gene(failedFilterVariantEvaluation);
+        Gene failedFilterGene = new Gene("GENE1", 12345);
+        failedFilterGene.addVariant(failedFilterVariantEvaluation);
         return failedFilterGene;
     }
 
     private Gene makePassedFilterGene(FilterType filterType) {
         VariantEvaluation passedFilterVariantEvaluation = makePassedFilterVariantEvaluation(filterType);
-        Gene passedFilterGene = new Gene(passedFilterVariantEvaluation);
+        Gene passedFilterGene = new Gene("GENE2", 67890);
+        passedFilterGene.addVariant(passedFilterVariantEvaluation);
         return passedFilterGene;
     }
 

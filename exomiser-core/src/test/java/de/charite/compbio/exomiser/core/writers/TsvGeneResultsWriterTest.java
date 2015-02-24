@@ -8,17 +8,12 @@ package de.charite.compbio.exomiser.core.writers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +31,6 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
-import static org.hamcrest.CoreMatchers.is;
 
 /**
  *
@@ -69,8 +63,9 @@ public class TsvGeneResultsWriterTest {
         variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
         variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
 
-        gene = new Gene(variantEval);
-
+        gene = new Gene(variantEval.getGeneSymbol(), variantEval.getEntrezGeneID());
+        gene.addVariant(variantEval);
+        
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
     }

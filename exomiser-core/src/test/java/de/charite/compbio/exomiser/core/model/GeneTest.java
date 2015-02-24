@@ -82,11 +82,13 @@ public class GeneTest {
         variantEvaluation1Gene1 = new VariantEvaluation(variant1);
         variantEvaluation2Gene1 = new VariantEvaluation(variant2);
         variantEvaluationGene2 = new VariantEvaluation(variant3);
+        
+        instance = new Gene(variantEvaluation1Gene1.getGeneSymbol(), variantEvaluation1Gene1.getEntrezGeneID());
     }
 
     @Test
     public void testConstructorSetsInstanceVariables() {
-        instance = new Gene(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1Gene1);
 
         List<VariantEvaluation> expectedVariantEvaluations = new ArrayList<>();
         expectedVariantEvaluations.add(variantEvaluation1Gene1);
@@ -105,8 +107,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithDifferentGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
-        Gene gene1 = new Gene(variantEvaluation1Gene1);
-        Gene gene2 = new Gene(variantEvaluationGene2);
+        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        Gene gene2 = new Gene(GENE2_SYMBOL, GENE2_ENTREZ_GENE_ID);
 
         assertTrue(gene1.compareTo(gene2) < 0);
         assertTrue(gene2.compareTo(gene1) > 0);
@@ -114,8 +116,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithDifferentGeneSymbolsAreComparedByCombinedScore() {
-        Gene gene1 = new Gene(variantEvaluation1Gene1);
-        Gene gene2 = new Gene(variantEvaluationGene2);
+        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        Gene gene2 = new Gene(GENE2_SYMBOL, GENE2_ENTREZ_GENE_ID);
 
         gene1.setCombinedScore(0.0f);
         gene2.setCombinedScore(1.0f);
@@ -126,8 +128,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithSameGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
-        Gene gene1 = new Gene(variantEvaluation1Gene1);
-        Gene gene2 = new Gene(variantEvaluation1Gene1);
+        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        Gene gene2 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
 
         assertTrue(gene1.compareTo(gene2) == 0);
         assertTrue(gene2.compareTo(gene1) == 0);
@@ -135,8 +137,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithSameGeneSymbolsAreComparedByCombinedScore() {
-        Gene gene1 = new Gene(variantEvaluation1Gene1);
-        Gene gene2 = new Gene(variantEvaluation1Gene1);
+        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        Gene gene2 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
 
         gene1.setCombinedScore(0.0f);
         gene2.setCombinedScore(1.0f);
@@ -147,21 +149,20 @@ public class GeneTest {
 
     @Test
     public void testPassesFiltersWhenNoFiltersHaveBeenApplied() {
-        instance = new Gene(variantEvaluation1Gene1);
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
     public void testPassesFiltersWhenVariantPassesFilter() {
         variantEvaluation1Gene1.addFilterResult(PASS_TARGET_FILTER_RESULT);
-        instance = new Gene(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1Gene1);
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
     public void testPassesFiltersWhenAtLeastOneVariantPassesFilter() {
         variantEvaluation1Gene1.addFilterResult(PASS_TARGET_FILTER_RESULT);
-        instance = new Gene(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1Gene1);
 
         variantEvaluation2Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
         instance.addVariant(variantEvaluationGene2);
@@ -172,21 +173,21 @@ public class GeneTest {
     @Test
     public void testPassesFiltersWhenVariantFailsFilter() {
         variantEvaluation1Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
-        instance = new Gene(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1Gene1);
         assertThat(instance.passedFilters(), is(false));
     }
 
     @Test
     public void testGetPassedVariantEvaluationsIsEmptyWhenVariantFailsFilter() {
         variantEvaluation1Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
-        instance = new Gene(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1Gene1);
         assertThat(instance.getPassedVariantEvaluations().isEmpty(), is(true));
     }
 
     @Test
     public void testGetPassedVariantEvaluations() {
         variantEvaluation1Gene1.addFilterResult(PASS_TARGET_FILTER_RESULT);
-        instance = new Gene(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1Gene1);
 
         variantEvaluation2Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
         instance.addVariant(variantEvaluation2Gene1);
@@ -199,14 +200,13 @@ public class GeneTest {
 
     @Test
     public void testGetNthVariant() {
-        instance = new Gene(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1Gene1);
         instance.addVariant(variantEvaluation2Gene1);
         assertThat(instance.getNthVariant(1), equalTo(variantEvaluation2Gene1));
     }
 
     @Test
     public void testGetNthVariantWhenAskingForElementPastEndOfArray() {
-        instance = new Gene(variantEvaluation1Gene1);
         assertThat(instance.getNthVariant(1000), equalTo(null));
     }
 
@@ -215,7 +215,6 @@ public class GeneTest {
         PriorityResult omimPriorityResult = new OMIMPriorityResult();
         PriorityType priorityType = PriorityType.OMIM_PRIORITY;
 
-        instance = new Gene(variantEvaluation1Gene1);
         instance.addPriorityResult(omimPriorityResult);
         instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
         // TODO: this is odd shouldn't it actually return the Object, not the value?
@@ -224,7 +223,6 @@ public class GeneTest {
 
     @Test
     public void canInheritanceModes() {
-        instance = new Gene(variantEvaluation1Gene1);
         assertThat(instance.getInheritanceModes(), notNullValue());
         assertThat(instance.getInheritanceModes().isEmpty(), is(true));
     }
@@ -233,7 +231,6 @@ public class GeneTest {
     public void canSetAndGetInheritanceModes() {
         Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_DOMINANT);
 
-        instance = new Gene(variantEvaluation1Gene1);
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.getInheritanceModes(), equalTo(inheritanceModes));
@@ -244,7 +241,6 @@ public class GeneTest {
         Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE,
                 ModeOfInheritance.X_RECESSIVE);
 
-        instance = new Gene(variantEvaluation1Gene1);
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -259,7 +255,6 @@ public class GeneTest {
     public void isConsistentWithDominantInheritanceModes() {
         Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
-        instance = new Gene(variantEvaluation1Gene1);
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -274,7 +269,6 @@ public class GeneTest {
     public void isConsistentWithRecessiveInheritanceModes() {
         Set inheritanceModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        instance = new Gene(variantEvaluation1Gene1);
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -289,7 +283,6 @@ public class GeneTest {
     public void isConsistentWithXRecessiveInheritanceModes() {
         Set inheritanceModes = EnumSet.of(ModeOfInheritance.X_RECESSIVE);
 
-        instance = new Gene(variantEvaluation1Gene1);
         instance.setInheritanceModes(inheritanceModes);
 
         assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));

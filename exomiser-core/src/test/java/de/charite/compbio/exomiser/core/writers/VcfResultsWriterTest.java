@@ -132,8 +132,11 @@ public class VcfResultsWriterTest {
         missenseVariantEvaluation = new VariantEvaluation(missenseVariant);
         indelVariantEvaluation = new VariantEvaluation(indelVariant);
 
-        gene1 = new Gene(missenseVariantEvaluation);
-        gene2 = new Gene(indelVariantEvaluation);
+        gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneID());
+        gene1.addVariant(missenseVariantEvaluation);
+        
+        gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneID());
+        gene2.addVariant(indelVariantEvaluation);
 
         gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
         gene2.addPriorityResult(new PhivePriorityResult("MGI:54321", "Gene2", 0.98f));

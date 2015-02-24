@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.model;
 
 import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -40,9 +41,9 @@ import java.util.Set;
  * disease genes. Additionally, filtering for autosomal recessive or dominant
  * patterns in the data is done with this class. This kind of prioritization is
  * done by classes that implement
- * {@link de.charite.compbio.exomiser.core.prioritisers.Priority Priority}. Recently, the
- * ability to downweight genes with too many variants (now hardcoded to 5) was
- * added).
+ * {@link de.charite.compbio.exomiser.core.prioritisers.Priority Priority}.
+ * Recently, the ability to downweight genes with too many variants (now
+ * hardcoded to 5) was added).
  *
  * @author Peter Robinson
  * @version 0.21 (16 January, 2013)
@@ -83,18 +84,15 @@ public class Gene implements Comparable<Gene>, Filterable {
     private final int entrezGeneId;
 
     /**
-     * Construct the gene by adding the first variant that affects the gene. If
-     * the current gene has additional variants, they will be added using the
-     * function addVariant.
+     * Construct the gene by providing a gene symbol and Entrez id.
      *
-     * @param variantEvaluation A variant located in this gene.
+     * @param geneSymbol
+     * @param geneId
      */
-    public Gene(VariantEvaluation variantEvaluation) {
+    public Gene(String geneSymbol, int geneId) {
+        this.geneSymbol = geneSymbol;
+        this.entrezGeneId = geneId;
         variantEvaluations = new ArrayList();
-        addVariant(variantEvaluation);
-//        variantEvaluations.add(variantEvaluation);
-        geneSymbol = variantEvaluation.getGeneSymbol();
-        entrezGeneId = variantEvaluation.getEntrezGeneID();
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         failedFilterTypes = EnumSet.noneOf(FilterType.class);
         priorityResultsMap = new LinkedHashMap();
@@ -273,7 +271,7 @@ public class Gene implements Comparable<Gene>, Filterable {
     public void addPriorityResult(PriorityResult priorityResult) {
         priorityResultsMap.put(priorityResult.getPriorityType(), priorityResult);
     }
-    
+
     /**
      * @param type {@code PriorityType} representing the priority type
      * @return The result applied by that {@code Priority}.
@@ -289,7 +287,7 @@ public class Gene implements Comparable<Gene>, Filterable {
     public Map<PriorityType, PriorityResult> getPriorityResults() {
         return priorityResultsMap;
     }
-    
+
     /**
      * Returns the priority score of this gene based on the relevance of the
      * gene as determined by a prioritiser.
@@ -372,11 +370,15 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
-     * Returns true if at least one Variant associated with the Gene has passed
-     * all filters.
+     * Returns true if the gene has passed all filters and at least one Variant
+     * associated with the Gene has also passed all filters. Will also return
+     * true if the gene has no variants associated with it.
      */
     @Override
     public boolean passedFilters() {
+        if (variantEvaluations.isEmpty() && failedFilterTypes.isEmpty()) {
+            return true;
+        }
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilters()) {
                 return true;
@@ -397,6 +399,12 @@ public class Gene implements Comparable<Gene>, Filterable {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean addFilterResult(FilterResult filterResult) {
+        //currently non-functional
+        return true;
     }
 
     @Override
