@@ -56,7 +56,7 @@ public enum PriorityType {
      */
     public static PriorityType valueOfCommandLine(String value) {
         for (PriorityType priorityType : values()) {
-            if (priorityType.commandLineValue.equals(value.toLowerCase())) {
+            if (priorityType.commandLineValue.equalsIgnoreCase(value)) {
                 return priorityType;
             }
         }

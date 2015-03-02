@@ -19,7 +19,6 @@ import de.charite.compbio.jannovar.pedigree.Sex;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -78,8 +77,9 @@ public class PedigreeFactory {
 
     private Pedigree createSingleSamplePedigree(ArrayList<String> sampleNames) {
         String sampleName = DEFAULT_SAMPLE_NAME;
-        if (!sampleNames.isEmpty())
+        if (!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
+        }
 
         final Person person = new Person(sampleName, null, null, Sex.UNKNOWN, Disease.AFFECTED);
         return new Pedigree("family", ImmutableList.of(person));
@@ -94,13 +94,15 @@ public class PedigreeFactory {
             contents = new PedFileReader(pedigreeFilePath.toFile()).read();
             // filter contents to the individuals from sampleNames
             ImmutableList.Builder<PedPerson> samplePersonsBuilder = new ImmutableList.Builder<PedPerson>();
-            for (PedPerson person : contents.individuals)
-                if (sampleNames.contains(person.name))
+            for (PedPerson person : contents.individuals) {
+                if (sampleNames.contains(person.name)) {
                     samplePersonsBuilder.add(person);
-            PedFileContents sampleContents = new PedFileContents(ImmutableList.<String> of(),
+                }
+            }
+            PedFileContents sampleContents = new PedFileContents(ImmutableList.<String>of(),
                     samplePersonsBuilder.build());
             final String pedName = sampleContents.individuals.get(0).pedigree;
-            logger.info("Created a pedigree for {} having pedigree name ", new Object[] { sampleNames, pedName });
+            logger.info("Created a pedigree for {} having pedigree name ", new Object[]{sampleNames, pedName});
             return new Pedigree(pedName, new PedigreeExtractor(pedName, sampleContents).run());
         } catch (PedParseException e) {
             throw new PedigreeCreationException("Problem parsing the PED file", e);

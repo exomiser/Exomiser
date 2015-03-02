@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.util;
 
 import de.charite.compbio.exomiser.core.Variant;
@@ -45,20 +44,20 @@ public class GeneScorerTest {
 
     @Before
     public void setUp() {
-        failedFrequency = new VariantEvaluation(null, 0, null);
+        failedFrequency = new VariantEvaluation(null, 0, null, null);
         failedFrequency.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
 
-        failedPathogenicity = new VariantEvaluation(null, 0, null);
+        failedPathogenicity = new VariantEvaluation(null, 0,  null, null);
         failedPathogenicity.addFilterResult(new PathogenicityFilterResult(0f, FilterResultStatus.FAIL));
 
-        failedFrequencyPassedPathogenicity = new VariantEvaluation(null, 0, null);
+        failedFrequencyPassedPathogenicity = new VariantEvaluation(null, 0,  null, null);
         failedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
         failedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(1f, FilterResultStatus.PASS));
         // these are set up so that failedFrequencyPassedPathogenicity has a higher
         // pathogenicity score (1.0)than passedFrequencyPassedPathogenicity (0.75) to ensure that the scoring only
         // includes variants
         // which have actually passed all the filters
-        passedFrequencyPassedPathogenicity = new VariantEvaluation(null, 0, null);
+        passedFrequencyPassedPathogenicity = new VariantEvaluation(null, 0,  null, null);
         passedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0.75f, FilterResultStatus.PASS));
         passedFrequencyPassedPathogenicity
                 .addFilterResult(new PathogenicityFilterResult(0.75f, FilterResultStatus.PASS));
@@ -68,9 +67,8 @@ public class GeneScorerTest {
     public void testScoreGenesWithRawScoreMode() {
         List<Gene> geneList = new ArrayList<>();
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        Pedigree pedigree = null;
         ScoringMode scoringMode = ScoringMode.RAW_SCORE;
-        GeneScorer.scoreGenes(geneList, modeOfInheritance, pedigree, scoringMode);
+        GeneScorer.scoreGenes(geneList, modeOfInheritance, scoringMode);
 
     }
 
@@ -78,9 +76,8 @@ public class GeneScorerTest {
     public void testScoreGenesWithRankScoreMode() {
         List<Gene> geneList = new ArrayList<>();
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        Pedigree pedigree = null;
         ScoringMode scoringMode = ScoringMode.RANK_BASED;
-        GeneScorer.scoreGenes(geneList, modeOfInheritance, pedigree, scoringMode);
+        GeneScorer.scoreGenes(geneList, modeOfInheritance, scoringMode);
 
     }
 
@@ -126,8 +123,7 @@ public class GeneScorerTest {
 
         List<VariantEvaluation> emptyVariantEvaluations = new ArrayList<>();
 
-        float calculatedScore = GeneScorer.calculateFilterScore(emptyVariantEvaluations,
-                ModeOfInheritance.UNINITIALIZED, null);
+        float calculatedScore = GeneScorer.calculateFilterScore(emptyVariantEvaluations, ModeOfInheritance.UNINITIALIZED);
 
         assertThat(calculatedScore, equalTo(0f));
     }
@@ -141,14 +137,12 @@ public class GeneScorerTest {
 
         float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
 
-        float calculatedScore = GeneScorer.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED,
-                null);
+        float calculatedScore = GeneScorer.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED);
 
         assertThat(calculatedScore, equalTo(bestScore));
     }
 
     // FIXME(holtgrew): the following were already commented out
-
     // @Test
     // public void testCalculatePriorityScore() {
     // Collection<PriorityScore> priorityScores = null;
@@ -184,5 +178,4 @@ public class GeneScorerTest {
     // // TODO review the generated test code and remove the default call to fail.
     // fail("The test case is a prototype.");
     // }
-
 }

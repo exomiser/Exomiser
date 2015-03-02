@@ -55,7 +55,7 @@ public class VariantEvaluationDataServiceTest {
     @Before
     public void setUp() {
         variant = null; // new Variant((byte) 1, 1, "C", "A", null, 5f, null);
-        varEval = new VariantEvaluation(null, 0, null);
+        varEval = new VariantEvaluation(null, 0, null, null);
         
         MockitoAnnotations.initMocks(this);
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);

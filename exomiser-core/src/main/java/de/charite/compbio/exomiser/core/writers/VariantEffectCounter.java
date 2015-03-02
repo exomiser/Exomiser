@@ -40,10 +40,12 @@ public class VariantEffectCounter {
             return;
         }
         VariantContext variantContext = variant.getVariantContext();
-        for (int sampleIdx = 0; sampleIdx < variantContext.getSampleNames().size(); ++sampleIdx) {
+        int numSamples = variantContext.getSampleNames().size();
+        for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
             final Genotype gt = variantContext.getGenotype(sampleIdx);
             if (gt.getAlleles().size() != 2) {
-                continue; // counted as no-call
+                // counted as no-call
+                continue;
             }
             boolean isAltAllele = false;
             for (int i = 0; i < 2; ++i) {
@@ -52,7 +54,8 @@ public class VariantEffectCounter {
                 }
             }
             if (!isAltAllele) {
-                continue; // does not have correct alternative allele
+                // does not have correct alternative allele
+                continue;
             }
             if (!counters.get(sampleIdx).containsKey(effect)) {
                 counters.get(sampleIdx).put(effect, 1);

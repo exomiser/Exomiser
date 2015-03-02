@@ -74,16 +74,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
 
-    public VariantEvaluation(VariantContext variantContext, int altAlleleID, AnnotationList annotationList) {
+    public VariantEvaluation(VariantContext variantContext, int altAlleleID, GenomeChange genomeChange, AnnotationList annotationList) {
         this.variantContext = variantContext;
         this.altAlleleID = altAlleleID;
         this.annotationList = annotationList;
-        if (annotationList == null || annotationList.isEmpty()) {
-            //TODO: change should never be null - it should be constructed from the VariantContext 
-            this.genomeChange = null;
-        } else {
-            this.genomeChange = annotationList.get(0).change;
-        }
+        this.genomeChange = genomeChange;
    
         passedFilterResultsMap = new LinkedHashMap<>();
         failedFilterTypes = EnumSet.noneOf(FilterType.class);
@@ -99,12 +94,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.variantContext = v.getVariantContext();
         this.altAlleleID = v.getAltAlleleID();
         this.annotationList = v.getAnnotationList();
-        if (annotationList == null || annotationList.isEmpty()) {
-            //TODO: change should never be null - it should be constructed from the VariantContext 
-            this.genomeChange = null;
-        } else {
-            this.genomeChange = annotationList.get(0).change;
-        }
+        this.genomeChange = v.getGenomeChange();
         
         passedFilterResultsMap = new LinkedHashMap<>();
         failedFilterTypes = EnumSet.noneOf(FilterType.class);

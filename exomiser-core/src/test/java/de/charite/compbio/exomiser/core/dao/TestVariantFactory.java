@@ -85,8 +85,10 @@ public class TestVariantFactory {
         } catch (InvalidGenomeChange e) {
             throw new RuntimeException("Problem building annotation", e);
         }
-
-        return new Variant(constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual), altAlleleID, annotations);
+        
+        GenomeChange genomeChange = annotations.get(0).change;
+        
+        return new Variant(constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual), altAlleleID, genomeChange, annotations);
     }
 
     public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {

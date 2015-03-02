@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
 import java.util.Collection;
@@ -12,20 +11,21 @@ import de.charite.compbio.jannovar.annotation.PutativeImpact;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 /**
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 public abstract class VariantTypePathogenicityScores {
 
     /**
-     * This is the pathogenicity value we will give to missense (nonsynonymous) variants for which we cannot find values
-     * for mutationTaster, polyphen2, or SIFT.
+     * This is the pathogenicity value we will give to missense (nonsynonymous)
+     * variants for which we cannot find values for mutationTaster, polyphen2,
+     * or SIFT.
      */
     public static final float DEFAULT_MISSENSE_SCORE = 0.6f;
     /**
-     * Pathogenicity score for a mutation class such as INTERGENIC where we are entirely sure it is nonpathogenic (for
-     * the purposes of this software).
+     * Pathogenicity score for a mutation class such as INTERGENIC where we are
+     * entirely sure it is nonpathogenic (for the purposes of this software).
      */
     public static final float NON_PATHOGENIC_SCORE = 0.00f;
     /**
@@ -53,19 +53,24 @@ public abstract class VariantTypePathogenicityScores {
      */
     public static final float STOPLOSS_SCORE = 0.70f;
     /**
-     * Assumed pathogenicity score for a variant that causes the start codon to be lost.
+     * Assumed pathogenicity score for a variant that causes the start codon to
+     * be lost.
      */
     public static final float STARTLOSS_SCORE = 0.95f;
 
     public static final float getPathogenicityScoreOf(Collection<VariantEffect> effects) {
-        if (effects.isEmpty())
-            return NON_PATHOGENIC_SCORE; // no effect annotated
-        VariantEffect variantEffect = effects.iterator().next(); // highest priority effect
+        if (effects.isEmpty()) {
+            // no effect annotated
+            return NON_PATHOGENIC_SCORE; 
+        }
+        // highest priority effect
+        VariantEffect variantEffect = effects.iterator().next(); 
 
         // guard against the case that the highest-impact effect is neither high nor moderate
-        if (variantEffect.getImpact().ordinal() > PutativeImpact.MODERATE.ordinal())
-            return NON_PATHOGENIC_SCORE; // neither HIGH nor MODERATE
-
+        if (variantEffect.getImpact().ordinal() > PutativeImpact.MODERATE.ordinal()) {
+             // neither HIGH nor MODERATE
+            return NON_PATHOGENIC_SCORE;
+        }
         switch (variantEffect) {
             case MISSENSE_VARIANT:
                 return DEFAULT_MISSENSE_SCORE;

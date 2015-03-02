@@ -59,11 +59,11 @@ public class VariantAnnotator {
             AnnotationList annotationList = lst.get(i);
             if (!annotationList.isEmpty()) {
                 GenomeChange change = annotationList.get(0).change;
-            //Currently a change can be null for variants with unknown reference. 
+                //Currently a change can be null for variants with unknown reference. 
                 //This will cause BAD things like NPEs to happen, so filter these things out here before they get into the system.
                 //this should be fixed with issue #55
                 if (change != null) {
-                    result.add(new Variant(vc, i, annotationList));
+                    result.add(new Variant(vc, i, change, annotationList));
                 }
             }
         }

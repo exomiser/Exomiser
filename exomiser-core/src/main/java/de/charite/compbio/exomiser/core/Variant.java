@@ -45,16 +45,11 @@ public class Variant {
      */
     private final GenomeChange genomeChange;
 
-    public Variant(VariantContext variantContext, int altAlleleID, AnnotationList annotationList) {
+    public Variant(VariantContext variantContext, int altAlleleID, GenomeChange genomeChange, AnnotationList annotationList) {
         this.variantContext = variantContext;
         this.altAlleleID = altAlleleID;
         this.annotationList = annotationList;
-        if (annotationList.isEmpty()) {
-            //TODO: change should never be null - it should be constructed from the VariantContext 
-            this.genomeChange = null;
-        } else {
-            this.genomeChange = annotationList.get(0).change;
-        }
+        this.genomeChange = genomeChange;
     }
 
     public VariantContext getVariantContext() {
@@ -64,7 +59,11 @@ public class Variant {
     public int getAltAlleleID() {
         return altAlleleID;
     }
- 
+
+    public GenomeChange getGenomeChange() {
+        return genomeChange;
+    }
+    
     public AnnotationList getAnnotationList() {
         return annotationList;
     }
@@ -145,7 +144,7 @@ public class Variant {
      */
     public VariantEffect getVariantEffect() {
         return annotationList.getHighestImpactEffect();
-        
+
     }
 
     /**
@@ -248,9 +247,11 @@ public class Variant {
         }
 
         // normalize 1/0 to 0/1 and join genotype strings with colon
-        for (int i = 0; i < gtStrings.size(); ++i)
-            if (gtStrings.get(i).equals("1/0"))
+        for (int i = 0; i < gtStrings.size(); ++i) {
+            if (gtStrings.get(i).equals("1/0")) {
                 gtStrings.set(i, "0/1");
+            }
+        }
         return Joiner.on(":").join(gtStrings);
     }
 
@@ -262,11 +263,6 @@ public class Variant {
         // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
         // for UCSC. At this point, there is a hard dependency on using the UCSC database.
         return Integer.parseInt(anno.transcript.geneID.substring("ENTREZ".length()));
-    }
-
-    @Deprecated
-    public GenomeChange getGenomeChange() {
-        return genomeChange;
     }
 
     public Genotype getGenotype() {
