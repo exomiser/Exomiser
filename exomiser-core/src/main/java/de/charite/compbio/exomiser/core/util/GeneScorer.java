@@ -244,12 +244,12 @@ public class GeneScorer {
      * @return
      */
     protected static float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, Pedigree pedigree) {
-
+        //TODO: is Pedigree really still needed here?
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
             filterScores.add(ve.getVariantScore());
-            if (variantIsHomozygous(ve, pedigree)) {
+            if (variantIsHomozygous(ve)) {
                 //Add the value a second time
                 filterScores.add(ve.getVariantScore());
             }
@@ -266,8 +266,8 @@ public class GeneScorer {
         return calculateAverageOfFirstTwoScores(filterScores);
     }
 
-    private static boolean variantIsHomozygous(VariantEvaluation ve, Pedigree pedigree) {
-        return ve.getVariant().vc.getGenotype(0).isHom();
+    private static boolean variantIsHomozygous(VariantEvaluation ve) {
+        return ve.getVariantContext().getGenotype(0).isHom();
     }
 
     private static void sortFilterScoresInDecendingOrder(List<Float> filterScores) {

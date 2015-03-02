@@ -19,6 +19,7 @@ import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.PositionType;
+import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import de.charite.compbio.jannovar.reference.TranscriptModelBuilder;
 
@@ -61,7 +62,7 @@ public class TestVariantFactory {
      */
     public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
         // build annotation list (for the one transcript we have below only)
-        final GenomePosition gPos = new GenomePosition(refDict, '+', chrom, pos, PositionType.ZERO_BASED);
+        final GenomePosition gPos = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ZERO_BASED);
         final GenomeChange change = new GenomeChange(gPos, ref, alt);
         final AnnotationBuilderDispatcher dispatcher;
         final TranscriptModel tmFGFR2 = buildTMForFGFR2();

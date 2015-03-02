@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import htsjdk.variant.variantcontext.VariantContext;
 
 /**
  *
@@ -59,63 +60,70 @@ public class InheritanceModeAnalyser {
      * @param variantEvaluations
      * @return 
      */
-    public Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations) {
+    protected Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations) {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         
-        ArrayList<Variant> variantList = new ArrayList<>();
+        List<Variant> variantList = new ArrayList<>();
         
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             variantList.add(variantEvaluation.getVariant());
         }
-        inheritanceModes.addAll(analyseInheritanceModes(variantList));
+        inheritanceModes.addAll(analyseInheritanceModesForVariants(variantList));
       
         return inheritanceModes;
     }
 
-    public Set<ModeOfInheritance> analyseInheritanceModes(ArrayList<Variant> variantList) {
+    private Set<ModeOfInheritance> analyseInheritanceModesForVariants(List<Variant> variants) {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-        
-        PedigreeDiseaseCompatibilityDecorator checker = new PedigreeDiseaseCompatibilityDecorator(pedigree);
-        
+           
+        Variant firstVariant = variants.get(0);
         // Build list of genotypes from the given variants.
-        String geneID = variantList.get(0).getGeneSymbol();
+        String geneID = firstVariant.getGeneSymbol();
         // Use interval of transcript of first region, only used for the chromosome information anyway.
-        GenomeInterval geneInterval = variantList.get(0).annotations.entries.get(0).transcript.txRegion;
-        GenotypeListBuilder builder = new GenotypeListBuilder(geneID, geneInterval, pedigree.getNames());
-        for (Variant var : variantList) {
-            final int altAlleleID = var.altAlleleID;
-            final int numSamples = var.vc.getNSamples();
+        GenomeInterval geneInterval = variants.get(0).getAnnotationList().get(0).transcript.txRegion;
+        GenotypeListBuilder genotypeListBuilder = new GenotypeListBuilder(geneID, pedigree.getNames(), firstVariant.isXChromosomal());
+        for (Variant variant : variants) {
+            final int altAlleleID = variant.getAltAlleleID();
+            VariantContext variantContext = variant.getVariantContext();
+            final int numSamples = variantContext.getNSamples();
             ImmutableList.Builder<Genotype> gtBuilder = new ImmutableList.Builder<Genotype>();
             for (int i = 0; i < numSamples; ++i) {
                 final String name = pedigree.members.get(i).name;
-                final List<Allele> alleles = var.vc.getGenotype(name).getAlleles();
+                final List<Allele> alleles = variantContext.getGenotype(name).getAlleles();
                 if (alleles.size() != 2) {
                     gtBuilder.add(Genotype.NOT_OBSERVED);
                     continue;
                 }
                 
-                final boolean isAlt0 = alleles.get(0).basesMatch(var.vc.getAlternateAllele(altAlleleID));
-                final boolean isAlt1 = alleles.get(1).basesMatch(var.vc.getAlternateAllele(altAlleleID));
-                if (!isAlt0 && !isAlt1)
+                final boolean isAlt0 = alleles.get(0).basesMatch(variantContext.getAlternateAllele(altAlleleID));
+                final boolean isAlt1 = alleles.get(1).basesMatch(variantContext.getAlternateAllele(altAlleleID));
+                if (!isAlt0 && !isAlt1) {
                     gtBuilder.add(Genotype.HOMOZYGOUS_REF);
-                else if ((isAlt0 && !isAlt1) || (!isAlt0 && isAlt1))
+                } else if ((isAlt0 && !isAlt1) || (!isAlt0 && isAlt1)) {
                     gtBuilder.add(Genotype.HETEROZYGOUS);
-                else 
+                } else {
                     gtBuilder.add(Genotype.HOMOZYGOUS_ALT);
+                }
             }
-            builder.addGenotypes(gtBuilder.build());
+            genotypeListBuilder.addGenotypes(gtBuilder.build());
         }
 
         // FIXME: there are more modes of inheritance implemented in Jannovar
-        final ImmutableList<ModeOfInheritance> toCheck = ImmutableList.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE,
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.X_RECESSIVE);
-        for (ModeOfInheritance mode : toCheck)
+        final ImmutableList<ModeOfInheritance> toCheck = ImmutableList.of(
+                ModeOfInheritance.AUTOSOMAL_RECESSIVE,
+                ModeOfInheritance.AUTOSOMAL_DOMINANT, 
+                ModeOfInheritance.X_RECESSIVE);
+        
+        PedigreeDiseaseCompatibilityDecorator checker = new PedigreeDiseaseCompatibilityDecorator(pedigree);
+        for (ModeOfInheritance mode : toCheck) {
             try {
-                if (checker.isCompatibleWith(builder.build(), mode))
+                if (checker.isCompatibleWith(genotypeListBuilder.build(), mode)) {
                     inheritanceModes.add(mode);
+                }
             } catch (CompatibilityCheckerException e) {
                 throw new RuntimeException("Problem in the mode of inheritance checks!", e);
             }
+        }
 
         return inheritanceModes;
     }

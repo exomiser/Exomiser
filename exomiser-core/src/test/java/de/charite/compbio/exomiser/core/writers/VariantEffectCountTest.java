@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
+import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.ArrayList;
@@ -19,15 +19,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// TODO(holtgrew): Rename to VariantEffect*
-
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantTypeCountTest {
+public class VariantEffectCountTest {
     
-    private VariantTypeCount instance;
+    private VariantEffectCount instance;
     
     private VariantEffect effect;
     private List<Integer> counts;
@@ -40,7 +38,7 @@ public class VariantTypeCountTest {
         counts = new ArrayList<>();
         counts.addAll(Arrays.asList(1, 2, 3));
         
-        instance = new VariantTypeCount(effect, counts);
+        instance = new VariantEffectCount(effect, counts);
     }
 
     @Test

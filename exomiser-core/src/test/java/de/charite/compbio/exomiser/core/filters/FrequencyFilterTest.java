@@ -24,7 +24,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class FrequencyFilterTest {
 
-    FrequencyFilter instance;
+    private FrequencyFilter instance;
 
     private VariantEvaluation passesEspAllFrequency;
     private VariantEvaluation passesEspAAFrequency;
@@ -36,7 +36,7 @@ public class FrequencyFilterTest {
 
     private VariantEvaluation nullFrequencyVariant;
 
-    Variant testVariant;
+    private Variant testVariant;
 
     private static final float FREQ_THRESHOLD = 0.1f;
     private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
@@ -63,7 +63,7 @@ public class FrequencyFilterTest {
 
     @Before
     public void setUp() throws Exception {
-        testVariant = new TestVariantFactory().constructVariant(6, 1000000, "CC", "CT", Genotype.HETEROZYGOUS, 30, 0);
+        testVariant = new TestVariantFactory().constructVariant(6, 1000000, "C", "T", Genotype.HETEROZYGOUS, 30, 0);
 
         boolean filterOutAllKnownVariants = false;
 

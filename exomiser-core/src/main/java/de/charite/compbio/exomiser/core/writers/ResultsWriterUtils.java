@@ -64,7 +64,7 @@ public class ResultsWriterUtils {
      * @param variantEvaluations
      * @return
      */
-    public static List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
+    public static List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
 
         // all used Jannovar VariantEffects
         final Set<VariantEffect> variantEffects = ImmutableSet.of(VariantEffect.FRAMESHIFT_ELONGATION,
@@ -82,7 +82,7 @@ public class ResultsWriterUtils {
                 VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT,
                 VariantEffect.DOWNSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT);
         
-        VariantEffectCounter variantTypeCounter = makeVariantTypeCounter(variantEvaluations);
+        VariantEffectCounter variantTypeCounter = makeVariantEffectCounter(variantEvaluations);
         final List<Map<VariantEffect, Integer>> freqMaps = variantTypeCounter.getFrequencyMap(variantEffects);
 
         int numIndividuals = 0;
@@ -90,7 +90,7 @@ public class ResultsWriterUtils {
             numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
         }
 
-        List<VariantTypeCount> result = new ArrayList<>();
+        List<VariantEffectCount> result = new ArrayList<>();
         Set<VariantEffect> effects = EnumSet.noneOf(VariantEffect.class);
         for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
             effects.addAll(freqMaps.get(sampleIdx).keySet());
@@ -104,13 +104,13 @@ public class ResultsWriterUtils {
             for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
                 typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
             }
-            result.add(new VariantTypeCount(effect, typeSpecificCounts));
+            result.add(new VariantEffectCount(effect, typeSpecificCounts));
         }
 
         return result;
     }
 
-    protected static VariantEffectCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
+    protected static VariantEffectCounter makeVariantEffectCounter(List<VariantEvaluation> variantEvaluations) {
         if (variantEvaluations.isEmpty()) {
             return new VariantEffectCounter(0);
         }

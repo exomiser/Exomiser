@@ -7,8 +7,11 @@ import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.reference.GenomeChange;
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -38,22 +41,71 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * basically combines this Variant with a list of variant evaluation objects
      * ({@link exomizer.filter.VariantScore}).
      */
-    private Variant var;
+    @Deprecated
+    private Variant variant;
+    
+    // HTSJDK {@link VariantContext} instance of this allele
+    private final VariantContext variantContext;
+
+    // numeric index of the alternative allele in {@link #vc}.
+    private final int altAlleleID;
+
+    /**
+     * list of {@link Annotation}s for this variant context, one for each
+     * affected transcript, and sorted by predicted impact, highest first.
+     */
+    private final AnnotationList annotationList;
+
+    /**
+     * shortcut to the {@link GenomeChange} in the first element of
+     * {@link #annotationList}, or null.
+     */
+    private final GenomeChange genomeChange;
 
     /**
      * A map of the results of filtering. The key to the map is an integer
      * constant as defined in {@link exomizer.common.FilterType FilterType}.
      */
-    private Map<FilterType, FilterResult> passedFilterResultsMap;
-    private Set<FilterType> failedFilterTypes;
+    private final Map<FilterType, FilterResult> passedFilterResultsMap;
+    private final Set<FilterType> failedFilterTypes;
 
     private float variantScore = 1f;
     private List<String> mutationRefList = null;
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
 
+    public VariantEvaluation(VariantContext variantContext, int altAlleleID, AnnotationList annotationList) {
+        this.variantContext = variantContext;
+        this.altAlleleID = altAlleleID;
+        this.annotationList = annotationList;
+        if (annotationList == null || annotationList.isEmpty()) {
+            //TODO: change should never be null - it should be constructed from the VariantContext 
+            this.genomeChange = null;
+        } else {
+            this.genomeChange = annotationList.get(0).change;
+        }
+   
+        passedFilterResultsMap = new LinkedHashMap<>();
+        failedFilterTypes = EnumSet.noneOf(FilterType.class);
+        //why not set the frequency data too? Well, not having a null implies that
+        //the data has been set from the database and if there is no data then 
+        //it must be an extremely rare and therefore interesting variant. 
+        //This will then erroneously pass the frequency filter.
+        pathogenicityData = new PathogenicityData(null, null, null, null);
+    }
+    
     public VariantEvaluation(Variant v) {
-        var = v;
+        variant = v;
+        this.variantContext = v.getVariantContext();
+        this.altAlleleID = v.getAltAlleleID();
+        this.annotationList = v.getAnnotationList();
+        if (annotationList == null || annotationList.isEmpty()) {
+            //TODO: change should never be null - it should be constructed from the VariantContext 
+            this.genomeChange = null;
+        } else {
+            this.genomeChange = annotationList.get(0).change;
+        }
+        
         passedFilterResultsMap = new LinkedHashMap<>();
         failedFilterTypes = EnumSet.noneOf(FilterType.class);
         //why not set the frequency data too? Well, not having a null implies that
@@ -68,7 +120,19 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * file.
      */
     public Variant getVariant() {
-        return this.var;
+        return variant;
+    }
+
+    public VariantContext getVariantContext() {
+        return variantContext;
+    }
+
+    public int getAltAlleleID() {
+        return altAlleleID;
+    }
+ 
+    public AnnotationList getAnnotationList() {
+        return annotationList;
     }
 
     /**
@@ -77,39 +141,22 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * if there is no annotated effect.
      */
     public VariantEffect getVariantEffect() {
-        return this.var.getHighestImpactEffect();
+        return annotationList.getHighestImpactEffect();
     }
 
     /**
-     * @return the gene symbol associated with the variant.
+     * @return Return the start position of the variant on its chromosome.
      */
-    public String getGeneSymbol() {
-        String symbols = var.getGeneSymbol();
-        if (symbols == null) {
-            return ".";
-        }
-        String[] tokens = symbols.split(",");
-        return tokens[0];
+    public int getPosition() {
+        return variant.getPosition();
     }
-
-    public int getEntrezGeneID() {
-        return var.getEntrezGeneID();
-    }
-
-    /**
-     * @return true if the variant belongs to a class that is non-exonic and
-     * nonsplicing.
-     */
-    public boolean isOffExomeTarget() {
-        return this.var.isOffExomeTarget();
-    }
-
+    
     public String getRef() {
-        return this.var.getRef();
+        return variant.getRef();
     }
 
     public String getAlt() {
-        return this.var.getAlt();
+        return variant.getAlt();
     }
 
     /**
@@ -126,16 +173,44 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
     }
 
-    public int getVariantReadDepth() {
-        return this.var.getVariantReadDepth();
+    public int getReadDepth() {
+        return variant.getReadDepth();
+    }
+    
+    public double getPhredScore() {
+        return variant.getPhredScore();
+    }
+    
+    /**
+     * @return the gene symbol associated with the variant.
+     */
+    public String getGeneSymbol() {
+        String symbols = variant.getGeneSymbol();
+        if (symbols == null) {
+            return ".";
+        }
+        String[] tokens = symbols.split(",");
+        return tokens[0];
     }
 
+    public int getEntrezGeneID() {
+        return variant.getEntrezGeneID();
+    }
+
+    /**
+     * @return true if the variant belongs to a class that is non-exonic and
+     * non-splicing.
+     */
+    public boolean isOffExome() {
+        return variant.isOffExome();
+    }
+    
     /**
      * @return An annotation for a single transcript, representing one of the
      * annotations with the highest priority score (most pathogenic).
      */
     public String getRepresentativeAnnotation() {
-        return this.var.getRepresentativeAnnotation();
+        return variant.getRepresentativeAnnotation();
     }
 
     /**
@@ -153,12 +228,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * summarizes all of the annotations, it should call the function
      * {@link #getRepresentativeAnnotation}.
      */
-    public List<String> getAnnotationList() {
-        return this.var.getAnnotationList();
+    public List<String> getAnnotations() {
+        return variant.getAnnotations();
     }
 
     public boolean hasAnnotations() {
-        return !getAnnotationList().isEmpty();
+        return !getAnnotations().isEmpty();
     }
 
     /**
@@ -176,8 +251,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * summarizes all of the annotations, it should call the function
      * {@link #getRepresentativeAnnotation}.
      */
-    public List<String> getAnnotationListWithoutGeneSymbols() {
-        List<String> lst = this.var.getAnnotationList();
+    public List<String> getAnnotationsWithoutGeneSymbols() {
+        List<String> lst = variant.getAnnotations();
         for (String s : lst) {
             int i = s.indexOf("(");
             if (i < 0) {
@@ -196,36 +271,15 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * Get a list of annotations for the variant preceded by their annotation
      * class (e.g., missense) and separated by a pipe (|).
      */
-    public List<String> getAnnotationListWithAnnotationClass() {
-        return this.var.getAnnotationListWithAnnotationClass();
+    public List<String> getAnnotationsWithAnnotationClass() {
+        return variant.getAnnotationsWithAnnotationClass();
     }
 
     /**
      * @return a String such as chr6:g.29911092G>T
      */
     public String getChromosomalVariant() {
-        return this.var.getGenomeChange().toString();
-    }
-
-    /**
-     * @return a string such as "chr4"
-     */
-    public String getChromosomeAsString() {
-        return this.var.getGenomeChange().pos.refDict.contigName.get(this.var.getGenomeChange().pos.chr);
-    }
-
-    /**
-     * @return the start position of the variant on the chromosome
-     */
-    public int getVariantStartPosition() {
-        return this.var.getGenomeChange().getGenomeInterval().beginPos + 1;
-    }
-
-    /**
-     * @return the end position of the variant on the chromosome
-     */
-    public int getVariantEndPosition() {
-        return this.var.getGenomeChange().getGenomeInterval().endPos;
+        return genomeChange.toString();
     }
 
     /**
@@ -233,15 +287,22 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * variant.
      */
     public int getNumberOfAffectedTranscripts() {
-        return this.var.annotations.entries.size();
+        return annotationList.size();
     }
 
     public List<String> getGenotypeList() {
         List<String> genotypes = new ArrayList<>();
-        for (Genotype gt : var.vc.getGenotypes()) {
+        for (Genotype gt : variantContext.getGenotypes()) {
             genotypes.add(gt.toBriefString());
         }
         return genotypes;
+    }
+
+    /**
+     * @return a string such as "chr4"
+     */
+    public String getChromosomeAsString() {
+        return variantContext.getChr();
     }
 
     /**
@@ -249,25 +310,18 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * chrX=23, ChrY=24, ChrM=25.
      */
     public int getChromosomeAsInteger() {
-        return this.var.getGenomeChange().getChr();
-    }
-
-    /**
-     * @return Return the start position of the variant on its chromosome.
-     */
-    public int getPosition() {
-        return getVariantStartPosition();
+        return genomeChange.getChr();
     }
 
     public String getGenotypeAsString() {
-        return this.var.getGenotypeAsString();
+        return variant.getGenotypeAsString();
     }
 
     /**
      * @return the number of individuals with a genotype at this variant.
      */
     public int getNumberOfIndividuals() {
-        return this.var.vc.getNSamples();
+        return variantContext.getNSamples();
     }
 
     /**
@@ -422,7 +476,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.var);
+        hash = 89 * hash + Objects.hashCode(variant);
         hash = 89 * hash + Float.floatToIntBits(this.variantScore);
         return hash;
     }
@@ -436,7 +490,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return false;
         }
         final VariantEvaluation other = (VariantEvaluation) obj;
-        if (!Objects.equals(this.var, other.var)) {
+        if (!Objects.equals(this.variant, other.variant)) {
             return false;
         }
         return Float.floatToIntBits(this.variantScore) == Float.floatToIntBits(other.variantScore);

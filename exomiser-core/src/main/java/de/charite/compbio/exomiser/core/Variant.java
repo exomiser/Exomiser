@@ -6,8 +6,6 @@ import java.util.List;
 import org.thymeleaf.util.StringUtils;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
@@ -15,6 +13,8 @@ import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.VariantDescription;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -28,40 +28,52 @@ import htsjdk.variant.variantcontext.VariantContext;
 public class Variant {
 
     // HTSJDK {@link VariantContext} instance of this allele
-    public final VariantContext vc;
+    private final VariantContext variantContext;
 
     // numeric index of the alternative allele in {@link #vc}.
-    public final int altAlleleID;
+    private final int altAlleleID;
 
     /**
      * list of {@link Annotation}s for this variant context, one for each
      * affected transcript, and sorted by predicted impact, highest first.
      */
-    public final AnnotationList annotations;
+    private final AnnotationList annotationList;
 
     /**
      * shortcut to the {@link GenomeChange} in the first element of
-     * {@link #annotations}, or null.
+     * {@link #annotationList}, or null.
      */
-    private final GenomeChange change;
+    private final GenomeChange genomeChange;
 
-    public Variant(VariantContext vc, int altAlleleID, AnnotationList annotations) {
-        this.vc = vc;
+    public Variant(VariantContext variantContext, int altAlleleID, AnnotationList annotationList) {
+        this.variantContext = variantContext;
         this.altAlleleID = altAlleleID;
-        this.annotations = annotations;
-        if (annotations.entries.isEmpty()) {
+        this.annotationList = annotationList;
+        if (annotationList.isEmpty()) {
             //TODO: change should never be null - it should be constructed from the VariantContext 
-            this.change = null;
+            this.genomeChange = null;
         } else {
-            this.change = annotations.entries.get(0).change;
+            this.genomeChange = annotationList.get(0).change;
         }
+    }
+
+    public VariantContext getVariantContext() {
+        return variantContext;
+    }
+
+    public int getAltAlleleID() {
+        return altAlleleID;
+    }
+ 
+    public AnnotationList getAnnotationList() {
+        return annotationList;
     }
 
     /**
      * @return forward strand {@link GenomePosition}
      */
     public GenomePosition getGenomePosition() {
-        return change.pos.withStrand('+');
+        return genomeChange.pos.withStrand(Strand.FWD);
     }
 
     /**
@@ -70,27 +82,20 @@ public class Variant {
      * @return <code>int</code> representation of chromosome
      */
     public int getChromosome() {
-        return change.pos.chr;
+        return genomeChange.getChr();
     }
 
     /**
-     * @return name of chromosome
-     */
-    public String getChromosomeStr() {
-        return vc.getChr();
-    }
-
-    /**
-     * @return String representation of {@link #change}/
+     * @return String representation of {@link #genomeChange}/
      */
     public String getChromosomalVariant() {
         // Change can be null for unknown references. In this case, we hack together something from the Variant Context.
         //TODO: change should never be null - it should be constructed from the VariantContext 
-        if (change != null) {
-            return change.toString();
+        if (genomeChange != null) {
+            return genomeChange.toString();
         } else {
-            return StringUtils.concat(vc.getChr(), ":g.", vc.getStart(), vc.getReference(), ">",
-                    vc.getAlternateAllele(altAlleleID));
+            return StringUtils.concat(variantContext.getChr(), ":g.", variantContext.getStart(), variantContext.getReference(), ">",
+                    variantContext.getAlternateAllele(altAlleleID));
         }
     }
 
@@ -103,10 +108,11 @@ public class Variant {
      * @return one-based position
      */
     public int getPosition() {
-        if (change.ref.equals("")) {
-            return change.pos.withStrand('+').pos;
+        if (genomeChange.getRef().equals("")) {
+//            return change.pos.withStrand(Strand.FWD).pos;
+            return genomeChange.getPos();
         } else {
-            return change.pos.withStrand('+').pos + 1;
+            return genomeChange.getPos() + 1;
         }
     }
 
@@ -114,10 +120,12 @@ public class Variant {
      * Shortcut to {@link #change.ref}, returning "-" in case of insertions.
      */
     public String getRef() {
-        if (change.ref.equals("")) {
+//        if (change.ref.equals("")) {
+        if (genomeChange.getRef().equals("")) {
             return "-";
         } else {
-            return change.withStrand('+').ref;
+//            return change.withStrand('+').ref;
+            return genomeChange.getRef();
         }
     }
 
@@ -125,57 +133,38 @@ public class Variant {
      * Shortcut to {@link #change.alt}, returning "-" in case of deletions.
      */
     public String getAlt() {
-        if (change.alt.equals("")) {
+        if (genomeChange.getAlt().equals("")) {
             return "-";
         } else {
-            return change.withStrand('+').alt;
+            return genomeChange.getAlt();
         }
     }
 
     /**
-     * @return Highest-impact {@link VariantEffect} or <code>null</code> if
-     * there is none.
+     * @return most pathogenic {@link VariantEffect}
      */
-    public VariantEffect getHighestImpactEffect() {
-        return annotations.getHighestImpactEffect();
-    }
-
-    /**
-     * @return Highest-impact {@link Annotation} or <code>null</code> if there
-     * is none.
-     */
-    public Annotation getHighestImpactAnnotation() {
-        return annotations.getHighestImpactAnnotation();
+    public VariantEffect getVariantEffect() {
+        return annotationList.getHighestImpactEffect();
+        
     }
 
     /**
      * @return <code>true</code> if the variant is neither exonic nor splicing
      */
-    public boolean isOffExomeTarget() {
-        Annotation anno = annotations.getHighestImpactAnnotation();
-        if (anno == null || anno.effects.isEmpty()) {
-            return true;
-        }
-        for (VariantEffect eff : anno.effects) {
-            if (eff.isSplicing()) {
-                return false;
-            } else if (eff.isIntronic() || eff.isOffTranscript()) {
-                return true;
-            }
-        }
-        return false;
+    public boolean isOffExome() {
+        return annotationList.getHighestImpactEffect().isOffExome();
     }
 
-    public int getVariantReadDepth() {
+    public int getReadDepth() {
         // FIXME: alleleID != sample ID!
-        return vc.getGenotype(altAlleleID).getDP();
+        return variantContext.getGenotype(altAlleleID).getDP();
     }
 
     /**
      * @return annotation of the most pathogenic annotation
      */
     public String getRepresentativeAnnotation() {
-        Annotation anno = annotations.getHighestImpactAnnotation();
+        Annotation anno = annotationList.getHighestImpactAnnotation();
         if (anno == null) {
             return "?";
         }
@@ -195,9 +184,9 @@ public class Variant {
     /**
      * @return list of all annotation strings
      */
-    public List<String> getAnnotationList() {
-        ArrayList<String> result = new ArrayList<String>();
-        for (Annotation anno : annotations.entries) {
+    public List<String> getAnnotations() {
+        ArrayList<String> result = new ArrayList<>();
+        for (Annotation anno : annotationList) {
             String annoS = anno.getSymbolAndAnnotation();
             if (annoS != null) {
                 result.add(annoS);
@@ -209,50 +198,35 @@ public class Variant {
     /**
      * @return list of all annotation strings with type prepended
      */
-    public List<String> getAnnotationListWithAnnotationClass() {
+    public List<String> getAnnotationsWithAnnotationClass() {
         List<String> result = new ArrayList<>();
-        for (Annotation anno : annotations.entries) {
+        for (Annotation anno : annotationList) {
             result.add(anno.getMostPathogenicVarType() + "|" + anno.getSymbolAndAnnotation());
         }
         return result;
     }
 
     public boolean isXChromosomal() {
-        return getChromosome() == change.pos.refDict.contigID.get("X").intValue();
+        return getChromosome() == genomeChange.pos.refDict.contigID.get("X").intValue();
     }
 
     public boolean isYChromosomal() {
-        return getChromosome() == change.pos.refDict.contigID.get("Y").intValue();
+        return getChromosome() == genomeChange.pos.refDict.contigID.get("Y").intValue();
     }
 
-    /**
-     * @return most pathogenic {@link VariantEffect}
-     */
-    public VariantEffect getVariantEffect() {
-        final Annotation anno = annotations.getHighestImpactAnnotation();
-        if (anno == null) {
-            return null;
-        }
-        return anno.getMostPathogenicVarType();
-    }
-
-    public double getVariantPhredScore() {
-        return vc.getPhredScaledQual();
+    public double getPhredScore() {
+        return variantContext.getPhredScaledQual();
     }
 
     public String getGeneSymbol() {
-        final Annotation anno = annotations.getHighestImpactAnnotation();
-        if (anno == null) {
-            return ".";
-        } else {
-            return anno.getGeneSymbol();
-        }
+        final Annotation anno = annotationList.getHighestImpactAnnotation();
+        return anno.getGeneSymbol();
     }
 
     public String getGenotypeAsString() {
         // collect genotype string list
         ArrayList<String> gtStrings = new ArrayList<String>();
-        for (Genotype gt : vc.getGenotypes()) {
+        for (Genotype gt : variantContext.getGenotypes()) {
             boolean firstAllele = true;
             StringBuilder builder = new StringBuilder();
             for (Allele allele : gt.getAlleles()) {
@@ -264,7 +238,7 @@ public class Variant {
 
                 if (allele.isNoCall()) {
                     builder.append('.');
-                } else if (allele.equals(vc.getAlternateAllele(altAlleleID))) {
+                } else if (allele.equals(variantContext.getAlternateAllele(altAlleleID))) {
                     builder.append('1');
                 } else {
                     builder.append('0');
@@ -281,7 +255,7 @@ public class Variant {
     }
 
     public int getEntrezGeneID() {
-        final Annotation anno = getHighestImpactAnnotation();
+        final Annotation anno = annotationList.getHighestImpactAnnotation();
         if (anno == null || anno.transcript == null || anno.transcript.geneID == null) {
             return -1;
         }
@@ -290,17 +264,18 @@ public class Variant {
         return Integer.parseInt(anno.transcript.geneID.substring("ENTREZ".length()));
     }
 
+    @Deprecated
     public GenomeChange getGenomeChange() {
-        return change;
+        return genomeChange;
     }
 
     public Genotype getGenotype() {
-        return vc.getGenotype(0);
+        return variantContext.getGenotype(0);
     }
 
     @Override
     public String toString() {
-        return "Variant [vc=" + vc + ", altAlleleID=" + altAlleleID + ", annotations=" + annotations + ", change="
-                + change + "]";
+        return "Variant [vc=" + variantContext + ", altAlleleID=" + altAlleleID + ", annotations=" + annotationList + ", change="
+                + genomeChange + "]";
     }
 }

@@ -17,6 +17,8 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
+import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -53,7 +55,7 @@ public class VariantEvaluationDataServiceTest {
     @Before
     public void setUp() {
         variant = null; // new Variant((byte) 1, 1, "C", "A", null, 5f, null);
-        varEval = new VariantEvaluation(variant);
+        varEval = new VariantEvaluation(null, 0, null);
         
         MockitoAnnotations.initMocks(this);
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);

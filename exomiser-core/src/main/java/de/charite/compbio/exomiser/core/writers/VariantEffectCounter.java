@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,15 +39,15 @@ public class VariantEffectCounter {
         if (effect == null) {
             return;
         }
-
-        for (int sampleIdx = 0; sampleIdx < variant.vc.getSampleNames().size(); ++sampleIdx) {
-            final Genotype gt = variant.vc.getGenotype(sampleIdx);
+        VariantContext variantContext = variant.getVariantContext();
+        for (int sampleIdx = 0; sampleIdx < variantContext.getSampleNames().size(); ++sampleIdx) {
+            final Genotype gt = variantContext.getGenotype(sampleIdx);
             if (gt.getAlleles().size() != 2) {
                 continue; // counted as no-call
             }
             boolean isAltAllele = false;
             for (int i = 0; i < 2; ++i) {
-                if (gt.getAllele(i).equals(variant.vc.getAlternateAllele(variant.altAlleleID))) {
+                if (gt.getAllele(i).equals(variantContext.getAlternateAllele(variant.getAltAlleleID()))) {
                     isAltAllele = true;
                 }
             }

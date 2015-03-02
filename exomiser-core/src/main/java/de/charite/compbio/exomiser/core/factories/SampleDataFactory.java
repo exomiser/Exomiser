@@ -81,7 +81,7 @@ public class SampleDataFactory {
     }
 
     private List<VariantContext> loadVariantsFromVcf(VCFFileReader vcfReader) {
-        logger.info("Loading and annotating VCF");
+        logger.info("Loading variants from VCF...");
         List<VariantContext> records = new ArrayList<>();
         for (VariantContext vc : vcfReader) {
             records.add(vc);
@@ -102,15 +102,12 @@ public class SampleDataFactory {
     private List<VariantEvaluation> createVariantEvaluations(List<VariantContext> vcfRecords) {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>(vcfRecords.size());
 
-        // TODO(holtgrewe): For now, we throw out variants on unknown references.
-        logger.info("Creating sample VariantEvaluations");
+        // TODO(holtgrewe) issue #55: For now, we throw out variants on unknown references.
+        logger.info("Annotating Variants...");
         // build VariantEvaluation objects from Variants
         for (VariantContext vc : vcfRecords) {
             for (Variant variant : variantAnnotator.annotateVariantContext(vc)) {
-                if (variant.getGenomeChange() != null) {
-                    // FIXME: handle this case and write through unprocessed?
-                    variantEvaluations.add(new VariantEvaluation(variant));
-                }
+                variantEvaluations.add(new VariantEvaluation(variant));
             }
         }
 

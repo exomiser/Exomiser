@@ -9,31 +9,29 @@ import java.util.List;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-// TODO(holtgrew): Rename to VariantEffectCount etc.
-
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantTypeCount {
-    private final VariantEffect variantType;
-    private final List<Integer> sampleVariantTypeCounts;
+public class VariantEffectCount {
+    private final VariantEffect variantEffect;
+    private final List<Integer> sampleVariantEffectCounts;
 
-    public VariantTypeCount(VariantEffect variantType, List<Integer> sampleVariantTypeCounts) {
-        this.variantType = variantType;
-        this.sampleVariantTypeCounts = sampleVariantTypeCounts;
+    public VariantEffectCount(VariantEffect variantType, List<Integer> sampleVariantTypeCounts) {
+        this.variantEffect = variantType;
+        this.sampleVariantEffectCounts = sampleVariantTypeCounts;
     }
     
     public VariantEffect getVariantType() {
-        return variantType;
+        return variantEffect;
     }
 
     public List<Integer> getSampleVariantTypeCounts() {
-        return sampleVariantTypeCounts;
+        return sampleVariantEffectCounts;
     }
 
     @Override
     public String toString() {
-        return variantType + "=" + sampleVariantTypeCounts;
+        return variantEffect + "=" + sampleVariantEffectCounts;
     }
 }

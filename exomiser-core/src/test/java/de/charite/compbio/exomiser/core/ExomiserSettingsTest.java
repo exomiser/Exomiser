@@ -52,6 +52,8 @@ public class ExomiserSettingsTest {
     private static final Path PED_PATH = Paths.get("data/test.ped");
     
     //filter settings
+    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
+    private static final boolean RUN_FULL_ANALYSIS = true;
     private static final float MAXIMUM_FREQUENCY_DEFAULT = 100.0f;
     private static final float MAXIMUM_FREQUENCY = 42.24f;
     private static final float MIMIMUM_QUALITY_DEFAULT = 0.0f;
@@ -87,8 +89,6 @@ public class ExomiserSettingsTest {
     private static final String OUT_FILE_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV_GENE);
-    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
-    private static final boolean RUN_FULL_ANALYSIS = true;
     
     public ExomiserSettingsTest() {
     }

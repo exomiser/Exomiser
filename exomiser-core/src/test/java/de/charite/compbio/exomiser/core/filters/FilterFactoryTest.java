@@ -93,7 +93,13 @@ public class FilterFactoryTest {
         Set<Integer> geneIdsToKeep = new HashSet<>();
         geneIdsToKeep.add(1);
         
-        ExomiserSettings settings = settingsBuilder.genesToKeepList(geneIdsToKeep).removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
+        ExomiserSettings settings = settingsBuilder
+                .genesToKeepList(geneIdsToKeep)
+                .removePathFilterCutOff(true)
+                .maximumFrequency(0.25f)
+                .minimumQuality(2f)
+                .geneticInterval(interval)
+                .build();
 
         List<VariantFilter> expResult = new ArrayList<>();
 
@@ -122,9 +128,14 @@ public class FilterFactoryTest {
     @Test
     public void testMakeVariantFiltersDoesNotIncludeGeneFiltersInReturnedList() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval VariantFilters 
-        ExomiserSettings settings = settingsBuilder.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval)
+        ExomiserSettings settings = settingsBuilder
+                .removePathFilterCutOff(true)
+                .maximumFrequency(0.25f)
+                .minimumQuality(2f)
+                .geneticInterval(interval)
                 //and a Inheritance GeneFilter
-                .modeOfInheritance(ModeOfInheritance.X_DOMINANT).build();
+                .modeOfInheritance(ModeOfInheritance.X_DOMINANT)
+                .build();
 
         List<VariantFilter> expResult = new ArrayList<>();
 

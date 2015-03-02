@@ -4,11 +4,9 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.jannovar.htsjdk.InfoFields;
 import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
-import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -18,16 +16,11 @@ import htsjdk.variant.vcf.VCFHeaderLine;
 import htsjdk.variant.vcf.VCFHeaderLineType;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -36,14 +29,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
 // TODO(holtgrew): Write out to sorting VariantContextWriter?
-
 /**
  * Generate results in VCF format using HTS-JDK.
- * 
- * @see <a href="http://samtools.github.io/hts-specs/VCFv4.1.pdf">VCF Standard</a>
+ *
+ * @see <a href="http://samtools.github.io/hts-specs/VCFv4.1.pdf">VCF
+ * Standard</a>
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
@@ -53,14 +44,18 @@ public class VcfResultsWriter implements ResultsWriter {
 
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.VCF;
 
-    /** The original {@link VCFHeader} that of the input file, used to base output VCF header on. */
+    /**
+     * The original {@link VCFHeader} that of the input file, used to base
+     * output VCF header on.
+     */
     private final VCFHeader vcfHeader;
 
     /**
-     * Initialize the object, given the original {@link VCFFileReader} from the input.
-     * 
-     * @param vcfHeader
-     *            original {@link VCFHeader} from the input, used for generating the output header
+     * Initialize the object, given the original {@link VCFFileReader} from the
+     * input.
+     *
+     * @param vcfHeader original {@link VCFHeader} from the input, used for
+     * generating the output header
      */
     public VcfResultsWriter(VCFHeader vcfHeader) {
         Locale.setDefault(Locale.UK);
@@ -95,39 +90,39 @@ public class VcfResultsWriter implements ResultsWriter {
 
     /**
      * Write the <code>sampleData</code> as VCF to <code>writer</code>.
-     * 
-     * <code>writer</code> is already completely initialized, including all headers, so data is written out directly for
-     * each {@link VariantEvalution} in <code>sampleData</code>.
-     * 
-     * @param sampleData
-     *            data set to write out
-     * @param writer
-     *            writer to write to
+     *
+     * <code>writer</code> is already completely initialized, including all
+     * headers, so data is written out directly for each
+     * {@link VariantEvalution} in <code>sampleData</code>.
+     *
+     * @param sampleData data set to write out
+     * @param writer writer to write to
      */
     private void writeSampleData(SampleData sampleData, VariantContextWriter writer) {
         // first, write out unannotated records, then the annotated ones gene-wise
-        for (VariantEvaluation ve : sampleData.getUnAnnotatedVariantEvaluations())
+        for (VariantEvaluation ve : sampleData.getUnAnnotatedVariantEvaluations()) {
             writeRecord(ve, writer, null);
-        for (Gene gene : sampleData.getGenes())
-            for (VariantEvaluation variantEval : gene.getVariantEvaluations())
+        }
+        for (Gene gene : sampleData.getGenes()) {
+            for (VariantEvaluation variantEval : gene.getVariantEvaluations()) {
                 writeRecord(variantEval, writer, gene);
+            }
+        }
     }
 
     /**
      * Write out <code>ve</code> as one record into <code>write</code>.
-     * 
-     * @param ve
-     *            record to write out
-     * @param writer
-     *            writer to write to
-     * @param gene
-     *            the {@link Gene} to use when writing out, <code>null</code> for unannotated variants.
+     *
+     * @param ve record to write out
+     * @param writer writer to write to
+     * @param gene the {@link Gene} to use when writing out, <code>null</code>
+     * for unannotated variants.
      */
     private void writeRecord(VariantEvaluation ve, VariantContextWriter writer, Gene gene) {
         // create a new VariantContextBuilder, based on the original line
         // n.b. variantContexts with alternative alleles will be shared between 
         // the alternative allele variant objects - Exomiser works on a 1 Variant = 1 Allele principle 
-        VariantContextBuilder builder = new VariantContextBuilder(ve.getVariant().vc);
+        VariantContextBuilder builder = new VariantContextBuilder(ve.getVariantContext());
         // update filter and info fields and write out to writer.
         updateFilterField(builder, ve);
         updateInfoField(builder, ve, gene);
@@ -135,7 +130,8 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     /**
-     * Update the FILTER field of <code>builder</code> given the {@link VariantEvaluation}.
+     * Update the FILTER field of <code>builder</code> given the
+     * {@link VariantEvaluation}.
      */
     private void updateFilterField(VariantContextBuilder builder, VariantEvaluation ve) {
         switch (ve.getFilterStatus()) {
@@ -143,7 +139,7 @@ public class VcfResultsWriter implements ResultsWriter {
                 updateFailedFilters(builder, ve.getFailedFilterTypes());
                 break;
             case PASSED:
-                builder.filter("PASSED");
+                builder.filter("PASS");
                 break;
             case UNFILTERED:
             default:
@@ -153,17 +149,20 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     /**
-     * Write all failed filter types from <code>failedFilterTypes</code> into <code>builder</code>.
+     * Write all failed filter types from <code>failedFilterTypes</code> into
+     * <code>builder</code>.
      */
     private void updateFailedFilters(VariantContextBuilder builder, Set<FilterType> failedFilterTypes) {
         Set<String> set = new HashSet<String>();
-        for (FilterType ft : failedFilterTypes)
+        for (FilterType ft : failedFilterTypes) {
             set.add(ft.toString());
+        }
         builder.filters(set);
     }
 
     /**
-     * Update the INFO field of <code>builder</code> given the {@link VariantEvaluation} and <code>gene</code>.
+     * Update the INFO field of <code>builder</code> given the
+     * {@link VariantEvaluation} and <code>gene</code>.
      */
     private void updateInfoField(VariantContextBuilder builder, VariantEvaluation ve, Gene gene) {
         // TODO: Add in the settings used and other data for Will and Orion here
@@ -180,8 +179,8 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     /**
-     * @return list of additional {@link VCFHeaderLine}s to write out, explaining the Jannovar and Exomiser INFO and
-     *         FILTER fields
+     * @return list of additional {@link VCFHeaderLine}s to write out,
+     * explaining the Jannovar and Exomiser INFO and FILTER fields
      */
     private List<VCFHeaderLine> getAdditionalHeaderLines() {
         List<VCFHeaderLine> lines = new ArrayList<VCFHeaderLine>();
@@ -198,8 +197,9 @@ public class VcfResultsWriter implements ResultsWriter {
         lines.add(new VCFInfoHeaderLine("EXOMISER_WARNING", 1, VCFHeaderLineType.String, "Exomiser gene"));
 
         // add FILTER descriptions
-        for (FilterType ft : FilterType.values())
+        for (FilterType ft : FilterType.values()) {
             lines.add(new VCFFilterHeaderLine(ft.name(), ft.toString()));
+        }
 
         return lines;
     }

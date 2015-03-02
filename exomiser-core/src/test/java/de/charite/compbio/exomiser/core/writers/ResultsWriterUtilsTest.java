@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
+import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.DEFAULT_OUTPUT_DIR;
@@ -82,10 +82,10 @@ public class ResultsWriterUtilsTest {
     @Test
     public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
         assertThat(variantTypeCounters.isEmpty(), is(false));
         
-        VariantTypeCount firstVariantTypeCount = variantTypeCounters.get(0);
+        VariantEffectCount firstVariantTypeCount = variantTypeCounters.get(0);
         assertThat(firstVariantTypeCount.getVariantType(), notNullValue());
         assertThat(firstVariantTypeCount.getSampleVariantTypeCounts().isEmpty(), is(true));
     }

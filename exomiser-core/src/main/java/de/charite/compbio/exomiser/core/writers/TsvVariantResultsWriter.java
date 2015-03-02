@@ -86,10 +86,10 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private List<Object> getRecordOfVariant(Variant var, VariantEvaluation ve, Gene gene) {
-        List<Object> record = new ArrayList<Object>();
+        List<Object> record = new ArrayList<>();
         // TODO(holtgrewe): Return data as in original VCF file? currently includes shifting and trimming!
         // CHROM
-        record.add(var.getChromosomeStr());
+        record.add(ve.getChromosomeAsString());
         // POS
         record.add(var.getPosition());
         // REF
@@ -97,19 +97,19 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // ALT
         record.add(var.getAlt());
         // QUAL
-        record.add(formatter.format(var.getVariantPhredScore()));
+        record.add(formatter.format(ve.getPhredScore()));
         // FILTER
         record.add(makeFiltersField(ve));
         // GENOTYPE
-        record.add(var.getGenotypeAsString());
+        record.add(ve.getGenotypeAsString());
         // COVERAGE
-        record.add(var.vc.getCommonInfo().getAttributeAsString("DP", "0"));
+        record.add(ve.getVariantContext().getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
         // FIXME: use new terms (use .toSequenceOntologyTerm() instead)!
-        record.add(var.annotations.getHighestImpactEffect().getLegacyTerm());
+        record.add(var.getAnnotationList().getHighestImpactEffect().getLegacyTerm());
 
         // HGVS
-        record.add(var.getRepresentativeAnnotation());
+        record.add(ve.getRepresentativeAnnotation());
 		// FIXME jannovar has no function to use HGVS stuff alone
         // variantAnnotation like KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q
         // String[] variantAnnotation =
@@ -123,7 +123,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // // AA_CHANGE
         // record.add(getColumnOfArrayIfExists(variantAnnotation, 4));
         // EXOMISER_GENE
-        record.add(var.getGeneSymbol());
+        record.add(ve.getGeneSymbol());
         // CADD
         record.add(getPatScore(ve.getPathogenicityData().getCaddScore()));
         // POLYPHEN

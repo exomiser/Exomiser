@@ -20,6 +20,7 @@ import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.io.JannovarData;
+import de.charite.compbio.jannovar.reference.GenomeChange;
 
 /**
  * Given a {@link VariantAnnotator}, build a {@link Variant} for each
@@ -43,6 +44,9 @@ public class VariantAnnotator {
     }
 
     /**
+     * Returns a list of variants of known reference. If a VariantContext has no
+     * know reference on the genome an empty list will be returned.
+     *
      * @param vc {@link VariantContext} to get {@link Variant} objects for
      * @return one {@link Variant} object for each alternative allele in vc.
      */
@@ -52,7 +56,16 @@ public class VariantAnnotator {
         List<Variant> result = new ArrayList<>();
         //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
         for (int i = 0; i < vc.getAlternateAlleles().size(); ++i) {
-            result.add(new Variant(vc, i, lst.get(i)));
+            AnnotationList annotationList = lst.get(i);
+            if (!annotationList.isEmpty()) {
+                GenomeChange change = annotationList.get(0).change;
+            //Currently a change can be null for variants with unknown reference. 
+                //This will cause BAD things like NPEs to happen, so filter these things out here before they get into the system.
+                //this should be fixed with issue #55
+                if (change != null) {
+                    result.add(new Variant(vc, i, annotationList));
+                }
+            }
         }
         return result;
     }

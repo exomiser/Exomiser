@@ -42,7 +42,7 @@ public class BedFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
 
-        if (variantEvaluation.isOffExomeTarget()) {
+        if (variantEvaluation.isOffExome()) {
             return failedScore;
         }
         String geneSymbol = variantEvaluation.getGeneSymbol();

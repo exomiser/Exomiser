@@ -53,8 +53,8 @@ public class QualityFilterTest {
     @Before
     public void setUp() {
 
-        Mockito.when(mockHighQualityVariant.getVariantPhredScore()).thenReturn(OVER_THRESHOLD);
-        Mockito.when(mockLowQualityVariant.getVariantPhredScore()).thenReturn(UNDER_THRESHOLD);
+        Mockito.when(mockHighQualityVariant.getPhredScore()).thenReturn(OVER_THRESHOLD);
+        Mockito.when(mockLowQualityVariant.getPhredScore()).thenReturn(UNDER_THRESHOLD);
         
         highQualityPassesFilter = new VariantEvaluation(mockHighQualityVariant);
         lowQualityFailsFilter = new VariantEvaluation(mockLowQualityVariant);

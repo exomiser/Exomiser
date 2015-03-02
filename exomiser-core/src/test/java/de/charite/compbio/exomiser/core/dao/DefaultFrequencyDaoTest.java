@@ -5,17 +5,10 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import java.util.Collection;
-
-import htsjdk.variant.variantcontext.VariantContext;
 import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.AnnotationLocation;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.io.JannovarData;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,15 +19,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.google.common.collect.ImmutableList;
 
 /**
  *

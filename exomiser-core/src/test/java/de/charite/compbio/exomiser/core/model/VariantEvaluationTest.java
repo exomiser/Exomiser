@@ -15,11 +15,11 @@ import de.charite.compbio.exomiser.core.filters.QualityFilterResult;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.pedigree.GenotypeList;
 import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.PositionType;
+import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
 
@@ -34,6 +34,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -66,16 +67,16 @@ public class VariantEvaluationTest {
     private static final FilterResult PASS_QUALITY_RESULT = new QualityFilterResult(0.45f, PASS);
 
     @Mock
-    Variant variant;
+    private Variant variant;
 
     @Mock
-    Variant variantInTwoGeneRegions;
+    private Variant variantInTwoGeneRegions;
 
     @Mock
-    Variant variantWithNullGeneSymbol;
+    private Variant variantWithNullGeneSymbol;
 
     @Mock
-    Variant unAnnotatedVariant;
+    private Variant unAnnotatedVariant;
 
     @Before
     public void setUp() {
@@ -83,7 +84,7 @@ public class VariantEvaluationTest {
         GenotypeBuilder gtBuilder = new GenotypeBuilder();
         gtBuilder.alleles(Arrays.asList(Allele.create("C", true), Allele.create("T", false)));
 
-        final GenomePosition gPos = new GenomePosition(HG19RefDictBuilder.build(), '+', 1, 1, PositionType.ONE_BASED);
+        final GenomePosition gPos = new GenomePosition(HG19RefDictBuilder.build(), Strand.FWD, 1, 1, PositionType.ONE_BASED);
         final GenomeChange change = new GenomeChange(gPos, "C", "T");
         
         Mockito.when(variant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
@@ -93,10 +94,10 @@ public class VariantEvaluationTest {
         Mockito.when(variant.getRef()).thenReturn("A");
         Mockito.when(variant.getAlt()).thenReturn("T");
         Mockito.when(variant.getGenotype()).thenReturn(gtBuilder.make());
-        Mockito.when(variant.getGenomeChange()).thenReturn(change);
-        Mockito.when(variant.getVariantPhredScore()).thenReturn(2.2);
-        Mockito.when(variant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(variant.getAnnotationList()).thenReturn(Arrays.asList("variant annotations..."));
+//        Mockito.when(variant.getGenomeChange()).thenReturn(change);
+        Mockito.when(variant.getPhredScore()).thenReturn(2.2);
+        Mockito.when(variant.getReadDepth()).thenReturn(READ_DEPTH);
+        Mockito.when(variant.getAnnotations()).thenReturn(Arrays.asList("variant annotations..."));
 
         Mockito.when(variantInTwoGeneRegions.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL + "," + GENE1_GENE_SYMBOL);
         Mockito.when(variantInTwoGeneRegions.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
@@ -105,14 +106,14 @@ public class VariantEvaluationTest {
         Mockito.when(variantInTwoGeneRegions.getRef()).thenReturn("C");
         Mockito.when(variantInTwoGeneRegions.getAlt()).thenReturn("G");
         Mockito.when(variantInTwoGeneRegions.getGenotype()).thenReturn(gtBuilder.make());
-        Mockito.when(variantInTwoGeneRegions.getGenomeChange()).thenReturn(change);
-        Mockito.when(variantInTwoGeneRegions.getVariantPhredScore()).thenReturn(2.2);
-        Mockito.when(variantInTwoGeneRegions.getVariantReadDepth()).thenReturn(READ_DEPTH);
+//        Mockito.when(variantInTwoGeneRegions.getGenomeChange()).thenReturn(change);
+        Mockito.when(variantInTwoGeneRegions.getPhredScore()).thenReturn(2.2);
+        Mockito.when(variantInTwoGeneRegions.getReadDepth()).thenReturn(READ_DEPTH);
 
         Mockito.when(variantWithNullGeneSymbol.getGeneSymbol()).thenReturn(null);
 
         // This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(unAnnotatedVariant.getAnnotationList()).thenReturn(Arrays.<String> asList());
+        Mockito.when(unAnnotatedVariant.getAnnotations()).thenReturn(Arrays.<String> asList());
 
         instance = new VariantEvaluation(variant);
     }
@@ -130,7 +131,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetVariantReadDepth() {
-        assertThat(instance.getVariantReadDepth(), equalTo(READ_DEPTH));
+        assertThat(instance.getReadDepth(), equalTo(READ_DEPTH));
     }
 
     @Test
@@ -153,16 +154,6 @@ public class VariantEvaluationTest {
     @Test
     public void canGetEntrezGeneID() {
         assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
-    }
-
-    @Test
-    public void testGetVariantStartPosition() {
-        assertThat(instance.getVariantStartPosition(), equalTo(1));
-    }
-
-    @Test
-    public void testGetVariantEndPosition() {
-        assertThat(instance.getVariantEndPosition(), equalTo(1));
     }
 
     @Test

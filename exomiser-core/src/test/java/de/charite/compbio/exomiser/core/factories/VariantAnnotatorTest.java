@@ -25,6 +25,8 @@ import static org.junit.Assert.*;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  *
@@ -58,8 +60,10 @@ public class VariantAnnotatorTest {
         VariantContext vc = varFactory.constructVariantContext(2, 2, "A", "T", Genotype.HETEROZYGOUS, 30);
 
         List<Variant> vars = instance.annotateVariantContext(vc);
-        assertThat(vars.size(), equalTo(1));
-        assertThat(vars.get(0).annotations.entries.size(), equalTo(0));
+//        Variant variant = vars.get(0);
+//        AnnotationList annotationList = variant.getAnnotationList();
+        assertThat(vars.isEmpty(), is(true));
+//        assertThat(annotationList.size(), equalTo(0));
     }
 
     @Test
@@ -68,11 +72,14 @@ public class VariantAnnotatorTest {
         VariantContext vc = varFactory.constructVariantContext(10, 2, "A", "T", Genotype.HETEROZYGOUS, 30);
 
         List<Variant> vars = instance.annotateVariantContext(vc);
+        Variant variant = vars.get(0);
+        AnnotationList annotationList = variant.getAnnotationList();
+        
         assertThat(vars.size(), equalTo(1));
-        assertThat(vars.get(0).annotations.entries.size(), equalTo(1));
-        assertThat(vars.get(0).annotations.entries.get(0).effects,
+        assertThat(annotationList.size(), equalTo(1));
+        assertThat(annotationList.get(0).effects,
                 equalTo(ImmutableSortedSet.of(VariantEffect.INTERGENIC_VARIANT)));
-        assertThat(vars.get(0).annotations.entries.get(0).transcript, equalTo(tmFGFR2));
+        assertThat(annotationList.get(0).transcript, equalTo(tmFGFR2));
     }
 
     @Test
@@ -81,11 +88,14 @@ public class VariantAnnotatorTest {
         VariantContext vc = varFactory.constructVariantContext(10, 123353320, "A", "T", Genotype.HETEROZYGOUS, 30);
 
         List<Variant> vars = instance.annotateVariantContext(vc);
+        Variant variant = vars.get(0);
+        AnnotationList annotationList = variant.getAnnotationList();
+        
         assertThat(vars.size(), equalTo(1));
-        assertThat(vars.get(0).annotations.entries.size(), equalTo(1));
-        assertThat(vars.get(0).annotations.entries.get(0).effects,
+        assertThat(annotationList.size(), equalTo(1));
+        assertThat(annotationList.get(0).effects,
                 equalTo(ImmutableSortedSet.of(VariantEffect.STOP_GAINED)));
-        assertThat(vars.get(0).annotations.entries.get(0).transcript, equalTo(tmFGFR2));
+        assertThat(annotationList.get(0).transcript, equalTo(tmFGFR2));
     }
 
     @Test
@@ -94,11 +104,14 @@ public class VariantAnnotatorTest {
         VariantContext vc = varFactory.constructVariantContext(7, 155604810, "A", "T", Genotype.HETEROZYGOUS, 30);
 
         List<Variant> vars = instance.annotateVariantContext(vc);
+        Variant variant = vars.get(0);
+        AnnotationList annotationList = variant.getAnnotationList();
+        
         assertThat(vars.size(), equalTo(1));
-        assertThat(vars.get(0).annotations.entries.size(), equalTo(1));
-        assertThat(vars.get(0).annotations.entries.get(0).effects,
+        assertThat(annotationList.size(), equalTo(1));
+        assertThat(annotationList.get(0).effects,
                 equalTo(ImmutableSortedSet.of(VariantEffect.SYNONYMOUS_VARIANT)));
-        assertThat(vars.get(0).annotations.entries.get(0).transcript, equalTo(tmSHH));
+        assertThat(annotationList.get(0).transcript, equalTo(tmSHH));
     }
 
 }

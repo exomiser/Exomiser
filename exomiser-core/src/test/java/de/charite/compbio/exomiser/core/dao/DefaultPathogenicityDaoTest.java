@@ -16,6 +16,7 @@ import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.PositionType;
+import de.charite.compbio.jannovar.reference.Strand;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -56,25 +57,25 @@ public class DefaultPathogenicityDaoTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         
-        GenomePosition invalidPos = new GenomePosition(HG19RefDictBuilder.build(), '+', 0, 0, PositionType.ONE_BASED);
-        GenomeChange invalidGenomeChange = new GenomeChange(invalidPos, "T", "G");
         Mockito.when(nonMissenseVariant.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
+        
+        GenomePosition invalidPos = new GenomePosition(HG19RefDictBuilder.build(), Strand.FWD, 0, 0, PositionType.ONE_BASED);
+        GenomeChange invalidGenomeChange = new GenomeChange(invalidPos, "T", "G");
         Mockito.when(missenseVariantNotInDatabase.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(missenseVariantNotInDatabase.getGenomePosition()).thenReturn(invalidPos);
-        Mockito.when(missenseVariantNotInDatabase.getGenomeChange()).thenReturn(invalidGenomeChange);
+//        Mockito.when(missenseVariantNotInDatabase.getGenomePosition()).thenReturn(invalidPos);
+//        Mockito.when(missenseVariantNotInDatabase.getGenomeChange()).thenReturn(invalidGenomeChange);
         Mockito.when(missenseVariantNotInDatabase.getChromosome()).thenReturn(0);
         Mockito.when(missenseVariantNotInDatabase.getPosition()).thenReturn(0);
         Mockito.when(missenseVariantNotInDatabase.getRef()).thenReturn("T");
         Mockito.when(missenseVariantNotInDatabase.getAlt()).thenReturn("G");
         
-        GenomePosition validPos = new GenomePosition(HG19RefDictBuilder.build(), '+', 10, 123256215,
-                PositionType.ONE_BASED);
+        GenomePosition validPos = new GenomePosition(HG19RefDictBuilder.build(), Strand.FWD, 10, 123256215, PositionType.ONE_BASED);
         GenomeChange validGenomeChange = new GenomeChange(validPos, "T", "G");
         Mockito.when(missenseVariantInDatabase.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(missenseVariantInDatabase.getGenomePosition()).thenReturn(validPos);
-        Mockito.when(missenseVariantInDatabase.getGenomeChange()).thenReturn(validGenomeChange);
+//        Mockito.when(missenseVariantInDatabase.getGenomePosition()).thenReturn(validPos);
+//        Mockito.when(missenseVariantInDatabase.getGenomeChange()).thenReturn(validGenomeChange);
         Mockito.when(missenseVariantInDatabase.getChromosome()).thenReturn(10);
-        Mockito.when(missenseVariantInDatabase.getChromosome()).thenReturn(123256215);
+        Mockito.when(missenseVariantInDatabase.getPosition()).thenReturn(123256215);
         Mockito.when(missenseVariantInDatabase.getRef()).thenReturn("T");
         Mockito.when(missenseVariantInDatabase.getAlt()).thenReturn("G");
         
@@ -102,9 +103,9 @@ public class DefaultPathogenicityDaoTest {
                 
         assertThat(result.hasPredictedScore(), is(true));
         assertThat(result.getSiftScore(), equalTo(new SiftScore(0f)));
-        assertThat(result.getCaddScore(), equalTo(new CaddScore(1f)));
-        assertThat(result.getPolyPhenScore(), equalTo(new PolyPhenScore(1f)));
-        assertThat(result.getMutationTasterScore(), equalTo(new MutationTasterScore(1f)));
+        assertThat(result.getCaddScore(), equalTo(new CaddScore(23.7f)));
+        assertThat(result.getPolyPhenScore(), equalTo(new PolyPhenScore(0.998f)));
+        assertThat(result.getMutationTasterScore(), equalTo(new MutationTasterScore(1.0f)));
     }
     
 }

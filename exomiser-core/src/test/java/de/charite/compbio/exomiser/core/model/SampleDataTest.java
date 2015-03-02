@@ -48,8 +48,8 @@ public class SampleDataTest {
         instance = new SampleData();
 
         // This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(mockAnnotatedVariant.getAnnotationList()).thenReturn(Arrays.asList("Lots of lovely annotations"));
-        Mockito.when(mockUnAnnotatedVariant.getAnnotationList()).thenReturn(Arrays.<String> asList());
+        Mockito.when(mockAnnotatedVariant.getAnnotations()).thenReturn(Arrays.asList("Lots of lovely annotations"));
+        Mockito.when(mockUnAnnotatedVariant.getAnnotations()).thenReturn(Arrays.<String> asList());
     }
 
     @Test

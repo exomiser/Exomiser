@@ -60,10 +60,11 @@ public class IntervalFilter implements VariantFilter {
     }
 
     private boolean variantIsNotWithinInterval(Variant variant) {
-        if (variantNotOnSameChromosomeAsInterval(variant.getChromosome()))
+        if (variantNotOnSameChromosomeAsInterval(variant.getChromosome())) {
             return true;
-        else
+        } else {
             return variantPositionOutsideOfIntervalBounds(variant.getPosition());
+        }
     }
 
     private boolean variantNotOnSameChromosomeAsInterval(int variantChromosome) {

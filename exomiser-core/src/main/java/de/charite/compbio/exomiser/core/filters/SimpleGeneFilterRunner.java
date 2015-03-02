@@ -38,7 +38,7 @@ public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
     }
 
     private void addFilterResultToGeneVariantEvaluations(FilterResult filterResult, Gene gene) {
-        //TODO: should the gene also have a filterResult added to it?
+        //TODO: should the gene also have a filterResult added to it? 
         for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
             variantEvaluation.addFilterResult(filterResult);
         }
