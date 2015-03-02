@@ -54,4 +54,16 @@ public class PriorityTypeTest {
         PriorityType instance = PriorityType.NONE;
         assertThat(instance, equalTo(PriorityType.valueOfCommandLine("none")));
     }
+    
+    @Test
+    public void testValueOfCommandLineIsCaseInsensitiveCamelCase() {
+        PriorityType instance = PriorityType.NONE;
+        assertThat(instance, equalTo(PriorityType.valueOfCommandLine("None")));
+    }
+    
+    @Test
+    public void testValueOfCommandLineIsCaseInsensitiveAllCaps() {
+        PriorityType instance = PriorityType.NONE;
+        assertThat(instance, equalTo(PriorityType.valueOfCommandLine("NONE")));
+    }
 }

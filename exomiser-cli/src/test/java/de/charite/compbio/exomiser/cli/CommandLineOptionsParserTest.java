@@ -80,12 +80,12 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void exomiserSettingsAreInvalidWhenAPrioritiserWasNotSpecified() {
+    public void exomiserSettingsAreValidWhenAPrioritiserWasNotSpecified() {
         String input = "-v 123.vcf --ped def.ped -D OMIM:101600";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.isValid(), is(false));
+        assertThat(exomiserSettings.isValid(), is(true));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void should_produce_invalid_settings_when_a_settings_file_is_provided() {
+    public void shouldProduceInvalidSettingsWhenInvalidSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testInvalidSettings.properties";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
