@@ -24,6 +24,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.AbstractPathogenicityScore;
+import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.Locale;
 
@@ -79,23 +80,22 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
     private void writeVariantsOfGene(Gene gene) throws IOException {
         for (VariantEvaluation ve : gene.getVariantEvaluations()) {
-            Variant var = ve.getVariant();
-            List<Object> record = getRecordOfVariant(var, ve, gene);
+            List<Object> record = getRecordOfVariant(ve, gene);
             this.printer.printRecord(record);
         }
     }
 
-    private List<Object> getRecordOfVariant(Variant var, VariantEvaluation ve, Gene gene) {
+    private List<Object> getRecordOfVariant(VariantEvaluation ve, Gene gene) {
         List<Object> record = new ArrayList<>();
-        // TODO(holtgrewe): Return data as in original VCF file? currently includes shifting and trimming!
+        VariantContext variantContext = ve.getVariantContext();
         // CHROM
-        record.add(ve.getChromosomeAsString());
+        record.add(variantContext.getChr());
         // POS
-        record.add(var.getPosition());
+        record.add(variantContext.getStart());
         // REF
-        record.add(var.getRef());
+        record.add(variantContext.getReference().getDisplayString());
         // ALT
-        record.add(var.getAlt());
+        record.add(variantContext.getAlternateAllele(ve.getAltAlleleID()).getDisplayString());
         // QUAL
         record.add(formatter.format(ve.getPhredScore()));
         // FILTER
@@ -106,8 +106,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         record.add(ve.getVariantContext().getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
         // FIXME: use new terms (use .toSequenceOntologyTerm() instead)!
-        record.add(var.getAnnotationList().getHighestImpactEffect().getLegacyTerm());
-
+        record.add(ve.getVariantEffect().getLegacyTerm());
         // HGVS
         record.add(ve.getRepresentativeAnnotation());
 		// FIXME jannovar has no function to use HGVS stuff alone
@@ -221,8 +220,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         StringBuilder output = new StringBuilder(Joiner.on(format.getDelimiter()).join(format.getHeader()));
         for (Gene gene : sampleData.getGenes()) {
             for (VariantEvaluation ve : gene.getVariantEvaluations()) {
-                Variant var = ve.getVariant();
-                List<Object> record = getRecordOfVariant(var, ve, gene);
+                List<Object> record = getRecordOfVariant(ve, gene);
                 output.append("\n");
                 output.append(Joiner.on(format.getDelimiter()).join(record));
             }
