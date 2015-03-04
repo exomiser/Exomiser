@@ -4,6 +4,8 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import java.util.Objects;
+
 /**
  * Contains information about how well a pair of <code>PhenotypeTerm</code> 
  * match each other.
@@ -11,66 +13,44 @@ package de.charite.compbio.exomiser.core.model;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PhenotypeMatch {
-    //information content
-    private double ic;
     //Jaccard similarity score
-    private double simJ;
+    private final double simJ;
     //lowest common subsumer
-    private String lcs;
+    private final PhenotypeTerm lcs;
     
-    private PhenotypeTerm mousePhenotype;
-    private PhenotypeTerm humanPhenotype;
+    private final PhenotypeTerm matchPhenotype;
+    private final PhenotypeTerm queryPhenotype;
 
-    public PhenotypeMatch() {
+    public PhenotypeMatch(PhenotypeTerm queryPhenotype, PhenotypeTerm matchPhenotype, double simJ, PhenotypeTerm lcs) {
+        this.queryPhenotype = queryPhenotype;
+        this.matchPhenotype = matchPhenotype;
+        this.simJ = simJ;
+        this.lcs = lcs;
     }
 
-    public double getIc() {
-        return ic;
+    public PhenotypeTerm getQueryPhenotype() {
+        return queryPhenotype;
     }
 
-    public void setIc(double ic) {
-        this.ic = ic;
+    public PhenotypeTerm getMatchPhenotype() {
+        return matchPhenotype;
+    }
+
+    public PhenotypeTerm getLcs() {
+        return lcs;
     }
 
     public double getSimJ() {
         return simJ;
     }
 
-    public void setSimJ(double simJ) {
-        this.simJ = simJ;
-    }
-
-    public String getLcs() {
-        return lcs;
-    }
-
-    public void setLcs(String lcs) {
-        this.lcs = lcs;
-    }
-
-    public PhenotypeTerm getMousePhenotype() {
-        return mousePhenotype;
-    }
-
-    public void setMousePhenotype(PhenotypeTerm mousePhenotype) {
-        this.mousePhenotype = mousePhenotype;
-    }
-
-    public PhenotypeTerm getHumanPhenotype() {
-        return humanPhenotype;
-    }
-
-    public void setHumanPhenotype(PhenotypeTerm humanPhenotype) {
-        this.humanPhenotype = humanPhenotype;
-    }
-
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 59 * hash + (int) (Double.doubleToLongBits(this.ic) ^ (Double.doubleToLongBits(this.ic) >>> 32));
-        hash = 59 * hash + (int) (Double.doubleToLongBits(this.simJ) ^ (Double.doubleToLongBits(this.simJ) >>> 32));
-        hash = 59 * hash + (this.mousePhenotype != null ? this.mousePhenotype.hashCode() : 0);
-        hash = 59 * hash + (this.humanPhenotype != null ? this.humanPhenotype.hashCode() : 0);
+        hash = 53 * hash + (int) (Double.doubleToLongBits(this.simJ) ^ (Double.doubleToLongBits(this.simJ) >>> 32));
+        hash = 53 * hash + Objects.hashCode(this.lcs);
+        hash = 53 * hash + Objects.hashCode(this.matchPhenotype);
+        hash = 53 * hash + Objects.hashCode(this.queryPhenotype);
         return hash;
     }
 
@@ -83,16 +63,16 @@ public class PhenotypeMatch {
             return false;
         }
         final PhenotypeMatch other = (PhenotypeMatch) obj;
-        if (Double.doubleToLongBits(this.ic) != Double.doubleToLongBits(other.ic)) {
-            return false;
-        }
         if (Double.doubleToLongBits(this.simJ) != Double.doubleToLongBits(other.simJ)) {
             return false;
         }
-        if (this.mousePhenotype != other.mousePhenotype && (this.mousePhenotype == null || !this.mousePhenotype.equals(other.mousePhenotype))) {
+        if (!Objects.equals(this.lcs, other.lcs)) {
             return false;
         }
-        if (this.humanPhenotype != other.humanPhenotype && (this.humanPhenotype == null || !this.humanPhenotype.equals(other.humanPhenotype))) {
+        if (!Objects.equals(this.matchPhenotype, other.matchPhenotype)) {
+            return false;
+        }
+        if (!Objects.equals(this.queryPhenotype, other.queryPhenotype)) {
             return false;
         }
         return true;
@@ -100,7 +80,7 @@ public class PhenotypeMatch {
 
     @Override
     public String toString() {
-        return "PhenotypeMatch{" + "ic=" + ic + ", simJ=" + simJ + ", mousePhenotype=" + mousePhenotype.getId() + ", humanPhenotype=" + humanPhenotype.getId() + '}';
+        return "PhenotypeMatch{" + "simJ=" + simJ + ", lcs=" + lcs + ", matchPhenotype=" + matchPhenotype + ", queryPhenotype=" + queryPhenotype + '}';
     }
     
 }

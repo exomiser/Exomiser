@@ -4,6 +4,8 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import java.util.Objects;
+
 /**
  * Represents a phenotype term from a phenotype ontology - e.g. the HPO, MPO, ZPO... 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -12,10 +14,12 @@ public class PhenotypeTerm {
     
     private final String id;
     private final String term;
+    private final double ic;
 
-    public PhenotypeTerm(String id, String term) {
+    public PhenotypeTerm(String id, String term, double ic) {
         this.id = id;
         this.term = term;
+        this.ic = ic;
     }
     
     public String getId() {
@@ -26,11 +30,16 @@ public class PhenotypeTerm {
         return term;
     }
 
+    public double getIc() {
+        return ic;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + (this.id != null ? this.id.hashCode() : 0);
-        hash = 37 * hash + (this.term != null ? this.term.hashCode() : 0);
+        int hash = 5;
+        hash = 97 * hash + Objects.hashCode(this.id);
+        hash = 97 * hash + Objects.hashCode(this.term);
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.ic) ^ (Double.doubleToLongBits(this.ic) >>> 32));
         return hash;
     }
 
@@ -43,19 +52,18 @@ public class PhenotypeTerm {
             return false;
         }
         final PhenotypeTerm other = (PhenotypeTerm) obj;
-        if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
+        if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        if ((this.term == null) ? (other.term != null) : !this.term.equals(other.term)) {
+        if (!Objects.equals(this.term, other.term)) {
             return false;
         }
-        return true;
+        return Double.doubleToLongBits(this.ic) == Double.doubleToLongBits(other.ic);
     }
-    
 
     @Override
     public String toString() {
-        return id + " " + term;
+        return "PhenotypeTerm{" + "id=" + id + ", term=" + term + ", ic=" + ic + '}';
     }
       
 }

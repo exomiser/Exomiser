@@ -43,12 +43,14 @@ public class Exomiser {
 
     private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
 
+    //TODO: this doesn't need to be injected - can just call new
     @Autowired
     private FilterFactory filterFactory;
     @Autowired
     private PriorityFactory priorityFactory;
     @Autowired
     private VariantEvaluationDataService variantEvaluationFactory;
+    //TODO: might be better using constructor injection to supply the  VariantEvaluationDataService to the SparseVariantFilterRunner
     @Autowired
     private SparseVariantFilterRunner sparseVariantFilterRunner;
 
