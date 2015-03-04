@@ -4,6 +4,8 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
@@ -28,10 +30,12 @@ public class PhenotypeMatch {
         this.lcs = lcs;
     }
 
+    @JsonProperty("a")
     public PhenotypeTerm getQueryPhenotype() {
         return queryPhenotype;
     }
 
+    @JsonProperty("b")
     public PhenotypeTerm getMatchPhenotype() {
         return matchPhenotype;
     }
@@ -40,6 +44,7 @@ public class PhenotypeMatch {
         return lcs;
     }
 
+    @JsonIgnore
     public double getSimJ() {
         return simJ;
     }

@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.writers.phenogrid;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import java.util.List;
 
@@ -13,11 +14,39 @@ import java.util.List;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PhenoGridMatch {
+
+    private final String id;
+    private final String label;
+    private final String type;
+
+    private final List<PhenotypeMatch> matches;
+
+    //score
+    //taxon
+    //metadata
+    //query term ids
+    PhenoGridMatch(String id, String label, String type, List<PhenotypeMatch> phenotypeMatches) {
+        this.id = id;
+        this.label = label;
+        this.type = type;
+        this.matches = phenotypeMatches;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public List<PhenotypeMatch> getMatches() {
+        return matches;
+    }
     
-    private String id;
-    private String label;
-    private String type;
-    
-    private List<PhenotypeMatch> matches;
     
 }

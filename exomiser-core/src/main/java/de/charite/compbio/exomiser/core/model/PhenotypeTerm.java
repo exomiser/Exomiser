@@ -4,6 +4,8 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
@@ -26,10 +28,12 @@ public class PhenotypeTerm {
         return id;
     }
 
+    @JsonProperty("label")
     public String getTerm() {
         return term;
     }
 
+    @JsonProperty("IC")
     public double getIc() {
         return ic;
     }
