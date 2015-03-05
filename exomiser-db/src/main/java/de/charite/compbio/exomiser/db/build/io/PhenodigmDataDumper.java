@@ -357,7 +357,7 @@ public class PhenodigmDataDumper {
         //hp_mp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, mp_id, sqrt(ic*simJ) as score from hp_mp_mapping";
+        String sql = "select hp_id, hp_term, mp_id, mp_term, simJ, ic, sqrt(ic*simJ) as score, lcs from hp_mp_mapping";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -370,8 +370,22 @@ public class PhenodigmDataDumper {
                 String hpId = rs.getString("hp_id");
                 String mpId = rs.getString("mp_id");
                 String score = rs.getString("score");
-
-                String outLine = String.format("%d|%s|%s|%s", id, hpId, mpId, score);
+                String hpTerm = rs.getString("hp_term");
+                String mpTerm = rs.getString("mp_term");
+                String simJ = rs.getString("simJ");
+                String ic = rs.getString("ic");
+                String lcs = rs.getString("lcs");
+                //logger.info(lcs);
+                String lcsId = "";
+                String lcsTerm = lcs;
+                String[] lcsParts = lcs.split("\\(");
+                if (lcsParts.length != 1){
+                    int terms = lcsParts.length;
+                    lcsTerm = lcsParts[0].trim();
+                    lcsId = lcsParts[terms - 1];
+                    lcsId = lcsId.replace(")", "");
+                }
+                String outLine = String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s", id, hpId, hpTerm, mpId, mpTerm, simJ, ic, score, lcsId, lcsTerm);
                 writer.write(outLine);
                 writer.newLine();
             }
@@ -388,7 +402,7 @@ public class PhenodigmDataDumper {
         //hp_mp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, zp_id, sqrt(ic*simJ) as score from hp_zp_mapping";
+        String sql = "select hp_id, hp_term, zp_id, zp_term, simJ, ic, sqrt(ic*simJ) as score, lcs from hp_zp_mapping";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -401,8 +415,22 @@ public class PhenodigmDataDumper {
                 String hpId = rs.getString("hp_id");
                 String zpId = rs.getString("zp_id");
                 String score = rs.getString("score");
-
-                String outLine = String.format("%d|%s|%s|%s", id, hpId, zpId, score);
+                String hpTerm = rs.getString("hp_term");
+                String zpTerm = rs.getString("zp_term");
+                String simJ = rs.getString("simJ");
+                String ic = rs.getString("ic");
+                String lcs = rs.getString("lcs");
+                //logger.info(lcs);
+                String lcsId = "";
+                String lcsTerm = lcs;
+                String[] lcsParts = lcs.split("\\(");
+                if (lcsParts.length != 1){
+                    int terms = lcsParts.length;
+                    lcsTerm = lcsParts[0].trim();
+                    lcsId = lcsParts[terms - 1];
+                    lcsId = lcsId.replace(")", "");
+                }
+                String outLine = String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s", id, hpId, hpTerm, zpId, zpTerm, simJ, ic, score, lcsId, lcsTerm);
                 writer.write(outLine);
                 writer.newLine();
             }
@@ -420,7 +448,7 @@ public class PhenodigmDataDumper {
         //hp_hp_mapping has a mapping_id column 
         int id = 0;
 
-        String sql = "select hp_id, hp_id_hit, sqrt(ic*simJ) as score from hp_hp_mapping";
+        String sql = "select hp_id, hp_term, hp_id_hit, hp_term_hit, simJ, ic, sqrt(ic*simJ) as score, lcs from hp_hp_mapping";
         //no need to close things when using the try-with-resources            
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
                 Connection connection = phenodigmDataSource.getConnection();
@@ -433,8 +461,22 @@ public class PhenodigmDataDumper {
                 String hpId = rs.getString("hp_id");
                 String hpIdHit = rs.getString("hp_id_hit");
                 String score = rs.getString("score");
-
-                String outLine = String.format("%d|%s|%s|%s", id, hpId, hpIdHit, score);
+                String hpTerm = rs.getString("hp_term");
+                String hpTermHit = rs.getString("hp_term_hit");
+                String simJ = rs.getString("simJ");
+                String ic = rs.getString("ic");
+                String lcs = rs.getString("lcs");
+                //logger.info(lcs);
+                String lcsId = "";
+                String lcsTerm = lcs;
+                String[] lcsParts = lcs.split("\\(");
+                if (lcsParts.length != 1){
+                    int terms = lcsParts.length;
+                    lcsTerm = lcsParts[0].trim();
+                    lcsId = lcsParts[terms - 1];
+                    lcsId = lcsId.replace(")", "");
+                }
+                String outLine = String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s", id, hpId, hpTerm, hpIdHit, hpTermHit, simJ, ic, score, lcsId, lcsTerm);
                 writer.write(outLine);
                 writer.newLine();
             }

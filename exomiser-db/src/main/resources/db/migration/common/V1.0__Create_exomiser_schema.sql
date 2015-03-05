@@ -64,8 +64,14 @@ DROP TABLE hp_mp_mappings IF EXISTS;
 CREATE TABLE hp_mp_mappings (
     mapping_id integer,
     hp_id character varying(10),
+    hp_term character varying(200),
     mp_id character varying(10),
-    score double precision
+    mp_term character varying(200),
+    simJ double precision,
+    ic double precision,
+    score double precision,
+    lcs_id character varying(10),
+    lcs_term character varying(150)
 );
 
 DROP TABLE mp IF EXISTS;
@@ -80,8 +86,14 @@ DROP TABLE hp_zp_mappings IF EXISTS;
 CREATE TABLE hp_zp_mappings (
     mapping_id integer,
     hp_id character varying(10),
+    hp_term character varying(200),
     zp_id character varying(10),
-    score double precision
+    zp_term character varying(200),
+    simJ double precision,
+    ic double precision,
+    score double precision,
+    lcs_id character varying(10),
+    lcs_term character varying(150)
 );
 
 DROP TABLE zp IF EXISTS;
@@ -256,8 +268,14 @@ DROP TABLE hp_hp_mappings IF EXISTS;
 CREATE TABLE hp_hp_mappings (
     mapping_id integer,
     hp_id character varying(10),
+    hp_term character varying(200),
     hp_id_hit character varying(10),
-    score double precision
+    hp_hit_term character varying(200),
+    simJ double precision,
+    ic double precision,
+    score double precision,
+    lcs_id character varying(10),
+    lcs_term character varying(150)
 );
 
 DROP TABLE disease_hp IF EXISTS;
