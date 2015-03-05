@@ -5,6 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
@@ -69,4 +72,17 @@ public class PhenotypeMatchTest {
         assertThat(instance.toString().isEmpty(), is(false));
     }
     
+    @Test
+    public void testJsonOutput() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+        try {
+            String jsonString = mapper.writeValueAsString(instance);
+            System.out.println(jsonString);
+        } catch (JsonProcessingException ex) {
+            System.out.println(ex);
+        }
+    }
+
 }

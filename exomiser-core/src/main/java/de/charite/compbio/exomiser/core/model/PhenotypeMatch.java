@@ -15,14 +15,14 @@ import java.util.Objects;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PhenotypeMatch {
-    //Jaccard similarity score
-    private final double simJ;
-    //lowest common subsumer
-    private final PhenotypeTerm lcs;
     
     private final PhenotypeTerm matchPhenotype;
     private final PhenotypeTerm queryPhenotype;
-
+    //lowest common subsumer
+    private final PhenotypeTerm lcs;
+    //Jaccard similarity score
+    private final double simJ;
+    
     public PhenotypeMatch(PhenotypeTerm queryPhenotype, PhenotypeTerm matchPhenotype, double simJ, PhenotypeTerm lcs) {
         this.queryPhenotype = queryPhenotype;
         this.matchPhenotype = matchPhenotype;
@@ -40,6 +40,7 @@ public class PhenotypeMatch {
         return matchPhenotype;
     }
 
+    @JsonProperty("lcs")
     public PhenotypeTerm getLcs() {
         return lcs;
     }

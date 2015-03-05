@@ -5,7 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.writers.phenogrid;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Used for storing results of a phenotypic analysis of a sample against a set
@@ -25,10 +27,12 @@ public class PhenoGrid {
         this.phenoGridMatchGroups = phenoGridMatchGroups;
     }
 
+    @JsonProperty("input_terms")
     public PhenoGridQueryTerms getPhenoGridQueryTerms() {
         return phenoGridQueryTerms;
     }
 
+    @JsonProperty("matches")
     public List<PhenoGridMatchGroup> getPhenoGridMatchGroups() {
         return phenoGridMatchGroups;
     }

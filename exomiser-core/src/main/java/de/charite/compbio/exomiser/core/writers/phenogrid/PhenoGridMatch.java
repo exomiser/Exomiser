@@ -5,11 +5,16 @@
  */
 package de.charite.compbio.exomiser.core.writers.phenogrid;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
+import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
+ * Data transport object for outputting phenotype match data to a disease or
+ * gene phenotype.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -20,16 +25,16 @@ public class PhenoGridMatch {
     private final String type;
 
     private final List<PhenotypeMatch> matches;
+    private final PhenoGridMatchScore score;
+    private final PhenoGridMatchTaxon taxon;
 
-    //score
-    //taxon
-    //metadata
-    //query term ids
-    PhenoGridMatch(String id, String label, String type, List<PhenotypeMatch> phenotypeMatches) {
+    PhenoGridMatch(String id, String label, String type, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
         this.id = id;
         this.label = label;
         this.type = type;
         this.matches = phenotypeMatches;
+        this.score = score;
+        this.taxon = taxon;
     }
 
     public String getId() {
@@ -47,6 +52,23 @@ public class PhenoGridMatch {
     public List<PhenotypeMatch> getMatches() {
         return matches;
     }
-    
-    
+
+    public PhenoGridMatchScore getScore() {
+        return score;
+    }
+
+    public PhenoGridMatchTaxon getTaxon() {
+        return taxon;
+    }
+
+    @JsonIgnore
+    public Set<String> getQueryTermIds() {
+        Set<String> queryTermIds = new TreeSet();
+        for (PhenotypeMatch phenotypeMatch : matches) {
+            PhenotypeTerm queryPhenotype = phenotypeMatch.getQueryPhenotype();
+            queryTermIds.add(queryPhenotype.getId());
+        }
+        return queryTermIds;
+    }
+
 }
