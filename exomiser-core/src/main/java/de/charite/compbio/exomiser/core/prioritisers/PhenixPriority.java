@@ -8,11 +8,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import ontologizer.go.OBOParser;
 import ontologizer.go.OBOParserException;
@@ -55,12 +55,12 @@ public class PhenixPriority implements Priority {
     /**
      * A list of error-messages
      */
-    private ArrayList<String> error_record = null;
+    private List<String> error_record = null;
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private ArrayList<String> messages = null;
+    private List<String> messages = null;
 
     /**
      * The semantic similarity measure used to calculate phenotypic similarity
@@ -70,15 +70,15 @@ public class PhenixPriority implements Priority {
      * The HPO terms entered by the user describing the individual who is being
      * sequenced by exome-sequencing or clinically relevant genome panel.
      */
-    private ArrayList<Term> hpoQueryTerms;
+    private List<Term> hpoQueryTerms;
 
     private float DEFAULT_SCORE = 0f;
 
-    private HashMap<String, ArrayList<Term>> geneId2annotations;
+    private Map<String, List<Term>> geneId2annotations;
 
-    private HashMap<Term, HashSet<String>> annotationTerm2geneIds;
+    private Map<Term, Set<String>> annotationTerm2geneIds;
 
-    private HashMap<Term, Double> term2ic;
+    private Map<Term, Double> term2ic;
 
     private final ScoreDistributionContainer scoredistributionContainer = new ScoreDistributionContainer();
 
@@ -139,7 +139,7 @@ public class PhenixPriority implements Priority {
         String hpoAnnotationFile = String.format("%s%s", scoreDistributionFolder, "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt");
         parseData(hpoOboFile, hpoAnnotationFile);
 
-        HashSet<Term> hpoQueryTermsHS = new HashSet<Term>();        
+        Set<Term> hpoQueryTermsHS = new HashSet<>();        
         for (String termIdString : hpoQueryTermIds) {
             Term t = hpo.getTermIncludingAlternatives(termIdString);
             if (t != null) {
@@ -148,7 +148,7 @@ public class PhenixPriority implements Priority {
                 logger.error("invalid term-id given: " + termIdString);
             }
         }
-        hpoQueryTerms = new ArrayList<Term>();
+        hpoQueryTerms = new ArrayList<>();
         hpoQueryTerms.addAll(hpoQueryTermsHS);
         this.symmetric = symmetric;
 
@@ -157,7 +157,7 @@ public class PhenixPriority implements Priority {
             scoredistributionContainer.parseDistributions(symmetric, numberQueryTerms, scoreDistributionFolder);
         }
 
-        ResnikSimilarity resnik = new ResnikSimilarity(hpo, term2ic);
+        ResnikSimilarity resnik = new ResnikSimilarity(hpo, (HashMap<Term, Double>) term2ic);
         similarityMeasure = new InformationContentObjectSimilarity(resnik, symmetric, false);
 
         /* some logging stuff */
@@ -191,7 +191,7 @@ public class PhenixPriority implements Priority {
      * @param hpoAnnotationFile path to the file
      */
     private void parseAnnotations(String hpoAnnotationFile) throws IOException {
-        geneId2annotations = new HashMap<String, ArrayList<Term>>();
+        geneId2annotations = new HashMap<String, List<Term>>();
 
         BufferedReader in = new BufferedReader(new FileReader(hpoAnnotationFile));
         String line = null;
@@ -218,7 +218,7 @@ public class PhenixPriority implements Priority {
                 continue;
             }
 
-            ArrayList<Term> annot;
+            List<Term> annot;
             if (geneId2annotations.containsKey(entrez)) {
                 annot = geneId2annotations.get(entrez);
             } else {
@@ -231,33 +231,30 @@ public class PhenixPriority implements Priority {
 
         // cleanup annotations
         for (String entrez : geneId2annotations.keySet()) {
-            ArrayList<Term> terms = geneId2annotations.get(entrez);
-            HashSet<Term> uniqueTerms = new HashSet<Term>(terms);
-            ArrayList<Term> uniqueTermsAL = new ArrayList<Term>();
+            List<Term> terms = geneId2annotations.get(entrez);
+            Set<Term> uniqueTerms = new HashSet<>(terms);
+            List<Term> uniqueTermsAL = new ArrayList<>();
             uniqueTermsAL.addAll(uniqueTerms);
-            ArrayList<Term> termsMostSpecific = HPOutils.cleanUpAssociation(uniqueTermsAL, hpoSlim, hpo.getRootTerm());
+            ArrayList<Term> termsMostSpecific = HPOutils.cleanUpAssociation((ArrayList<Term>)uniqueTermsAL, hpoSlim, hpo.getRootTerm());
             geneId2annotations.put(entrez, termsMostSpecific);
         }
 
         // prepare IC computation
-        annotationTerm2geneIds = new HashMap<Term, HashSet<String>>();
+        annotationTerm2geneIds = new HashMap<>();
         for (String oId : geneId2annotations.keySet()) {
-            ArrayList<Term> annotations = geneId2annotations.get(oId);
+            List<Term> annotations = geneId2annotations.get(oId);
             for (Term annot : annotations) {
-                ArrayList<Term> termAndAncestors = hpoSlim.getAncestors(annot);
+                List<Term> termAndAncestors = hpoSlim.getAncestors(annot);
                 for (Term t : termAndAncestors) {
-                    HashSet<String> objectsAnnotatedByTerm; // here we store
-                    // which objects
-                    // have been
-                    // annotated with
-                    // this term
+                    Set<String> objectsAnnotatedByTerm; 
+                    // here we store which objects have been annotated with this term
                     if (annotationTerm2geneIds.containsKey(t)) {
                         objectsAnnotatedByTerm = annotationTerm2geneIds.get(t);
                     } else {
-                        objectsAnnotatedByTerm = new HashSet<String>();
+                        objectsAnnotatedByTerm = new HashSet<>();
                     }
-
-                    objectsAnnotatedByTerm.add(oId); // add the current object
+                    // add the current object
+                    objectsAnnotatedByTerm.add(oId); 
                     annotationTerm2geneIds.put(t, objectsAnnotatedByTerm);
                 }
             }
@@ -307,7 +304,7 @@ public class PhenixPriority implements Priority {
      * @return list of messages representing process, result, and if any, errors
      * of score filtering.
      */
-    public ArrayList<String> getMessages() {
+    public List<String> getMessages() {
         if (this.error_record.size() > 0) {
             for (String s : error_record) {
                 this.messages.add("Error: " + s);
@@ -374,9 +371,9 @@ public class PhenixPriority implements Priority {
             return new PhenixPriorityResult(DEFAULT_SCORE);
         }
 
-        ArrayList<Term> annotationsOfGene = geneId2annotations.get(entrezGeneIdString);
+        List<Term> annotationsOfGene = geneId2annotations.get(entrezGeneIdString);
 
-        double similarityScore = similarityMeasure.computeObjectSimilarity(hpoQueryTerms, annotationsOfGene);
+        double similarityScore = similarityMeasure.computeObjectSimilarity( (ArrayList<Term>) hpoQueryTerms, (ArrayList<Term>) annotationsOfGene);
         if (similarityScore > maxSemSim) {
             maxSemSim = similarityScore;
         }
@@ -466,16 +463,16 @@ public class PhenixPriority implements Priority {
 
     }
 
-    private HashMap<Term, Double> caclulateTermIC(Ontology ontology, HashMap<Term, HashSet<String>> term2objectIdsAnnotated) {
+    private Map<Term, Double> caclulateTermIC(Ontology ontology, Map<Term, Set<String>> term2objectIdsAnnotated) {
 
         Term root = ontology.getRootTerm();
-        HashMap<Term, Integer> term2frequency = new HashMap<Term, Integer>();
+        Map<Term, Integer> term2frequency = new HashMap<>();
         for (Term t : term2objectIdsAnnotated.keySet()) {
             term2frequency.put(t, term2objectIdsAnnotated.get(t).size());
         }
 
         int maxFreq = term2frequency.get(root);
-        HashMap<Term, Double> term2informationContent = SimilarityUtilities.caculateInformationContent(maxFreq, term2frequency);
+        Map<Term, Double> term2informationContent = SimilarityUtilities.caculateInformationContent(maxFreq, (HashMap<Term, Integer>) term2frequency);
 
         int frequencyZeroCounter = 0;
         double ICzeroCountTerms = -1 * (Math.log(1 / (double) maxFreq));
