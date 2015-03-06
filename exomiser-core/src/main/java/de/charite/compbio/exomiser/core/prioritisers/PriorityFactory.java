@@ -81,9 +81,9 @@ public class PriorityFactory {
     }
 
     private List<String> addDiseasePhenotypeTermsIfHpoIdsIsEmpty(String diseaseId, List<String> hpoIds) {
-        if (diseaseId != null && !diseaseId.isEmpty() && hpoIds.isEmpty()) {
+        if (hpoIds.isEmpty() && diseaseId != null && !diseaseId.isEmpty()) {
             logger.info("HPO terms have not been specified. Setting HPO IDs using disease annotations for {}", diseaseId);
-            hpoIds = prioritiserService.getHpoIdsForDiseaseId(diseaseId);
+            return prioritiserService.getHpoIdsForDiseaseId(diseaseId);
         }
         return hpoIds;
     }

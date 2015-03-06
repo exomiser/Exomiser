@@ -25,8 +25,7 @@ public class PrioritiserServiceImpl implements PrioritiserService {
     @Cacheable(value="diseaseHp")
     @Override
     public List<String> getHpoIdsForDiseaseId(String diseaseId) {
-        List<String> diseaseHpoIds = new ArrayList<>(diseaseDao.getHpoIdsForDiseaseId(diseaseId));
-        return diseaseHpoIds;
+        return new ArrayList<>(diseaseDao.getHpoIdsForDiseaseId(diseaseId));
     }
 
 }

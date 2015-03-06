@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.*;
 import org.junit.Before;
@@ -37,6 +38,18 @@ public class PriorityFactoryTest {
         settingsBuilder = new SettingsBuilder();
     }
 
+    private ExomiserSettings buildValidSettingsWithPrioritiser(PriorityType priorityType) {
+        settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
+        settingsBuilder.usePrioritiser(priorityType);
+        return settingsBuilder.build();
+    }
+    
+    private SettingsBuilder getValidSettingsWithPrioritiser(PriorityType priorityType) {
+        settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
+        settingsBuilder.usePrioritiser(priorityType);
+        return settingsBuilder;
+    }
+        
     @Test
     public void testmakePrioritisersForNotSetPriorityReturnsJustOmimPrioritiser() {
         PriorityType type = PriorityType.NOT_SET;
@@ -74,6 +87,19 @@ public class PriorityFactoryTest {
     public void testmakePrioritisersForHiPhivePriorityReturnsThatAndOmimPrioritisers() {
         PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
         ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+
+        List<Prioritiser> prioritisers = instance.makePrioritisers(settings);
+        assertOmimAndOtherSpecifiedPrioritiserPresent(prioritisers, type);
+    }
+    
+    @Test
+    public void testmakeHiPhivePrioritiserWithDiseaseIdAndEmptyHpoListReturnsThatAndOmimPrioritisers() {
+        PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
+        List<String> emptyStringList = Collections.emptyList();
+        ExomiserSettings settings = getValidSettingsWithPrioritiser(type)
+                .diseaseId("OMIM:101600")
+                .hpoIdList(emptyStringList)
+                .build();
 
         List<Prioritiser> prioritisers = instance.makePrioritisers(settings);
         assertOmimAndOtherSpecifiedPrioritiserPresent(prioritisers, type);
@@ -126,10 +152,4 @@ public class PriorityFactoryTest {
         assertThat(prioritisers.isEmpty(), is(true));
     }
     
-    private ExomiserSettings buildValidSettingsWithPrioritiser(PriorityType priorityType) {
-        settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
-        settingsBuilder.usePrioritiser(priorityType);
-        return settingsBuilder.build();
-    }
-
 }

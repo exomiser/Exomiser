@@ -36,21 +36,6 @@ public class DefaultDiseaseDaoTest {
     @Autowired
     DiseaseDao instance;
     
-    @Test(expected = UnsupportedOperationException.class)
-    public void testGetDisease() {
-        instance.getDisease(new DiseaseIdentifier("OMIM:101600"));
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void testGetAllDiseases() {
-        instance.getAllDiseases();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void testGetKnownDiseasesForGene() {
-        instance.getKnownDiseasesForGene(new GeneIdentifier("Fgfr2", "MGI:11111"));
-    }
-
     @Test
     public void testGetHpoIdsForDiseaseId() {
         Set<String> omim101600HpoIds = new TreeSet<>(

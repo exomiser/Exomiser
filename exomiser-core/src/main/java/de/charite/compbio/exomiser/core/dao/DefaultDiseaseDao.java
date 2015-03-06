@@ -8,7 +8,6 @@ package de.charite.compbio.exomiser.core.dao;
 import de.charite.compbio.exomiser.core.model.Disease;
 import de.charite.compbio.exomiser.core.model.DiseaseIdentifier;
 import de.charite.compbio.exomiser.core.model.GeneIdentifier;
-import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,48 +34,6 @@ public class DefaultDiseaseDao implements DiseaseDao {
     @Autowired
     private DataSource dataSource;  
     
-    @Override
-    public Disease getDisease(DiseaseIdentifier diseaseId) {
-            try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement preparedFrequencyQuery = createPreparedStatement(connection, diseaseId);
-                ResultSet rs = preparedFrequencyQuery.executeQuery()) {
-            return processResults(rs);
-
-        } catch (SQLException e) {
-            logger.error("Error executing disease query: ", e);
-        }
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    private PreparedStatement createPreparedStatement(Connection connection, DiseaseIdentifier diseaseId) throws SQLException {
-        String query = "";
-        PreparedStatement ps = connection.prepareStatement(query);
-
-        
-
-        return ps;
-    }
-
-    private Disease processResults(ResultSet rs) throws SQLException {
-        
-
-        if (rs.next()) { 
-        }
-        
-        return new Disease();
-    }
-
-    @Override
-    public Set<Disease> getAllDiseases() {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public Set<Disease> getKnownDiseasesForGene(GeneIdentifier geneId) {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
     @Override
     public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
     
