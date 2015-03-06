@@ -5,9 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.model.Disease;
-import de.charite.compbio.exomiser.core.model.DiseaseIdentifier;
-import de.charite.compbio.exomiser.core.model.GeneIdentifier;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
