@@ -259,18 +259,18 @@ public class HiPhivePriority implements Priority {
         } 
         //INTERACTION WITH A HIGH QUALITY MOUSE/HUMAN PHENO HIT => 0 to 0.65 once scaled
         if (runPpi && randomWalkMatrix.containsGene(entrezGeneId) && !phenoGenes.isEmpty()) {
-                int col_idx = getColumnIndexOfMostPhenotypicallySimilarGene(gene, phenoGenes);
-                int row_idx = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
-                walkerScore = weightedHighQualityMatrix.get(row_idx, col_idx);
+                int columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(gene, phenoGenes);
+                int rowIndex = randomWalkMatrix.getRowIndexForGene(gene.getEntrezGeneID());
+                walkerScore = weightedHighQualityMatrix.get(rowIndex, columnIndex);
                 if (walkerScore <= 0.00001) {
                     walkerScore = 0f;
                 } else {
                     //walkerScore = val;
-                    String closestGene = phenoGeneSymbols.get(col_idx);
+                    String closestGene = phenoGeneSymbols.get(columnIndex);
                     String thisGene = gene.getGeneSymbol();
                     //String stringDbImageLink = "http://string-db.org/api/image/networkList?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
                     String stringDbLink = "http://string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + thisGene + "%0D" + closestGene + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
-                    entrezGeneId = phenoGenes.get(col_idx);
+                    entrezGeneId = phenoGenes.get(columnIndex);
                     double phenoScore = scores.get(entrezGeneId);
                     // HUMAN
                     if (humanScores.containsKey(entrezGeneId)) {
@@ -590,44 +590,44 @@ public class HiPhivePriority implements Priority {
         return hpMatches;
     }
 
-    private void calculateBestScoresFromHumanPhenotypes(Set<String> hpIdsWithPhenotypeMatch, Map<String, Float> best_mapped_term_score, Map<String, String> best_mapped_term_mpid, Map<String, Float> mapped_terms) {
+    private void calculateBestScoresFromHumanPhenotypes(Set<String> hpIdsWithPhenotypeMatch, Map<String, Float> bestMappedTermScore, Map<String, String> bestMappedTermMpId, Map<String, Float> mappedTerms) {
         // calculate perfect model scores for human
-        float sum_best_score = 0f;
+        float sumBestScore = 0f;
         // loop over each hp id should start here
         for (String hpId : hpIdsWithPhenotypeMatch) {
-            if (best_mapped_term_score.containsKey(hpId)) {
-                float hp_score = best_mapped_term_score.get(hpId);
+            if (bestMappedTermScore.containsKey(hpId)) {
+                float hpScore = bestMappedTermScore.get(hpId);
                 // add in scores for best match for the HP term
-                sum_best_score += hp_score;
-                if (hp_score > bestMaxScore) {
-                    bestMaxScore = hp_score;
+                sumBestScore += hpScore;
+                if (hpScore > bestMaxScore) {
+                    bestMaxScore = hpScore;
                 }
-                //logger.info("ADDING SCORE FOR " + hpid + " TO " + best_mapped_term_mpid.get(hpid) + " WITH SCORE " + hp_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
+                //logger.info("ADDING SCORE FOR " + hpid + " TO " + bestMappedTermMpId.get(hpid) + " WITH SCORE " + hpScore + ", SUM NOW " + sumBestScore + ", MAX NOW " + bestMaxScore);
                 // add in MP-HP hits
-                String mpId = best_mapped_term_mpid.get(hpId);
-                float best_score = 0f;
+                String mpId = bestMappedTermMpId.get(hpId);
+                float bestScore = 0f;
                 for (String hpId2 : hpIdsWithPhenotypeMatch) {
                     StringBuilder hashKey = new StringBuilder();
                     hashKey.append(hpId2);
                     hashKey.append(mpId);
-                    if (mapped_terms.get(hashKey.toString()) != null && mapped_terms.get(hashKey.toString()) > best_score) {
-                        best_score = mapped_terms.get(hashKey.toString());
+                    if (mappedTerms.get(hashKey.toString()) != null && mappedTerms.get(hashKey.toString()) > bestScore) {
+                        bestScore = mappedTerms.get(hashKey.toString());
                     }
                 }
                 // add in scores for best match for the MP term
-                sum_best_score += best_score;
-                //logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + best_score + ", SUM NOW " + sum_best_score + ", MAX NOW " + this.best_max_score);
-                if (best_score > bestMaxScore) {
-                    bestMaxScore = best_score;
+                sumBestScore += bestScore;
+                //logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + bestScore + ", SUM NOW " + sumBestScore + ", MAX NOW " + bestMaxScore);
+                if (bestScore > bestMaxScore) {
+                    bestMaxScore = bestScore;
                 }
             }
         }
-        bestAvgScore = sum_best_score / (2 * hpIdsWithPhenotypeMatch.size());
+        bestAvgScore = sumBestScore / (2 * hpIdsWithPhenotypeMatch.size());
     }
 
-    private void addBestMappedTerm(Map<String, Float> best_mapped_term_score, String hpid, float score, Map<String, String> best_mapped_term_mpid, String mp_id) {
-        best_mapped_term_score.put(hpid, score);
-        best_mapped_term_mpid.put(hpid, mp_id);
+    private void addBestMappedTerm(Map<String, Float> bestMappedTermScore, String hpId, float score, Map<String, String> bestMappedTermMpId, String mpId) {
+        bestMappedTermScore.put(hpId, score);
+        bestMappedTermMpId.put(hpId, mpId);
     }
 
     private void addScoreIfAbsentOrBetter(int entrez, double score, String hit, Map<Integer, Double> geneToScoreMap, Map<Integer, String> geneToDiseaseMap) {
@@ -779,7 +779,7 @@ public class HiPhivePriority implements Priority {
     }
 
     /**
-     * Set hpo_ids variable based on the entered disease
+     * Set hpoIds variable based on the entered disease
      */
     private List<String> getHpoIdsForDisease(String disease) {
         String hpoListString = "";

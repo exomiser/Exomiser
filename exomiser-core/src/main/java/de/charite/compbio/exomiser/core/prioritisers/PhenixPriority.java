@@ -161,8 +161,8 @@ public class PhenixPriority implements Priority {
         similarityMeasure = new InformationContentObjectSimilarity(resnik, symmetric, false);
 
         /* some logging stuff */
-        this.error_record = new ArrayList<String>();
-        this.messages = new ArrayList<String>();
+        this.error_record = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 
     private void parseData(String hpoOboFile, String hpoAnnotationFile) {
@@ -191,7 +191,7 @@ public class PhenixPriority implements Priority {
      * @param hpoAnnotationFile path to the file
      */
     private void parseAnnotations(String hpoAnnotationFile) throws IOException {
-        geneId2annotations = new HashMap<String, List<Term>>();
+        geneId2annotations = new HashMap<>();
 
         BufferedReader in = new BufferedReader(new FileReader(hpoAnnotationFile));
         String line = null;
@@ -235,7 +235,7 @@ public class PhenixPriority implements Priority {
             Set<Term> uniqueTerms = new HashSet<>(terms);
             List<Term> uniqueTermsAL = new ArrayList<>();
             uniqueTermsAL.addAll(uniqueTerms);
-            ArrayList<Term> termsMostSpecific = HPOutils.cleanUpAssociation((ArrayList<Term>)uniqueTermsAL, hpoSlim, hpo.getRootTerm());
+            List<Term> termsMostSpecific = HPOutils.cleanUpAssociation((ArrayList<Term>)uniqueTermsAL, hpoSlim, hpo.getRootTerm());
             geneId2annotations.put(entrez, termsMostSpecific);
         }
 
