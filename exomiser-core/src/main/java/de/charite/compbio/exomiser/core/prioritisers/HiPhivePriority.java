@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @author Damian Smedley <damian.smedley@sanger.ac.uk>
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class HiPhivePriority implements Priority {
+public class HiPhivePriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(HiPhivePriority.class);
 
@@ -141,11 +141,6 @@ public class HiPhivePriority implements Priority {
     public void prioritizeGenes(List<Gene> genes) {
 
         setUpOntologyCaches();
-
-        if (diseaseId != null && !diseaseId.isEmpty() && hpoIds.isEmpty()) {
-            logger.info("Setting HPO IDs using disease annotations for {}", diseaseId);
-            hpoIds = getHpoIdsForDisease(diseaseId);
-        }
 
         hpHpMatches = makeHpHpMatches(hpoIds);
         hpMpMatches = makeHpMpMatches(hpoIds);
@@ -776,34 +771,6 @@ public class HiPhivePriority implements Priority {
             logger.error("Unable to execute query '{}' for ontology terms cache", selectZpoQuery, e);
         }
         return termsCache;
-    }
-
-    /**
-     * Set hpoIds variable based on the entered disease
-     */
-    private List<String> getHpoIdsForDisease(String disease) {
-        String hpoListString = "";
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
-            hpoIdsStatement.setString(1, disease);
-            ResultSet rs = hpoIdsStatement.executeQuery();
-            rs.next();
-            hpoListString = rs.getString(1);
-        } catch (SQLException e) {
-            logger.error("Unable to retrieve HPO terms for disease {}", disease, e);
-        }
-        List<String> diseaseHpoIds = parseHpoIdListFromString(hpoListString);
-        logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), disease, diseaseHpoIds);
-        return diseaseHpoIds;
-    }
-
-    private List<String> parseHpoIdListFromString(String hpoIdsString) {
-        String[] hpoArray = hpoIdsString.split(",");
-        List<String> hpoIdList = new ArrayList<>();
-        for (String string : hpoArray) {
-            hpoIdList.add(string.trim());
-        }
-        return hpoIdList;
     }
 
 }

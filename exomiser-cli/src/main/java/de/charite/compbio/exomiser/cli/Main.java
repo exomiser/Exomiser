@@ -14,7 +14,6 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;

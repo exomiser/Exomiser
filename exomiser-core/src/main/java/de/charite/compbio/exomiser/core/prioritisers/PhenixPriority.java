@@ -38,7 +38,7 @@ import sonumina.math.graph.SlimDirectedGraphView;
  * @author Sebastian Koehler
  * @version 0.06 (6 December, 2013)
  */
-public class PhenixPriority implements Priority {
+public class PhenixPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenixPriority.class);
 

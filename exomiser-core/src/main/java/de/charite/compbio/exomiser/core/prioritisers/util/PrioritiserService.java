@@ -7,13 +7,14 @@ package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import java.util.List;
 
-
 /**
+ * Service for retrieving phenotype data from the database for use by the
+ * prioritisers.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface PrioritiserService {
-    
-    public List<String> getHpoIdsForDisease(String diseaseId);
-    
+
+    public List<String> getHpoIdsForDiseaseId(String diseaseId);
+
 }

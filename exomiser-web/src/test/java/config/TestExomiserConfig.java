@@ -23,8 +23,12 @@ import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserService;
+import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserServiceImpl;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.mockito.Mockito;
@@ -145,5 +149,15 @@ public class TestExomiserConfig {
     @Bean
     public VariantEvaluationDataService variantEvaluationDataService() {
         return Mockito.mock(VariantEvaluationDataService.class);
+    }
+    
+    @Bean
+    PrioritiserService prioritiserService() {
+        return new PrioritiserServiceImpl();
+    }
+    
+    @Bean
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
     }
 }

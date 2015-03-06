@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.dao;
 import de.charite.compbio.exomiser.core.model.Disease;
 import de.charite.compbio.exomiser.core.model.DiseaseIdentifier;
 import de.charite.compbio.exomiser.core.model.GeneIdentifier;
+import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.Set;
 
 /**
@@ -21,5 +22,7 @@ public interface DiseaseDao {
     public Disease getDisease(DiseaseIdentifier diseaseId);
 
     public Set<Disease> getKnownDiseasesForGene(GeneIdentifier geneId);
+    
+    public Set<String> getHpoIdsForDiseaseId(String diseaseId);
 
 }

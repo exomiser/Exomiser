@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserService;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,48 +32,60 @@ public class PriorityFactory {
     private static final Logger logger = LoggerFactory.getLogger(PriorityFactory.class);
 
     @Autowired
+    private PrioritiserService prioritiserService;
+    @Autowired
     private DataSource dataSource;
     @Autowired
     @Lazy
     private DataMatrix randomWalkMatrix;
     @Autowired
     private Path phenixDataDirectory;
-    
-    public List<Priority> makePrioritisers(ExomiserSettings exomiserSettings) {
-        
-        String disease = exomiserSettings.getDiseaseId();
+
+    public List<Prioritiser> makePrioritisers(ExomiserSettings exomiserSettings) {
+
+        String diseaseId = exomiserSettings.getDiseaseId();
         String candidateGene = exomiserSettings.getCandidateGene();
         List<String> hpoIds = exomiserSettings.getHpoIds();
         List<Integer> entrezSeedGenes = exomiserSettings.getSeedGeneList();
         String exomiser2Params = exomiserSettings.getExomiser2Params();
-        
+
         PriorityType priorityType = exomiserSettings.getPrioritiserType();
         if (priorityType == PriorityType.NONE) {
             return Collections.emptyList();
         }
-        
-        List<Priority> genePriorityList = new ArrayList<>();
+
+        List<Prioritiser> genePriorityList = new ArrayList<>();
         //TODO: OmimPrioritizer is specified implicitly - perhaps they should be different types of ExomiserSettings?
         //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. These might be badly named as the OMIM proritiser is currently the default.
         //always run OMIM unless the user specified what they really don't want to run any prioritisers
         genePriorityList.add(getOmimPrioritizer());
-        
+
         switch (priorityType) {
             case PHENIX_PRIORITY:
                 genePriorityList.add(getPhenixPrioritiser(hpoIds));
                 break;
             case HI_PHIVE_PRIORITY:
-                genePriorityList.add(getHiPhivePrioritiser(hpoIds, candidateGene, disease, exomiser2Params));
-                break;  
+                hpoIds = addDiseasePhenotypeTermsIfHpoIdsIsEmpty(diseaseId, hpoIds);
+                genePriorityList.add(getHiPhivePrioritiser(hpoIds, candidateGene, diseaseId, exomiser2Params));
+                break;
             case PHIVE_PRIORITY:
-                genePriorityList.add(getPhivePrioritiser(hpoIds,disease));
+                hpoIds = addDiseasePhenotypeTermsIfHpoIdsIsEmpty(diseaseId, hpoIds);
+                genePriorityList.add(getPhivePrioritiser(hpoIds, diseaseId));
                 break;
             case EXOMEWALKER_PRIORITY:
                 genePriorityList.add(getExomeWalkerPrioritiser(entrezSeedGenes));
-                break;                      
+                break;
         }
 
         return genePriorityList;
+    }
+
+    private List<String> addDiseasePhenotypeTermsIfHpoIdsIsEmpty(String diseaseId, List<String> hpoIds) {
+        if (diseaseId != null && !diseaseId.isEmpty() && hpoIds.isEmpty()) {
+            logger.info("HPO terms have not been specified. Setting HPO IDs using disease annotations for {}", diseaseId);
+            hpoIds = prioritiserService.getHpoIdsForDiseaseId(diseaseId);
+        }
+        return hpoIds;
     }
 
     public OMIMPriority getOmimPrioritizer() {
@@ -85,15 +98,15 @@ public class PriorityFactory {
     public PhenixPriority getPhenixPrioritiser(List<String> hpoIds) {
         Set<String> hpoIDset = new HashSet<>();
         hpoIDset.addAll(hpoIds);
-        
+
         boolean symmetric = false;
         PhenixPriority priority = new PhenixPriority(phenixDataDirectory.toString(), hpoIDset, symmetric);
         logger.info("Made new PhenIX Priority: {}", priority);
         return priority;
     }
 
-    public PhivePriority getPhivePrioritiser(List<String> hpoIds,String disease) {
-        PhivePriority priority = new PhivePriority(hpoIds,disease);
+    public PhivePriority getPhivePrioritiser(List<String> hpoIds, String disease) {
+        PhivePriority priority = new PhivePriority(hpoIds, disease);
         priority.setDataSource(dataSource);
         logger.info("Made new PHIVE Priority: {}", priority);
         return priority;
@@ -104,7 +117,7 @@ public class PriorityFactory {
         logger.info("Made new GeneWanderer Priority: {}", priority);
         return priority;
     }
-    
+
     public HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
         HiPhivePriority priority = new HiPhivePriority(hpoIds, candGene, disease, hiPhiveParams, randomWalkMatrix);
         priority.setDataSource(dataSource);

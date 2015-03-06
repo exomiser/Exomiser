@@ -16,9 +16,13 @@ import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserService;
+import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserServiceImpl;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import jannovar.reference.Chromosome;
 import java.net.URISyntaxException;
@@ -184,6 +188,16 @@ public class MainConfig {
     @Bean
     public PriorityFactory priorityFactory() {
         return new PriorityFactory();
+    }
+        
+    @Bean
+    PrioritiserService prioritiserService() {
+        return new PrioritiserServiceImpl();
+    }
+    
+    @Bean
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
     }
 
     @Bean

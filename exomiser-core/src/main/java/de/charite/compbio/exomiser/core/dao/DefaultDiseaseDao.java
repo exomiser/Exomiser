@@ -8,16 +8,19 @@ package de.charite.compbio.exomiser.core.dao;
 import de.charite.compbio.exomiser.core.model.Disease;
 import de.charite.compbio.exomiser.core.model.DiseaseIdentifier;
 import de.charite.compbio.exomiser.core.model.GeneIdentifier;
+import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -32,7 +35,6 @@ public class DefaultDiseaseDao implements DiseaseDao {
     @Autowired
     private DataSource dataSource;  
     
-    @Cacheable()
     @Override
     public Disease getDisease(DiseaseIdentifier diseaseId) {
             try (
@@ -44,14 +46,10 @@ public class DefaultDiseaseDao implements DiseaseDao {
         } catch (SQLException e) {
             logger.error("Error executing disease query: ", e);
         }
-        return null;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, DiseaseIdentifier diseaseId) throws SQLException {
-        // Added order by clause as sometimes have multiple rows for the same position, ref and alt and first row may have no freq data
-        // Can remove if future versions of database remove these duplicated rows
-
-        //TODO: optimise this query to remove the order by 
         String query = "";
         PreparedStatement ps = connection.prepareStatement(query);
 
@@ -71,12 +69,39 @@ public class DefaultDiseaseDao implements DiseaseDao {
 
     @Override
     public Set<Disease> getAllDiseases() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
     public Set<Disease> getKnownDiseasesForGene(GeneIdentifier geneId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
+
+    @Override
+    public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
+    
+        String hpoListString = "";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
+            hpoIdsStatement.setString(1, diseaseId);
+            ResultSet rs = hpoIdsStatement.executeQuery();
+            rs.next();
+            hpoListString = rs.getString(1);
+        } catch (SQLException e) {
+            logger.error("Unable to retrieve HPO terms for disease {}", diseaseId, e);
+        }
+        List<String> diseaseHpoIds = parseHpoIdListFromString(hpoListString);
+        logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), diseaseId, diseaseHpoIds);
+        return new TreeSet<>(diseaseHpoIds);
+    }
+
+    private List<String> parseHpoIdListFromString(String hpoIdsString) {
+        String[] hpoArray = hpoIdsString.split(",");
+        List<String> hpoIdList = new ArrayList<>();
+        for (String string : hpoArray) {
+            hpoIdList.add(string.trim());
+        }
+        return hpoIdList;
+    }    
     
 }

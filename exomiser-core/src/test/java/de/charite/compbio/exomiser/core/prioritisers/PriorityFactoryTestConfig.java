@@ -5,14 +5,17 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserService;
+import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserServiceImpl;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.jblas.DoubleMatrix;
 import org.jblas.FloatMatrix;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,5 +51,15 @@ public class PriorityFactoryTestConfig {
     @Bean
     Path phenixDataDirectory() {
         return Paths.get("stubPhenixDataDir");
+    }
+    
+    @Bean
+    PrioritiserService prioritiserService() {
+        return new PrioritiserServiceImpl();
+    }
+    
+    @Bean
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
     }
 }

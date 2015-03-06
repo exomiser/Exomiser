@@ -33,7 +33,7 @@ public class DefaultPrioritiserService implements PrioritiserService {
     /**
      * Set hpo_ids variable based on the entered disease
      */
-    public List<String> getHpoIdsForDisease(String diseaseId) {
+    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement preparedStatement = createPreparedStatement(connection, diseaseId);

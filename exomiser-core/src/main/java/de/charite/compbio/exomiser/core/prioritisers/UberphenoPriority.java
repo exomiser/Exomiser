@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author Sebastian Koehler
  * @version 0.05 (April 28, 2013)
  */
-public class UberphenoPriority implements Priority {
+public class UberphenoPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(UberphenoPriority.class);
 

@@ -10,8 +10,19 @@
     <cache name="pathogenicity" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU">
     </cache>
 
-
     <!--Frequency cache-->
     <cache name="frequency" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--disease HP terms -->
+    <cache name="diseaseHp" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--HP terms -->
+    <cache name="hpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--MP terms -->
+    <cache name="mpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--ZP terms -->
+    <cache name="zpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
 </ehcache>
