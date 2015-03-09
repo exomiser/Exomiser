@@ -7,6 +7,10 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.OntologyDao;
+import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
@@ -61,5 +65,20 @@ public class PriorityFactoryTestConfig {
     @Bean
     DiseaseDao diseaseDao() {
         return new DefaultDiseaseDao();
+    }
+    
+    @Bean
+    OntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+    
+    @Bean
+    OntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+    
+    @Bean
+    OntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
     }
 }

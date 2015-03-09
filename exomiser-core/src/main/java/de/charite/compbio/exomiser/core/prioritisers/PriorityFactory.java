@@ -121,6 +121,7 @@ public class PriorityFactory {
     public HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
         HiPhivePriority priority = new HiPhivePriority(hpoIds, candGene, disease, hiPhiveParams, randomWalkMatrix);
         priority.setDataSource(dataSource);
+        priority.setOntologyService(ontologyService);
         logger.info("Made new HiPHIVE Priority: {}", priority);
         return priority;
     }

@@ -42,4 +42,17 @@ public class DaoTestConfig {
     public DiseaseDao defaultDiseaseDao() {
         return new DefaultDiseaseDao();
     }
+    
+    @Bean
+    public HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+
+    @Bean MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+    
+    @Bean ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
+    }
 }

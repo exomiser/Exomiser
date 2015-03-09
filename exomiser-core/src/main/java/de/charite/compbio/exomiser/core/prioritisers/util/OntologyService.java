@@ -5,7 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
+import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service for retrieving phenotype data from the database for use by the
@@ -15,6 +17,12 @@ import java.util.List;
  */
 public interface OntologyService {
 
+    public Set<PhenotypeTerm> getHpoTerms();
+    
+    public Set<PhenotypeTerm> getMpoTerms();
+    
+    public Set<PhenotypeTerm> getZpoTerms();
+    
     public List<String> getHpoIdsForDiseaseId(String diseaseId);
 
 }
