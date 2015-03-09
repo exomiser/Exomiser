@@ -8,8 +8,8 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserService;
-import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -54,8 +54,8 @@ public class PriorityFactoryTestConfig {
     }
     
     @Bean
-    PrioritiserService prioritiserService() {
-        return new PrioritiserServiceImpl();
+    OntologyService ontologyService() {
+        return new OntologyServiceImpl();
     }
     
     @Bean

@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface PrioritiserService {
+public interface OntologyService {
 
     public List<String> getHpoIdsForDiseaseId(String diseaseId);
 

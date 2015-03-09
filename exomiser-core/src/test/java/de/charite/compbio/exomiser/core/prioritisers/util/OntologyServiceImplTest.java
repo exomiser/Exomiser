@@ -28,10 +28,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PrioritiserServiceImplTest {
+public class OntologyServiceImplTest {
     
     @InjectMocks
-    private PrioritiserServiceImpl instance;
+    private OntologyServiceImpl instance;
     
     @Mock
     DiseaseDao mockDiseaseDao;

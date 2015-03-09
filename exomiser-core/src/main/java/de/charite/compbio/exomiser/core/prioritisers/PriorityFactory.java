@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import de.charite.compbio.exomiser.core.prioritisers.util.PrioritiserService;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +32,7 @@ public class PriorityFactory {
     private static final Logger logger = LoggerFactory.getLogger(PriorityFactory.class);
 
     @Autowired
-    private PrioritiserService prioritiserService;
+    private OntologyService ontologyService;
     @Autowired
     private DataSource dataSource;
     @Autowired
@@ -83,7 +83,7 @@ public class PriorityFactory {
     private List<String> addDiseasePhenotypeTermsIfHpoIdsIsEmpty(String diseaseId, List<String> hpoIds) {
         if (hpoIds.isEmpty() && diseaseId != null && !diseaseId.isEmpty()) {
             logger.info("HPO terms have not been specified. Setting HPO IDs using disease annotations for {}", diseaseId);
-            return prioritiserService.getHpoIdsForDiseaseId(diseaseId);
+            return ontologyService.getHpoIdsForDiseaseId(diseaseId);
         }
         return hpoIds;
     }
