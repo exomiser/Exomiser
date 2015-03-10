@@ -13,7 +13,13 @@ DROP TABLE hp_hp_mappings IF EXISTS;
 CREATE TABLE hp_hp_mappings (
     mapping_id integer,
     hp_id character varying(10),
+    hp_term character varying(200),
     hp_id_hit character varying(10),
-    score double precision
+    hp_hit_term character varying(200),
+    simj double precision,
+    ic double precision,
+    score double precision,
+    lcs_id character varying(10),
+    lcs_term character varying(200)
 );
 

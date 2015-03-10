@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
+import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.List;
 import java.util.Set;
@@ -25,4 +26,9 @@ public interface OntologyService {
     
     public List<String> getHpoIdsForDiseaseId(String diseaseId);
 
+    public Set<PhenotypeMatch> getHpoMatchesForHpoTerm(PhenotypeTerm hpoTerm);
+
+    public Set<PhenotypeMatch> getMpoMatchesForHpoTerm(PhenotypeTerm hpoTerm);
+    
+    public Set<PhenotypeMatch> getZpoMatchesForHpoTerm(PhenotypeTerm hpoTerm);
 }

@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,7 +35,7 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
 
     @Override
     public Set<PhenotypeTerm> getAllTerms() {
-        String query = "select id, lcname from hpo";
+        String query = "select id, lcname as term from hpo";
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement ontologyTermsStatement = connection.prepareStatement(query);
@@ -43,8 +44,31 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
             return rsProcessor.processOntologyTermsResultSet(rs);
             
         } catch (SQLException e) {
-            logger.error("Unable to execute query '{}' for HPO termse", query, e);
+            logger.error("Unable to execute query '{}' for HPO terms", query, e);
         }
         return Collections.emptySet();
     }
+
+    @Override
+    public Set<PhenotypeMatch> getPhenotypeMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
+        String mappingQuery = "SELECT simj, ic, score, hp_id_hit AS hit_id, hp_hit_term AS hit_term, lcs_id, lcs_term FROM hp_hp_mappings WHERE hp_id = ?";
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement ps = setQueryHpId(connection, mappingQuery, hpoTerm);
+                ResultSet rs = ps.executeQuery()) {
+
+            return rsProcessor.processOntologyTermMatchResultSet(rs, hpoTerm);
+            
+        } catch (SQLException e) {
+            logger.error("Unable to execute query '{}' for HP-HP match terms", mappingQuery, e);
+        }
+        return Collections.emptySet();
+    }
+
+    private PreparedStatement setQueryHpId(final Connection connection, String mappingQuery, PhenotypeTerm hpoTerm) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(mappingQuery);
+        ps.setString(1, hpoTerm.getId());
+        return ps;
+    }
+    
 }

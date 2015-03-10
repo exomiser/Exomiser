@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,7 +35,7 @@ public class ZebraFishPhenotypeOntologyDao implements OntologyDao {
 
     @Override
     public Set<PhenotypeTerm> getAllTerms() {
-        String query = "SELECT zp_id, zp_term FROM zp";
+        String query = "SELECT zp_id as id, zp_term as term FROM zp";
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement ontologyTermsStatement = connection.prepareStatement(query);
@@ -46,6 +47,28 @@ public class ZebraFishPhenotypeOntologyDao implements OntologyDao {
             logger.error("Unable to execute query '{}' for ZPO terms", query, e);
         }
         return Collections.emptySet();
+    }
+
+    @Override
+    public Set<PhenotypeMatch> getPhenotypeMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
+        String mappingQuery = "SELECT simj, ic, score, zp_id AS hit_id, zp_term AS hit_term, lcs_id, lcs_term FROM hp_zp_mappings WHERE hp_id = ?";
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement ps = setQueryHpId(connection, mappingQuery, hpoTerm);
+                ResultSet rs = ps.executeQuery()) {
+
+            return rsProcessor.processOntologyTermMatchResultSet(rs, hpoTerm);
+            
+        } catch (SQLException e) {
+            logger.error("Unable to execute query '{}' for HP-ZP match terms", mappingQuery, e);
+        }
+        return Collections.emptySet();
+    }
+
+    private PreparedStatement setQueryHpId(final Connection connection, String mappingQuery, PhenotypeTerm hpoTerm) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(mappingQuery);
+        ps.setString(1, hpoTerm.getId());
+        return ps;
     }
     
 }

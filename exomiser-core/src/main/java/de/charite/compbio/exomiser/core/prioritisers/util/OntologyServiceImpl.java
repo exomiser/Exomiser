@@ -9,6 +9,7 @@ import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,21 @@ public class OntologyServiceImpl implements OntologyService {
     @Override
     public Set<PhenotypeTerm> getZpoTerms() {
         return zpoDao.getAllTerms();
+    }
+
+    @Override
+    public Set<PhenotypeMatch> getHpoMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
+        return hpoDao.getPhenotypeMatchesForHpoTerm(hpoTerm);
+    }
+
+    @Override
+    public Set<PhenotypeMatch> getMpoMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
+        return mpoDao.getPhenotypeMatchesForHpoTerm(hpoTerm);
+    }
+
+    @Override
+    public Set<PhenotypeMatch> getZpoMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
+        return zpoDao.getPhenotypeMatchesForHpoTerm(hpoTerm);
     }
 
 }

@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,7 +35,7 @@ public class MousePhenotypeOntologyDao implements OntologyDao {
 
     @Override
     public Set<PhenotypeTerm> getAllTerms() {
-        String query = "SELECT mp_id, mp_term FROM mp";
+        String query = "SELECT mp_id as id, mp_term as term FROM mp";
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement ontologyTermsStatement = connection.prepareStatement(query);
@@ -47,5 +48,28 @@ public class MousePhenotypeOntologyDao implements OntologyDao {
         }
         return Collections.emptySet();
     }
+
+    @Override
+    public Set<PhenotypeMatch> getPhenotypeMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
+        String mappingQuery = "SELECT simj, ic, score, mp_id AS hit_id, mp_term AS hit_term, lcs_id, lcs_term FROM hp_mp_mappings WHERE hp_id = ?";
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement ps = setQueryHpId(connection, mappingQuery, hpoTerm);
+                ResultSet rs = ps.executeQuery()) {
+
+            return rsProcessor.processOntologyTermMatchResultSet(rs, hpoTerm);
+            
+        } catch (SQLException e) {
+            logger.error("Unable to execute query '{}' for HP-MP match terms", mappingQuery, e);
+        }
+        return Collections.emptySet();
+    }
+
+    private PreparedStatement setQueryHpId(final Connection connection, String mappingQuery, PhenotypeTerm hpoTerm) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(mappingQuery);
+        ps.setString(1, hpoTerm.getId());
+        return ps;
+    }
+    
     
 }

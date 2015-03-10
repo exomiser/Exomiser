@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.Set;
 
@@ -16,4 +17,5 @@ public interface OntologyDao {
     
     public Set<PhenotypeTerm> getAllTerms();
     
+    public Set<PhenotypeMatch> getPhenotypeMatchesForHpoTerm(PhenotypeTerm hpoTerm);
 }
