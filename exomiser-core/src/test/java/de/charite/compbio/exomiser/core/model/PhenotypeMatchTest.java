@@ -26,6 +26,7 @@ public class PhenotypeMatchTest {
     private PhenotypeTerm queryPhenotype;
     private PhenotypeTerm matchPhenotype;
     private double simJ;
+    private double score;
     
     @Before
     public void setUp() {
@@ -33,8 +34,9 @@ public class PhenotypeMatchTest {
         queryPhenotype = new PhenotypeTerm("ID:12344", "big nose", 2.00);
         matchPhenotype = new PhenotypeTerm("ID:12355", "little nose", 2.00); 
         simJ = 0.8;
+        score = 1.26;
         
-        instance = new PhenotypeMatch(queryPhenotype, matchPhenotype, simJ, lcs);
+        instance = new PhenotypeMatch(queryPhenotype, matchPhenotype, simJ, score, lcs);
     }
 
     @Test
@@ -55,6 +57,11 @@ public class PhenotypeMatchTest {
     @Test
     public void testGetSimJ() {
         assertThat(instance.getSimJ(), equalTo(simJ));
+    }
+    
+    @Test
+    public void testGetScore() {
+        assertThat(instance.getScore(), equalTo(score));
     }
     
     @Test

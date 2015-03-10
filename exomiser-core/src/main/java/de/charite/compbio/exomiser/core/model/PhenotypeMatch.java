@@ -22,12 +22,14 @@ public class PhenotypeMatch {
     private final PhenotypeTerm lcs;
     //Jaccard similarity score
     private final double simJ;
+    private final double score;
     
-    public PhenotypeMatch(PhenotypeTerm queryPhenotype, PhenotypeTerm matchPhenotype, double simJ, PhenotypeTerm lcs) {
+    public PhenotypeMatch(PhenotypeTerm queryPhenotype, PhenotypeTerm matchPhenotype, double simJ, double score, PhenotypeTerm lcs) {
         this.queryPhenotype = queryPhenotype;
         this.matchPhenotype = matchPhenotype;
         this.simJ = simJ;
         this.lcs = lcs;
+        this.score = score;
     }
 
     @JsonProperty("a")
@@ -50,13 +52,19 @@ public class PhenotypeMatch {
         return simJ;
     }
 
+    @JsonIgnore
+    public double getScore() {
+        return score;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 53 * hash + (int) (Double.doubleToLongBits(this.simJ) ^ (Double.doubleToLongBits(this.simJ) >>> 32));
-        hash = 53 * hash + Objects.hashCode(this.lcs);
-        hash = 53 * hash + Objects.hashCode(this.matchPhenotype);
-        hash = 53 * hash + Objects.hashCode(this.queryPhenotype);
+        int hash = 5;
+        hash = 17 * hash + Objects.hashCode(this.matchPhenotype);
+        hash = 17 * hash + Objects.hashCode(this.queryPhenotype);
+        hash = 17 * hash + Objects.hashCode(this.lcs);
+        hash = 17 * hash + (int) (Double.doubleToLongBits(this.simJ) ^ (Double.doubleToLongBits(this.simJ) >>> 32));
+        hash = 17 * hash + (int) (Double.doubleToLongBits(this.score) ^ (Double.doubleToLongBits(this.score) >>> 32));
         return hash;
     }
 
@@ -69,16 +77,19 @@ public class PhenotypeMatch {
             return false;
         }
         final PhenotypeMatch other = (PhenotypeMatch) obj;
-        if (Double.doubleToLongBits(this.simJ) != Double.doubleToLongBits(other.simJ)) {
+        if (!Objects.equals(this.matchPhenotype, other.matchPhenotype)) {
+            return false;
+        }
+        if (!Objects.equals(this.queryPhenotype, other.queryPhenotype)) {
             return false;
         }
         if (!Objects.equals(this.lcs, other.lcs)) {
             return false;
         }
-        if (!Objects.equals(this.matchPhenotype, other.matchPhenotype)) {
+        if (Double.doubleToLongBits(this.simJ) != Double.doubleToLongBits(other.simJ)) {
             return false;
         }
-        if (!Objects.equals(this.queryPhenotype, other.queryPhenotype)) {
+        if (Double.doubleToLongBits(this.score) != Double.doubleToLongBits(other.score)) {
             return false;
         }
         return true;
@@ -86,7 +97,7 @@ public class PhenotypeMatch {
 
     @Override
     public String toString() {
-        return "PhenotypeMatch{" + "simJ=" + simJ + ", lcs=" + lcs + ", matchPhenotype=" + matchPhenotype + ", queryPhenotype=" + queryPhenotype + '}';
+        return "PhenotypeMatch{" + "matchPhenotype=" + matchPhenotype + ", queryPhenotype=" + queryPhenotype + ", lcs=" + lcs + ", simJ=" + simJ + ", score=" + score + '}';
     }
     
 }

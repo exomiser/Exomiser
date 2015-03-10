@@ -77,7 +77,7 @@ public class TestPhenoGridObjectCache {
         PhenotypeTerm poisonouslyWartyNose = new PhenotypeTerm("GRUF:444", "Poisonously warty nose", 4.0);
         PhenotypeTerm hideouslyWartyNose = new PhenotypeTerm("GRUF:443", "Hideously warty nose", 4.0);
         PhenotypeTerm wartyNose = new PhenotypeTerm("GRUF:440", "Warty nose", 2.0);
-        PhenotypeMatch noseMatch = new PhenotypeMatch(poisonouslyWartyNose, hideouslyWartyNose, 0.85, wartyNose);
+        PhenotypeMatch noseMatch = new PhenotypeMatch(poisonouslyWartyNose, hideouslyWartyNose, 0.85, 2.0, wartyNose);
         return noseMatch;
     }
 
@@ -85,7 +85,7 @@ public class TestPhenoGridObjectCache {
         PhenotypeTerm blackTongue = new PhenotypeTerm("GRUF:333", "Black tongue", 5.0);
         PhenotypeTerm forkedTongue = new PhenotypeTerm("GRUF:124", "Forked tongue", 5.0);
         PhenotypeTerm abnormalTongue = new PhenotypeTerm("GRUF:120", "Abnormal tongue", 3.0);
-        PhenotypeMatch tongueMatch = new PhenotypeMatch(blackTongue, forkedTongue, 0.9, abnormalTongue);
+        PhenotypeMatch tongueMatch = new PhenotypeMatch(blackTongue, forkedTongue, 0.9, 3.0, abnormalTongue);
         return tongueMatch;
     }
 
@@ -93,7 +93,7 @@ public class TestPhenoGridObjectCache {
         PhenotypeTerm purplePrickles = new PhenotypeTerm("GRUF:111", "Purple prickles", 4.0);
         PhenotypeTerm redPrickles = new PhenotypeTerm("GRUF:112", "Red prickles", 4.0);
         PhenotypeTerm colouredPrickles = new PhenotypeTerm("GRUF:110", "Coloured prickles", 2.0);
-        PhenotypeMatch prickleMatch = new PhenotypeMatch(purplePrickles, redPrickles, 0.7, colouredPrickles);
+        PhenotypeMatch prickleMatch = new PhenotypeMatch(purplePrickles, redPrickles, 0.7, 3.0, colouredPrickles);
         return prickleMatch;
     }
 
@@ -101,7 +101,7 @@ public class TestPhenoGridObjectCache {
         PhenotypeTerm knobblyKnee = new PhenotypeTerm("GRUF:222", "Knobbly knees", 5.0);
         PhenotypeTerm wobblyKnee = new PhenotypeTerm("GRUF:224", "Wobbly knees", 5.0);
         PhenotypeTerm unstableKnee = new PhenotypeTerm("GRUF:220", "Unstable knees", 3.0);
-        PhenotypeMatch kneeMatch = new PhenotypeMatch(knobblyKnee, wobblyKnee, 0.9, unstableKnee);
+        PhenotypeMatch kneeMatch = new PhenotypeMatch(knobblyKnee, wobblyKnee, 0.9, 3.0, unstableKnee);
         return kneeMatch;
     }
 
