@@ -3,15 +3,15 @@ package de.charite.compbio.exomiser.db.build.parsers;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import jannovar.common.Constants;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * We are parsing two different VCF files for population frequency data on
  * variants, the file from ESP and the file from dbSNP. The formats of the two
- * files are similar enough that we extract that into this superclass.
- * <P>
- * This classs encapsulates the functionality of parsing a basic VCF line,
+ * files are similar enough that we extract that into this superclass. <P> This
+ * classs encapsulates the functionality of parsing a basic VCF line,
  * transforming the coordinates of the variant from VCF-style to Annovar style
  * (if necessary), and also provides two convenience functions for parsing the
  * INFO field of the VCF line to extract minor allele frequency data and to
@@ -27,22 +27,24 @@ public class VCF2FrequencyParser {
 
     /**
      * This method parses a standard VCF line of a population frequency VCF file
-     * from ESP or dbSNP
-     * This is an example of the format:
-     * #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
-     * 1       10019   rs376643643     TA      T       .       .       RS=376643643;RSPOS=10020;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000200;WGT=1;VC=DIV;R5;OTHERKG
-     * 1       10054   rs373328635     CAA     C,CA    .       .       RS=373328635;RSPOS=10055;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000210;WGT=1;VC=DIV;R5;OTHERKG;NOC
-     * 1       10109   rs376007522     A       T       .       .       RS=376007522;RSPOS=10109;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000100;WGT=1;VC=SNV;R5;OTHERKG
-     * 
+     * from ESP or dbSNP This is an example of the format: #CHROM POS ID REF ALT
+     * QUAL FILTER INFO 1 10019 rs376643643 TA T . .
+     * RS=376643643;RSPOS=10020;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000200;WGT=1;VC=DIV;R5;OTHERKG
+     * 1 10054 rs373328635 CAA C,CA . .
+     * RS=373328635;RSPOS=10055;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000210;WGT=1;VC=DIV;R5;OTHERKG;NOC
+     * 1 10109 rs376007522 A T . .
+     * RS=376007522;RSPOS=10109;dbSNPBuildID=138;SSR=0;SAO=0;VP=0x050000020001000002000100;WGT=1;VC=SNV;R5;OTHERKG
+     *
      * @param line
-     * @return a <code>Frequency</code> object created from the input line.
+     * @return a
+     * <code>Frequency</code> object created from the input line.
      */
     public static ArrayList<Frequency> parseVCFline(String line) {
-        
+
         ArrayList<Frequency> frequencyList = new ArrayList<>();
 
         String fields[] = line.split("\t");
-        
+
         byte chrom = 0;
         try {
             chrom = chromosomeStringToByte(fields[0]);
@@ -51,61 +53,132 @@ public class VCF2FrequencyParser {
             logger.error("", e.getMessage());
             System.exit(1);
         }
-        
+
         int pos = Integer.parseInt(fields[1]);
-        /* Transform rsID to integer to save space. Note that if there are problems with parse we use
-         the constant NO_RSID = -1: */
+        /*
+         * Transform rsID to integer to save space. Note that if there are
+         * problems with parse we use the constant NO_RSID = -1:
+         */
         int rsId = rsIdToInt(fields[2]);
-        /* Uppercasing shouldn't be necessary acccording to the VCF standard, but occasionally
-         one sees VCF files with lower case for part of the sequences, e.g., to show indels. */
+        /*
+         * Uppercasing shouldn't be necessary acccording to the VCF standard,
+         * but occasionally one sees VCF files with lower case for part of the
+         * sequences, e.g., to show indels.
+         */
         String ref = fields[3].toUpperCase();
         String info = fields[7];
-        
-        /* dbSNP has introduced the concept of multiple minor alleles on the same VCF line with their
-         * frequencies reported in same order in the INFO field in the CAF section
-         * Because of this had to introduce a loop and move the dbSNP freq parsing to here. 
-         * Not ideal as ESP processing also goes through this method but does not use the 
-         * CAF field so should be skipped
+
+        /*
+         * dbSNP has introduced the concept of multiple minor alleles on the
+         * same VCF line with their frequencies reported in same order in the
+         * INFO field in the CAF section Because of this had to introduce a loop
+         * and move the dbSNP freq parsing to here. Not ideal as ESP processing
+         * also goes through this method but does not use the CAF field so
+         * should be skipped
          */
-        
+
         //String alt = fields[4].toUpperCase();
         String alts[] = fields[4].toUpperCase().split(",");
 
+        float ea = Constants.UNINITIALIZED_FLOAT;
+        float aa = Constants.UNINITIALIZED_FLOAT;
+        float all = Constants.UNINITIALIZED_FLOAT;
         ArrayList<String> minorFreqs = new ArrayList();
+        HashMap<String, String> exACFreqs = new HashMap();
         String A[] = info.split(";");
         for (String a : A) {
+            // freq data from dbSNP file
             // format has changed in latest field to ;CAF=[0.9812,.,0.01882]; where major allele is 1st followed by minor alleles in order of alt line
             if (a.startsWith("CAF=")) {
                 String parts[] = a.split(",");
-                for (String part : parts){
+                for (String part : parts) {
                     part = part.replace("]", "");
-                    minorFreqs.add(part);                    
+                    minorFreqs.add(part);
                 }
             }
+            // freq data from ESP file
+            if (a.startsWith("MAF=")) {
+                a = a.substring(4);
+                /**
+                 * This must now be a field with information for minor allele
+                 * frequency for EA,AA,All
+                 */
+                String minorAlleleFreqs[] = a.split(",");
+                if (minorAlleleFreqs.length == 3) {
+                    ea = Float.parseFloat(minorAlleleFreqs[0]);
+                    aa = Float.parseFloat(minorAlleleFreqs[1]);
+                    all = Float.parseFloat(minorAlleleFreqs[2]);
+                }
+            }
+            // freq data from ExAC file
+            if (a.startsWith("AC") || a.startsWith("AN")) {
+                String exACData[] = a.split("=");
+                exACFreqs.put(exACData[0], exACData[1]);
+            }
         }
-        
+        float afr = Constants.UNINITIALIZED_FLOAT;
+        float amr = Constants.UNINITIALIZED_FLOAT;
+        float eas = Constants.UNINITIALIZED_FLOAT;
+        float fin = Constants.UNINITIALIZED_FLOAT;
+        float nfe = Constants.UNINITIALIZED_FLOAT;
+        float oth = Constants.UNINITIALIZED_FLOAT;
+        float sas = Constants.UNINITIALIZED_FLOAT;
         int minorAlleleCounter = 1;
         for (String alt : alts) {
             // VCF files and Annovar-style annotations use different nomenclature for
             // indel variants. We use Annovar.
             transformVCF2AnnovarCoordinates(ref, alt, pos);
             float maf = Constants.UNINITIALIZED_FLOAT;
-            if (minorFreqs.size() > 0){
-                if (! minorFreqs.get(minorAlleleCounter).equals(".")){
+            if (minorFreqs.size() > 0) {
+                if (!minorFreqs.get(minorAlleleCounter).equals(".")) {
                     maf = Float.parseFloat(minorFreqs.get(minorAlleleCounter));
-                    /* NOTE that the dnSNP maf are given as proportion, whereas the ESP MAF
-                     are given as percent. In order not to loose numerical accurary, we will
-                     convert all to percent for the database. */
+                    /*
+                     * NOTE that the dnSNP maf are given as proportion, whereas
+                     * the ESP MAF are given as percent. In order not to loose
+                     * numerical accurary, we will convert all to percent for
+                     * the database.
+                     */
                     maf = maf * 100f;
                 }
             }
-            Frequency freq =  new Frequency(chrom, pos, ref, alt, rsId, maf, info);
+
+            if (exACFreqs.get("AN_AFR") != null && !exACFreqs.get("AN_AFR").equals("0")) {
+                afr = 100f * Integer.parseInt(exACFreqs.get("AC_AFR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AFR"));
+            }
+            if (exACFreqs.get("AN_AMR") != null && !exACFreqs.get("AN_AMR").equals("0")) {
+                amr = 100f * Integer.parseInt(exACFreqs.get("AC_AMR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AMR"));
+            }
+            if (exACFreqs.get("AN_EAS") != null && !exACFreqs.get("AN_EAS").equals("0")) {
+                eas = 100f * Integer.parseInt(exACFreqs.get("AC_EAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_EAS"));
+            }
+            if (exACFreqs.get("AN_FIN") != null && !exACFreqs.get("AN_FIN").equals("0")) {
+                fin = 100f * Integer.parseInt(exACFreqs.get("AC_FIN").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_FIN"));
+            }
+            if (exACFreqs.get("AN_NFE") != null && !exACFreqs.get("AN_NFE").equals("0")) {
+                nfe = 100f * Integer.parseInt(exACFreqs.get("AC_NFE").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_NFE"));
+            }
+            if (exACFreqs.get("AN_OTH") != null && !exACFreqs.get("AN_OTH").equals("0")) {
+                oth = 100f * Integer.parseInt(exACFreqs.get("AC_OTH").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_OTH"));
+            }
+            if (exACFreqs.get("AN_SAS") != null && !exACFreqs.get("AN_SAS").equals("0")) {
+                sas = 100f * Integer.parseInt(exACFreqs.get("AC_SAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_SAS"));
+            }
+            Frequency freq = new Frequency(chrom, pos, ref, alt, rsId, maf);
+            freq.setESPFrequencyEA(ea);
+            freq.setESPFrequencyAA(aa);
+            freq.setESPFrequencyAll(all);
+            freq.setExACFrequencyAfr(afr);
+            freq.setExACFrequencyAmr(amr);
+            freq.setExACFrequencyEas(eas);
+            freq.setExACFrequencyFin(fin);
+            freq.setExACFrequencyNfe(nfe);
+            freq.setExACFrequencyOth(oth);
+            freq.setExACFrequencySas(sas);
             frequencyList.add(freq);
             minorAlleleCounter++;
         }
         return frequencyList;
     }
-
 
     /**
      * VCF files and Annovar-style annotations use different nomenclature for
@@ -116,25 +189,46 @@ public class VCF2FrequencyParser {
      */
     private static void transformVCF2AnnovarCoordinates(String ref, String alt, int pos) {
         if (ref.length() == 1 && alt.length() == 1) {
-            /* i.e., single nucleotide variant */
-            /* In this case, no changes are needed. */
+            /*
+             * i.e., single nucleotide variant
+             */
+            /*
+             * In this case, no changes are needed.
+             */
             return;
         } else if (ref.length() > alt.length()) {
-            /* deletion or block substitution */
+            /*
+             * deletion or block substitution
+             */
             String head = ref.substring(0, alt.length());
-            /*System.out.println(String.format("1) ref=%s (%d nt), alt=%s (%d nt), head=%s (%d nt)",
-             ref,ref.length(),alt,alt.length(),head,head.length()));*/
-            /* For instance, if we have ref=TCG, alt=T, there is a two nt deletion, and head is "T" */
+            /*
+             * System.out.println(String.format("1) ref=%s (%d nt), alt=%s (%d
+             * nt), head=%s (%d nt)",
+             ref,ref.length(),alt,alt.length(),head,head.length()));
+             */
+            /*
+             * For instance, if we have ref=TCG, alt=T, there is a two nt
+             * deletion, and head is "T"
+             */
             if (head.equals(alt)) {
-                pos = pos + head.length(); /* this advances to position of mutation */
+                pos = pos + head.length(); /*
+                 * this advances to position of mutation
+                 */
                 ref = ref.substring(alt.length());
                 alt = "-";
             }
         } else if (alt.length() >= ref.length()) {
-            /*  insertion or block substitution */
-            String head = alt.substring(0, ref.length()); /* get first L nt of ALT (where L is length of REF) */
-            /* System.out.println(String.format("2) ref=%s (%d nt), alt=%s (%d nt), head=%s (%d nt)",
-             ref,ref.length(),alt,alt.length(),head,head.length()));*/
+            /*
+             * insertion or block substitution
+             */
+            String head = alt.substring(0, ref.length()); /*
+             * get first L nt of ALT (where L is length of REF)
+             */
+            /*
+             * System.out.println(String.format("2) ref=%s (%d nt), alt=%s (%d
+             * nt), head=%s (%d nt)",
+             ref,ref.length(),alt,alt.length(),head,head.length()));
+             */
 
             if (head.equals(ref)) {
                 pos = pos + ref.length() - 1;
@@ -143,10 +237,10 @@ public class VCF2FrequencyParser {
             }
         }
     }
-    
+
     /**
-     * @param rsId A dbSNP rsID such as rs101432848. In rare cases may be multiple
-     * e.g., rs200118651;rs202059104 (then just take last id)
+     * @param rsId A dbSNP rsID such as rs101432848. In rare cases may be
+     * multiple e.g., rs200118651;rs202059104 (then just take last id)
      * @return int value of id with the 'rs' removed
      */
     private static int rsIdToInt(String rsId) {
@@ -154,7 +248,9 @@ public class VCF2FrequencyParser {
         if (A.length > 1) {
             return rsIdToInt(A[A.length - 1]);
         }
-        /* If we get here there is just one rsID */
+        /*
+         * If we get here there is just one rsID
+         */
         if (rsId.startsWith("rs")) {
             return Integer.parseInt(rsId.substring(2));
         }
@@ -184,5 +280,4 @@ public class VCF2FrequencyParser {
         }
         return chr;
     }
-
 }

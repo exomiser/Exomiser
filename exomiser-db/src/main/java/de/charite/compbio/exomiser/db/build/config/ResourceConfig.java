@@ -6,23 +6,7 @@
 
 package de.charite.compbio.exomiser.db.build.config;
 
-import de.charite.compbio.exomiser.db.build.parsers.ClinVarParser;
-import de.charite.compbio.exomiser.db.build.parsers.DbSnpFrequencyParser;
-import de.charite.compbio.exomiser.db.build.parsers.DiseaseInheritanceCache;
-import de.charite.compbio.exomiser.db.build.parsers.EntrezParser;
-import de.charite.compbio.exomiser.db.build.parsers.EspFrequencyParser;
-import de.charite.compbio.exomiser.db.build.parsers.HPOOntologyFileParser;
-import de.charite.compbio.exomiser.db.build.parsers.MetaDataParser;
-import de.charite.compbio.exomiser.db.build.parsers.MimToGeneParser;
-import de.charite.compbio.exomiser.db.build.parsers.MorbidMapParser;
-import de.charite.compbio.exomiser.db.build.parsers.NSFP2SQLDumpParser;
-import de.charite.compbio.exomiser.db.build.parsers.Omim2GeneParser;
-import de.charite.compbio.exomiser.db.build.parsers.OmimResourceGroupParser;
-import de.charite.compbio.exomiser.db.build.parsers.PhenoSeriesParser;
-import de.charite.compbio.exomiser.db.build.parsers.ResourceGroupParser;
-import de.charite.compbio.exomiser.db.build.parsers.StringParser;
-import de.charite.compbio.exomiser.db.build.parsers.StringResourceGroupParser;
-import de.charite.compbio.exomiser.db.build.parsers.VariantFrequencyResourceGroupParser;
+import de.charite.compbio.exomiser.db.build.parsers.*;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -69,7 +53,7 @@ public class ResourceConfig {
             resources.add(exomeWalkerPhenotypicSeriesResource());
             resources.add(exomeWalkerOmimToGeneResource());
             
-            resources.add(clinVarResource());
+            //resources.add(clinVarResource());
             resources.add(metaDataResource());
             
             //these ones are biggies:
@@ -78,6 +62,7 @@ public class ResourceConfig {
             resources.add(dbSnpResource());
             resources.add(espResource());
             resources.add(hgResource());
+            resources.add(exacResource());
 
             //UCSC resource files for making the ucsc.ser file - 
             //these are download only
@@ -162,6 +147,25 @@ public class ResourceConfig {
         resource.setExtractionScheme("copy"); //can also do a gz 
         //parsing
         resource.setParserClass(DbSnpFrequencyParser.class);
+        resource.setParsedFileName("frequency.pg");
+        //resource groups
+        resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
+        resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
+        
+        return resource;
+    }
+    
+    @Bean
+    public Resource exacResource() {
+        logger.info("Making ExAC resource");
+        Resource resource = new Resource("ExAC");
+        resource.setUrl("ftp://ftp.broadinstitute.org/pub/ExAC_release/current/");
+        resource.setRemoteFileName("ExAC.r0.3.sites.vep.vcf.gz");
+        resource.setVersion("0.3");
+        resource.setExtractedFileName("ExAC.r0.3.sites.vep.vcf.gz");
+        resource.setExtractionScheme("copy"); //can also do a gz 
+        //parsing
+        resource.setParserClass(ExACFrequencyParser.class);
         resource.setParsedFileName("frequency.pg");
         //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);

@@ -35,6 +35,7 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
     Resource dbSnpResource;
     Resource espResource;
     Resource ucscHgResource;
+    Resource exacResource;
 
     public VariantFrequencyResourceGroupParser() {
     }
@@ -63,15 +64,19 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         if (frequencyList.isEmpty()) {
             logger.error("DbSnpFrequencyParser returned no Frequency data.");
         }
+        
+        // Now parseResource the ExAC data using the frequency information generated
+        // from the dbSNP and UCSC known gene data.
+        ExACFrequencyParser exacParser = new ExACFrequencyParser(frequencyList);
+        logger.info("Parsing the ExAC data");
+        exacParser.parseResource(exacResource, inDir, outDir);
+        
         // Now parseResource the ESP data using the frequency information generated
         // from the dbSNP and UCSC known gene data.
         EspFrequencyParser espParser = new EspFrequencyParser(frequencyList);
         logger.info("Parsing the ESP data");
         espParser.parseResource(espResource, inDir, outDir);
-//        /* Remove duplicates */
-//        if (frequencyList == null || frequencyList.isEmpty()) {
-//            logger.error("Attempt to remove duplicates from null or empty frequencyList");
-//        }
+
 
         //doesn't matter which resource we choose the parsed file name from as they 
         //should all the the same
@@ -93,6 +98,12 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         dbSnpResource = resourceGroup.getResource(DbSnpFrequencyParser.class);
         if (dbSnpResource == null) {
             logResourceMissing(resourceGroup.getName(), DbSnpFrequencyParser.class);
+            return false;
+        }
+        
+        exacResource = resourceGroup.getResource(ExACFrequencyParser.class);
+        if (exacResource == null) {
+            logResourceMissing(resourceGroup.getName(), ExACFrequencyParser.class);
             return false;
         }
         

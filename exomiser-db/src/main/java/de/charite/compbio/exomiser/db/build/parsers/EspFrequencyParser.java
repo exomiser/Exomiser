@@ -149,7 +149,18 @@ public class EspFrequencyParser implements ResourceParser {
                 }
                 ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */;
                 for (Frequency frequency : frequencyPerLine) {
-                    parseEspDataFromVCFInfoField(frequency);
+                    //parseEspDataFromVCFInfoField(frequency);
+                    int idx = Collections.binarySearch(frequencyList, frequency, comparator);
+                    if (idx < 0) {
+                    /* This means we have not found this variant in the dbSNP data */
+                        espFrequencyList.add(frequency);
+                    } else {
+                    /* replace f with the pre-exisiting Frequency object that contains dbSNP data for this variant */
+                        Frequency existingFrequency = frequencyList.get(idx);
+                        existingFrequency.setESPFrequencyEA(frequency.getESPFrequencyEA());
+                        existingFrequency.setESPFrequencyAA(frequency.getESPFrequencyAA());
+                        existingFrequency.setESPFrequencyAll(frequency.getESPFrequencyAll());
+                    }
                 }
                 //Frequency frequency = VCF2FrequencyParser.parseVCFline(line);
                 //parseEspDataFromVCFInfoField(frequency);
@@ -160,52 +171,6 @@ public class EspFrequencyParser implements ResourceParser {
         }
         logger.info("{}", ResourceOperationStatus.SUCCESS);        
         return ResourceOperationStatus.SUCCESS;
-    }
-
-    /**
-     * Inputs a single line of the ESP data. Note that the ESP MAF data are
-     * given in percent. The method is intended to be called right after the
-     * method {@link #parseVCFline} is called. This method sets the class-level
-     * variables {@link #id} and {@link #info} from the Superclass.
-     */
-    private void parseEspDataFromVCFInfoField(Frequency frequency) {
-        float ea = Constants.UNINITIALIZED_FLOAT;
-        float aa = Constants.UNINITIALIZED_FLOAT;
-        float all = Constants.UNINITIALIZED_FLOAT;
-
-        String infos[] = frequency.getInfo().split(";");
-        for (String field : infos) {
-            if (field.startsWith("MAF=")) {
-                field = field.substring(4);
-                /**
-                 * This must now be a field with information for minor allele
-                 * frequency for EA,AA,All
-                 */
-                String minorAlleleFreqs[] = field.split(",");
-                if (minorAlleleFreqs.length == 3) {
-                    ea = Float.parseFloat(minorAlleleFreqs[0]);
-                    aa = Float.parseFloat(minorAlleleFreqs[1]);
-                    all = Float.parseFloat(minorAlleleFreqs[2]);
-
-                }
-                /* If minorAlleleFreqs does not have three fields, something went wrong with the
-                 parseResource and we leave the three variables EA, AA, all uninitialized. */
-                break;
-            }
-        }
-
-        int idx = Collections.binarySearch(frequencyList, frequency, comparator);
-        if (idx < 0) {
-            /* This means we have not found this variant in the dbSNP data */
-            espFrequencyList.add(frequency);
-        } else {
-            /* replace f with the pre-exisiting Frequency object that contains dbSNP data for this variant */
-            frequency = frequencyList.get(idx);
-        }
-        /* Now add the ESP frequency information */
-        frequency.setESPFrequencyEA(ea);
-        frequency.setESPFrequencyAA(aa);
-        frequency.setESPFrequencyAll(all);
     }
 
     /**
