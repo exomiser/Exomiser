@@ -68,17 +68,17 @@ public class PriorityFactoryTestConfig {
     }
     
     @Bean
-    OntologyDao humanPhenotypeOntologyDao() {
+    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
         return new HumanPhenotypeOntologyDao();
     }
     
     @Bean
-    OntologyDao mousePhenotypeOntologyDao() {
+    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
         return new MousePhenotypeOntologyDao();
     }
     
     @Bean
-    OntologyDao zebraFishPhenotypeOntologyDao() {
+    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
         return new ZebraFishPhenotypeOntologyDao();
     }
 }
