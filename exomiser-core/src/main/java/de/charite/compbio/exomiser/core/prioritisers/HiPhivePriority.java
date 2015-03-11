@@ -409,6 +409,9 @@ public class HiPhivePriority implements Prioritiser {
         //hpId : mpId
         Map<String, String> bestMappedTermsMpId = new HashMap<>();
         
+        //TODO: make matchedTermIds from  matches, 
+        //TODO: remove matchedTermIds and matchedTermScores
+        //TODO: take matches as input argument for runDynamicQuery
         Set<String> matchedTermIds = new HashSet<>();
         //'hpId + mpId' : score
         Map<String, Float> matchedTermScores = new HashMap<>();
@@ -449,6 +452,7 @@ public class HiPhivePriority implements Prioritiser {
         }
 
         if (species == Species.HUMAN) {
+            //TODO: replace matchedTermScores with matches
             calculateBestScoresFromHumanPhenotypes(hpIdsWithPhenotypeMatch, bestMappedTermsScore, bestMappedTermsMpId, matchedTermScores);
         }
         //TODO: needed here or do before? 
@@ -495,7 +499,7 @@ public class HiPhivePriority implements Prioritiser {
                     double bestScore = 0d;
                     for (String mpId : matchedPhenotypeIdsForModel) {
                         String matchIds = hpId + mpId;
-                        if (matchedTermScores.containsKey(matchIds)) {
+                        if (matches.containsKey(matchIds)) {
                             PhenotypeMatch match = matches.get(matchIds);
                             double score = match.getScore();
                             // identify best match                                                                                                                                                                 
@@ -515,7 +519,7 @@ public class HiPhivePriority implements Prioritiser {
                     double bestScore = 0f;
                     for (String hpId : hpIdsWithPhenotypeMatch) {
                         String matchIds = hpId + mpId;
-                        if (matchedTermScores.containsKey(matchIds)) {
+                        if (matches.containsKey(matchIds)) {
                             PhenotypeMatch match = matches.get(matchIds);
                             double score = match.getScore();
                             // identify best match                                                                                                                                                                 
