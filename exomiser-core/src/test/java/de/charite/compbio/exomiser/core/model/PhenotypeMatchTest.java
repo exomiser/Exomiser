@@ -40,10 +40,32 @@ public class PhenotypeMatchTest {
     }
 
     @Test
+    public void testGetQueryPhenotypeId() {
+        assertThat(instance.getQueryPhenotypeId(), equalTo(queryPhenotype.getId()));
+    }
+    
+    @Test
+    public void testGetQueryPhenotypeIdForNullInstance() {
+        instance = new PhenotypeMatch(null, matchPhenotype, simJ, score, lcs);
+        assertThat(instance.getQueryPhenotypeId(), equalTo("null"));
+    }
+    
+    @Test
     public void testGetQueryPhenotype() {
         assertThat(instance.getQueryPhenotype(), equalTo(queryPhenotype));
     }
 
+    @Test
+    public void testGetMatchPhenotypeId() {
+        assertThat(instance.getMatchPhenotypeId(), equalTo(matchPhenotype.getId()));
+    }
+    
+    @Test
+    public void testGetMatchPhenotypeIdForNullInstance() {
+        instance = new PhenotypeMatch(queryPhenotype, null, simJ, score, lcs);
+        assertThat(instance.getMatchPhenotypeId(), equalTo("null"));
+    }
+    
     @Test
     public void testGetMatchPhenotype() {
         assertThat(instance.getMatchPhenotype(), equalTo(matchPhenotype));

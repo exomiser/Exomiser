@@ -32,11 +32,21 @@ public class PhenotypeMatch {
         this.score = score;
     }
 
+    @JsonIgnore
+    public String getQueryPhenotypeId() {
+        return (queryPhenotype == null) ? "null" : queryPhenotype.getId();
+    }
+    
     @JsonProperty("a")
     public PhenotypeTerm getQueryPhenotype() {
         return queryPhenotype;
     }
 
+    @JsonIgnore
+    public String getMatchPhenotypeId() {
+        return (matchPhenotype == null) ? "null" : matchPhenotype.getId();
+    }
+    
     @JsonProperty("b")
     public PhenotypeTerm getMatchPhenotype() {
         return matchPhenotype;
