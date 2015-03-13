@@ -31,4 +31,6 @@ public interface OntologyService {
     public Set<PhenotypeMatch> getMpoMatchesForHpoTerm(PhenotypeTerm hpoTerm);
     
     public Set<PhenotypeMatch> getZpoMatchesForHpoTerm(PhenotypeTerm hpoTerm);
+
+    public PhenotypeTerm getPhenotypeTermForHpoId(String hpoId);
 }

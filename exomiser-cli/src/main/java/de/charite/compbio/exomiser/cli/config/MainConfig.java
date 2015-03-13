@@ -25,8 +25,11 @@ import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import jannovar.reference.Chromosome;
 import java.net.URISyntaxException;
@@ -194,6 +197,16 @@ public class MainConfig {
         return new PriorityFactory();
     }
         
+    @Bean
+    PriorityService priorityService() {
+        return new PriorityService();
+    }
+    
+    @Bean
+    ModelService modelService() {
+        return new ModelServiceImpl();
+    }
+    
     @Bean
     OntologyService ontologyService() {
         return new OntologyServiceImpl();

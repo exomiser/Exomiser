@@ -12,8 +12,11 @@ import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.OntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -55,6 +58,16 @@ public class PriorityFactoryTestConfig {
     @Bean
     Path phenixDataDirectory() {
         return Paths.get("stubPhenixDataDir");
+    }
+    
+    @Bean
+    PriorityService priorityService() {
+        return new PriorityService();
+    }
+    
+    @Bean
+    ModelService modelService() {
+        return new ModelServiceImpl();
     }
     
     @Bean

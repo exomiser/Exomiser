@@ -30,8 +30,9 @@ public class GeneModel {
     
     private final int entrezGeneId;
     private final String humanGeneSymbol;
-    private final List<String> phenotypeIds;
+    
     private final String modelId;
+    private final List<String> phenotypeIds;
 
     public GeneModel(int entrezGeneId, String humanGeneSymbol, String modelId, List<String> phenotypeIds) {
         this.entrezGeneId = entrezGeneId;

@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +33,7 @@ public class PriorityFactory {
     private static final Logger logger = LoggerFactory.getLogger(PriorityFactory.class);
 
     @Autowired
-    private OntologyService ontologyService;
+    private PriorityService priorityService;
     @Autowired
     private DataSource dataSource;
     @Autowired
@@ -83,7 +84,7 @@ public class PriorityFactory {
     private List<String> addDiseasePhenotypeTermsIfHpoIdsIsEmpty(String diseaseId, List<String> hpoIds) {
         if (hpoIds.isEmpty() && diseaseId != null && !diseaseId.isEmpty()) {
             logger.info("HPO terms have not been specified. Setting HPO IDs using disease annotations for {}", diseaseId);
-            return ontologyService.getHpoIdsForDiseaseId(diseaseId);
+            return priorityService.getHpoIdsForDiseaseId(diseaseId);
         }
         return hpoIds;
     }
@@ -120,8 +121,7 @@ public class PriorityFactory {
 
     public HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
         HiPhivePriority priority = new HiPhivePriority(hpoIds, candGene, disease, hiPhiveParams, randomWalkMatrix);
-        priority.setDataSource(dataSource);
-        priority.setOntologyService(ontologyService);
+        priority.setPriorityService(priorityService);
         logger.info("Made new HiPHIVE Priority: {}", priority);
         return priority;
     }

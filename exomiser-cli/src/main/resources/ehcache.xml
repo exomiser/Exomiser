@@ -16,6 +16,9 @@
     <!--disease HP terms -->
     <cache name="diseaseHp" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
+    <!-- disease id - disease term -->
+    <cache name="diseases" eternal="true" maxEntriesLocalHeap="10000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
     <!--HP terms -->
     <cache name="hpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 

@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -14,5 +15,7 @@ import java.util.Set;
 public interface DiseaseDao {
         
     public Set<String> getHpoIdsForDiseaseId(String diseaseId);
+    
+    public Map<String, String> getDiseaseIdToTerms();
 
 }

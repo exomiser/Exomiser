@@ -12,15 +12,18 @@ import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 /**
- *
+ * Service for retrieving phenotype data from the database for use by the
+ * prioritisers. This class is complemented by the PriorityService. 
+ * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Service
@@ -75,4 +78,29 @@ public class OntologyServiceImpl implements OntologyService {
         return zpoDao.getPhenotypeMatchesForHpoTerm(hpoTerm);
     }
 
+    /**
+     * Returns the matching HPO PhenotypeTerm for a given HPO id or null if the
+     * term cannot be found.
+     *
+     * @param hpoId
+     * @return
+     */
+    @Override
+    public PhenotypeTerm getPhenotypeTermForHpoId(String hpoId) {
+        for (PhenotypeTerm hpoTerm : getHpoTerms()) {
+            if (hpoTerm.getId().equals(hpoId)) {
+                return hpoTerm;
+            }
+        }
+        return null;
+    }
+
+    //TODO: is this needed in any othoer prioritiser - was in HiPhive, but might be redundant now.
+    private Map<String, PhenotypeTerm> makeGenericOntologyTermCache(Set<PhenotypeTerm> allPhenotypeTerms) {
+        Map<String, PhenotypeTerm> termsCache = new HashMap();
+        for (PhenotypeTerm term : allPhenotypeTerms) {
+            termsCache.put(term.getId(), term);
+        }
+        return termsCache;
+    }
 }

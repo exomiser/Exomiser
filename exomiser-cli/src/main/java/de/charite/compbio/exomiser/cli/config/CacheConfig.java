@@ -53,7 +53,7 @@ public class CacheConfig {
                 cacheManager = noOpCacheManager();
                 break;
             case "mem":
-                cacheManager = new ConcurrentMapCacheManager("pathogenicity", "frequency", "diseaseHp", "hpo", "mpo", "zpo");
+                cacheManager = new ConcurrentMapCacheManager("pathogenicity", "frequency", "diseaseHp", "diseases","hpo", "mpo", "zpo");
                 cacheNames.addAll(cacheManager.getCacheNames());
                 break;
             case "ehcache":
