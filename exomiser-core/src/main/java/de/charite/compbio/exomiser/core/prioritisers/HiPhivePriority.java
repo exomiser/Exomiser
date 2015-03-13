@@ -149,20 +149,20 @@ public class HiPhivePriority implements Prioritiser {
         List<HiPhivePriorityResult> priorityResults = new ArrayList<>(genes.size());
         logger.info("Prioritising genes...");
         for (Gene gene : genes) {
-            if (hpHpMatches.containsKey(gene.getEntrezGeneID())) {
-                logger.info("{} best phenotype hits:", gene.getGeneSymbol() );
-                Map<String, Map<PhenotypeTerm, PhenotypeMatch>> geneModelMatches = hpHpMatches.get(gene.getEntrezGeneID());
-                if (!geneModelMatches.isEmpty()) {
-                    for (Entry<String, Map<PhenotypeTerm, PhenotypeMatch>> entry : geneModelMatches.entrySet()) {
-                        logger.info("\t{}:", entry.getKey());
-                        if (!entry.getValue().isEmpty()) {
-                            for (PhenotypeMatch bestPhenotypeMatch : entry.getValue().values()) {
-                                logger.info("\t\t{}-{}={}", bestPhenotypeMatch.getQueryPhenotype().getId(), bestPhenotypeMatch.getMatchPhenotype().getId(), bestPhenotypeMatch.getScore());                    
-                            }
-                        }
-                    }
-                }
-            }
+//            if (hpHpMatches.containsKey(gene.getEntrezGeneID())) {
+//                logger.info("{} best phenotype hits:", gene.getGeneSymbol());
+//                Map<String, Map<PhenotypeTerm, PhenotypeMatch>> geneModelMatches = hpHpMatches.get(gene.getEntrezGeneID());
+//                if (!geneModelMatches.isEmpty()) {
+//                    for (Entry<String, Map<PhenotypeTerm, PhenotypeMatch>> entry : geneModelMatches.entrySet()) {
+//                        logger.info("\t{}:", entry.getKey());
+//                        if (!entry.getValue().isEmpty()) {
+//                            for (PhenotypeMatch bestPhenotypeMatch : entry.getValue().values()) {
+//                                logger.info("\t\t{}-{}={}", bestPhenotypeMatch.getQueryPhenotype().getId(), bestPhenotypeMatch.getMatchPhenotype().getId(), bestPhenotypeMatch.getScore());
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             HiPhivePriorityResult priorityResult = makePrioritiserResultForGene(gene, hpoPhenotypeTerms, hpHpMatches, hpMpMatches, hpZpMatches);
             gene.addPriorityResult(priorityResult);
@@ -351,6 +351,7 @@ public class HiPhivePriority implements Prioritiser {
 
     //TODO - this shouldn' exist. runDynamicQuery should have two variants - one for human the other for non-human
     private enum Species {
+
         HUMAN, MOUSE, FISH;
     }
 
@@ -365,102 +366,88 @@ public class HiPhivePriority implements Prioritiser {
             Set<PhenotypeMatch> termMatches = ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
             allPhenotypeMatches.put(hpoTerm, termMatches);
         }
-        String annotationQuery = "SELECT H.disease_id as model_id, hp_id as pheno_ids, gene_id as entrez_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id";
-        return runDynamicQuery(allPhenotypeMatches, annotationQuery, Species.HUMAN);
+
+        Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(allPhenotypeMatches);
+        calculateBestScoresFromHumanPhenotypes(bestMatches);
+
+        if (runHuman) {
+            String annotationQuery = "SELECT H.disease_id as model_id, hp_id as pheno_ids, gene_id as entrez_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id";
+            return runDynamicQuery(bestMatches, allPhenotypeMatches, annotationQuery, Species.HUMAN);
+        } else {
+            return Collections.emptyMap();
+        }
     }
 
     private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> makeHpMpMatches(List<PhenotypeTerm> queryHpoPhenotypes, boolean runMouse) {
-        // Mouse
         if (runMouse) {
+            logger.info("Fetching HP-MP scores...");
 //            String mappingQuery = "SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?";
             Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches = new LinkedHashMap<>();
             for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
                 Set<PhenotypeMatch> termMatches = ontologyService.getMpoMatchesForHpoTerm(hpoTerm);
                 allPhenotypeMatches.put(hpoTerm, termMatches);
             }
+            Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(allPhenotypeMatches);
+
             String annotationQuery = "SELECT mouse_model_id as model_id, mp_id as pheno_ids, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
-            return runDynamicQuery(allPhenotypeMatches, annotationQuery, Species.MOUSE);
+            return runDynamicQuery(bestMatches, allPhenotypeMatches, annotationQuery, Species.MOUSE);
         } else {
             return Collections.emptyMap();
         }
     }
 
     private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> makeHpZpMatches(List<PhenotypeTerm> queryHpoPhenotypes, boolean runFish) {
-        // Fish
         if (runFish) {
+            logger.info("Fetching HP-ZP scores...");
 //            String mappingQuery = "SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?";
             Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches = new LinkedHashMap<>();
             for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
                 Set<PhenotypeMatch> termMatches = ontologyService.getZpoMatchesForHpoTerm(hpoTerm);
                 allPhenotypeMatches.put(hpoTerm, termMatches);
             }
+            Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(allPhenotypeMatches);
+
             String annotationQuery = "SELECT zfin_model_id as model_id, zp_id as pheno_ids, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
-            return runDynamicQuery(allPhenotypeMatches, annotationQuery, Species.FISH);
+            return runDynamicQuery(bestMatches, allPhenotypeMatches, annotationQuery, Species.FISH);
         } else {
             return Collections.emptyMap();
         }
     }
-
-    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> runDynamicQuery(Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches, String findAnnotationQuery, Species species) {
-
-        //hpId
-        Set<String> hpIdsWithPhenotypeMatch = new LinkedHashSet<>();
-        //hpId : score
-        Map<String, Double> bestMappedTermsScore = new HashMap<>();
-        //hpId : mpId
-        Map<String, String> bestMappedTermsMpId = new HashMap<>();
-        //TODO: merge bestMappedTermsScore and bestMappedTermsMpId into bestMatches
-        Map<PhenotypeTerm, PhenotypeMatch> bestMatches = new LinkedHashMap<>();
-        
-        //TODO: take speciesPhenotypeMatches as input argument for runDynamicQuery
-        //'hpId + mpId' : phenotypeMatch
-        Map<String, PhenotypeMatch> speciesPhenotypeMatches = new HashMap<>();
+    
+    private Set<PhenotypeMatch> getBestMatchesForQueryTerms(Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches) {
+        Map<PhenotypeTerm, PhenotypeMatch> bestMatches = new HashMap<>();
 
         for (Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : allPhenotypeMatches.entrySet()) {
-                PhenotypeTerm queryTerm = entry.getKey();
-                String hpId = queryTerm.getId();
+            PhenotypeTerm queryTerm = entry.getKey();
             for (PhenotypeMatch match : entry.getValue()) {
-                PhenotypeTerm matchTerm = match.getMatchPhenotype();
-                String mpId = matchTerm.getId();
-                String matchIds = hpId + mpId;
                 double score = match.getScore();
-                speciesPhenotypeMatches.put(matchIds, match);
-                
-                if (species == Species.HUMAN && queryTerm.equals(matchTerm)) {
-                    addBestMappedTerm(match, bestMatches, bestMappedTermsScore, hpId, bestMappedTermsMpId, mpId);
-                    //for some hp terms e.g. HP we won't have the self hit but still want to flag found
-                    hpIdsWithPhenotypeMatch.add(hpId);
-                } else {
-                    if (bestMappedTermsScore.containsKey(hpId)) {
-                        if (score > bestMappedTermsScore.get(hpId)) {
-                            addBestMappedTerm(match, bestMatches, bestMappedTermsScore, hpId, bestMappedTermsMpId, mpId);
-                        }
-                    } else {
-                        addBestMappedTerm(match, bestMatches, bestMappedTermsScore, hpId, bestMappedTermsMpId, mpId);
-                        hpIdsWithPhenotypeMatch.add(hpId);
+                if (bestMatches.containsKey(queryTerm)) {
+                    if (score > bestMatches.get(queryTerm).getScore()) {
+                        bestMatches.put(queryTerm, match);
                     }
+                } else {
+                    bestMatches.put(queryTerm, match);
                 }
             }
         }
-        logger.debug("Phenotype matches {} for {}", speciesPhenotypeMatches, species);
         for (PhenotypeMatch bestMatch : bestMatches.values()) {
             logger.info("Best match: {}-{}={}", bestMatch.getQueryPhenotypeId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
         }
-
-        if (species == Species.HUMAN) {
-            calculateBestScoresFromHumanPhenotypes(bestMatches.values());
-        }
-        //TODO: needed here or do before? 
-        if (species == Species.HUMAN && !runHuman) {
-            return Collections.emptyMap();
-        }
-
-        Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> geneModelPhenotypeMatches = calculateBestGeneModelPhenotypeMatches(species, findAnnotationQuery, hpIdsWithPhenotypeMatch, speciesPhenotypeMatches);
-        return geneModelPhenotypeMatches;
+        return new HashSet<>(bestMatches.values());
     }
 
+    /**
+     * This method only works for same species matches e.g. HPO-HPO or MPO-MPO
+     * matches as it makes the assumption that the best matches are self-hits.
+     * DO NOT USE THIS FOR MIXED SPECIES HITS AS THE SCORES WILL BE WRONG.
+     *
+     * @param bestMatches
+     */
     private void calculateBestScoresFromHumanPhenotypes(Collection<PhenotypeMatch> bestMatches) {
-        // loop over each hp id should start here
+        //this is the original algorithm for mixes species matches using hashes instead of PhenotypeMatches:
+        
+//         // calculate perfect model scores for human
+//         // loop over each hp id should start here
 //        for (String hpId : hpIdsWithPhenotypeMatch) {
 //            if (bestMappedTermScore.containsKey(hpId)) {
 //                double hpScore = bestMappedTermScore.get(hpId);
@@ -488,8 +475,7 @@ public class HiPhivePriority implements Prioritiser {
 //                bestMaxScore = Math.max(hpScore, bestMaxScore);
 //            }
 //        }
-        
-        // calculate perfect model scores for human
+
         double sumBestScore = 0d;
         for (PhenotypeMatch bestMatch : bestMatches) {
             double matchScore = bestMatch.getScore();
@@ -497,12 +483,39 @@ public class HiPhivePriority implements Prioritiser {
             sumBestScore += matchScore;
         }
         bestAvgScore = sumBestScore / bestMatches.size();
+        //input set: 
+        //HP:0010055-HP:0010055=2.805085560382805
+        //HP:0001363-HP:0001363=2.4418464446906243
+        //HP:0001156-HP:0001156=2.048321278502726
+        //HP:0011304-HP:0011304=2.749831974791806
         //bestMaxScore=2.805085560382805 bestAvgScore=2.5112713145919905 sumBestScore=10.045085258367962 hpIdsWithPhenotypeMatch=4
         logger.info("bestMaxScore={} bestAvgScore={} sumBestScore={} numBestMatches={}", bestMaxScore, bestAvgScore, sumBestScore, bestMatches.size());
     }
 
-    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> calculateBestGeneModelPhenotypeMatches(Species species, String findAnnotationQuery, Set<String> hpIdsWithPhenotypeMatch, Map<String, PhenotypeMatch> speciesPhenotypeMatches) {
+    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> runDynamicQuery(Set<PhenotypeMatch> bestMatches, Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches, String findAnnotationQuery, Species species) {
+
+        //TODO: take speciesPhenotypeMatches as input argument for runDynamicQuery
+        //'hpId + mpId' : phenotypeMatch
+        Map<String, PhenotypeMatch> speciesPhenotypeMatches = new HashMap<>();
+
+        for (Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : allPhenotypeMatches.entrySet()) {
+            PhenotypeTerm queryTerm = entry.getKey();
+            String hpId = queryTerm.getId();
+            for (PhenotypeMatch match : entry.getValue()) {
+                PhenotypeTerm matchTerm = match.getMatchPhenotype();
+                String mpId = matchTerm.getId();
+                String matchIds = hpId + mpId;
+                speciesPhenotypeMatches.put(matchIds, match);
+            }
+        }
+
+        Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> geneModelPhenotypeMatches = calculateBestGeneModelPhenotypeMatches(species, findAnnotationQuery, bestMatches, speciesPhenotypeMatches);
+        return geneModelPhenotypeMatches;
+    }
+
+    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> calculateBestGeneModelPhenotypeMatches(Species species, String findAnnotationQuery, Set<PhenotypeMatch> bestMatches, Map<String, PhenotypeMatch> speciesPhenotypeMatches) {
         // calculate best phenotype matches and scores for all genes
+        //Integer = EntrezGeneId, String = GeneModelId
         Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> geneModelPhenotypeMatches = new HashMap<>();
         //These are the human, mouse and fish queries
         //"SELECT H.disease_id as model_id, hp_id as pheno_ids, gene_id as entrez_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id"
@@ -510,11 +523,19 @@ public class HiPhivePriority implements Prioritiser {
         //"SELECT zfin_model_id as model_id, zp_id as pheno_ids, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'"
         logger.info("Fetching disease/model phenotype annotations and HUMAN-{} gene orthologs", species);
         
-        Set<String> matchedPhenotypeIdsForSpecies = new HashSet<>();
+        //hpId
+        Set<String> hpIdsWithPhenotypeMatch = new TreeSet<>();
+        for (PhenotypeMatch match : bestMatches) {
+            hpIdsWithPhenotypeMatch.add(match.getQueryPhenotypeId());
+        }
+        logger.info("hpIdsWithPhenotypeMatch={}", hpIdsWithPhenotypeMatch);
+        
+        Set<String> matchedPhenotypeIdsForSpecies = new TreeSet<>();
         for (PhenotypeMatch match : speciesPhenotypeMatches.values()) {
             matchedPhenotypeIdsForSpecies.add(match.getMatchPhenotypeId());
         }
-        
+        logger.info("matchedPhenotypeIdsFor{}={}", species, matchedPhenotypeIdsForSpecies);
+
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement findAnnotationStatement = connection.prepareStatement(findAnnotationQuery);
             ResultSet rs = findAnnotationStatement.executeQuery();
@@ -532,7 +553,7 @@ public class HiPhivePriority implements Prioritiser {
                 String modelPhenotypeIds = rs.getString("pheno_ids");
                 int entrezId = rs.getInt("entrez_id");
                 String humanGeneSymbol = rs.getString("human_gene_symbol");
-                
+
                 String[] mpInitial = modelPhenotypeIds.split(",");
                 List<String> matchedPhenotypeIdsForModel = new ArrayList<>();
                 for (String mpid : mpInitial) {
@@ -583,7 +604,7 @@ public class HiPhivePriority implements Prioritiser {
                         maxScore = Math.max(bestScore, maxScore);
                     }
                 }
-                
+
                 int rowColumnCount = hpIdsWithPhenotypeMatch.size() + matchedPhenotypeIdsForModel.size();
                 // calculate combined score
                 if (sumBestHitRowsColumnsScore != 0) {
@@ -625,7 +646,8 @@ public class HiPhivePriority implements Prioritiser {
         }
         return geneModelPhenotypeMatches;
     }
-                                                //GeneId - modelId - hpId: PhenotypeMatch 
+
+    //GeneId - modelId - hpId: PhenotypeMatch 
     private void addGeneModelPhenotypeMatch(Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> geneModelPhenotypeMatches, String geneSymbol, int entrezId, String modelId, PhenotypeMatch match) {
         PhenotypeTerm hpQueryTerm = match.getQueryPhenotype();
         if (!geneModelPhenotypeMatches.containsKey(entrezId)) {
@@ -633,28 +655,18 @@ public class HiPhivePriority implements Prioritiser {
             geneModelPhenotypeMatches.put(entrezId, new HashMap<String, Map<PhenotypeTerm, PhenotypeMatch>>());
             geneModelPhenotypeMatches.get(entrezId).put(modelId, new LinkedHashMap<PhenotypeTerm, PhenotypeMatch>());
             geneModelPhenotypeMatches.get(entrezId).get(modelId).put(hpQueryTerm, match);
-        }
-        else if (!geneModelPhenotypeMatches.get(entrezId).containsKey(modelId)) {
+        } else if (!geneModelPhenotypeMatches.get(entrezId).containsKey(modelId)) {
             logger.debug("Adding match for gene {} (ENTREZ:{}) new modelId {} ({}-{}={})", geneSymbol, entrezId, modelId, match.getQueryPhenotype().getId(), match.getMatchPhenotype().getId(), match.getScore());
             geneModelPhenotypeMatches.get(entrezId).put(modelId, new LinkedHashMap<PhenotypeTerm, PhenotypeMatch>());
             geneModelPhenotypeMatches.get(entrezId).get(modelId).put(hpQueryTerm, match);
-        }
-        else if (!geneModelPhenotypeMatches.get(entrezId).get(modelId).containsKey(hpQueryTerm)) {
+        } else if (!geneModelPhenotypeMatches.get(entrezId).get(modelId).containsKey(hpQueryTerm)) {
             logger.debug("Adding match for gene {} (ENTREZ:{}) modelId {} new ({}-{}={})", geneSymbol, entrezId, modelId, match.getQueryPhenotype().getId(), match.getMatchPhenotype().getId(), match.getScore());
             geneModelPhenotypeMatches.get(entrezId).get(modelId).put(hpQueryTerm, match);
-        }
-        else if (geneModelPhenotypeMatches.get(entrezId).get(modelId).get(hpQueryTerm).getScore() < match.getScore()) {
+        } else if (geneModelPhenotypeMatches.get(entrezId).get(modelId).get(hpQueryTerm).getScore() < match.getScore()) {
             PhenotypeMatch currentBestMatch = geneModelPhenotypeMatches.get(entrezId).get(modelId).get(hpQueryTerm);
             logger.debug("Replacing match for gene {} (ENTREZ:{}) modelId {} - {}-{}={} with ({}-{}={})", geneSymbol, entrezId, modelId, currentBestMatch.getQueryPhenotype().getId(), currentBestMatch.getMatchPhenotype().getId(), currentBestMatch.getScore(), match.getQueryPhenotype().getId(), match.getMatchPhenotype().getId(), match.getScore());
             geneModelPhenotypeMatches.get(entrezId).get(modelId).put(hpQueryTerm, match);
         }
-    }
-
-    private void addBestMappedTerm(PhenotypeMatch match, Map<PhenotypeTerm, PhenotypeMatch> bestMatches,Map<String, Double> bestMappedTermScore, String hpId, Map<String, String> bestMappedTermMpId, String mpId) {
-        //TODO: this should be a PhenotypeMatch
-        bestMatches.put(match.getQueryPhenotype(), match);
-        bestMappedTermScore.put(hpId, match.getScore());
-        bestMappedTermMpId.put(hpId, mpId);
     }
 
     private void addScoreIfAbsentOrBetter(int entrezGeneId, double score, String modelId, Map<Integer, Double> geneIdToScoreMap, Map<Integer, String> geneIdToModelIdMap) {
