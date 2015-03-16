@@ -5,7 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -34,11 +36,15 @@ public class GeneModel {
     private final String modelId;
     private final List<String> phenotypeIds;
 
+    private double score = 0d;
+    private final Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms;
+    
     public GeneModel(int entrezGeneId, String humanGeneSymbol, String modelId, List<String> phenotypeIds) {
         this.entrezGeneId = entrezGeneId;
         this.humanGeneSymbol = humanGeneSymbol;
         this.modelId = modelId;
         this.phenotypeIds = phenotypeIds;
+        this.bestPhenotypeMatchForTerms = new LinkedHashMap<>();
     }
 
     public int getEntrezGeneId() {
@@ -55,6 +61,27 @@ public class GeneModel {
 
     public List<String> getPhenotypeIds() {
         return phenotypeIds;
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
+    }
+    
+    public Map<PhenotypeTerm, PhenotypeMatch> getBestPhenotypeMatchForTerms() {
+        return bestPhenotypeMatchForTerms;
+    }
+      
+    public void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match) {
+        PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
+        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm)) {
+            bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
+        } else if (bestPhenotypeMatchForTerms.get(matchQueryTerm).getScore() < match.getScore()) {
+            bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
+        } 
     }
 
     @Override
@@ -93,7 +120,7 @@ public class GeneModel {
 
     @Override
     public String toString() {
-        return "GeneModel{" + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + "modelId=" + modelId + ", phenotypeIds=" + phenotypeIds + '}';
+        return "GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", phenotypeIds=" + phenotypeIds + '}';
     }
     
 }

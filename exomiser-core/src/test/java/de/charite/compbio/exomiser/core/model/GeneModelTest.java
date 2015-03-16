@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class GeneModelTest {
     
     private GeneModel instance;
-    
+    private double score = 1.0d;
     private final int entrezGeneId = 12345;
     private final String humanGeneSymbol = "GENE1";
     private final String modelId = "model1";
@@ -32,6 +32,17 @@ public class GeneModelTest {
         instance = new GeneModel(entrezGeneId, humanGeneSymbol, modelId, phenotypeIds);
     }
 
+    @Test
+    public void testScoreIsZeroByDefault() {
+        assertThat(instance.getScore(), equalTo(0d));
+    } 
+    
+    @Test
+    public void testCanSetScore() {
+        instance.setScore(score);
+        assertThat(instance.getScore(), equalTo(score));
+    }
+    
     @Test
     public void testGetEntrezGeneId() {
         assertThat(instance.getEntrezGeneId(), equalTo(entrezGeneId));
@@ -90,7 +101,8 @@ public class GeneModelTest {
     
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("GeneModel{" + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + "modelId=" + modelId + ", phenotypeIds=" + phenotypeIds + '}'));
+        instance.setScore(score);
+        assertThat(instance.toString(), equalTo("GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", phenotypeIds=" + phenotypeIds + '}'));
     }
     
 }
