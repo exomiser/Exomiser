@@ -80,11 +80,11 @@ public class PriorityService {
         logger.info("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
         switch (species) {
             case HUMAN:
-                return modelService.getDiseaseModels();
+                return modelService.getHumanDiseaseModels();
             case MOUSE:
-                return modelService.getMouseModels();
+                return modelService.getMouseGeneModels();
             case FISH:
-                return modelService.getFishModels();
+                return modelService.getFishGeneModels();
             default:
                 return Collections.emptyList();
         }

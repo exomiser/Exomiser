@@ -63,13 +63,4 @@ public class PhenixPriorityResult implements PriorityResult {
                 this.hpoSemSimScore, Math.exp(-1 * this.negativeLogPval));
     }
 
-    /**
-     * @return A list with detailed results of filtering. Not yet implemented
-     * for gene wanderer.
-     */
-    @Override
-    public List<String> getFilterResultList() {
-        return new ArrayList<>();
-    }
-
 }

@@ -52,19 +52,6 @@ public class HiPhivePriorityResult implements PriorityResult {
     }
 
     /**
-     * This is call for genes with no PPI data; they are assigned a score of
-     * zero. They will be assigned a score equivalent to the median of all genes
-     * by the function {@code prioritize_listofgenes} in
-     * {@link exomizer.priority.IPriority IPriority}. basically as a kind of
-     * uniform prior.
-     */
-    public static HiPhivePriorityResult noPPIDataScore() {
-        float nodatascore = 0f;
-        HiPhivePriorityResult grs = new HiPhivePriorityResult(nodatascore, "", "", "", "", 0, 0, 0, 0);
-        return grs;
-    }
-
-    /**
      * @return An HTML list with an entry representing the GeneWanderer (Random
      * walk) similarity score.
      * @see exomizer.filter.ITriage#getHTMLCode()
@@ -73,27 +60,6 @@ public class HiPhivePriorityResult implements PriorityResult {
     public String getHTMLCode() {
         //return String.format("<ul><li>Similarity score: %.3f %s</li></ul>",this.genewandererScore,this.evidence);
         return this.evidence;
-    }
-
-    /**
-     * @return HTML describing the phenotype evidence for the match
-     */
-    public String getHumanPhenotypeEvidence() {
-        return this.humanPhenotypeEvidence;
-    }
-
-    /**
-     * @return HTML describing the phenotype evidence for the match
-     */
-    public String getMousePhenotypeEvidence() {
-        return this.mousePhenotypeEvidence;
-    }
-
-    /**
-     * @return HTML describing the phenotype evidence for the match
-     */
-    public String getFishPhenotypeEvidence() {
-        return this.fishPhenotypeEvidence;
     }
 
     public float getHumanScore() {
@@ -124,12 +90,4 @@ public class HiPhivePriorityResult implements PriorityResult {
         this.score = newscore;
     }
 
-    /**
-     * @return A list with detailed results of filtering. Not yet implemented
-     * for gene wanderer.
-     */
-    @Override
-    public List<String> getFilterResultList() {
-        return new ArrayList<>();
-    }
 }

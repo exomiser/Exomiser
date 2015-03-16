@@ -557,7 +557,7 @@ public class HiPhivePriority implements Prioritiser {
                 // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
                 if ((modelId == null ? diseaseId == null : modelId.equals(diseaseId))
                         && (humanGeneSymbol == null ? candidateGeneSymbol == null : humanGeneSymbol.equals(candidateGeneSymbol))) {
-                    //System.out.println("FOUND self hit " + disease + ":"+candGene);
+                    logger.info("Found self hit {}:{} - skipping due to benchmarking", diseaseId, candidateGeneSymbol);
                 } else {
                     // normal behaviour when not trying to exclude candidate gene to simulate novel gene disovery in benchmarking
                     // only build PPI network for high qual hits
@@ -650,7 +650,8 @@ public class HiPhivePriority implements Prioritiser {
             if (!randomWalkMatrix.containsGene(similarGeneEntrezId)) {
                 columnIndex++;
                 continue;
-            } else if (similarGeneEntrezId == gene.getEntrezGeneID()) {//avoid self-hits now are testing genes with direct pheno-evidence as well
+            } else if (similarGeneEntrezId == gene.getEntrezGeneID()) {
+                //avoid self-hits now are testing genes with direct pheno-evidence as well
                 columnIndex++;
                 continue;
             } else {

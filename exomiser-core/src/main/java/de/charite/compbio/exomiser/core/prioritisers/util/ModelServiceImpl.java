@@ -32,19 +32,19 @@ public class ModelServiceImpl implements ModelService {
     private DataSource dataSource;
 
     @Override
-    public List<GeneModel> getDiseaseModels() {
+    public List<GeneModel> getHumanDiseaseModels() {
         String modelQuery = "SELECT H.disease_id as model_id, hp_id as pheno_ids, gene_id as entrez_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id";
         return runModelQuery(modelQuery);
     }
 
     @Override
-    public List<GeneModel> getMouseModels() {
+    public List<GeneModel> getMouseGeneModels() {
         String modelQuery = "SELECT mouse_model_id as model_id, mp_id as pheno_ids, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
         return runModelQuery(modelQuery);
     }
 
     @Override
-    public List<GeneModel> getFishModels() {
+    public List<GeneModel> getFishGeneModels() {
         String modelQuery = "SELECT zfin_model_id as model_id, zp_id as pheno_ids, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
         return runModelQuery(modelQuery);
     }

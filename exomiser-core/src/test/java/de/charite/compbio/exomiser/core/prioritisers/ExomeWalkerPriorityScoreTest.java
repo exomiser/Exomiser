@@ -75,9 +75,4 @@ public class ExomeWalkerPriorityScoreTest {
         assertThat(instance.getScore(), equalTo(newScore));
     }
 
-    @Test
-    public void testGetFilterResultListIsEmpty() {
-        assertThat(instance.getFilterResultList().isEmpty(), is(true));
-    }
-    
 }
