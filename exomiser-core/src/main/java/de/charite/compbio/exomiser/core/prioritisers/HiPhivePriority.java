@@ -127,9 +127,9 @@ public class HiPhivePriority implements Prioritiser {
 
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
-        final Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> hpHpMatches = makeHpHpMatches(hpoPhenotypeTerms, runHuman);
-        final Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> hpMpMatches = makeHpMpMatches(hpoPhenotypeTerms, runMouse);
-        final Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> hpZpMatches = makeHpZpMatches(hpoPhenotypeTerms, runFish);
+        final Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> hpHpMatches = makeHpToHumanMatches(runHuman, hpoPhenotypeTerms, Species.HUMAN);
+        final Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> hpMpMatches = makeHpToOtherSpeciesMatches(runMouse, hpoPhenotypeTerms, Species.MOUSE);
+        final Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> hpZpMatches = makeHpToOtherSpeciesMatches(runFish, hpoPhenotypeTerms, Species.FISH);
 
         if (runPpi) {
             weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(phenoGenes, scores);
@@ -334,67 +334,41 @@ public class HiPhivePriority implements Prioritiser {
         }
     }
 
-    //TODO: collapse these makeHpXpMatches into one method or perhaps two.
-    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> makeHpHpMatches(List<PhenotypeTerm> queryHpoPhenotypes, boolean runHuman) {
+    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> makeHpToHumanMatches(boolean runHuman, List<PhenotypeTerm> queryHpoPhenotypes, Species species) {
         //TODO: this must always run in order that the best score is set - refactor this so that the behaviour of runDynamicQuery
         //is consistent with the mouse and fish
         // Human
-        Species species = Species.HUMAN;
-        logger.info("Fetching HP-HP scores...");
-//        String mappingQuery = "SELECT hp_id_hit, score FROM hp_hp_mappings M WHERE M.hp_id = ?";
-        Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches = new LinkedHashMap<>();
+        logger.info("Fetching HUMAN-{} phenotype matches...", species);
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> humanPhenotypeMatches = getMatchingPhenotypesForSpecies(queryHpoPhenotypes, species);
+        Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(humanPhenotypeMatches);
+        
+        calculateBestScoresFromHumanPhenotypes(bestMatches);
+        
+        if (runHuman) {
+            return runDynamicQuery(bestMatches, humanPhenotypeMatches, species);
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
+    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> makeHpToOtherSpeciesMatches(boolean runSpecies, List<PhenotypeTerm> queryHpoPhenotypes, Species species) {
+        if (runSpecies) {
+            logger.info("Fetching HUMAN-{} phenotype matches...", species);
+            Map<PhenotypeTerm, Set<PhenotypeMatch>> mousePhenotypeMatches = getMatchingPhenotypesForSpecies(queryHpoPhenotypes, species);
+            Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(mousePhenotypeMatches);
+            return runDynamicQuery(bestMatches, mousePhenotypeMatches, species);
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
+    private Map<PhenotypeTerm, Set<PhenotypeMatch>> getMatchingPhenotypesForSpecies(List<PhenotypeTerm> queryHpoPhenotypes, Species species) {
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
         for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
             Set<PhenotypeMatch> termMatches = priorityService.getSpeciesMatchesForHpoTerm(hpoTerm, species);
-            allPhenotypeMatches.put(hpoTerm, termMatches);
+            speciesPhenotypeMatches.put(hpoTerm, termMatches);
         }
-
-        Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(allPhenotypeMatches);
-        calculateBestScoresFromHumanPhenotypes(bestMatches);
-
-        if (runHuman) {
-//            String annotationQuery = "SELECT H.disease_id as model_id, hp_id as pheno_ids, gene_id as entrez_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id";
-            return runDynamicQuery(bestMatches, allPhenotypeMatches, species);
-        } else {
-            return Collections.emptyMap();
-        }
-    }
-
-    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> makeHpMpMatches(List<PhenotypeTerm> queryHpoPhenotypes, boolean runMouse) {
-        Species species = Species.MOUSE;
-        if (runMouse) {
-            logger.info("Fetching HP-MP scores...");
-//            String mappingQuery = "SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?";
-            Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches = new LinkedHashMap<>();
-            for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
-                Set<PhenotypeMatch> termMatches = priorityService.getSpeciesMatchesForHpoTerm(hpoTerm, species);
-                allPhenotypeMatches.put(hpoTerm, termMatches);
-            }
-            Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(allPhenotypeMatches);
-
-//            String annotationQuery = "SELECT mouse_model_id as model_id, mp_id as pheno_ids, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
-            return runDynamicQuery(bestMatches, allPhenotypeMatches, species);
-        } else {
-            return Collections.emptyMap();
-        }
-    }
-
-    private Map<Integer, Map<String, Map<PhenotypeTerm, PhenotypeMatch>>> makeHpZpMatches(List<PhenotypeTerm> queryHpoPhenotypes, boolean runFish) {
-        Species species = Species.FISH;
-        if (runFish) {
-            logger.info("Fetching HP-ZP scores...");
-//            String mappingQuery = "SELECT zp_id, score FROM hp_zp_mappings M WHERE M.hp_id = ?";
-            Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches = new LinkedHashMap<>();
-            for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
-                Set<PhenotypeMatch> termMatches = priorityService.getSpeciesMatchesForHpoTerm(hpoTerm, species);
-                allPhenotypeMatches.put(hpoTerm, termMatches);
-            }
-            Set<PhenotypeMatch> bestMatches = getBestMatchesForQueryTerms(allPhenotypeMatches);
-
-//            String annotationQuery = "SELECT zfin_model_id as model_id, zp_id as pheno_ids, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
-            return runDynamicQuery(bestMatches, allPhenotypeMatches, species);
-        } else {
-            return Collections.emptyMap();
-        }
+        return speciesPhenotypeMatches;
     }
 
     private Set<PhenotypeMatch> getBestMatchesForQueryTerms(Map<PhenotypeTerm, Set<PhenotypeMatch>> allPhenotypeMatches) {
