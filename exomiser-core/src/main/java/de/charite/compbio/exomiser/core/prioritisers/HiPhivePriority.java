@@ -1,7 +1,5 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import java.util.ArrayList;
-
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.GeneModel;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
@@ -194,14 +192,12 @@ public class HiPhivePriority implements Prioritiser {
             if (walkerScore <= 0.00001) {
                 walkerScore = 0d;
             } else {
-                //walkerScore = val;
                 Integer closestGeneId = highQualityPhenoMatchedGenes.get(columnIndex);
                 closestPhysicallyInteractingGeneModels = getBestPhenotypeMatchesForGene(closestGeneId, bestDiseaseModelForGene, bestMouseModelForGene, bestFishModelForGene);
             }
         }
         logger.debug("Making result for {} {} score={}", gene.getGeneSymbol(), entrezGeneId, score);
-        HiPhivePriorityResult priorityResult = new HiPhivePriorityResult(gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore);
-        return priorityResult;
+        return new HiPhivePriorityResult(gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore);
     }
 
     private Map<Species, GeneModel> getBestPhenotypeMatchesForGene(Integer entrezGeneId, final Map<Integer, GeneModel> bestDiseaseModelForGene, final Map<Integer, GeneModel> bestMouseModelForGene, final Map<Integer, GeneModel> bestFishModelForGene) {
@@ -364,8 +360,7 @@ public class HiPhivePriority implements Prioritiser {
             }
         }
 
-        Map<Integer, GeneModel> geneModelPhenotypeMatches = calculateBestGeneModelPhenotypeMatchForSpecies(species, bestMatches, speciesPhenotypeMatches);
-        return geneModelPhenotypeMatches;
+        return calculateBestGeneModelPhenotypeMatchForSpecies(species, bestMatches, speciesPhenotypeMatches);
     }
 
     private Map<Integer, GeneModel> calculateBestGeneModelPhenotypeMatchForSpecies(Species species, Set<PhenotypeMatch> bestMatches, Map<String, PhenotypeMatch> speciesPhenotypeMatches) {

@@ -33,19 +33,19 @@ public class ModelServiceImpl implements ModelService {
 
     @Override
     public List<GeneModel> getHumanDiseaseModels() {
-        String modelQuery = "SELECT H.disease_id as model_id, hp_id as pheno_ids, gene_id as entrez_id, human_gene_symbol FROM human2mouse_orthologs hm, disease_hp M, disease H WHERE hm.entrez_id=H.gene_id AND M.disease_id=H.disease_id";
+        String modelQuery = "SELECT d.disease_id as model_id, hp_id as pheno_ids, gene_id as entrez_id, human_gene_symbol, d.diseasename as model_symbol FROM human2mouse_orthologs hm, disease_hp M, disease d WHERE hm.entrez_id=d.gene_id AND M.disease_id=d.disease_id";
         return runModelQuery(modelQuery);
     }
 
     @Override
     public List<GeneModel> getMouseGeneModels() {
-        String modelQuery = "SELECT mouse_model_id as model_id, mp_id as pheno_ids, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
+        String modelQuery = "SELECT mouse_model_id as model_id, mp_id as pheno_ids, entrez_id, human_gene_symbol, M.mgi_gene_id, M.mgi_gene_symbol as model_symbol FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
         return runModelQuery(modelQuery);
     }
 
     @Override
     public List<GeneModel> getFishGeneModels() {
-        String modelQuery = "SELECT zfin_model_id as model_id, zp_id as pheno_ids, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
+        String modelQuery = "SELECT zfin_model_id as model_id, zp_id as pheno_ids, entrez_id, human_gene_symbol, M.zfin_gene_id, M.zfin_gene_symbol as model_symbol FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
         return runModelQuery(modelQuery);
     }
 
@@ -66,10 +66,11 @@ public class ModelServiceImpl implements ModelService {
                 String phenotypeIdString = rs.getString("pheno_ids");
                 int entrezId = rs.getInt("entrez_id");
                 String humanGeneSymbol = rs.getString("human_gene_symbol");
-
+                String modelSymbol = rs.getString("model_symbol");
+                        
                 String[] mpInitial = phenotypeIdString.split(",");
                 List<String> phenotypeIds = Arrays.asList(mpInitial);
-                GeneModel model = new GeneModel(entrezId, humanGeneSymbol, modelId, phenotypeIds);
+                GeneModel model = new GeneModel(entrezId, humanGeneSymbol, modelId, modelSymbol, phenotypeIds);
                 models.add(model);
             }
         } catch (SQLException e) {

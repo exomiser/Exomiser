@@ -78,7 +78,7 @@ public class HiPhivePriorityResult implements PriorityResult {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = model.getBestPhenotypeMatchForTerms();
             switch(species) {
                 case HUMAN:
-                    String diseaseLink = makeDiseaseLink(model.getModelId(), model.getModelId());
+                    String diseaseLink = makeDiseaseLink(model.getModelId(), model.getModelSymbol());
                     stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to %s associated with %s.</dt>", model.getScore(), diseaseLink, model.getHumanGeneSymbol()));
                     break;
                 case MOUSE:
@@ -98,7 +98,7 @@ public class HiPhivePriorityResult implements PriorityResult {
             Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = model.getBestPhenotypeMatchForTerms();
             switch(species) {
                 case HUMAN:
-                    String diseaseLink = makeDiseaseLink(model.getModelId(), model.getModelId());
+                    String diseaseLink = makeDiseaseLink(model.getModelId(), model.getModelSymbol());
                     stringBuilder.append(String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s.</dt>", stringDbLink, model.getHumanGeneSymbol(), diseaseLink, model.getHumanGeneSymbol()));
                     break;
                 case MOUSE:

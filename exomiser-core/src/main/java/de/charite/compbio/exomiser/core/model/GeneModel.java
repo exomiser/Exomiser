@@ -34,15 +34,17 @@ public class GeneModel {
     private final String humanGeneSymbol;
     
     private final String modelId;
+    private final String modelSymbol;
     private final List<String> phenotypeIds;
 
     private double score = 0d;
     private final Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms;
     
-    public GeneModel(int entrezGeneId, String humanGeneSymbol, String modelId, List<String> phenotypeIds) {
+    public GeneModel(int entrezGeneId, String humanGeneSymbol, String modelId, String modelSymbol, List<String> phenotypeIds) {
         this.entrezGeneId = entrezGeneId;
         this.humanGeneSymbol = humanGeneSymbol;
         this.modelId = modelId;
+        this.modelSymbol = modelSymbol;
         this.phenotypeIds = phenotypeIds;
         this.bestPhenotypeMatchForTerms = new LinkedHashMap<>();
     }
@@ -57,6 +59,10 @@ public class GeneModel {
 
     public String getModelId() {
         return modelId;
+    }
+
+    public String getModelSymbol() {
+        return modelSymbol;
     }
 
     public List<String> getPhenotypeIds() {
@@ -120,7 +126,7 @@ public class GeneModel {
 
     @Override
     public String toString() {
-        return "GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", phenotypeIds=" + phenotypeIds + '}';
+        return "GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", modelSymbol=" + modelSymbol + ", phenotypeIds=" + phenotypeIds + '}';
     }
     
 }
