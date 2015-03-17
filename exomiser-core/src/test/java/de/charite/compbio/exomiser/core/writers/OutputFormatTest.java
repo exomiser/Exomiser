@@ -24,7 +24,7 @@ public class OutputFormatTest {
     @Test
     public void testValues() {
         System.out.println("values");
-        OutputFormat[] expResult = {OutputFormat.HTML, OutputFormat.VCF, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT};
+        OutputFormat[] expResult = {OutputFormat.HTML, OutputFormat.VCF, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.PHENOGRID};
         OutputFormat[] result = OutputFormat.values();
         assertThat(result, equalTo(expResult));
     }
@@ -45,4 +45,11 @@ public class OutputFormatTest {
         assertThat(result, equalTo(expResult));
     }
     
+    @Test
+    public void testHasPhenogridJsonOutput() {
+        OutputFormat instance = OutputFormat.PHENOGRID;
+        String expResult = "phenogrid.json";
+        String result = instance.getFileExtension();
+        assertThat(result, equalTo(expResult));
+    }
 }
