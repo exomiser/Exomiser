@@ -70,6 +70,43 @@ public class GeneModelTest {
     }
 
     @Test
+    public void testBestPhenotypeMatchesIsEmptyByDefault() {
+        assertThat(instance.getBestPhenotypeMatchForTerms().isEmpty(), is(true));
+    }
+    
+    @Test
+    public void testaddMatchIfWhenAbsent() {
+        PhenotypeMatch match = new PhenotypeMatch(null, null, score, 1.0, null);
+        instance.addMatchIfAbsentOrBetterThanCurrent(match);
+        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(true));
+    }
+    
+    @Test
+    public void testaddMatchWhenBetterThanCurrent() {
+        PhenotypeMatch match = new PhenotypeMatch(null, null, score, 0.5, null);
+        instance.addMatchIfAbsentOrBetterThanCurrent(match);
+        
+        PhenotypeMatch betterMatch = new PhenotypeMatch(null, null, score, 1.0, null);
+        instance.addMatchIfAbsentOrBetterThanCurrent(betterMatch);
+        
+        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(false));
+        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(betterMatch), is(true));
+    }
+    
+    
+    @Test
+    public void testaddMatchWhenNotBetterThanCurrent() {
+        PhenotypeMatch betterMatch = new PhenotypeMatch(null, null, score, 1.0, null);
+        instance.addMatchIfAbsentOrBetterThanCurrent(betterMatch);
+        
+        PhenotypeMatch match = new PhenotypeMatch(null, null, score, 0.5, null);
+        instance.addMatchIfAbsentOrBetterThanCurrent(match);
+        
+        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(false));
+        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(betterMatch), is(true));
+    }
+    
+    @Test
     public void testHashCode() {
         GeneModel other = new GeneModel(entrezGeneId, humanGeneSymbol, modelId, modelSymbol, phenotypeIds);
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
