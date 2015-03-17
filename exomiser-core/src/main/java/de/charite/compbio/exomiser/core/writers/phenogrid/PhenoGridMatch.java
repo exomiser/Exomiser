@@ -28,7 +28,7 @@ public class PhenoGridMatch {
     private final PhenoGridMatchScore score;
     private final PhenoGridMatchTaxon taxon;
 
-    PhenoGridMatch(String id, String label, String type, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
+    public PhenoGridMatch(String id, String label, String type, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
         this.id = id;
         this.label = label;
         this.type = type;
