@@ -95,12 +95,4 @@ public class OntologyServiceImpl implements OntologyService {
         return null;
     }
 
-    //TODO: is this needed in any othoer prioritiser - was in HiPhive, but might be redundant now.
-    private Map<String, PhenotypeTerm> makeGenericOntologyTermCache(Set<PhenotypeTerm> allPhenotypeTerms) {
-        Map<String, PhenotypeTerm> termsCache = new HashMap();
-        for (PhenotypeTerm term : allPhenotypeTerms) {
-            termsCache.put(term.getId(), term);
-        }
-        return termsCache;
-    }
 }
