@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
+import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.model.GeneModel;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
@@ -63,7 +64,7 @@ public class PriorityService {
         return ontologyService.getHpoIdsForDiseaseId(diseaseId);
     }
 
-    public Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Species species) {
+    public Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {
         switch (species) {
             case HUMAN:
                 return ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
@@ -76,7 +77,7 @@ public class PriorityService {
         }
     }
 
-    public List<GeneModel> getModelsForSpecies(Species species) {
+    public List<GeneModel> getModelsForSpecies(Organism species) {
         logger.info("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
         switch (species) {
             case HUMAN:

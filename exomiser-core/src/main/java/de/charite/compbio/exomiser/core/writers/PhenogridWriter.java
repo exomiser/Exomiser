@@ -16,7 +16,7 @@ import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.exomiser.core.prioritisers.util.Species;
+import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGrid;
 import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGridMatch;
 import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGridMatchGroup;
@@ -92,7 +92,7 @@ public class PhenogridWriter implements ResultsWriter {
         List<GeneModel> fishModels = new ArrayList<>();
 
         for (HiPhivePriorityResult result : hiPhiveResults) {
-            for (Entry<Species, GeneModel> entry : result.getPhenotypeEvidence().entrySet()) {
+            for (Entry<Organism, GeneModel> entry : result.getPhenotypeEvidence().entrySet()) {
                 switch(entry.getKey()) {
                     case HUMAN:
                         diseaseModels.add(entry.getValue());
@@ -114,15 +114,15 @@ public class PhenogridWriter implements ResultsWriter {
     private List<PhenoGridMatchGroup> createPhenogridMatchGroups(Set<String> phenotypeIds, List<GeneModel> diseaseModels, List<GeneModel> mouseModels, List<GeneModel> fishModels) {
         List<PhenoGridMatchGroup> phenoGridMatchGroups = new ArrayList<>();
         
-        PhenoGridMatchTaxon humanTaxon = new PhenoGridMatchTaxon("NCBITaxon:9606", "Homo sapiens");
+        PhenoGridMatchTaxon humanTaxon = new PhenoGridMatchTaxon("NCBITaxon:9606", Organism.HUMAN.getSpeciesName());
         PhenoGridMatchGroup diseaseMatchGroup = makePhenoGridMatchGroup(humanTaxon, diseaseModels, phenotypeIds);
         phenoGridMatchGroups.add(diseaseMatchGroup);
         
-        PhenoGridMatchTaxon mouseTaxon = new PhenoGridMatchTaxon("NCBITaxon:10090", "Mus musculus");
+        PhenoGridMatchTaxon mouseTaxon = new PhenoGridMatchTaxon("NCBITaxon:10090", Organism.MOUSE.getSpeciesName());
         PhenoGridMatchGroup mouseMatchGroup = makePhenoGridMatchGroup(mouseTaxon, mouseModels, phenotypeIds);
         phenoGridMatchGroups.add(mouseMatchGroup);
         
-        PhenoGridMatchTaxon fishTaxon = new PhenoGridMatchTaxon("NCBITaxon:7955", "Danio rerio");
+        PhenoGridMatchTaxon fishTaxon = new PhenoGridMatchTaxon("NCBITaxon:7955", Organism.MOUSE.getSpeciesName());
         PhenoGridMatchGroup fishMatchGroup = makePhenoGridMatchGroup(fishTaxon, fishModels, phenotypeIds);
         phenoGridMatchGroups.add(fishMatchGroup);
         
