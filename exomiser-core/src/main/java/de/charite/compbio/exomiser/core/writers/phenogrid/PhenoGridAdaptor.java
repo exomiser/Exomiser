@@ -33,7 +33,7 @@ public class PhenoGridAdaptor {
     private static final PhenoGridMatchTaxon MOUSE_TAXON = new PhenoGridMatchTaxon("NCBITaxon:10090", Organism.MOUSE.getSpeciesName());
     private static final PhenoGridMatchTaxon FISH_TAXON = new PhenoGridMatchTaxon("NCBITaxon:7955", Organism.FISH.getSpeciesName());
 
-    public PhenoGrid makePhenoGridFromHiPhiveResults(List<HiPhivePriorityResult> hiPhiveResults) {
+    public PhenoGrid makePhenoGridFromHiPhiveResults(String phenoGridId, List<HiPhivePriorityResult> hiPhiveResults) {
         Set<String> phenotypeIds = new LinkedHashSet<>();
         if (!hiPhiveResults.isEmpty()) {
             HiPhivePriorityResult result = hiPhiveResults.get(0);
@@ -41,7 +41,7 @@ public class PhenoGridAdaptor {
                 phenotypeIds.add(phenoTerm.getId());
             }
         }
-        PhenoGridQueryTerms phenoGridQueryTerms = new PhenoGridQueryTerms("hiPhive specified phenotypes", phenotypeIds);
+        PhenoGridQueryTerms phenoGridQueryTerms = new PhenoGridQueryTerms(phenoGridId, phenotypeIds);
         
         List<Model> diseaseModels = new ArrayList<>();
         List<Model> mouseModels = new ArrayList<>();
@@ -70,14 +70,20 @@ public class PhenoGridAdaptor {
     private List<PhenoGridMatchGroup> createPhenogridMatchGroups(Set<String> phenotypeIds, List<Model> diseaseModels, List<Model> mouseModels, List<Model> fishModels) {
         List<PhenoGridMatchGroup> phenoGridMatchGroups = new ArrayList<>();
         
-        PhenoGridMatchGroup diseaseMatchGroup = makePhenoGridMatchGroup(HUMAN_TAXON, diseaseModels, phenotypeIds);
-        phenoGridMatchGroups.add(diseaseMatchGroup);
+        if (!diseaseModels.isEmpty()){
+            PhenoGridMatchGroup diseaseMatchGroup = makePhenoGridMatchGroup(HUMAN_TAXON, diseaseModels, phenotypeIds);
+            phenoGridMatchGroups.add(diseaseMatchGroup);
+        }
         
-        PhenoGridMatchGroup mouseMatchGroup = makePhenoGridMatchGroup(MOUSE_TAXON, mouseModels, phenotypeIds);
-        phenoGridMatchGroups.add(mouseMatchGroup);
+        if (!mouseModels.isEmpty()){
+            PhenoGridMatchGroup mouseMatchGroup = makePhenoGridMatchGroup(MOUSE_TAXON, mouseModels, phenotypeIds);
+            phenoGridMatchGroups.add(mouseMatchGroup);
+        }
         
-        PhenoGridMatchGroup fishMatchGroup = makePhenoGridMatchGroup(FISH_TAXON, fishModels, phenotypeIds);
-        phenoGridMatchGroups.add(fishMatchGroup);
+        if(!fishModels.isEmpty()) {
+            PhenoGridMatchGroup fishMatchGroup = makePhenoGridMatchGroup(FISH_TAXON, fishModels, phenotypeIds);
+            phenoGridMatchGroups.add(fishMatchGroup);
+        }
         
         return phenoGridMatchGroups;
     }

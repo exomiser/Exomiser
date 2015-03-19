@@ -74,7 +74,7 @@ public class PhenogridWriter implements ResultsWriter {
             }
         }
         PhenoGridAdaptor phenoGridAdaptor = new PhenoGridAdaptor();
-        PhenoGrid phenogrid = phenoGridAdaptor.makePhenoGridFromHiPhiveResults(hiPhiveResults) ;
+        PhenoGrid phenogrid = phenoGridAdaptor.makePhenoGridFromHiPhiveResults("hiPhive specified phenotypes", hiPhiveResults) ;
         return writePhenoGridAsJson(phenogrid);
     }
 
