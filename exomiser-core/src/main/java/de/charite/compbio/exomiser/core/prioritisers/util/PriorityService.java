@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.prioritisers.util;
 import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.model.GeneModel;
+import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.ArrayList;
@@ -77,7 +78,7 @@ public class PriorityService {
         }
     }
 
-    public List<GeneModel> getModelsForSpecies(Organism species) {
+    public List<Model> getModelsForOrganism(Organism species) {
         logger.info("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
         switch (species) {
             case HUMAN:

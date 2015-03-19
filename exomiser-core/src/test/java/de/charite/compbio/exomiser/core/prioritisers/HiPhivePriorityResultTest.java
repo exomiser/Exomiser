@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.GeneModel;
+import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import de.charite.compbio.exomiser.core.model.Organism;
 import java.util.ArrayList;
@@ -27,18 +28,24 @@ public class HiPhivePriorityResultTest {
     private final String geneSymbol = "FGFR2";
     private final double score = 0.87d;
     private List<PhenotypeTerm> queryPhenotypeTerms;
-    private Map<Organism, GeneModel> phenotypeEvidence;
-    private Map<Organism, GeneModel> ppiEvidence;
+    private List<Model> phenotypeEvidence;
+    private List<Model> ppiEvidence;
     private final double walkerScore = 0.6d;
     
     @Before
     public void setUp() {
         queryPhenotypeTerms = new ArrayList<>();
-        phenotypeEvidence = new HashMap<>();
-        ppiEvidence = new HashMap<>();
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms,phenotypeEvidence, ppiEvidence, walkerScore);
+        phenotypeEvidence = new ArrayList<>();
+        ppiEvidence = new ArrayList<>();
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, phenotypeEvidence, ppiEvidence, walkerScore);
     }
 
+    private GeneModel makeStubGeneModelForOrganismWithScore(Organism organism, double score) {
+        GeneModel model = new GeneModel("gene1_model1", organism, 12345, geneSymbol, "MGI:12345", "gene1", null);
+        model.setScore(score);
+        return model;
+    }
+        
     @Test
     public void testGetPriorityType() {
         assertThat(instance.getPriorityType(), equalTo(PriorityType.HI_PHIVE_PRIORITY));
@@ -85,6 +92,18 @@ public class HiPhivePriorityResultTest {
     public void testGetHumanScoreIsZeroWithNoDiseaseEvidence() {
         assertThat(instance.getHumanScore(), equalTo(0f));
     }
+    
+    @Test
+    public void testGetHumanScoreMatchesModelScore() {
+        double modelScore = 1f;
+        GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.HUMAN, modelScore);
+                
+        List<Model> models = new ArrayList<>();
+        models.add(geneModel);
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore);
+
+        assertThat(instance.getHumanScore(), equalTo((float) modelScore));
+    }
 
     @Test
     public void testGetMouseScoreIsZeroWithNoDiseaseEvidence() {
@@ -92,8 +111,32 @@ public class HiPhivePriorityResultTest {
     }
 
     @Test
+    public void testGetMouseScoreMatchesModelScore() {
+        double modelScore = 1f;
+        GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.MOUSE, modelScore);
+                
+        List<Model> models = new ArrayList<>();
+        models.add(geneModel);
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore);
+
+        assertThat(instance.getMouseScore(), equalTo((float) modelScore));
+    }
+    
+    @Test
     public void testGetFishScoreIsZeroWithNoDiseaseEvidence() {
         assertThat(instance.getFishScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testGetFishScoreMatchesModelScore() {
+        double modelScore = 1f;
+        GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.FISH, modelScore);
+                
+        List<Model> models = new ArrayList<>();
+        models.add(geneModel);
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore);
+
+        assertThat(instance.getFishScore(), equalTo((float) modelScore));
     }
 
     @Test

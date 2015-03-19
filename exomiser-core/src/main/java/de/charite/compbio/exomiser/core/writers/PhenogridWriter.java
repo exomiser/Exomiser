@@ -9,8 +9,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.model.DiseaseModel;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.GeneModel;
+import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -18,6 +20,7 @@ import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGrid;
+import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGridAdaptor;
 import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGridMatch;
 import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGridMatchGroup;
 import de.charite.compbio.exomiser.core.writers.phenogrid.PhenoGridMatchScore;
@@ -30,10 +33,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,86 +73,11 @@ public class PhenogridWriter implements ResultsWriter {
                hiPhiveResults.add(hiPhiveResult);
             }
         }
-
-        PhenoGrid phenogrid = makePhenoGridFromHiPhiveResults(hiPhiveResults) ;
+        PhenoGridAdaptor phenoGridAdaptor = new PhenoGridAdaptor();
+        PhenoGrid phenogrid = phenoGridAdaptor.makePhenoGridFromHiPhiveResults(hiPhiveResults) ;
         return writePhenoGridAsJson(phenogrid);
     }
 
-    private PhenoGrid makePhenoGridFromHiPhiveResults(List<HiPhivePriorityResult> hiPhiveResults) {
-        Set<String> phenotypeIds = new LinkedHashSet<>();
-        if (!hiPhiveResults.isEmpty()) {
-            HiPhivePriorityResult result = hiPhiveResults.get(0);
-            for (PhenotypeTerm phenoTerm : result.getQueryPhenotypeTerms()) {
-                phenotypeIds.add(phenoTerm.getId());
-            }
-        }
-        PhenoGridQueryTerms phenoGridQueryTerms = new PhenoGridQueryTerms("hiPhive specified phenotypes", phenotypeIds);
-        
-        List<GeneModel> diseaseModels = new ArrayList<>();
-        List<GeneModel> mouseModels = new ArrayList<>();
-        List<GeneModel> fishModels = new ArrayList<>();
-
-        for (HiPhivePriorityResult result : hiPhiveResults) {
-            for (Entry<Organism, GeneModel> entry : result.getPhenotypeEvidence().entrySet()) {
-                switch(entry.getKey()) {
-                    case HUMAN:
-                        diseaseModels.add(entry.getValue());
-                        break;
-                    case MOUSE:
-                        mouseModels.add(entry.getValue());
-                        break;
-                    case FISH:
-                        fishModels.add(entry.getValue());
-                        break;
-                }
-            }
-        }
-        List<PhenoGridMatchGroup> phenoGridMatchGroups = createPhenogridMatchGroups(phenotypeIds, diseaseModels, mouseModels, fishModels);
-        
-        return new PhenoGrid(phenoGridQueryTerms, phenoGridMatchGroups);        
-    }
-
-    private List<PhenoGridMatchGroup> createPhenogridMatchGroups(Set<String> phenotypeIds, List<GeneModel> diseaseModels, List<GeneModel> mouseModels, List<GeneModel> fishModels) {
-        List<PhenoGridMatchGroup> phenoGridMatchGroups = new ArrayList<>();
-        
-        PhenoGridMatchTaxon humanTaxon = new PhenoGridMatchTaxon("NCBITaxon:9606", Organism.HUMAN.getSpeciesName());
-        PhenoGridMatchGroup diseaseMatchGroup = makePhenoGridMatchGroup(humanTaxon, diseaseModels, phenotypeIds);
-        phenoGridMatchGroups.add(diseaseMatchGroup);
-        
-        PhenoGridMatchTaxon mouseTaxon = new PhenoGridMatchTaxon("NCBITaxon:10090", Organism.MOUSE.getSpeciesName());
-        PhenoGridMatchGroup mouseMatchGroup = makePhenoGridMatchGroup(mouseTaxon, mouseModels, phenotypeIds);
-        phenoGridMatchGroups.add(mouseMatchGroup);
-        
-        PhenoGridMatchTaxon fishTaxon = new PhenoGridMatchTaxon("NCBITaxon:7955", Organism.MOUSE.getSpeciesName());
-        PhenoGridMatchGroup fishMatchGroup = makePhenoGridMatchGroup(fishTaxon, fishModels, phenotypeIds);
-        phenoGridMatchGroups.add(fishMatchGroup);
-        
-        return phenoGridMatchGroups;
-    }
-
-    private PhenoGridMatchGroup makePhenoGridMatchGroup(PhenoGridMatchTaxon taxon, List<GeneModel> geneModels, Set<String> phenotypeIds) {
-        List<PhenoGridMatch> phenoGridMatches = makePhenogridMatchesFromGeneModels(geneModels, taxon);
-        PhenoGridMatchGroup phenoGridMatchGroup = new PhenoGridMatchGroup(phenoGridMatches, phenotypeIds);
-        return phenoGridMatchGroup;
-    }
-
-    private List<PhenoGridMatch> makePhenogridMatchesFromGeneModels(List<GeneModel> geneModels, PhenoGridMatchTaxon taxon) {
-        List<PhenoGridMatch> phenoGridMatches = new ArrayList<>();
-        int modelCount = 0;
-        for (GeneModel model : geneModels) {
-            PhenoGridMatchScore score = new PhenoGridMatchScore("hiPhive", (int) (model.getScore() * 100f), modelCount++);
-            List<PhenotypeMatch> phenotypeMatches = new ArrayList<>(model.getBestPhenotypeMatchForTerms().values());
-            String modelType = "gene";
-            if ("9606".equals(taxon.getId())) {
-                modelType = "disease";
-            }
-            PhenoGridMatch match = new PhenoGridMatch(model.getModelId(), model.getModelSymbol(), modelType, phenotypeMatches, score, taxon);
-            phenoGridMatches.add(match);            
-        }
-        
-        return phenoGridMatches;
-    }
-    
     private String writePhenoGridAsJson(PhenoGrid phenogrid) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, false);

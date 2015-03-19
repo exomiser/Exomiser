@@ -5,7 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
+import de.charite.compbio.exomiser.core.model.DiseaseModel;
 import de.charite.compbio.exomiser.core.model.GeneModel;
+import de.charite.compbio.exomiser.core.model.Model;
 import java.util.List;
 
 /**
@@ -15,11 +17,11 @@ import java.util.List;
  */
 public interface ModelService {
 
-    public List<GeneModel> getHumanDiseaseModels();
+    public List<Model> getHumanDiseaseModels();
 
-    public List<GeneModel> getMouseGeneModels();
+    public List<Model> getMouseGeneModels();
 
-    public List<GeneModel> getFishGeneModels();
+    public List<Model> getFishGeneModels();
     
     
 }

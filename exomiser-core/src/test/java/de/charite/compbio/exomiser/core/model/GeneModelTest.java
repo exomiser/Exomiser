@@ -21,21 +21,25 @@ import static org.junit.Assert.*;
 public class GeneModelTest {
     
     private GeneModel instance;
+    private final Organism organism = Organism.MOUSE;
     private final double score = 1.0d;
     private final int entrezGeneId = 12345;
     private final String humanGeneSymbol = "GENE1";
-    private final String modelId = "model1";
-    private final String modelSymbol = "Gene1";
+    private final String modelId = "gene1_model1";
+    private final String modelGeneId = "MGI:12345";
+    private final String modelGeneSymbol = "Gene1";
     private final List<String> modelPhenotypeIds = new ArrayList<>(Arrays.asList("HP:0000000", "HP:0000001"));
     
     @Before
     public void setUp() {
         //TODO: want it to work more like this I think - although a HUMAN modelOrganism would indicate a DiseaseModel
-//        humanGeneId = new GeneIdentifier(modelSymbol, modelId);
-//        modelGeneId = new GeneIdentifier(modelSymbol, modelId);
+//        humanGeneId = new GeneIdentifier(modelGeneId, modelGeneSymbol);
+//        modelGeneId = new GeneIdentifier(modelGeneId, modelGeneSymbol);
+//        diseaseId = new DiseaseIdentifier(diseaseId, diseaseTerm);
 //        modelOrganism = Organism.HUMAN
-//        instance = new GeneModel(modelOrganism, humanGeneId, modelGeneId, modelSpecies, modelPhenotypeIds);
-        instance = new GeneModel(entrezGeneId, humanGeneSymbol, modelId, modelSymbol, modelPhenotypeIds);
+//        instance = new GeneModel(modelOrganism, humanGeneId, modelGeneId, modelPhenotypeIds);
+//        instance = new DiseaseModel(modelOrganism, humanGeneId, diseaseId, modelPhenotypeIds);
+        instance = new GeneModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
     }
 
     @Test
@@ -65,8 +69,8 @@ public class GeneModelTest {
     }
 
     @Test
-    public void testGetModelSymbol() {
-        assertThat(instance.getModelSymbol(), equalTo(modelSymbol));
+    public void testGetModelGeneSymbol() {
+        assertThat(instance.getModelGeneSymbol(), equalTo(modelGeneSymbol));
     }
     
     @Test
@@ -113,44 +117,50 @@ public class GeneModelTest {
     
     @Test
     public void testHashCode() {
-        GeneModel other = new GeneModel(entrezGeneId, humanGeneSymbol, modelId, modelSymbol, modelPhenotypeIds);
+        GeneModel other = new GeneModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
 
     @Test
     public void testEquals() {
-        GeneModel other = new GeneModel(entrezGeneId, humanGeneSymbol, modelId, modelSymbol, modelPhenotypeIds);
+        GeneModel other = new GeneModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
         assertThat(instance.equals(other), is(true));
     }
 
     @Test
     public void testNotEqualsGeneId() {
-        GeneModel other = new GeneModel(54321, humanGeneSymbol, modelId, modelSymbol, modelPhenotypeIds);
+        GeneModel other = new GeneModel(modelId, organism, 54321, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
         assertThat(instance.equals(other), is(false));
     }
     
     @Test
     public void testNotEqualsGeneSymbol() {
-        GeneModel other = new GeneModel(entrezGeneId, "GENE2", modelId, modelSymbol, modelPhenotypeIds);
+        GeneModel other = new GeneModel(modelId, organism, entrezGeneId, "GENE2", modelGeneId, modelGeneSymbol, modelPhenotypeIds);
         assertThat(instance.equals(other), is(false));
     }
     
     @Test
     public void testNotEqualsModelId() {
-        GeneModel other = new GeneModel(entrezGeneId, humanGeneSymbol, "wibble", modelSymbol, modelPhenotypeIds);
+        GeneModel other = new GeneModel("different_model", organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
         assertThat(instance.equals(other), is(false));
     }
     
     @Test
     public void testNotEqualsPhenotypes() {
-        GeneModel other = new GeneModel(entrezGeneId, humanGeneSymbol, modelId, modelSymbol, null);
+        GeneModel other = new GeneModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, null);
+        assertThat(instance.equals(other), is(false));
+    }
+    
+    @Test
+    public void testNotEqualsOrganism() {
+        GeneModel other = new GeneModel(modelId, Organism.HUMAN, entrezGeneId, humanGeneSymbol, modelId, modelGeneSymbol, null);
         assertThat(instance.equals(other), is(false));
     }
     
     @Test
     public void testToString() {
         instance.setScore(score);
-        assertThat(instance.toString(), equalTo("GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", modelSymbol=" + modelSymbol + ", phenotypeIds=" + modelPhenotypeIds + '}'));
+        assertThat(instance.toString(), equalTo("GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", modelSymbol=" + modelGeneSymbol + ", phenotypeIds=" + modelPhenotypeIds + '}'));
     }
     
 }

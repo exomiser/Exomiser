@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Bean for encapsulating data involved in a disease/animal model to human gene
+ * Bean for encapsulating data involved in an animal model to human gene
  * association.
  *
  * For example the disease Pfeiffer syndrome (OMIM:101600) has a set of defined
@@ -28,59 +28,85 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneModel {
+public class GeneModel implements Model {
+    
+    private final String modelId;
+    private final Organism organism;
     
     private final int entrezGeneId;
     private final String humanGeneSymbol;
     
-    private final String modelId;
-    private final String modelSymbol;
+    private final String modelGeneId;
+    private final String modelGeneSymbol;
+    
     private final List<String> phenotypeIds;
 
     private double score = 0d;
     private final Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms;
     
-    public GeneModel(int entrezGeneId, String humanGeneSymbol, String modelId, String modelSymbol, List<String> phenotypeIds) {
+    public GeneModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String modelGeneId, String modelGeneSymbol, List<String> phenotypeIds) {
+        this.modelId = modelId;
+        this.organism = organism;
+        
         this.entrezGeneId = entrezGeneId;
         this.humanGeneSymbol = humanGeneSymbol;
-        this.modelId = modelId;
-        this.modelSymbol = modelSymbol;
+        
+        this.modelGeneId = modelGeneId;
+        this.modelGeneSymbol = modelGeneSymbol;
+        
         this.phenotypeIds = phenotypeIds;
         this.bestPhenotypeMatchForTerms = new LinkedHashMap<>();
     }
 
+    public String getModelGeneId() {
+        return modelGeneId;
+    }
+
+    public String getModelGeneSymbol() {
+        return modelGeneSymbol;
+    }
+
+    @Override
+    public Organism getOrganism() {
+        return organism;
+    }
+
+    @Override
     public int getEntrezGeneId() {
         return entrezGeneId;
     }
 
+    @Override
     public String getHumanGeneSymbol() {
         return humanGeneSymbol;
     }
 
+    @Override
     public String getModelId() {
         return modelId;
     }
 
-    public String getModelSymbol() {
-        return modelSymbol;
-    }
-
+    @Override
     public List<String> getPhenotypeIds() {
         return phenotypeIds;
     }
 
+    @Override
     public double getScore() {
         return score;
     }
 
+    @Override
     public void setScore(double score) {
         this.score = score;
     }
     
+    @Override
     public Map<PhenotypeTerm, PhenotypeMatch> getBestPhenotypeMatchForTerms() {
         return bestPhenotypeMatchForTerms;
     }
       
+    @Override
     public void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match) {
         PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
         if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm)) {
@@ -94,6 +120,7 @@ public class GeneModel {
     public int hashCode() {
         int hash = 3;
         hash = 79 * hash + this.entrezGeneId;
+        hash = 79 * hash + Objects.hashCode(this.organism);
         hash = 79 * hash + Objects.hashCode(this.humanGeneSymbol);
         hash = 79 * hash + Objects.hashCode(this.modelId);
         hash = 79 * hash + Objects.hashCode(this.phenotypeIds);
@@ -109,6 +136,9 @@ public class GeneModel {
             return false;
         }
         final GeneModel other = (GeneModel) obj;
+        if (this.organism != other.organism) {
+            return false;
+        }
         if (this.entrezGeneId != other.entrezGeneId) {
             return false;
         }
@@ -126,7 +156,7 @@ public class GeneModel {
 
     @Override
     public String toString() {
-        return "GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", modelSymbol=" + modelSymbol + ", phenotypeIds=" + phenotypeIds + '}';
+        return "GeneModel{score=" + score + ", entrezGeneId=" + entrezGeneId + ", humanGeneSymbol=" + humanGeneSymbol + ", modelId=" + modelId + ", modelSymbol=" + modelGeneSymbol + ", phenotypeIds=" + phenotypeIds + '}';
     }
     
 }

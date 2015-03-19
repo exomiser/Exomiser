@@ -1,6 +1,8 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import de.charite.compbio.exomiser.core.model.DiseaseModel;
 import de.charite.compbio.exomiser.core.model.GeneModel;
+import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import de.charite.compbio.exomiser.core.model.Organism;
@@ -13,25 +15,50 @@ import java.util.Map;
  */
 public class HiPhivePriorityResult implements PriorityResult {
 
-    private final String geneSymbol; 
-    private double score;
+    private final String geneSymbol;
+    private double score = 0f;
     private final List<PhenotypeTerm> queryPhenotypeTerms;
-    private final Map<Organism, GeneModel> phenotypeEvidence;
-    private final Map<Organism, GeneModel> ppiEvidence;
+    private final List<Model> phenotypeEvidence;
+    private final List<Model> ppiEvidence;
+
+    private double humanScore = 0f;
+    private double mouseScore = 0f;
+    private double fishScore = 0f;
+
     private final double walkerScore;
 
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public HiPhivePriorityResult(String geneSymbol, double score, List<PhenotypeTerm> queryPhenotypeTerms, Map<Organism, GeneModel> phenotypeEvidence, Map<Organism, GeneModel> ppiEvidence, double walkerScore) {
+    public HiPhivePriorityResult(String geneSymbol, double score, List<PhenotypeTerm> queryPhenotypeTerms, List<Model> phenotypeEvidence, List<Model> ppiEvidence, double walkerScore) {
         this.geneSymbol = geneSymbol;
         this.score = score;
         this.queryPhenotypeTerms = queryPhenotypeTerms;
+        setPhenotypeEvidenceScores(phenotypeEvidence);
+
         this.phenotypeEvidence = phenotypeEvidence;
         this.ppiEvidence = ppiEvidence;
         this.walkerScore = walkerScore;
     }
 
+    private void setPhenotypeEvidenceScores(List<Model> phenotypeEvidence) {
+        if (phenotypeEvidence != null) {
+            for (Model model : phenotypeEvidence) {
+                switch (model.getOrganism()) {
+                    case HUMAN:
+                        humanScore = model.getScore();
+                        break;
+                    case MOUSE:
+                        mouseScore = model.getScore();
+                        break;
+                    case FISH:
+                        fishScore = model.getScore();
+                        break;
+                }
+            }
+        }
+    }
+        
     @Override
     public PriorityType getPriorityType() {
         return PriorityType.HI_PHIVE_PRIORITY;
@@ -54,12 +81,28 @@ public class HiPhivePriorityResult implements PriorityResult {
         return queryPhenotypeTerms;
     }
 
-    public Map<Organism, GeneModel> getPhenotypeEvidence() {
+    public List<Model> getPhenotypeEvidence() {
         return phenotypeEvidence;
     }
 
-    public Map<Organism, GeneModel> getPpiEvidence() {
+    public List<Model> getPpiEvidence() {
         return ppiEvidence;
+    }
+
+    public float getHumanScore() {
+        return (float) humanScore;
+    }
+
+    public float getMouseScore() {
+        return (float) mouseScore;
+    }
+
+    public float getFishScore() {
+        return (float) fishScore;
+    }
+
+    public float getWalkerScore() {
+        return (float) this.walkerScore;
     }
 
     /**
@@ -71,13 +114,13 @@ public class HiPhivePriorityResult implements PriorityResult {
     public String getHTMLCode() {
         //return String.format("<ul><li>Similarity score: %.3f %s</li></ul>",this.genewandererScore,this.evidence);
         StringBuilder stringBuilder = new StringBuilder();
-        
-        for (Organism species : phenotypeEvidence.keySet()) {
-            GeneModel model = phenotypeEvidence.get(species);
+
+        for (Model model : phenotypeEvidence) {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = model.getBestPhenotypeMatchForTerms();
-            switch(species) {
+            switch (model.getOrganism()) {
                 case HUMAN:
-                    String diseaseLink = makeDiseaseLink(model.getModelId(), model.getModelSymbol());
+                    DiseaseModel diseaseModel = (DiseaseModel) model;
+                    String diseaseLink = makeDiseaseLink(diseaseModel.getDiseaseId(), diseaseModel.getDiseaseTerm());
                     stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to %s associated with %s.</dt>", model.getScore(), diseaseLink, model.getHumanGeneSymbol()));
                     break;
                 case MOUSE:
@@ -90,14 +133,14 @@ public class HiPhivePriorityResult implements PriorityResult {
             makeBestPhenotypeMatchHtml(stringBuilder, bestMatchesForModel);
         }
 
-        for (Organism species : ppiEvidence.keySet()) {
-            GeneModel model = ppiEvidence.get(species);
+        for (Model model : ppiEvidence) {
             String stringDbLink = "http://string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + geneSymbol + "%0D" + model.getHumanGeneSymbol() + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
-            
+
             Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = model.getBestPhenotypeMatchForTerms();
-            switch(species) {
+            switch (model.getOrganism()) {
                 case HUMAN:
-                    String diseaseLink = makeDiseaseLink(model.getModelId(), model.getModelSymbol());
+                    DiseaseModel diseaseModel = (DiseaseModel) model;
+                    String diseaseLink = makeDiseaseLink(diseaseModel.getDiseaseId(), diseaseModel.getDiseaseTerm());
                     stringBuilder.append(String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s.</dt>", stringDbLink, model.getHumanGeneSymbol(), diseaseLink, model.getHumanGeneSymbol()));
                     break;
                 case MOUSE:
@@ -112,7 +155,7 @@ public class HiPhivePriorityResult implements PriorityResult {
         String html = stringBuilder.toString();
         if (html.isEmpty()) {
             return "<dl><dt>No phenotype or PPI evidence</dt></dl>";
-        } 
+        }
         return html;
     }
 
@@ -129,7 +172,7 @@ public class HiPhivePriorityResult implements PriorityResult {
         }
         stringBuilder.append("</dl>");
     }
-    
+
     private String makeDiseaseLink(String diseaseId, String diseaseTerm) {
         String[] databaseNameAndIdentifier = diseaseId.split(":");
         String databaseName = databaseNameAndIdentifier[0];
@@ -139,33 +182,6 @@ public class HiPhivePriorityResult implements PriorityResult {
         } else {
             return "<a href=\"http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=" + id + "\">" + diseaseTerm + "</a>";
         }
-    }
-
-
-    public float getHumanScore() {
-        GeneModel model = phenotypeEvidence.get(Organism.HUMAN);
-        return returnModelScoreOrZeroIfAbsent(model);
-    }
-
-    public float getMouseScore() {
-        GeneModel model = phenotypeEvidence.get(Organism.MOUSE);
-        return returnModelScoreOrZeroIfAbsent(model);
-    }
-
-    public float getFishScore() {
-        GeneModel model = phenotypeEvidence.get(Organism.FISH);
-        return returnModelScoreOrZeroIfAbsent(model);
-    }
-
-    private float returnModelScoreOrZeroIfAbsent(GeneModel model) {
-        if (model != null) {
-            return (float) model.getScore();
-        }
-        return 0f;
-    }
-
-    public float getWalkerScore() {
-        return (float) this.walkerScore;
     }
 
 }
