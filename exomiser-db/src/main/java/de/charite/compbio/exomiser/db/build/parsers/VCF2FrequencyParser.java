@@ -80,9 +80,9 @@ public class VCF2FrequencyParser {
         //String alt = fields[4].toUpperCase();
         String alts[] = fields[4].toUpperCase().split(",");
 
-        float ea = Constants.UNINITIALIZED_FLOAT;
-        float aa = Constants.UNINITIALIZED_FLOAT;
-        float all = Constants.UNINITIALIZED_FLOAT;
+        float ea = 0f;
+        float aa = 0f;
+        float all = 0f;
         ArrayList<String> minorFreqs = new ArrayList();
         HashMap<String, String> exACFreqs = new HashMap();
         String A[] = info.split(";");
@@ -116,64 +116,62 @@ public class VCF2FrequencyParser {
                 exACFreqs.put(exACData[0], exACData[1]);
             }
         }
-        float afr = Constants.UNINITIALIZED_FLOAT;
-        float amr = Constants.UNINITIALIZED_FLOAT;
-        float eas = Constants.UNINITIALIZED_FLOAT;
-        float fin = Constants.UNINITIALIZED_FLOAT;
-        float nfe = Constants.UNINITIALIZED_FLOAT;
-        float oth = Constants.UNINITIALIZED_FLOAT;
-        float sas = Constants.UNINITIALIZED_FLOAT;
+
         int minorAlleleCounter = 1;
         for (String alt : alts) {
             // VCF files and Annovar-style annotations use different nomenclature for
             // indel variants. We use Annovar.
             transformVCF2AnnovarCoordinates(ref, alt, pos);
-            float maf = Constants.UNINITIALIZED_FLOAT;
+            Frequency freq = new Frequency(chrom, pos, ref, alt, rsId);
+            if (ea != 0f){   
+                freq.setESPFrequencyEA(ea);
+                freq.setESPFrequencyAA(aa);
+                freq.setESPFrequencyAll(all);
+            }        
             if (minorFreqs.size() > 0) {
                 if (!minorFreqs.get(minorAlleleCounter).equals(".")) {
-                    maf = Float.parseFloat(minorFreqs.get(minorAlleleCounter));
+                    float maf = Float.parseFloat(minorFreqs.get(minorAlleleCounter));
                     /*
                      * NOTE that the dnSNP maf are given as proportion, whereas
                      * the ESP MAF are given as percent. In order not to loose
                      * numerical accurary, we will convert all to percent for
                      * the database.
                      */
-                    maf = maf * 100f;
+                     maf = maf * 100f;
+                    freq.setDbSnpGmaf(maf);
                 }
             }
 
             if (exACFreqs.get("AN_AFR") != null && !exACFreqs.get("AN_AFR").equals("0")) {
-                afr = 100f * Integer.parseInt(exACFreqs.get("AC_AFR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AFR"));
+                float afr = 100f * Integer.parseInt(exACFreqs.get("AC_AFR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AFR"));
+                freq.setExACFrequencyAfr(afr);
             }
             if (exACFreqs.get("AN_AMR") != null && !exACFreqs.get("AN_AMR").equals("0")) {
-                amr = 100f * Integer.parseInt(exACFreqs.get("AC_AMR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AMR"));
+                float amr = 100f * Integer.parseInt(exACFreqs.get("AC_AMR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AMR"));
+                freq.setExACFrequencyAmr(amr);
             }
             if (exACFreqs.get("AN_EAS") != null && !exACFreqs.get("AN_EAS").equals("0")) {
-                eas = 100f * Integer.parseInt(exACFreqs.get("AC_EAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_EAS"));
+                float eas = 100f * Integer.parseInt(exACFreqs.get("AC_EAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_EAS"));
+                freq.setExACFrequencyEas(eas);
             }
             if (exACFreqs.get("AN_FIN") != null && !exACFreqs.get("AN_FIN").equals("0")) {
-                fin = 100f * Integer.parseInt(exACFreqs.get("AC_FIN").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_FIN"));
+                float fin = 100f * Integer.parseInt(exACFreqs.get("AC_FIN").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_FIN"));
+                freq.setExACFrequencyFin(fin);
             }
             if (exACFreqs.get("AN_NFE") != null && !exACFreqs.get("AN_NFE").equals("0")) {
-                nfe = 100f * Integer.parseInt(exACFreqs.get("AC_NFE").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_NFE"));
+                float nfe = 100f * Integer.parseInt(exACFreqs.get("AC_NFE").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_NFE"));
+                freq.setExACFrequencyNfe(nfe);
             }
             if (exACFreqs.get("AN_OTH") != null && !exACFreqs.get("AN_OTH").equals("0")) {
-                oth = 100f * Integer.parseInt(exACFreqs.get("AC_OTH").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_OTH"));
+                float oth = 100f * Integer.parseInt(exACFreqs.get("AC_OTH").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_OTH"));
+                freq.setExACFrequencyOth(oth);
             }
             if (exACFreqs.get("AN_SAS") != null && !exACFreqs.get("AN_SAS").equals("0")) {
-                sas = 100f * Integer.parseInt(exACFreqs.get("AC_SAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_SAS"));
+                float sas = 100f * Integer.parseInt(exACFreqs.get("AC_SAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_SAS"));
+                freq.setExACFrequencySas(sas);
             }
-            Frequency freq = new Frequency(chrom, pos, ref, alt, rsId, maf);
-            freq.setESPFrequencyEA(ea);
-            freq.setESPFrequencyAA(aa);
-            freq.setESPFrequencyAll(all);
-            freq.setExACFrequencyAfr(afr);
-            freq.setExACFrequencyAmr(amr);
-            freq.setExACFrequencyEas(eas);
-            freq.setExACFrequencyFin(fin);
-            freq.setExACFrequencyNfe(nfe);
-            freq.setExACFrequencyOth(oth);
-            freq.setExACFrequencySas(sas);
+            
+          
             frequencyList.add(freq);
             minorAlleleCounter++;
         }
@@ -254,7 +252,8 @@ public class VCF2FrequencyParser {
         if (rsId.startsWith("rs")) {
             return Integer.parseInt(rsId.substring(2));
         }
-        return Constants.NO_RSID;
+        //return Constants.NO_RSID;
+        return 0;
     }
 
     /**

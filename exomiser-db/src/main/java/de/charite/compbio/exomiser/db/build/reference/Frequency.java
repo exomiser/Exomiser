@@ -79,36 +79,6 @@ public class Frequency implements Comparable<Frequency> {
         this.ref = ref;
         this.alt = alt;
         this.rsId = rsId;
-        this.dbSNPmaf = Constants.UNINITIALIZED_FLOAT;
-        this.espEA = Constants.UNINITIALIZED_FLOAT;
-        this.espAA = Constants.UNINITIALIZED_FLOAT;
-        this.espAll = Constants.UNINITIALIZED_FLOAT;
-        this.exACAfr = Constants.UNINITIALIZED_FLOAT;
-        this.exACAmr = Constants.UNINITIALIZED_FLOAT;
-        this.exACEas = Constants.UNINITIALIZED_FLOAT;
-        this.exACFin = Constants.UNINITIALIZED_FLOAT;
-        this.exACNfe = Constants.UNINITIALIZED_FLOAT;
-        this.exACOth = Constants.UNINITIALIZED_FLOAT;
-        this.exACSas = Constants.UNINITIALIZED_FLOAT;
-    }
-
-    public Frequency(byte chromosome, int position, String ref, String alt, int rsId, float maf) {
-        this.chromosome = chromosome;
-        this.pos = position;
-        this.ref = ref;
-        this.alt = alt;
-        this.rsId = rsId;
-        this.dbSNPmaf = maf;
-        this.espEA = Constants.UNINITIALIZED_FLOAT;
-        this.espAA = Constants.UNINITIALIZED_FLOAT;
-        this.espAll = Constants.UNINITIALIZED_FLOAT;
-        this.exACAfr = Constants.UNINITIALIZED_FLOAT;
-        this.exACAmr = Constants.UNINITIALIZED_FLOAT;
-        this.exACEas = Constants.UNINITIALIZED_FLOAT;
-        this.exACFin = Constants.UNINITIALIZED_FLOAT;
-        this.exACNfe = Constants.UNINITIALIZED_FLOAT;
-        this.exACOth = Constants.UNINITIALIZED_FLOAT;
-        this.exACSas = Constants.UNINITIALIZED_FLOAT;
     }
 
     public byte getChromosome() {
