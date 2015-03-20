@@ -124,7 +124,7 @@ public class HtmlResultsWriterTest {
         Mockito.when(missenseVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
         Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
         missenseVariantEvaluation = new VariantEvaluation(missenseVariant);
-        missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f)));
+        missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f)));
         missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f), new MutationTasterScore(1f), new SiftScore(0f), new CaddScore(1f)));
         missenseVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
         missenseVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));

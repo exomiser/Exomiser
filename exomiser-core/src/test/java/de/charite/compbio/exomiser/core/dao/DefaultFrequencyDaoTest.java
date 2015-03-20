@@ -43,7 +43,7 @@ public class DefaultFrequencyDaoTest {
     @Mock
     Variant variantInDatabaseWithOutRsId;
 
-    private static final FrequencyData NO_DATA = new FrequencyData(null, null, null, null, null);
+    private static final FrequencyData NO_DATA = new FrequencyData(null, null, null, null, null, null, null, null, null, null, null, null);
 
     @Before
     public void setUp() {
@@ -80,7 +80,7 @@ public class DefaultFrequencyDaoTest {
     @Test
     public void testVariantInDatabaseReturnsFrequencyData() {
         FrequencyData result = instance.getFrequencyData(variantInDatabaseWithRsId);
-        FrequencyData expected = new FrequencyData(new RsId(121918506), new Frequency(0.01f), new Frequency(0.02f), new Frequency(0.03f), new Frequency(0.04f));
+        FrequencyData expected = new FrequencyData(new RsId(121918506), new Frequency(0.01f), new Frequency(0.02f), new Frequency(0.03f), new Frequency(0.04f), new Frequency(0f), new Frequency(0f),new Frequency(0f),new Frequency(0f),new Frequency(0f),new Frequency(0f),new Frequency(0f));
         assertThat(result, equalTo(expected));
         assertThat(result.representedInDatabase(), is(true));
     }

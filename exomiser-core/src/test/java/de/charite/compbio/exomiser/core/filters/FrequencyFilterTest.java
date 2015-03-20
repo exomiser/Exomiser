@@ -51,12 +51,12 @@ public class FrequencyFilterTest {
     private static final Frequency DBSNP_PASS = new Frequency(PASS_FREQ);
     private static final Frequency DBSNP_FAIL = new Frequency(FAIL_FREQ);
 
-    private static final FrequencyData espAllPassData = new FrequencyData(null, null, ESP_ALL_PASS, null, null);
-    private static final FrequencyData espAllFailData = new FrequencyData(null, null, ESP_ALL_FAIL, null, null);
-    private static final FrequencyData espAaPassData = new FrequencyData(null, null, null, ESP_AA_PASS, null);
-    private static final FrequencyData espEaPassData = new FrequencyData(null, null, null, null, ESP_EA_PASS);
-    private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS, null, null, null);
-    private static final FrequencyData noFreqData = new FrequencyData(null, null, null, null, null);
+    private static final FrequencyData espAllPassData = new FrequencyData(null, null, ESP_ALL_PASS, null, null, null, null,null,null,null,null,null);
+    private static final FrequencyData espAllFailData = new FrequencyData(null, null, ESP_ALL_FAIL, null, null,null, null,null,null,null,null,null);
+    private static final FrequencyData espAaPassData = new FrequencyData(null, null, null, ESP_AA_PASS, null,null, null,null,null,null,null,null);
+    private static final FrequencyData espEaPassData = new FrequencyData(null, null, null, null, ESP_EA_PASS,null, null,null,null,null,null,null);
+    private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS, null, null, null,null, null,null,null,null,null,null);
+    private static final FrequencyData noFreqData = new FrequencyData(null, null, null, null, null,null, null,null,null,null,null,null);
 
     @Before
     public void setUp() throws Exception {

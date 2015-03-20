@@ -42,15 +42,15 @@ public class FrequencyDataTest {
     private static final Frequency DBSNP_FAIL = new Frequency(FAIL_FREQ);    
     
     private static final RsId RSID = new RsId(12335);
-    private static final FrequencyData realPassData = new FrequencyData(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS);
+    private static final FrequencyData realPassData = new FrequencyData(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS,null, null,null,null,null,null,null);
 
-    private static final FrequencyData espAllPassData = new FrequencyData(null, null, ESP_ALL_PASS, null, null);
-    private static final FrequencyData espAllFailData = new FrequencyData(null, null, ESP_ALL_FAIL, null, null);
-    private static final FrequencyData espAaPassData = new FrequencyData(null, null, null, ESP_AA_PASS, null);
-    private static final FrequencyData espEaPassData = new FrequencyData(null, null, null, null, ESP_EA_PASS);
-    private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS, null, null, null);
-    private static final FrequencyData rsIdOnlyData = new FrequencyData(RSID, null, null, null, null);
-    private static final FrequencyData noFreqData = new FrequencyData(null, null, null, null, null);
+    private static final FrequencyData espAllPassData = new FrequencyData(null, null, ESP_ALL_PASS, null, null,null, null,null,null,null,null,null);
+    private static final FrequencyData espAllFailData = new FrequencyData(null, null, ESP_ALL_FAIL, null, null,null, null,null,null,null,null,null);
+    private static final FrequencyData espAaPassData = new FrequencyData(null, null, null, ESP_AA_PASS, null,null, null,null,null,null,null,null);
+    private static final FrequencyData espEaPassData = new FrequencyData(null, null, null, null, ESP_EA_PASS,null, null,null,null,null,null,null);
+    private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS, null, null, null,null, null,null,null,null,null,null);
+    private static final FrequencyData rsIdOnlyData = new FrequencyData(RSID, null, null, null, null,null, null,null,null,null,null,null);
+    private static final FrequencyData noFreqData = new FrequencyData(null, null, null, null, null,null, null,null,null,null,null,null);
     
     public FrequencyDataTest() {
     }
@@ -97,7 +97,7 @@ public class FrequencyDataTest {
     
     @Test
     public void testRepresentedInDatabaseRsIdOnly() {
-        FrequencyData instance = new FrequencyData(RSID, null, null, null, null);
+        FrequencyData instance = new FrequencyData(RSID, null, null, null, null,null, null,null,null,null,null,null);
         assertThat(instance.representedInDatabase(), is(true));
     }
     
@@ -142,7 +142,7 @@ public class FrequencyDataTest {
     @Test
     public void testGetKnownFrequencies() {
         System.out.println("getKnownFrequencies");
-        FrequencyData instance = new FrequencyData(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS);
+        FrequencyData instance = new FrequencyData(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS,null, null,null,null,null,null,null);
         List<Frequency> expResult = new ArrayList<>();
         expResult.add(DBSNP_PASS);
         expResult.add(ESP_ALL_PASS);
@@ -165,7 +165,7 @@ public class FrequencyDataTest {
     public void testGetMaxFreqWithData() {
         float maxFreq = 89.5F;
         Frequency maxFrequency = new Frequency(maxFreq);
-        FrequencyData instance = new FrequencyData(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
+        FrequencyData instance = new FrequencyData(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS,null, null,null,null,null,null,null);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
     }
 }

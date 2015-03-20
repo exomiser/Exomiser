@@ -168,11 +168,11 @@ public class FilterReportFactoryTest {
         FilterType filterType = FilterType.FREQUENCY_FILTER;
 
         VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
-        completelyNovelVariantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
+        completelyNovelVariantEval.setFrequencyData(new FrequencyData(null, null, null, null, null, null, null, null, null, null, null, null));
         variantEvaluations.add(completelyNovelVariantEval);
         
         VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedFilterVariantEvaluation(filterType);
-        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f)));
+        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f)));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
         
         settings = new SettingsBuilder().maximumFrequency(0.0f).build();
@@ -182,7 +182,7 @@ public class FilterReportFactoryTest {
         report.addMessage("Frequency Data available in dbSNP (for 1000 Genomes Phase I) for 1 variants (50.0%)");
         report.addMessage("dbSNP \"rs\" id available for 1 variants (50.0%)");
         report.addMessage("Data available in Exome Server Project for 1 variants (50.0%)");
-                
+        report.addMessage("Data available from ExAC Project for 1 variants (50.0%)");        
         FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
 
         assertThat(result, equalTo(report));

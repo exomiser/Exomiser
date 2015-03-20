@@ -44,7 +44,7 @@ public class VariantEvaluationDataServiceTest {
     private FrequencyDao mockFrequencyDao;
 
     private static final PathogenicityData PATH_DATA = new PathogenicityData(new PolyPhenScore(1), new MutationTasterScore(1), new SiftScore(0), new CaddScore(1));
-    private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f));
+    private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f), new Frequency(100.0f));
     
     private VariantEvaluation varEval;
     private Variant variant;
