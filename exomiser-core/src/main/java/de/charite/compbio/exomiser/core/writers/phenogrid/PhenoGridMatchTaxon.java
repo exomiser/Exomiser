@@ -51,6 +51,10 @@ public class PhenoGridMatchTaxon {
         }
         return Objects.equals(this.label, other.label);
     }
-    
+
+    @Override
+    public String toString() {
+        return "PhenoGridMatchTaxon{" + "id=" + id + ", label=" + label + '}';
+    }
     
 }

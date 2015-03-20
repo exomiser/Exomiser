@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -69,6 +70,53 @@ public class PhenoGridMatch {
             queryTermIds.add(queryPhenotype.getId());
         }
         return queryTermIds;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + Objects.hashCode(this.id);
+        hash = 53 * hash + Objects.hashCode(this.label);
+        hash = 53 * hash + Objects.hashCode(this.type);
+        hash = 53 * hash + Objects.hashCode(this.matches);
+        hash = 53 * hash + Objects.hashCode(this.score);
+        hash = 53 * hash + Objects.hashCode(this.taxon);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PhenoGridMatch other = (PhenoGridMatch) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.label, other.label)) {
+            return false;
+        }
+        if (!Objects.equals(this.type, other.type)) {
+            return false;
+        }
+        if (!Objects.equals(this.matches, other.matches)) {
+            return false;
+        }
+        if (!Objects.equals(this.score, other.score)) {
+            return false;
+        }
+        if (!Objects.equals(this.taxon, other.taxon)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "PhenoGridMatch{" + "id=" + id + ", label=" + label + ", type=" + type + ", #matches=" + matches.size() + ", score=" + score + ", taxon=" + taxon + '}';
     }
 
 }

@@ -29,9 +29,9 @@ public class PhenoGridAdaptor {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenoGridAdaptor.class);
     
-    private static final PhenoGridMatchTaxon HUMAN_TAXON = new PhenoGridMatchTaxon("NCBITaxon:9606", Organism.HUMAN.getSpeciesName());
-    private static final PhenoGridMatchTaxon MOUSE_TAXON = new PhenoGridMatchTaxon("NCBITaxon:10090", Organism.MOUSE.getSpeciesName());
-    private static final PhenoGridMatchTaxon FISH_TAXON = new PhenoGridMatchTaxon("NCBITaxon:7955", Organism.FISH.getSpeciesName());
+    protected static final PhenoGridMatchTaxon HUMAN_TAXON = new PhenoGridMatchTaxon("NCBITaxon:9606", Organism.HUMAN.getSpeciesName());
+    protected static final PhenoGridMatchTaxon MOUSE_TAXON = new PhenoGridMatchTaxon("NCBITaxon:10090", Organism.MOUSE.getSpeciesName());
+    protected static final PhenoGridMatchTaxon FISH_TAXON = new PhenoGridMatchTaxon("NCBITaxon:7955", Organism.FISH.getSpeciesName());
 
     public PhenoGrid makePhenoGridFromHiPhiveResults(String phenoGridId, List<HiPhivePriorityResult> hiPhiveResults) {
         Set<String> phenotypeIds = new LinkedHashSet<>();

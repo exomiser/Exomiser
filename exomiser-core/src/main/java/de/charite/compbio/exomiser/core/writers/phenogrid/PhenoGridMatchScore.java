@@ -5,6 +5,8 @@
  */
 package de.charite.compbio.exomiser.core.writers.phenogrid;
 
+import java.util.Objects;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -32,7 +34,41 @@ public class PhenoGridMatchScore {
     public int getRank() {
         return rank;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + Objects.hashCode(this.metric);
+        hash = 89 * hash + this.score;
+        hash = 89 * hash + this.rank;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PhenoGridMatchScore other = (PhenoGridMatchScore) obj;
+        if (!Objects.equals(this.metric, other.metric)) {
+            return false;
+        }
+        if (this.score != other.score) {
+            return false;
+        }
+        if (this.rank != other.rank) {
+            return false;
+        }
+        return true;
+    }
+
     
-    
+    @Override
+    public String toString() {
+        return "PhenoGridMatchScore{" + "metric=" + metric + ", score=" + score + ", rank=" + rank + '}';
+    }
     
 }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -47,6 +48,37 @@ public class PhenoGridMatchGroup {
     @JsonProperty("cutoff")
     public int getCutOff() {
         return CUTOFF;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 17 * hash + Objects.hashCode(this.matches);
+        hash = 17 * hash + Objects.hashCode(this.queryPhenotypeTermIds);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PhenoGridMatchGroup other = (PhenoGridMatchGroup) obj;
+        if (!Objects.equals(this.matches, other.matches)) {
+            return false;
+        }
+        if (!Objects.equals(this.queryPhenotypeTermIds, other.queryPhenotypeTermIds)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "PhenoGridMatchGroup{" + "matches=" + matches + ", queryPhenotypeTermIds=" + queryPhenotypeTermIds + '}';
     }
 
 }
