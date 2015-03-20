@@ -64,6 +64,9 @@ public class OutFormatOptionMarshaller extends AbstractOptionMarshaller {
                 case "VCF":
                     outputFormats.add(OutputFormat.VCF);
                     break;
+                case "PHENOGRID":
+                    outputFormats.add(OutputFormat.PHENOGRID);
+                    break;
                 default:
                     logger.info("{} is not a recognised output format. Please choose one or more of HTML, TAB-GENE, TAB-VARIANT, VCF - defaulting to HTML", outputFormatString);
                     outputFormats.add(OutputFormat.HTML);

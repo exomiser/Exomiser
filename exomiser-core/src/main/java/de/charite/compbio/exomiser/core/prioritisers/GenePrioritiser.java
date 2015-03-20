@@ -28,7 +28,7 @@ public class GenePrioritiser {
      * @param genes
      * @return
      */
-    public static List<Gene> prioritiseFilteredGenes(List<Priority> prioritisers, List<Gene> genes) {
+    public static List<Gene> prioritiseFilteredGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
         List<Gene> filteredGenes = new ArrayList<>();
         for (Gene gene : genes) {
             if (gene.passedFilters()) {
@@ -47,9 +47,9 @@ public class GenePrioritiser {
      * @param genes
      * @return
      */
-    public static List<Gene> prioritiseGenes(List<Priority> prioritisers, List<Gene> genes) {
+    public static List<Gene> prioritiseGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
         logger.info("Running prioritisers over {} genes", genes.size());
-        for (Priority prioritiser : prioritisers) {
+        for (Prioritiser prioritiser : prioritisers) {
             logger.info("Starting prioritiser: {}", prioritiser.getPriorityName());
             prioritiser.prioritizeGenes(genes);
         }

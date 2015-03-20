@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * @author Sebastian Koehler
  * @version 0.09 (3 November, 2013)
  */
-public class ExomeWalkerPriority implements Priority {
+public class ExomeWalkerPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 

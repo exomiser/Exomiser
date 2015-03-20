@@ -65,29 +65,14 @@ public class PhivePriorityResult implements PriorityResult {
     @Override
     public float getScore() {
         if (phenodigmScore == Constants.UNINITIALIZED_FLOAT) {
-            return 0.1f;// mouse model exists but no hit to this disease
+            // mouse model exists but no phenotype hit to this disease
+            return 0.1f;
         } else if (phenodigmScore == Constants.NOPARSE_FLOAT) {
-            return 0.6f;// no mouse model exists in MGI
+            // no mouse model exists in MGI for this gene
+            return 0.6f;
         } else {
             return phenodigmScore;
         }
-    }
-
-    /**
-     * @return A list with detailed results of filtering. The list is intended
-     * to be displayed as an HTML list if desired.
-     */
-    @Override
-    public List<String> getFilterResultList() {
-        List<String> results = new ArrayList<>();
-        if (phenodigmScore == Constants.UNINITIALIZED_FLOAT) {
-            results.add("MGI Phenodigm: no hit for these phenotypes");
-        } else if (phenodigmScore == Constants.NOPARSE_FLOAT) {
-            results.add("MGI Phenodigm: no mouse model for this gene");
-        } else {
-            results.add(String.format("MGI Phenodigm: (%.3f%%)", 100 * phenodigmScore));
-        }
-        return results;
     }
 
     /**

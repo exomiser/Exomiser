@@ -5,14 +5,16 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.model.Disease;
-import de.charite.compbio.exomiser.core.model.DiseaseIdentifier;
-import de.charite.compbio.exomiser.core.model.GeneIdentifier;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,53 +32,52 @@ public class DefaultDiseaseDao implements DiseaseDao {
     private final Logger logger = LoggerFactory.getLogger(DefaultDiseaseDao.class);
 
     @Autowired
-    private DataSource dataSource;  
-    
-    @Cacheable()
-    @Override
-    public Disease getDisease(DiseaseIdentifier diseaseId) {
-            try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement preparedFrequencyQuery = createPreparedStatement(connection, diseaseId);
-                ResultSet rs = preparedFrequencyQuery.executeQuery()) {
-            return processResults(rs);
+    private DataSource dataSource;
 
+    @Override
+    public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
+        String hpoListString = "";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
+            hpoIdsStatement.setString(1, diseaseId);
+            ResultSet rs = hpoIdsStatement.executeQuery();
+            rs.next();
+            hpoListString = rs.getString(1);
         } catch (SQLException e) {
-            logger.error("Error executing disease query: ", e);
+            logger.error("Unable to retrieve HPO terms for disease {}", diseaseId, e);
         }
-        return null;
+        List<String> diseaseHpoIds = parseHpoIdListFromString(hpoListString);
+        logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), diseaseId, diseaseHpoIds);
+        return new TreeSet<>(diseaseHpoIds);
     }
 
-    private PreparedStatement createPreparedStatement(Connection connection, DiseaseIdentifier diseaseId) throws SQLException {
-        // Added order by clause as sometimes have multiple rows for the same position, ref and alt and first row may have no freq data
-        // Can remove if future versions of database remove these duplicated rows
-
-        //TODO: optimise this query to remove the order by 
-        String query = "";
-        PreparedStatement ps = connection.prepareStatement(query);
-
-        
-
-        return ps;
-    }
-
-    private Disease processResults(ResultSet rs) throws SQLException {
-        
-
-        if (rs.next()) { 
+    private List<String> parseHpoIdListFromString(String hpoIdsString) {
+        String[] hpoArray = hpoIdsString.split(",");
+        List<String> hpoIdList = new ArrayList<>();
+        for (String string : hpoArray) {
+            hpoIdList.add(string.trim());
         }
-        
-        return new Disease();
+        return hpoIdList;
     }
 
+    @Cacheable(value="diseases")
     @Override
-    public Set<Disease> getAllDiseases() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Map<String, String> getDiseaseIdToTerms() {
+        Map<String, String> termsCache = new HashMap();
+        String diseaseNameQuery = "SELECT disease_id, diseasename FROM disease";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement ontologyTermsStatement = connection.prepareStatement(diseaseNameQuery);
+                ResultSet rs = ontologyTermsStatement.executeQuery()) {
+            while (rs.next()) {
+                String id = rs.getString(1);
+                String term = rs.getString(2);
+                id = id.trim();
+                termsCache.put(id, term);
+            }
+        } catch (SQLException e) {
+            logger.error("Unable to execute query '{}' for disease terms cache", diseaseNameQuery, e);
+        }
+        logger.info("Created {} disease id : term mappings", termsCache.size());
+        return termsCache;
     }
-
-    @Override
-    public Set<Disease> getKnownDiseasesForGene(GeneIdentifier geneId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }

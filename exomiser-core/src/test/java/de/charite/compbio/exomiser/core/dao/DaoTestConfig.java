@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.jdbc.Sql;
 
 /**
  *
@@ -35,5 +36,23 @@ public class DaoTestConfig {
     @Bean
     public DefaultPathogenicityDao defaultPathogenicityDao() {
         return new DefaultPathogenicityDao();
+    }
+    
+    @Bean
+    public DiseaseDao defaultDiseaseDao() {
+        return new DefaultDiseaseDao();
+    }
+    
+    @Bean
+    public HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+
+    @Bean MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+    
+    @Bean ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
     }
 }

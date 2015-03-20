@@ -85,13 +85,4 @@ public class ExomeWalkerPriorityResult implements PriorityResult {
         }
     }
 
-    /**
-     * @return A list with detailed results of filtering. Not yet implemented
-     * for gene wanderer.
-     */
-    @Override
-    public List<String> getFilterResultList() {
-        return new ArrayList<>();
-    }
-
 }

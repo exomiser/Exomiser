@@ -17,12 +17,6 @@ public interface PriorityResult extends Score {
     public PriorityType getPriorityType();
 
     /**
-     * @return A list with detailed results of filtering. The list is intended
-     * to be displayed as an HTML list if desired.
-     */
-    public List<String> getFilterResultList();
-
-    /**
      * @return HTML code representing this prioritization/relevance score
      * @deprecated this should be handled by the writers
      */

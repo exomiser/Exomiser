@@ -40,5 +40,5 @@ public class DiseaseIdentifier extends ExternalIdentifier implements Comparable<
         
         return this.getDatabaseCode().compareTo(other.getDatabaseCode());
     }
-
+    
 }

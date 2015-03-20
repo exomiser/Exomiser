@@ -15,9 +15,16 @@ import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
 import jannovar.reference.Chromosome;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -155,6 +162,16 @@ public class ExomiserConfig {
         return new Exomiser();
     }
     
+    @Bean 
+    public SparseVariantFilterRunner sparseVariantFilterer() {
+        return new SparseVariantFilterRunner();
+    }
+    
+    @Bean
+    public VariantEvaluationDataService variantEvaluationDataService() {
+        return new VariantEvaluationDataService();
+    }
+    
 //cacheable beans
     @Bean
     public FrequencyDao frequencyDao() {
@@ -166,13 +183,29 @@ public class ExomiserConfig {
         return new DefaultPathogenicityDao();
     }
 
-    @Bean 
-    public SparseVariantFilterRunner sparseVariantFilterer() {
-        return new SparseVariantFilterRunner();
+    @Bean
+    OntologyService ontologyService() {
+        return new OntologyServiceImpl();
     }
     
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return new VariantEvaluationDataService();
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
     }
+           
+    @Bean
+    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+    
+    @Bean
+    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+    
+    @Bean
+    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
+    }
+
 }

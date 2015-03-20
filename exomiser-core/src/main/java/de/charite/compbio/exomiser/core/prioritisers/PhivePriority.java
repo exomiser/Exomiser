@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author Damian Smedley
  * @version 0.05 (April 6, 2013)
  */
-public class PhivePriority implements Priority {
+public class PhivePriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(PhivePriority.class);
 
@@ -151,44 +151,11 @@ public class PhivePriority implements Priority {
     }
 
     /**
-     * Set hpo_ids variable based on the entered disease
-     */
-    private List<String> getHpoIdsForDisease(String disease) {
-        String hpoListString = "";
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
-            hpoIdsStatement.setString(1, disease);
-            ResultSet rs = hpoIdsStatement.executeQuery();
-            rs.next();
-            hpoListString = rs.getString(1);
-        } catch (SQLException e) {
-            logger.error("Unable to retrieve HPO terms for disease {}", disease, e);
-        }
-        List<String> diseaseHpoIds = parseHpoIdListFromString(hpoListString);
-        logger.info("{} HPO ids retrieved for disease {} - {}", diseaseHpoIds.size(), disease, diseaseHpoIds);
-        return diseaseHpoIds;
-    }
-
-    private List<String> parseHpoIdListFromString(String hpoIdsString) {
-        String[] hpoArray = hpoIdsString.split(",");
-        List<String> hpoIdList = new ArrayList<>();
-        for (String string : hpoArray) {
-            hpoIdList.add(string.trim());
-        }
-        return hpoIdList;
-    }
-
-    /**
      * @param g A gene whose relevance score is to be retrieved from the SQL
      * database by this function.
      * @return result of prioritization (represents a non-negative score)
      */
     private void retrieveScoreData(List<Gene> genes) {
-
-        if (disease != null && !disease.isEmpty() && hpoIds.isEmpty()) {
-            logger.info("Setting HPO IDs using disease annotations for {}", disease);
-            hpoIds = getHpoIdsForDisease(disease);
-        }
 
         Set<String> hpIdsWithPhenotypeMatch = new LinkedHashSet<>();
         Map<String, Float> bestMappedTermScore = new HashMap<>();

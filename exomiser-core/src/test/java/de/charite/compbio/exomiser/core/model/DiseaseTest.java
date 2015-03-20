@@ -16,29 +16,10 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class DiseaseTest {
     
-    public DiseaseTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test constructor, of class Disease.
      */
@@ -111,7 +92,7 @@ public class DiseaseTest {
     public void testGetSetPhenotypeTerms() {
         Disease instance = new Disease();
         List<PhenotypeTerm> expResult = new ArrayList<>();
-        expResult.add(new PhenotypeTerm("HP:00001", "big nose"));
+        expResult.add(new PhenotypeTerm("HP:00001", "big nose", 1.0));
         instance.setPhenotypeTerms(expResult);
         List<PhenotypeTerm> result = instance.getPhenotypeTerms();
         assertEquals(expResult, result);

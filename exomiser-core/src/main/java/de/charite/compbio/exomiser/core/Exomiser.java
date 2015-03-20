@@ -21,7 +21,7 @@ import de.charite.compbio.exomiser.core.util.GeneScorer;
 import de.charite.compbio.exomiser.core.util.InheritanceModeAnalyser;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.prioritisers.GenePrioritiser;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
+import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
@@ -43,12 +43,14 @@ public class Exomiser {
 
     private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
 
+    //TODO: this doesn't need to be injected - can just call new
     @Autowired
     private FilterFactory filterFactory;
     @Autowired
     private PriorityFactory priorityFactory;
     @Autowired
     private VariantEvaluationDataService variantEvaluationFactory;
+    //TODO: might be better using constructor injection to supply the  VariantEvaluationDataService to the SparseVariantFilterRunner
     @Autowired
     private SparseVariantFilterRunner sparseVariantFilterRunner;
 
@@ -69,7 +71,7 @@ public class Exomiser {
 
         //Prioritisers should ALWAYS run last.
         logger.info("MAKING PRIORITISERS");
-        List<Priority> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
+        List<Prioritiser> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
         runPrioritisers(priorityList, exomiserSettings, sampleData);
         
         scoreGenes(exomiserSettings, sampleData);
@@ -123,7 +125,7 @@ public class Exomiser {
         }
     }
 
-    private void runPrioritisers(List<Priority> priorityList, ExomiserSettings exomiserSettings, SampleData sampleData) {
+    private void runPrioritisers(List<Prioritiser> priorityList, ExomiserSettings exomiserSettings, SampleData sampleData) {
         logger.info("PRIORITISING GENES");
         //for VCF we need the priority scores for all genes, even those with no passed
         //variants. For other output formats we only need to do if for genes with at

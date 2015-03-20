@@ -24,32 +24,17 @@ public class ResultsWriterFactory {
     public ResultsWriter getResultsWriter(OutputFormat outputFormat) {
         switch (outputFormat){
             case HTML:
-                return getHtmlResultsWriter();
+                return new HtmlResultsWriter(templateEngine);
             case TSV_GENE:
-                return getTsvGeneResultsWriter();
+                return new TsvGeneResultsWriter();
             case TSV_VARIANT:
-                return getTsvVariantResultsWriter();
+                return new TsvVariantResultsWriter();
             case VCF:
-                return getVcfResultsWriter();
+                return new VcfResultsWriter();
+            case PHENOGRID:
+                return new PhenogridWriter();
             default:
-                return getHtmlResultsWriter();
+                return new HtmlResultsWriter(templateEngine);
         }
-    }
-    
-    protected ResultsWriter getHtmlResultsWriter() {
-        return new HtmlResultsWriter(templateEngine);
-    }
-
-    protected ResultsWriter getTsvGeneResultsWriter() {
-        return new TsvGeneResultsWriter();
-    }
-    
-    protected ResultsWriter getTsvVariantResultsWriter() {
-        return new TsvVariantResultsWriter();
-    }
-
-    protected ResultsWriter getVcfResultsWriter() {
-        return new VcfResultsWriter();
-    }
-    
+    }   
 }

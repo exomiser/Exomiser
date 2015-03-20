@@ -21,7 +21,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
  * @version 0.13 (13 May, 2013).
  * @see de.charite.compbio.exomiser.filter.Filter
  */
-public interface Priority {
+public interface Prioritiser {
 
     /**
      * Apply a prioritization algorithm to a list of
