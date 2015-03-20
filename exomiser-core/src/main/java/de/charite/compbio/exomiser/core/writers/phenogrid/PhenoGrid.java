@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.core.writers.phenogrid;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Used for storing results of a phenotypic analysis of a sample against a set
