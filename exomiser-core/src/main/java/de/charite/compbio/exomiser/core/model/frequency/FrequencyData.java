@@ -45,17 +45,36 @@ public class FrequencyData {
      * Exome Server Project (ESP) all comers MAF.
      */
     private final Frequency espAllMaf;
+    
+    /**
+     * ExAC project MAFs.
+     */
+    private final Frequency exacAFRMaf;
+    private final Frequency exacAMRMaf;
+    private final Frequency exacEASMaf;
+    private final Frequency exacFINMaf;
+    private final Frequency exacNFEMaf;
+    private final Frequency exacOTHMaf;
+    private final Frequency exacSASMaf;
 
     private final List<Frequency> knownFrequencies;
 
     //builder here like with Pathogenicity?
-    public FrequencyData(RsId rsid, Frequency dbSnp, Frequency espAll, Frequency espAA, Frequency espEA) {
+    public FrequencyData(RsId rsid, Frequency dbSnp, Frequency espAll, Frequency espAA, Frequency espEA, Frequency exacAFR, Frequency exacAMR, Frequency exacEAS, Frequency exacFIN, Frequency exacNFE, Frequency exacOTH, Frequency exacSAS) {
         
         this.rsId = rsid;
         this.dbSnpMaf = dbSnp;
         this.espAaMaf = espAA;
         this.espAllMaf = espAll;
         this.espEaMaf = espEA;
+        this.exacAFRMaf = exacAFR;
+        this.exacAMRMaf = exacAMR;
+        this.exacEASMaf = exacEAS;
+        this.exacFINMaf = exacFIN;
+        this.exacNFEMaf = exacNFE;
+        this.exacOTHMaf = exacOTH;
+        this.exacSASMaf = exacSAS;
+        
         knownFrequencies = new ArrayList<>();
         
         if (dbSnpMaf != null) {
@@ -70,6 +89,27 @@ public class FrequencyData {
         if (espEaMaf != null) {
             knownFrequencies.add(espEaMaf);
         }
+        if (exacAFRMaf != null) {
+            knownFrequencies.add(exacAFRMaf);
+        }
+        if (exacAMRMaf != null) {
+            knownFrequencies.add(exacAMRMaf);
+        }
+        if (exacEASMaf != null) {
+            knownFrequencies.add(exacEASMaf);
+        }
+        if (exacFINMaf != null) {
+            knownFrequencies.add(exacFINMaf);
+        }
+        if (exacNFEMaf != null) {
+            knownFrequencies.add(exacNFEMaf);
+        }
+        if (exacOTHMaf != null) {
+            knownFrequencies.add(exacOTHMaf);
+        }
+        if (exacSASMaf != null) {
+            knownFrequencies.add(exacSASMaf);
+        }        
     }
 
     public RsId getRsId() {
@@ -91,7 +131,7 @@ public class FrequencyData {
     public Frequency getEspAllMaf() {
         return espAllMaf;
     }
-
+    
     /**
      * @return true if this variant is at all represented in dbSNP or ESP data,
      * regardless of frequency. That is, if the variant has an RS id in dbSNP or
@@ -115,6 +155,10 @@ public class FrequencyData {
 
     public boolean hasEspData() {
         return espAllMaf != null;
+    }
+    
+    public boolean hasExacData() {
+        return exacAFRMaf != null || exacAMRMaf != null || exacEASMaf != null || exacFINMaf != null || exacNFEMaf != null || exacOTHMaf != null || exacSASMaf != null;
     }
 
     /**
