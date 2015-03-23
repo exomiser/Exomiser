@@ -22,7 +22,7 @@ public enum FrequencySource {
     //ESP project http://evs.gs.washington.edu/EVS/
     ESP_AFRICAN_AMERICAN("ESP AA"),
     ESP_EUROPEAN_AMERICAN("ESP EA"), //
-    ESP_ALL("ESP ALL"),
+    ESP_ALL("ESP All"),
     
     //ExAC project http://exac.broadinstitute.org/about
     EXAC_AFRICAN_INC_AFRICAN_AMERICAN("ExAC AFR"),
