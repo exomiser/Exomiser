@@ -68,7 +68,7 @@ public class TsvVariantResultsWriterTest {
 		variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
 
 		variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
-		variantEval.setFrequencyData(new FrequencyData(null, null, null, null, null, null, null, null, null, null, null, null));
+		variantEval.setFrequencyData(new FrequencyData(null));
 
 		gene = new Gene(variantEval);
 	}

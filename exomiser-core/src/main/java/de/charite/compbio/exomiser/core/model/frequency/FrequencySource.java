@@ -14,24 +14,24 @@ public enum FrequencySource {
     
     UNKNOWN("unknown"),
     //Frequencies from a local datasource
-    LOCAL("local"),
+    LOCAL("Local"),
     
-    //Thousand genomes http://www.1000genomes.org/
-    THOUSAND_GENOMES("1000genomes"),
+    //Thousand genomes http://www.1000genomes.org/ 
+    THOUSAND_GENOMES("1000Genomes"),
     
     //ESP project http://evs.gs.washington.edu/EVS/
-    ESP_AFRICAN_AMERICAN("espAAmaf"),
-    ESP_EUROPEAN_AMERICAN("espEAmaf"),
-    ESP_ALL("espAllmaf"),
+    ESP_AFRICAN_AMERICAN("ESP AA"),
+    ESP_EUROPEAN_AMERICAN("ESP EA"), //
+    ESP_ALL("ESP ALL"),
     
-    //EXAC project http://exac.broadinstitute.org/about
-    EXAC_AFRICAN_INC_AFRICAN_AMERICAN("exacAFRmaf"),
-    EXAC_AMERICAN("exacAMRmaf"),
-    EXAC_EAST_ASIAN("exacEASmaf"),
-    EXAC_FINISH("exacFINmaf"),
-    EXAC_NON_FINISH_EUROPEAN("exacNFEmaf"),
-    EXAC_SOUTH_ASIAN("exacSASmaf"),
-    EXAC_OTHER("exacOTHmaf");
+    //ExAC project http://exac.broadinstitute.org/about
+    EXAC_AFRICAN_INC_AFRICAN_AMERICAN("ExAC AFR"),
+    EXAC_AMERICAN("ExAC AMR"),
+    EXAC_EAST_ASIAN("ExAC EAS"),
+    EXAC_FINISH("ExAC FIN"),
+    EXAC_NON_FINISH_EUROPEAN("ExAC NFE"),
+    EXAC_SOUTH_ASIAN("ExAC SAS"),
+    EXAC_OTHER("ExAC OTH");
     
     private final String source;
             

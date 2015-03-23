@@ -1,12 +1,9 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import jannovar.exome.Variant;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -39,24 +36,21 @@ public class FrequencyFilterTest {
     private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
     private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
 
-    private static final Frequency ESP_ALL_PASS = new Frequency(PASS_FREQ);
+    private static final Frequency ESP_ALL_PASS = new Frequency(PASS_FREQ, FrequencySource.ESP_ALL);
     private static final Frequency ESP_ALL_FAIL = new Frequency(FAIL_FREQ);
 
-    private static final Frequency ESP_AA_PASS = new Frequency(PASS_FREQ);
-    private static final Frequency ESP_AA_FAIL = new Frequency(FAIL_FREQ);
+    private static final Frequency ESP_AA_PASS = new Frequency(PASS_FREQ, FrequencySource.ESP_AFRICAN_AMERICAN);
 
-    private static final Frequency ESP_EA_PASS = new Frequency(PASS_FREQ);
-    private static final Frequency ESP_EA_FAIL = new Frequency(FAIL_FREQ);
+    private static final Frequency ESP_EA_PASS = new Frequency(PASS_FREQ, FrequencySource.ESP_EUROPEAN_AMERICAN);
 
-    private static final Frequency DBSNP_PASS = new Frequency(PASS_FREQ);
-    private static final Frequency DBSNP_FAIL = new Frequency(FAIL_FREQ);
+    private static final Frequency DBSNP_PASS = new Frequency(PASS_FREQ, FrequencySource.THOUSAND_GENOMES);
 
-    private static final FrequencyData espAllPassData = new FrequencyData(null, null, ESP_ALL_PASS, null, null, null, null,null,null,null,null,null);
-    private static final FrequencyData espAllFailData = new FrequencyData(null, null, ESP_ALL_FAIL, null, null,null, null,null,null,null,null,null);
-    private static final FrequencyData espAaPassData = new FrequencyData(null, null, null, ESP_AA_PASS, null,null, null,null,null,null,null,null);
-    private static final FrequencyData espEaPassData = new FrequencyData(null, null, null, null, ESP_EA_PASS,null, null,null,null,null,null,null);
-    private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS, null, null, null,null, null,null,null,null,null,null);
-    private static final FrequencyData noFreqData = new FrequencyData(null, null, null, null, null,null, null,null,null,null,null,null);
+    private static final FrequencyData espAllPassData = new FrequencyData(null, ESP_ALL_PASS);
+    private static final FrequencyData espAllFailData = new FrequencyData(null, ESP_ALL_FAIL);
+    private static final FrequencyData espAaPassData = new FrequencyData(null, ESP_AA_PASS);
+    private static final FrequencyData espEaPassData = new FrequencyData(null, ESP_EA_PASS);
+    private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS);
+    private static final FrequencyData noFreqData = new FrequencyData(null);
 
     @Before
     public void setUp() throws Exception {

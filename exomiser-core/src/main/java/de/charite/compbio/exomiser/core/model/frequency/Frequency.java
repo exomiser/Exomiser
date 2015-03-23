@@ -22,7 +22,7 @@ public class Frequency {
         this.source = FrequencySource.UNKNOWN;
     }
 
-    Frequency(float frequency, FrequencySource source) {
+    public Frequency(float frequency, FrequencySource source) {
         this.frequency = frequency;
         this.source = source;
     }

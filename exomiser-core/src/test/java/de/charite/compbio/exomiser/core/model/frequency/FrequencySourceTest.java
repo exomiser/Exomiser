@@ -43,7 +43,7 @@ public class FrequencySourceTest {
 
     @Test
     public void testGetSource() {
-        assertThat(LOCAL.getSource(), equalTo("local"));
+        assertThat(LOCAL.getSource(), equalTo("Local"));
     }
 
 }

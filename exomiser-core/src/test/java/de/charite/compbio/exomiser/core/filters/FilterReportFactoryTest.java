@@ -13,11 +13,13 @@ import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import jannovar.common.ModeOfInheritance;
 import jannovar.exome.Variant;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -168,11 +170,11 @@ public class FilterReportFactoryTest {
         FilterType filterType = FilterType.FREQUENCY_FILTER;
 
         VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
-        completelyNovelVariantEval.setFrequencyData(new FrequencyData(null, null, null, null, null, null, null, null, null, null, null, null));
+        completelyNovelVariantEval.setFrequencyData(new FrequencyData(null));
         variantEvaluations.add(completelyNovelVariantEval);
         
         VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedFilterVariantEvaluation(filterType);
-        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f)));
+        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
         
         settings = new SettingsBuilder().maximumFrequency(0.0f).build();

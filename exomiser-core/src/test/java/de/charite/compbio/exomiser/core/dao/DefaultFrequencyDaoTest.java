@@ -7,9 +7,14 @@ package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import jannovar.common.VariantType;
 import jannovar.exome.Variant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
@@ -43,7 +48,13 @@ public class DefaultFrequencyDaoTest {
     @Mock
     Variant variantInDatabaseWithOutRsId;
 
-    private static final FrequencyData NO_DATA = new FrequencyData(null, null, null, null, null, null, null, null, null, null, null, null);
+    RsId rsId = new RsId(121918506);
+    Frequency dbSnp = new Frequency(0.01f, FrequencySource.THOUSAND_GENOMES);
+    Frequency espAll = new Frequency(0.02f, FrequencySource.ESP_ALL);
+    Frequency espAa = new Frequency(0.03f, FrequencySource.ESP_AFRICAN_AMERICAN);
+    Frequency espEa = new Frequency(0.04f, FrequencySource.ESP_EUROPEAN_AMERICAN);
+
+    private static final FrequencyData NO_DATA = new FrequencyData(null, Collections.EMPTY_SET);
 
     @Before
     public void setUp() {
@@ -80,9 +91,9 @@ public class DefaultFrequencyDaoTest {
     @Test
     public void testVariantInDatabaseReturnsFrequencyData() {
         FrequencyData result = instance.getFrequencyData(variantInDatabaseWithRsId);
-        FrequencyData expected = new FrequencyData(new RsId(121918506), new Frequency(0.01f), new Frequency(0.02f), new Frequency(0.03f), new Frequency(0.04f), new Frequency(0f), new Frequency(0f),new Frequency(0f),new Frequency(0f),new Frequency(0f),new Frequency(0f),new Frequency(0f));
+        FrequencyData expected = new FrequencyData(rsId, dbSnp, espAa, espAll, espEa);
         assertThat(result, equalTo(expected));
         assertThat(result.representedInDatabase(), is(true));
     }
-
+    
 }
