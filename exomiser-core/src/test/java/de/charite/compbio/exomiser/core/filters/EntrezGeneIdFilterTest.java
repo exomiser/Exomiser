@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 
 import java.util.HashSet;

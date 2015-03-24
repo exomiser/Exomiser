@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;

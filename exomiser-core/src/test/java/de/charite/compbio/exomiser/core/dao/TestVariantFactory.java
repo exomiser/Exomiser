@@ -7,7 +7,7 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 
 import java.util.Arrays;
 
-import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.InvalidGenomeChange;
@@ -78,9 +78,9 @@ public class TestVariantFactory {
         try {
             Annotation anno = dispatcher.build();
             if (anno != null) {
-                annotations = new AnnotationList(Arrays.asList(anno));
+                annotations = new AnnotationList(change, Arrays.asList(anno));
             } else {
-                annotations = new AnnotationList(Arrays.<Annotation>asList());
+                annotations = new AnnotationList(change, Arrays.<Annotation>asList());
             }
         } catch (InvalidGenomeChange e) {
             throw new RuntimeException("Problem building annotation", e);

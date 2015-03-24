@@ -1,4 +1,4 @@
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.model;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.io.JannovarData;

@@ -11,7 +11,7 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.Constants;
-import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.sql.Connection;

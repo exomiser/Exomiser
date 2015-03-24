@@ -1,11 +1,7 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -15,13 +11,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FrequencyFilterTest {
 
     private FrequencyFilter instance;

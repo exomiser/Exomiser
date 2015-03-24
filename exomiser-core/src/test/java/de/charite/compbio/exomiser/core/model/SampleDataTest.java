@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.Person;
 import htsjdk.variant.vcf.VCFHeader;

@@ -9,18 +9,19 @@ import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
-import de.charite.compbio.exomiser.core.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.jannovar.annotation.AnnotationList;
+import de.charite.compbio.jannovar.htsjdk.InvalidCoordinatesException;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.io.JannovarData;
 import de.charite.compbio.jannovar.reference.GenomeChange;
+import java.util.Collections;
 
 /**
  * Given a {@link VariantAnnotator}, build a {@link Variant} for each
@@ -47,27 +48,40 @@ public class VariantAnnotator {
      * Returns a list of variants of known reference. If a VariantContext has no
      * know reference on the genome an empty list will be returned.
      *
-     * @param vc {@link VariantContext} to get {@link Variant} objects for
+     * @param variantContext {@link VariantContext} to get {@link Variant} objects for
      * @return one {@link Variant} object for each alternative allele in vc.
      */
-    public List<Variant> annotateVariantContext(VariantContext vc) {
-        //builds one annotation list for each alternative allele
-        ImmutableList<AnnotationList> lst = annotator.buildAnnotationList(vc);
-        List<Variant> result = new ArrayList<>();
+    public List<Variant> annotateVariantContext(VariantContext variantContext) {
+        ImmutableList<AnnotationList> alleleAnnotationLists = buildAlleleAnnotations(variantContext);
+        if (alleleAnnotationLists.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Variant> variants = new ArrayList<>();
         //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
-        for (int i = 0; i < vc.getAlternateAlleles().size(); ++i) {
-            AnnotationList annotationList = lst.get(i);
+        for (int alleleID = 0; alleleID < variantContext.getAlternateAlleles().size(); ++alleleID) {
+            AnnotationList annotationList = alleleAnnotationLists.get(alleleID);
             if (!annotationList.isEmpty()) {
-                GenomeChange change = annotationList.get(0).change;
+                GenomeChange change = annotationList.getChange();
                 //Currently a change can be null for variants with unknown reference. 
                 //This will cause BAD things like NPEs to happen, so filter these things out here before they get into the system.
                 //this should be fixed with issue #55
                 if (change != null) {
-                    result.add(new Variant(vc, i, change, annotationList));
+                    variants.add(new Variant(variantContext, alleleID, change, annotationList));
                 }
             }
         }
-        return result;
+        return variants;
+    }
+
+    private ImmutableList<AnnotationList> buildAlleleAnnotations(VariantContext variantContext) {
+        //builds one annotation list for each alternative allele
+        ImmutableList<AnnotationList> alleleAnnotationLists = null;
+        try {
+            alleleAnnotationLists = annotator.buildAnnotationList(variantContext);
+        } catch (InvalidCoordinatesException ex) {
+            logger.error("Cannot build annotations for VariantContext {} - coordinates are invalid", variantContext, ex);
+        }
+        return alleleAnnotationLists;
     }
 
 }

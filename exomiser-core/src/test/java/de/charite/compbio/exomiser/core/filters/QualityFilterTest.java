@@ -5,13 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.Variant;
-import de.charite.compbio.exomiser.core.filters.VariantFilter;
-import de.charite.compbio.exomiser.core.filters.TargetFilter;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

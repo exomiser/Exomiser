@@ -18,6 +18,12 @@
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-htsjdk</artifactId>
             <version>0.13-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.testng</groupId>
+                    <artifactId>testng</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jblas</groupId>

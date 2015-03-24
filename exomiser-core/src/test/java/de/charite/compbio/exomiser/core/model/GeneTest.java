@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.Variant;
 import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
