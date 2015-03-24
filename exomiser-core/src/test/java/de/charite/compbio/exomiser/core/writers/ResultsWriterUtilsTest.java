@@ -5,17 +5,13 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
-import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.DEFAULT_OUTPUT_DIR;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
-import jannovar.exome.VariantTypeCounter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,22 +21,43 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ResultsWriterUtilsTest {
 
     SettingsBuilder settingsbuilder;
-    
-    public ResultsWriterUtilsTest() {
-    }
 
+    @Mock
+    Gene passedGeneOne;
+    @Mock
+    Gene passedGeneTwo;
+    @Mock
+    Gene failedGene;
+    
     @Before
     public void before() {
         settingsbuilder = new ExomiserSettings.SettingsBuilder();
         settingsbuilder.vcfFilePath(Paths.get("wibble"));
+        
+        Mockito.when(passedGeneOne.passedFilters()).thenReturn(Boolean.TRUE);
+        Mockito.when(passedGeneTwo.passedFilters()).thenReturn(Boolean.TRUE);
+        Mockito.when(failedGene.passedFilters()).thenReturn(Boolean.FALSE);
+    }
+    
+    private List<Gene> getGenes() {
+        List<Gene> genes = new ArrayList<>();
+        genes.add(passedGeneOne);
+        genes.add(passedGeneTwo);
+        genes.add(failedGene);
+        return genes;
     }
 
     @Test
@@ -105,4 +122,35 @@ public class ResultsWriterUtilsTest {
         
         assertThat(results.isEmpty(), is(false));
     }
+
+    @Test
+    public void testMaxPassedGenesWhereMaxGenesIsZero() {
+        List<Gene> allPassedGenes = new ArrayList<>();
+        allPassedGenes.add(passedGeneOne);
+        allPassedGenes.add(passedGeneTwo);
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 0), equalTo(allPassedGenes));
+    } 
+    
+    @Test
+    public void testMaxPassedGenesWhereMaxGenesIsOne() {
+        List<Gene> onePassed = new ArrayList<>();
+        onePassed.add(passedGeneOne);
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 1), equalTo(onePassed));
+    } 
+    @Test
+    public void testMaxPassedGenesWhereMaxGenesIsGreaterThanInputSize() {
+        List<Gene> allPassedGenes = new ArrayList<>();
+        allPassedGenes.add(passedGeneOne);
+        allPassedGenes.add(passedGeneTwo);
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 100), equalTo(allPassedGenes));
+    }
+    
+    @Test
+    public void testPassedGenesReturnsAllPassedGenes() {
+        List<Gene> allPassedGenes = new ArrayList<>();
+        allPassedGenes.add(passedGeneOne);
+        allPassedGenes.add(passedGeneTwo);
+        assertThat(ResultsWriterUtils.getPassedGenes(getGenes()), equalTo(allPassedGenes));
+    }
+    
 }
