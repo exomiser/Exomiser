@@ -4,7 +4,6 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
