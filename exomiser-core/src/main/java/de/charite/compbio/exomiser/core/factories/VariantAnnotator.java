@@ -74,14 +74,14 @@ public class VariantAnnotator {
     }
 
     private ImmutableList<AnnotationList> buildAlleleAnnotations(VariantContext variantContext) {
-        //builds one annotation list for each alternative allele
-        ImmutableList<AnnotationList> alleleAnnotationLists = null;
         try {
-            alleleAnnotationLists = annotator.buildAnnotationList(variantContext);
+            //builds one annotation list for each alternative allele
+            return annotator.buildAnnotationList(variantContext);
         } catch (InvalidCoordinatesException ex) {
-            logger.error("Cannot build annotations for VariantContext {} - coordinates are invalid", variantContext, ex);
+            //not all genes can be assigned to a chromosome, so these will fail here. 
+            logger.debug("Cannot build annotations for VariantContext {} - coordinates are invalid: {}", variantContext, ex);
+            return new ImmutableList.Builder<AnnotationList>().build();
         }
-        return alleleAnnotationLists;
     }
 
 }
