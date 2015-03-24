@@ -174,23 +174,8 @@ public class SubmitJobController {
             model.addAttribute("totalGenes", sampleGenes.size());
         }
         
-        List<Gene> passedGenes = getPassedGenes(sampleGenes, maxGenes);
+        List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleGenes, maxGenes);
         model.addAttribute("genes", passedGenes);
-    }
-
-    private List<Gene> getPassedGenes(List<Gene> genes, int numGenesToShow) {
-        List<Gene> passedGenes = new ArrayList<>();
-        int genesShown = 0;
-        for (Gene gene : genes) {
-            if (genesShown < numGenesToShow) {
-                if (gene.passedFilters()) {
-                    passedGenes.add(gene);
-                    genesShown++;
-                }
-            }
-        }
-        logger.info("Returning {} of a total of {} genes for display", passedGenes.size(), genes.size());
-        return passedGenes;
     }
 
     private int numGenesPassedFilters(List<Gene> genes) {

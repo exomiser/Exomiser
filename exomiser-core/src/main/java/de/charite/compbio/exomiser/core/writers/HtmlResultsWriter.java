@@ -96,22 +96,10 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("sampleName", sampleName);
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
-        
-        List<Gene> passedGenes = new ArrayList<>();
-        int numGenesToShow = settings.getNumberOfGenesToShow();
-        if (numGenesToShow == 0) {
-            numGenesToShow = sampleData.getGenes().size();
-        } 
-        int genesShown = 0;
-        for (Gene gene : sampleData.getGenes()) {
-            if(genesShown <= numGenesToShow) {
-                if (gene.passedFilters()) {
-                    passedGenes.add(gene);
-                    genesShown++;
-                }
-            }
-        }
+                 
+        List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleData.getGenes(), settings.getNumberOfGenesToShow());       
         context.setVariable("genes", passedGenes);
+        
         return templateEngine.process("results", context);
     }
 
