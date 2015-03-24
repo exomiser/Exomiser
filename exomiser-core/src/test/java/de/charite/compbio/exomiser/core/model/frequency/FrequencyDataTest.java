@@ -8,11 +8,7 @@ package de.charite.compbio.exomiser.core.model.frequency;
 
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.TreeSet;
-import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -53,28 +49,23 @@ public class FrequencyDataTest {
     }
 
     @Test
-    public void testHasFrequencyDataForSource() {
-//        assertThat(realPassData.hasDataFromSource(FrequencySource.ESP_AFRICAN_AMERICAN), is(true));
-    }
-    
-    @Test
     public void testGetDbSnpMaf() {
-        assertThat(instance.getDbSnpMaf(), equalTo(DBSNP_PASS));
+        assertThat(instance.getFrequencyForSource(THOUSAND_GENOMES), equalTo(DBSNP_PASS));
     }
 
     @Test
     public void testGetEspEaMaf() {
-        assertThat(instance.getEspEaMaf(), equalTo(ESP_EA_PASS));
+        assertThat(instance.getFrequencyForSource(ESP_EUROPEAN_AMERICAN), equalTo(ESP_EA_PASS));
     }
 
     @Test
     public void testGetEspAaMaf() {
-        assertThat(instance.getEspAaMaf(), equalTo(ESP_AA_PASS));
+        assertThat(instance.getFrequencyForSource(ESP_AFRICAN_AMERICAN), equalTo(ESP_AA_PASS));
     }
 
     @Test
     public void testGetEspAllMaf() {
-        assertThat(instance.getEspAllMaf(), equalTo(ESP_ALL_PASS));
+        assertThat(instance.getFrequencyForSource(ESP_ALL), equalTo(ESP_ALL_PASS));
     }
 
     @Test

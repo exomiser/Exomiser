@@ -25,7 +25,12 @@ import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.Frequency;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.pathogenicity.AbstractPathogenicityScore;
+import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -46,7 +51,9 @@ public class TsvVariantResultsWriter implements ResultsWriter {
             .withRecordSeparator("\r\n")
             .withIgnoreSurroundingSpaces(true)
             .withHeader("#CHROM", "POS", "REF", "ALT", "QUAL", "FILTER", "GENOTYPE", "COVERAGE", "FUNCTIONAL_CLASS", "HGVS", "EXOMISER_GENE",
-                    "CADD(>0.483)", "POLYPHEN(>0.956|>0.446)", "MUTATIONTASTER(>0.94)", "SIFT(<0.06)", "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
+                    "CADD(>0.483)", "POLYPHEN(>0.956|>0.446)", "MUTATIONTASTER(>0.94)", "SIFT(<0.06)",
+                    "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
+                    "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
                     "EXOMISER_VARIANT_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_GENE_COMBINED_SCORE");
     private CSVPrinter printer;
 
@@ -113,7 +120,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
         // HGVS
         record.add(var.getRepresentativeAnnotation());
-		// FIXME jannovar has no function to use HGVS stuff alone
+        // FIXME jannovar has no function to use HGVS stuff alone
         // variantAnnotation like KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q
         // String[] variantAnnotation =
         // var.getRepresentativeAnnotation().split(":");
@@ -135,32 +142,9 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         record.add(getPatScore(ve.getPathogenicityData().getMutationTasterScore()));
         // SIFT
         record.add(getPatScore(ve.getPathogenicityData().getSiftScore()));
-        // DBSNP_ID
-        if (ve.getFrequencyData() == null) {
-            record.add(".");
-            // MAX_FREQUENCY
-            record.add(".");
-            // DBSNP_FREQUENCY
-            record.add(".");
-            // EVS_EA_FREQUENCY
-            record.add(".");
-            // EVS_AA_FREQUENCY
-            record.add(".");
-        } else {
-            if (ve.getFrequencyData().getRsId() == null) {
-                record.add(".");
-            } else {
-                record.add("rs" + ve.getFrequencyData().getRsId().getId());
-            }
-            // MAX_FREQUENCY
-            record.add(dotIfNull(ve.getFrequencyData().getMaxFreq()));
-            // DBSNP_FREQUENCY
-            record.add(dotIfNull(ve.getFrequencyData().getDbSnpMaf()));
-            // EVS_EA_FREQUENCY
-            record.add(dotIfNull(ve.getFrequencyData().getEspEaMaf()));
-            // EVS_AA_FREQUENCY
-            record.add(dotIfNull(ve.getFrequencyData().getEspAaMaf()));
-        }
+        // "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
+        // "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
+        addFrequencyData(ve.getFrequencyData(), record);
         // EXOMISER_VARIANT_SCORE
         record.add(dotIfNull(ve.getVariantScore()));
         // EXOMISER_GENE_PHENO_SCORE
@@ -172,6 +156,27 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         return record;
     }
 
+    private void addFrequencyData(FrequencyData frequencyData, List<Object> record) {
+        if (frequencyData == null) {
+            frequencyData = new FrequencyData(null, Collections.EMPTY_SET);
+        }
+        // DBSNP_ID
+        record.add(dotIfNull(frequencyData.getRsId()));
+        // MAX_FREQUENCY
+        record.add(dotIfNull(frequencyData.getMaxFreq()));
+        // Don't change the order of these - it's necessary for the data to end up in the correct column
+        FrequencySource[] experimentalFrequencySources = {
+        // "DBSNP_FREQUENCY", 
+            THOUSAND_GENOMES, 
+        // "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
+            ESP_EUROPEAN_AMERICAN, ESP_AFRICAN_AMERICAN, 
+        // "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
+            EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN, EXAC_EAST_ASIAN, EXAC_FINISH, EXAC_NON_FINISH_EUROPEAN, EXAC_SOUTH_ASIAN, EXAC_OTHER};
+        for (FrequencySource source : experimentalFrequencySources) {
+            record.add(dotIfFrequencyNull(frequencyData.getFrequencyForSource(source)));
+        }
+    }
+
     private Object dotIfNull(Object o) {
         if (o == null) {
             return ".";
@@ -180,13 +185,14 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
     }
 
-	// private String getColumnOfArrayIfExists(String[] variantAnnotation, int
-    // i) {
-    // if (variantAnnotation.length > i)
-    // return variantAnnotation[i];
-    // else
-    // return ".";
-    // }
+    private Object dotIfFrequencyNull(Frequency frequency) {
+        if (frequency == null) {
+            return ".";
+        } else {
+            return frequency.getFrequency();
+        }
+    }
+
     private Object getPatScore(AbstractPathogenicityScore score) {
         if (score == null) {
             return ".";

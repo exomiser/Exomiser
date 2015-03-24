@@ -49,22 +49,10 @@ public class FrequencyData {
         return rsId;
     }
 
-    public Frequency getDbSnpMaf() {
-        return knownFrequencies.get(THOUSAND_GENOMES);
+    public Frequency getFrequencyForSource(FrequencySource source) {
+        return knownFrequencies.get(source);
     }
 
-    public Frequency getEspEaMaf() {
-        return knownFrequencies.get(ESP_EUROPEAN_AMERICAN);
-    }
-
-    public Frequency getEspAaMaf() {
-        return knownFrequencies.get(ESP_AFRICAN_AMERICAN);
-    }
-
-    public Frequency getEspAllMaf() {
-        return knownFrequencies.get(ESP_ALL);
-    }
-    
     /**
      * @return true if this variant is at all represented in dbSNP or ESP data,
      * regardless of frequency. That is, if the variant has an RS id in dbSNP or
