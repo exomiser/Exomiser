@@ -113,7 +113,7 @@ public class ExACFrequencyParser implements ResourceParser {
                 }
                 vcount++;
 
-                ArrayList<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
+                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
                 
                 for (Frequency frequency : frequencyPerLine) {
                     int idx = Collections.binarySearch(frequencyList, frequency, comparator);

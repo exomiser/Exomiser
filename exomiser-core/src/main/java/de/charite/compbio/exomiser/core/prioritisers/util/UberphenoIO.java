@@ -66,7 +66,7 @@ public class UberphenoIO {
                 String termId = mat.group();
                 Term t = uberpheno.getTerm(termId);
 
-                HashSet<Integer> omimids = new HashSet<>();
+                Set<Integer> omimids = new HashSet<>();
                 if (split.length == 4) {
                     omimids = parseOmimsFromLine(split[3]);
                 }
@@ -169,7 +169,6 @@ public class UberphenoIO {
      * @param allUberphenoTermsHpMpZp
      * @return a randomized version of gene/uberpheno term associations
      */
-    @SuppressWarnings(value = "unchecked")
     public UberphenoAnnotationContainer createRandomizedVersion(UberphenoAnnotationContainer uberphenoAnnotationContainer, List<Term> allUberphenoTermsHpMpZp) {
 
         UberphenoAnnotationContainer annotations = new UberphenoAnnotationContainer();
@@ -179,18 +178,11 @@ public class UberphenoIO {
         generator.setSeed(System.currentTimeMillis());
 
         for (int geneId : uberphenoAnnotationContainer.container.keySet()) {
-
             for (UberphenoAnnotation oldAnnotation : uberphenoAnnotationContainer.container.get(geneId)) {
-
-                HashSet<Integer> omims = new HashSet<>();
-                HashSet<Integer> old = ((HashSet<Integer>) oldAnnotation.getEvidenceOmimIds().clone());
-                omims.addAll(old);
-
                 int randomIndex = generator.nextInt(allUberphenoTermsHpMpZp.size());
-                UberphenoAnnotation newAnnotation = new UberphenoAnnotation(geneId, oldAnnotation.getGeneSymbol(), allUberphenoTermsHpMpZp.get(randomIndex), omims);
+                UberphenoAnnotation newAnnotation = new UberphenoAnnotation(geneId, oldAnnotation.getGeneSymbol(), allUberphenoTermsHpMpZp.get(randomIndex), oldAnnotation.getEvidenceOmimIds());
                 addAnnotation(newAnnotation, annotations);
             }
-
         }
         return annotations;
     }
@@ -207,7 +199,7 @@ public class UberphenoIO {
         try {
             logger.info(oboParser.doParse());
         } catch (IOException | OBOParserException e) {
-            logger.error("Unable to parse uberpheno OBO file {}", uphenoFile,  e);
+            logger.error("Unable to parse uberpheno OBO file {}", uphenoFile, e);
         }
         TermContainer termContainer = new TermContainer(oboParser.getTermMap(), oboParser.getFormatVersion(), oboParser.getDate());
         return new Ontology(termContainer);

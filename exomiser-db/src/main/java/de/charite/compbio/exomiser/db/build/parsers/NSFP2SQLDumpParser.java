@@ -294,16 +294,16 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         char aaalt = fields[AAALT].charAt(0);
         int aapos = parseAaPos(fields[AAPOS]);
         float sift = getMostPathogenicSIFTScore(fields[SIFT_SCORE]);
-        float polyphen2_HVAR = getMostPathogenicPolyphenScore(fields[POLYPHEN2_HVAR_SCORE]);
-        float mut_taster = getMostPathogenicMutTasterScore(fields[MUTATION_TASTER_SCORE], fields[MUTATION_TASTER_PRED]);
+        float polyphen2HVAR = getMostPathogenicPolyphenScore(fields[POLYPHEN2_HVAR_SCORE]);
+        float mutTaster = getMostPathogenicMutTasterScore(fields[MUTATION_TASTER_SCORE], fields[MUTATION_TASTER_PRED]);
         float phyloP = parsePhyloP(fields[PHYLO_P]);
-        float cadd_raw = parseCaddRaw(fields[CADD_raw]);
-        float cadd_raw_rankscore = parseCaddRawRankScore(fields[CADD_raw_rankscore]);
-        //float cadd_phred = parseCaddPhred(fields[CADD_phred]);
+        float caddRaw = parseCaddRaw(fields[CADD_raw]);
+        float caddRawRankscore = parseCaddRawRankScore(fields[CADD_raw_rankscore]);
+//        float caddPhred = parseCaddPhred(fields[CADD_phred]);
 
         return new VariantPathogenicity(c, pos, ref, alt, aaref, aaalt, aapos,
-                sift, polyphen2_HVAR, mut_taster,
-                phyloP, cadd_raw_rankscore, cadd_raw);
+                sift, polyphen2HVAR, mutTaster,
+                phyloP, caddRawRankscore, caddRaw);
     }
 
     /**
@@ -328,18 +328,18 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         if (s.equals(".")) {
             return Constants.NOPARSE;
         }
-        Integer ret_value;
+        Integer value;
         int i = s.indexOf(";");
         if (i > 0) {
             s = s.substring(0, i);
         }
         try {
-            ret_value = Integer.parseInt(s);
+            value = Integer.parseInt(s);
         } catch (NumberFormatException e) {
             logger.error("Could not parse aapos value: '{}'", s);
             return Constants.NOPARSE;
         }
-        return ret_value;
+        return value;
     }
 
     /**

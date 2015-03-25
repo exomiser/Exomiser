@@ -10,6 +10,7 @@ import de.charite.compbio.exomiser.db.build.resources.ResourceGroup;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class StringResourceGroupParser extends AbstractResourceGroupParser imple
             return;
         }
 
-        HashMap<String, List<Integer>> ensembl2EntrezGene = new HashMap<>();
+        Map<String, List<Integer>> ensembl2EntrezGene = new HashMap<>();
         //first parseResource the entrez gene to symbol and ensembl peptide biomart file
         EntrezParser entrezParser = new EntrezParser(ensembl2EntrezGene);
         entrezParser.parseResource(entrezResource, inDir, outDir);

@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ public class FrequencyData {
     
     private final RsId rsId;
 
-    private final EnumMap<FrequencySource, Frequency> knownFrequencies;
+    private final Map<FrequencySource, Frequency> knownFrequencies;
 
     public FrequencyData(RsId rsId, Frequency... frequency) {
         this(rsId, new HashSet<>(Arrays.asList(frequency)));

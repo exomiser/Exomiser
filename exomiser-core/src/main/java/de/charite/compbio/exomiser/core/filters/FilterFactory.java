@@ -169,8 +169,8 @@ public class FilterFactory {
         return frequencyFilter;
     }
 
-    public VariantFilter getQualityFilter(float quality_threshold) {
-        VariantFilter filter = new QualityFilter(quality_threshold);
+    public VariantFilter getQualityFilter(float qualityThreshold) {
+        VariantFilter filter = new QualityFilter(qualityThreshold);
 
         logger.info("Made new Quality Filter: {}", filter);
         return filter;

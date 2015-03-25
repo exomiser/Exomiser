@@ -2,7 +2,9 @@ package de.charite.compbio.exomiser.db.build.parsers;
 
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
+import java.util.Map;
 import de.charite.compbio.jannovar.io.ReferenceDictionary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,11 +53,12 @@ public class VCF2FrequencyParser {
      * @return a
      * <code>Frequency</code> object created from the input line.
      */
-    public ArrayList<Frequency> parseVCFline(String line) {
+    //TODO: might be an idea to use HTSJDK and new Jannovar like we do in the exomiser-core
+    public List<Frequency> parseVCFline(String line) {
 
-        ArrayList<Frequency> frequencyList = new ArrayList<>();
+        List<Frequency> frequencyList = new ArrayList<>();
 
-        String fields[] = line.split("\t");
+        String[] fields = line.split("\t");
 
         byte chrom = 0;
         try {
@@ -89,33 +92,32 @@ public class VCF2FrequencyParser {
          * should be skipped
          */
 
-        //String alt = fields[4].toUpperCase();
-        String alts[] = fields[4].toUpperCase().split(",");
+        String[] alts = fields[4].toUpperCase().split(",");
 
         float ea = 0f;
         float aa = 0f;
         float all = 0f;
-        ArrayList<String> minorFreqs = new ArrayList();
-        HashMap<String, String> exACFreqs = new HashMap();
-        String A[] = info.split(";");
-        for (String a : A) {
+        List<String> minorFreqs = new ArrayList();
+        Map<String, String> exACFreqs = new HashMap();
+        String[] infoFields = info.split(";");
+        for (String infoField : infoFields) {
             // freq data from dbSNP file
             // format has changed in latest field to ;CAF=[0.9812,.,0.01882]; where major allele is 1st followed by minor alleles in order of alt line
-            if (a.startsWith("CAF=")) {
-                String parts[] = a.split(",");
+            if (infoField.startsWith("CAF=")) {
+                String parts[] = infoField.split(",");
                 for (String part : parts) {
                     part = part.replace("]", "");
                     minorFreqs.add(part);
                 }
             }
             // freq data from ESP file
-            if (a.startsWith("MAF=")) {
-                a = a.substring(4);
+            if (infoField.startsWith("MAF=")) {
+                infoField = infoField.substring(4);
                 /**
                  * This must now be a field with information for minor allele
                  * frequency for EA,AA,All
                  */
-                String minorAlleleFreqs[] = a.split(",");
+                String[] minorAlleleFreqs = infoField.split(",");
                 if (minorAlleleFreqs.length == 3) {
                     ea = Float.parseFloat(minorAlleleFreqs[0]);
                     aa = Float.parseFloat(minorAlleleFreqs[1]);
@@ -123,8 +125,8 @@ public class VCF2FrequencyParser {
                 }
             }
             // freq data from ExAC file
-            if (a.startsWith("AC") || a.startsWith("AN")) {
-                String exACData[] = a.split("=");
+            if (infoField.startsWith("AC") || infoField.startsWith("AN")) {
+                String exACData[] = infoField.split("=");
                 exACFreqs.put(exACData[0], exACData[1]);
             }
         }
@@ -133,6 +135,7 @@ public class VCF2FrequencyParser {
         for (String alt : alts) {
             // VCF files and Annovar-style annotations use different nomenclature for
             // indel variants. We use Annovar.
+            //TODO - now that we use the new Jannovar which uses a 0-based co-ordinate system investigate is this is necessary
             transformVCF2AnnovarCoordinates(ref, alt, pos);
             Frequency freq = new Frequency(chrom, pos, ref, alt, rsId);
             if (ea != 0f){   
@@ -199,47 +202,25 @@ public class VCF2FrequencyParser {
      */
     private void transformVCF2AnnovarCoordinates(String ref, String alt, int pos) {
         if (ref.length() == 1 && alt.length() == 1) {
-            /*
-             * i.e., single nucleotide variant
-             */
-            /*
-             * In this case, no changes are needed.
-             */
+            // i.e., single nucleotide variant
+            // In this case, no changes are needed.
             return;
         } else if (ref.length() > alt.length()) {
-            /*
-             * deletion or block substitution
-             */
+            // deletion or block substitution
             String head = ref.substring(0, alt.length());
-            /*
-             * System.out.println(String.format("1) ref=%s (%d nt), alt=%s (%d
-             * nt), head=%s (%d nt)",
-             ref,ref.length(),alt,alt.length(),head,head.length()));
-             */
-            /*
-             * For instance, if we have ref=TCG, alt=T, there is a two nt
-             * deletion, and head is "T"
-             */
+            //For instance, if we have ref=TCG, alt=T, there is a two nt
+            // deletion, and head is "T"
+
             if (head.equals(alt)) {
-                pos = pos + head.length(); /*
-                 * this advances to position of mutation
-                 */
+                pos = pos + head.length(); 
+                //this advances to position of mutation
                 ref = ref.substring(alt.length());
                 alt = "-";
             }
         } else if (alt.length() >= ref.length()) {
-            /*
-             * insertion or block substitution
-             */
-            String head = alt.substring(0, ref.length()); /*
-             * get first L nt of ALT (where L is length of REF)
-             */
-            /*
-             * System.out.println(String.format("2) ref=%s (%d nt), alt=%s (%d
-             * nt), head=%s (%d nt)",
-             ref,ref.length(),alt,alt.length(),head,head.length()));
-             */
-
+            //insertion or block substitution
+            String head = alt.substring(0, ref.length());
+             // get first L nt of ALT (where L is length of REF)
             if (head.equals(ref)) {
                 pos = pos + ref.length() - 1;
                 alt = alt.substring(ref.length());
@@ -254,9 +235,9 @@ public class VCF2FrequencyParser {
      * @return int value of id with the 'rs' removed
      */
     private int rsIdToInt(String rsId) {
-        String A[] = rsId.split(";");
-        if (A.length > 1) {
-            return rsIdToInt(A[A.length - 1]);
+        String[] rsIdFields = rsId.split(";");
+        if (rsIdFields.length > 1) {
+            return rsIdToInt(rsIdFields[rsIdFields.length - 1]);
         }
         /*
          * If we get here there is just one rsID

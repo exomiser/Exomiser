@@ -3,7 +3,6 @@ package de.charite.compbio.exomiser.db.build.parsers;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
-import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.jannovar.impl.intervals.Interval;
 import de.charite.compbio.jannovar.io.Chromosome;
 import de.charite.compbio.jannovar.io.JannovarData;
@@ -89,7 +88,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
     /**
      * Map of Chromosomes
      */
-    private final HashMap<Integer, ChromosomalExonLocations> chromosomeMap;
+    private final Map<Integer, ChromosomalExonLocations> chromosomeMap;
 
     public DbSnpFrequencyParser(ReferenceDictionary refDict, Resource ucscResource, Path ucscResourcePath, List<Frequency> frequencyList) {
         vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
@@ -207,7 +206,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
                     continue; // comment.
                 }
                 vcount++;
-                ArrayList<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
+                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
                 for (Frequency frequency : frequencyPerLine) {
                     checkVariantForExomalLocationAndOutput(frequency);
                 }
@@ -259,14 +258,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
             logger.error("Could not identify chromosome {}", frequency.getChromosome());
         } else {
             if (c2e.variantIsLocatedInExonicSequence(pos, endpos)) {
-                //System.out.println(chromosome + ":" + pos + ":" + id + ":" + ref + ":" + alt + ":" + info);
-//                Frequency freq = new Frequency(this.chrom, this.pos, this.ref, this.alt, rs);
-//                float maf = getMinorAlleleFrequencyFromVCFInfoField(frequency.getInfo());
-//
-//                if (maf >= 0f) {
-//                    frequency.setDbSnpGmaf(maf);
-//                }
-
                 if (previous != null && previous.isIdenticalSNP(frequency)) {
                     float x = previous.getMaximumFrequency();
                     float y = frequency.getMaximumFrequency();
@@ -287,51 +278,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
         previous = frequency;
     }
 
-    /**
-     * Parse the INFO field of the dbSNP VCF file, e.g.,
-     * RSPOS=16327;dbSNPBuildID=127;SSR=0;SAO=0;VP=050100000005000402000100;WGT=1;VC=SNV;SLO;ASP;HD;OTHERKG
-     * <P>
-     * The field called {@code GMAF} denotes the Global Minor Allele Frequency
-     * [0, 0.5]; global population is 1000GenomesProject phase 1 genotype data
-     * from 629 individuals, released in the 11-23-2010 dataset".
-     * <P>
-     * There are also fields G5A: "&gt;5% minor allele frequency in each and all
-     * populations" and G5: &gt;5% minor allele frequency in 1+ populations".
-     * (Exact frequency not indicated).
-     * <P>
-     * There are some fields indicating a low quality SNP: WTD: "Is Withdrawn by
-     * submitter (...)", and similarly NOV: "Rs cluster has non-overlapping
-     * allele sets" and GCF: "Has Genotype Conflict (...)".
-     * <P>
-     * Upon inspection of the file and given the known difficulties with dbSNP
-     * data, we will only record the frequency of variants with an explicit GMAF
-     * field. This will miss some variants with G5 or G5A fields, but we assume
-     * that most of these will have more information from the ESP file.
-     *
-     * @param info the Info field of a VCF line.
-     * @return float of the minor allele frequency
-     */
-//    protected static float getMinorAlleleFrequencyFromVCFInfoField(String info) {
-//        String A[] = info.split(";");
-//        for (String a : A) {
-//            // format has changed in latest field to CAF=[0.9812,0.01882]
-//            //if (a.startsWith("GMAF=")) {
-//            if (a.startsWith("CAF=")) {
-//                //System.out.println(info);
-//                String parts[] = a.split(",");
-//                String parts2[] = parts[1].split("]");
-//                if (!parts2[0].equals(".")) {
-//                    float maf = Float.parseFloat(parts2[0]);
-//                    /* NOTE that the dnSNP maf are given as proportion, whereas the ESP MAF
-//                     are given as percent. In order not to loose numerical accurary, we will
-//                     convert all to percent for the database. */
-//                    maf = maf * 100f;
-//                    return maf;
-//                }
-//            }
-//        }
-//        return Constants.NOPARSE_FLOAT;
-//    }
     /**
      * This class is used to represent all of the exons on a chromosome.
      */

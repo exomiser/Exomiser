@@ -157,7 +157,7 @@ public class EspFrequencyParser implements ResourceParser {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                ArrayList<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
+                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
                 for (Frequency frequency : frequencyPerLine) {
                     //parseEspDataFromVCFInfoField(frequency);
                     int idx = Collections.binarySearch(frequencyList, frequency, comparator);

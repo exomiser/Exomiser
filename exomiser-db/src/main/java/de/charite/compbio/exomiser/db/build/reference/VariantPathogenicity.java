@@ -50,7 +50,7 @@ public class VariantPathogenicity {
      * @param aaalt variant (alternate) amino acid
      * @param aapos Position of the variant amino acid in the protein.
      * @param siftScore SIFT score for the variant
-     * @param polyphen2_HVAR Polyphen2 score for the variant
+     * @param polyphen2HVAR Polyphen2 score for the variant
      * @param muttasterScore Mutation Taster score for the variant
      * @param phyloP phyloP conservation score for the variant
      * @param caddRawRankScore
@@ -58,7 +58,7 @@ public class VariantPathogenicity {
      */
     public VariantPathogenicity(int chromosome, int position, char ref, char alt,
             char aaref, char aaalt, int aapos,
-            float siftScore, float polyphen2_HVAR, float muttasterScore,
+            float siftScore, float polyphen2HVAR, float muttasterScore,
             float phyloP, float caddRawRankScore, float caddRawScore) {
         this.chromosome = chromosome;
         this.position = position;
@@ -68,7 +68,7 @@ public class VariantPathogenicity {
         this.aaalt = aaalt;
         this.aapos = aapos;
         this.siftScore = siftScore;
-        this.polyphenScore = polyphen2_HVAR;
+        this.polyphenScore = polyphen2HVAR;
         this.muttasterScore = muttasterScore;
         this.phylopScore = phyloP;
         this.caddRawRankScore = caddRawRankScore;

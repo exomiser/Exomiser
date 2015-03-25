@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +23,12 @@ import org.slf4j.LoggerFactory;
 public class EntrezParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(EntrezParser.class);
-    private final HashMap<String, List<Integer>> ensembl2EntrezGene;
+    private final Map<String, List<Integer>> ensembl2EntrezGene;
 
     /**
      * @param ensembl2EntrezGene
      */
-    public EntrezParser(HashMap<String, List<Integer>> ensembl2EntrezGene) {
+    public EntrezParser(Map<String, List<Integer>> ensembl2EntrezGene) {
         this.ensembl2EntrezGene = ensembl2EntrezGene;
     }
 
@@ -37,7 +38,6 @@ public class EntrezParser implements ResourceParser {
      * @param resource Resource containing the information about
      * @param inDir Directory path to string file.
      * @param outDir Directory where output file is to be written
-     * @return the ResourceOperationStatus
      */
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
@@ -47,7 +47,7 @@ public class EntrezParser implements ResourceParser {
 
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
 
-        HashMap<Integer, String> entrez2sym = new HashMap<>();
+        Map<Integer, String> entrez2sym = new HashMap<>();
         ResourceOperationStatus status;
         
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());

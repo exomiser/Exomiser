@@ -56,7 +56,7 @@ public class PedigreeFactory {
      * @return
      */
     public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, SampleData sampleData) {
-        ArrayList<String> sampleNames = createSampleNames(sampleData);
+        List<String> sampleNames = createSampleNames(sampleData);
         int numberOfSamples = sampleData.getNumberOfSamples();
         logger.info("Processing pedigree for {} sample(s)", numberOfSamples);
         switch (numberOfSamples) {
@@ -69,13 +69,12 @@ public class PedigreeFactory {
         }
     }
 
-    private ArrayList<String> createSampleNames(SampleData sampleData) {
-        //yes, odd but necessary as the jannovar package explicitly demands an ArrayList
+    private List<String> createSampleNames(SampleData sampleData) {
         List<String> sampleDataNames = sampleData.getSampleNames();
         return new ArrayList(sampleDataNames);
     }
 
-    private Pedigree createSingleSamplePedigree(ArrayList<String> sampleNames) {
+    private Pedigree createSingleSamplePedigree(List<String> sampleNames) {
         String sampleName = DEFAULT_SAMPLE_NAME;
         if (!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
@@ -85,7 +84,7 @@ public class PedigreeFactory {
         return new Pedigree("family", ImmutableList.of(person));
     }
 
-    private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, ArrayList<String> sampleNames) {
+    private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, List<String> sampleNames) {
         try {
             logger.info("Processing pedigree file: {}", pedigreeFilePath);
             checkPedigreePathIsNotNull(pedigreeFilePath);
@@ -93,7 +92,7 @@ public class PedigreeFactory {
             PedFileContents contents;
             contents = new PedFileReader(pedigreeFilePath.toFile()).read();
             // filter contents to the individuals from sampleNames
-            ImmutableList.Builder<PedPerson> samplePersonsBuilder = new ImmutableList.Builder<PedPerson>();
+            ImmutableList.Builder<PedPerson> samplePersonsBuilder = new ImmutableList.Builder<>();
             for (PedPerson person : contents.individuals) {
                 if (sampleNames.contains(person.name)) {
                     samplePersonsBuilder.add(person);

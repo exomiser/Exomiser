@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,11 +39,11 @@ public class StringParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(StringParser.class);
 
-    private final HashMap<String, List<Integer>> ensembl2EntrezGene;
+    private final Map<String, List<Integer>> ensembl2EntrezGene;
 
-    private HashSet<Interaction> interactionSet = null;
+    private Set<Interaction> interactionSet = null;
 
-    public StringParser(HashMap<String, List<Integer>> ensembl2EntrezGene) {
+    public StringParser(Map<String, List<Integer>> ensembl2EntrezGene) {
         this.ensembl2EntrezGene = ensembl2EntrezGene;
         this.interactionSet = new HashSet<>();
     }

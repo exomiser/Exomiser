@@ -183,7 +183,7 @@ public class Variant {
      * @return list of all annotation strings
      */
     public List<String> getAnnotations() {
-        ArrayList<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         for (Annotation anno : annotationList) {
             String annoS = anno.getSymbolAndAnnotation();
             if (annoS != null) {

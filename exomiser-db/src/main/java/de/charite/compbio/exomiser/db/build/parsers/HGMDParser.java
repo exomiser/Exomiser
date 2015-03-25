@@ -3,13 +3,13 @@ package de.charite.compbio.exomiser.db.build.parsers;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.IOException; 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +69,7 @@ public class HGMDParser {
 
     private int currentNumber;
 
-    private HashMap<String,Integer> id2DiseaseMap=null;
+    private Map<String,Integer> id2DiseaseMap=null;
     
     public HGMDParser() {
 	this.id2DiseaseMap = new HashMap<String,Integer>();

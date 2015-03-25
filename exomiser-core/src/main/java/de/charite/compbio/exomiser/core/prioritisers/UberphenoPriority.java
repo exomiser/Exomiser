@@ -15,6 +15,7 @@ import sonumina.math.graph.SlimDirectedGraphView;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,12 +89,12 @@ public class UberphenoPriority implements Prioritiser {
     /**
      * The HPO-terms associated with the current disease
      */
-    private ArrayList<Term> annotationsOfDisease;
+    private List<Term> annotationsOfDisease;
 
     /**
      * Assignment of an IC to each term in the Uberpheno
      */
-    private HashMap<Term, Double> uberphenoterm2informationContent;
+    private Map<Term, Double> uberphenoterm2informationContent;
 
     /**
      * Create a new instance of the UberphenoFilter.
@@ -136,7 +137,7 @@ public class UberphenoPriority implements Prioritiser {
             uberphenoterm2informationContent = uberphenoAnnotationContainer.calculateInformationContentUberpheno(uberpheno, uberphenoSlim);
 
             /* Similarity calculation ... TODO: parameter-based choice of similarity measure */
-            ResnikSimilarity resnik = new ResnikSimilarity(uberpheno, uberphenoterm2informationContent);
+            ResnikSimilarity resnik = new ResnikSimilarity(uberpheno, (HashMap) uberphenoterm2informationContent);
             similarityMeasure = new InformationContentObjectSimilarity(resnik, false, false);
         }
 
@@ -227,8 +228,8 @@ public class UberphenoPriority implements Prioritiser {
         if (terms == null || terms.size() < 1) {
             return new UberphenoPriorityResult(-10.0f);
         }
-        ArrayList<Term> termsAl = new ArrayList<Term>(terms);
-        double similarityScore = similarityMeasure.computeObjectSimilarity(annotationsOfDisease, termsAl);
+        List<Term> termsAl = new ArrayList<>(terms);
+        double similarityScore = similarityMeasure.computeObjectSimilarity((ArrayList) annotationsOfDisease, (ArrayList) termsAl);
         return new UberphenoPriorityResult(similarityScore);
     }
 

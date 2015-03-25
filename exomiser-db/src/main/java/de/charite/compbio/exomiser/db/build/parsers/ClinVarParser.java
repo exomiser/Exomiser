@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class ClinVarParser implements ResourceParser {
 
     private final String expectedBuild = "GRCh37";
 
-    private final ArrayList<ClinVar> clinvarLst;
+    private final List<ClinVar> clinvarLst;
 
     /**
      * The constructor initializes {@link #clinvarLst}.
