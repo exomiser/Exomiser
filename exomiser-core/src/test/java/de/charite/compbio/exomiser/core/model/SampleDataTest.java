@@ -5,18 +5,21 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import jannovar.exception.PedParseException;
-import jannovar.exome.Variant;
-import jannovar.pedigree.Pedigree;
-import jannovar.pedigree.Person;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Person;
+import htsjdk.variant.vcf.VCFHeader;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,22 +41,22 @@ public class SampleDataTest {
     
     @Mock
     Variant mockUnAnnotatedVariant;
-
+    
     @Before
     public void setUp() {
         instance = new SampleData();
-        
-        //This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(mockAnnotatedVariant.getAnnotation()).thenReturn("Lots of lovely annotations");
-        Mockito.when(mockUnAnnotatedVariant.getAnnotation()).thenReturn(".");
+
+        // This is hard-coding Jannovar's return values be aware this could change
+        Mockito.when(mockAnnotatedVariant.getAnnotations()).thenReturn(Arrays.asList("Lots of lovely annotations"));
+        Mockito.when(mockUnAnnotatedVariant.getAnnotations()).thenReturn(Arrays.<String> asList());
     }
 
     @Test
-    public void noArgsConstructorInitialisesGenesVariantEvalations(){
+    public void noArgsConstructorInitialisesGenesVariantEvalations() {
         assertThat(instance.getGenes(), notNullValue());
         assertThat(instance.getVariantEvaluations(), notNullValue());
-    } 
-    
+    }
+
     @Test
     public void testCanSetAndGetSampleNames() {
         List<String> sampleNames = new ArrayList<>();
@@ -77,7 +80,7 @@ public class SampleDataTest {
 
     @Test
     public void testCanSetAndGetVcfHeader() {
-        List<String> vcfHeader = new ArrayList<>();
+        VCFHeader vcfHeader = new VCFHeader();
         instance.setVcfHeader(vcfHeader);
         assertThat(instance.getVcfHeader(), equalTo(vcfHeader));
     }
@@ -90,8 +93,8 @@ public class SampleDataTest {
     }
 
     @Test
-    public void testCanSetAndGetPedigree() throws PedParseException {
-        Pedigree pedigree = new Pedigree(new ArrayList<Person>(), "Family Robinson");
+    public void testCanSetAndGetPedigree() {
+        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Individual");
         instance.setPedigree(pedigree);
         assertThat(instance.getPedigree(), equalTo(pedigree));
     }
@@ -107,15 +110,15 @@ public class SampleDataTest {
     public void testCanReturnUnannotatedVariantEvaluations() {
         VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation(mockAnnotatedVariant);
         VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation(mockUnAnnotatedVariant);
-        
+
         List<VariantEvaluation> allVariantEvaluations = new ArrayList<>();
         allVariantEvaluations.add(annotatedVariantEvaluation);
         allVariantEvaluations.add(unAnnotatedVariantEvaluation);
         instance.setVariantEvaluations(allVariantEvaluations);
-        
+
         List<VariantEvaluation> unAnnotatedVariantEvaluations = new ArrayList<>();
         unAnnotatedVariantEvaluations.add(unAnnotatedVariantEvaluation);
-        
+
         assertThat(instance.getUnAnnotatedVariantEvaluations(), equalTo(unAnnotatedVariantEvaluations));
     }
 }

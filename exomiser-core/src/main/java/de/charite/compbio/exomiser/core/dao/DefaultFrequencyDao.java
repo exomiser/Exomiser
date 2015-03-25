@@ -10,7 +10,9 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import jannovar.exome.Variant;
+import de.charite.compbio.exomiser.core.Constants;
+import de.charite.compbio.exomiser.core.model.Variant;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,10 +95,14 @@ public class DefaultFrequencyDao implements FrequencyDao {
                 + "ORDER BY dbsnpmaf desc, espeamaf desc, espaamaf desc, espallmaf desc ";
         PreparedStatement ps = connection.prepareStatement(frequencyQuery);
 
-        ps.setInt(1, variant.get_chromosome());
-        ps.setInt(2, variant.get_position());
-        ps.setString(3, variant.get_ref());
-        ps.setString(4, variant.get_alt());
+        // FIXME(holtgrewe): The position comes directly from the GenomeChange in variant. This is fine. Currently, I'm
+        // converting from the 0-based positions in new Jannovar's GenomeChange to 1-based for Exomisers (which is what
+        // the old Janovar used). Also, the reference is "" in the case of deletions and alt is "" in the case of
+        // insertions. The old representation for either was "-". Changing this will probably
+        ps.setInt(1, variant.getChromosome());
+        ps.setInt(2, variant.getPosition());
+        ps.setString(3, variant.getRef());
+        ps.setString(4, variant.getAlt());
 
         return ps;
     }

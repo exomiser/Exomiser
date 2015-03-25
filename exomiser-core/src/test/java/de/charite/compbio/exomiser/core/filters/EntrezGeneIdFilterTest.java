@@ -5,22 +5,17 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.Filter;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.exome.Variant;
-import java.util.ArrayList;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import org.junit.Assert.*;
+
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -39,13 +34,10 @@ public class EntrezGeneIdFilterTest {
     private static final int WANTED_GENE_ID = 1;
     private static final int UNWANTED_GENE_ID = 0;
     
-    private static VariantEvaluation wantedPassesFilter;
-    private static VariantEvaluation unwantedFailsFilter;
-
     @Mock
-    Variant mockWantedVariant;
+    private VariantEvaluation wantedPassesFilter;
     @Mock
-    Variant mockUnwantedVariant;
+    private VariantEvaluation unwantedFailsFilter;
 
     @Before
     public void setUp() {
@@ -57,11 +49,8 @@ public class EntrezGeneIdFilterTest {
     }
 
     private void initMocks() {
-        Mockito.when(mockWantedVariant.getEntrezGeneID()).thenReturn(WANTED_GENE_ID);
-        Mockito.when(mockUnwantedVariant.getEntrezGeneID()).thenReturn(UNWANTED_GENE_ID);
-        
-        wantedPassesFilter = new VariantEvaluation(mockWantedVariant);
-        unwantedFailsFilter = new VariantEvaluation(mockUnwantedVariant);
+        Mockito.when(wantedPassesFilter.getEntrezGeneID()).thenReturn(WANTED_GENE_ID);
+        Mockito.when(unwantedFailsFilter.getEntrezGeneID()).thenReturn(UNWANTED_GENE_ID);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package de.charite.compbio.exomiser.db.build.reference;
 
-import jannovar.common.Constants;
 import java.util.Objects;
 
 /**

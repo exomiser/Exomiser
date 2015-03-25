@@ -5,96 +5,113 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import jannovar.annotation.Annotation;
-import jannovar.annotation.AnnotationList;
-import jannovar.common.VariantType;
-import jannovar.exception.AnnotationException;
-import jannovar.exome.Variant;
-import jannovar.reference.Chromosome;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.io.JannovarData;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
+import htsjdk.variant.variantcontext.VariantContext;
+
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import de.charite.compbio.jannovar.annotation.AnnotationList;
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class VariantAnnotatorTest {
-    
+
     private VariantAnnotator instance;
-    
-    private Map<Byte, Chromosome> chromosomeMap;   
-    
-    @Mock
-    private Chromosome chromosome;
-    private Variant variant;
-    private Variant unknownChromosomeVariant;
-    private Variant unknownPositionVariant;
-    
-    private static final Byte CHR_1 = 1;
-    private static final Byte UNKNOWN_CHR = 0;
-    
-    private static final int POSITION = 1;
-    private static final int UNKNOWN_POSITION = 0;
-    
-    private static final String REF = "A";
-    private static final String ALT = "T";
-    
-    @Mock
-    private final AnnotationList annotationList = new AnnotationList(new ArrayList<Annotation>());
+    private TestVariantFactory varFactory;
+    private TranscriptModel tmFGFR2;
+    private TranscriptModel tmSHH;
 
     @Before
     public void setUp() throws Exception {
-        chromosomeMap = new HashMap<>();
-        chromosomeMap.put(CHR_1, chromosome);
-        instance = new VariantAnnotator(chromosomeMap);
-        
-        variant = new Variant(CHR_1, POSITION, REF, ALT, null, 0f, "known variant");
-        unknownChromosomeVariant = new Variant(UNKNOWN_CHR, POSITION, REF, ALT, null, 0f, "unknown chromosome variant");
-        unknownPositionVariant = new Variant(CHR_1, UNKNOWN_POSITION, REF, ALT, null, 0f, "unknown position variant");
-        
-        setUpMocks();
-    }
-    
-    private void setUpMocks() throws Exception {
-        Mockito.when(chromosome.getAnnotationList(POSITION, REF, ALT)).thenReturn(annotationList);
-        Mockito.when(chromosome.getAnnotationList(UNKNOWN_POSITION, REF, ALT)).thenThrow(AnnotationException.class);
-        Mockito.when(annotationList.getVariantType()).thenReturn(VariantType.MISSENSE);
+        varFactory = new TestVariantFactory();
+        tmFGFR2 = varFactory.buildTMForFGFR2();
+        tmSHH = varFactory.buildTMForSHH();
+        JannovarData jannovarData = new JannovarData(HG19RefDictBuilder.build(), ImmutableList.<TranscriptModel> of(
+                tmFGFR2, tmSHH));
+        instance = new VariantAnnotator(jannovarData);
     }
 
     @Test(expected = NullPointerException.class)
     public void testAnnotationOfNullThrowsNullPointer() {
-        instance.annotateVariant(null);
+        instance.annotateVariantContext(null);
     }
-    
+
     @Test
-    public void testAnnotationOfVariantAtUnknownPositionReturnsOriginalVariant() {
-        assertThat(unknownPositionVariant.getVariantTypeConstant(), equalTo(VariantType.ERROR));
-        instance.annotateVariant(unknownPositionVariant);
-        assertThat(unknownPositionVariant.getVariantTypeConstant(), equalTo(VariantType.ERROR));
+    public void testIntergenicAnnotationNoNeighbour() {
+        // intergenic variants should have empty annotation lists if there is no neighbouring gene
+        VariantContext vc = varFactory.constructVariantContext(2, 2, "A", "T", Genotype.HETEROZYGOUS, 30);
+
+        List<Variant> vars = instance.annotateVariantContext(vc);
+//        Variant variant = vars.get(0);
+//        AnnotationList annotationList = variant.getAnnotationList();
+        assertThat(vars.isEmpty(), is(true));
+//        assertThat(annotationList.size(), equalTo(0));
     }
-    
+
     @Test
-    public void testAnnotationOfVariantOfUnKnownChromosomeReturnsOriginalVariant() {
-        assertThat(unknownChromosomeVariant.getVariantTypeConstant(), equalTo(VariantType.ERROR));
-        instance.annotateVariant(unknownChromosomeVariant);
-        assertThat(unknownChromosomeVariant.getVariantTypeConstant(), equalTo(VariantType.ERROR));
+    public void testIntergenicAnnotationWithNeighbour() {
+        // intergenic variants should have an entry for neighbouring genes
+        VariantContext vc = varFactory.constructVariantContext(10, 2, "A", "T", Genotype.HETEROZYGOUS, 30);
+
+        List<Variant> vars = instance.annotateVariantContext(vc);
+        Variant variant = vars.get(0);
+        AnnotationList annotationList = variant.getAnnotationList();
+        
+        assertThat(vars.size(), equalTo(1));
+        assertThat(annotationList.size(), equalTo(1));
+        assertThat(annotationList.get(0).effects,
+                equalTo(ImmutableSortedSet.of(VariantEffect.INTERGENIC_VARIANT)));
+        assertThat(annotationList.get(0).transcript, equalTo(tmFGFR2));
     }
-    
+
     @Test
-    public void testAnnotationOfKnownVariantSetsAnnotationList() {
-        assertThat(variant.getVariantTypeConstant(), equalTo(VariantType.ERROR));
-        instance.annotateVariant(variant);
-        assertThat(variant.getVariantTypeConstant(), equalTo(VariantType.MISSENSE));
+    public void testExonicAnnotationInFGFR2Gene() {
+        // a variant in the FGFR2 gene should be annotated correctly
+        VariantContext vc = varFactory.constructVariantContext(10, 123353320, "A", "T", Genotype.HETEROZYGOUS, 30);
+
+        List<Variant> vars = instance.annotateVariantContext(vc);
+        Variant variant = vars.get(0);
+        AnnotationList annotationList = variant.getAnnotationList();
+        
+        assertThat(vars.size(), equalTo(1));
+        assertThat(annotationList.size(), equalTo(1));
+        assertThat(annotationList.get(0).effects,
+                equalTo(ImmutableSortedSet.of(VariantEffect.STOP_GAINED)));
+        assertThat(annotationList.get(0).transcript, equalTo(tmFGFR2));
+    }
+
+    @Test
+    public void testExonicAnnotationInSHHGene() {
+        // a variant in the SHH gene should be annotated correctly
+        VariantContext vc = varFactory.constructVariantContext(7, 155604810, "A", "T", Genotype.HETEROZYGOUS, 30);
+
+        List<Variant> vars = instance.annotateVariantContext(vc);
+        Variant variant = vars.get(0);
+        AnnotationList annotationList = variant.getAnnotationList();
+        
+        assertThat(vars.size(), equalTo(1));
+        assertThat(annotationList.size(), equalTo(1));
+        assertThat(annotationList.get(0).effects,
+                equalTo(ImmutableSortedSet.of(VariantEffect.SYNONYMOUS_VARIANT)));
+        assertThat(annotationList.get(0).transcript, equalTo(tmSHH));
     }
 
 }

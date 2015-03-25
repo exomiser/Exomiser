@@ -13,7 +13,7 @@ import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,10 +45,15 @@ public class ExomiserSettingsTest {
     private static final String BUILD_TIMESTAMP_DEFAULT = "";
     private static final String BUILD_TIMESTAMP = "20140704-1556";
 
+    //input settings
     private static final Path VCF_PATH_NOT_SET = null;
     private static final Path VCF_PATH = Paths.get("data/test.vcf");
     private static final Path PED_PATH_NOT_SET = null;
     private static final Path PED_PATH = Paths.get("data/test.ped");
+    
+    //filter settings
+    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
+    private static final boolean RUN_FULL_ANALYSIS = true;
     private static final float MAXIMUM_FREQUENCY_DEFAULT = 100.0f;
     private static final float MAXIMUM_FREQUENCY = 42.24f;
     private static final float MIMIMUM_QUALITY_DEFAULT = 0.0f;
@@ -65,22 +70,25 @@ public class ExomiserSettingsTest {
     private static final String CANDIDATE_GENE_NAME = "ADH1";
     private static final ModeOfInheritance MODE_OF_INHERITANCE = ModeOfInheritance.AUTOSOMAL_DOMINANT;
     private static final ModeOfInheritance MODE_OF_INHERITANCE_DEFAULT = ModeOfInheritance.UNINITIALIZED;
+    
+    //prioritiser settings
+    private static final PriorityType PRIORITISER_DEFAULT = PriorityType.NONE;
     private static final String DISEASE_STRING_DEFAULT = "";
     private static final String DISEASE_STRING = "OMIM:100100";
     private static final List<String> HPO_LIST_DEFAULT = new ArrayList<>();
     private static final List<String> HPO_LIST = new ArrayList<>(Arrays.asList("HPO:123456"));
     private static final List<Integer> SEED_GENE_LIST_DEFAULT = new ArrayList<>();
     private static final List<Integer> SEED_GENE_LIST = new ArrayList<>(Arrays.asList(1, 23, 56));
+    
+    //output settings
     private static final int NUMBER_OF_GENES_TO_SHOW_DEFAULT = 0;
-    private static final int NUMBER_OF_GENES_TO_SHOW = 12438803;
+    private static final int NUMBER_OF_GENES_TO_SHOW = 12438803;    
     private static final String OUT_FILE_NAME_DEFAULT = "";
     private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET = "results/test-exomiser-results";
     private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET = "results/test-exomiser-" + BUILD_VERSION + "-results";
     private static final String OUT_FILE_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV_GENE);
-    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
-    private static final boolean RUN_FULL_ANALYSIS = true;
     
     public ExomiserSettingsTest() {
     }
@@ -99,7 +107,7 @@ public class ExomiserSettingsTest {
         System.out.println(settings);
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH_NOT_SET));
         assertThat(settings.getPedPath(), equalTo(PED_PATH_NOT_SET));
-        assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NOT_SET));
+        assertThat(settings.getPrioritiserType(), equalTo(PRIORITISER_DEFAULT));
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
@@ -172,19 +180,11 @@ public class ExomiserSettingsTest {
     }
 
     @Test
-    public void testThatJustSettingAFcvFileIsNotValid() {
+    public void testThatJustSettingAFcvFileIsValid() {
         SettingsBuilder settingsBuilder = new SettingsBuilder();
         settingsBuilder.vcfFilePath(VCF_PATH);
         ExomiserSettings settings = settingsBuilder.build();
-        assertThat(settings.isValid(), is(false));
-    }
-
-    @Test
-    public void testThatJustSettingAPrioritiserIsNotValid() {
-        SettingsBuilder settingsBuilder = new SettingsBuilder();
-        settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
-        ExomiserSettings settings = settingsBuilder.build();
-        assertThat(settings.isValid(), is(false));
+        assertThat(settings.isValid(), is(true));
     }
 
     @Test
@@ -212,9 +212,9 @@ public class ExomiserSettingsTest {
      * Test of getPrioritiserType method, of class ExomiserSettings.
      */
     @Test
-    public void testThatBuilderProducesAnUndefinedPriorityTypeAsDefault() {
+    public void testThatBuilderProducesPriorityTypeNoneAsDefault() {
         ExomiserSettings settings = new SettingsBuilder().build();
-        assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NOT_SET));
+        assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NONE));
     }
 
     /**

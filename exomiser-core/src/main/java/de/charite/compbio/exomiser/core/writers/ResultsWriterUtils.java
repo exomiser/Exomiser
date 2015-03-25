@@ -13,14 +13,22 @@ import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
-import jannovar.exome.VariantTypeCounter;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
+
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import java.util.EnumSet;
+import java.util.Map;
 
 /**
  *
@@ -61,43 +69,72 @@ public class ResultsWriterUtils {
      * @param variantEvaluations
      * @return
      */
-    public static List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
-        VariantTypeCounter variantTypeCounter = makeVariantTypeCounter(variantEvaluations);
+    public static List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
 
-        List<VariantTypeCount> variantTypeCounters = new ArrayList<>();
+        // all used Jannovar VariantEffects
+        final Set<VariantEffect> variantEffects = ImmutableSet.of(VariantEffect.FRAMESHIFT_ELONGATION,
+                VariantEffect.FRAMESHIFT_TRUNCATION, VariantEffect.FRAMESHIFT_VARIANT,
+                VariantEffect.INTERNAL_FEATURE_ELONGATION, VariantEffect.FEATURE_TRUNCATION, VariantEffect.MNV,
+                VariantEffect.STOP_GAINED, VariantEffect.STOP_LOST, VariantEffect.START_LOST,
+                VariantEffect.SPLICE_ACCEPTOR_VARIANT, VariantEffect.SPLICE_DONOR_VARIANT,
+                VariantEffect.MISSENSE_VARIANT, VariantEffect.INFRAME_INSERTION,
+                VariantEffect.DISRUPTIVE_INFRAME_INSERTION, VariantEffect.INFRAME_DELETION,
+                VariantEffect.DISRUPTIVE_INFRAME_DELETION, VariantEffect.THREE_PRIME_UTR_TRUNCATION,
+                VariantEffect.SPLICE_REGION_VARIANT, VariantEffect.STOP_RETAINED_VARIANT,
+                VariantEffect.INITIATOR_CODON_VARIANT, VariantEffect.SYNONYMOUS_VARIANT,
+                VariantEffect.FIVE_PRIME_UTR_VARIANT, VariantEffect.THREE_PRIME_UTR_VARIANT,
+                VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT,
+                VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT,
+                VariantEffect.DOWNSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT);
+        
+        VariantEffectCounter variantTypeCounter = makeVariantEffectCounter(variantEvaluations);
+        final List<Map<VariantEffect, Integer>> freqMaps = variantTypeCounter.getFrequencyMap(variantEffects);
 
-        Iterator<VariantType> iter = variantTypeCounter.getVariantTypeIterator();
-        while (iter.hasNext()) {
-            VariantType variantType = iter.next();
-            List<Integer> typeSpecificCounts = variantTypeCounter.getTypeSpecificCounts(variantType);
-            VariantTypeCount variantTypeCount = new VariantTypeCount(variantType, typeSpecificCounts);
-            variantTypeCounters.add(variantTypeCount);
+        int numIndividuals = 0;
+        if (!variantEvaluations.isEmpty()) {
+            numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
         }
 
-        return variantTypeCounters;
+        List<VariantEffectCount> result = new ArrayList<>();
+        Set<VariantEffect> effects = EnumSet.noneOf(VariantEffect.class);
+        for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
+            effects.addAll(freqMaps.get(sampleIdx).keySet());
+        }
+        if (variantEvaluations.isEmpty()) {
+            effects.addAll(variantEffects);
+        }
+
+        for (VariantEffect effect : effects) {
+            List<Integer> typeSpecificCounts = new ArrayList<>();
+            for (int sampleIdx = 0; sampleIdx < numIndividuals; ++sampleIdx) {
+                typeSpecificCounts.add(freqMaps.get(sampleIdx).get(effect));
+            }
+            result.add(new VariantEffectCount(effect, typeSpecificCounts));
+        }
+
+        return result;
     }
 
-    protected static VariantTypeCounter makeVariantTypeCounter(List<VariantEvaluation> variantEvaluations) {
-
+    protected static VariantEffectCounter makeVariantEffectCounter(List<VariantEvaluation> variantEvaluations) {
         if (variantEvaluations.isEmpty()) {
-            return new VariantTypeCounter(0);
+            return new VariantEffectCounter(0);
         }
 
         int numIndividuals = variantEvaluations.get(0).getNumberOfIndividuals();
-        VariantTypeCounter vtypeCounter = new VariantTypeCounter(numIndividuals);
+        VariantEffectCounter effectCounter = new VariantEffectCounter(numIndividuals);
 
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            vtypeCounter.incrementCount(variantEvaluation.getVariant());
+            effectCounter.put(variantEvaluation.getVariant());
         }
-        return vtypeCounter;
+        return effectCounter;
     }
 
     public static List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {
-        //TODO: ExomiserSettings is really sticking it's nose into everything might be a good idea to scale
-        //this back so that it's only really needed in to cli package as it is tightly coupled with that anyway.
-        //For instance here it would be somewhat simpler to just supply the list of filters applied as they all
-        //know what their required parameters were. Sure this will violate the 'Tell Don't Ask' principle but
-        //the alternatives are worse
+        // TODO: ExomiserSettings is really sticking it's nose into everything might be a good idea to scale
+        // this back so that it's only really needed in to cli package as it is tightly coupled with that anyway.
+        // For instance here it would be somewhat simpler to just supply the list of filters applied as they all
+        // know what their required parameters were. Sure this will violate the 'Tell Don't Ask' principle but
+        // the alternatives are worse
         List<FilterType> filtersApplied = FilterFactory.determineFilterTypesToRun(settings);
         return filterReportFactory.makeFilterReports(filtersApplied, settings, sampleData);
 

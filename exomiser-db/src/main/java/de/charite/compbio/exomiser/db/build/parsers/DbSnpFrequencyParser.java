@@ -3,10 +3,16 @@ package de.charite.compbio.exomiser.db.build.parsers;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
-import jannovar.common.Constants;
-import jannovar.exception.JannovarException;
-import jannovar.io.SerializationManager;
-import jannovar.reference.TranscriptModel;
+import de.charite.compbio.exomiser.core.Constants;
+import de.charite.compbio.jannovar.impl.intervals.Interval;
+import de.charite.compbio.jannovar.io.Chromosome;
+import de.charite.compbio.jannovar.io.JannovarData;
+import de.charite.compbio.jannovar.io.JannovarDataSerializer;
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
+import de.charite.compbio.jannovar.io.SerializationException;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,10 +27,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * This class is designed to parseResource the dbSNP file {@code 00-All.vcf} which is
@@ -68,15 +78,20 @@ public class DbSnpFrequencyParser implements ResourceParser {
      */
     private final static int FLANKING = 50;
 
+    /** The VCF parser. */
+    private final VCF2FrequencyParser vcf2FrequencyParser;
+
     /* use to avoid duplicate entries. */
     Frequency previous = null; 
     
     /**
      * Map of Chromosomes
      */
-    private final HashMap<Byte, ChromosomalExonLocations> chromosomeMap;
+    private final HashMap<Integer, ChromosomalExonLocations> chromosomeMap;
 
-    public DbSnpFrequencyParser(Resource ucscResource, Path ucscResourcePath, List<Frequency> frequencyList) {
+    public DbSnpFrequencyParser(ReferenceDictionary refDict, Resource ucscResource, Path ucscResourcePath,
+            List<Frequency> frequencyList) {
+        this.vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
         this.frequencyList = frequencyList;
         chromosomeMap = new HashMap<>();
         //TODO: hack to get the full file path into the resource... possibly this should happen from the start
@@ -113,28 +128,30 @@ public class DbSnpFrequencyParser implements ResourceParser {
         }
         String serializedFile =  ucscSerializedData.toString();
         logger.info("De-serializing known Exon locations from UCSC data file: {}", serializedFile);
-        SerializationManager manager = new SerializationManager();
-        ArrayList<TranscriptModel> transcriptList = null;
+        JannovarData jannovarData = null;
         try {
-            transcriptList = manager.deserializeKnownGeneList(serializedFile);
-        } catch (JannovarException e) {
+            jannovarData = new JannovarDataSerializer(serializedFile).load();
+        } catch (SerializationException e) {
             status = ResourceOperationStatus.FAILURE;
             ucscResource.setParseStatus(status);
             logger.error("{}: Unable to deserialize the TranscriptModel serialized file.", status, e);
         }
 
-        for (TranscriptModel kgl : transcriptList) {
-            byte chromosome = kgl.getChromosome();
-            if (!chromosomeMap.containsKey(chromosome)) {
-                ChromosomalExonLocations exonLocations = new ChromosomalExonLocations(chromosome);
-                exonLocations.addGene(kgl);
-                //System.out.println("Adding chromosome for " + chromosome);
-                chromosomeMap.put(chromosome, exonLocations);
-            } else {
-                ChromosomalExonLocations exonLocations = chromosomeMap.get(chromosome);
-                exonLocations.addGene(kgl);
+        for (Entry<Integer, Chromosome> entry : jannovarData.chromosomes.entrySet()) {
+            int chr = entry.getKey();
+            for (Interval<TranscriptModel> itv : entry.getValue().tmIntervalTree.intervals) {
+                if (!chromosomeMap.containsKey(chr)) {
+                    ChromosomalExonLocations exonLocations = new ChromosomalExonLocations(chr);
+                    exonLocations.addGene(itv.value);
+                    //System.out.println("Adding chromosome for " + chromosome);
+                    chromosomeMap.put(chr, exonLocations);
+                } else {
+                    ChromosomalExonLocations exonLocations = chromosomeMap.get(chr);
+                    exonLocations.addGene(itv.value);
+                }
             }
         }
+
         status = ResourceOperationStatus.SUCCESS;
         ucscResource.setParseStatus(status);
         logger.info("{} Parsed {} and added {} exons", status, serializedFile, n_exons);
@@ -325,7 +342,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
         /**
          * one of the 22 autosomes, 23 for X, 24 for Y, 25 for M
          */
-        private final byte chromosome;
+        private final int chromosome;
         /**
          * TreeMap with all of the genes
          * ({@link jannovar.reference.TranscriptModel TranscriptModel} objects)
@@ -341,7 +358,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
          * @param c the integer representation of the Chromosome, 1-22, 23=X,
          * 24=Y, 25=M
          */
-        private ChromosomalExonLocations(byte c) {
+        private ChromosomalExonLocations(int c) {
             chromosome = c;
             exonTreeMap = new TreeMap<>();
         }
@@ -353,13 +370,11 @@ public class DbSnpFrequencyParser implements ResourceParser {
          *
          * @param kgl A transcript of a human known gene.
          */
-        public void addGene(TranscriptModel kgl) {
-            int ends[] = kgl.getExonEnds();
-            int starts[] = kgl.getExonStarts();
-            for (int i = 0; i < ends.length; i++) {
-                int start = starts[i];
-                int end = ends[i];
-                Exon exon = new Exon(start, end);
+        public void addGene(TranscriptModel tm) {
+            for (GenomeInterval itv : tm.exonRegions) {
+                final int start = itv.beginPos + 1; // convert to 1-based
+                final int stop = itv.endPos;
+                Exon exon = new Exon(start, stop);
                 n_exons++;
                 /* 1. There is already an Exon with this start */
                 if (exonTreeMap.containsKey(start)) {

@@ -27,7 +27,11 @@ public class VcfFileOptionMarshaller extends AbstractOptionMarshaller  {
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
-        settingsBuilder.vcfFilePath(Paths.get(values[0]));
+        if (values[0].isEmpty()) {
+            settingsBuilder.vcfFilePath(null);
+        } else {
+            settingsBuilder.vcfFilePath(Paths.get(values[0]));
+        }
     }    
 
 }

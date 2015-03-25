@@ -6,14 +6,25 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
-import jannovar.exception.PedParseException;
-import jannovar.io.PedFileParser;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Disease;
+import de.charite.compbio.jannovar.pedigree.PedFileContents;
+import de.charite.compbio.jannovar.pedigree.PedFileReader;
+import de.charite.compbio.jannovar.pedigree.PedParseException;
+import de.charite.compbio.jannovar.pedigree.PedPerson;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.PedigreeExtractor;
+import de.charite.compbio.jannovar.pedigree.Person;
+import de.charite.compbio.jannovar.pedigree.Sex;
+
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Handles the creation of Pedigree objects.
@@ -69,38 +80,34 @@ public class PedigreeFactory {
         if (!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
         }
-        Pedigree pedigree = Pedigree.constructSingleSamplePedigree(sampleName);
-        checkPedigreeIsNotNull(pedigree);
-        logger.info("Created a single sample pedigree for {}", sampleName);
-        return pedigree;
+
+        final Person person = new Person(sampleName, null, null, Sex.UNKNOWN, Disease.AFFECTED);
+        return new Pedigree("family", ImmutableList.of(person));
     }
 
     private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, ArrayList<String> sampleNames) {
-        logger.info("Processing pedigree file: {}", pedigreeFilePath);
-        checkPedigreePathIsNotNull(pedigreeFilePath);
-        Pedigree pedigree = parsePedigreeFile(pedigreeFilePath, sampleNames);
-        checkPedigreeIsNotNull(pedigree);
-        return pedigree;
-    }
-
-    private Pedigree parsePedigreeFile(Path pedigreeFilePath, ArrayList<String> sampleNames) {
         try {
-            PedFileParser parser = new PedFileParser();
-            Pedigree pedigree = parser.parseFile(pedigreeFilePath.toString());
-            //check that the names in the sample match those in the pedigree 
-            //This function intends to check that PED file data is compatible to VCF
-            //sample names. That is, are the names in the PED file identical with the
-            //names in the VCF file? If there is a discrepancy, this function will
-            //throw an exception. If everything is OK there, this function will
-            //additional rearrange the order of the persons represented in the PED file
-            //so that it is identical to the order in the VCF file. This will make
-            //Pedigree analysis more efficient and the code more straightforward.
-            pedigree.adjustSampleOrderInPedFile(sampleNames);
-
-            logger.info("Created a pedigree for {}", sampleNames);
-            return pedigree;
+            logger.info("Processing pedigree file: {}", pedigreeFilePath);
+            checkPedigreePathIsNotNull(pedigreeFilePath);
+            // read contents of PED file
+            PedFileContents contents;
+            contents = new PedFileReader(pedigreeFilePath.toFile()).read();
+            // filter contents to the individuals from sampleNames
+            ImmutableList.Builder<PedPerson> samplePersonsBuilder = new ImmutableList.Builder<PedPerson>();
+            for (PedPerson person : contents.individuals) {
+                if (sampleNames.contains(person.name)) {
+                    samplePersonsBuilder.add(person);
+                }
+            }
+            PedFileContents sampleContents = new PedFileContents(ImmutableList.<String>of(),
+                    samplePersonsBuilder.build());
+            final String pedName = sampleContents.individuals.get(0).pedigree;
+            logger.info("Created a pedigree for {} having pedigree name ", new Object[]{sampleNames, pedName});
+            return new Pedigree(pedName, new PedigreeExtractor(pedName, sampleContents).run());
         } catch (PedParseException e) {
-            throw new PedigreeCreationException(String.format("Unable to parse PED file from the path specified: %s", pedigreeFilePath), e);
+            throw new PedigreeCreationException("Problem parsing the PED file", e);
+        } catch (IOException e) {
+            throw new PedigreeCreationException("Problem reading the PED file", e);
         }
     }
 
@@ -112,15 +119,9 @@ public class PedigreeFactory {
         }
     }
 
-    private void checkPedigreeIsNotNull(Pedigree pedigree) {
-        if (pedigree == null) {
-            //we really need one of these so if we can't create one, fail early and hard.
-            //This will simply cause an NPE later on, so we might as well be explicit about the root cause of the problem.
-            throw new PedigreeCreationException();
-        }
-    }
-
     public class PedigreeCreationException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
 
         public PedigreeCreationException() {
             super("Error creating Pedigree");

@@ -1,9 +1,10 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import jannovar.exome.Variant;
-
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class QualityFilter implements VariantFilter {
      * Threshold for filtering. Retain only those variants whose PHRED variant
      * call quality is at least as good. The default is 1.
      */
-    private float mimimumQualityThreshold = 1.0f;
+    private double mimimumQualityThreshold = 1.0f;
     /**
      * Minimum number of reads supporting the ALT call. There must be at least
      * this number of reads in each direction.
@@ -47,7 +48,7 @@ public class QualityFilter implements VariantFilter {
      * @param mimimumQualityThreshold The minimum PHRED quality threshold (e.g.
      * 30) under which a variant will be filtered out.
      */
-    public QualityFilter(float mimimumQualityThreshold) {
+    public QualityFilter(double mimimumQualityThreshold) {
         if (mimimumQualityThreshold <= 0f) {
             throw new IllegalArgumentException(String.format("Illegal value for minimum quality threshold: %2f. Minimum quality threshold must be greater than 0.0", mimimumQualityThreshold));
         }
@@ -65,7 +66,7 @@ public class QualityFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         Variant v = variantEvaluation.getVariant();
-        float phredScore = v.getVariantPhredScore();
+        double phredScore = v.getPhredScore();
         if (overQualityThreshold(phredScore)) {
             return passedFilterResult;
         }
@@ -73,7 +74,7 @@ public class QualityFilter implements VariantFilter {
         return failedFilterResult;
     }
 
-    protected boolean overQualityThreshold(float qualityScore) {
+    protected boolean overQualityThreshold(double qualityScore) {
         return qualityScore >= mimimumQualityThreshold;
     }
 
@@ -81,7 +82,9 @@ public class QualityFilter implements VariantFilter {
     public int hashCode() {
         int hash = 3;
         hash = 29 * hash + Objects.hashCode(QualityFilter.filterType);
-        hash = 29 * hash + Float.floatToIntBits(this.mimimumQualityThreshold);
+        long temp;
+        temp = Double.doubleToLongBits(mimimumQualityThreshold);
+        hash = 29 * hash + (int) (temp ^ (temp >>> 32));
         hash = 29 * hash + this.minAltReadThresold;
         return hash;
     }
@@ -95,7 +98,8 @@ public class QualityFilter implements VariantFilter {
             return false;
         }
         final QualityFilter other = (QualityFilter) obj;
-        if (Float.floatToIntBits(this.mimimumQualityThreshold) != Float.floatToIntBits(other.mimimumQualityThreshold)) {
+        if (Double.doubleToLongBits(this.mimimumQualityThreshold) != Double
+                .doubleToLongBits(other.mimimumQualityThreshold)) {
             return false;
         }
         return this.minAltReadThresold == other.minAltReadThresold;

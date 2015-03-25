@@ -5,9 +5,11 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-import jannovar.common.VariantType;
+import java.util.EnumSet;
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,14 +74,14 @@ public class PathogenicityFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         PathogenicityData pathData = variantEvaluation.getPathogenicityData();
-        VariantType variantType = variantEvaluation.getVariantType();
+        VariantEffect variantEffect = variantEvaluation.getVariantEffect();
 
-        float filterScore = calculateFilterScore(variantType, pathData);
+        float filterScore = calculateFilterScore(variantEffect, pathData);
 
         if (removePathFilterCutOff) {
             return returnPassResult(filterScore);
         }
-        if (variantIsPredictedPathogenic(variantType)) {
+        if (variantIsPredictedPathogenic(variantEffect)) {
             return returnPassResult(filterScore);
         }
         return returnFailResult(filterScore);
@@ -88,16 +90,16 @@ public class PathogenicityFilter implements VariantFilter {
     /**
      * Creates the PathogenicityScore data
      *
-     * @param variantType
+     * @param variantEffect
      * @param pathogenicityData
      * @return
      */
-    protected float calculateFilterScore(VariantType variantType, PathogenicityData pathogenicityData) {
-        if (variantType == VariantType.MISSENSE) {
+    protected float calculateFilterScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             return returnMissenseScore(pathogenicityData);
         } else {
             //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantType);
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect));
         }
     }
 
@@ -118,19 +120,18 @@ public class PathogenicityFilter implements VariantFilter {
     }
 
     /**
-     * @param variantType
+     * @param variantEffect
      * @param pathData
-     * @return true if the variant being analysed passes the runFilter (e.g.,
-     * has high quality )
+     * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
      */
-    protected boolean variantIsPredictedPathogenic(VariantType variantType) {
-        if (variantType == VariantType.MISSENSE) {
+    protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect) {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             //we're making the assumption that a miissense variant is always 
             //potentially pathogenic as the prediction scores are predictions, 
             //we'll leave it up to the user to decide
             return true;
         } else {
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantType) >= DEFAULT_PATHOGENICITY_THRESHOLD;
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect)) >= DEFAULT_PATHOGENICITY_THRESHOLD;
         }
     }
 

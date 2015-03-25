@@ -174,7 +174,7 @@ and open the template in the editor.
                                         <div class="col-sm-6" > 
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
-                                                <dd th:each="annotation: ${variantEvaluation.annotationList}" 
+                                                <dd th:each="annotation: ${variantEvaluation.annotations}" 
                                                     th:with="ucscData=${#strings.listSplit(annotation,':')}, ucscId=${ucscData[0]}, text=${annotation.replace(ucscId + ':', '')}">
                                                     <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" 
                                                        th:text="${ucscId}">uc001lfg.4</a> <th:block th:text="${text}">exon6:c.518A> C:p.E173A</th:block>

@@ -10,9 +10,8 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
-import jannovar.common.ModeOfInheritance;
-import jannovar.genotype.GenotypeCall;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,20 +45,19 @@ public class GeneScorer {
      *
      * @param geneList
      * @param modeOfInheritance
-     * @param pedigree
      * @param scoringMode
      */
-    public static void scoreGenes(List<Gene> geneList, ModeOfInheritance modeOfInheritance, Pedigree pedigree, ScoringMode scoringMode) {
+    public static void scoreGenes(List<Gene> geneList, ModeOfInheritance modeOfInheritance, ScoringMode scoringMode) {
         logger.info("Scoring genes using mode {}", scoringMode);
         switch (scoringMode) {
             case RAW_SCORE:
-                scoreGenes(geneList, modeOfInheritance, pedigree);
+                scoreGenes(geneList, modeOfInheritance);
                 break;
             case RANK_BASED:
-                scoreGenesByRank(geneList, modeOfInheritance, pedigree);
+                scoreGenesByRank(geneList, modeOfInheritance);
                 break;
             default:
-                scoreGenes(geneList, modeOfInheritance, pedigree);
+                scoreGenes(geneList, modeOfInheritance);
         }
         Collections.sort(geneList);
     }
@@ -77,17 +75,17 @@ public class GeneScorer {
      * {@link exomizer.exome.Gene Gene} objects according to the combined
      * filter/priority score.
      */
-    private static void scoreGenes(List<Gene> geneList, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
+    private static void scoreGenes(List<Gene> geneList, ModeOfInheritance modeOfInheritance) {
         logger.info("Scoring genes");
         for (Gene gene : geneList) {
-            float filterScore = setGeneFilterScore(gene, modeOfInheritance, pedigree);
+            float filterScore = setGeneFilterScore(gene, modeOfInheritance);
             float priorityScore = setGenePriorityScore(gene);
             setGeneCombinedScore(filterScore, priorityScore, gene);
         }
     }
 
-    private static float setGeneFilterScore(Gene gene, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
-        float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance, pedigree);
+    private static float setGeneFilterScore(Gene gene, ModeOfInheritance modeOfInheritance) {
+        float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance);
         gene.setFilterScore(filterScore);
         return filterScore;
     }
@@ -109,16 +107,15 @@ public class GeneScorer {
      * @param variantEvaluations from a gene
      * @param modeOfInheritance Autosomal recessive, dominant, or X chromosomal
      * recessive.
-     * @param pedigree of the effected individual
      * @return
      */
-    protected static float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
+    protected static float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance) {
 
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }
         if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            return calculateAutosomalRecessiveFilterScore(variantEvaluations, pedigree);
+            return calculateAutosomalRecessiveFilterScore(variantEvaluations);
         } // not autosomal recessive
 
         return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
@@ -188,9 +185,9 @@ public class GeneScorer {
      * genes according to their score and then overwrites the original score
      * according to a uniform distribution based on the ranks of the genes.
      */
-    private static void scoreGenesByRank(List<Gene> geneList, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
+    private static void scoreGenesByRank(List<Gene> geneList, ModeOfInheritance modeOfInheritance) {
         //first of all score the genes according to their raw scores
-        scoreGenes(geneList, modeOfInheritance, pedigree);
+        scoreGenes(geneList, modeOfInheritance);
 
         //now reset the scores according to their rank
         logger.info("Scoring genes by RANK.");
@@ -241,16 +238,14 @@ public class GeneScorer {
      * of the worst(highest numerical) two variants.
      *
      * @param variantEvaluations
-     * @param pedigree
      * @return
      */
-    protected static float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, Pedigree pedigree) {
-
+    protected static float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
             filterScores.add(ve.getVariantScore());
-            if (variantIsHomozygous(ve, pedigree)) {
+            if (variantIsHomozygous(ve)) {
                 //Add the value a second time
                 filterScores.add(ve.getVariantScore());
             }
@@ -267,12 +262,8 @@ public class GeneScorer {
         return calculateAverageOfFirstTwoScores(filterScores);
     }
 
-    private static boolean variantIsHomozygous(VariantEvaluation ve, Pedigree pedigree) {
-        GenotypeCall gc = ve.getVariant().getGenotype();
-        if (pedigree.containsCompatibleHomozygousVariant(gc)) {
-            return true;
-        }
-        return false;
+    private static boolean variantIsHomozygous(VariantEvaluation ve) {
+        return ve.getVariantContext().getGenotype(0).isHom();
     }
 
     private static void sortFilterScoresInDecendingOrder(List<Float> filterScores) {

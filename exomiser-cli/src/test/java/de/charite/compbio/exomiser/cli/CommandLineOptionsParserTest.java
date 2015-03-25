@@ -11,11 +11,10 @@ import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -81,12 +80,12 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void exomiserSettingsAreInvalidWhenAPrioritiserWasNotSpecified() {
+    public void exomiserSettingsAreValidWhenAPrioritiserWasNotSpecified() {
         String input = "-v 123.vcf --ped def.ped -D OMIM:101600";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.isValid(), is(false));
+        assertThat(exomiserSettings.isValid(), is(true));
     }
 
     @Test
@@ -108,7 +107,7 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void should_produce_invalid_settings_when_a_settings_file_is_provided() {
+    public void shouldProduceInvalidSettingsWhenInvalidSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testInvalidSettings.properties";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);

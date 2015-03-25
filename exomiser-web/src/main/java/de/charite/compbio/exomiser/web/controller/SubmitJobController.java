@@ -28,9 +28,9 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
-import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
+import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -152,8 +152,8 @@ public class SubmitJobController {
         model.addAttribute("filterReports", filterReports);
         
         List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();
-        List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
-        model.addAttribute("variantTypeCounters", variantTypeCounters);
+        List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
+        model.addAttribute("variantTypeCounters", variantEffectCounters);
         
         //write out the variant type counters
         List<String> sampleNames = sampleData.getSampleNames();

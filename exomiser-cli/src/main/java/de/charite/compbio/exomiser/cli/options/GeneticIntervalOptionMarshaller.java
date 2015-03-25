@@ -8,6 +8,8 @@ package de.charite.compbio.exomiser.cli.options;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.GENETIC_INTERVAL_OPTION;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+
 import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +32,8 @@ public class GeneticIntervalOptionMarshaller extends AbstractOptionMarshaller {
             //use the default builder value
             return;
         }
-        settingsBuilder.geneticInterval(GeneticInterval.parseString(values[0]));
+        // FIXME: First load Jannovar DB, use JannovarData#refDict, then parse interval!
+        settingsBuilder.geneticInterval(GeneticInterval.parseString(HG19RefDictBuilder.build(), values[0]));
     }
     
     

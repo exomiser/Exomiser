@@ -13,7 +13,7 @@ import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -48,12 +48,10 @@ public class ExomiserSettings {
     //REQUIRED INPUT OPTIONS (these are used for JSON de/serealisation and the command-line)
     public static final String VCF_OPTION = "vcf";
     public static final String PED_OPTION = "ped";
-    public static final String PRIORITISER_OPTION = "prioritiser"; //values for this are handled by PriorityType
 
     //REQUIRED INPUT variables 
     private final Path vcfFilePath; //required, no default
     private final Path pedFilePath; //might be required if vcf if a multi-sample family vcf
-    private final PriorityType prioritiserType;  //required, no default
 
     //ANALYSIS OPTIONS
     public static final String RUN_FULL_ANALYSIS_OPTION = "full-analysis";
@@ -87,6 +85,7 @@ public class ExomiserSettings {
     private final Set<Integer> genesToKeep;
     
     //PRIORITISER OPTIONS
+    public static final String PRIORITISER_OPTION = "prioritiser"; //values for this are handled by PriorityType
     public static final String CANDIDATE_GENE_OPTION = "candidate-gene";
     public static final String HPO_IDS_OPTION = "hpo-ids";
     public static final String SEED_GENES_OPTION = "seed-genes";
@@ -95,6 +94,7 @@ public class ExomiserSettings {
     public static final String EXOMISER2_PARAMS_OPTION = "hiphive-params";
 
     //PRIORITISER variables
+    private final PriorityType prioritiserType;  //required, no default
     //candidate-gene (command-line was: candidate_gene, refered to variable: candidateGene)
     private final String candidateGene;
     //inheritance-mode (command-line was: inheritance, refered to variable: inheritanceMode)
@@ -143,7 +143,8 @@ public class ExomiserSettings {
         private boolean runFullAnalysis = false;
         
         //PRIORITISER
-        private PriorityType prioritiserType = PriorityType.NOT_SET;
+        private PriorityType prioritiserType = PriorityType.NONE;
+        
         //FILTER options
         private float maximumFrequency = 100.00f;
         private float minimumQuality = 0;
@@ -328,11 +329,8 @@ public class ExomiserSettings {
         runFullAnalysis = builder.runFullAnalysis;
         
         //Priority
-        prioritiserType = builder.prioritiserType;  //required, no default
-        if (prioritiserType == PriorityType.NOT_SET) {
-            logger.error("Error building ExomiserSettings - Prioritiser has not been set, settings are INVALID!");
-            isValid = false;
-        }
+        prioritiserType = builder.prioritiserType;
+        
         //FILTER options
         maximumFrequency = builder.maximumFrequency;
         minimumQuality = builder.minimumQuality;

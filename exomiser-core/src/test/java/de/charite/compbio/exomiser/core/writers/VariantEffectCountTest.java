@@ -5,41 +5,45 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
-import jannovar.common.VariantType;
+import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantTypeCountTest {
+public class VariantEffectCountTest {
     
-    private VariantTypeCount instance;
+    private VariantEffectCount instance;
     
-    private VariantType type;
+    private VariantEffect effect;
     private List<Integer> counts;
     
     @Before
     public void setUp() {
         
-        type = VariantType.MISSENSE;
+        effect = VariantEffect.MISSENSE_VARIANT;
         
         counts = new ArrayList<>();
         counts.addAll(Arrays.asList(1, 2, 3));
         
-        instance = new VariantTypeCount(type, counts);
+        instance = new VariantEffectCount(effect, counts);
     }
 
     @Test
     public void testGetVariantType() {
-        assertThat(instance.getVariantType(), equalTo(type));
+        assertThat(instance.getVariantType(), equalTo(effect));
     }
 
     @Test
@@ -49,7 +53,7 @@ public class VariantTypeCountTest {
 
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("MISSENSE=[1, 2, 3]"));
+        assertThat(instance.toString(), equalTo("MISSENSE_VARIANT=[1, 2, 3]"));
     }
     
 }

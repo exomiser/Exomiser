@@ -5,15 +5,17 @@
  */
 package de.charite.compbio.exomiser.db.build.parsers;
 
+import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.exomiser.core.model.InheritanceMode;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
-import jannovar.common.Constants;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

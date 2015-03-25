@@ -50,7 +50,7 @@ public class DataMatrix {
         name = matrixFileZip;
     }
 
-    private void setUpIndexAndCreateEmptyMatrix(String object2idxFileZip) throws RuntimeException {
+    private void setUpIndexAndCreateEmptyMatrix(String object2idxFileZip) {
         File indexFile = new File(object2idxFileZip);
         try (BufferedReader indexReader = gzippedFileBufferedReader(indexFile)) {
             String line;
@@ -63,7 +63,7 @@ public class DataMatrix {
         setUpMatrix();
     }
 
-    private void addLineDataToIndexes(String line) throws NumberFormatException {
+    private void addLineDataToIndexes(String line) {
         String[] split = SPLIT_PATTERN.split(line);
         int objectId = Integer.parseInt(split[0]);
         int idx = Integer.parseInt(split[1]);
@@ -76,7 +76,7 @@ public class DataMatrix {
         matrix = new FloatMatrix(matrixSize, matrixSize);
     }
     
-    private void fillMatrixfromFile(String matrixFileZip, boolean shouldUseExponent) throws RuntimeException {
+    private void fillMatrixfromFile(String matrixFileZip, boolean shouldUseExponent) {
         File matrixFile = new File(matrixFileZip);
         try (BufferedReader in = gzippedFileBufferedReader(matrixFile)) {
             int i = 0;
@@ -98,7 +98,7 @@ public class DataMatrix {
         }
     }
 
-    private void addLineDataToMatrixRow(String line, int i, boolean shouldUseExponent) throws NumberFormatException {
+    private void addLineDataToMatrixRow(String line, int i, boolean shouldUseExponent) {
         String[] row = SPLIT_PATTERN.split(line);
         int matrixSize = matrix.rows;
         for (int j = 0; j < matrixSize; j++) {
@@ -110,7 +110,7 @@ public class DataMatrix {
         }
     }
 
-    private BufferedReader gzippedFileBufferedReader(File file) throws IOException, RuntimeException {
+    private BufferedReader gzippedFileBufferedReader(File file) throws IOException {
         // if the gz-file exists we try to create a BufferedReader for this file
         BufferedReader bufferedReader;
         int bufferSizeInBytes = 2048;
@@ -172,7 +172,7 @@ public class DataMatrix {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.info("Unable to write DataMatrix to file {}", file);
         }
     }
 
@@ -203,7 +203,7 @@ public class DataMatrix {
                 outMatrix.write("\n");
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.info("Unable to write DataMatrix with headers to file {}", file);
         }
     }
 

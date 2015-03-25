@@ -5,9 +5,8 @@
 #if you want to mix and match using a settings file and the command line options
 #for some reason.
 
-#REQUIRED OPTIONS - these need to be filled in either here or on the command-line.
+#REQUIRED OPTIONS - this needs to be filled in either here or on the command-line.
 vcf=
-prioritiser=
 
 #SAMPLE DATA OPTIONS
 ped=
@@ -22,6 +21,7 @@ keep-off-target=false
 full-analysis=false
 
 #PRIORITISER OPTIONS
+prioritiser=none
 candidate-gene=
 hpo-ids=
 seed-genes=

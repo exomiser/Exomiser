@@ -132,7 +132,7 @@ public class Main {
         ResultsWriterFactory resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(sampleData.getVcfHeader(), outFormat);
             resultsWriter.writeFile(sampleData, exomiserSettings);
         }
 

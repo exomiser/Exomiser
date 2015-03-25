@@ -39,15 +39,17 @@ public class GeneFactory {
 
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             String geneSymbol = variantEvaluation.getGeneSymbol();
+            int geneId = variantEvaluation.getEntrezGeneID();
             if (geneSymbol != null && !".".equals(geneSymbol)) {
                 // Off target variants do not have gene-symbols.
                 // This if avoids null pointers
                 if (geneMap.containsKey(geneSymbol)) {
-                    Gene g = geneMap.get(geneSymbol);
-                    g.addVariant(variantEvaluation);
+                    Gene gene = geneMap.get(geneSymbol);
+                    gene.addVariant(variantEvaluation);
                 } else {
-                    Gene g = new Gene(variantEvaluation);
-                    geneMap.put(geneSymbol, g);
+                    Gene gene = new Gene(geneSymbol, geneId);
+                    gene.addVariant(variantEvaluation);
+                    geneMap.put(geneSymbol, gene);
                 }
             }
         }

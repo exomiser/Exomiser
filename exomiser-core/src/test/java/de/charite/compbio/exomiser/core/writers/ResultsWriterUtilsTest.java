@@ -101,10 +101,10 @@ public class ResultsWriterUtilsTest {
     @Test
     public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
         assertThat(variantTypeCounters.isEmpty(), is(false));
         
-        VariantTypeCount firstVariantTypeCount = variantTypeCounters.get(0);
+        VariantEffectCount firstVariantTypeCount = variantTypeCounters.get(0);
         assertThat(firstVariantTypeCount.getVariantType(), notNullValue());
         assertThat(firstVariantTypeCount.getSampleVariantTypeCounts().isEmpty(), is(true));
     }

@@ -7,7 +7,6 @@
 
 #REQUIRED OPTIONS - these need to be filled in either here or on the command-line.
 vcf=data/Pfeiffer.vcf
-prioritiser=phive
 
 #SAMPLE DATA OPTIONS
 ped=
@@ -22,6 +21,7 @@ keep-off-target=false
 full-analysis=false
 
 #PRIORITISER OPTIONS
+prioritiser=phive
 candidate-gene=
 hpo-ids=HP:0001156, HP:0001363, HP:0011304, HP:0010055
 seed-genes=

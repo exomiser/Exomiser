@@ -1,17 +1,14 @@
 package de.charite.compbio.exomiser.core.writers;
 
-import jannovar.exome.Variant;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -21,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.impossibl.postgres.utils.guava.Joiner;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -30,7 +28,8 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.pathogenicity.AbstractPathogenicityScore;
-import java.util.Collections;
+import htsjdk.variant.variantcontext.VariantContext;
+
 import java.util.Locale;
 
 /**
@@ -56,6 +55,8 @@ public class TsvVariantResultsWriter implements ResultsWriter {
                     "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
                     "EXOMISER_VARIANT_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_GENE_COMBINED_SCORE");
     private CSVPrinter printer;
+
+    private final DecimalFormat formatter = new DecimalFormat(".##");
 
     public TsvVariantResultsWriter() {
         Locale.setDefault(Locale.UK);
@@ -85,42 +86,36 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
     private void writeVariantsOfGene(Gene gene) throws IOException {
         for (VariantEvaluation ve : gene.getVariantEvaluations()) {
-            Variant var = ve.getVariant();
-            List<Object> record = getRecordOfVariant(var, ve, gene);
+            List<Object> record = getRecordOfVariant(ve, gene);
             this.printer.printRecord(record);
         }
     }
 
-    private List<Object> getRecordOfVariant(Variant var, VariantEvaluation ve, Gene gene) {
-        List<Object> record = new ArrayList<Object>();
+    private List<Object> getRecordOfVariant(VariantEvaluation ve, Gene gene) {
+        List<Object> record = new ArrayList<>();
+        VariantContext variantContext = ve.getVariantContext();
         // CHROM
-        record.add(var.get_chromosome_as_string());
+        record.add(variantContext.getChr());
         // POS
-        record.add(var.get_position());
+        record.add(variantContext.getStart());
         // REF
-        record.add(var.get_ref());
+        record.add(variantContext.getReference().getDisplayString());
         // ALT
-        record.add(var.get_alt());
+        record.add(variantContext.getAlternateAllele(ve.getAltAlleleID()).getDisplayString());
         // QUAL
-        record.add(var.getVariantPhredScore());
+        record.add(formatter.format(ve.getPhredScore()));
         // FILTER
         record.add(makeFiltersField(ve));
         // GENOTYPE
-        record.add(var.getGenotypeAsString());
+        record.add(ve.getGenotypeAsString());
         // COVERAGE
-        Pattern pat = Pattern.compile(".*DP=([0-9]+).*");
-        Matcher m = pat.matcher(var.get_info());
-        if (m.matches()) {
-            record.add(m.group(1));
-        } else {
-            record.add("0");
-        }
+        record.add(ve.getVariantContext().getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
-        record.add(var.get_variant_type_as_string());
-
+        // FIXME: use new terms (use .toSequenceOntologyTerm() instead)!
+        record.add(ve.getVariantEffect().getLegacyTerm());
         // HGVS
-        record.add(var.getRepresentativeAnnotation());
-        // FIXME jannovar has no function to use HGVS stuff alone
+        record.add(ve.getRepresentativeAnnotation());
+		// FIXME jannovar has no function to use HGVS stuff alone
         // variantAnnotation like KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q
         // String[] variantAnnotation =
         // var.getRepresentativeAnnotation().split(":");
@@ -133,7 +128,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // // AA_CHANGE
         // record.add(getColumnOfArrayIfExists(variantAnnotation, 4));
         // EXOMISER_GENE
-        record.add(var.getGeneSymbol());
+        record.add(ve.getGeneSymbol());
         // CADD
         record.add(getPatScore(ve.getPathogenicityData().getCaddScore()));
         // POLYPHEN
@@ -230,8 +225,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         StringBuilder output = new StringBuilder(Joiner.on(format.getDelimiter()).join(format.getHeader()));
         for (Gene gene : sampleData.getGenes()) {
             for (VariantEvaluation ve : gene.getVariantEvaluations()) {
-                Variant var = ve.getVariant();
-                List<Object> record = getRecordOfVariant(var, ve, gene);
+                List<Object> record = getRecordOfVariant(ve, gene);
                 output.append("\n");
                 output.append(Joiner.on(format.getDelimiter()).join(record));
             }

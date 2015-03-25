@@ -87,7 +87,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
         context.setVariable("filterReports", filterReports);
         //write out the variant type counters
-        List<VariantTypeCount> variantTypeCounters = makeVariantTypeCounters(sampleData.getVariantEvaluations());
+        List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(sampleData.getVariantEvaluations());
         List<String> sampleNames= sampleData.getSampleNames();
         String sampleName = "Anonymous";
         if(!sampleNames.isEmpty()) {
@@ -103,8 +103,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         return templateEngine.process("results", context);
     }
 
-    protected List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
-        return ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
+    protected List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
+        return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
     }
     
     protected List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {  

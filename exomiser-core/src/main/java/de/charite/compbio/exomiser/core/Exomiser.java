@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
-import de.charite.compbio.exomiser.core.filters.Filter;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
@@ -144,7 +143,7 @@ public class Exomiser {
         PriorityType prioriserType = exomiserSettings.getPrioritiserType();
         ScoringMode scoreMode = prioriserType.getScoringMode();
 
-        GeneScorer.scoreGenes(sampleData.getGenes(), exomiserSettings.getModeOfInheritance(), sampleData.getPedigree(), scoreMode);
+        GeneScorer.scoreGenes(sampleData.getGenes(), exomiserSettings.getModeOfInheritance(), scoreMode);
     }
 
 }

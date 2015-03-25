@@ -3,7 +3,8 @@ package de.charite.compbio.exomiser.db.build.parsers;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
-import jannovar.common.Constants;
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,11 @@ import org.slf4j.LoggerFactory;
 public class EspFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(EspFrequencyParser.class);
+
+    /**
+     * The frequencey parse to use
+     */
+    private final VCF2FrequencyParser vcf2FreqParser;
 
     /**
      * List of objects that encapsulate information about the frequency of a
@@ -61,15 +68,18 @@ public class EspFrequencyParser implements ResourceParser {
     /**
      * The constructor initialized the file output stream.
      *
+     * @param refDict the reference dictionary to use for chromosome name to id
+     * conversion
      * @param frequencyList A previous list of Frequency objects (will have
      * dbSNP information). This is sorted here as it is a requirement for the
      * binary search.
      */
-    public EspFrequencyParser(List<Frequency> frequencyList) {
+    public EspFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList) {
         logger.info("Sorting variant frequency list ({} variants)", frequencyList.size());
+        this.vcf2FreqParser = new VCF2FrequencyParser(refDict);
         Collections.sort(frequencyList);
         this.frequencyList = frequencyList;
-        //list for adding new Frequencies from the ESP files
+        // list for adding new Frequencies from the ESP files
         espFrequencyList = new ArrayList<>();
     }
 
@@ -114,7 +124,7 @@ public class EspFrequencyParser implements ResourceParser {
             mergeAndSortFrequencyObjects();
             //remember to set the status to success
             status = ResourceOperationStatus.SUCCESS;
-            
+
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
             status = ResourceOperationStatus.FILE_NOT_FOUND;
@@ -125,7 +135,7 @@ public class EspFrequencyParser implements ResourceParser {
 
         resource.setParseStatus(status);
         logger.info("{}", status);
-        
+
     }
 
     /**
@@ -147,29 +157,28 @@ public class EspFrequencyParser implements ResourceParser {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */;
+                ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line);
                 for (Frequency frequency : frequencyPerLine) {
                     //parseEspDataFromVCFInfoField(frequency);
                     int idx = Collections.binarySearch(frequencyList, frequency, comparator);
                     if (idx < 0) {
-                    /* This means we have not found this variant in the dbSNP data */
+                        /* This means we have not found this variant in the dbSNP data */
                         espFrequencyList.add(frequency);
                     } else {
-                    /* replace f with the pre-exisiting Frequency object that contains dbSNP data for this variant */
+                        /* replace f with the pre-exisiting Frequency object that contains dbSNP data for this variant */
                         Frequency existingFrequency = frequencyList.get(idx);
                         existingFrequency.setESPFrequencyEA(frequency.getESPFrequencyEA());
                         existingFrequency.setESPFrequencyAA(frequency.getESPFrequencyAA());
                         existingFrequency.setESPFrequencyAll(frequency.getESPFrequencyAll());
                     }
                 }
-                //Frequency frequency = VCF2FrequencyParser.parseVCFline(line);
-                //parseEspDataFromVCFInfoField(frequency);
+
             }
         } catch (IOException e) {
             logger.error("{} - Error parsing ESP file: {}", ResourceOperationStatus.FAILURE, espFile, e.getMessage());
             return ResourceOperationStatus.FAILURE;
         }
-        logger.info("{}", ResourceOperationStatus.SUCCESS);        
+        logger.info("{}", ResourceOperationStatus.SUCCESS);
         return ResourceOperationStatus.SUCCESS;
     }
 
