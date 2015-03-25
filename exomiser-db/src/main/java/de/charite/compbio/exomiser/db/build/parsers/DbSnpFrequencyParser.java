@@ -37,9 +37,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 
 /**
- * This class is designed to parseResource the dbSNP file {@code 00-All.vcf} which is
- * available in gzipped form at the dbSNP FTP site. We use a collection of
- * {@link jannovar.reference.TranscriptModel} objects in order to filter the
+ * This class is designed to parseResource the dbSNP file {@code 00-All.vcf}
+ * which is available in gzipped form at the dbSNP FTP site. We use a collection
+ * of {@link jannovar.reference.TranscriptModel} objects in order to filter the
  * dbSNP variants to those that are located either within an exon or close to an
  * exon (see {@link #FLANKING} for the distance threshold).
  *
@@ -51,7 +51,7 @@ import com.google.common.collect.ImmutableList;
 public class DbSnpFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DbSnpFrequencyParser.class);
-    
+
     /**
      * Total number of unique exons
      */
@@ -78,20 +78,21 @@ public class DbSnpFrequencyParser implements ResourceParser {
      */
     private final static int FLANKING = 50;
 
-    /** The VCF parser. */
+    /**
+     * The VCF parser.
+     */
     private final VCF2FrequencyParser vcf2FrequencyParser;
 
     /* use to avoid duplicate entries. */
-    Frequency previous = null; 
-    
+    Frequency previous = null;
+
     /**
      * Map of Chromosomes
      */
     private final HashMap<Integer, ChromosomalExonLocations> chromosomeMap;
 
-    public DbSnpFrequencyParser(ReferenceDictionary refDict, Resource ucscResource, Path ucscResourcePath,
-            List<Frequency> frequencyList) {
-        this.vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
+    public DbSnpFrequencyParser(ReferenceDictionary refDict, Resource ucscResource, Path ucscResourcePath, List<Frequency> frequencyList) {
+        vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
         this.frequencyList = frequencyList;
         chromosomeMap = new HashMap<>();
         //TODO: hack to get the full file path into the resource... possibly this should happen from the start
@@ -112,21 +113,20 @@ public class DbSnpFrequencyParser implements ResourceParser {
         ResourceOperationStatus status;
         try {
             ucscSerializedData = Paths.get(ucscResource.getExtractedFileName());
-            if ( !ucscSerializedData.toFile().exists()) {
+            if (!ucscSerializedData.toFile().exists()) {
                 status = ResourceOperationStatus.FILE_NOT_FOUND;
                 ucscResource.setParseStatus(status);
                 logger.error("{}: UCSC serialized data file is not present in the process path at {}", status, ucscSerializedData);
                 return;
-            } 
-        }
-        catch (IOError ex) {
+            }
+        } catch (IOError ex) {
             status = ResourceOperationStatus.FILE_NOT_FOUND;
             ucscResource.setParseStatus(status);
             logger.error("{}: UCSC serialized data file is not present in the process path. Please add it to the data\\extracted dir.", status, ex);
             //no useable API for Jannovar so we had to create this manually
             return;
         }
-        String serializedFile =  ucscSerializedData.toString();
+        String serializedFile = ucscSerializedData.toString();
         logger.info("De-serializing known Exon locations from UCSC data file: {}", serializedFile);
         JannovarData jannovarData = null;
         try {
@@ -175,7 +175,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
         long startTime = System.currentTimeMillis();
 
         ResourceOperationStatus status;
-        
+
         if (chromosomeMap.isEmpty()) {
             logger.error("Unable to parse file: {} as the chromosomeMap is empty", inFile);
             status = ResourceOperationStatus.FAILURE;
@@ -207,8 +207,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
                     continue; // comment.
                 }
                 vcount++;
-                //Frequency frequency = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */
-                ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line); /* Method of superclass, instantiates various class variables  */;
+                ArrayList<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
                 for (Frequency frequency : frequencyPerLine) {
                     checkVariantForExomalLocationAndOutput(frequency);
                 }
@@ -222,9 +221,9 @@ public class DbSnpFrequencyParser implements ResourceParser {
             }
             logger.info("Found " + n_exonic_vars + " exonic vars and " + n_non_exonic_vars + " non-exonics");
             logger.info("Got " + n_duplicates + " duplicates");
-            
+
             status = ResourceOperationStatus.SUCCESS;
-            
+
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
             status = ResourceOperationStatus.FILE_NOT_FOUND;
@@ -333,7 +332,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
 //        }
 //        return Constants.NOPARSE_FLOAT;
 //    }
-
     /**
      * This class is used to represent all of the exons on a chromosome.
      */

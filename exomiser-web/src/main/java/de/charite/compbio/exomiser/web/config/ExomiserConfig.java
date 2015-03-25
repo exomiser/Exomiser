@@ -24,14 +24,10 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.jannovar.io.JannovarDataSerializer;
 import de.charite.compbio.jannovar.io.SerializationException;
-
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
-import jannovar.reference.Chromosome;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,17 +65,17 @@ public class ExomiserConfig {
     public Path dataPath() {
         Path dataPath = Paths.get(env.getProperty("dataDir"));
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
-        
+
         return dataPath;
     }
-        
+
     @Bean
     public int maxVariants() {
         int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
         logger.info("Set max variants to {}", maxVariants);
         return maxVariants;
     }
-    
+
     @Bean
     public int maxGenes() {
         int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
@@ -131,7 +127,7 @@ public class ExomiserConfig {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
     }
-    
+
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
@@ -167,17 +163,17 @@ public class ExomiserConfig {
     public Exomiser exomiser() {
         return new Exomiser();
     }
-    
-    @Bean 
+
+    @Bean
     public SparseVariantFilterRunner sparseVariantFilterer() {
         return new SparseVariantFilterRunner();
     }
-    
+
     @Bean
     public VariantEvaluationDataService variantEvaluationDataService() {
         return new VariantEvaluationDataService();
     }
-    
+
 //cacheable beans
     @Bean
     public FrequencyDao frequencyDao() {
@@ -193,22 +189,22 @@ public class ExomiserConfig {
     OntologyService ontologyService() {
         return new OntologyServiceImpl();
     }
-    
+
     @Bean
     DiseaseDao diseaseDao() {
         return new DefaultDiseaseDao();
     }
-           
+
     @Bean
     HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
         return new HumanPhenotypeOntologyDao();
     }
-    
+
     @Bean
     MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
         return new MousePhenotypeOntologyDao();
     }
-    
+
     @Bean
     ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
         return new ZebraFishPhenotypeOntologyDao();

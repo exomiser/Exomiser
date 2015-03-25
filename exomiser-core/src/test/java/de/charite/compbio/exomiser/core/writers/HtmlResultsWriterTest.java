@@ -9,9 +9,15 @@ import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.Frequency;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -94,16 +100,6 @@ public class HtmlResultsWriterTest {
         missenseVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
         missenseVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
         
-        Mockito.when(indelVariant.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL);
-        Mockito.when(indelVariant.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
-        Mockito.when(indelVariant.getChromosomeAsByte()).thenReturn((byte) 2);
-        Mockito.when(indelVariant.get_position()).thenReturn(2);
-        Mockito.when(indelVariant.get_ref()).thenReturn("C");
-        Mockito.when(indelVariant.get_alt()).thenReturn("GCT");
-        Mockito.when(indelVariant.getGenotype()).thenReturn(genotypeCall);
-        Mockito.when(indelVariant.getVariantPhredScore()).thenReturn(2.2f);
-        Mockito.when(indelVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(indelVariant.getVariantTypeConstant()).thenReturn(VariantType.FS_INSERTION);
         indelVariantEvaluation = new VariantEvaluation(indelVariant);
 
         gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneID());

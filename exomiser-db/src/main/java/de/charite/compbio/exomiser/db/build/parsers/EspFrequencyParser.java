@@ -41,7 +41,7 @@ public class EspFrequencyParser implements ResourceParser {
     /**
      * The frequencey parse to use
      */
-    private final VCF2FrequencyParser vcf2FreqParser;
+    private final VCF2FrequencyParser vcf2FrequencyParser;
 
     /**
      * List of objects that encapsulate information about the frequency of a
@@ -76,7 +76,7 @@ public class EspFrequencyParser implements ResourceParser {
      */
     public EspFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList) {
         logger.info("Sorting variant frequency list ({} variants)", frequencyList.size());
-        this.vcf2FreqParser = new VCF2FrequencyParser(refDict);
+        vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
         Collections.sort(frequencyList);
         this.frequencyList = frequencyList;
         // list for adding new Frequencies from the ESP files
@@ -157,7 +157,7 @@ public class EspFrequencyParser implements ResourceParser {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line);
+                ArrayList<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
                 for (Frequency frequency : frequencyPerLine) {
                     //parseEspDataFromVCFInfoField(frequency);
                     int idx = Collections.binarySearch(frequencyList, frequency, comparator);

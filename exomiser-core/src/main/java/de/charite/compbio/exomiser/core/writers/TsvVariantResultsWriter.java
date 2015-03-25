@@ -29,6 +29,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.pathogenicity.AbstractPathogenicityScore;
 import htsjdk.variant.variantcontext.VariantContext;
+import java.util.Collections;
 
 import java.util.Locale;
 
@@ -109,7 +110,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // GENOTYPE
         record.add(ve.getGenotypeAsString());
         // COVERAGE
-        record.add(ve.getVariantContext().getCommonInfo().getAttributeAsString("DP", "0"));
+        record.add(variantContext.getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
         // FIXME: use new terms (use .toSequenceOntologyTerm() instead)!
         record.add(ve.getVariantEffect().getLegacyTerm());

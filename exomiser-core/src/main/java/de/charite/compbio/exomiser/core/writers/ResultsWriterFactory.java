@@ -41,7 +41,7 @@ public class ResultsWriterFactory {
             case TSV_VARIANT:
                 return new TsvVariantResultsWriter();
             case VCF:
-                return new VcfResultsWriter();
+                return new VcfResultsWriter(header);
             case PHENOGRID:
                 return new PhenogridWriter();
             default:

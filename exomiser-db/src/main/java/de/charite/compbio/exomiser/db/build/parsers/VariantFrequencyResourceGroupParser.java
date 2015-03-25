@@ -73,7 +73,7 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         
         // Now parseResource the ExAC data using the frequency information generated
         // from the dbSNP and UCSC known gene data.
-        ExACFrequencyParser exacParser = new ExACFrequencyParser(frequencyList);
+        ExACFrequencyParser exacParser = new ExACFrequencyParser(refDict, frequencyList);
         logger.info("Parsing the ExAC data");
         exacParser.parseResource(exacResource, inDir, outDir);
         

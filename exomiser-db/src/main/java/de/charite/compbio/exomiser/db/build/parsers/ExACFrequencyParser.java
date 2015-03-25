@@ -3,20 +3,15 @@ package de.charite.compbio.exomiser.db.build.parsers;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.db.build.reference.Frequency;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
-import jannovar.common.Constants;
-import jannovar.exception.JannovarException;
-import jannovar.io.SerializationManager;
-import jannovar.reference.TranscriptModel;
+import de.charite.compbio.jannovar.io.ReferenceDictionary;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import org.slf4j.Logger;
@@ -44,6 +39,7 @@ public class ExACFrequencyParser implements ResourceParser {
      */
     private final List<Frequency> frequencyList;
     
+    private final VCF2FrequencyParser vcf2FrequencyParser;
 
     /*
      * use to avoid duplicate entries.
@@ -62,7 +58,8 @@ public class ExACFrequencyParser implements ResourceParser {
         }
     };
 
-    public ExACFrequencyParser(List<Frequency> frequencyList) {
+    public ExACFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList) {
+        vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
         this.frequencyList = frequencyList;
         exACFrequencyList = new ArrayList<>();
     }
@@ -116,9 +113,7 @@ public class ExACFrequencyParser implements ResourceParser {
                 }
                 vcount++;
 
-                ArrayList<Frequency> frequencyPerLine = VCF2FrequencyParser.parseVCFline(line); /*
-                 * Method of superclass, instantiates various class variables
-                 */;
+                ArrayList<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
                 
                 for (Frequency frequency : frequencyPerLine) {
                     int idx = Collections.binarySearch(frequencyList, frequency, comparator);

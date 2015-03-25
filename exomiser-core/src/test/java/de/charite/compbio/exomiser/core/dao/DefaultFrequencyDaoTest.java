@@ -11,6 +11,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.jannovar.pedigree.Genotype;
+import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 

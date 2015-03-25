@@ -51,7 +51,7 @@ public class VCF2FrequencyParser {
      * @return a
      * <code>Frequency</code> object created from the input line.
      */
-    public static ArrayList<Frequency> parseVCFline(String line) {
+    public ArrayList<Frequency> parseVCFline(String line) {
 
         ArrayList<Frequency> frequencyList = new ArrayList<>();
 
