@@ -64,15 +64,7 @@ public class PhivePriorityResult implements PriorityResult {
      */
     @Override
     public float getScore() {
-        if (phenodigmScore == Constants.UNINITIALIZED_FLOAT) {
-            // mouse model exists but no phenotype hit to this disease
-            return 0.1f;
-        } else if (phenodigmScore == Constants.NOPARSE_FLOAT) {
-            // no mouse model exists in MGI for this gene
-            return 0.6f;
-        } else {
-            return phenodigmScore;
-        }
+        return phenodigmScore;
     }
 
     /**
@@ -81,7 +73,7 @@ public class PhivePriorityResult implements PriorityResult {
      */
     @Override
     public String getHTMLCode() {
-        if (phenodigmScore == Constants.NOPARSE_FLOAT) {
+        if (phenodigmScore == PhivePriority.NO_MOUSE_MODEL_SCORE) {
             return "<dl><dt>No mouse model for this gene</dt></dl>";
         } else {
             String link = makeMgiGeneLink();

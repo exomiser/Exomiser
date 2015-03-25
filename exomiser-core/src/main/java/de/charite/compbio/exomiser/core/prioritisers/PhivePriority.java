@@ -42,12 +42,8 @@ public class PhivePriority implements Prioritiser {
     private static final Logger logger = LoggerFactory.getLogger(PhivePriority.class);
 
     private static final PriorityType PRIORITY_TYPE = PriorityType.PHIVE_PRIORITY;
-
-    /**
-     * Threshold for filtering. Retain only those variants whose score is below
-     * this threshold.
-     */
-    private float scoreThreshold = 2.0f;
+    private static final float NO_PHENOTYPE_HIT_SCORE = 0.1f;
+    static final float NO_MOUSE_MODEL_SCORE = 0.6f;
 
     private List<String> hpoIds;
     private final String disease;
@@ -57,19 +53,6 @@ public class PhivePriority implements Prioritiser {
 
     private PreparedStatement testGeneStatement;
     private PreparedStatement findMouseAnnotationStatement;
-
-    /**
-     * A flag to indicate we could not retrieve data from the database for some
-     * variant. Using the value 200% means that the variant will not fail the
-     * Phenodigm filter.
-     */
-    private static final float NO_MGI_PHENODIGM_DATA = 2.0f;
-
-    /**
-     * score of the variant. Zero means no relevance, but the score is not
-     * necessarily scaled to [0..1]
-     */
-    private float MGI_PHENODIGM_SCORE;
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
@@ -116,16 +99,6 @@ public class PhivePriority implements Prioritiser {
     @Override
     public PriorityType getPriorityType() {
         return PRIORITY_TYPE;
-    }
-
-    /**
-     * Sets the score threshold for variants. Note: Keeping this method for now,
-     * but I do not think we need parameters for Phenodigm prioritization?
-     *
-     * @param score A score threshold, e.g., a float such as "0.02"
-     */
-    public void setScoreThreshold(float score) {
-        scoreThreshold = score;
     }
 
     /**
@@ -233,7 +206,7 @@ public class PhivePriority implements Prioritiser {
         bestAvgScore = sumBestScore / bestHitCounter;
 
         for (Gene g : genes) {
-            float mgiScore = Constants.UNINITIALIZED_FLOAT;
+            float mgiScore = NO_PHENOTYPE_HIT_SCORE;
             String mgiGeneId = null;
             String mgiGeneSymbol = null;
 
@@ -329,7 +302,8 @@ public class PhivePriority implements Prioritiser {
                         foundDataForMgiPhenodigm++;
                     }
                 } else {
-                    mgiScore = Constants.NOPARSE_FLOAT;//use to indicate there is no phenotyped mouse model in MGI
+                    // no mouse model exists in MGI for this gene
+                    mgiScore = NO_MOUSE_MODEL_SCORE;
                 }
                 rs2.close();
                 PhivePriorityResult rscore = new PhivePriorityResult(mgiGeneId, mgiGeneSymbol, mgiScore);
@@ -398,10 +372,8 @@ public class PhivePriority implements Prioritiser {
     public String getHTMLCode() {
         StringBuilder sb = new StringBuilder();
         sb.append("<ul>\n");
-        Iterator<String> it = this.messages.iterator();
-        while (it.hasNext()) {
-            String s = it.next();
-            sb.append("<li>" + s + "</li>\n");
+        for (String message : messages) {
+            sb.append("<li>" + message + "</li>\n");
         }
         sb.append("</ul>\n");
         return sb.toString();
