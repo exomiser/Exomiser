@@ -129,7 +129,7 @@ public class StringParser implements ResourceParser {
             reader.readLine();
             String line;
             while ((line = reader.readLine()) != null) {
-                String split[] = line.split("\\s+");
+                String[] split = line.split("\\s+");
                 String p1 = null, p2 = null;
                 if (split[0].substring(0, 5).equals("9606.")) {
                     p1 = split[0].substring(5);

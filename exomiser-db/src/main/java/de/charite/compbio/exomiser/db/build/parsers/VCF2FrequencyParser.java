@@ -104,7 +104,7 @@ public class VCF2FrequencyParser {
             // freq data from dbSNP file
             // format has changed in latest field to ;CAF=[0.9812,.,0.01882]; where major allele is 1st followed by minor alleles in order of alt line
             if (infoField.startsWith("CAF=")) {
-                String parts[] = infoField.split(",");
+                String[] parts = infoField.split(",");
                 for (String part : parts) {
                     part = part.replace("]", "");
                     minorFreqs.add(part);
@@ -126,7 +126,7 @@ public class VCF2FrequencyParser {
             }
             // freq data from ExAC file
             if (infoField.startsWith("AC") || infoField.startsWith("AN")) {
-                String exACData[] = infoField.split("=");
+                String[] exACData = infoField.split("=");
                 exACFreqs.put(exACData[0], exACData[1]);
             }
         }

@@ -115,10 +115,9 @@ public class ClinVarParser implements ResourceParser {
             } else if (sign.equalsIgnoreCase("not provided")) {
                 this.significance = "?";
             } else {
-                String split[] = sign.split(";");
+                String[] split = sign.split(";");
                 if (split.length == 1) {
                     logger.warn("Do not recognize clinical significance string: '{}'", sign);
-                    //System.exit(1);
                 }
                 for (String s : split) {
                     if (s.equals("Pathogenic")) {
@@ -159,7 +158,7 @@ public class ClinVarParser implements ResourceParser {
                     logger.info(line);
                     continue; // First line with column definitions.
                 }
-                String split[] = line.split("\t");
+                String[] split = line.split("\t");
                 int expectedFieldLength = 24;
                 if (split.length < expectedFieldLength) {
                     logger.warn("Malformed line: {}", line);
@@ -208,7 +207,7 @@ public class ClinVarParser implements ResourceParser {
                 }
 
                 int pos = Integer.parseInt(from);
-                String acc[] = RCV.split(";"); /* can have a comma separated list of accession numbers */
+                String[] acc = RCV.split(";"); /* can have a comma separated list of accession numbers */
 
                 for (String a : acc) {
                     ClinVar clinVar = new ClinVar(chrom, pos, a, sign);

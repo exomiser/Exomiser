@@ -80,7 +80,7 @@ public class MorbidMapParser implements ResourceParser {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                String fields[] = line.split("\\|");
+                String[] fields = line.split("\\|");
                 if (fields.length != 4) {
                     logger.error("Malformed morbid map line: {}", line);
                     logger.error("Expected 4 fields per line but got {}", fields.length);

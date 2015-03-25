@@ -106,12 +106,12 @@ public class DiseaseInheritanceCache implements ResourceParser {
             //so let's parse...
             while ((line = br.readLine()) != null) {
 //                System.out.println(line);
-                String split[] = line.split("\t");
-                if (split[3].equals("NOT")) {
+                String[] fields = line.split("\t");
+                if (fields[3].equals("NOT")) {
                     continue;
                 }
 
-                Integer currentDiseaseId = Integer.parseInt(split[1]);
+                Integer currentDiseaseId = Integer.parseInt(fields[1]);
                 //first line will have a null diseaseId
                 if (diseaseId == null) {
                     diseaseId = currentDiseaseId;
@@ -126,7 +126,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
                     inheritanceModes = new ArrayList<>();
                 }
                 //get the hpo term
-                String hpoTerm = split[4];
+                String hpoTerm = fields[4];
                 //only add the known inheritance mode
                 InheritanceMode currentInheritance = InheritanceMode.valueOfHpoTerm(hpoTerm);
                 if (currentInheritance != InheritanceMode.UNKNOWN) {

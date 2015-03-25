@@ -149,21 +149,20 @@ public class HGMDParser {
 	    int no_pmid=0;
 	    logger.info("Parsing HGMD Pro File ready {}", br.ready() );
 	    while ((line = br.readLine()) != null)   {
-		//System.out.println(line);
-		String F[] = line.split("!");
-		if (F.length<27) {
+		String[] fields = line.split("!");
+		if (fields.length<27) {
 		    //System.out.println("Error parsing line with less than 30 fields:\n" + line + "\n\t=>Had only " + F.length + " fields");
 		    bad++;
 		    continue;
 		}
-		diseasename=F[0];
-		gensym=F[1];
-		cDNAmut=F[12];
-		aaMut=F[11];
-		chr=F[15];
-		start=F[16];
-		end=F[17];
-		pmid=F[25];
+		diseasename=fields[0];
+		gensym=fields[1];
+		cDNAmut=fields[12];
+		aaMut=fields[11];
+		chr=fields[15];
+		start=fields[16];
+		end=fields[17];
+		pmid=fields[25];
 
                 switch (chr) {
                     case "X":
