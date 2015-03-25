@@ -28,6 +28,8 @@ public class MorbidMapParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(MorbidMapParser.class);
 
+    private static final int NO_DISEASE_ID = -10;
+    
     private final DiseaseInheritanceCache diseaseInheritanceCache;
     private final Map<Integer, Set<Integer>> mim2geneMap;
 
@@ -69,8 +71,8 @@ public class MorbidMapParser implements ResourceParser {
             return;
         }
         
-        // A heuristic to avoid duplicate entries. TODO refactor
-        Set<Integer> seen = new HashSet<>();
+        // A heuristic to avoid duplicate entries.
+        Set<String> seen = new HashSet<>();
         
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
                 BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())){
@@ -86,20 +88,19 @@ public class MorbidMapParser implements ResourceParser {
                     logger.error("Expected 4 fields per line but got {}", fields.length);
                     break;
                 }
-
-                String disease = null;
-                String phenMIM = null;
-                Integer phenID = null;
+                logger.debug("Line: {}", line);
+                String disease;
+                String phenMIM;
+                Integer phenID;
                 String diseaseString = fields[0]; /* e.g., 17,20-lyase deficiency, isolated, 202110 (3) */
 
                 logger.debug("diseaseString = {}", diseaseString);
                 int i = diseaseString.lastIndexOf(',');
-                if (i > 0) { /* This means there is probably a MIM number */
+                /* This means there is probably a MIM number */
+                if (i > 0) { 
 
                     disease = diseaseString.substring(0, i).trim();
-                    logger.debug("disease = {}", disease);
                     phenMIM = diseaseString.substring(i + 1).trim();
-                    logger.debug("phenMIM = {}", phenMIM);
                     i = phenMIM.indexOf('(');
                     if (i > 0) {
                         phenMIM = phenMIM.substring(0, i).trim();
@@ -109,29 +110,32 @@ public class MorbidMapParser implements ResourceParser {
                     } catch (NumberFormatException e) {
                         //System.out.println("Could not parseResource phenMIM: " + phenMIM);
                         // Note by inspection, these lines have no valid phenMIM, it is ok to skip them.
-                        phenID = Constants.UNINITIALIZED_INT;
+                        phenID = NO_DISEASE_ID;
                     }
-                    logger.debug("2 disease=" + disease);
-                    logger.debug("2 phenMIM=" + phenMIM);
+                    logger.debug("disease = {}", disease);
+                    logger.debug("phenMIM = {}", phenMIM);
+                    logger.debug("phenID = {}", phenID);
                 } else {
                     disease = diseaseString.trim();
-                    phenID = Constants.UNINITIALIZED_INT;
+                    phenID = NO_DISEASE_ID;
+                    logger.debug("disease = {}", disease);
+                    logger.debug("phenID = {}", phenID);
                 }
                 Integer genemim = Integer.parseInt(fields[2]);
                 logger.debug("genemim = {}", genemim);
 
-                Set<Integer> entrezList = mim2geneMap.get(genemim);
+                Set<Integer> associatedEntrezGeneIds = mim2geneMap.get(genemim);
                 if (logger.isDebugEnabled()) {
                     logger.debug("mim2geneMap size = {}", mim2geneMap.size());
-                    if (entrezList == null) {
-                        logger.debug("entrez list is null");
+                    if (!mim2geneMap.containsKey(genemim)) {
+                        logger.debug("No known genes associated with OMIM geneId {}", genemim);
                     } else {
-                        logger.debug("entrez list size=" + entrezList.size());
+                        logger.debug("Entrez gene ids associated with OMIM geneId {}: {}", genemim, associatedEntrezGeneIds);
                     }
                 }
-                if (entrezList == null || entrezList.isEmpty()) {
-                    continue; /* No entrez gene link */
-
+                if (associatedEntrezGeneIds == null || associatedEntrezGeneIds.isEmpty()) {
+                    // No entrez gene link
+                    continue; 
                 }
                 if (genemim < 0) {
                     continue;
@@ -139,11 +143,14 @@ public class MorbidMapParser implements ResourceParser {
                 String diseaseType = getDiseaseType(disease);
                 disease = getDiseaseName(disease);
                 InheritanceMode inh = diseaseInheritanceCache.getInheritanceMode(phenID);
-                for (Integer id : entrezList) {
-                    Integer unique = phenID + genemim + id;
+                for (Integer id : associatedEntrezGeneIds) {
+                    //TODO: this isn't unique - there could be a clash
+                    String unique = phenID.toString() + genemim.toString() + id.toString();
+                    logger.debug("unique={}", unique);
                     if (!seen.contains(unique)) {
                         seen.add(unique);
                         MIM mim = new MIM(phenID, genemim, disease, id, diseaseType, inh);
+                        logger.debug("Adding MIM to file: {}", mim.dumpLine());
                         writer.write(mim.dumpLine());
                     }
                 }

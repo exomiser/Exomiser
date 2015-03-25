@@ -5,9 +5,8 @@ package de.charite.compbio.exomiser.core;
  * 
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-public interface Constants {
-    public static float UNINITIALIZED_FLOAT = -10;
-    public static int UNINITIALIZED_INT = -10;
+public final class Constants {
+    public static final float UNINITIALIZED_FLOAT = -10;
     public static final int NOPARSE = -5;
     public static final float NOPARSE_FLOAT = -5f;
 }

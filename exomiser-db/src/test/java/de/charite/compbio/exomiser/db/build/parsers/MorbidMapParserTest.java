@@ -6,8 +6,6 @@
 
 package de.charite.compbio.exomiser.db.build.parsers;
 
-import de.charite.compbio.exomiser.db.build.parsers.DiseaseInheritanceCache;
-import de.charite.compbio.exomiser.db.build.parsers.MorbidMapParser;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
 import java.nio.file.Path;
@@ -16,11 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -29,25 +23,6 @@ import org.junit.Test;
  */
 public class MorbidMapParserTest {
     
-    public MorbidMapParserTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of parseResource method, of class MorbidMapParser.
      */
