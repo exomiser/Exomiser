@@ -17,6 +17,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -158,25 +159,18 @@ public class NSFP2SQLDumpParser implements ResourceParser {
     
     private static int CADD_raw_rankscore = 52;
     
-    //private static int CADD_phred = 53;
-
-    /**
-     * Keep list of genes we have already seen (no need to have multiple SQL
-     * table rows). Key: genesymbol, value: AUTOINCREMENT ID in the gene table.
-     */
-    private HashMap<String, Integer> seen_genes;
     /**
      * This variable will contain values such as A3238732G that represent the
      * current SNV. It will be used to deal with doubled lines for the same
      * variant
      */
-    private String current_var = null;
+    private String currentVar = null;
 
     /**
      * A number that will be used as a primary key in the gene file (like an
      * auto increment in MySQL).
      */
-    private int auto_increment = 0;
+    private int autoIncrement = 0;
     /**
      * The count of all lines parsed from all of the dbNSFP files (Header lines
      * are not counted).
@@ -186,11 +180,11 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * The count of all variants added to the dump file. Note, multiple lines
      * for same variant are counted once.
      */
-    private int n_total_variants = 0;
+    private int totalVariantsCount = 0;
     /**
      * The count of all the genes added to the dump file.
      */
-    private int n_total_genes = 0;
+    private int totalGenesCount = 0;
 
     /** the reference dictionary to use for chromosome name to numeric id conversion */
     private final ReferenceDictionary refDict;
@@ -208,14 +202,14 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * for same variant are counted once.
      */
     public int getVariantCount() {
-        return n_total_variants;
+        return totalVariantsCount;
     }
 
     /**
      * Get count of all the genes added to the dump file.
      */
     public int getGeneCount() {
-        return n_total_genes;
+        return totalGenesCount;
     }
 
     /**
@@ -255,7 +249,6 @@ public class NSFP2SQLDumpParser implements ResourceParser {
                             //try to autodetect the column positions for the parser 
                             setParseFields(line);                          
                         } else {
-//                        logger.info(line);
                             VariantPathogenicity pathogenicity = parseLine(line);
                             writer.write(pathogenicity.toDumpLine());
                         }
@@ -284,17 +277,13 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      */
     VariantPathogenicity parseLine(String line) {
 
-        String fields[] = line.split("\t");
+        String[] fields = line.split("\t");
         if (fields.length < N_NSFP_FIELDS) {
             logger.error("Malformed line '{}' - Only {} fields found (expecting {})", line, fields.length, N_NSFP_FIELDS);
             System.exit(1);
         }
 
         String chr = fields[CHR];
-//        String genename = first_entry(fields[GENENAME]);
-//        if (totalLinesCount % 100000 == 0) {
-//            logger.info("Chromsome {} line {} ({})", chr, totalLinesCount, genename);
-//        }
 
         int c = refDict.contigID.get(chr);
 
@@ -365,14 +354,14 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         if (i > 0) {
             s = s.substring(0, i);
         }
-        float ret_value;
+        float value;
         try {
-            ret_value = Float.parseFloat(s);
+            value = Float.parseFloat(s);
         } catch (NumberFormatException e) {
             logger.error("Could not parse phyloP float value: '{}'", s);
             return Constants.NOPARSE_FLOAT;
         }
-        return ret_value;
+        return value;
     }
     
        /**
@@ -387,14 +376,14 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         if (i > 0) {
             s = s.substring(0, i);
         }
-        float ret_value;
+        float value;
         try {
-            ret_value = Float.parseFloat(s);
+            value = Float.parseFloat(s);
         } catch (NumberFormatException e) {
             logger.error("Could not parse CaddRawRankScore float value: '{}'", s);
             return Constants.NOPARSE_FLOAT;
         }
-        return ret_value;
+        return value;
     }
 
           /**
@@ -409,14 +398,14 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         if (i > 0) {
             s = s.substring(0, i);
         }
-        float ret_value;
+        float value;
         try {
-            ret_value = Float.parseFloat(s);
+            value = Float.parseFloat(s);
         } catch (NumberFormatException e) {
             logger.error("Could not parse CaddRaw float value: '{}'", s);
             return Constants.NOPARSE_FLOAT;
         }
-        return ret_value;
+        return value;
     }
     
     /**
@@ -437,16 +426,17 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             return Constants.NOPARSE_FLOAT;
         }
         float min = Float.MAX_VALUE;
-        String A[] = s.split(";");
+        String[] A = s.split(";");
         for (String a : A) {
             a = a.trim();
-            if (a.equals(".")) /* Note there are some entries such as ".;0.292" */ {
+             // Note there are some entries such as ".;0.292"
+            if (a.equals(".")) {
                 continue;
             }
             try {
-                float f = Float.parseFloat(a);
-                if (min > f) {
-                    min = f;
+                float value = Float.parseFloat(a);
+                if (min > value) {
+                    min = value;
                 }
             } catch (NumberFormatException e) {
                 logger.error("Could not parse sift score: '{}'", s);
@@ -478,17 +468,17 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             return Constants.NOPARSE_FLOAT;
         }
         float max = Float.MIN_VALUE;
-        String A[] = s.split(";");
+        String[] A = s.split(";");
         for (String a : A) {
             a = a.trim();
-            if (a.equals(".")) { /* Note there are some entries such as ".;0.292" */
-
+             // Note there are some entries such as ".;0.292"
+            if (a.equals(".")) {
                 continue;
             }
             try {
-                float f = Float.parseFloat(a);
-                if (max < f) {
-                    max = f;
+                float value = Float.parseFloat(a);
+                if (max < value) {
+                    max = value;
                 }
             } catch (NumberFormatException e) {
                 logger.error("Could not parse polyPhen score value: '{}'", s);
@@ -526,8 +516,8 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             return Constants.NOPARSE_FLOAT;
         }
         float max = Float.MIN_VALUE;
-        String A[] = score.split(";");
-        String pred[] = prediction.split(";");
+        String[] A = score.split(";");
+        String[] pred = prediction.split(";");
         if (A.length != pred.length) {
             logger.error("Badly formated mutation taster score entry: Score was: {} and prediction was {}", score, prediction);
             logger.error("Length of score entry: {}, length of prediction entry: {}", A.length, pred.length);
@@ -550,9 +540,9 @@ public class NSFP2SQLDumpParser implements ResourceParser {
                 continue;
             }
             try {
-                float f = Float.parseFloat(a);
-                if (max < f) {
-                    max = f;
+                float value = Float.parseFloat(a);
+                if (max < value) {
+                    max = value;
                 }
             } catch (NumberFormatException e) {
                 logger.error("Could not parse mutTaster score: '{}'", score);
@@ -563,115 +553,6 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             return max;
         } else {
             return Constants.NOPARSE_FLOAT;
-        }
-    }
-
-    /**
-     * Get annotations for each of the variants in the VCG file for one
-     * chromosome. Strategy is not to just split and examine good candidate
-     * lines. It is probably quicker to compare strings rather than to transform
-     * every string (position on chromosome) into an Integer, but this can be
-     * tested later.
-     *
-     * @param path Complete path to dbNSFP file for one chromosome.
-     */
-    private void input_chromosome(String path) {
-        logger.info("******************************");
-        long startTime = System.currentTimeMillis();
-
-        int count = 0;
-        int varcount = 0;
-
-        VariantPathogenicity currentVar = null;
-        String currentVarString = null;
-        float currentPathScore = 0f;
-
-        logger.info("Opening file: " + path);
-
-        try {
-            FileInputStream fstream = new FileInputStream(path);
-            DataInputStream in = new DataInputStream(fstream);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
-            String line;
-            int good = 0;
-            int bad = 0;
-            VariantPathogenicity v2p = null;
-            boolean lineWaitingInBuffer = false;
-            while ((line = br.readLine()) != null) {
-
-                if (line.startsWith("#")) {
-                    continue; // comment.
-                }
-                this.totalLinesCount++;
-
-                String A[] = line.split("\t");
-                if (A.length < N_NSFP_FIELDS) {
-                    logger.error("Malformed line '{}' - Only {} fields found (expecting {})", line, A.length, N_NSFP_FIELDS);
-                    System.exit(1);
-                }
-                String genename = first_entry(A[GENENAME]);
-                if (this.totalLinesCount % 100000 == 0) {
-                    logger.info("line {} ({})", totalLinesCount, genename);
-                }
-
-                String chr = A[CHR];
-                Integer c = refDict.contigID.get(chr);
-                Integer pos = Integer.parseInt(A[POS]);
-                char ref = A[REF].charAt(0);
-                char alt = A[ALT].charAt(0);
-                char aaref = A[AAREF].charAt(0);
-                char aaalt = A[AAALT].charAt(0);
-                int aapos = parseAaPos(A[AAPOS]);
-                float sift = getMostPathogenicSIFTScore(A[SIFT_SCORE]);
-                float polyphen2_HVAR = getMostPathogenicPolyphenScore(A[POLYPHEN2_HVAR_SCORE]);
-                float mut_taster = getMostPathogenicMutTasterScore(A[MUTATION_TASTER_SCORE], A[MUTATION_TASTER_PRED]);
-                float phyloP = parsePhyloP(A[PHYLO_P]);
-                float cadd_raw_rankscore = parseCaddRawRankScore(A[CADD_raw_rankscore]);
-                float cadd_raw_score = parseCaddRaw(A[CADD_raw]);
-                
-                v2p = new VariantPathogenicity(c, pos, ref, alt, aaref, aaalt, aapos,
-                        sift, polyphen2_HVAR, mut_taster,
-                        phyloP, cadd_raw_rankscore, cadd_raw_score);
-                String cu_var = String.format("%c%d%c", ref, pos, alt);
-                if (currentVar == null) { /* First iteration of loop */
-
-                    currentVar = v2p;
-                    currentVarString = cu_var;
-                    currentPathScore = v2p.maxPathogenicity();
-                    lineWaitingInBuffer = true;
-                } else if (cu_var.equals(currentVarString)) { /* A second line for the same chrom/ref/pos/alt combination */
-
-                    if (v2p.maxPathogenicity() > currentPathScore) {
-                        //System.out.println("2bCU =" +cu_var);
-                        currentVar = v2p;
-                        currentPathScore = v2p.maxPathogenicity();
-                        lineWaitingInBuffer = true;
-                    }
-                } else { /* The current variant is a new chrom/ref/pos/alt combination */
-
-//                    out_variant.write(currentVar.toDumpLine());
-                    lineWaitingInBuffer = false;
-                    currentVar = v2p;
-                    currentPathScore = v2p.maxPathogenicity();
-                    currentVarString = cu_var;
-                }
-            }
-	    // The following line is needed to output the very last variant in a chromosome file.
-
-//            out_variant.write(v2p.toDumpLine());
-            in.close();
-            // Flush the write file handles.
-//            out_variant.flush();
-        } catch (IOException e) {
-            logger.error("I/O Problem", e);
-            System.exit(1);
-        } catch (Exception e) {
-            logger.error("Please note that dbNSFP regularly changes its format.");
-            logger.error("If in doubt, the most probable cause of errors with parsing are due to format changes.");
-            logger.error("Consider changing the integer constants in NSFP2SQLDumpParser.java according to the version of dbNSFP used.");
-            logger.error("{}", e);
-            System.exit(1);
         }
     }
 
@@ -691,7 +572,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         
         for (int i = 0; i < fields.length; i++) {
             String field = fields[i];
-//            logger.info("Field {} = {}", i, field);
+            logger.debug("Field {} = {}", i, field);
             int prev = 0;
             switch (field){
                 case "chr":
