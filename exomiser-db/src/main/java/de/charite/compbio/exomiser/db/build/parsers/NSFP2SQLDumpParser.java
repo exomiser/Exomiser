@@ -1,6 +1,5 @@
 package de.charite.compbio.exomiser.db.build.parsers;
 
-import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.exomiser.db.build.reference.VariantPathogenicity;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
@@ -62,6 +61,9 @@ public class NSFP2SQLDumpParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(NSFP2SQLDumpParser.class);
 
+    //This is wat's used inplace of a null in the dbNSFP file
+    protected static final String NO_VALUE = ".";
+
     // The following are the fields of the dbNSFP files.
     /**
      * Chromosome number
@@ -117,12 +119,6 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * "D", we report the score as given in dbNSFP.
      */
     private static int MUTATION_TASTER_PRED = 37;//35
-
-    /**
-     * PhyloP score, the larger the score, the more conserved the site.
-     */
-    private static int PHYLO_P = 59;//50
-    /// End of list of field indices for dbNSFP
 
     /**
      * Total number of fields in the dbNSFP database
@@ -262,95 +258,77 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         String ref = fields[REF];
         String alt = fields[ALT];
         //pathogenicity scores
-        float sift = getMostPathogenicSIFTScore(fields[SIFT_SCORE]);
-        float polyphen2HVAR = getMostPathogenicPolyphenScore(fields[POLYPHEN2_HVAR_SCORE]);
-        float mutTaster = getMostPathogenicMutTasterScore(fields[MUTATION_TASTER_SCORE], fields[MUTATION_TASTER_PRED]);
-        float phyloP = parseDbNsfpFloat(fields[PHYLO_P]);
-        float caddRaw = parseDbNsfpFloat(fields[CADD_raw]);
-        float caddRawRankscore = parseDbNsfpFloat(fields[CADD_raw_rankscore]);
-//        float caddPhred = parseCaddPhred(fields[CADD_phred]);
+        Float sift = getMostPathogenicSIFTScore(fields[SIFT_SCORE]);
+        Float polyphen2HVAR = getMostPathogenicPolyphenScore(fields[POLYPHEN2_HVAR_SCORE]);
+        Float mutTaster = getMostPathogenicMutTasterScore(fields[MUTATION_TASTER_SCORE], fields[MUTATION_TASTER_PRED]);
+        Float caddRaw = valueOfField(fields[CADD_raw]);
+        Float caddRawRankscore = valueOfField(fields[CADD_raw_rankscore]);
 
         return new VariantPathogenicity(c, pos, ref, alt,
-                sift, polyphen2HVAR, mutTaster,
-                phyloP, caddRawRankscore, caddRaw);
+                sift, polyphen2HVAR, mutTaster, caddRawRankscore, caddRaw);
     }
 
+    /**
+     * Some entries in dbNSFP are either nonnegative floats or "." . If the
+     * latter, then this method will return a null.
+     * @param field
+     * @return 
+     */
+    protected Float valueOfField(String field) {
+        String firstValue = getFirstValue(field);
+        try {
+            return Float.valueOf(firstValue);
+        } catch (NumberFormatException e) {
+            logger.error("Could not parse float value from: '{}'", field);
+            return null;
+        }
+    }
+        
     /**
      * Many entries in dbNFSP are lists of transcripts separated by ";" For
      * instance, ENST00000298232;ENST00000361285;ENST00000342420</BR>
      * This is the case for genes with multiple transcripts. For simplicity, we
      * will just take the first such entry.
      */
-    private String first_entry(String s) {
+    private String getFirstValue(String s) {
         int i = s.indexOf(";");
         if (i > 0) {
-            s = s.substring(0, i);
+            return s.substring(0, i);
         }
         return s;
     }
 
-
-    /**
-     * Some entries in dbNSFP are either nonnegative floats or "." . If the
-     * latter, then return -1f (NOPARSE_FLOAT; a flag)
-     */
-    private float parseDbNsfpFloat(String s) {
-        if (s.equals(".")) {
-            return Constants.NOPARSE_FLOAT;
-        }
-        int i = s.indexOf(";");
-        if (i > 0) {
-            s = s.substring(0, i);
-        }
-        float value;
-        try {
-            value = Float.parseFloat(s);
-        } catch (NumberFormatException e) {
-            logger.error("Could not parse float value: '{}'", s);
-            return Constants.NOPARSE_FLOAT;
-        }
-        return value;
-    }
-        
     /**
      * If there are SIFT scores for two different transcripts that correspond to
      * a given chromosomal variant, they are entered e.g. as 0.527;0.223. In
      * this case, we will extract the most pathogenic score, i.e., the score
      * that is closest to zero.
      *
-     * @param s SIFT score, either a single float number or a semicolon
+     * @param field SIFT score, either a single float number or a semicolon
      * separated list of such scores
      * @return A float representation of the SIFT score. If a list of SIFT
      * scores is passed to the function, then a float representation of the most
      * pathogenic score is returned. If "." is passed to the function, then
      * return NOPARSE_FLOAT (a flag)
      */
-    private float getMostPathogenicSIFTScore(String s) {
-        if (s.equals(".")) {
-            return Constants.NOPARSE_FLOAT;
+    protected Float getMostPathogenicSIFTScore(String field) {
+        if (field.equals(NO_VALUE)) {
+            return null;
         }
         float min = Float.MAX_VALUE;
-        String[] A = s.split(";");
-        for (String a : A) {
-            a = a.trim();
-             // Note there are some entries such as ".;0.292"
-            if (a.equals(".")) {
-                continue;
-            }
-            try {
-                float value = Float.parseFloat(a);
-                if (min > value) {
-                    min = value;
-                }
-            } catch (NumberFormatException e) {
-                logger.error("Could not parse sift score: '{}'", s);
-                return Constants.NOPARSE_FLOAT;
+        String[] scores = field.split(";");
+        for (String score : scores) {
+            score = score.trim();
+            // Note there are some entries such as ".;0.292"
+            Float value = valueOfField(score);
+            if (value != null) {
+                min = Math.min(value, min);
             }
         }
         if (min < Float.MAX_VALUE) {
             return min;
         } else {
-            return Constants.NOPARSE_FLOAT;
+            return null;
         }
     }
 
@@ -360,39 +338,31 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * 0.527;0.223. In this case, we will extract the most pathogenic score,
      * i.e., the score that is closest to one.
      *
-     * @param s Polyphen score, either a single float number or a semicolon
+     * @param field Polyphen score, either a single float number or a semicolon
      * separated list of such scores
      * @return A float representation of the Polyphen score. If a list of
      * Polyphen scores is passed to the function, then a float representation of
      * the most pathogenic score is returned. If "." is passed to the function,
      * then return NOPARSE_FLOAT (a flag)
      */
-    private float getMostPathogenicPolyphenScore(String s) {
-        if (s.equals(".")) {
-            return Constants.NOPARSE_FLOAT;
+    protected Float getMostPathogenicPolyphenScore(String field) {
+        if (field.equals(NO_VALUE)) {
+            return null;
         }
-        float max = Float.MIN_VALUE;
-        String[] A = s.split(";");
-        for (String a : A) {
-            a = a.trim();
-             // Note there are some entries such as ".;0.292"
-            if (a.equals(".")) {
-                continue;
-            }
-            try {
-                float value = Float.parseFloat(a);
-                if (max < value) {
-                    max = value;
-                }
-            } catch (NumberFormatException e) {
-                logger.error("Could not parse polyPhen score value: '{}'", s);
-                return Constants.NOPARSE_FLOAT;
+        Float max = Float.MIN_VALUE;
+        String[] scores = field.split(";");
+        for (String score : scores) {
+            score = score.trim();
+            // Note there are some entries such as ".;0.292"
+            Float value = valueOfField(score);
+            if (value != null) {
+                max = Math.max(value, max);
             }
         }
         if (max > Float.MIN_VALUE) {
             return max;
         } else {
-            return Constants.NOPARSE_FLOAT;
+            return null;
         }
     }
 
@@ -406,7 +376,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * function since the way the various scores are normalized in dbNSFP may
      * change in the future.
      *
-     * @param score Mutation Taster score, either a single float number or a
+     * @param field Mutation Taster score, either a single float number or a
      * semicolon separated list of such scores
      * @param prediction MutationTaster prediction. If this is for a
      * polymorphism, then the score is set to zero (not path).
@@ -415,21 +385,21 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * representation of the most pathogenic score is returned. If "." is passed
      * to the function, then return NOPARSE_FLOAT (a flag)
      */
-    private float getMostPathogenicMutTasterScore(String score, String prediction) {
-        if (score.equals(".")) {
-            return Constants.NOPARSE_FLOAT;
+    protected Float getMostPathogenicMutTasterScore(String field, String prediction) {
+        if (field.equals(NO_VALUE)) {
+            return null;
         }
-        float max = Float.MIN_VALUE;
-        String[] A = score.split(";");
-        String[] pred = prediction.split(";");
-        if (A.length != pred.length) {
-            logger.error("Badly formated mutation taster score entry: Score was: {} and prediction was {}", score, prediction);
-            logger.error("Length of score entry: {}, length of prediction entry: {}", A.length, pred.length);
-            return Constants.NOPARSE_FLOAT;
+        String[] scores = field.split(";");
+        String[] predictions = prediction.split(";");
+        if (scores.length != predictions.length) {
+            logger.error("Badly formated mutation taster score entry: Score was: {} and prediction was {}", field, prediction);
+            logger.error("Length of score entry: {}, length of prediction entry: {}", scores.length, predictions.length);
+            return null;
         }
-        for (int i = 0; i < A.length; ++i) {
-            String a = A[i].trim();
-            String p = pred[i].trim();
+        Float max = Float.MIN_VALUE;
+        for (int i = 0; i < scores.length; ++i) {
+            String score = scores[i].trim();
+            String p = predictions[i].trim();
             if (p.equals("N") || p.equals("P")) {
                 max = 0f;
                 continue;
@@ -437,26 +407,18 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             if (!p.equals("A") && !p.equals("D")) {
                 logger.error("Badly formated mutation taster score entry. The prediction field was '{}'", p);
                 logger.error("Acceptable values for prediction field are one of A,D,N,P");
-                return Constants.NOPARSE_FLOAT;
+                return null;
             }
-            if (a.equals(".")) { /* Note there are some entries such as ".;0.292" */
-
-                continue;
+            Float value = valueOfField(score);
+            if (value != null) {
+                max = Math.max(value, max);
             }
-            try {
-                float value = Float.parseFloat(a);
-                if (max < value) {
-                    max = value;
-                }
-            } catch (NumberFormatException e) {
-                logger.error("Could not parse mutTaster score: '{}'", score);
-                return Constants.NOPARSE_FLOAT;
-            }
+            
         }
         if (max > Float.MIN_VALUE) {
             return max;
         } else {
-            return Constants.NOPARSE_FLOAT;
+            return null;
         }
     }
 
@@ -513,11 +475,6 @@ public class NSFP2SQLDumpParser implements ResourceParser {
                     prev = MUTATION_TASTER_PRED;
                     logger.info("Setting MUTATION_TASTER_PRED field '{}' from position {} to {}", field, prev, i);
                     MUTATION_TASTER_PRED = i;
-                    break;
-                case "phyloP":
-                    prev = PHYLO_P;
-                    logger.info("Setting PHYLO_P field '{}' from position {} to {}", field, prev, i);
-                    PHYLO_P = i;
                     break;
                 case "CADD_raw":
                     prev = CADD_raw;

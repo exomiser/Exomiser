@@ -10,7 +10,6 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.exomiser.core.model.Variant;
 
 import java.sql.Connection;

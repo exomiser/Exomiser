@@ -1,10 +1,5 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import java.util.ArrayList;
-
-import de.charite.compbio.exomiser.core.Constants;
-import java.util.List;
-
 /**
  * Filter Variants on the basis of OWLSim phenotypic comparisons between the HPO
  * clinical phenotypes associated with the disease being sequenced and MP

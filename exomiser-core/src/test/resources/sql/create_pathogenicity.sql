@@ -8,8 +8,6 @@ CREATE TABLE variant (
     sift double precision,
     polyphen double precision,
     mut_taster double precision,
-    phylop double precision,
     cadd double precision,
     cadd_raw double precision 
 );
-

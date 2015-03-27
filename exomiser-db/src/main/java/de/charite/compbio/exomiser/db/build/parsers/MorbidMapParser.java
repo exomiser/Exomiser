@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.db.build.parsers;
 
-import de.charite.compbio.exomiser.core.Constants;
 import de.charite.compbio.exomiser.core.model.InheritanceMode;
 import de.charite.compbio.exomiser.db.build.resources.Resource;
 import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;

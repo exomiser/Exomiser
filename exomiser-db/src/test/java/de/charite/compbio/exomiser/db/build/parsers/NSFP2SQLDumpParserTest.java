@@ -7,23 +7,29 @@
 package de.charite.compbio.exomiser.db.build.parsers;
 
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class NSFP2SQLDumpParserTest {
     
+    private NSFP2SQLDumpParser instance;
+    
+    @Before
+    public void setUp() {
+        instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
+    }
     /**
      * Test of getTotalNsfpLines method, of class NSFP2SQLDumpParser.
      */
     @Test
     public void testGetTotalNsfpLines() {
-        System.out.println("getTotalNsfpLines");
-        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
         int expResult = 0;
         int result = instance.getTotalNsfpLines();
         assertEquals(expResult, result);
@@ -35,7 +41,6 @@ public class NSFP2SQLDumpParserTest {
     @Test
     public void testGetVariantCount() {
         System.out.println("getVariantCount");
-        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
         int expResult = 0;
         int result = instance.getVariantCount();
         assertEquals(expResult, result);
@@ -47,11 +52,30 @@ public class NSFP2SQLDumpParserTest {
     @Test
     public void testGetGeneCount() {
         System.out.println("getGeneCount");
-        NSFP2SQLDumpParser instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
         int expResult = 0;
         int result = instance.getGeneCount();
         assertEquals(expResult, result);
 
+    }
+    
+    @Test
+    public void parseDbNsfpFloatForNoValueReturnsNull() {
+        assertThat(instance.valueOfField("."), equalTo(null));
+    }
+    
+    @Test
+    public void parseDbNsfpFloatForMultipleValuesReturnsFirstOne() {
+        assertThat(instance.valueOfField("1;2;3;4"), equalTo(1f));
+    }
+    
+    @Test
+    public void parseDbNsfpFloatForSingleValue() {
+        assertThat(instance.valueOfField("1"), equalTo(1f));
+    }
+    
+    @Test
+    public void parseDbNsfpFloatForSingleNonNumericValueReturnsNull() {
+        assertThat(instance.valueOfField("wibble"), equalTo(null));
     }
 
     /**

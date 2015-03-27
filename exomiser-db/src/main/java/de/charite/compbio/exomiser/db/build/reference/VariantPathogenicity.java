@@ -19,16 +19,12 @@ public class VariantPathogenicity {
     private final int position;
     private final String ref;
     private final String alt;
-    
-    //TODO: possibly make thes guys Floats or PathogenicityScores so that they
-    //can be nulls and do away with the -5.0 constant which leads to weird manipulations
-    //like in the maxPathogenicity method.
-    private final float phylopScore;
-    private final float siftScore;
-    private final float polyphenScore;
-    private final float muttasterScore;
-    private final float caddRawRankScore;
-    private final float caddRawScore;
+
+    private final Float siftScore;
+    private final Float polyphenScore;
+    private final Float muttasterScore;
+    private final Float caddRawRankScore;
+    private final Float caddRawScore;
     
     /**
      * This class encapsulates the information in a single dbNSFP line. In some
@@ -51,8 +47,8 @@ public class VariantPathogenicity {
      * @param caddRawScore
      */
     public VariantPathogenicity(int chromosome, int position, String ref, String alt,
-            float siftScore, float polyphen2HVAR, float muttasterScore,
-            float phyloP, float caddRawRankScore, float caddRawScore) {
+            Float siftScore, Float polyphen2HVAR, Float muttasterScore,
+            Float caddRawRankScore, Float caddRawScore) {
         this.chromosome = chromosome;
         this.position = position;
         this.ref = ref;
@@ -60,41 +56,8 @@ public class VariantPathogenicity {
         this.siftScore = siftScore;
         this.polyphenScore = polyphen2HVAR;
         this.muttasterScore = muttasterScore;
-        this.phylopScore = phyloP;
         this.caddRawRankScore = caddRawRankScore;
         this.caddRawScore = caddRawScore;
-    }
-
-    public int getChromosome() {
-        return chromosome;
-    }
-
-    public int getPosition() {
-        return position;
-    }
-
-    public String getRef() {
-        return ref;
-    }
-
-    public String getAlt() {
-        return alt;
-    }
-
-    public float getSiftScore() {
-        return siftScore;
-    }
-
-    public float getPolyphenScore() {
-        return polyphenScore;
-    }
-
-    public float getMutationTasterScore() {
-        return muttasterScore;
-    }
-
-    public float getPhylopScore() {
-        return phylopScore;
     }
 
     /**
@@ -104,9 +67,9 @@ public class VariantPathogenicity {
      * @return
      */
     public String toDumpLine() {
-        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
+        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
                 chromosome, position, ref, alt, 
-                siftScore, polyphenScore, muttasterScore, phylopScore, caddRawRankScore, caddRawScore);
+                siftScore, polyphenScore, muttasterScore, caddRawRankScore, caddRawScore);
     }
 
     @Override
@@ -114,7 +77,6 @@ public class VariantPathogenicity {
         return "VariantPathogenicity{" + "chromosome=" + chromosome + 
                 ", position=" + position + ", ref=" + ref + ", alt=" + alt + 
                 ", sift=" + siftScore + ", polyphen=" + polyphenScore + 
-                ", muttaster=" + muttasterScore + ", phyloP=" + phylopScore + 
-                ", caddRawRank=" + caddRawRankScore + ", caddRaw=" + caddRawScore + '}';
+                ", muttaster=" + muttasterScore + ", caddRawRank=" + caddRawRankScore + ", caddRaw=" + caddRawScore + '}';
     }
 }
