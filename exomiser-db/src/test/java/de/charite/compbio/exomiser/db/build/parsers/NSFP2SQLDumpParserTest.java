@@ -6,21 +6,9 @@
 
 package de.charite.compbio.exomiser.db.build.parsers;
 
-import de.charite.compbio.exomiser.db.build.parsers.NSFP2SQLDumpParser;
-import de.charite.compbio.exomiser.db.build.reference.VariantPathogenicity;
-import de.charite.compbio.exomiser.db.build.resources.Resource;
-import de.charite.compbio.exomiser.db.build.resources.ResourceOperationStatus;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 /**
@@ -29,25 +17,6 @@ import static org.junit.Assert.*;
  */
 public class NSFP2SQLDumpParserTest {
     
-    public NSFP2SQLDumpParserTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getTotalNsfpLines method, of class NSFP2SQLDumpParser.
      */

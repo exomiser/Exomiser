@@ -17,16 +17,13 @@ public class VariantPathogenicity {
     //from the pathogenicity scores.
     private final int chromosome;
     private final int position;
-    private final char ref;
-    private final char alt;
-    private final char aaref;
-    private final char aaalt;
-    private final int aapos;
-    private final float phylopScore;
+    private final String ref;
+    private final String alt;
     
     //TODO: possibly make thes guys Floats or PathogenicityScores so that they
     //can be nulls and do away with the -5.0 constant which leads to weird manipulations
     //like in the maxPathogenicity method.
+    private final float phylopScore;
     private final float siftScore;
     private final float polyphenScore;
     private final float muttasterScore;
@@ -46,9 +43,6 @@ public class VariantPathogenicity {
      * @param position Position of the variant on the chromosome
      * @param ref reference nucleotide
      * @param alt variant (alternate) nucleotide
-     * @param aaref reference amino acid
-     * @param aaalt variant (alternate) amino acid
-     * @param aapos Position of the variant amino acid in the protein.
      * @param siftScore SIFT score for the variant
      * @param polyphen2HVAR Polyphen2 score for the variant
      * @param muttasterScore Mutation Taster score for the variant
@@ -56,17 +50,13 @@ public class VariantPathogenicity {
      * @param caddRawRankScore
      * @param caddRawScore
      */
-    public VariantPathogenicity(int chromosome, int position, char ref, char alt,
-            char aaref, char aaalt, int aapos,
+    public VariantPathogenicity(int chromosome, int position, String ref, String alt,
             float siftScore, float polyphen2HVAR, float muttasterScore,
             float phyloP, float caddRawRankScore, float caddRawScore) {
         this.chromosome = chromosome;
         this.position = position;
         this.ref = ref;
         this.alt = alt;
-        this.aaref = aaref;
-        this.aaalt = aaalt;
-        this.aapos = aapos;
         this.siftScore = siftScore;
         this.polyphenScore = polyphen2HVAR;
         this.muttasterScore = muttasterScore;
@@ -83,24 +73,12 @@ public class VariantPathogenicity {
         return position;
     }
 
-    public char getRef() {
+    public String getRef() {
         return ref;
     }
 
-    public char getAlt() {
+    public String getAlt() {
         return alt;
-    }
-
-    public char getAminoAcidRef() {
-        return aaref;
-    }
-
-    public char getAminoAcidAlt() {
-        return aaalt;
-    }
-
-    public int getAminoAcidPosition() {
-        return aapos;
     }
 
     public float getSiftScore() {
@@ -120,36 +98,14 @@ public class VariantPathogenicity {
     }
 
     /**
-     * @return a float between 0 (not pathogenic) and 1 (maximally pathogenic)
-     * that represents the most pathogenic prediction for siftScore, polyphen,
-     * and mutation taster.
-     */
-    public float maxPathogenicity() {
-        
-        //polyPhen and mutTaster scores range from 0-1 with 1 being the most pathogenic                                
-        float maxPath = Math.max(polyphenScore, muttasterScore);
-        //sift scores range from 0-1 with 0 being the most pathogenic                        
-        if ((1 - siftScore) != 6 ) {
-            maxPath = Math.max(maxPath, (1 - siftScore));
-        }
-//        System.out.printf("Scored mutTaster (%f) polyPhen (%f) sift (1 - %f) maxpath: %f%n", muttasterScore, polyphenScore, siftScore, maxPath);
-        
-        if (maxPath < 0) {
-            maxPath = 0; /* This can occur because the flags for no data are less than zero. */
-
-        }
-        return maxPath;
-    }
-
-    /**
      * This returns a line that will form part of the import file for
      * postgreSQL.
      *
      * @return
      */
     public String toDumpLine() {
-        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
-                chromosome, position, ref, alt, aaref, aaalt, aapos,
+        return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
+                chromosome, position, ref, alt, 
                 siftScore, polyphenScore, muttasterScore, phylopScore, caddRawRankScore, caddRawScore);
     }
 
@@ -157,7 +113,6 @@ public class VariantPathogenicity {
     public String toString() {
         return "VariantPathogenicity{" + "chromosome=" + chromosome + 
                 ", position=" + position + ", ref=" + ref + ", alt=" + alt + 
-                ", aaref=" + aaref + ", aaalt=" + aaalt + ", aapos=" + aapos + 
                 ", sift=" + siftScore + ", polyphen=" + polyphenScore + 
                 ", muttaster=" + muttasterScore + ", phyloP=" + phylopScore + 
                 ", caddRawRank=" + caddRawRankScore + ", caddRaw=" + caddRawScore + '}';

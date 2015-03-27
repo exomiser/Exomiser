@@ -100,25 +100,25 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         while (rs.next()) {
             float rowSift = rs.getFloat(1);
             //TODO - remove the Constants once the database build has been fixed
-            if (!rs.wasNull() && rowSift != Constants.UNINITIALIZED_FLOAT && rowSift != Constants.NOPARSE_FLOAT) {
+            if (!rs.wasNull() && rowSift != Constants.NOPARSE_FLOAT) {
                 if (Float.isNaN(sift) || rowSift < sift) {
                     sift = rowSift;
                 }
             }
             float rowPoly = rs.getFloat(2);
-            if (!rs.wasNull() && rowPoly != Constants.UNINITIALIZED_FLOAT && rowPoly != Constants.NOPARSE_FLOAT) {
+            if (!rs.wasNull()  && rowPoly != Constants.NOPARSE_FLOAT) {
                 if (Float.isNaN(polyphen) || rowPoly > polyphen) {
                     polyphen = rowPoly;
                 }
             }
             float rowMut = rs.getFloat(3);
-            if (!rs.wasNull() && rowMut != Constants.UNINITIALIZED_FLOAT && rowMut != Constants.NOPARSE_FLOAT) {
+            if (!rs.wasNull()  && rowMut != Constants.NOPARSE_FLOAT) {
                 if (Float.isNaN(mutationTaster) || rowMut > mutationTaster) {
                     mutationTaster = rowMut;
                 }
             }
             float rowCadd = rs.getFloat(4);
-            if (!rs.wasNull() && rowCadd != Constants.UNINITIALIZED_FLOAT && rowCadd != Constants.NOPARSE_FLOAT) {
+            if (!rs.wasNull() && rowCadd != Constants.NOPARSE_FLOAT) {
                 if (Float.isNaN(cadd) || rowCadd > cadd) {
                     cadd = rowCadd;
                 }

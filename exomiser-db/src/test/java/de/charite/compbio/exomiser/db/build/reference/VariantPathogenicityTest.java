@@ -6,59 +6,25 @@
 
 package de.charite.compbio.exomiser.db.build.reference;
 
-import de.charite.compbio.exomiser.db.build.reference.VariantPathogenicity;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class VariantPathogenicityTest {
+   
+    private VariantPathogenicity instance;
     
-    public VariantPathogenicityTest() {
-    }
-
-    /**
-     * Test of maxPathogenicity method, of class VariantPathogenicity.
-     */
-    @Test
-    public void testMaxPathogenicitySift() {
-        float siftScore = 0.1f;
-        float polyPhenScore = 0.2f;
-        float mutTasterScore = 0.3f;
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f,0.4f,0.4f);
-        float expResult = 1 - siftScore;
-        float result = instance.maxPathogenicity();
-        assertEquals(expResult, result, 0.01);
-    }
-    
-    /**
-     * Test of maxPathogenicity method, of class VariantPathogenicity.
-     */
-    @Test
-    public void testMaxPathogenicityMutTaster() {
-        float siftScore = 1.0f;
-        float polyPhenScore = 0.2f;
-        float mutTasterScore = 0.3f;
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f,0.4f,0.4f);
-        float expResult = mutTasterScore;
-        float result = instance.maxPathogenicity();
-        assertEquals(expResult, result, 0.01);
-    }
-    
-    /**
-     * Test of maxPathogenicity method, of class VariantPathogenicity.
-     */
-    @Test
-    public void testMaxPathogenicityPolyPhen() {
-        float siftScore = 1.0f;
-        float polyPhenScore = 0.4f;
-        float mutTasterScore = 0.3f;
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, siftScore, polyPhenScore, mutTasterScore, 0.4f,0.4f,0.4f);
-        float expResult = polyPhenScore;
-        float result = instance.maxPathogenicity();
-        assertEquals(expResult, result, 0.01);
+    private static final float SIFT = 0.1f;
+    private static final float POLYPHEN = 0.2f;
+    private static final float MUT_TASTER = 0.3f;
+            
+    @Before
+    public void setUp() {
+        instance = new VariantPathogenicity(1, 2, "A", "B", SIFT, POLYPHEN, MUT_TASTER, 0.4f, 0.4f, 0.4f);
     }
 
     /**
@@ -66,8 +32,7 @@ public class VariantPathogenicityTest {
      */
     @Test
     public void testGetDumpLine() {
-        VariantPathogenicity instance = new VariantPathogenicity(1, 2, 'A', 'B', 'C', 'D', 3, 0.1f, 0.2f, 0.3f, 0.4f,0.4f,0.4f);
-        String expResult = String.format("1|2|A|B|C|D|3|0.1|0.2|0.3|0.4|0.4|0.4%n");
+        String expResult = String.format("1|2|A|B|0.1|0.2|0.3|0.4|0.4|0.4%n");
         String result = instance.toDumpLine();
         assertEquals(expResult, result);
     }

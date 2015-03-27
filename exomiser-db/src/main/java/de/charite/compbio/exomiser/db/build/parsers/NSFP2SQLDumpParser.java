@@ -79,30 +79,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * alternative nucleotide allele (as on the + strand)
      */
     private static int ALT = 3;
-    /**
-     * reference amino acid or "." if the variant is a splicing site SNP (2bp on
-     * each end of an intron)
-     */
-    private static int AAREF = 4;
-    /**
-     * alternative amino acid, or "." if the variant is a splicing site SNP (2bp
-     * on each end of an intron)
-     */
-    private static int AAALT = 5;
-    /**
-     * physical position on the chromosome as to hg18 (1-based coordinate)
-     */
-//    public static final int HG18_POS = 6;
-    /**
-     * gene name (gene symbol)
-     */
-    private static int GENENAME = 7;
 
-    /**
-     * amino acid position as to the protein. "-1" if the variant is a splicing
-     * site SNP (2bp on each end of an intron)
-     */
-    private static int AAPOS = 20;
     /**
      * SIFT score, If a score is smaller than 0.05 the corresponding NS is
      * predicted as "D(amaging)"; otherwise it is predicted as "T(olerated)".
@@ -239,7 +216,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
                     
                     writer.flush();
                     
-                    String line = null;
+                    String line;
                     while ((line = reader.readLine()) != null) {
                         totalLinesCount++;
                         if (line.startsWith("#")) {
@@ -279,26 +256,21 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             logger.error("Malformed line '{}' - Only {} fields found (expecting {})", line, fields.length, N_NSFP_FIELDS);
             System.exit(1);
         }
-
-        String chr = fields[CHR];
-
-        int c = refDict.contigID.get(chr);
-
+        //variant position
+        int c = refDict.contigID.get(fields[CHR]);
         int pos = Integer.parseInt(fields[POS]);
-        char ref = fields[REF].charAt(0);
-        char alt = fields[ALT].charAt(0);
-        char aaref = fields[AAREF].charAt(0);
-        char aaalt = fields[AAALT].charAt(0);
-        int aapos = parseAaPos(fields[AAPOS]);
+        String ref = fields[REF];
+        String alt = fields[ALT];
+        //pathogenicity scores
         float sift = getMostPathogenicSIFTScore(fields[SIFT_SCORE]);
         float polyphen2HVAR = getMostPathogenicPolyphenScore(fields[POLYPHEN2_HVAR_SCORE]);
         float mutTaster = getMostPathogenicMutTasterScore(fields[MUTATION_TASTER_SCORE], fields[MUTATION_TASTER_PRED]);
-        float phyloP = parsePhyloP(fields[PHYLO_P]);
-        float caddRaw = parseCaddRaw(fields[CADD_raw]);
-        float caddRawRankscore = parseCaddRawRankScore(fields[CADD_raw_rankscore]);
+        float phyloP = parseDbNsfpFloat(fields[PHYLO_P]);
+        float caddRaw = parseDbNsfpFloat(fields[CADD_raw]);
+        float caddRawRankscore = parseDbNsfpFloat(fields[CADD_raw_rankscore]);
 //        float caddPhred = parseCaddPhred(fields[CADD_phred]);
 
-        return new VariantPathogenicity(c, pos, ref, alt, aaref, aaalt, aapos,
+        return new VariantPathogenicity(c, pos, ref, alt,
                 sift, polyphen2HVAR, mutTaster,
                 phyloP, caddRawRankscore, caddRaw);
     }
@@ -317,33 +289,12 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         return s;
     }
 
-    /**
-     * Some entries in dbNSFP are either nonnegative ints or "." . If the
-     * latter, then return -1 (NOPARSE; a flag)
-     */
-    private int parseAaPos(String s) {
-        if (s.equals(".")) {
-            return Constants.NOPARSE;
-        }
-        Integer value;
-        int i = s.indexOf(";");
-        if (i > 0) {
-            s = s.substring(0, i);
-        }
-        try {
-            value = Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            logger.error("Could not parse aapos value: '{}'", s);
-            return Constants.NOPARSE;
-        }
-        return value;
-    }
 
     /**
      * Some entries in dbNSFP are either nonnegative floats or "." . If the
      * latter, then return -1f (NOPARSE_FLOAT; a flag)
      */
-    private float parsePhyloP(String s) {
+    private float parseDbNsfpFloat(String s) {
         if (s.equals(".")) {
             return Constants.NOPARSE_FLOAT;
         }
@@ -355,56 +306,12 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         try {
             value = Float.parseFloat(s);
         } catch (NumberFormatException e) {
-            logger.error("Could not parse phyloP float value: '{}'", s);
+            logger.error("Could not parse float value: '{}'", s);
             return Constants.NOPARSE_FLOAT;
         }
         return value;
     }
-    
-       /**
-     * Some entries in dbNSFP are either nonnegative floats or "." . If the
-     * latter, then return -1f (NOPARSE_FLOAT; a flag)
-     */
-    private float parseCaddRawRankScore(String s) {
-        if (s.equals(".")) {
-            return Constants.NOPARSE_FLOAT;
-        }
-        int i = s.indexOf(";");
-        if (i > 0) {
-            s = s.substring(0, i);
-        }
-        float value;
-        try {
-            value = Float.parseFloat(s);
-        } catch (NumberFormatException e) {
-            logger.error("Could not parse CaddRawRankScore float value: '{}'", s);
-            return Constants.NOPARSE_FLOAT;
-        }
-        return value;
-    }
-
-          /**
-     * Some entries in dbNSFP are either nonnegative floats or "." . If the
-     * latter, then return -1f (NOPARSE_FLOAT; a flag)
-     */
-    private float parseCaddRaw(String s) {
-        if (s.equals(".")) {
-            return Constants.NOPARSE_FLOAT;
-        }
-        int i = s.indexOf(";");
-        if (i > 0) {
-            s = s.substring(0, i);
-        }
-        float value;
-        try {
-            value = Float.parseFloat(s);
-        } catch (NumberFormatException e) {
-            logger.error("Could not parse CaddRaw float value: '{}'", s);
-            return Constants.NOPARSE_FLOAT;
-        }
-        return value;
-    }
-    
+        
     /**
      * If there are SIFT scores for two different transcripts that correspond to
      * a given chromosomal variant, they are entered e.g. as 0.527;0.223. In
@@ -587,27 +494,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
                     logger.info("Setting ALT field '{}' from position {} to {}", field, prev, i);
                     ALT = i;
                     break;
-                case "aaref":
-                    prev = AAREF;
-                    logger.info("Setting AAREF field '{}' from position {} to {}", field, prev, i);
-                    AAREF = i;
-                    break;
-                case "aaalt":
-                    prev = AAALT;
-                    logger.info("Setting AAALT field '{}' from position {} to {}", field, prev, i);
-                    AAALT = i;
-                    break;
-                case "genename":
-                    prev = GENENAME;
-                    logger.info("Setting GENENAME field '{}' from position {} to {}", field, prev, i);
-                    GENENAME = i;
-                    break;
-                case "aapos":
-                    prev = AAPOS;
-                    logger.info("Setting AAPOS field field '{}' from position {} to {}", field, prev, i);
-                    AAPOS = i;
-                    break;
-                case "SIFT_score":
+               case "SIFT_score":
                     prev = SIFT_SCORE;
                     logger.info("Setting SIFT_SCORE field '{}' from position {} to {}", field, prev, i);
                     SIFT_SCORE = i;
