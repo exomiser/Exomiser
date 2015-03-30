@@ -43,7 +43,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(SampleData sampleData, ExomiserSettings settings) {
-        String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {

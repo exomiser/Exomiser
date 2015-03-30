@@ -65,7 +65,7 @@ public class VcfResultsWriter implements ResultsWriter {
     @Override
     public void writeFile(SampleData sampleData, ExomiserSettings settings) {
         // create a VariantContextWriter writing to the output file path
-        String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader,
                 outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines());

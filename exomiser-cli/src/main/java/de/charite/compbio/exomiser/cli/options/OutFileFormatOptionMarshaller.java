@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.OUT_FORMAT_OPTION;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.OUT_FILE_FORMAT_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import java.util.ArrayList;
@@ -20,18 +20,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OutFormatOptionMarshaller extends AbstractOptionMarshaller {
+public class OutFileFormatOptionMarshaller extends AbstractOptionMarshaller {
     
-    private static final Logger logger = LoggerFactory.getLogger(OutFormatOptionMarshaller.class);
+    private static final Logger logger = LoggerFactory.getLogger(OutFileFormatOptionMarshaller.class);
 
-    public OutFormatOptionMarshaller() {
+    public OutFileFormatOptionMarshaller() {
         option = OptionBuilder
                 .hasArgs()
                 .withArgName("type")
                 .withType(OutputFormat.class)
                 .withValueSeparator(',')
                 .withDescription("Comma separated list of format options: HTML, VCF, TAB-GENE or TAB-VARIANT,. Defaults to HTML if not specified. e.g. --out-format=TAB-VARIANT or --out-format=TAB-GENE,TAB-VARIANT,HTML,VCF")
-                .withLongOpt(OUT_FORMAT_OPTION)
+                .withLongOpt(OUT_FILE_FORMAT_OPTION)
                 .create("f");
     }
 
@@ -49,15 +49,13 @@ public class OutFormatOptionMarshaller extends AbstractOptionMarshaller {
                 case "HTML":
                     outputFormats.add(OutputFormat.HTML);
                     break;
+                case "TSV_GENE":
                 case "TAB-GENE":
-                    outputFormats.add(OutputFormat.TSV_GENE);
-                    break;
                 case "TSV-GENE":
                     outputFormats.add(OutputFormat.TSV_GENE);
                     break;
+                case "TSV_VARIANT":
                 case "TAB-VARIANT":
-                    outputFormats.add(OutputFormat.TSV_VARIANT);
-                    break;
                 case "TSV-VARIANT":
                     outputFormats.add(OutputFormat.TSV_VARIANT);
                     break;

@@ -71,7 +71,7 @@ public class TsvVariantResultsWriterTest {
 
     @Test
     public void testWrite() {
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT)).build();
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputPrefix("testWrite").outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT)).build();
         instance.writeFile(sampleData, settings);
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().delete());

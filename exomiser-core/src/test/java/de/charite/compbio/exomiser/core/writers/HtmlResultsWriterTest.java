@@ -31,6 +31,7 @@ import de.charite.compbio.jannovar.pedigree.Genotype;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.junit.After;
@@ -63,7 +64,7 @@ public class HtmlResultsWriterTest {
 
     private static TemplateEngine templateEngine;
 
-    private String testOutFileName;
+    private String testOutFilePrefix;
 
     private VariantEvaluation missenseVariantEvaluation;
     private VariantEvaluation indelVariantEvaluation;
@@ -123,7 +124,13 @@ public class HtmlResultsWriterTest {
 
     @After
     public void tearDown() {
-        Paths.get(testOutFileName).toFile().delete();
+        Paths.get(testOutFilePrefix).toFile().delete();
+    }
+
+    private static ExomiserSettings.SettingsBuilder getSettingsBuilder() {
+        return new ExomiserSettings.SettingsBuilder()
+                .vcfFilePath(Paths.get(System.getProperty("java.io.tmpdir"), "temp.vcf"))
+                .usePrioritiser(PriorityType.NONE);
     }
 
     private SampleData makeSampleData(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
@@ -139,36 +146,35 @@ public class HtmlResultsWriterTest {
 
     @Test
     public void testWriteTemplateWithEmptyData() throws Exception{
-        testOutFileName = "testWrite.html";
+        testOutFilePrefix = tmpFolder.newFile("testWrite.html").toString();
         
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
-        ExomiserSettings settings = getSettingsBuilder()
-                .outFileName(testOutFileName).build();
+        ExomiserSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
         instance.writeFile(sampleData, settings);
-        Path testOutFile = Paths.get(testOutFileName);
+        Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
 
     }
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
-        testOutFileName = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData.html").toString();
+        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData.html").toString();
         List<VariantEvaluation> variantData = new ArrayList<>();
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
-        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFileName).build();
+        ExomiserSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
         instance.writeFile(sampleData, settings);
 
-        Path testOutFile = Paths.get(testOutFileName);
+        Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
     }
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
-        testOutFileName = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html").toString();
+        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html").toString();
         List<VariantEvaluation> variantData = new ArrayList<>();
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
@@ -178,17 +184,11 @@ public class HtmlResultsWriterTest {
         genes.add(gene2);
 
         SampleData sampleData = makeSampleData(genes, variantData);
-        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFileName).build();
+        ExomiserSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
         instance.writeFile(sampleData, settings);
-        Path testOutFile = Paths.get(testOutFileName);
+        Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
-    }
-
-    private static ExomiserSettings.SettingsBuilder getSettingsBuilder() {
-        return new ExomiserSettings.SettingsBuilder()
-                .vcfFilePath(Paths.get(System.getProperty("java.io.tmpdir"), "temp.vcf"))
-                .usePrioritiser(PriorityType.NONE);
     }
 
 }

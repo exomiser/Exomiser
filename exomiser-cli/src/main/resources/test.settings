@@ -37,6 +37,6 @@ num-genes=0
 # according to the out-format option. If unspecified this will default to the following: 
 # {exomiserDir}/results/input-vcf-name-exomiser-results.html
 # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
-out-file=
+out-prefix=
 #out-format options: HTML, VCF, TSV-VARIANT, TSV-GENE (default: HTML)
 out-format=HTML, VCF, TSV-VARIANT, TSV-GENE

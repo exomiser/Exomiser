@@ -74,8 +74,8 @@ public class CommandLineOptionsConfig {
 
         //output options
         desiredOptionMarshallers.add(new NumGenesOptionMarshaller());
-        desiredOptionMarshallers.add(new OutFileOptionMarshaller());
-        desiredOptionMarshallers.add(new OutFormatOptionMarshaller());
+        desiredOptionMarshallers.add(new OutFilePrefixOptionMarshaller());
+        desiredOptionMarshallers.add(new OutFileFormatOptionMarshaller());
 
         return desiredOptionMarshallers;
     }

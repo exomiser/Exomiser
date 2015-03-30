@@ -109,7 +109,7 @@ public class VcfResultsWriterTest {
         outPath = tmpFolder.newFile().toPath();
         settings = new ExomiserSettings.SettingsBuilder().vcfFilePath(outPath)
                 .usePrioritiser(PriorityType.OMIM_PRIORITY).outputFormats(EnumSet.of(OutputFormat.VCF))
-                .outFileName("testWrite").build();
+                .outputPrefix("testWrite").build();
 
         instance = new VcfResultsWriter(reader.getFileHeader());
 

@@ -83,10 +83,10 @@ public class ExomiserSettingsTest {
     //output settings
     private static final int NUMBER_OF_GENES_TO_SHOW_DEFAULT = 0;
     private static final int NUMBER_OF_GENES_TO_SHOW = 12438803;    
-    private static final String OUT_FILE_NAME_DEFAULT = "";
-    private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET = "results/test-exomiser-results";
-    private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET = "results/test-exomiser-" + BUILD_VERSION + "-results";
-    private static final String OUT_FILE_NAME = "wibbler";
+    private static final String OUTPUT_PREFIX_DEFAULT = "";
+    private static final String OUTPUT_PREFIX_DEFAULT_WHEN_VCF_SET = "results/test.vcf-exomiser-results";
+    private static final String OUTPUT_PREFIX_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET = "results/test.vcf-exomiser-" + BUILD_VERSION + "-results";
+    private static final String OUTPUT_PREFIX_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV_GENE);
     
@@ -120,7 +120,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST_DEFAULT));
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST_DEFAULT));
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT_DEFAULT));
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
 
@@ -423,19 +423,19 @@ public class ExomiserSettingsTest {
     }
 
     /**
-     * Test of getOutFileName method, of class ExomiserSettings.
+     * Test of getOutputPrefix method, of class ExomiserSettings.
      */
     @Test
     public void testThatBuilderProducesDefaultOutFileName() {
         ExomiserSettings settings = new SettingsBuilder().build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileName() {
         vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT_WHEN_VCF_SET));
     }
     
     @Test
@@ -443,14 +443,14 @@ public class ExomiserSettingsTest {
         vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
         vcfPathAndPrioritiserSetBuilder.buildVersion(BUILD_VERSION);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET));
     }
 
     @Test
     public void testThatBuilderProducesSetOutFileName() {
-        vcfPathAndPrioritiserSetBuilder.outFileName(OUT_FILE_NAME);
+        vcfPathAndPrioritiserSetBuilder.outputPrefix(OUTPUT_PREFIX_NAME);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_NAME));
     }
 
     /**
@@ -500,7 +500,7 @@ public class ExomiserSettingsTest {
                 .hpoIdList(HPO_LIST)
                 .seedGeneList(SEED_GENE_LIST)
                 .numberOfGenesToShow(NUMBER_OF_GENES_TO_SHOW)
-                .outFileName(OUT_FILE_NAME)
+                .outputPrefix(OUTPUT_PREFIX_NAME)
                 .outputFormats(OUTPUT_FORMAT)
                 .runFullAnalysis(RUN_FULL_ANALYSIS);
 
@@ -521,7 +521,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST));
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST));
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW));
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
         assertThat(settings.isValid(), is(true));
@@ -536,7 +536,7 @@ public class ExomiserSettingsTest {
                 .maximumFrequency(MAXIMUM_FREQUENCY)
                 .hpoIdList(HPO_LIST)
                 .seedGeneList(SEED_GENE_LIST)
-                .outFileName(OUT_FILE_NAME)
+                .outputPrefix(OUTPUT_PREFIX_NAME)
                 .outputFormats(OUTPUT_FORMAT);
 
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
@@ -556,7 +556,7 @@ public class ExomiserSettingsTest {
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST));
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST));
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
         assertThat(settings.isValid(), is(true));

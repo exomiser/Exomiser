@@ -65,7 +65,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(SampleData sampleData, ExomiserSettings settings) {
-        String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         try {
             this.printer = new CSVPrinter(new BufferedWriter(new FileWriter(outFile.toFile())), format);

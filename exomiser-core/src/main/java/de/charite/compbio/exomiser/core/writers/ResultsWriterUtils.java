@@ -16,16 +16,12 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.EnumSet;
 import java.util.Map;
@@ -44,21 +40,12 @@ public class ResultsWriterUtils {
      * Determines the correct file extension for a file given what was specified
      * in the {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
      *
-     * @param outFileName
+     * @param outputPrefix
      * @param outputFormat
      * @return
      */
-    public static String determineFileExtension(String outFileName, OutputFormat outputFormat) {
-
-        String specifiedFileExtension = outputFormat.getFileExtension();
-        String outFileExtension = FilenameUtils.getExtension(outFileName);
-        if (outFileExtension.isEmpty() || outFileName.endsWith("-results")) {
-            //default filename will end in the build number and "-results"
-            outFileName = String.format("%s.%s", outFileName, specifiedFileExtension);
-        } else {
-            outFileName = outFileName.replace(outFileExtension, specifiedFileExtension);
-        }
-        return outFileName;
+    public static String makeOutputFilename(String outputPrefix, OutputFormat outputFormat) {
+        return String.format("%s.%s", outputPrefix, outputFormat.getFileExtension());
     }
 
     /**

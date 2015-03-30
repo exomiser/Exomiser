@@ -21,7 +21,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +54,9 @@ public class ExomiserSettings {
 
     //ANALYSIS OPTIONS
     public static final String RUN_FULL_ANALYSIS_OPTION = "full-analysis";
-    
+
     private final boolean runFullAnalysis;
-    
+
     //FILTER OPTIONS (these are used for JSON de/serealisation and the command-line)
     public static final String MAX_FREQ_OPTION = "max-freq";
     public static final String MIN_QUAL_OPTION = "min-qual";
@@ -66,7 +65,7 @@ public class ExomiserSettings {
     public static final String REMOVE_DBSNP_OPTION = "remove-dbsnp";
     public static final String KEEP_OFF_TARGET_OPTION = "keep-off-target";
     public static final String GENES_TO_KEEP_OPTION = "genes-to-keep";
-    
+
     //FILTER variables
     //max-freq (command-line was: freq_threshold, refered to variable: frequency_threshold)
     private final float maximumFrequency;
@@ -83,7 +82,7 @@ public class ExomiserSettings {
     private final boolean removeOffTargetVariants;
     //genes to keep in final results
     private final Set<Integer> genesToKeep;
-    
+
     //PRIORITISER OPTIONS
     public static final String PRIORITISER_OPTION = "prioritiser"; //values for this are handled by PriorityType
     public static final String CANDIDATE_GENE_OPTION = "candidate-gene";
@@ -109,15 +108,15 @@ public class ExomiserSettings {
 
     //OUTPUT OPTIONS (these are used for JSON de/serealisation and the command-line)
     public static final String NUM_GENES_OPTION = "num-genes";
-    public static final String OUT_FILE_OPTION = "out-file";
-    public static final String OUT_FORMAT_OPTION = "out-format";
+    public static final String OUT_FILE_PREFIX_OPTION = "out-prefix";
+    public static final String OUT_FILE_FORMAT_OPTION = "out-format";
 
     public static final String DEFAULT_OUTPUT_DIR = "results";
     //OUTPUT variables
     //num-genes (command-line was: ngenes, refered to variable: numberOfGenesToShow)
     private final int numberOfGenesToShow;
     //out-file (command-line was: outfile, refered to variable: outfile)
-    private final String outFileName;
+    private final String outputPrefix;
     //out-format 
     private final Set<OutputFormat> outputFormats;
 
@@ -141,10 +140,10 @@ public class ExomiserSettings {
 
         //ANALYSIS options
         private boolean runFullAnalysis = false;
-        
+
         //PRIORITISER
         private PriorityType prioritiserType = PriorityType.NONE;
-        
+
         //FILTER options
         private float maximumFrequency = 100.00f;
         private float minimumQuality = 0;
@@ -152,7 +151,7 @@ public class ExomiserSettings {
         private boolean removePathFilterCutOff = false;
         private boolean removeDbSnp = false;
         private boolean keepOffTargetVariants = false;
-        private Set<Integer> geneIdsToKeep = new LinkedHashSet();    
+        private Set<Integer> geneIdsToKeep = new LinkedHashSet();
 
         //PRIORITISER options
         private String candidateGene = "";
@@ -161,10 +160,10 @@ public class ExomiserSettings {
         private List<String> hpoIds = new ArrayList();
         private List<Integer> seedGeneList = new ArrayList();
         private String exomiser2Params = "";
-        
+
         //OUTPUT options
         private int numberOfGenesToShow = 0;
-        private String outFileName = "";
+        private String outputPrefix = "";
         private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML);
 
         private String diseaseGeneFamilyName = "";
@@ -192,14 +191,14 @@ public class ExomiserSettings {
             this.pedFilePath = pedFilePath;
             return this;
         }
-        
+
         @JsonSetter(RUN_FULL_ANALYSIS_OPTION)
         public SettingsBuilder runFullAnalysis(boolean runFullAnalysis) {
             this.runFullAnalysis = runFullAnalysis;
             return this;
         }
 
-       @JsonSetter(PRIORITISER_OPTION)
+        @JsonSetter(PRIORITISER_OPTION)
         public SettingsBuilder usePrioritiser(PriorityType prioritiserType) {
             this.prioritiserType = prioritiserType;
             return this;
@@ -258,7 +257,7 @@ public class ExomiserSettings {
             diseaseId = value;
             return this;
         }
-        
+
         @JsonSetter(EXOMISER2_PARAMS_OPTION)
         public SettingsBuilder exomiser2Params(String value) {
             exomiser2Params = value;
@@ -276,7 +275,7 @@ public class ExomiserSettings {
             seedGeneList = value;
             return this;
         }
-        
+
         @JsonSetter(GENES_TO_KEEP_OPTION)
         public SettingsBuilder genesToKeepList(Set<Integer> value) {
             geneIdsToKeep = value;
@@ -289,13 +288,13 @@ public class ExomiserSettings {
             return this;
         }
 
-        @JsonSetter(OUT_FILE_OPTION)
-        public SettingsBuilder outFileName(String value) {
-            outFileName = value;
+        @JsonSetter(OUT_FILE_PREFIX_OPTION)
+        public SettingsBuilder outputPrefix(String value) {
+            outputPrefix = value;
             return this;
         }
 
-        @JsonSetter(OUT_FORMAT_OPTION)
+        @JsonSetter(OUT_FILE_FORMAT_OPTION)
         public SettingsBuilder outputFormats(Set<OutputFormat> value) {
             outputFormats = value;
             return this;
@@ -306,12 +305,12 @@ public class ExomiserSettings {
             diseaseGeneFamilyName = value;
             return this;
         }
-        
+
         public ExomiserSettings build() {
             return new ExomiserSettings(this);
         }
     }
-    
+
     private ExomiserSettings(SettingsBuilder builder) {
 
         //build metadata
@@ -327,10 +326,10 @@ public class ExomiserSettings {
 
         //analysis
         runFullAnalysis = builder.runFullAnalysis;
-        
+
         //Priority
         prioritiserType = builder.prioritiserType;
-        
+
         //FILTER options
         maximumFrequency = builder.maximumFrequency;
         minimumQuality = builder.minimumQuality;
@@ -339,7 +338,7 @@ public class ExomiserSettings {
         removeDbSnp = builder.removeDbSnp;
         removeOffTargetVariants = builder.keepOffTargetVariants;
         genesToKeep = builder.geneIdsToKeep;
-        
+
         //PRIORITISER options
         candidateGene = builder.candidateGene;
         modeOfInheritance = builder.modeOfInheritance;
@@ -350,11 +349,11 @@ public class ExomiserSettings {
 
         //OUTPUT options
         numberOfGenesToShow = builder.numberOfGenesToShow;
-        if (builder.outFileName.isEmpty() && builder.vcfFilePath != null) {
-            outFileName = generateDefaultOutputFileName(builder.vcfFilePath, builder.buildVersion);
+        if (builder.outputPrefix.isEmpty() && builder.vcfFilePath != null) {
+            outputPrefix = generateDefaultOutputPrefix(builder.vcfFilePath, builder.buildVersion);
         } else {
             //here the user has explicitly set a path for where and what they want the output file to be called.
-            outFileName = builder.outFileName;
+            outputPrefix = builder.outputPrefix;
         }
         outputFormats = builder.outputFormats;
 
@@ -362,23 +361,22 @@ public class ExomiserSettings {
     }
 
     /**
-     * The default output name is set to the vcf file name (minus the full path
-     * and file extension), unless the filename is explicitly set by the user.
+     * The default output name is set to the vcf file name (minus the full
+     * path), unless the filename is explicitly set by the user.
      *
      * @param vcfFilePath
      */
-    private String generateDefaultOutputFileName(Path vcfFilePath, String buildVersion) {
-        String outputFileName;
-        String vcfFilenameWithoutExtension = FilenameUtils.removeExtension(vcfFilePath.toFile().getName());
+    private String generateDefaultOutputPrefix(Path vcfFilePath, String buildVersion) {
+        String outputPrefix;
+        Path vcfFilename = vcfFilePath.getFileName();
         if (buildVersion.isEmpty()) {
-            outputFileName = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension);
+            outputPrefix = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilename);
         } else {
-            outputFileName = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilenameWithoutExtension, buildVersion);   
+            outputPrefix = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilename, buildVersion);
         }
-        logger.debug("Output filename set to: {}", outputFileName);
-        return outputFileName;
+        logger.debug("Output prefix set to: {}", outputPrefix);
+        return outputPrefix;
     }
-
 
     @JsonIgnore
     public boolean isValid() {
@@ -394,22 +392,22 @@ public class ExomiserSettings {
     public Path vcfFileName() {
         return vcfFilePath.getFileName();
     }
-    
+
     @JsonIgnore
     public Path getPedPath() {
         return pedFilePath;
     }
-    
+
     @JsonProperty(PED_OPTION)
     public Path getPedFileName() {
-        return ((pedFilePath == null)? null : pedFilePath.getFileName());
+        return ((pedFilePath == null) ? null : pedFilePath.getFileName());
     }
-    
+
     @JsonProperty(RUN_FULL_ANALYSIS_OPTION)
     public boolean runFullAnalysis() {
         return runFullAnalysis;
-    } 
-    
+    }
+
     @JsonProperty(PRIORITISER_OPTION)
     public PriorityType getPrioritiserType() {
         return prioritiserType;
@@ -459,7 +457,7 @@ public class ExomiserSettings {
     public String getDiseaseId() {
         return diseaseId;
     }
-    
+
     @JsonProperty(EXOMISER2_PARAMS_OPTION)
     public String getExomiser2Params() {
         return exomiser2Params;
@@ -479,22 +477,22 @@ public class ExomiserSettings {
     public Set<Integer> getGenesToKeep() {
         return genesToKeep;
     }
-    
+
     @JsonProperty(NUM_GENES_OPTION)
     public int getNumberOfGenesToShow() {
         return numberOfGenesToShow;
     }
 
-    @JsonProperty(OUT_FORMAT_OPTION)
+    @JsonProperty(OUT_FILE_FORMAT_OPTION)
     public Set<OutputFormat> getOutputFormats() {
         return outputFormats;
     }
 
-    @JsonProperty(OUT_FILE_OPTION)
-    public String getOutFileName() {
-        return outFileName;
+    @JsonProperty(OUT_FILE_PREFIX_OPTION)
+    public String getOutputPrefix() {
+        return outputPrefix;
     }
-    
+
     @JsonProperty(BUILD_VERSION)
     public String getBuildVersion() {
         return buildVersion;
@@ -526,7 +524,7 @@ public class ExomiserSettings {
         hash = 13 * hash + Objects.hashCode(this.seedGeneList);
         hash = 13 * hash + Objects.hashCode(this.exomiser2Params);
         hash = 13 * hash + this.numberOfGenesToShow;
-        hash = 13 * hash + Objects.hashCode(this.outFileName);
+        hash = 13 * hash + Objects.hashCode(this.outputPrefix);
         hash = 13 * hash + Objects.hashCode(this.outputFormats);
         hash = 13 * hash + Objects.hashCode(this.diseaseGeneFamilyName);
         hash = 13 * hash + (this.isValid ? 1 : 0);
@@ -596,7 +594,7 @@ public class ExomiserSettings {
         if (this.numberOfGenesToShow != other.numberOfGenesToShow) {
             return false;
         }
-        if (!Objects.equals(this.outFileName, other.outFileName)) {
+        if (!Objects.equals(this.outputPrefix, other.outputPrefix)) {
             return false;
         }
         if (!Objects.equals(this.outputFormats, other.outputFormats)) {
@@ -611,10 +609,9 @@ public class ExomiserSettings {
         return true;
     }
 
-    
     @Override
     public String toString() {
-        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", removePathFilterCutOff=" + removePathFilterCutOff + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outFileName + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
+        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", removePathFilterCutOff=" + removePathFilterCutOff + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outputPrefix + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
     }
 
 }

@@ -62,9 +62,7 @@ public class VariantAnnotator {
             AnnotationList annotationList = alleleAnnotationLists.get(alleleID);
             if (!annotationList.isEmpty()) {
                 GenomeChange change = annotationList.getChange();
-                //Currently a change can be null for variants with unknown reference. 
-                //This will cause BAD things like NPEs to happen, so filter these things out here before they get into the system.
-                //this should be fixed with issue #55
+                //this shouldn't happen, as it should have been dealt with by buildAlleleAnnotations(), but just in case...
                 if (change != null) {
                     variants.add(new Variant(variantContext, alleleID, change, annotationList));
                 }

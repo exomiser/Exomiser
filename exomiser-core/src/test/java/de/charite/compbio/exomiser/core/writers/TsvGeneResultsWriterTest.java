@@ -72,7 +72,7 @@ public class TsvGeneResultsWriterTest {
 
     @Test
     public void testWrite() {
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outFileName("testWrite")
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputPrefix("testWrite")
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
         instance.writeFile(sampleData, settings);
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());

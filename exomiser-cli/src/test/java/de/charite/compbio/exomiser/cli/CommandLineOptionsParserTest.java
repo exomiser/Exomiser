@@ -134,7 +134,7 @@ public class CommandLineOptionsParserTest {
         settingsBuilder.diseaseId("OMIM:101500");
         settingsBuilder.modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         settingsBuilder.numberOfGenesToShow(345);
-        settingsBuilder.outFileName("target/test-output/");
+        settingsBuilder.outputPrefix("/users/jules/exomes/vcf/analysis");
         settingsBuilder.outputFormats(EnumSet.of(OutputFormat.VCF));
         
         ExomiserSettings expectedSettings = settingsBuilder.build();
@@ -549,24 +549,24 @@ public class CommandLineOptionsParserTest {
 
     @Test
     public void should_produce_settings_out_file_value_when_specified() {
-        String option = "--out-file";
+        String option = "--out-prefix";
         String value = "wibble";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.getOutFileName(), equalTo(value));
+        assertThat(exomiserSettings.getOutputPrefix(), equalTo(value));
     }
 
     @Test
     public void should_produce_settings_out_file_with_specified_suffix() {
-        String option = "--out-file";
-        String value = "wibble.pflurb";
+        String option = "--out-prefix";
+        String value = "/users/jules/vcf/analysis/wibble_20150328.pflurb.vcf";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.getOutFileName(), equalTo(value));
+        assertThat(exomiserSettings.getOutputPrefix(), equalTo(value));
     }
 
     @Test
