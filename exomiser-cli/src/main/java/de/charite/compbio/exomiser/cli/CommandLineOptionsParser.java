@@ -9,7 +9,6 @@ import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;

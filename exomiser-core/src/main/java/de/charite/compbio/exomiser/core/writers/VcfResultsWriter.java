@@ -69,8 +69,7 @@ public class VcfResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
         VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader,
                 outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines());
-        // actually write the data and close writer again
-        writeSampleData(sampleData, writer);
+        writeData(settings, sampleData, writer);
         writer.close();
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
     }
@@ -81,11 +80,31 @@ public class VcfResultsWriter implements ResultsWriter {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader, baos,
                 InfoFields.BOTH, getAdditionalHeaderLines());
-        // actually write the data and close writer again
-        writeSampleData(sampleData, writer);
+        writeData(settings, sampleData, writer);
         writer.close();
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
+    }
+
+    private void writeData(ExomiserSettings settings, SampleData sampleData, VariantContextWriter writer) {
+        // actually write the data and close writer again
+        if (settings.outputPassVariantsOnly()) {
+            logger.info("Writing out only PASS variants");
+            writeOnlyPassSampleData(sampleData, writer);
+        } else {
+            writeAllSampleData(sampleData, writer);
+        }
+    }
+
+    private void writeOnlyPassSampleData(SampleData sampleData, VariantContextWriter writer) {
+        writeUnannotatedVariants(sampleData, writer);
+        for (Gene gene : sampleData.getGenes()) {
+            for (VariantEvaluation variant : gene.getVariantEvaluations()) {
+                if (variant.passedFilters()) {
+                    writeRecord(variant, writer, gene);
+                }
+            }
+        }
     }
 
     /**
@@ -98,15 +117,19 @@ public class VcfResultsWriter implements ResultsWriter {
      * @param sampleData data set to write out
      * @param writer writer to write to
      */
-    private void writeSampleData(SampleData sampleData, VariantContextWriter writer) {
+    private void writeAllSampleData(SampleData sampleData, VariantContextWriter writer) {
+        writeUnannotatedVariants(sampleData, writer);
+        for (Gene gene : sampleData.getGenes()) {
+            for (VariantEvaluation variant : gene.getVariantEvaluations()) {
+                writeRecord(variant, writer, gene);
+            }
+        }
+    }
+
+    private void writeUnannotatedVariants(SampleData sampleData, VariantContextWriter writer) {
         // first, write out unannotated records, then the annotated ones gene-wise
         for (VariantEvaluation ve : sampleData.getUnAnnotatedVariantEvaluations()) {
             writeRecord(ve, writer, null);
-        }
-        for (Gene gene : sampleData.getGenes()) {
-            for (VariantEvaluation variantEval : gene.getVariantEvaluations()) {
-                writeRecord(variantEval, writer, gene);
-            }
         }
     }
 

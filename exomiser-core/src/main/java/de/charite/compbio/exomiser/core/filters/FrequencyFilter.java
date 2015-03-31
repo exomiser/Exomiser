@@ -194,6 +194,6 @@ public class FrequencyFilter implements VariantFilter {
 
     @Override
     public String toString() {
-        return String.format("%s filter: Maximum frequency threshold=%s filter out dbSNP and ESP=%s", filterType, maxFreq, strictFiltering);
+        return String.format("%s filter: Maximum frequency threshold=%s, Remove known variants=%s", filterType, maxFreq, strictFiltering);
     }
 }

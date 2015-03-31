@@ -56,7 +56,7 @@ public class CommandLineOptionsConfig {
 
         //filter options
         desiredOptionMarshallers.add(new FrequencyThresholdOptionMarshaller());
-        desiredOptionMarshallers.add(new FrequencyDbSnpOptionMarshaller());
+        desiredOptionMarshallers.add(new FrequencyKnownVariantOptionMarshaller());
         desiredOptionMarshallers.add(new GeneticIntervalOptionMarshaller());
         desiredOptionMarshallers.add(new QualityThresholdOptionMarshaller());
         desiredOptionMarshallers.add(new PathogenicityFilterCutOffOptionMarshaller());
@@ -73,6 +73,7 @@ public class CommandLineOptionsConfig {
         desiredOptionMarshallers.add(new HiPhiveOptionMarshaller());
 
         //output options
+        desiredOptionMarshallers.add(new OutputPassOnlyVariantsOptionMarshaller());
         desiredOptionMarshallers.add(new NumGenesOptionMarshaller());
         desiredOptionMarshallers.add(new OutFilePrefixOptionMarshaller());
         desiredOptionMarshallers.add(new OutFileFormatOptionMarshaller());

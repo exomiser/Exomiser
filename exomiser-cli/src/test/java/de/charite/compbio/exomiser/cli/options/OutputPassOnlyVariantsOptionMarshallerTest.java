@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -19,24 +18,23 @@ import static org.junit.Assert.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FrequencyDbSnpOptionMarshallerTest {
+public class OutputPassOnlyVariantsOptionMarshallerTest {
     
-    private FrequencyDbSnpOptionMarshaller instance;
+    private OutputPassOnlyVariantsOptionMarshaller instance;
     private Option option;
     private ExomiserSettings.SettingsBuilder settingsBuilder;
     
     @Before
     public void setUp() {
-        instance = new FrequencyDbSnpOptionMarshaller();
+        instance = new OutputPassOnlyVariantsOptionMarshaller();
         option = instance.getOption();
         settingsBuilder = new ExomiserSettings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
-        settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
     }
 
     @Test
     public void testOptionCommandLineParameter() {
-        assertThat(instance.getCommandLineParameter(), equalTo("remove-dbsnp"));
+        assertThat(instance.getCommandLineParameter(), equalTo("output-pass-variants-only"));
     }
     
     @Test
@@ -45,9 +43,9 @@ public class FrequencyDbSnpOptionMarshallerTest {
     }
     
     @Test
-    public void testSettingsRemoveDbSnpIsFalseByDefault() {
+    public void testSettingsOutputPassVariantsOnlyIsFalseByDefault() {
         ExomiserSettings settings = settingsBuilder.build();        
-        assertThat(settings.removeDbSnp(), is(false));
+        assertThat(settings.outputPassVariantsOnly(), is(false));
     }
 
     @Test
@@ -55,7 +53,7 @@ public class FrequencyDbSnpOptionMarshallerTest {
         instance.applyValuesToSettingsBuilder(null, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
         
-        assertThat(settings.removeDbSnp(), is(true));
+        assertThat(settings.outputPassVariantsOnly(), is(true));
     }
     
     @Test
@@ -64,7 +62,7 @@ public class FrequencyDbSnpOptionMarshallerTest {
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
         
-        assertThat(settings.removeDbSnp(), is(false));
+        assertThat(settings.outputPassVariantsOnly(), is(false));
     }
     
     @Test
@@ -73,7 +71,7 @@ public class FrequencyDbSnpOptionMarshallerTest {
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
         ExomiserSettings settings = settingsBuilder.build();
         
-        assertThat(settings.removeDbSnp(), is(true));
+        assertThat(settings.outputPassVariantsOnly(), is(true));
     }
-
+    
 }

@@ -46,7 +46,7 @@ public class FilterFactory {
                     variantFilters.add(getTargetFilter());
                     break;
                 case FREQUENCY_FILTER:
-                    variantFilters.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeDbSnp()));
+                    variantFilters.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeKnownVariants()));
                     break;
                 case QUALITY_FILTER:
                     variantFilters.add(getQualityFilter(settings.getMinimumQuality()));

@@ -209,7 +209,7 @@ public class SubmitJobController {
                 .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
                 //Set Filtering Parameters
                 .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
-                .removeDbSnp(removeDbSnp)
+                .removeKnownVariants(removeDbSnp)
                 .keepOffTargetVariants(keepOffTarget)
                 //make this work for nulls....
                 //                .geneticInterval(GeneticInterval.parseString(geneticInterval))

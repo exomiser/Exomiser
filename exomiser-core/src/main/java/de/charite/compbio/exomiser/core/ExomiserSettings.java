@@ -62,7 +62,7 @@ public class ExomiserSettings {
     public static final String MIN_QUAL_OPTION = "min-qual";
     public static final String GENETIC_INTERVAL_OPTION = "restrict-interval";
     public static final String REMOVE_PATHOGENICITY_FILTER_CUTOFF = "keep-non-pathogenic";
-    public static final String REMOVE_DBSNP_OPTION = "remove-dbsnp";
+    public static final String REMOVE_KNOWN_VARIANTS_OPTION = "remove-known-variants";
     public static final String KEEP_OFF_TARGET_OPTION = "keep-off-target";
     public static final String GENES_TO_KEEP_OPTION = "genes-to-keep";
 
@@ -77,7 +77,7 @@ public class ExomiserSettings {
     //remove-path-filter-cutoff
     private final boolean removePathFilterCutOff;
     //remove-dbsnp (command-line was: dbsnp, refered to variable:  filterOutAlldbSNP)
-    private final boolean removeDbSnp;
+    private final boolean removeKnownVariants;
     //remove-off-target-syn the target filter switch - not specified in the original exomiser as this was a default. 
     private final boolean removeOffTargetVariants;
     //genes to keep in final results
@@ -107,12 +107,14 @@ public class ExomiserSettings {
     private final String exomiser2Params;
 
     //OUTPUT OPTIONS (these are used for JSON de/serealisation and the command-line)
+    public static final String OUTPUT_PASS_VARIANTS_ONLY_OPTION = "output-pass-variants-only";
     public static final String NUM_GENES_OPTION = "num-genes";
     public static final String OUT_FILE_PREFIX_OPTION = "out-prefix";
     public static final String OUT_FILE_FORMAT_OPTION = "out-format";
 
     public static final String DEFAULT_OUTPUT_DIR = "results";
     //OUTPUT variables
+    private final boolean outputPassVariantsOnly;
     //num-genes (command-line was: ngenes, refered to variable: numberOfGenesToShow)
     private final int numberOfGenesToShow;
     //out-file (command-line was: outfile, refered to variable: outfile)
@@ -149,7 +151,7 @@ public class ExomiserSettings {
         private float minimumQuality = 0;
         private GeneticInterval geneticInterval = null;
         private boolean removePathFilterCutOff = false;
-        private boolean removeDbSnp = false;
+        private boolean removeKnownVariants = false;
         private boolean keepOffTargetVariants = false;
         private Set<Integer> geneIdsToKeep = new LinkedHashSet();
 
@@ -162,6 +164,7 @@ public class ExomiserSettings {
         private String exomiser2Params = "";
 
         //OUTPUT options
+        private boolean outputPassVariantsOnly = false;
         private int numberOfGenesToShow = 0;
         private String outputPrefix = "";
         private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML);
@@ -228,9 +231,9 @@ public class ExomiserSettings {
             return this;
         }
 
-        @JsonSetter(REMOVE_DBSNP_OPTION)
-        public SettingsBuilder removeDbSnp(boolean value) {
-            removeDbSnp = value;
+        @JsonSetter(REMOVE_KNOWN_VARIANTS_OPTION)
+        public SettingsBuilder removeKnownVariants(boolean value) {
+            removeKnownVariants = value;
             return this;
         }
 
@@ -282,6 +285,12 @@ public class ExomiserSettings {
             return this;
         }
 
+        @JsonSetter(OUTPUT_PASS_VARIANTS_ONLY_OPTION)
+        public SettingsBuilder outputPassVariantsOnly(boolean value) {
+            outputPassVariantsOnly = value;
+            return this;
+        }
+        
         @JsonSetter(NUM_GENES_OPTION)
         public SettingsBuilder numberOfGenesToShow(int value) {
             numberOfGenesToShow = value;
@@ -335,7 +344,7 @@ public class ExomiserSettings {
         minimumQuality = builder.minimumQuality;
         geneticInterval = builder.geneticInterval;
         removePathFilterCutOff = builder.removePathFilterCutOff;
-        removeDbSnp = builder.removeDbSnp;
+        removeKnownVariants = builder.removeKnownVariants;
         removeOffTargetVariants = builder.keepOffTargetVariants;
         genesToKeep = builder.geneIdsToKeep;
 
@@ -348,6 +357,7 @@ public class ExomiserSettings {
         exomiser2Params = builder.exomiser2Params;
 
         //OUTPUT options
+        outputPassVariantsOnly = builder.outputPassVariantsOnly;
         numberOfGenesToShow = builder.numberOfGenesToShow;
         if (builder.outputPrefix.isEmpty() && builder.vcfFilePath != null) {
             outputPrefix = generateDefaultOutputPrefix(builder.vcfFilePath, builder.buildVersion);
@@ -367,15 +377,15 @@ public class ExomiserSettings {
      * @param vcfFilePath
      */
     private String generateDefaultOutputPrefix(Path vcfFilePath, String buildVersion) {
-        String outputPrefix;
+        String defaultOutputPrefix;
         Path vcfFilename = vcfFilePath.getFileName();
         if (buildVersion.isEmpty()) {
-            outputPrefix = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilename);
+            defaultOutputPrefix = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilename);
         } else {
-            outputPrefix = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilename, buildVersion);
+            defaultOutputPrefix = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilename, buildVersion);
         }
-        logger.debug("Output prefix set to: {}", outputPrefix);
-        return outputPrefix;
+        logger.debug("Output prefix was unspecified. Now set to: {}", defaultOutputPrefix);
+        return defaultOutputPrefix;
     }
 
     @JsonIgnore
@@ -433,9 +443,9 @@ public class ExomiserSettings {
         return removePathFilterCutOff;
     }
 
-    @JsonProperty(REMOVE_DBSNP_OPTION)
-    public boolean removeDbSnp() {
-        return removeDbSnp;
+    @JsonProperty(REMOVE_KNOWN_VARIANTS_OPTION)
+    public boolean removeKnownVariants() {
+        return removeKnownVariants;
     }
 
     @JsonProperty(KEEP_OFF_TARGET_OPTION)
@@ -478,6 +488,11 @@ public class ExomiserSettings {
         return genesToKeep;
     }
 
+    @JsonSetter(OUTPUT_PASS_VARIANTS_ONLY_OPTION)
+    public boolean outputPassVariantsOnly() {
+        return outputPassVariantsOnly;
+    }
+    
     @JsonProperty(NUM_GENES_OPTION)
     public int getNumberOfGenesToShow() {
         return numberOfGenesToShow;
@@ -505,29 +520,32 @@ public class ExomiserSettings {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 13 * hash + Objects.hashCode(this.vcfFilePath);
-        hash = 13 * hash + Objects.hashCode(this.pedFilePath);
-        hash = 13 * hash + Objects.hashCode(this.prioritiserType);
-        hash = 13 * hash + (this.runFullAnalysis ? 1 : 0);
-        hash = 13 * hash + Float.floatToIntBits(this.maximumFrequency);
-        hash = 13 * hash + Float.floatToIntBits(this.minimumQuality);
-        hash = 13 * hash + Objects.hashCode(this.geneticInterval);
-        hash = 13 * hash + (this.removePathFilterCutOff ? 1 : 0);
-        hash = 13 * hash + (this.removeDbSnp ? 1 : 0);
-        hash = 13 * hash + (this.removeOffTargetVariants ? 1 : 0);
-        hash = 13 * hash + Objects.hashCode(this.genesToKeep);
-        hash = 13 * hash + Objects.hashCode(this.candidateGene);
-        hash = 13 * hash + Objects.hashCode(this.modeOfInheritance);
-        hash = 13 * hash + Objects.hashCode(this.diseaseId);
-        hash = 13 * hash + Objects.hashCode(this.hpoIds);
-        hash = 13 * hash + Objects.hashCode(this.seedGeneList);
-        hash = 13 * hash + Objects.hashCode(this.exomiser2Params);
-        hash = 13 * hash + this.numberOfGenesToShow;
-        hash = 13 * hash + Objects.hashCode(this.outputPrefix);
-        hash = 13 * hash + Objects.hashCode(this.outputFormats);
-        hash = 13 * hash + Objects.hashCode(this.diseaseGeneFamilyName);
-        hash = 13 * hash + (this.isValid ? 1 : 0);
+        int hash = 3;
+        hash = 11 * hash + Objects.hashCode(this.buildVersion);
+        hash = 11 * hash + Objects.hashCode(this.buildTimestamp);
+        hash = 11 * hash + Objects.hashCode(this.vcfFilePath);
+        hash = 11 * hash + Objects.hashCode(this.pedFilePath);
+        hash = 11 * hash + (this.runFullAnalysis ? 1 : 0);
+        hash = 11 * hash + Float.floatToIntBits(this.maximumFrequency);
+        hash = 11 * hash + Float.floatToIntBits(this.minimumQuality);
+        hash = 11 * hash + Objects.hashCode(this.geneticInterval);
+        hash = 11 * hash + (this.removePathFilterCutOff ? 1 : 0);
+        hash = 11 * hash + (this.removeKnownVariants ? 1 : 0);
+        hash = 11 * hash + (this.removeOffTargetVariants ? 1 : 0);
+        hash = 11 * hash + Objects.hashCode(this.genesToKeep);
+        hash = 11 * hash + Objects.hashCode(this.prioritiserType);
+        hash = 11 * hash + Objects.hashCode(this.candidateGene);
+        hash = 11 * hash + Objects.hashCode(this.modeOfInheritance);
+        hash = 11 * hash + Objects.hashCode(this.diseaseId);
+        hash = 11 * hash + Objects.hashCode(this.hpoIds);
+        hash = 11 * hash + Objects.hashCode(this.seedGeneList);
+        hash = 11 * hash + Objects.hashCode(this.exomiser2Params);
+        hash = 11 * hash + (this.outputPassVariantsOnly ? 1 : 0);
+        hash = 11 * hash + this.numberOfGenesToShow;
+        hash = 11 * hash + Objects.hashCode(this.outputPrefix);
+        hash = 11 * hash + Objects.hashCode(this.outputFormats);
+        hash = 11 * hash + Objects.hashCode(this.diseaseGeneFamilyName);
+        hash = 11 * hash + (this.isValid ? 1 : 0);
         return hash;
     }
 
@@ -540,13 +558,16 @@ public class ExomiserSettings {
             return false;
         }
         final ExomiserSettings other = (ExomiserSettings) obj;
+        if (!Objects.equals(this.buildVersion, other.buildVersion)) {
+            return false;
+        }
+        if (!Objects.equals(this.buildTimestamp, other.buildTimestamp)) {
+            return false;
+        }
         if (!Objects.equals(this.vcfFilePath, other.vcfFilePath)) {
             return false;
         }
         if (!Objects.equals(this.pedFilePath, other.pedFilePath)) {
-            return false;
-        }
-        if (this.prioritiserType != other.prioritiserType) {
             return false;
         }
         if (this.runFullAnalysis != other.runFullAnalysis) {
@@ -564,13 +585,16 @@ public class ExomiserSettings {
         if (this.removePathFilterCutOff != other.removePathFilterCutOff) {
             return false;
         }
-        if (this.removeDbSnp != other.removeDbSnp) {
+        if (this.removeKnownVariants != other.removeKnownVariants) {
             return false;
         }
         if (this.removeOffTargetVariants != other.removeOffTargetVariants) {
             return false;
         }
         if (!Objects.equals(this.genesToKeep, other.genesToKeep)) {
+            return false;
+        }
+        if (this.prioritiserType != other.prioritiserType) {
             return false;
         }
         if (!Objects.equals(this.candidateGene, other.candidateGene)) {
@@ -589,6 +613,9 @@ public class ExomiserSettings {
             return false;
         }
         if (!Objects.equals(this.exomiser2Params, other.exomiser2Params)) {
+            return false;
+        }
+        if (this.outputPassVariantsOnly != other.outputPassVariantsOnly) {
             return false;
         }
         if (this.numberOfGenesToShow != other.numberOfGenesToShow) {
@@ -611,7 +638,7 @@ public class ExomiserSettings {
 
     @Override
     public String toString() {
-        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", removePathFilterCutOff=" + removePathFilterCutOff + ", removeDbSnp=" + removeDbSnp + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outputPrefix + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
+        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", removePathFilterCutOff=" + removePathFilterCutOff + ", removeDbSnp=" + removeKnownVariants + ", removeOffTargetVariants=" + removeOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outputPrefix + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
     }
 
 }

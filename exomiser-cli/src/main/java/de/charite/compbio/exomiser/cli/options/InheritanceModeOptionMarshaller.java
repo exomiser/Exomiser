@@ -32,19 +32,16 @@ public class InheritanceModeOptionMarshaller extends AbstractOptionMarshaller {
     private ModeOfInheritance parseInheritanceMode(String value) {
         switch (value) {
             case "AR":
-                return ModeOfInheritance.AUTOSOMAL_RECESSIVE;
             case "AUTOSOMAL_RECESSIVE":
                 return ModeOfInheritance.AUTOSOMAL_RECESSIVE;
             case "AD":
-                return ModeOfInheritance.AUTOSOMAL_DOMINANT;
             case "AUTOSOMAL_DOMINANT":
                 return ModeOfInheritance.AUTOSOMAL_DOMINANT;
             case "X":
-                return ModeOfInheritance.X_RECESSIVE;
             case "X_RECESSIVE":
                 return ModeOfInheritance.X_RECESSIVE;
             default:
-                logger.error("value {} is not one of AR, AD or X - inheritance mode has not been set", value);
+                logger.info("value {} is not one of AR, AD or X - inheritance mode has not been set", value);
                 return ModeOfInheritance.UNINITIALIZED;
         }
     }

@@ -126,7 +126,7 @@ public class CommandLineOptionsParserTest {
         settingsBuilder.maximumFrequency(0.01f);
         settingsBuilder.minimumQuality(0f);
         settingsBuilder.removePathFilterCutOff(true);
-        settingsBuilder.removeDbSnp(true);
+        settingsBuilder.removeKnownVariants(true);
         settingsBuilder.keepOffTargetVariants(true);
         settingsBuilder.candidateGene("FGFR2");
         settingsBuilder.hpoIdList(Arrays.asList("HP:0000001","HP:0000002","HP:0000003"));
@@ -295,22 +295,22 @@ public class CommandLineOptionsParserTest {
 
     @Test
     public void should_produce_settings_with_remove_dbsnp_when_set() {
-        String option = "--remove-dbsnp";
+        String option = "--remove-known-variants";
         String input = String.format("-v 123.vcf %s --prioritiser=phive", option);
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removeDbSnp(), is(true));
+        assertThat(exomiserSettings.removeKnownVariants(), is(true));
     }
 
     @Test
     public void should_produce_settings_with_remove_dbsnp_default_when_not_set() {
-        String option = "--remove-dbsnp";
+        String option = "--remove-known-variants";
         String input = "-v 123.vcf --prioritiser=phive";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removeDbSnp(), is(false));
+        assertThat(exomiserSettings.removeKnownVariants(), is(false));
     }
 
     @Test

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -107,8 +106,10 @@ public class VcfResultsWriterTest {
     @Before
     public void setUp() throws IOException {
         outPath = tmpFolder.newFile().toPath();
-        settings = new ExomiserSettings.SettingsBuilder().vcfFilePath(outPath)
-                .usePrioritiser(PriorityType.OMIM_PRIORITY).outputFormats(EnumSet.of(OutputFormat.VCF))
+        settings = new ExomiserSettings.SettingsBuilder()
+                .vcfFilePath(outPath)
+                .usePrioritiser(PriorityType.OMIM_PRIORITY)
+                .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputPrefix("testWrite").build();
 
         instance = new VcfResultsWriter(reader.getFileHeader());
@@ -121,8 +122,7 @@ public class VcfResultsWriterTest {
         sampleData.setGenes(new ArrayList<Gene>());
 
         TestVariantFactory varFactory = new TestVariantFactory();
-        Variant missenseVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0,
-                2.2);
+        Variant missenseVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         Variant indelVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
         passTargetResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
@@ -218,4 +218,21 @@ public class VcfResultsWriterTest {
         Assert.assertEquals(EXPECTED, vcf);
     }
 
+    @Test
+    public void testWritePassVariantsOnlyContainsOnlyPassedVariantLine() {
+        missenseVariantEvaluation.addFilterResult(passTargetResult);
+        indelVariantEvaluation.addFilterResult(failTargetResult);
+        sampleData.setGenes(Arrays.asList(gene1, gene2));
+        
+        ExomiserSettings outputPassVariantsOnlySettings = new ExomiserSettings.SettingsBuilder()
+                .vcfFilePath(outPath)
+                .outputFormats(EnumSet.of(OutputFormat.VCF))
+                .outputPassVariantsOnly(true)
+                .outputPrefix("testWrite").build();
+        
+        String vcf = instance.writeString(sampleData, outputPassVariantsOnlySettings);
+        final String EXPECTED = EXPECTED_HEADER
+                + "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
+        Assert.assertEquals(EXPECTED, vcf);
+    }
 }
