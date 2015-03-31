@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -57,7 +56,8 @@ public class PriorityFactory {
 
         List<Prioritiser> genePriorityList = new ArrayList<>();
         //TODO: OmimPrioritizer is specified implicitly - perhaps they should be different types of ExomiserSettings?
-        //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. These might be badly named as the OMIM proritiser is currently the default.
+        //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. 
+        //These might be badly named as the OMIM proritiser is currently the default.
         //always run OMIM unless the user specified what they really don't want to run any prioritisers
         genePriorityList.add(getOmimPrioritizer());
 
