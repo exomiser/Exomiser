@@ -146,7 +146,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>de.charite.compbio.exomiser.db.build.App</mainClass>
+                    <mainClass>de.charite.compbio.exomiser.db.Main</mainClass>
                     <!--optional--> 
                     <workingDirectory>${project.build.dir}</workingDirectory>
                     <!--                    <arguments>
