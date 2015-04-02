@@ -26,7 +26,7 @@ release.properties
 
 #Gradle stuff
 .gradle
-#build/
+build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
