@@ -39,6 +39,8 @@ public class PathogenicityFilter implements VariantFilter {
     private static final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
     private static final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
+    public static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
+    
     private final boolean removePathFilterCutOff;
 
     /**
@@ -92,8 +94,8 @@ public class PathogenicityFilter implements VariantFilter {
      * @return
      */
     protected float calculateFilterScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            return returnMissenseScore(pathogenicityData);
+        if (pathogenicityData.getCaddScore() != null) {
+            return pathogenicityData.getCaddScore().getScore();
         } else {
             //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
             return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect));
@@ -129,6 +131,7 @@ public class PathogenicityFilter implements VariantFilter {
             return true;
         } else {
             return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect)) >= DEFAULT_PATHOGENICITY_THRESHOLD;
+            // need to change for Genomiser so intronic and intergenic variants get through as well
         }
     }
 

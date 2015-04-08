@@ -6,9 +6,16 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
+import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import htsjdk.tribble.readers.TabixReader;
-import jannovar.exome.Variant;
+
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,16 +36,16 @@ public class TabixPathogenicityDao implements PathogenicityDao {
 
     PathogenicityData processResults(Variant variant) {
         try {
-            String chromosome = Integer.toString(variant.get_chromosome());
+            String chromosome = Integer.toString(variant.getChromosome());
             if (chromosome.equals("23")) {
                 chromosome = "X";
             }
             if (chromosome.equals("24")) {
                 chromosome = "Y";
             }
-            String ref = variant.get_ref();
-            String alt = variant.get_alt();
-            int start = variant.get_position();
+            String ref = variant.getRef();
+            String alt = variant.getAlt();
+            int start = variant.getPosition();
             // deal with fact that deletion coordinates are handled differently by Jannovar
             // TODO ? if this is working
             if (alt.equals("-")) {
