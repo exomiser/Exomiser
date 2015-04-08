@@ -7,10 +7,12 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,7 @@ public class FilterFactory {
                     variantFilters.add(getTargetFilter());
                     break;
                 case FREQUENCY_FILTER:
-                    variantFilters.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeDbSnp()));
+                    variantFilters.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeKnownVariants()));
                     break;
                 case QUALITY_FILTER:
                     variantFilters.add(getQualityFilter(settings.getMinimumQuality()));
@@ -101,7 +103,7 @@ public class FilterFactory {
             filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
         }
 
-        if (settings.removeOffTargetVariants()) {
+        if (!settings.keepOffTargetVariants()) {
             filtersToRun.add(FilterType.TARGET_FILTER);
         }
         filtersToRun.add(FilterType.FREQUENCY_FILTER);
@@ -167,8 +169,8 @@ public class FilterFactory {
         return frequencyFilter;
     }
 
-    public VariantFilter getQualityFilter(float quality_threshold) {
-        VariantFilter filter = new QualityFilter(quality_threshold);
+    public VariantFilter getQualityFilter(float qualityThreshold) {
+        VariantFilter filter = new QualityFilter(qualityThreshold);
 
         logger.info("Made new Quality Filter: {}", filter);
         return filter;

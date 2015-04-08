@@ -14,8 +14,6 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
-import jannovar.exome.VariantTypeCounter;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -24,12 +22,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
  *
@@ -39,29 +36,24 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HtmlResultsWriter.class);
 
-    private static TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
     
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.HTML;
     
-    public HtmlResultsWriter() {
-        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setTemplateMode("HTML5");
-        templateResolver.setPrefix("html/templates/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setCacheable(false);
-        templateEngine = new TemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver);    
+    public HtmlResultsWriter(TemplateEngine templateEngine) {
+        Locale.setDefault(Locale.UK);
+        this.templateEngine = templateEngine;
     }
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
 
-        String outFileName = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
 
-            writer.write(writeString(sampleData, settings, priorityList));
+            writer.write(writeString(sampleData, settings));
 
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
@@ -71,7 +63,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList) {
+    public String writeString(SampleData sampleData, ExomiserSettings settings) {
         Context context = new Context();
         //write the settings
         ObjectMapper mapper = new ObjectMapper();
@@ -95,7 +87,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
         context.setVariable("filterReports", filterReports);
         //write out the variant type counters
-        List<VariantTypeCount> variantTypeCounters = makeVariantTypeCounters(sampleData.getVariantEvaluations());
+        List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(sampleData.getVariantEvaluations());
         List<String> sampleNames= sampleData.getSampleNames();
         String sampleName = "Anonymous";
         if(!sampleNames.isEmpty()) {
@@ -104,27 +96,15 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("sampleName", sampleName);
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
-        
-        List<Gene> passedGenes = new ArrayList<>();
-        int numGenesToShow = settings.getNumberOfGenesToShow();
-        if (numGenesToShow == 0) {
-            numGenesToShow = sampleData.getGenes().size();
-        } 
-        int genesShown = 0;
-        for (Gene gene : sampleData.getGenes()) {
-            if(genesShown <= numGenesToShow) {
-                if (gene.passedFilters()) {
-                    passedGenes.add(gene);
-                    genesShown++;
-                }
-            }
-        }
+                 
+        List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleData.getGenes(), settings.getNumberOfGenesToShow());       
         context.setVariable("genes", passedGenes);
+        
         return templateEngine.process("results", context);
     }
 
-    protected List<VariantTypeCount> makeVariantTypeCounters(List<VariantEvaluation> variantEvaluations) {
-        return ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
+    protected List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
+        return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
     }
     
     protected List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {  

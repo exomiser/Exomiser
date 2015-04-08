@@ -1,5 +1,18 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 6.0.0 2015-01-12
+- Added 'none' type prioritiser for when you really don't want to run any prioritiser.
+- Exomiser will now show the help options when no parameters are supplied.
+- New test settings files for different prioritisers and the batch file.
+- Changed input parameters these are optional switches:
+    --remove-path-filter-cutoff to --keep-non-pathogenic 
+    --remove-off-target-syn to --keep-off-target
+- Renamed somewhat misleading example.settings to template.settings to reflect it's intended use.
+- TSV output now comes in TSV_GENE and TSV_VARIANT flavours.
+- Added missing ehcache.xml to the distribution.
+- Switched PostgreSQL driver to use pgjdbc-ng which allegedly has better performance.
+- Consolidated JDBC Connection pool to use HikariCP. 
+ 
 ## 5.2.0 2014-12-18
 - No changes to exomiser-cli
 

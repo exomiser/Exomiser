@@ -1,10 +1,15 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
-import jannovar.common.VariantType;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
+import java.util.EnumSet;
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,14 +17,19 @@ import org.slf4j.LoggerFactory;
  * VariantFilter variants according to their predicted pathogenicity. There are
  * two components to this, which may better be separated in later versions of
  * this software, but I think there are more advantages to keeping them all in
- * one class. <P> There are variants such as splice site variants, which we can
- * assume are in general pathogenic. We at the moment do not need to use any
- * particular software to evaluate this, we merely take the variant class from
- * the Jannovar code. <P> For missense mutations, we will use the predictions of
- * MutationTaster, polyphen, and SIFT taken from the data from the dbNSFP
- * project. <P> The code therefore removes mutations judged not to be pathogenic
- * (intronic, etc.), and assigns each other mutation an overall pathogenicity
- * score defined on the basis of "medical genetic intuition".
+ * one class.
+ * <P>
+ * There are variants such as splice site variants, which we can assume are in
+ * general pathogenic. We at the moment do not need to use any particular
+ * software to evaluate this, we merely take the variant class from the Jannovar
+ * code.
+ * <P>
+ * For missense mutations, we will use the predictions of MutationTaster,
+ * polyphen, and SIFT taken from the data from the dbNSFP project.
+ * <P>
+ * The code therefore removes mutations judged not to be pathogenic (intronic,
+ * etc.), and assigns each other mutation an overall pathogenicity score defined
+ * on the basis of "medical genetic intuition".
  *
  * @author Peter N Robinson
  * @version 0.09 (29 December, 2012).
@@ -61,14 +71,14 @@ public class PathogenicityFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         PathogenicityData pathData = variantEvaluation.getPathogenicityData();
-        VariantType variantType = variantEvaluation.getVariantType();
-        //logger.info(variantEvaluation.getRepresentativeAnnotation());
-        float filterScore = calculateFilterScore(variantType, pathData);
+        VariantEffect variantEffect = variantEvaluation.getVariantEffect();
+
+        float filterScore = calculateFilterScore(variantEffect, pathData);
 
         if (removePathFilterCutOff) {
             return returnPassResult(filterScore);
         }
-        if (variantIsPredictedPathogenic(variantType)) {
+        if (variantIsPredictedPathogenic(variantEffect)) {
             return returnPassResult(filterScore);
         }
         return returnFailResult(filterScore);
@@ -77,47 +87,49 @@ public class PathogenicityFilter implements VariantFilter {
     /**
      * Creates the PathogenicityScore data
      *
-     * @param variantType
+     * @param variantEffect
      * @param pathogenicityData
      * @return
      */
-    protected float calculateFilterScore(VariantType variantType, PathogenicityData pathogenicityData) {
-        if (pathogenicityData.getCaddScore() != null) {
-            return pathogenicityData.getCaddScore().getScore();
+    protected float calculateFilterScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            return returnMissenseScore(pathogenicityData);
         } else {
-            // returns default scores based on averages for each variant type in CADD
-//            if (VariantTypePathogenicityScores.getDefaultPathogenicityScoreOf(variantType) > 0.5)   
-//                logger.info("HAVING TO USE DEFAULT FOR PATHOGENIC VARIANT " + variantType);
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantType);
+            //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect));
         }
     }
 
-    /**
-     * @param variantType
-     * @param pathData
-     * @return true if the variant being analysed passes the runFilter (e.g.,
-     * has high quality )
-     */
-    protected boolean variantIsPredictedPathogenic(VariantType variantType) {
-        // this is equivalent to the old logic using VariantTypePathogenicityScores
-        if (variantType == VariantType.MISSENSE || 
-                variantType == VariantType.FS_DELETION ||
-                variantType == VariantType.FS_INSERTION ||
-                variantType == VariantType.NON_FS_SUBSTITUTION ||
-                variantType == VariantType.FS_SUBSTITUTION ||
-                variantType == VariantType.NON_FS_DELETION ||
-                variantType == VariantType.NON_FS_INSERTION ||
-                variantType == VariantType.SPLICING ||
-                variantType == VariantType.STOPGAIN ||
-                variantType == VariantType.STOPLOSS ||
-                variantType == VariantType.FS_DUPLICATION ||
-                variantType == VariantType.NON_FS_DUPLICATION ||
-                variantType == VariantType.START_LOSS
-                ) {           
-                return true;
+    private float returnMissenseScore(PathogenicityData pathogenicityData) {
+        if (pathogenicityData.hasPredictedScore()) {
+            return returnMostPathogenicPredictedScore(pathogenicityData);
         }
-        // need to change for Genomiser so intronic and intergenic variants get through as well
-        return false;
+        return VariantTypePathogenicityScores.DEFAULT_MISSENSE_SCORE;
+    }
+
+    private float returnMostPathogenicPredictedScore(PathogenicityData pathogenicityData) {
+        PathogenicityScore mostPathogenicPredictedScore = pathogenicityData.getMostPathogenicScore();
+        //Thanks to SIFT being about tolerance rather than pathogenicity, the score is inverted
+        if (mostPathogenicPredictedScore.getClass() == SiftScore.class) {
+            return 1 - mostPathogenicPredictedScore.getScore();
+        }
+        return mostPathogenicPredictedScore.getScore();
+    }
+
+    /**
+     * @param variantEffect
+     * @param pathData
+     * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
+     */
+    protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect) {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            //we're making the assumption that a miissense variant is always 
+            //potentially pathogenic as the prediction scores are predictions, 
+            //we'll leave it up to the user to decide
+            return true;
+        } else {
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect)) >= DEFAULT_PATHOGENICITY_THRESHOLD;
+        }
     }
 
     private FilterResult returnPassResult(float filterScore) {
@@ -156,4 +168,5 @@ public class PathogenicityFilter implements VariantFilter {
     public String toString() {
         return String.format("%s filter: removePathFilterCutOff=%s", filterType, removePathFilterCutOff);
     }
+
 }

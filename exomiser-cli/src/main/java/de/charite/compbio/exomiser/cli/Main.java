@@ -14,7 +14,6 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -130,12 +129,11 @@ public class Main {
         exomiser.analyse(sampleData, exomiserSettings);
 
         logger.info("Writing results");
-
+        ResultsWriterFactory resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
+        
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = ResultsWriterFactory.getResultsWriter(outFormat);
-            //TODO: remove priorityList - this should become another report
-            List<Priority> priorityList = new ArrayList<>();
-            resultsWriter.writeFile(sampleData, exomiserSettings, priorityList);
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(sampleData.getVcfHeader(), outFormat);
+            resultsWriter.writeFile(sampleData, exomiserSettings);
         }
 
         logger.info("Finished analysis");
@@ -149,6 +147,9 @@ public class Main {
             Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);
             if (commandLine.hasOption("help")) {
+                printHelp();
+            }
+            if (args.length == 0) {
                 printHelp();
             }
             //check the args for a batch file first as this option is otherwise ignored 

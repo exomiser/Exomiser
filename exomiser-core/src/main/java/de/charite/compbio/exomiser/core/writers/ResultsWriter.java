@@ -7,9 +7,7 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import java.util.List;
 
 /**
  * 
@@ -22,18 +20,15 @@ public interface ResultsWriter {
      * 
      * @param sampleData
      * @param settings
-     * @param priorityList 
      */
-    public void writeFile(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList);
+    public void writeFile(SampleData sampleData, ExomiserSettings settings);
     
     /**
      * Writes the result data out to a String.
      * 
      * @param sampleData
      * @param settings
-     * @param priorityList 
      * @return  
      */
-    //TODO: Issue #32 https://bitbucket.org/exomiser/exomiser/issue/32/collect-the-filter-and-priority-summary
-    public String writeString(SampleData sampleData, ExomiserSettings settings, List<Priority> priorityList);
+    public String writeString(SampleData sampleData, ExomiserSettings settings);
 }

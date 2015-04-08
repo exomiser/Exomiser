@@ -6,25 +6,6 @@
 -- Dumped by pg_dump version 9.3.1
 -- Started on 2013-12-05 14:38:16
 
--- -- SET statement_timeout = 0;
--- -- SET lock_timeout = 0;
--- -- SET client_encoding = 'UTF8';
--- -- SET standard_conforming_strings = on;
--- -- SET check_function_bodies = false;
--- -- SET client_min_messages = warning;
--- 
--- -- SET search_path = public, pg_catalog;
--- 
--- -- SET default_with_oids = false;
-
---
--- TOC entry 162 (class 1259 OID 16388)
--- Name: esp; Type: TABLE; Schema: public; Owner: -
-
--- CREATE SCHEMA EXOMISER;
--- SET SCHEMA EXOMISER;
-
-
 --
 -- TOC entry 176 (class 1259 OID 16513)
 -- Name: frequency; Type: TABLE; Schema: public; Owner: -
@@ -40,8 +21,34 @@ CREATE TABLE frequency (
     dbsnpmaf double precision,
     espeamaf double precision,
     espaamaf double precision,
-    espallmaf double precision
+    espallmaf double precision,
+    exacafrmaf double precision,
+    exacamrmaf double precision,
+    exaceasmaf double precision,
+    exacfinmaf double precision,
+    exacnfemaf double precision,
+    exacothmaf double precision,
+    exacsasmaf double precision
 );
+
+--
+-- TOC entry 173 (class 1259 OID 16445)
+-- Name: variant; Type: TABLE; Schema: public; Owner: -
+--
+DROP TABLE variant IF EXISTS;
+
+CREATE TABLE variant (
+    chromosome smallint NOT NULL,
+    "position" integer NOT NULL,
+    ref character(1) NOT NULL,
+    alt character(1) NOT NULL,
+    sift double precision,
+    polyphen double precision,
+    mut_taster double precision,
+    cadd double precision,
+    cadd_raw double precision 
+);
+
 
 DROP TABLE clinvar IF EXISTS;
 
@@ -64,8 +71,14 @@ DROP TABLE hp_mp_mappings IF EXISTS;
 CREATE TABLE hp_mp_mappings (
     mapping_id integer,
     hp_id character varying(10),
+    hp_term character varying(200),
     mp_id character varying(10),
-    score double precision
+    mp_term character varying(200),
+    simJ double precision,
+    ic double precision,
+    score double precision,
+    lcs_id character varying(10),
+    lcs_term character varying(150)
 );
 
 DROP TABLE mp IF EXISTS;
@@ -80,8 +93,14 @@ DROP TABLE hp_zp_mappings IF EXISTS;
 CREATE TABLE hp_zp_mappings (
     mapping_id integer,
     hp_id character varying(10),
+    hp_term character varying(200),
     zp_id character varying(10),
-    score double precision
+    zp_term character varying(200),
+    simJ double precision,
+    ic double precision,
+    score double precision,
+    lcs_id character varying(10),
+    lcs_term character varying(150)
 );
 
 DROP TABLE zp IF EXISTS;
@@ -223,29 +242,6 @@ CREATE TABLE phenoseries (
 );
 
 
---
--- TOC entry 173 (class 1259 OID 16445)
--- Name: variant; Type: TABLE; Schema: public; Owner: -
---
-DROP TABLE variant IF EXISTS;
-
-CREATE TABLE variant (
-    chromosome smallint NOT NULL,
-    "position" integer NOT NULL,
-    ref character(1) NOT NULL,
-    alt character(1) NOT NULL,
-    aaref character(1),
-    aaalt character(1),
-    aapos integer,
-    sift double precision,
-    polyphen double precision,
-    mut_taster double precision,
-    phylop double precision,
-    cadd double precision,
-    cadd_raw double precision 
-);
-
-
 --CREATE TABLE disease_disease_summary (
 --    disease_query character varying(20),
 --    disease_hit character varying(20),
@@ -256,8 +252,14 @@ DROP TABLE hp_hp_mappings IF EXISTS;
 CREATE TABLE hp_hp_mappings (
     mapping_id integer,
     hp_id character varying(10),
+    hp_term character varying(200),
     hp_id_hit character varying(10),
-    score double precision
+    hp_hit_term character varying(200),
+    simJ double precision,
+    ic double precision,
+    score double precision,
+    lcs_id character varying(10),
+    lcs_term character varying(150)
 );
 
 DROP TABLE disease_hp IF EXISTS;

@@ -13,11 +13,9 @@ import similarity.concepts.ResnikSimilarity;
 import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
 
-import jannovar.common.Constants;
-
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
-import java.sql.Connection;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * @author Sebastian Koehler
  * @version 0.05 (April 28, 2013)
  */
-public class UberphenoPriority implements Priority {
+public class UberphenoPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(UberphenoPriority.class);
 
@@ -91,12 +89,12 @@ public class UberphenoPriority implements Priority {
     /**
      * The HPO-terms associated with the current disease
      */
-    private ArrayList<Term> annotationsOfDisease;
+    private List<Term> annotationsOfDisease;
 
     /**
      * Assignment of an IC to each term in the Uberpheno
      */
-    private HashMap<Term, Double> uberphenoterm2informationContent;
+    private Map<Term, Double> uberphenoterm2informationContent;
 
     /**
      * Create a new instance of the UberphenoFilter.
@@ -139,7 +137,7 @@ public class UberphenoPriority implements Priority {
             uberphenoterm2informationContent = uberphenoAnnotationContainer.calculateInformationContentUberpheno(uberpheno, uberphenoSlim);
 
             /* Similarity calculation ... TODO: parameter-based choice of similarity measure */
-            ResnikSimilarity resnik = new ResnikSimilarity(uberpheno, uberphenoterm2informationContent);
+            ResnikSimilarity resnik = new ResnikSimilarity(uberpheno, (HashMap) uberphenoterm2informationContent);
             similarityMeasure = new InformationContentObjectSimilarity(resnik, false, false);
         }
 
@@ -206,8 +204,8 @@ public class UberphenoPriority implements Priority {
 
         for (Gene gene : gene_list) {
             try {
-                UberphenoPriorityScore uberphenoRelScore = scoreVariantUberpheno(gene);
-                gene.addPriorityScore(uberphenoRelScore, PriorityType.UBERPHENO_PRIORITY);
+                UberphenoPriorityResult uberphenoRelScore = scoreVariantUberpheno(gene);
+                gene.addPriorityResult(uberphenoRelScore);
             } catch (Exception e) {
                 error_record.add(e.toString());
             }
@@ -223,16 +221,16 @@ public class UberphenoPriority implements Priority {
      * @param g A {@link exomizer.exome.Gene Gene} whose score is to be
      * determined.
      */
-    private UberphenoPriorityScore scoreVariantUberpheno(Gene g) {
+    private UberphenoPriorityResult scoreVariantUberpheno(Gene g) {
 
         int entrezGeneId = g.getEntrezGeneID();
         Set<Term> terms = uberphenoAnnotationContainer.getAnnotationsOfGene(entrezGeneId);
         if (terms == null || terms.size() < 1) {
-            return new UberphenoPriorityScore(Constants.UNINITIALIZED_FLOAT);
+            return new UberphenoPriorityResult(-10.0f);
         }
-        ArrayList<Term> termsAl = new ArrayList<Term>(terms);
-        double similarityScore = similarityMeasure.computeObjectSimilarity(annotationsOfDisease, termsAl);
-        return new UberphenoPriorityScore(similarityScore);
+        List<Term> termsAl = new ArrayList<>(terms);
+        double similarityScore = similarityMeasure.computeObjectSimilarity((ArrayList) annotationsOfDisease, (ArrayList) termsAl);
+        return new UberphenoPriorityResult(similarityScore);
     }
 
     /**
@@ -248,37 +246,6 @@ public class UberphenoPriority implements Priority {
     @Override
     public String getHTMLCode() {
         return "";
-    }
-
-    /**
-     * Get number of variants before filter was applied TODO
-     */
-    @Override
-    public int getBefore() {
-        return 0;
-    }
-
-    /**
-     * Get number of variants after filter was applied TODO
-     */
-    @Override
-    public int getAfter() {
-        return 0;
-    }
-
-    /**
-     * This class does not need a database connection, this function only there
-     * to satisfy the interface.
-     *
-     * @param connection An SQL (postgres) connection that was initialized
-     * elsewhere.
-     */
-    @Override
-    public void setConnection(Connection connection) { /* no-op */ }
-
-    @Override
-    public void closeConnection() {
-        //not implemented - nothing to close
     }
 
 }

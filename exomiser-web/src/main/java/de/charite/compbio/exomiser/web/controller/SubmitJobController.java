@@ -28,11 +28,11 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
-import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
+import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
-import jannovar.exome.VariantTypeCounter;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,12 @@ public class SubmitJobController {
 
     @Autowired
     private Exomiser exomiser;
+    
+    @Autowired
+    private int maxVariants;
+    
+    @Autowired
+    private int maxGenes;
 
     @RequestMapping(value = "submit", method = RequestMethod.GET)
     public String configureExomiserJob(Model model) {
@@ -81,8 +88,8 @@ public class SubmitJobController {
             @RequestParam(value = "genetic-interval", required = false) String geneticInterval,
             @RequestParam("frequency") String frequency,
             @RequestParam("remove-dbsnp") Boolean removeDbSnp,
-            @RequestParam("remove-non-pathogenic") Boolean removeNonPathogenic,
-            @RequestParam("remove-off-target") Boolean removeOffTarget,
+            @RequestParam("keep-non-pathogenic") Boolean keepNonPathogenic,
+            @RequestParam("keep-off-target") Boolean keepOffTarget,
             @RequestParam("inheritance") String modeOfInheritance,
             @RequestParam(value = "genes-to-keep", required = false) List<String> genesToFilter,
             @RequestParam("prioritiser") String prioritiser,
@@ -97,31 +104,32 @@ public class SubmitJobController {
         logger.info("Selected phenotypes: {}", phenotypes);
         Set<Integer> genesToKeep = makeGenesToKeep(genesToFilter);
      
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
-                //Upload Sample Files input
-                .vcfFilePath(vcfPath)
-                .pedFilePath(pedPath)
-                //Enter Sample Phenotype input
-                .diseaseId(diseaseId)
-                .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
-                //Set Filtering Parameters
-                .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
-                .removeDbSnp(removeDbSnp)
-                .removeOffTargetVariants(removeOffTarget)
-                //make this work for nulls....
-                //                .geneticInterval(GeneticInterval.parseString(geneticInterval))
-                .removePathFilterCutOff(removeNonPathogenic)
-                .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
-                .maximumFrequency(Float.valueOf(frequency))
-                .genesToKeepList(genesToKeep)
-                //Choose Prioritiser
-                .usePrioritiser(PriorityType.valueOf(prioritiser))
-                .build();
+        ExomiserSettings settings = buildSettings(vcfPath, pedPath, diseaseId, phenotypes, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
 
+        if (!settings.isValid()) {
+            return "submit";
+        }
+        logger.info("New analysis using settings {}", settings);
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
         SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
+        int numVariantsInSample = sampleData.getVariantEvaluations().size();
+        if (numVariantsInSample > maxVariants) {
+            logger.info("{} contains {} variants - this is more than the allowed maximum of {}."
+                    + "Returning user to submit page", sampleData.getVcfFilePath(), numVariantsInSample, maxVariants);
+            cleanUpSampleFiles(vcfPath, pedPath);
+            model.addAttribute("numVariants", numVariantsInSample);
+            return "resubmitWithFewerVariants";
+        }
         exomiser.analyse(sampleData, settings);
 
+        buildResultsModel(model, settings, sampleData);
+        
+        logger.info("Returning {} results to user", vcfPath.getFileName());
+        cleanUpSampleFiles(vcfPath, pedPath);
+        return "results";
+    }
+
+    private void buildResultsModel(Model model, ExomiserSettings settings, SampleData sampleData) {
         ObjectMapper mapper = new ObjectMapper();
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
@@ -144,8 +152,8 @@ public class SubmitJobController {
         model.addAttribute("filterReports", filterReports);
         
         List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();
-        List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
-        model.addAttribute("variantTypeCounters", variantTypeCounters);
+        List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
+        model.addAttribute("variantTypeCounters", variantEffectCounters);
         
         //write out the variant type counters
         List<String> sampleNames = sampleData.getSampleNames();
@@ -156,23 +164,65 @@ public class SubmitJobController {
         model.addAttribute("sampleName", sampleName);
         model.addAttribute("sampleNames", sampleNames);
         
-        List<Gene> passedGenes = new ArrayList<>();
-        int numGenesToShow = settings.getNumberOfGenesToShow();
-        if (numGenesToShow == 0) {
-            numGenesToShow = sampleData.getGenes().size();
+        List<Gene> sampleGenes = sampleData.getGenes();
+        model.addAttribute("geneResultsTruncated", false);
+        int numCandidateGenes = numGenesPassedFilters(sampleGenes);
+        if (numCandidateGenes > maxGenes) {
+            logger.info("Truncating number of genes returned - {} ");
+            model.addAttribute("geneResultsTruncated", true);
+            model.addAttribute("numCandidateGenes", numCandidateGenes);
+            model.addAttribute("totalGenes", sampleGenes.size());
         }
-        int genesShown = 0;
-        for (Gene gene : sampleData.getGenes()) {
-            if (genesShown <= numGenesToShow) {
-                if (gene.passedFilters()) {
-                    passedGenes.add(gene);
-                    genesShown++;
-                }
+        
+        List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleGenes, maxGenes);
+        model.addAttribute("genes", passedGenes);
+    }
+
+    private int numGenesPassedFilters(List<Gene> genes) {
+        int numCandidateGenes = 0;
+        for (Gene gene : genes) {
+            if (gene.passedFilters()) {
+                numCandidateGenes++;
             }
         }
-        model.addAttribute("genes", passedGenes);
-        
-        return "results";
+        return numCandidateGenes;
+    }
+
+    private void cleanUpSampleFiles(Path vcfPath, Path pedPath) {
+        try {
+            Files.deleteIfExists(vcfPath);
+            if (pedPath != null) {
+                Files.deleteIfExists(pedPath);
+            }
+        } catch (IOException ex) {
+            logger.error(null, ex);
+        }
+    }
+
+    private ExomiserSettings buildSettings(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
+        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder()
+                //Upload Sample Files input
+                .vcfFilePath(vcfPath)
+                .pedFilePath(pedPath)
+                //Enter Sample Phenotype input
+                .diseaseId(diseaseId)
+                .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
+                //Set Filtering Parameters
+                .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
+                .removeKnownVariants(removeDbSnp)
+                .keepOffTargetVariants(keepOffTarget)
+                //make this work for nulls....
+                //                .geneticInterval(GeneticInterval.parseString(geneticInterval))
+                .removePathFilterCutOff(keepNonPathogenic)
+                .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
+                .maximumFrequency(Float.valueOf(frequency))
+                .genesToKeepList(genesToKeep)
+                //we're hardcoding this value as more than this will put undue strain on the server for displaying the results.
+                .numberOfGenesToShow(maxGenes)
+                //Choose Prioritiser
+                .usePrioritiser(PriorityType.valueOf(prioritiser))
+                .build();
+        return settings;
     }
 
     private Set<Integer> makeGenesToKeep(List<String> genesToFilter) {
@@ -198,7 +248,7 @@ public class SubmitJobController {
         if (!multipartFile.isEmpty()) {
             logger.info("Uploading multipart file: {}", multipartFile.getOriginalFilename());
             try {
-                path = Paths.get(multipartFile.getOriginalFilename());
+                path = Paths.get(System.getProperty("java.io.tmpdir"), multipartFile.getOriginalFilename());
                 multipartFile.transferTo(path.toFile());
             } catch (IOException e) {
                 logger.error("Failed to upload file {}", multipartFile.getOriginalFilename(), e);

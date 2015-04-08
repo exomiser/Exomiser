@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>6.0.0</version>
+        <version>7.0.0.BETA</version>
     </parent>
   
     <properties>
@@ -63,11 +63,16 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.21</version>
         </dependency>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.1-901.jdbc4</version>
+        </dependency>
         <!--Other libraries-->
         <dependency>
             <groupId>de.charite.compbio</groupId>
-            <artifactId>jannovar</artifactId>
-            <version>0.6-SNAPSHOT</version>
+            <artifactId>jannovar-core</artifactId>
+            <version>0.13-SNAPSHOT</version>
         </dependency>
         <!--YamlBeans is a java <-> yml library-->
         <dependency>
@@ -141,7 +146,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>de.charite.compbio.exomiser.db.build.App</mainClass>
+                    <mainClass>de.charite.compbio.exomiser.db.Main</mainClass>
                     <!--optional--> 
                     <workingDirectory>${project.build.dir}</workingDirectory>
                     <!--                    <arguments>

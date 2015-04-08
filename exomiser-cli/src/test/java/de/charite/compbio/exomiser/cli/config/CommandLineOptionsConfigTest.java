@@ -13,8 +13,8 @@ import de.charite.compbio.exomiser.cli.options.HpoIdsOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.InheritanceModeOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.NumGenesOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.OutFileOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.OutFormatOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.OutFilePrefixOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.OutFileFormatOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.PedFileOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.VcfFileOptionMarshaller;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
@@ -106,14 +106,14 @@ public class CommandLineOptionsConfigTest {
     
     @Test
     public void outputFormatOptionsCanHaveMultipleCommaSeparatedValues() {
-        String longOption = OUT_FORMAT_OPTION;
+        String longOption = OUT_FILE_FORMAT_OPTION;
         Option option = options.getOption(longOption);
         assertThat(option.hasArgs(), is(true));
         assertThat(option.getValueSeparator(), equalTo(','));
     }
   @Test
     public void optionMarshallersContainOutFormatOptionMarshaller() {        
-        OptionMarshaller expectedOptionMarshaller = new OutFormatOptionMarshaller();
+        OptionMarshaller expectedOptionMarshaller = new OutFileFormatOptionMarshaller();
         testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
     }
     
@@ -194,14 +194,14 @@ public class CommandLineOptionsConfigTest {
     
     @Test
     public void hasOutFileOption() {
-        String longOption = OUT_FILE_OPTION;
+        String longOption = OUT_FILE_PREFIX_OPTION;
         Option option = options.getOption(longOption);
         assertThat(option.hasArg(), is(true));
         assertThat(option.getLongOpt(), equalTo(longOption));
     } 
     @Test
     public void optionMarshallersContainsOutFileOptionMarshaller() {
-        OptionMarshaller expectedOptionMarshaller = new OutFileOptionMarshaller();
+        OptionMarshaller expectedOptionMarshaller = new OutFilePrefixOptionMarshaller();
         testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
     }
 }

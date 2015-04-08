@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,30 +30,20 @@ import org.slf4j.LoggerFactory;
  * @author Peter N Robinson
  * @version 0.16 (28 January,2014)
  */
-public class OMIMPriority implements Priority {
+public class OMIMPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
-    /**
-     * Database handle to the postgreSQL database used by this application.
-     */
-    private Connection connection = null;
-    /**
-     * A prepared SQL statement for OMIM entries.
-     */
-    private PreparedStatement omimQuery = null;
-    /**
-     * A prepared SQL statement for Orphanet entries.
-     */
-    private PreparedStatement orphanetQuery = null;
+
+    private DataSource dataSource;
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = null;
+    private final List<String> messages;
 
     public OMIMPriority() {
-        this.messages = new ArrayList<String>();
+        this.messages = new ArrayList<>();
     }
 
     @Override
@@ -82,17 +73,16 @@ public class OMIMPriority implements Priority {
      * method to implement a Phenomizer-type prioritization at a later time
      * point.
      *
-     * @param gene_list A list of the {@link exomizer.exome.Gene Gene} objects
-     * that have suvived the filtering (i.e., have rare, potentially pathogenic
+     * @param genes A list of the {@link exomizer.exome.Gene Gene} objects that
+     * have suvived the filtering (i.e., have rare, potentially pathogenic
      * variants).
      */
     @Override
-    public void prioritizeGenes(List<Gene> gene_list) {
-        for (Gene g : gene_list) {
-            OMIMPriorityScore mimrel = retrieve_omim_data(g);
-            g.addPriorityScore(mimrel, PriorityType.OMIM_PRIORITY);
+    public void prioritizeGenes(List<Gene> genes) {
+        for (Gene g : genes) {
+            OMIMPriorityResult mimrel = retrieveOmimData(g);
+            g.addPriorityResult(mimrel);
         }
-        closeConnection();
     }
 
     /**
@@ -101,54 +91,69 @@ public class OMIMPriority implements Priority {
      * but initialized RelevanceScore object. Otherwise, we retrieve a list of
      * all OMIM and Orphanet diseases associated with the entrez Gene.
      *
-     * @param g The gene which is being evaluated.
+     * @param gene The gene which is being evaluated.
      */
-    private OMIMPriorityScore retrieve_omim_data(Gene g) {
-        OMIMPriorityScore rel = new OMIMPriorityScore();
-        int entrez = g.getEntrezGeneID();
+    private OMIMPriorityResult retrieveOmimData(Gene gene) {
+        OMIMPriorityResult priorityResult = new OMIMPriorityResult();
+        int entrez = gene.getEntrezGeneID();
         if (entrez < 0) {
-            return rel; /* Return an empty relevance score object. */
+            return priorityResult; 
 
         }
-        try {
-            ResultSet rs = null;
-            this.omimQuery.setInt(1, entrez);
-            rs = omimQuery.executeQuery();
+        getOmimDiseasesForGene(gene, priorityResult);
+//        findOrphaNetDiseasesForGene(gene, priorityResult);
 
-            while (rs.next()) { /* The way the db was constructed, there is just one line for each such query. */
+        return priorityResult;
+    }
 
+    private void getOmimDiseasesForGene(Gene gene, OMIMPriorityResult rel) {
+        String omimQuery = "SELECT disease_id, omim_gene_id, diseasename, type, inheritance "
+                + "FROM disease "
+                + "WHERE gene_id = ?";
+
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(omimQuery);
+            preparedStatement.setInt(1, gene.getEntrezGeneID());
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                // The way the db was constructed, there is just one line for each such query.
                 //  phenmim,genemim,diseasename,type"+
+                String diseaseId = rs.getString(1);
+                String diseaseName = rs.getString(3);
+                if (diseaseId.startsWith("OMIM")) {
+                    String omimGeneId = rs.getString(2);
+                    char typ = rs.getString(4).charAt(0);
+                    char inheritance = rs.getString(5).charAt(0);
+                    float factor = getInheritanceFactor(gene, inheritance);
+                    rel.addRow(diseaseId, omimGeneId, diseaseName, typ, inheritance, factor);            
+                } else {
+                    rel.addOrphanetRow(diseaseId, diseaseName);
 
-                String phenmim = rs.getString(1);
-                String genemim = rs.getString(2);
-                String disease = rs.getString(3);
-                char typ = rs.getString(4).charAt(0);
-                char inheritance = rs.getString(5).charAt(0);
-                float factor = getInheritanceFactor(g, inheritance);
-                // System.out.println(preparedQuery);
-                rel.addRow(phenmim, genemim, disease, typ, inheritance, factor);
+                }
             }
-            rs.close();
-            rs = null;
         } catch (SQLException e) {
             logger.error("Error executing OMIM query", e);
         }
-        // Now try to get the Orphanet data 
-        try {
-            ResultSet rs2 = null;
-            this.orphanetQuery.setInt(1, entrez);
-            rs2 = orphanetQuery.executeQuery();
-            while (rs2.next()) {
-                String orphanum = rs2.getString(1);
-                String disease = rs2.getString(2);
+    }
+
+    private void findOrphaNetDiseasesForGene(Gene gene, OMIMPriorityResult rel) {
+        // Now try to get the Orphanet data
+        String orphanetQuery = "SELECT disease_id, diseasename "
+                + "FROM disease "
+                + "WHERE disease_id LIKE '%ORPHA%' AND gene_id = ?";
+        
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(orphanetQuery);
+            preparedStatement.setInt(1, gene.getEntrezGeneID());
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                String orphanum = rs.getString(1);
+                String disease = rs.getString(2);
                 rel.addOrphanetRow(orphanum, disease);
             }
-
         } catch (SQLException e) {
             logger.error("Exception caused by Orphanet query!", e);
         }
-
-        return rel;
     }
 
     /**
@@ -162,84 +167,43 @@ public class OMIMPriority implements Priority {
      * 1 for any gene with X-linked inheritance if the disease in question is
      * listed as X chromosomal.
      */
-    private float getInheritanceFactor(Gene g, char inheritance) {
+    private float getInheritanceFactor(Gene gene, char inheritance) {
         if (inheritance == 'U') {
             /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
             return 1f;
-        } else if (g.isConsistentWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
+        } else if (gene.isConsistentWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
             /* inheritance of disease is dominant or both (dominant/recessive) */
             return 1f;
-        } else if (g.isConsistentWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
+        } else if (gene.isConsistentWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
             /* inheritance of disease is recessive or both (dominant/recessive) */
             return 1f;
-        } else if (g.isXChromosomal() && inheritance == 'X') {
+        } else if (gene.isXChromosomal() && inheritance == 'X') {
             return 1f;
         } else if (inheritance == 'Y') {
-            return 1f; /* Y chromosomal, rare. */
+            /* Y chromosomal, rare. */
+            return 1f; 
 
         } else if (inheritance == 'M') {
-            return 1f; /* mitochondrial. */
+            /* mitochondrial. */
+            return 1f; 
 
         } else if (inheritance == 'S') {
-            return 0.5f; /* gene only associated with somatic mutations */
+            /* gene only associated with somatic mutations */
+            return 0.5f; 
 
         } else if (inheritance == 'P') {
-            return 0.5f; /* gene only associated with polygenic */
+            /* gene only associated with polygenic */
+            return 0.5f; 
 
         } else {
             return 0.5f;
         }
     }
 
-    /**
-     * Prepare the SQL query statements required for this filter.
-     * <p>
-     * SELECT phenmim,genemim,diseasename,type</br>
-     * FROM omim</br>
-     * WHERE gene_id = ? </br>
-     */
-    private void setUpSQLPreparedStatement() {
-        String query = "SELECT disease_id,omim_gene_id,diseasename,type,inheritance "
-                + "FROM disease "
-                + "WHERE disease_id LIKE '%OMIM%' AND gene_id = ?";
-        try {
-            this.omimQuery = connection.prepareStatement(query);
-        } catch (SQLException e) {
-            logger.error("Problem setting up OMIM SQL query: {}", query, e);
-        }
-        /* Now the same for Orphanet. */
-        query = "SELECT disease_id,diseasename "
-                + "FROM disease "
-                + "WHERE disease_id LIKE '%ORPHA%' AND gene_id = ?";
-        try {
-            this.orphanetQuery = connection.prepareStatement(query);
-        } catch (SQLException e) {
-            logger.error("Problem setting up Orphanet SQL query: {}", query, e);
-        }
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
-    /**
-     * Initialize the database connection and call
-     * {@link #setUpSQLPreparedStatement}
-     *
-     * @param connection A connection to a postgreSQL database from the exomizer
-     * or tomcat.
-     */
-    @Override
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-        setUpSQLPreparedStatement();
-    }
-
-    @Override
-    public void closeConnection() {
-        try {
-            connection.close();
-        } catch (SQLException ex) {
-            logger.error(null, ex);
-        }
-    }
-    
     /**
      * Since no filtering of prioritizing is done with the OMIM data for now, it
      * does not make sense to display this in the HTML table.
@@ -254,20 +218,6 @@ public class OMIMPriority implements Priority {
     @Override
     public String getHTMLCode() {
         return "";
-    }
-
-    /**
-     * Get number of variants before filter was applied TODO
-     */
-    public int getBefore() {
-        return 0;
-    }
-
-    /**
-     * Get number of variants after filter was applied TODO
-     */
-    public int getAfter() {
-        return 0;
     }
 
 }

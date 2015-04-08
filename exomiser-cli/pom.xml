@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>6.0.0</version>
+        <version>7.0.0.BETA</version>
     </parent>
   
     <properties>
@@ -19,11 +19,6 @@
     </properties>
     
     <dependencies>
-        <dependency>
-            <groupId>org.seqdoop</groupId>
-            <artifactId>htsjdk</artifactId>
-            <version>1.118</version>
-        </dependency>
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>exomiser-core</artifactId>
@@ -127,10 +122,9 @@
                                     <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
                                     <filtering>true</filtering>
                                     <includes>
+                                        <include>*.settings</include>
+                                        <include>test-batchFiles.txt</include>
                                         <include>application.properties</include>
-                                        <include>example.settings</include>
-                                        <include>test.settings</include>
-                                        <include>test-multisample.settings</include>
                                         <include>log4j2.xml</include>
                                         <include>ehcache.xml</include>
                                     </includes> 

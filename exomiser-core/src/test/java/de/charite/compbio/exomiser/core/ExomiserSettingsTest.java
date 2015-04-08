@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +13,7 @@ import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,10 +45,15 @@ public class ExomiserSettingsTest {
     private static final String BUILD_TIMESTAMP_DEFAULT = "";
     private static final String BUILD_TIMESTAMP = "20140704-1556";
 
+    //input settings
     private static final Path VCF_PATH_NOT_SET = null;
     private static final Path VCF_PATH = Paths.get("data/test.vcf");
     private static final Path PED_PATH_NOT_SET = null;
     private static final Path PED_PATH = Paths.get("data/test.ped");
+    
+    //filter settings
+    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
+    private static final boolean RUN_FULL_ANALYSIS = true;
     private static final float MAXIMUM_FREQUENCY_DEFAULT = 100.0f;
     private static final float MAXIMUM_FREQUENCY = 42.24f;
     private static final float MIMIMUM_QUALITY_DEFAULT = 0.0f;
@@ -58,30 +62,35 @@ public class ExomiserSettingsTest {
     private static final GeneticInterval GENETIC_INTERVAL = new GeneticInterval((byte) 2, 12345, 67890);
     private static final boolean REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT = false;
     private static final boolean REMOVE_PATHOGENIC_FILTER_CUTOFF = true;
-    private static final boolean REMOVE_DBSNP_DEFAULT = false;
-    private static final boolean REMOVE_DBSNP = true;
-    private static final boolean REMOVE_OFF_TARGET_VARIANTS_DEFAULT = true;
-    private static final boolean REMOVE_OFF_TARGET_VARIANTS = false;
+    private static final boolean REMOVE_KNOWN_VARIANTS_DEFAULT = false;
+    private static final boolean REMOVE_KNOWN_VARIANTS = true;
+    private static final boolean KEEP_OFF_TARGET_VARIANTS_DEFAULT = false;
+    private static final boolean KEEP_OFF_TARGET_VARIANTS = true;
     private static final String CANDIDATE_GENE_NAME_DEFAULT = "";
     private static final String CANDIDATE_GENE_NAME = "ADH1";
     private static final ModeOfInheritance MODE_OF_INHERITANCE = ModeOfInheritance.AUTOSOMAL_DOMINANT;
     private static final ModeOfInheritance MODE_OF_INHERITANCE_DEFAULT = ModeOfInheritance.UNINITIALIZED;
+    
+    //prioritiser settings
+    private static final PriorityType PRIORITISER_DEFAULT = PriorityType.NONE;
     private static final String DISEASE_STRING_DEFAULT = "";
     private static final String DISEASE_STRING = "OMIM:100100";
     private static final List<String> HPO_LIST_DEFAULT = new ArrayList<>();
     private static final List<String> HPO_LIST = new ArrayList<>(Arrays.asList("HPO:123456"));
     private static final List<Integer> SEED_GENE_LIST_DEFAULT = new ArrayList<>();
     private static final List<Integer> SEED_GENE_LIST = new ArrayList<>(Arrays.asList(1, 23, 56));
+    
+    //output settings
+    private static final boolean OUTPUT_PASS_VARIANTS_ONLY_DEFAULT = false;
+    private static final boolean OUTPUT_PASS_VARIANTS_ONLY = true;
     private static final int NUMBER_OF_GENES_TO_SHOW_DEFAULT = 0;
-    private static final int NUMBER_OF_GENES_TO_SHOW = 12438803;
-    private static final String OUT_FILE_NAME_DEFAULT = "";
-    private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET = "results/test-exomiser-results";
-    private static final String OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET = "results/test-exomiser-" + BUILD_VERSION + "-results";
-    private static final String OUT_FILE_NAME = "wibbler";
+    private static final int NUMBER_OF_GENES_TO_SHOW = 12438803;    
+    private static final String OUTPUT_PREFIX_DEFAULT = "";
+    private static final String OUTPUT_PREFIX_DEFAULT_WHEN_VCF_SET = "results/test.vcf-exomiser-results";
+    private static final String OUTPUT_PREFIX_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET = "results/test.vcf-exomiser-" + BUILD_VERSION + "-results";
+    private static final String OUTPUT_PREFIX_NAME = "wibbler";
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
-    private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV);
-    private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
-    private static final boolean RUN_FULL_ANALYSIS = true;
+    private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV_GENE);
     
     public ExomiserSettingsTest() {
     }
@@ -100,20 +109,20 @@ public class ExomiserSettingsTest {
         System.out.println(settings);
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH_NOT_SET));
         assertThat(settings.getPedPath(), equalTo(PED_PATH_NOT_SET));
-        assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NOT_SET));
+        assertThat(settings.getPrioritiserType(), equalTo(PRIORITISER_DEFAULT));
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
-        assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
+        assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING_DEFAULT));
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST_DEFAULT));
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST_DEFAULT));
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT_DEFAULT));
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
 
@@ -173,19 +182,11 @@ public class ExomiserSettingsTest {
     }
 
     @Test
-    public void testThatJustSettingAFcvFileIsNotValid() {
+    public void testThatJustSettingAFcvFileIsValid() {
         SettingsBuilder settingsBuilder = new SettingsBuilder();
         settingsBuilder.vcfFilePath(VCF_PATH);
         ExomiserSettings settings = settingsBuilder.build();
-        assertThat(settings.isValid(), is(false));
-    }
-
-    @Test
-    public void testThatJustSettingAPrioritiserIsNotValid() {
-        SettingsBuilder settingsBuilder = new SettingsBuilder();
-        settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
-        ExomiserSettings settings = settingsBuilder.build();
-        assertThat(settings.isValid(), is(false));
+        assertThat(settings.isValid(), is(true));
     }
 
     @Test
@@ -213,9 +214,9 @@ public class ExomiserSettingsTest {
      * Test of getPrioritiserType method, of class ExomiserSettings.
      */
     @Test
-    public void testThatBuilderProducesAnUndefinedPriorityTypeAsDefault() {
+    public void testThatBuilderProducesPriorityTypeNoneAsDefault() {
         ExomiserSettings settings = new SettingsBuilder().build();
-        assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NOT_SET));
+        assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NONE));
     }
 
     /**
@@ -295,36 +296,33 @@ public class ExomiserSettingsTest {
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
     }
 
-    /**
-     * Test of removeDbSnp method, of class ExomiserSettings.
-     */
     @Test
-    public void testThatBuilderProducesRemoveDbSnpDefault() {
+    public void testThatBuilderProducesRemoveKnownVariantsDefault() {
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
+        assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
     }
 
     @Test
-    public void testThatBuilderProducesRemoveDbSnpWhenSet() {
-        vcfPathAndPrioritiserSetBuilder.removeDbSnp(REMOVE_DBSNP);
+    public void testThatBuilderProducesRemoveKnownVariantsWhenSet() {
+        vcfPathAndPrioritiserSetBuilder.removeKnownVariants(REMOVE_KNOWN_VARIANTS);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP));
+        assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS));
     }
 
     /**
-     * Test of removeOffTargetVariants method, of class ExomiserSettings.
+     * Test of keepOffTargetVariants method, of class ExomiserSettings.
      */
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsDefault() {
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsWhenSet() {
-        vcfPathAndPrioritiserSetBuilder.removeOffTargetVariants(REMOVE_OFF_TARGET_VARIANTS);
+        vcfPathAndPrioritiserSetBuilder.keepOffTargetVariants(KEEP_OFF_TARGET_VARIANTS);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS));
     }
 
     /**
@@ -374,7 +372,7 @@ public class ExomiserSettingsTest {
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING));
     }
-
+    
     /**
      * Test of getHpoIds method, of class ExomiserSettings.
      */
@@ -407,6 +405,19 @@ public class ExomiserSettingsTest {
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST));
     }
 
+    @Test
+    public void testThatBuilderProducesDefaultOutputPassVariantsOption() {
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
+        assertThat(settings.outputPassVariantsOnly(), equalTo(OUTPUT_PASS_VARIANTS_ONLY_DEFAULT));
+    }
+
+    @Test
+    public void testThatBuilderProducesOutputPassVariantsOptionWhenSet() {
+        vcfPathAndPrioritiserSetBuilder.outputPassVariantsOnly(OUTPUT_PASS_VARIANTS_ONLY);
+        ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
+        assertThat(settings.outputPassVariantsOnly(), equalTo(OUTPUT_PASS_VARIANTS_ONLY));
+    }
+
     /**
      * Test of getNumberOfGenesToShow method, of class ExomiserSettings.
      */
@@ -424,19 +435,19 @@ public class ExomiserSettingsTest {
     }
 
     /**
-     * Test of getOutFileName method, of class ExomiserSettings.
+     * Test of getOutputPrefix method, of class ExomiserSettings.
      */
     @Test
     public void testThatBuilderProducesDefaultOutFileName() {
         ExomiserSettings settings = new SettingsBuilder().build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileName() {
         vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_SET));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT_WHEN_VCF_SET));
     }
     
     @Test
@@ -444,14 +455,14 @@ public class ExomiserSettingsTest {
         vcfPathAndPrioritiserSetBuilder.vcfFilePath(VCF_PATH);
         vcfPathAndPrioritiserSetBuilder.buildVersion(BUILD_VERSION);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET));
     }
 
     @Test
     public void testThatBuilderProducesSetOutFileName() {
-        vcfPathAndPrioritiserSetBuilder.outFileName(OUT_FILE_NAME);
+        vcfPathAndPrioritiserSetBuilder.outputPrefix(OUTPUT_PREFIX_NAME);
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_NAME));
     }
 
     /**
@@ -493,15 +504,16 @@ public class ExomiserSettingsTest {
                 .minimumQuality(MIMIMUM_QUALITY)
                 .geneticInterval(GENETIC_INTERVAL)
                 .removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF)
-                .removeDbSnp(REMOVE_DBSNP)
-                .removeOffTargetVariants(REMOVE_OFF_TARGET_VARIANTS)
+                .removeKnownVariants(REMOVE_KNOWN_VARIANTS)
+                .keepOffTargetVariants(KEEP_OFF_TARGET_VARIANTS)
                 .candidateGene(CANDIDATE_GENE_NAME)
                 .modeOfInheritance(MODE_OF_INHERITANCE)
                 .diseaseId(DISEASE_STRING)
                 .hpoIdList(HPO_LIST)
                 .seedGeneList(SEED_GENE_LIST)
+                .outputPassVariantsOnly(OUTPUT_PASS_VARIANTS_ONLY)
                 .numberOfGenesToShow(NUMBER_OF_GENES_TO_SHOW)
-                .outFileName(OUT_FILE_NAME)
+                .outputPrefix(OUTPUT_PREFIX_NAME)
                 .outputFormats(OUTPUT_FORMAT)
                 .runFullAnalysis(RUN_FULL_ANALYSIS);
 
@@ -514,15 +526,16 @@ public class ExomiserSettingsTest {
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL));
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
-        assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP));
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS));
+        assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME));
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE));
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING));
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST));
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST));
+        assertThat(settings.outputPassVariantsOnly(), equalTo(OUTPUT_PASS_VARIANTS_ONLY));
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW));
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
         assertThat(settings.isValid(), is(true));
@@ -537,7 +550,7 @@ public class ExomiserSettingsTest {
                 .maximumFrequency(MAXIMUM_FREQUENCY)
                 .hpoIdList(HPO_LIST)
                 .seedGeneList(SEED_GENE_LIST)
-                .outFileName(OUT_FILE_NAME)
+                .outputPrefix(OUTPUT_PREFIX_NAME)
                 .outputFormats(OUTPUT_FORMAT);
 
         ExomiserSettings settings = vcfPathAndPrioritiserSetBuilder.build();
@@ -549,15 +562,16 @@ public class ExomiserSettingsTest {
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
-        assertThat(settings.removeDbSnp(), is(REMOVE_DBSNP_DEFAULT));
-        assertThat(settings.removeOffTargetVariants(), is(REMOVE_OFF_TARGET_VARIANTS_DEFAULT));
+        assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
+        assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING_DEFAULT));
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST));
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST));
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
-        assertThat(settings.getOutFileName(), equalTo(OUT_FILE_NAME));
+        assertThat(settings.outputPassVariantsOnly(), equalTo(OUTPUT_PASS_VARIANTS_ONLY_DEFAULT));
+        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_NAME));
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
         assertThat(settings.isValid(), is(true));

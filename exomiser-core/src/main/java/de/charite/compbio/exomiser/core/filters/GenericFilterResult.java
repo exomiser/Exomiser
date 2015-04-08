@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -72,7 +73,7 @@ public class GenericFilterResult implements FilterResult {
         
     @Override
     public String toString() {
-        return String.format("Filter=%s score=%.3f status=%s",filterType, score, filterResultStatus);
+        return String.format(Locale.UK, "Filter=%s score=%.3f status=%s",filterType, score, filterResultStatus);
     }
     
 }

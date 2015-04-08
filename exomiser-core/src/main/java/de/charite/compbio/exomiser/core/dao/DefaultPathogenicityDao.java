@@ -10,14 +10,17 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import jannovar.common.Constants;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +39,14 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
     @Autowired
     private DataSource dataSource;
 
-    @Cacheable(value="pathogenicity", key="#variant.chromosomalVariant")
+    @Cacheable(value = "pathogenicity", key = "#variant.chromosomalVariant")
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
 
         //if a variant is not classified as missense then we don't need to hit 
         //the database as we're going to assign it a constant pathogenicity score.
-        VariantType variantType = variant.getVariantTypeConstant();
-        if (variantType != VariantType.MISSENSE) {
+        VariantEffect variantEffect = variant.getVariantEffect();
+        if (variantEffect != VariantEffect.MISSENSE_VARIANT) {
             return new PathogenicityData(null, null, null, null);
         }
 
@@ -61,93 +64,96 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
-        String query = String.format("SELECT sift,"
-                + "polyphen, mut_taster, cadd, phyloP "
+        String query = String.format("SELECT "
+                + "sift,"
+                + "polyphen,"
+                + "mut_taster,"
+                + "cadd "
                 + "FROM variant "
                 + "WHERE chromosome = ? "
                 + "AND position = ? "
                 + "AND ref = ? "
                 + "AND alt = ? ");
-
         PreparedStatement ps = connection.prepareStatement(query);
-        int chrom = variant.get_chromosome();
-        int position = variant.get_position();
-        // Note: when we get here, we have tested above that we have a nonsynonymous substitution
-        char ref = variant.get_ref().charAt(0);
-        char alt = variant.get_alt().charAt(0);
 
-        ps.setInt(1, chrom);
-        ps.setInt(2, position);
-        ps.setString(3, Character.toString(ref));
-        ps.setString(4, Character.toString(alt));
+        // FIXME(holtgrewe): See my comment in {@link DefaultFrequencyDao.createPreparedStatement}.
+        // Note: when we get here, we have tested above that we have a nonsynonymous substitution
+        ps.setInt(1, variant.getChromosome());
+        ps.setInt(2, variant.getPosition());
+        ps.setString(3, variant.getRef());
+        ps.setString(4, variant.getAlt());
 
         return ps;
     }
 
     PathogenicityData processResults(ResultSet rs, Variant variant) throws SQLException {
 
-        float polyphen = Float.NaN;
-        float mutationTaster = Float.NaN;
-        float sift = Float.NaN;
-        float cadd = Float.NaN;
+        SiftScore siftScore = null;
+        PolyPhenScore polyPhenScore = null;
+        MutationTasterScore mutationTasterScore = null;
+        CaddScore caddScore = null;
         /* 
          * Switched db back to potentially having multiple rows per variant
          * if alt transcripts leads to diff aa changes and pathogenicities.
          * In future if know which transcript is more likely in the disease
          * tissue can use the most appropriate row but for now take max
          */
-        //yukkity yuk-yuk
         while (rs.next()) {
-            float rowSift = rs.getFloat(1);
-            //TODO - remove the Constants once the database build has been fixed
-            if (!rs.wasNull() && rowSift != Constants.UNINITIALIZED_FLOAT && rowSift != Constants.NOPARSE_FLOAT) {
-                if (Float.isNaN(sift) || rowSift < sift) {
-                    sift = rowSift;
-                }
-            }
-            float rowPoly = rs.getFloat(2);
-            if (!rs.wasNull() && rowPoly != Constants.UNINITIALIZED_FLOAT && rowPoly != Constants.NOPARSE_FLOAT) {
-                if (Float.isNaN(polyphen) || rowPoly > polyphen) {
-                    polyphen = rowPoly;
-                }
-            }
-            float rowMut = rs.getFloat(3);
-            if (!rs.wasNull() && rowMut != Constants.UNINITIALIZED_FLOAT && rowMut != Constants.NOPARSE_FLOAT) {
-                if (Float.isNaN(mutationTaster) || rowMut > mutationTaster) {
-                    mutationTaster = rowMut;
-                }
-            }
-            float rowCadd = rs.getFloat(4);
-            if (!rs.wasNull() && rowCadd != Constants.UNINITIALIZED_FLOAT && rowCadd != Constants.NOPARSE_FLOAT) {
-                if (Float.isNaN(cadd) || rowCadd > cadd) {
-                    cadd = rowCadd;
-                }
-            }
-        }
-        
-        //yukkity yuk-yuk-yuk
-        SiftScore siftScore = null;
-        if (!Float.isNaN(sift)) {
-            siftScore = new SiftScore(sift);
-        }
-        
-        PolyPhenScore polyPhenScore = null;
-        if (!Float.isNaN(polyphen)) {
-            polyPhenScore = new PolyPhenScore(polyphen);
-        }
-        
-        MutationTasterScore mutationTasterScore = null;
-        if (!Float.isNaN(mutationTaster)) {
-            mutationTasterScore = new MutationTasterScore(mutationTaster);
-        }
-
-        CaddScore caddScore = null;
-        if (!Float.isNaN(cadd)) {
-            caddScore = new CaddScore(cadd);
+            siftScore = getBestSiftScore(rs, siftScore);
+            polyPhenScore = getBestPolyPhenScore(rs, polyPhenScore);
+            mutationTasterScore = getBestMutationTasterScore(rs, mutationTasterScore);
+            caddScore = getBestCaddScore(rs, caddScore);
         }
 
         return new PathogenicityData(polyPhenScore, mutationTasterScore, siftScore, caddScore);
 
+    }
+
+    private SiftScore getBestSiftScore(ResultSet rs, SiftScore score) throws SQLException {
+        float rowVal = rs.getFloat("sift");
+        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+            if (score == null || rowVal < score.getScore()) {
+                return new SiftScore(rowVal);
+            }
+        }
+        return score;
+    }
+
+    private PolyPhenScore getBestPolyPhenScore(ResultSet rs, PolyPhenScore score) throws SQLException {
+        float rowVal = rs.getFloat("polyphen");
+        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+            if (score == null || rowVal > score.getScore()) {
+                return new PolyPhenScore(rowVal);
+            }
+        }
+        return score;
+    }
+
+    private MutationTasterScore getBestMutationTasterScore(ResultSet rs, MutationTasterScore score) throws SQLException {
+        float rowVal = rs.getFloat("mut_taster");
+        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+            if (score == null || rowVal > score.getScore()) {
+                return new MutationTasterScore(rowVal);
+            }
+        }
+        return score;
+    }
+
+    private CaddScore getBestCaddScore(ResultSet rs, CaddScore score) throws SQLException {
+        float rowVal = rs.getFloat("cadd");
+        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+            if (score == null || rowVal > score.getScore()) {
+                return new CaddScore(rowVal);
+            }
+        }
+        return score;
+    }
+
+    //TODO: this should vanish in the next db build. Check and remove.
+    private static final float NOPARSE_FLOAT = -5f;
+
+    private static boolean valueNotNullOrNoParseFloat(ResultSet rs, float rowVal) throws SQLException {
+        return !rs.wasNull() && rowVal != NOPARSE_FLOAT;
     }
 
 }

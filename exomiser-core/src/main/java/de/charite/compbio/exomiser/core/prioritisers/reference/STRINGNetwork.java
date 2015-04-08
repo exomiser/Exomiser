@@ -1,8 +1,5 @@
 package de.charite.compbio.exomiser.core.prioritisers.reference;
 
-
-
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,17 +13,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 /**
- * This class encapsulates a network derived from the STRING
- * protein-protein interaction network. It is designed to be initialized
- * by the seed genes chosen by the user of ExomeWalker. It then goes and
- * identifies the degree one neighbors of these genes. It can then be used
- * to quickly answer the question whether a candidate gene is
- * related to the seed genes or any of their neighbors.
- * This class gets its information from the Exomiser database and 
+ * This class encapsulates a network derived from the STRING protein-protein
+ * interaction network. It is designed to be initialized by the seed genes
+ * chosen by the user of ExomeWalker. It then goes and identifies the degree one
+ * neighbors of these genes. It can then be used to quickly answer the question
+ * whether a candidate gene is related to the seed genes or any of their
+ * neighbors. This class gets its information from the Exomiser database and
  * expects to find the <b>string</b> table.
+ *
  * @see exomizer.io.STRINGParser
  * @author Peter Robinson
  * @version 0.03 (10 February, 2014)
@@ -61,8 +56,8 @@ public class STRINGNetwork implements Network {
      */
     public STRINGNetwork(Connection c, String seedGeneList) {
         this.connection = c;
-        this.interactionPath = new HashMap<Integer, List<String>>();
-        this.seedGeneIdSet = new HashSet<Integer>();
+        this.interactionPath = new HashMap<>();
+        this.seedGeneIdSet = new HashSet<>();
         logger.info("initialising seed genes");
         initializeSeedGenesAndNeighbors(seedGeneList);
     }
@@ -89,8 +84,7 @@ public class STRINGNetwork implements Network {
                 return null;
             }
         } catch (SQLException e) {
-            System.err.println("[WARN] STRINGNetwork, could not retrieve gene symbol");
-            System.err.println("[WARN] SQLException" + e.getMessage());
+            logger.error("STRINGNetwork, could not retrieve gene symbol", e);
         }
         return null;
     }
@@ -109,14 +103,14 @@ public class STRINGNetwork implements Network {
         if (this.interactionPath.containsKey(entrezID)) {
             return this.interactionPath.get(entrezID);
         } else {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
     }
 
     /**
-     * Adds a one- or two-interaction path to
-     * {@link #interactionPath}. The key is the gene at the end of the chain,
-     * i.e., on the other side of the path from a seed gene.
+     * Adds a one- or two-interaction path to {@link #interactionPath}. The key
+     * is the gene at the end of the chain, i.e., on the other side of the path
+     * from a seed gene.
      *
      * @param id Entrez ID of a gene interacting (path: 1 or 2) with a seed gene
      * @param path String representation of path, e.g. ABC1 <-> DEF2 <->GHI3.
@@ -127,7 +121,6 @@ public class STRINGNetwork implements Network {
         }
         List<String> lst = this.interactionPath.get(id);
         lst.add(path);
-        //logger.info("Adding path {}", path);
     }
 
     /**
@@ -135,9 +128,8 @@ public class STRINGNetwork implements Network {
      * that is connected to a seed gene. The method adds all direct interaction
      * partners, so that in the end we have paths of length two from the seed
      * genes. For example, say we have a seed gene ABC1. Then we might use
-     * {@link #addSinglePath} to creat ethe path
-     * <code>ABC1 <-> DEF2</code>. This method will extend that path to
-     * <code>ABC1 <-> DEF2 <-> GHI3</code>.
+     * {@link #addSinglePath} to creat ethe path <code>ABC1 <-> DEF2</code>.
+     * This method will extend that path to <code>ABC1 <-> DEF2 <-> GHI3</code>.
      *
      * @param neighborID Entrez Gene id of a gene that is neighbor to a seed
      * gene.
@@ -157,20 +149,20 @@ public class STRINGNetwork implements Network {
                 int id = rs.getInt(1);
                 if (id == seedID) {
                     continue; /* this is a self-loop from a seed gene to another gene and back. 
-				 We can skip it since we do not want to display this on the
-				 website. */
+                     We can skip it since we do not want to display this on the
+                     website. */
+
                 }
                 String symbol = rs.getString(2);
                 if (symbol == null || symbol.length() == 0) {
-                    System.err.println("[WARN] Double symbol null in addDoublePath");
-                    System.err.println("id=" + id);
+                    logger.error("Double symbol null in addDoublePath for id {}", id);
                     continue;
                 }
                 String path = String.format("%s&hArr;%s", pathToDate, symbol);
                 addPathToMap(id, path);
             }
         } catch (SQLException e) {
-            System.err.println("[WARN] SQLException" + e.getMessage());
+            logger.error("SQLException {}", e.getMessage());
         }
     }
 
@@ -196,22 +188,23 @@ public class STRINGNetwork implements Network {
                 int id = rs.getInt(1);
                 String symbol = rs.getString(2);
                 if (symbol == null) {
-                    System.err.println("[WARN, SINGLE STRINGNetowrk: symbol is null");
-                    System.err.println("id=" + id);
+                    logger.error("id {} symbol is null", id);
                     continue;
                 }
                 String path = String.format("%s&hArr;%s", seedSymbol, symbol);
                 addPathToMap(id, path);
                 if (this.seedGeneIdSet.contains(id)) {
                     continue; /* Do not add double path if the first node also belongs to the seed family. */
+
                 }
                 addDoublePath(id, seedID, path); /*
                  * id is the Entrez Gene id of the gene that interacts with the
                  * seed gene (seedID).
                  */
+
             }
         } catch (SQLException e) {
-            System.err.println("[WARN] SQLException" + e.getMessage());
+            logger.error("", e);
         }
         String query2 = "SELECT entrezID,symbol FROM entrez2sym,string WHERE "
                 + "(entrezID = entrezb AND entreza=?);";
@@ -224,14 +217,14 @@ public class STRINGNetwork implements Network {
                 int id = rs.getInt(1);
                 String symbol = rs.getString(2);
                 if (symbol == null) {
-                    System.err.println("[WARN, SINGLE STRINGNetowrk: symbol is null");
-                    System.err.println("id=" + id);
+                    logger.error("id {} symbol is null", id);
                     continue;
                 }
                 String path = String.format("%s&hArr;%s", seedSymbol, symbol);
                 addPathToMap(id, path);
                 if (this.seedGeneIdSet.contains(id)) {
                     continue; /* Do not add double path if the first node also belongs to the seed family. */
+
                 }
                 addDoublePath(id, seedID, path); /*
                  * id is the Entrez Gene id of the gene that interacts with the
@@ -239,7 +232,7 @@ public class STRINGNetwork implements Network {
                  */
             }
         } catch (SQLException e) {
-            System.err.println("[WARN] SQLException" + e.getMessage());
+            logger.error("", e);
         }
     }
 
@@ -250,20 +243,19 @@ public class STRINGNetwork implements Network {
      *
      * @param seedGenes A comma-separated list of EntrezGene ids
      */
-    public void initializeSeedGenesAndNeighbors(String seedGenes) {
-        String A[] = seedGenes.split(",");
-        for (String a : A) {
-            Integer entrezID = Integer.parseInt(a.trim());
+    private void initializeSeedGenesAndNeighbors(String seedGenes) {
+        String[] seedGeneValues = seedGenes.split(",");
+        for (String geneId : seedGeneValues) {
+            Integer entrezID = Integer.parseInt(geneId.trim());
             logger.info("DOING {}", entrezID);
             this.seedGeneIdSet.add(entrezID);
             String symbol = getSymbol(entrezID);
             logger.info("GOT SYMBOL {}", symbol);
             if (symbol == null) {
-                continue; /* i.e., no symbol could be found. */
+                continue;
             }
             addSinglePath(entrezID, symbol);
             logger.info("FINISHED");
         }
     }
 }
-/* eof */

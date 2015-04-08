@@ -9,6 +9,13 @@ CREATE TABLE frequency (
     dbsnpmaf double precision,
     espeamaf double precision,
     espaamaf double precision,
-    espallmaf double precision
+    espallmaf double precision,
+    exacafrmaf double precision,
+    exacamrmaf double precision,
+    exaceasmaf double precision,
+    exacfinmaf double precision,
+    exacnfemaf double precision,
+    exacothmaf double precision,
+    exacsasmaf double precision
 );
 

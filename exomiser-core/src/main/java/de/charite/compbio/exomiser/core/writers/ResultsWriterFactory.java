@@ -6,36 +6,46 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
+import htsjdk.variant.vcf.VCFHeader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.thymeleaf.TemplateEngine;
+
 /**
  * Provides an entry point for getting a ResultsWriter for a specific format.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
+@Component
 public class ResultsWriterFactory {
 
-    public static ResultsWriter getResultsWriter(OutputFormat outputFormat) {
+    @Autowired
+    private TemplateEngine templateEngine;
+
+    /**
+     * Build {@link ResultsWriter} for the given {@link VCFReader} and {@link OutputFormat}.
+     * 
+     * @param header
+     *            from the input file, to base output header upon
+     * @param outputFormat
+     *            the format to use for the output
+     * @return the constructed {@link ResultsWriter} implementation
+     */
+    public ResultsWriter getResultsWriter(VCFHeader header, OutputFormat outputFormat) {
         switch (outputFormat){
             case HTML:
-                return getHtmlResultsWriter();
-            case TSV:
-                return getTsvResultsWriter();
+                return new HtmlResultsWriter(templateEngine);
+            case TSV_GENE:
+                return new TsvGeneResultsWriter();
+            case TSV_VARIANT:
+                return new TsvVariantResultsWriter();
             case VCF:
-                return getVcfResultsWriter();
+                return new VcfResultsWriter(header);
+            case PHENOGRID:
+                return new PhenogridWriter();
             default:
-                return getHtmlResultsWriter();
+                return new HtmlResultsWriter(templateEngine);
         }
-    }
-    
-    protected static ResultsWriter getHtmlResultsWriter() {
-        return new HtmlResultsWriter();
-    }
-
-    protected static ResultsWriter getTsvResultsWriter() {
-        return new TsvResultsWriter();
-    }
-
-    protected static ResultsWriter getVcfResultsWriter() {
-        return new VcfResultsWriter();
-    }
-    
+    }   
 }

@@ -12,6 +12,7 @@ import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,10 @@ import org.slf4j.LoggerFactory;
 public class FilterReportFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(FilterReportFactory.class);
+
+    public FilterReportFactory() {
+        Locale.setDefault(Locale.UK);
+    }
 
     /**
      * Makes a List of {@code FilterReport} for the {@code FilterType} specified.
@@ -87,6 +92,7 @@ public class FilterReportFactory {
         int numDbSnpFreqData = 0;
         int numDbSnpRsId = 0;
         int numEspFreqData = 0;
+        int numExaCFreqData = 0;
 
         for (VariantEvaluation ve : variantEvaluations) {
             FrequencyData frequencyData = ve.getFrequencyData();
@@ -103,6 +109,9 @@ public class FilterReportFactory {
             if (frequencyData.hasEspData()) {
                 numEspFreqData++;
             }
+            if (frequencyData.hasExacData()) {
+                numExaCFreqData++;
+            }
         }
         
         int before = report.getPassed() + report.getFailed();
@@ -111,7 +120,7 @@ public class FilterReportFactory {
         report.addMessage(String.format("Frequency Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, 100f * (double) numDbSnpFreqData / before));
         report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, 100 * (double) numDbSnpRsId / before));
         report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, 100f * (double) numEspFreqData / before));
-        
+        report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, 100f * (double) numExaCFreqData / before));
         return report;
     }
 

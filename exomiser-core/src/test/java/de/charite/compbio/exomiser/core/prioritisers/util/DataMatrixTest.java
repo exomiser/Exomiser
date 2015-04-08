@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import org.jblas.FloatMatrix;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,18 +30,23 @@ public class DataMatrixTest {
     @Before
     public void setUp() {
         floatMatrix = new FloatMatrix(4, 4);
+        
+        //floatMatrix.put(row, column, value);
         floatMatrix.put(0, 0, 00);
         floatMatrix.put(0, 1, 01);
         floatMatrix.put(0, 2, 02);
         floatMatrix.put(0, 3, 03);
+        
         floatMatrix.put(1, 0, 10);
         floatMatrix.put(1, 1, 11);
         floatMatrix.put(1, 2, 12);
         floatMatrix.put(1, 3, 13);
+        
         floatMatrix.put(2, 0, 20);
         floatMatrix.put(2, 1, 21);
         floatMatrix.put(2, 2, 22);
         floatMatrix.put(2, 3, 23);
+        
         floatMatrix.put(3, 0, 30);
         floatMatrix.put(3, 1, 31);
         floatMatrix.put(3, 2, 32);
@@ -59,11 +65,6 @@ public class DataMatrixTest {
         rowToEntrezIdIndex.put(3, 3333);
                 
         instance = new DataMatrix(floatMatrix, entrezIdToRowIndex);
-    }
-
-    @Test
-    public void testGetIdx2objectid() {
-        assertThat(instance.getRowToEntrezIdIndex(), equalTo(rowToEntrezIdIndex));
     }
 
     @Test
@@ -89,6 +90,28 @@ public class DataMatrixTest {
     @Test
     public void testContainsGeneIsFalse() {
         assertThat(instance.containsGene(9999), is(false));
+    }
+    
+    @Test
+    public void testGetRowIndexForGeneInIndex() {
+        assertThat(instance.getRowIndexForGene(3333), equalTo(3));
+    }
+    
+    @Test
+    public void testGetRowIndexForGeneNotInIndex() {
+        assertThat(instance.getRowIndexForGene(9999), nullValue());
+    }
+    
+    @Test
+    public void testGetColumnMatrixForGeneInIndex() {
+        //expect a new single column matrix with 4 rows
+        FloatMatrix geneColumn = new FloatMatrix(4, 1);
+        geneColumn.put(0, 0, 03);
+        geneColumn.put(1, 0, 13);
+        geneColumn.put(2, 0, 23);        
+        geneColumn.put(3, 0, 33);
+        
+        assertThat(instance.getColumnMatrixForGene(3333), equalTo(geneColumn));
     }
     
 //

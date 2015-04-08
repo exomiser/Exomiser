@@ -3,24 +3,26 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
-import jannovar.common.VariantType;
+import java.util.Collection;
+
+import de.charite.compbio.jannovar.annotation.PutativeImpact;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 /**
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 public abstract class VariantTypePathogenicityScores {
-    
+
     /**
      * This is the pathogenicity value we will give to missense (nonsynonymous)
      * variants for which we cannot find values for mutationTaster, polyphen2,
      * or SIFT.
-     * Average CADD score for missense = 15.08 => ~0.97 
      */
-    public static final float DEFAULT_MISSENSE_SCORE = 0.97f;
+    public static final float DEFAULT_MISSENSE_SCORE = 0.6f;
     /**
      * Pathogenicity score for a mutation class such as INTERGENIC where we are
      * entirely sure it is nonpathogenic (for the purposes of this software).
@@ -28,77 +30,76 @@ public abstract class VariantTypePathogenicityScores {
     public static final float NON_PATHOGENIC_SCORE = 0.00f;
     /**
      * Assumed pathogenicity score for a frameshift mutation.
-     * Average CADD score from running an exome
      */
-    public static final float FRAMESHIFT_SCORE = 0.85f;
+    public static final float FRAMESHIFT_SCORE = 0.95f;
     /**
      * Assumed pathogenicity score for a nonframeshift indel mutation.
-     * Need to run more exomes to get a proper average - for now set to 0.1 less than
-     * frameshift
      */
-    public static final float NONFRAMESHIFT_INDEL_SCORE = 0.75f;
+    public static final float NONFRAMESHIFT_INDEL_SCORE = 0.85f;
     /**
      * Assumed pathogenicity score for a nonsense mutation.
-     * Average CADD score = 31.67 => ~0.999 
      */
-    public static final float NONSENSE_SCORE = 0.999f;
+    public static final float NONSENSE_SCORE = 0.95f;
     /**
      * Assumed pathogenicity score for a splice site mutation.
-     * Average CADD score from running an exome
      */
-    public static final float SPLICING_SCORE = 0.85f;
+    public static final float SPLICING_SCORE = 0.90f;
     /**
      * Assumed pathogenicity score for a synonymous mutation.
      */
     public static final float SYNONYMOUS_SCORE = 0.10f;
     /**
      * Assumed pathogenicity score for a stoploss mutation.
-     * Average CADD score for missense = 13.84 => ~0.94  
      */
-    public static final float STOPLOSS_SCORE = 0.94f;
+    public static final float STOPLOSS_SCORE = 0.70f;
     /**
      * Assumed pathogenicity score for a variant that causes the start codon to
      * be lost.
-     * Average CADD score for missense = 14.11 => ~0.94
      */
-    public static final float STARTLOSS_SCORE = 0.94f;
+    public static final float STARTLOSS_SCORE = 0.95f;
 
+    public static final float getPathogenicityScoreOf(Collection<VariantEffect> effects) {
+        if (effects.isEmpty()) {
+            // no effect annotated
+            return NON_PATHOGENIC_SCORE; 
+        }
+        // highest priority effect
+        VariantEffect variantEffect = effects.iterator().next(); 
 
-
-    public static final float getPathogenicityScoreOf(VariantType variantType) {
-        if (!variantType.isTopPriorityVariant()) {
+        // guard against the case that the highest-impact effect is neither high nor moderate
+        if (variantEffect.getImpact().ordinal() > PutativeImpact.MODERATE.ordinal()) {
+             // neither HIGH nor MODERATE
             return NON_PATHOGENIC_SCORE;
         }
-        switch (variantType) {
-            case MISSENSE:
+        switch (variantEffect) {
+            case MISSENSE_VARIANT:
                 return DEFAULT_MISSENSE_SCORE;
-            case FS_DELETION:
+            case SYNONYMOUS_VARIANT:
+                return SYNONYMOUS_SCORE;
+            case FRAMESHIFT_ELONGATION:
+            case FRAMESHIFT_TRUNCATION:
+            case FRAMESHIFT_VARIANT:
                 return FRAMESHIFT_SCORE;
-            case FS_INSERTION:
-                return FRAMESHIFT_SCORE;
-            case NON_FS_SUBSTITUTION:
+            case MNV:
+            case FEATURE_TRUNCATION:
+            case DISRUPTIVE_INFRAME_DELETION:
+            case DISRUPTIVE_INFRAME_INSERTION:
+            case INFRAME_DELETION:
+            case INFRAME_INSERTION:
+            case INTERNAL_FEATURE_ELONGATION:
+            case COMPLEX_SUBSTITUTION:
                 return NONFRAMESHIFT_INDEL_SCORE;
-            case FS_SUBSTITUTION:
-                return FRAMESHIFT_SCORE;
-            case NON_FS_DELETION:
-                return NONFRAMESHIFT_INDEL_SCORE;
-            case NON_FS_INSERTION:
-                return NONFRAMESHIFT_INDEL_SCORE;
-            case SPLICING:
+            case SPLICE_ACCEPTOR_VARIANT:
+            case SPLICE_DONOR_VARIANT:
+            case SPLICE_REGION_VARIANT:
                 return SPLICING_SCORE;
-            case STOPGAIN:
-                return NONSENSE_SCORE;
-            case STOPLOSS:
-                return STOPLOSS_SCORE;
-            //Note, the frameshift duplication get the FRAMESHIFT default score
-            case FS_DUPLICATION:
-                return FRAMESHIFT_SCORE;
-            case NON_FS_DUPLICATION:
-                return NONFRAMESHIFT_INDEL_SCORE;
-            case START_LOSS:
+            case START_LOST:
                 return STARTLOSS_SCORE;
+            case STOP_LOST:
+                return STOPLOSS_SCORE;
+            case STOP_GAINED:
+                return NONSENSE_SCORE;
             default:
-                //(the remainder should be the ).
                 return NON_PATHOGENIC_SCORE;
         }
     }

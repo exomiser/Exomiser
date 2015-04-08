@@ -5,17 +5,13 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
-import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.VariantTypeCount;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.DEFAULT_OUTPUT_DIR;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.VariantType;
-import jannovar.exome.VariantTypeCounter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,69 +21,100 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ResultsWriterUtilsTest {
 
-    SettingsBuilder settingsbuilder;
-    
-    public ResultsWriterUtilsTest() {
-    }
+    SettingsBuilder settingsBuilder;
 
+    @Mock
+    Gene passedGeneOne;
+    @Mock
+    Gene passedGeneTwo;
+    @Mock
+    Gene failedGene;
+    
     @Before
     public void before() {
-        settingsbuilder = new ExomiserSettings.SettingsBuilder();
-        settingsbuilder.vcfFilePath(Paths.get("wibble"));
+        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder.vcfFilePath(Paths.get("wibble"));
+        
+        Mockito.when(passedGeneOne.passedFilters()).thenReturn(Boolean.TRUE);
+        Mockito.when(passedGeneTwo.passedFilters()).thenReturn(Boolean.TRUE);
+        Mockito.when(failedGene.passedFilters()).thenReturn(Boolean.FALSE);
+    }
+    
+    private List<Gene> getGenes() {
+        List<Gene> genes = new ArrayList<>();
+        genes.add(passedGeneOne);
+        genes.add(passedGeneTwo);
+        genes.add(failedGene);
+        return genes;
     }
 
     @Test
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
-        OutputFormat testedFormat = OutputFormat.TSV;
-        ExomiserSettings settings = settingsbuilder.build();
+        OutputFormat testedFormat = OutputFormat.TSV_GENE;
+        ExomiserSettings settings = settingsBuilder.build();
         String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
-        String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
+        String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
     }
 
     @Test
     public void testThatSpecifiedVcfFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.VCF;
-        ExomiserSettings settings = settingsbuilder.build();
+        ExomiserSettings settings = settingsBuilder.build();
         String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
-        String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
+        String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
     }
 
     @Test
-    public void testThatSpecifiedOutputFormatOverwritesGivenOutFileExtension() {
+    public void testThatSpecifiedOutputFormatDoesNotOverwriteGivenOutputPrefixFileExtension() {
         OutputFormat testedFormat = OutputFormat.VCF;
-        settingsbuilder.outFileName("/user/jules/exomes/analysis/slartibartfast.xml");
-        ExomiserSettings settings = settingsbuilder.build();        
-        String expResult = String.format("/user/jules/exomes/analysis/slartibartfast.%s", testedFormat.getFileExtension());
-        String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
+        String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
+        settingsBuilder.outputPrefix(outputPrefix);
+        ExomiserSettings settings = settingsBuilder.build();        
+        String expResult = String.format("%s.%s", outputPrefix, testedFormat.getFileExtension());
+        String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
     }
-
+    
     @Test
     public void testDefaultOutputFormatIsNotDestroyedByIncorrectFileExtensionDetection() {
         OutputFormat testedFormat = OutputFormat.HTML;
-        settingsbuilder.buildVersion("2.1.0");
-        ExomiserSettings settings = settingsbuilder.build();
+        settingsBuilder.buildVersion("2.1.0");
+        ExomiserSettings settings = settingsBuilder.build();
         String expResult = DEFAULT_OUTPUT_DIR + "/wibble-exomiser-2.1.0-results.html";
-        String result = ResultsWriterUtils.determineFileExtension(settings.getOutFileName(), testedFormat);
+        String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
+    }
+    
+    @Test
+    public void testOutFileNameIsCombinationOfOutPrefixAndOutFormat() {
+        OutputFormat outFormat = OutputFormat.TSV_GENE;
+        String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009.vcf";
+        settingsBuilder.outputPrefix(outFilePrefix);
+        ExomiserSettings settings = settingsBuilder.build();
+        assertThat(ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), outFormat), equalTo(outFilePrefix + "." + outFormat.getFileExtension()));
     }
     
     @Test
     public void canMakeEmptyVariantTypeCounterFromEmptyVariantEvaluations() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        List<VariantTypeCount> variantTypeCounters = ResultsWriterUtils.makeVariantTypeCounters(variantEvaluations);
+        List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
         assertThat(variantTypeCounters.isEmpty(), is(false));
         
-        VariantTypeCount firstVariantTypeCount = variantTypeCounters.get(0);
+        VariantEffectCount firstVariantTypeCount = variantTypeCounters.get(0);
         assertThat(firstVariantTypeCount.getVariantType(), notNullValue());
         assertThat(firstVariantTypeCount.getSampleVariantTypeCounts().isEmpty(), is(true));
     }
@@ -105,4 +132,35 @@ public class ResultsWriterUtilsTest {
         
         assertThat(results.isEmpty(), is(false));
     }
+
+    @Test
+    public void testMaxPassedGenesWhereMaxGenesIsZero() {
+        List<Gene> allPassedGenes = new ArrayList<>();
+        allPassedGenes.add(passedGeneOne);
+        allPassedGenes.add(passedGeneTwo);
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 0), equalTo(allPassedGenes));
+    } 
+    
+    @Test
+    public void testMaxPassedGenesWhereMaxGenesIsOne() {
+        List<Gene> onePassed = new ArrayList<>();
+        onePassed.add(passedGeneOne);
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 1), equalTo(onePassed));
+    } 
+    @Test
+    public void testMaxPassedGenesWhereMaxGenesIsGreaterThanInputSize() {
+        List<Gene> allPassedGenes = new ArrayList<>();
+        allPassedGenes.add(passedGeneOne);
+        allPassedGenes.add(passedGeneTwo);
+        assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 100), equalTo(allPassedGenes));
+    }
+    
+    @Test
+    public void testPassedGenesReturnsAllPassedGenes() {
+        List<Gene> allPassedGenes = new ArrayList<>();
+        allPassedGenes.add(passedGeneOne);
+        allPassedGenes.add(passedGeneTwo);
+        assertThat(ResultsWriterUtils.getPassedGenes(getGenes()), equalTo(allPassedGenes));
+    }
+    
 }

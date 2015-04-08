@@ -12,24 +12,21 @@ and open the template in the editor.
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="stylesheet" type="text/css" media="all" href="../../resources/bootstrap-3.2.0/css/bootstrap.min.css" th:href="@{/resources/bootstrap-3.2.0/css/bootstrap.min.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../../resources/css/sanger-pagesmith-shim.css" th:href="@{resources/css/sanger-pagesmith-shim.css}"/>
     </head>
     <body>
-        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <div class="container">
-                <ul class="nav nav-pills" id="tabs">
-                    <li><a href="#settings" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-cog"/> Analysis Settings</h4></a></li>
-                    <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-filter"/> Filtering Summary</h4></a></li>
-                    <li><a href="#distribution" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</h4></a></li>
-                    <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</h4></a></li>
-                    <li><a href="#prioritisation" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-sort"/> Prioritised Genes</h4></a></li>
-                    <!--<li><a href="#about" role="tab" data-toggle="tab"><h4><span class="glyphicon glyphicon-question-sign"/> About</h4></a></li>-->
-                </ul>
-            </div>
-        </nav>
         <div id="content" class="container">
-            <h1>
+            <h2>
                 Exomiser Analysis Results for <th:block th:text="${sampleName}"> Slartibartfast</th:block>
-            </h1>
+            </h2>
+            <ul class="nav nav-pills" id="tabs">
+                <li><a href="#settings" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-cog"/> Analysis Settings</b></a></li>
+                <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-filter"/> Filtering Summary</b></a></li>
+                <li><a href="#distribution" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</b></a></li>
+                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</b></a></li>
+                <li><a href="#prioritisation" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-sort"/> Prioritised Genes</b></a></li>
+                <!--<li><a href="#about" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-question-sign"/> About</b></a></li>-->
+            </ul>
             <div class="tab-content">
                 <div class="tab-pane fade" id="settings">
                     <p>Settings used for this analysis:</p>
@@ -127,6 +124,13 @@ and open the template in the editor.
 
                 <div class="tab-pane" id="prioritisation">
                     <table class="table table-striped table-responsive table-condensed table-hover" id="details">
+                        <caption th:if="${geneResultsTruncated} == true"> 
+                            <div class="alert alert-info" role="alert">
+                                For performance reasons only the top <span th:text="${@maxGenes}">300</span> out of a total of <span th:text="${numCandidateGenes}">99999</span> candidate genes are shown here. 
+                                If you want to explore these other genes please try the offline version which you can 
+                                <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/" class="alert-link">download from the FTP site</a>. 
+                            </div>
+                        </caption>
                         <tbody>
                             <tr th:each="gene: ${genes}">
                                 <td>
@@ -150,10 +154,7 @@ and open the template in the editor.
                                     </div>
                                     <div class="row">
                                         <div class="col-sm-12">
-                                            <dl th:each="priorityScore: ${gene.priorityScoreMap}">
-                                                <dt th:text="|${priorityScore.key} prioritiser:|">Omim prioritiser:</dt>
-                                                <dd th:each="result: ${priorityScore.value.HTMLCode}" th:utext="${result}"><a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a></dd>
-                                            </dl>
+                                            <th:block th:each="priorityResult: ${gene.priorityResults}" th:utext="${priorityResult.value.HTMLCode}"><a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a></th:block>
                                         </div>
                                     </div>
                                     <div class="row"
@@ -173,7 +174,7 @@ and open the template in the editor.
                                         <div class="col-sm-6" > 
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
-                                                <dd th:each="annotation: ${variantEvaluation.annotationList}" 
+                                                <dd th:each="annotation: ${variantEvaluation.annotations}" 
                                                     th:with="ucscData=${#strings.listSplit(annotation,':')}, ucscId=${ucscData[0]}, text=${annotation.replace(ucscId + ':', '')}">
                                                     <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" 
                                                        th:text="${ucscId}">uc001lfg.4</a> <th:block th:text="${text}">exon6:c.518A> C:p.E173A</th:block>
@@ -192,10 +193,7 @@ and open the template in the editor.
                                             <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <dt>Frequency Data:</dt>
                                                 <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
-                                                <dd th:each="dbSnp: ${#objects.nullSafe(frequencyData.dbSnpMaf, default)}" th:text="'DbSNP: ' + ${dbSnp} + '%'">dbSNP: 0.02%</dd>
-                                                <dd th:each="espAll: ${#objects.nullSafe(frequencyData.espAllMaf, default)}" th:text="'ESP All: ' + ${espAll} + '%'">ESP All: 0.02%</dd>
-                                                <dd th:each="espEa: ${#objects.nullSafe(frequencyData.espEaMaf, default)}" th:text="'ESP EA: ' + ${espEa} + '%'">ESP EA: 0.02%</dd>
-                                                <dd th:each="espAa: ${#objects.nullSafe(frequencyData.espAaMaf, default)}" th:text="'ESP AA: ' + ${espAa} + '%'">ESP AA: 0.02%</dd>
+                                                <dd th:each="freq: ${frequencyData.knownFrequencies}" th:text="${freq.source.source} + ': ' + ${freq.frequency} + '%'">1000Genomes: 0.02%</dd>
                                             </dl>
                                         </div>
                                     </div>

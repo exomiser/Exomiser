@@ -58,7 +58,6 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
     private String buildPrioritiserDescription(String prioritiserLongOpt) {
         List<PriorityType> inValidPriorityTypes = new ArrayList<>();
         inValidPriorityTypes.add(PriorityType.NOT_SET);
-        inValidPriorityTypes.add(PriorityType.INHERITANCE_MODE_PRIORITY);
         inValidPriorityTypes.add(PriorityType.OMIM_PRIORITY);
 
         List<PriorityType> validPriorityTypes = new ArrayList<>();

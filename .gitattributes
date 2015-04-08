@@ -1,0 +1,26 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=lf
+
+*.txt    text
+*.java   text diff=java
+*.html   text diff=html
+*.css    text
+*.js     text
+*.sql    text
+*.xml    text
+*.md     text
+
+*.ped    text
+*.vcf    text
+
+# Denote all files that are truly binary and should not be modified.
+*.ser binary
+*.png binary
+*.eot binary
+*.woff binary
+*.ttf binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.class binary
+*.gif binary

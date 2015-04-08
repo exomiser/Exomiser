@@ -10,22 +10,22 @@
     <parent>
         <artifactId>Exomiser</artifactId>
         <groupId>de.charite.compbio</groupId>
-        <version>6.0.0</version>
+        <version>7.0.0.BETA</version>
     </parent>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--path to where the database and other resources are found in exomiser.properties-->
-        <data.dir>C:/Users/jj8/Documents/exomiser-3.0.1/data</data.dir>
-        <warName>resources#exomiser</warName>
+        <data.dir>C:/Users/jj8/Documents/exomiser-cli-4.0.0/data</data.dir>
+        <warName>exomiser</warName>
     </properties>
 
     <profiles>
         <profile>
-            <id>prod</id>
+            <id>sanger</id>
             <properties>
-                <data.dir>/www/data/exomizer</data.dir>
-                <warName>resources#exomiser</warName>
+                <data.dir>/www/data/exomiser</data.dir>
+                <warName>resources#software#exomiser</warName>
             </properties>  
         </profile>
     </profiles>
@@ -145,6 +145,18 @@
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <warName>${warName}</warName>
+                    <!--if you're trying to develop html templates on a running 
+                    server in NetBeans comment the webResources section out and 
+                    the templates will be automatically deployed -->
+                    <webResources>
+                        <resource>
+                            <directory>src/test/resources</directory>
+                            <includes>
+                                <include>Pfeiffer.vcf</include>
+                            </includes>
+                            <targetPath>resources</targetPath>
+                        </resource>
+                    </webResources>
                 </configuration>
             </plugin>
         </plugins>

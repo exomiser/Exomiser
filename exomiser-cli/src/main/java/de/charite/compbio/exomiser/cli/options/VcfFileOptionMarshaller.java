@@ -19,7 +19,7 @@ public class VcfFileOptionMarshaller extends AbstractOptionMarshaller  {
     public VcfFileOptionMarshaller() {
         option = OptionBuilder
                 .withArgName("file")
-                .hasArg()
+                .hasArg()                
                 .withDescription("Path to VCF file with mutations to be analyzed. Can be either for an individual or a family.")
                 .withLongOpt(ExomiserSettings.VCF_OPTION)
                 .create("v");
@@ -27,7 +27,11 @@ public class VcfFileOptionMarshaller extends AbstractOptionMarshaller  {
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
-        settingsBuilder.vcfFilePath(Paths.get(values[0]));
+        if (values[0].isEmpty()) {
+            settingsBuilder.vcfFilePath(null);
+        } else {
+            settingsBuilder.vcfFilePath(Paths.get(values[0]));
+        }
     }    
 
 }

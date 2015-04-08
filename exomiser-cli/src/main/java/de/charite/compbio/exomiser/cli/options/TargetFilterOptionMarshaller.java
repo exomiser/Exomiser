@@ -6,8 +6,8 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_OFF_TARGET_OPTION;
-import org.apache.commons.cli.Option;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.KEEP_OFF_TARGET_OPTION;
+import org.apache.commons.cli.OptionBuilder;
 
 /**
  *
@@ -16,18 +16,25 @@ import org.apache.commons.cli.Option;
 public class TargetFilterOptionMarshaller extends AbstractOptionMarshaller {
 
     public TargetFilterOptionMarshaller() {
-        option = new Option("T", REMOVE_OFF_TARGET_OPTION, false, "Keep off-target variants. These are defined as intergenic, intronic, upstream, downstream, synonymous or intronic ncRNA variants. Default: true");
+        option = OptionBuilder
+                .hasOptionalArg()
+                .withType(Boolean.class)
+                .withArgName("true/false")
+                .withDescription("Keep the off-target variants that are normally removed by default. "
+                        + "These are defined as intergenic, intronic, upstream, downstream or intronic ncRNA variants. "
+                        + "This setting can optionally take a true/false argument. Not including the argument is equivalent to specifying 'true'.")
+                .withLongOpt(KEEP_OFF_TARGET_OPTION) 
+                .create("T");
     }
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
-        //default is true
-        if (values == null || values.length == 0 || values[0].isEmpty()) {
-            //the command line is just a switch
-            settingsBuilder.removeOffTargetVariants(false);
+        //the default should be to remove the off-target variants
+        if (values == null) {
+            settingsBuilder.keepOffTargetVariants(true);
         } else {
-            //but the json/properties file specify true or false
-            settingsBuilder.removeOffTargetVariants(Boolean.parseBoolean(values[0]));
+            //but the json/properties file specifies true or false, hence the optionArg
+            settingsBuilder.keepOffTargetVariants(Boolean.parseBoolean(values[0]));
         }
     }
 

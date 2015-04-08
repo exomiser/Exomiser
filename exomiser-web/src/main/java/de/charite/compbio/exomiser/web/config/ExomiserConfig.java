@@ -9,19 +9,25 @@ import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
-import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import jannovar.reference.Chromosome;
+import de.charite.compbio.jannovar.io.JannovarDataSerializer;
+import de.charite.compbio.jannovar.io.SerializationException;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +65,22 @@ public class ExomiserConfig {
     public Path dataPath() {
         Path dataPath = Paths.get(env.getProperty("dataDir"));
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
-        
+
         return dataPath;
+    }
+
+    @Bean
+    public int maxVariants() {
+        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
+        logger.info("Set max variants to {}", maxVariants);
+        return maxVariants;
+    }
+
+    @Bean
+    public int maxGenes() {
+        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
+        logger.info("Set max genes to {}", maxGenes);
+        return maxGenes;
     }
 
     @Bean
@@ -71,22 +91,22 @@ public class ExomiserConfig {
     }
 
     @Bean
-    public Path phenomizerDataDirectory() {
-        Path phenomizerDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
-        logger.info("phenomizerDataDirectory: {}", phenomizerDataDirectory.toAbsolutePath());
-        return phenomizerDataDirectory;
+    public Path phenixDataDirectory() {
+        Path phenixDataDirectory = dataPath().resolve(env.getProperty("phenomizerDataDir"));
+        logger.info("phenixDataDirectory: {}", phenixDataDirectory.toAbsolutePath());
+        return phenixDataDirectory;
     }
 
     @Bean
     public Path hpoOntologyFilePath() {
-        Path hpoOntologyFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
+        Path hpoOntologyFilePath = phenixDataDirectory().resolve(env.getProperty("hpoOntologyFile"));
         logger.info("hpoOntologyFilePath: {}", hpoOntologyFilePath.toAbsolutePath());
         return hpoOntologyFilePath;
     }
 
     @Bean
     public Path hpoAnnotationFilePath() {
-        Path hpoAnnotationFilePath = phenomizerDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
+        Path hpoAnnotationFilePath = phenixDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
         logger.info("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
@@ -101,10 +121,13 @@ public class ExomiserConfig {
     @Bean
     @Lazy
     public VariantAnnotator variantAnnotator() {
-        Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
-        return new VariantAnnotator(chromosomeMap);
+        try {
+            return new VariantAnnotator(new JannovarDataSerializer(ucscFilePath().toString()).load());
+        } catch (SerializationException e) {
+            throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
+        }
     }
-    
+
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
@@ -140,7 +163,17 @@ public class ExomiserConfig {
     public Exomiser exomiser() {
         return new Exomiser();
     }
-    
+
+    @Bean
+    public SparseVariantFilterRunner sparseVariantFilterer() {
+        return new SparseVariantFilterRunner();
+    }
+
+    @Bean
+    public VariantEvaluationDataService variantEvaluationDataService() {
+        return new VariantEvaluationDataService();
+    }
+
 //cacheable beans
     @Bean
     public FrequencyDao frequencyDao() {
@@ -152,13 +185,29 @@ public class ExomiserConfig {
         return new DefaultPathogenicityDao();
     }
 
-    @Bean 
-    public SparseVariantFilterRunner sparseVariantFilterer() {
-        return new SparseVariantFilterRunner();
-    }
-    
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return new VariantEvaluationDataService();
+    OntologyService ontologyService() {
+        return new OntologyServiceImpl();
     }
+
+    @Bean
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
+    }
+
+    @Bean
+    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+
+    @Bean
+    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+
+    @Bean
+    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
+    }
+
 }
