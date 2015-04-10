@@ -238,7 +238,7 @@ public class PhenodigmDataDumper {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm mouseMp data to file: {}", outfile);
 
-        String sql = "select mgo.model_gene_id, mgo.model_gene_symbol, mmm.model_id, group_concat(mp_id) as mpids "
+        String sql = "select mgo.model_gene_id, mgo.model_gene_symbol, mmm.model_id, group_concat(distinct mp_id) as mpids "
                 + "from mouse_model_mp mmm, mouse_model_gene_ortholog mmgo, mouse_gene_ortholog mgo "
                 + "where mgo.model_gene_id = mmgo.model_gene_id and mmgo.model_id = mmm.model_id group by mmm.model_id";
         //no need to close things when using the try-with-resources            
