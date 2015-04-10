@@ -141,7 +141,7 @@ DROP TABLE human2fish_orthologs IF EXISTS;
 CREATE TABLE human2fish_orthologs (
     zfin_gene_id character varying(40),
     zfin_gene_symbol character varying(100),
-    human_gene_symbol character varying(20),
+    human_gene_symbol character varying(40),
     entrez_id character varying(20)
 );
 
@@ -155,7 +155,7 @@ DROP TABLE human2mouse_orthologs IF EXISTS;
 CREATE TABLE human2mouse_orthologs (
     mgi_gene_id character varying(20),
     mgi_gene_symbol character varying(100),
-    human_gene_symbol character varying(20),
+    human_gene_symbol character varying(40),
     entrez_id integer
 );
 
