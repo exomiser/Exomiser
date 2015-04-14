@@ -10,7 +10,7 @@
 -- TOC entry 176 (class 1259 OID 16513)
 -- Name: frequency; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE frequency IF EXISTS;
+DROP TABLE IF EXISTS frequency;
 
 CREATE TABLE frequency (
     chromosome smallint,
@@ -35,7 +35,7 @@ CREATE TABLE frequency (
 -- TOC entry 173 (class 1259 OID 16445)
 -- Name: variant; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE variant IF EXISTS;
+DROP TABLE IF EXISTS variant;
 
 CREATE TABLE variant (
     chromosome smallint NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE variant (
 );
 
 
-DROP TABLE clinvar IF EXISTS;
+DROP TABLE IF EXISTS clinvar;
 
 CREATE TABLE clinvar (
     chromosome SMALLINT,
@@ -66,7 +66,7 @@ CREATE INDEX cvidx ON clinvar(chromosome,position);
 -- TOC entry 174 (class 1259 OID 16482)
 -- Name: hp_mp_mappings; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE hp_mp_mappings IF EXISTS;
+DROP TABLE IF EXISTS hp_mp_mappings;
 
 CREATE TABLE hp_mp_mappings (
     mapping_id integer,
@@ -81,14 +81,14 @@ CREATE TABLE hp_mp_mappings (
     lcs_term character varying(150)
 );
 
-DROP TABLE mp IF EXISTS;
+DROP TABLE IF EXISTS mp;
 
 CREATE TABLE mp(
     mp_id       CHAR(10),
     mp_term VARCHAR(256)
 );
 
-DROP TABLE hp_zp_mappings IF EXISTS;
+DROP TABLE IF EXISTS hp_zp_mappings;
 
 CREATE TABLE hp_zp_mappings (
     mapping_id integer,
@@ -103,7 +103,7 @@ CREATE TABLE hp_zp_mappings (
     lcs_term character varying(150)
 );
 
-DROP TABLE zp IF EXISTS;
+DROP TABLE IF EXISTS zp;
 
 CREATE TABLE zp(
     zp_id       CHAR(10),
@@ -116,7 +116,7 @@ CREATE TABLE zp(
 -- this looks like a bad idea - 
 --
 
-DROP TABLE hpo IF EXISTS;
+DROP TABLE IF EXISTS hpo;
 
 CREATE TABLE hpo(
     lcname   VARCHAR(256) PRIMARY KEY,
@@ -136,7 +136,7 @@ CREATE INDEX hpoidx ON hpo(id);
 -- TOC entry 165 (class 1259 OID 16406)
 -- Name: human2fish_orthologs; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE human2fish_orthologs IF EXISTS;
+DROP TABLE IF EXISTS human2fish_orthologs;
 
 CREATE TABLE human2fish_orthologs (
     zfin_gene_id character varying(40),
@@ -150,7 +150,7 @@ CREATE TABLE human2fish_orthologs (
 -- TOC entry 166 (class 1259 OID 16409)
 -- Name: human2mouse_orthologs; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE human2mouse_orthologs IF EXISTS;
+DROP TABLE IF EXISTS human2mouse_orthologs;
 
 CREATE TABLE human2mouse_orthologs (
     mgi_gene_id character varying(20),
@@ -164,7 +164,7 @@ CREATE TABLE human2mouse_orthologs (
 -- TOC entry 167 (class 1259 OID 16412)
 -- Name: mgi_mp; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE mgi_mp IF EXISTS;
+DROP TABLE IF EXISTS mgi_mp;
 
 CREATE TABLE mgi_mp (
     mgi_gene_id character varying(20),
@@ -173,7 +173,7 @@ CREATE TABLE mgi_mp (
     mp_id character varying(3000)
 );
 
-DROP TABLE zfin_zp IF EXISTS;
+DROP TABLE IF EXISTS zfin_zp;
 
 CREATE TABLE zfin_zp (
     zfin_gene_id character varying(20),
@@ -188,7 +188,7 @@ CREATE TABLE zfin_zp (
 -- TOC entry 169 (class 1259 OID 16421)
 -- Name: omim; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE disease IF EXISTS;
+DROP TABLE IF EXISTS disease;
 
 CREATE TABLE disease (
     disease_id VARCHAR(20) NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE disease (
 -- TOC entry 170 (class 1259 OID 16427)
 -- Name: omim2gene; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE omim2gene IF EXISTS;
+DROP TABLE IF EXISTS omim2gene;
 
 CREATE TABLE omim2gene (
     mimdiseaseid integer NOT NULL,
@@ -221,7 +221,7 @@ CREATE TABLE omim2gene (
 -- TOC entry 171 (class 1259 OID 16433)
 -- Name: omim_terms; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE omim_terms IF EXISTS;
+DROP TABLE IF EXISTS omim_terms;
 
 CREATE TABLE omim_terms (
     omim_disease_id character varying(20),
@@ -233,7 +233,7 @@ CREATE TABLE omim_terms (
 -- TOC entry 172 (class 1259 OID 16439)
 -- Name: phenoseries; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE phenoseries IF EXISTS;
+DROP TABLE IF EXISTS phenoseries;
 
 CREATE TABLE phenoseries (
     seriesid integer NOT NULL,
@@ -247,7 +247,7 @@ CREATE TABLE phenoseries (
 --    disease_hit character varying(20),
 --    combined_perc double precision
 --);
-DROP TABLE hp_hp_mappings IF EXISTS;
+DROP TABLE IF EXISTS hp_hp_mappings;
 
 CREATE TABLE hp_hp_mappings (
     mapping_id integer,
@@ -262,7 +262,7 @@ CREATE TABLE hp_hp_mappings (
     lcs_term character varying(150)
 );
 
-DROP TABLE disease_hp IF EXISTS;
+DROP TABLE IF EXISTS disease_hp;
 
 CREATE TABLE disease_hp (
     disease_id character varying(20),
@@ -274,21 +274,21 @@ CREATE TABLE disease_hp (
 --    entrezgeneid integer not null, 
 --    diseasename  character varying(2056)
 --);
-DROP TABLE metadata IF EXISTS;
+DROP TABLE IF EXISTS metadata;
 
 CREATE TABLE metadata (
     resource VARCHAR(1024),
     version  VARCHAR(1024)
 );
 
-DROP TABLE entrez2sym IF EXISTS;
+DROP TABLE IF EXISTS entrez2sym;
 
 CREATE TABLE entrez2sym (
     entrezID INTEGER PRIMARY KEY,
     symbol VARCHAR(24)
 );
 
-DROP TABLE string IF EXISTS;
+DROP TABLE IF EXISTS string;
 
 CREATE TABLE string (
     entrezA INTEGER,
