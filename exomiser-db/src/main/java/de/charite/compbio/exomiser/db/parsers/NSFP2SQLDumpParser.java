@@ -64,15 +64,16 @@ public class NSFP2SQLDumpParser implements ResourceParser {
     //This is wat's used inplace of a null in the dbNSFP file
     protected static final String NO_VALUE = ".";
 
+    // N.B Changed positions to the hg19 ones - the hg38 ones at 0 and 1 are the defaults ones now
     // The following are the fields of the dbNSFP files.
     /**
      * Chromosome number
      */
-    private static int CHR = 0;
+    private static int CHR = 7;
     /**
      * physical position on the chromosome as to hg19 (1-based coordinate)
      */
-    private static int POS = 1;
+    private static int POS = 8;
     /**
      * reference nucleotide allele (as on the + strand)
      */
@@ -157,7 +158,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
     private int totalGenesCount = 0;
 
     /** the reference dictionary to use for chromosome name to numeric id conversion */
-    private final ReferenceDictionary refDict;
+    //private final ReferenceDictionary refDict;
 
     /**
      * Get count of all lines parsed from all of the dbNSFP files (Header lines
@@ -188,8 +189,8 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * @param refDict
      *            the {@link ReferenceDictionary} to use for converting contig names to numeric ids
      */
-    public NSFP2SQLDumpParser(ReferenceDictionary refDict) {
-        this.refDict = refDict;
+    public NSFP2SQLDumpParser() {//ReferenceDictionary refDict) {
+        //this.refDict = refDict;
     }
 
     @Override
@@ -253,7 +254,24 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             System.exit(1);
         }
         //variant position
-        int c = refDict.contigID.get(fields[CHR]);
+        /* if work out what Jules was doing with ReferenceDictionary 
+         * put back to int c = refDict.contigID.get(fields[CHR]);
+         */
+        int c;
+        switch (fields[CHR]) {
+            case "X":
+                c = 23; 
+                break;
+            case "Y":
+                c = 24; 
+                break;
+            case "M":
+                c = 25; 
+                break;
+            default:
+                c = Integer.parseInt(fields[CHR]);
+                break;
+        }
         int pos = Integer.parseInt(fields[POS]);
         String ref = fields[REF];
         String alt = fields[ALT];
@@ -275,28 +293,14 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * @return 
      */
     protected Float valueOfField(String field) {
-        String firstValue = getFirstValue(field);
         try {
-            return Float.valueOf(firstValue);
+            return Float.valueOf(field);
         } catch (NumberFormatException e) {
             logger.error("Could not parse float value from: '{}'", field);
             return null;
         }
     }
         
-    /**
-     * Many entries in dbNFSP are lists of transcripts separated by ";" For
-     * instance, ENST00000298232;ENST00000361285;ENST00000342420</BR>
-     * This is the case for genes with multiple transcripts. For simplicity, we
-     * will just take the first such entry.
-     */
-    private String getFirstValue(String s) {
-        int i = s.indexOf(";");
-        if (i > 0) {
-            return s.substring(0, i);
-        }
-        return s;
-    }
 
     /**
      * If there are SIFT scores for two different transcripts that correspond to
@@ -319,7 +323,10 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         String[] scores = field.split(";");
         for (String score : scores) {
             score = score.trim();
-            // Note there are some entries such as ".;0.292"
+            if (score.equals(NO_VALUE)){
+               // Note there are some entries such as ".;0.292" so catch them here 
+               continue;
+            }
             Float value = valueOfField(score);
             if (value != null) {
                 min = Math.min(value, min);
@@ -353,7 +360,10 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         String[] scores = field.split(";");
         for (String score : scores) {
             score = score.trim();
-            // Note there are some entries such as ".;0.292"
+            if (score.equals(NO_VALUE)){
+               // Note there are some entries such as ".;0.292" so catch them here 
+               continue;
+            }
             Float value = valueOfField(score);
             if (value != null) {
                 max = Math.max(value, max);
@@ -399,6 +409,10 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         Float max = Float.MIN_VALUE;
         for (int i = 0; i < scores.length; ++i) {
             String score = scores[i].trim();
+            if (score.equals(NO_VALUE)){
+               // Note there are some entries such as ".;0.292" so catch them here 
+               continue;
+            }
             String p = predictions[i].trim();
             if (p.equals("N") || p.equals("P")) {
                 max = 0f;
@@ -441,11 +455,16 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             logger.debug("Field {} = {}", i, field);
             int prev = 0;
             switch (field){
-                case "chr":
+                case "hg19_chr":
                     prev = CHR;
                     logger.info("Setting CHR field '{}' from position {} to {}", field, prev, i);
                     CHR = i;
                     break;
+                case "hg19_pos":
+                    prev = POS;
+                    logger.info("Setting POS field '{}' from position {} to {}", field, prev, i);
+                    POS = i;
+                    break;    
                 case "ref":
                     prev = REF;
                     logger.info("Setting REF field '{}' from position {} to {}", field, prev, i);
