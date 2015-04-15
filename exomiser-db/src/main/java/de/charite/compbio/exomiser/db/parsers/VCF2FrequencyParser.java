@@ -29,7 +29,9 @@ public class VCF2FrequencyParser {
 
     /** The reference dictionary to use for chromosome to name conversion */
     private final ReferenceDictionary refDict;
-
+    private String ref;
+    private String alt;
+    private int pos;
     /**
      * Initialize object with the given <code>refDict</code>.
      * 
@@ -69,7 +71,7 @@ public class VCF2FrequencyParser {
             System.exit(1);
         }
 
-        int pos = Integer.parseInt(fields[1]);
+        pos = Integer.parseInt(fields[1]);
         /*
          * Transform rsID to integer to save space. Note that if there are
          * problems with parse we use the constant NO_RSID = -1:
@@ -80,7 +82,7 @@ public class VCF2FrequencyParser {
          * but occasionally one sees VCF files with lower case for part of the
          * sequences, e.g., to show indels.
          */
-        String ref = fields[3].toUpperCase();
+        ref = fields[3].toUpperCase();
         String info = fields[7];
 
         /*
@@ -132,11 +134,12 @@ public class VCF2FrequencyParser {
         }
 
         int minorAlleleCounter = 1;
-        for (String alt : alts) {
+        for (String indAlt : alts) {
+            this.alt = indAlt;
             // VCF files and Annovar-style annotations use different nomenclature for
             // indel variants. We use Annovar.
             //TODO - now that we use the new Jannovar which uses a 0-based co-ordinate system investigate is this is necessary
-            transformVCF2AnnovarCoordinates(ref, alt, pos);
+            transformVCF2AnnovarCoordinates();
             Frequency freq = new Frequency(chrom, pos, ref, alt, rsId);
             if (ea != 0f){   
                 freq.setESPFrequencyEA(ea);
@@ -200,7 +203,7 @@ public class VCF2FrequencyParser {
      * should be used once for each VCF line and should be called only from the
      * method {@link #parseVCFline}.
      */
-    private void transformVCF2AnnovarCoordinates(String ref, String alt, int pos) {
+    private void transformVCF2AnnovarCoordinates() {
         if (ref.length() == 1 && alt.length() == 1) {
             // i.e., single nucleotide variant
             // In this case, no changes are needed.

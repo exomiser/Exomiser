@@ -174,7 +174,7 @@ public class ClinVarParser implements ResourceParser {
                 String sign = split[5];
 //                logger.info(line);
 
-                if (chr.equals("-") || chr.isEmpty() || from.equals("-")) {
+                if (chr.equals("-") || chr.isEmpty() || from.equals("-") || from.equals("")) {
                     logger.info("Skipping {} Chr='{}', from='{}' - No positional information defined on line: {}", type, chr, from, line);
                     noPositionInfoVariants++;
                     continue;

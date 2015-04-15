@@ -24,7 +24,8 @@ public class NSFP2SQLDumpParserTest {
     
     @Before
     public void setUp() {
-        instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
+        //instance = new NSFP2SQLDumpParser(HG19RefDictBuilder.build());
+        instance = new NSFP2SQLDumpParser();
     }
     /**
      * Test of getTotalNsfpLines method, of class NSFP2SQLDumpParser.

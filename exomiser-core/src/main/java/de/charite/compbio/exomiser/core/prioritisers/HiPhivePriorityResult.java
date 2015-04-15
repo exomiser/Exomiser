@@ -1,11 +1,9 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.DiseaseModel;
-import de.charite.compbio.exomiser.core.model.GeneModel;
 import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
-import de.charite.compbio.exomiser.core.model.Organism;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +104,57 @@ public class HiPhivePriorityResult implements PriorityResult {
     }
 
     /**
+     * @return A summary for the text output formats 
+     */
+    public String getPhenotypeEvidenceText() {
+        StringBuilder humanBuilder = new StringBuilder();
+        StringBuilder mouseBuilder = new StringBuilder();
+        StringBuilder fishBuilder = new StringBuilder();
+        StringBuilder humanPPIBuilder = new StringBuilder();
+        StringBuilder mousePPIBuilder = new StringBuilder();
+        StringBuilder fishPPIBuilder = new StringBuilder();
+        for (Model model : phenotypeEvidence) {
+            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = model.getBestPhenotypeMatchForTerms();
+            switch (model.getOrganism()) {
+                case HUMAN:
+                    DiseaseModel diseaseModel = (DiseaseModel) model;
+                    humanBuilder.append(diseaseModel.getDiseaseTerm() +" (" + diseaseModel.getDiseaseId() + "): ");
+                    makeBestPhenotypeMatchText(humanBuilder, bestMatchesForModel);
+                    break;
+                case MOUSE:
+                    makeBestPhenotypeMatchText(mouseBuilder, bestMatchesForModel);
+                    break;
+                case FISH:
+                    makeBestPhenotypeMatchText(fishBuilder, bestMatchesForModel);
+            }
+        }
+        for (Model model : ppiEvidence) {
+            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = model.getBestPhenotypeMatchForTerms();
+            switch (model.getOrganism()) {
+                case HUMAN:
+                    DiseaseModel diseaseModel = (DiseaseModel) model;
+                    humanPPIBuilder.append("Proximity to " + model.getHumanGeneSymbol() + " associated with " + diseaseModel.getDiseaseTerm() +" (" + diseaseModel.getDiseaseId() + "): ");
+                    makeBestPhenotypeMatchText(humanPPIBuilder, bestMatchesForModel);
+                    break;
+                case MOUSE:
+                    mousePPIBuilder.append("Proximity to " + model.getHumanGeneSymbol() + " ");
+                    makeBestPhenotypeMatchText(mousePPIBuilder, bestMatchesForModel);
+                    break;
+                case FISH:
+                    fishPPIBuilder.append("Proximity to " + model.getHumanGeneSymbol() + " ");
+                    makeBestPhenotypeMatchText(fishPPIBuilder, bestMatchesForModel);
+            }
+        }
+        String human = humanBuilder.toString();
+        String mouse = mouseBuilder.toString();
+        String fish = fishBuilder.toString();
+        String humanPPI = humanPPIBuilder.toString();
+        String mousePPI = mousePPIBuilder.toString();
+        String fishPPI = fishPPIBuilder.toString();
+        return String.format("%s\t%s\t%s\t%s\t%s\t%s", human, mouse, fish, humanPPI, mousePPI, fishPPI);
+    }
+    
+    /**
      * @return An HTML list with an entry representing the GeneWanderer (Random
      * walk) similarity score.
      * @see exomizer.filter.ITriage#getHTMLCode()
@@ -159,6 +208,18 @@ public class HiPhivePriorityResult implements PriorityResult {
         return html;
     }
 
+    private void makeBestPhenotypeMatchText(StringBuilder stringBuilder, Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches) {
+        for (PhenotypeTerm queryTerm : queryPhenotypeTerms) {
+            if (bestModelPhenotypeMatches.containsKey(queryTerm)){// && bestModelPhenotypeMatches.get(queryTerm).getScore() > 1.75) {// RESTRICT TO HIGH QUALITY MATCHES
+                PhenotypeMatch match = bestModelPhenotypeMatches.get(queryTerm);
+                PhenotypeTerm matchTerm = match.getMatchPhenotype();
+                stringBuilder.append(String.format("%s (%s)-%s (%s), ", queryTerm.getTerm(), queryTerm.getId(), matchTerm.getTerm(), matchTerm.getId()));
+            } else {
+                //stringBuilder.append(String.format("%s (%s)-No match, ", queryTerm.getTerm(), queryTerm.getId()));
+            }
+        }
+    }
+    
     private void makeBestPhenotypeMatchHtml(StringBuilder stringBuilder, Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches) {
         stringBuilder.append("<dt>Best Phenotype Matches:</dt>");
         for (PhenotypeTerm queryTerm : queryPhenotypeTerms) {

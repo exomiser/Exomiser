@@ -74,7 +74,7 @@ public class ResourceConfig {
             resources.add(exomeWalkerPhenotypicSeriesResource());
             resources.add(exomeWalkerOmimToGeneResource());
             
-            //resources.add(clinVarResource());
+            resources.add(clinVarResource());
             resources.add(metaDataResource());
             
             //these ones are biggies:
