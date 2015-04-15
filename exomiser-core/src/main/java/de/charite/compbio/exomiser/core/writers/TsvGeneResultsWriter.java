@@ -34,8 +34,8 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;
     private static final String HEADER_LINE = "#GENE_SYMBOL	ENTREZ_GENE_ID	"
             + "EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE	"
-            + "HUMAN_PHENO_SCORE	MOUSE_PHENO_SCORE	FISH_PHENO_SCORE	WALKER_RAW_SCORE	WALKER_SCALED_MAX_SCORE	WALKER_SCORE	"
-            + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE\n";
+            + "HUMAN_PHENO_SCORE	MOUSE_PHENO_SCORE	FISH_PHENO_SCORE	WALKER_SCORE	"
+            + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE	HUMAN_PHENO_EVIDENCE	MOUSE_PHENO_EVIDENCE	FISH_PHENO_EVIDENCE	HUMAN_PPI_EVIDENCE	MOUSE_PPI_EVIDENCE	FISH_PPI_EVIDENCE\n";
 
     public TsvGeneResultsWriter() {
         Locale.setDefault(Locale.UK);
@@ -86,6 +86,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         float walkerScore = 0f;
         float phiveAllSpeciesScore = 0f;
         float omimScore = 0f;
+        String phenoEvidence = "";
         // priority score calculation
         for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
             PriorityType type = prioritiserResult.getPriorityType();
@@ -96,6 +97,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 mousePhenScore = phenoScore.getMouseScore();
                 fishPhenScore = phenoScore.getFishScore();
                 walkerScore = phenoScore.getWalkerScore();
+                phenoEvidence = phenoScore.getPhenotypeEvidenceText();
             } else if (type == PriorityType.OMIM_PRIORITY) {
                 omimScore = prioritiserResult.getScore();
             } else if (type == PriorityType.EXOMEWALKER_PRIORITY) {
@@ -111,7 +113,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
             matchesCandidateGene = 1;
         }
 
-        return String.format("%s\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%d\n",
+        return String.format("%s\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%d\t%s\n",
                 gene.getGeneSymbol(),
                 gene.getEntrezGeneID(),
                 gene.getPriorityScore(),
@@ -120,12 +122,13 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 humanPhenScore,
                 mousePhenScore,
                 fishPhenScore,
-                rawWalkerScore,
-                walkerScaledMaxScore,
+                //rawWalkerScore,
+                //walkerScaledMaxScore,
                 walkerScore,
                 phiveAllSpeciesScore,
                 omimScore,
-                matchesCandidateGene);
+                matchesCandidateGene,
+                phenoEvidence);
     }
 
 }
