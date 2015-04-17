@@ -41,7 +41,13 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
         }
 
         List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
+        int count = 0;
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            count++;
+            if (count > 100000){
+                logger.info("Passed variants = " + filteredVariantEvaluations.size());
+                count = 1;
+            }
             runFiltersOverVariantEvaluationUntilFailure(filters, variantEvaluation);
             if (variantEvaluation.passedFilters()) {
                 filteredVariantEvaluations.add(variantEvaluation);

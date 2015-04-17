@@ -15,6 +15,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -83,8 +84,14 @@ public class SampleDataFactory {
     private List<VariantContext> loadVariantsFromVcf(VCFFileReader vcfReader) {
         logger.info("Loading variants from VCF...");
         List<VariantContext> records = new ArrayList<>();
+        int count = 0;
         for (VariantContext vc : vcfReader) {
             records.add(vc);
+            count++;
+            if (count > 100000){
+                logger.info("Loaded " + records.size());
+                count = 1;
+            }
         }
         vcfReader.close();
         return records;
@@ -105,8 +112,14 @@ public class SampleDataFactory {
         // TODO(holtgrewe) issue #55: For now, we throw out variants on unknown references.
         logger.info("Annotating Variants...");
         // build VariantEvaluation objects from Variants
+        int count = 0;
         for (VariantContext vc : vcfRecords) {
             for (Variant variant : variantAnnotator.annotateVariantContext(vc)) {
+                count++;
+                if (count > 100000){
+                    logger.info("Annotated " + variantEvaluations.size());
+                    count = 1;
+                }
                 variantEvaluations.add(new VariantEvaluation(variant));
             }
         }
