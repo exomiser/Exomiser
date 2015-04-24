@@ -211,7 +211,7 @@ and open the template in the editor.
                                             <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <dt>Frequency Data:</dt>
                                                 <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
-                                                <dd th:each="freq: ${frequencyData.knownFrequencies}" th:text="${freq.source.source} + ': ' + ${freq.frequency} + '%'">1000Genomes: 0.02%</dd>
+                                                <dd th:each="freq: ${frequencyData.knownFrequencies}" th:text="${freq.source.source} + ': ' + ${#numbers.formatDecimal(freq.frequency,1,4)} + '%'">1000Genomes: 0.02%</dd>
                                             </dl>
                                         </div>
                                     </div>
