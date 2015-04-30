@@ -18,8 +18,6 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import de.charite.compbio.jannovar.annotation.AnnotationList;
-import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
