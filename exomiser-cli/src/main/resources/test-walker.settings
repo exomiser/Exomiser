@@ -31,7 +31,7 @@ disease-id=
 inheritance-mode=
 
 #OUTPUT OPTIONS
-output-pass-only-variants=false
+output-pass-variants-only=false
 #num-genes options: 0 = all or specify a limit e.g. 500 for the first 500 results  
 num-genes=0
 #out-prefix options: specify the path/filename without an extension and this will be added

@@ -14,7 +14,7 @@ import org.apache.commons.cli.OptionBuilder;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class OutputPassOnlyVariantsOptionMarshaller extends AbstractOptionMarshaller {
-//    output-pass-only-variants
+//    output-pass-variants-only
 
     public OutputPassOnlyVariantsOptionMarshaller () {
         option = OptionBuilder
