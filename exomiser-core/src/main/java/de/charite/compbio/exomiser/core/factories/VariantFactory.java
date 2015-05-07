@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
@@ -54,8 +53,7 @@ public class VariantFactory {
         // build Variant objects from VariantContexts
         for (VariantContext variantContext : variantContexts) {
             List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
-            //what about missing annotations????
-            //todo!
+            //What about missing annotations? How should these be handled???
             if (!variantAlleleAnnotations.isEmpty()) {
                 //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
                 for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {

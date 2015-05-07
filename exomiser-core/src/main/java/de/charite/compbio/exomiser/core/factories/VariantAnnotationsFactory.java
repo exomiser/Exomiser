@@ -7,19 +7,16 @@ package de.charite.compbio.exomiser.core.factories;
 
 import htsjdk.variant.variantcontext.VariantContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.htsjdk.InvalidCoordinatesException;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
 import java.util.Collections;
 
 /**
@@ -59,9 +56,9 @@ public class VariantAnnotationsFactory {
             //builds one annotation list for each alternative allele
             return annotator.buildAnnotations(variantContext);
         } catch (InvalidCoordinatesException ex) {
-            //not all genes can be assigned to a chromosome, so these will fail here. 
-            //TODO: how to report these? They will not be used in the analysis.
-            logger.warn("Cannot build annotations for VariantContext {} {} {} - coordinates are invalid: {}", variantContext.getChr(), variantContext.getStart(), variantContext.getAlleles(), ex);
+            //Not all genes can be assigned to a chromosome, so these will fail here. 
+            //Should we report these? They will not be used in the analysis or appear in the output anywhere.
+            logger.warn("Cannot build annotations for VariantContext {} {} {}: {}", variantContext.getChr(), variantContext.getStart(), variantContext.getAlleles(), ex);
             return Collections.emptyList();
         }
     }
