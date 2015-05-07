@@ -10,7 +10,7 @@ import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
@@ -190,8 +190,8 @@ public class ExomiserConfig {
     }
 
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return new VariantEvaluationDataService();
+    public VariantDataService variantEvaluationDataService() {
+        return new VariantDataService();
     }
 
 //cacheable beans

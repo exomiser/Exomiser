@@ -36,10 +36,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author jj8
  */
 @RunWith(MockitoJUnitRunner.class)
-public class VariantEvaluationDataServiceTest {
+public class VariantDataServiceTest {
 
     @InjectMocks
-    private VariantEvaluationDataService instance;
+    private VariantDataService instance;
     @Mock
     private PathogenicityDao mockPathogenicityDao;
     @Mock
