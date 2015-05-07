@@ -275,4 +275,68 @@ public class GeneTest {
         assertThat(instance.isConsistentWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(true));
     }
+    
+    @Test
+    public void testIsCompatibleWithX_falseWhenVariantsIsEmpty() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        assertThat(instance.isXChromosomal(), is(false));
+    }        
+
+    @Test
+    public void testIsCompatibleWithX_falseWhenVariantIsNotCompatibleWithX() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
+        assertThat(instance.isXChromosomal(), is(false));
+    }
+    
+    @Test
+    public void testIsCompatibleWithX_trueWhenVariantIsCompatibleWithX() {
+        int X_CHROMOSOME = 23;
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(X_CHROMOSOME, 1, "A", "T").build());
+        assertThat(instance.isXChromosomal(), is(true));
+    }
+    
+    @Test
+    public void testIsCompatibleWithY_falseWhenVariantsIsEmpty() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        assertThat(instance.isYChromosomal(), is(false));
+    }        
+
+    @Test
+    public void testIsCompatibleWithY_falseWhenVariantIsNotCompatibleWithX() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
+        assertThat(instance.isYChromosomal(), is(false));
+    }
+    
+    @Test
+    public void testIsCompatibleWithY_trueWhenVariantIsCompatibleWithX() {
+        int Y_CHROMOSOME = 24;
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(Y_CHROMOSOME, 1, "A", "T").build());
+        assertThat(instance.isYChromosomal(), is(true));
+    }
+    
+    @Test
+    public void testCanSetAndChangePriorityScore() {
+        float firstScore = 0f;
+        instance.setPriorityScore(firstScore);
+        assertThat(instance.getPriorityScore(), equalTo(firstScore));
+        
+        float secondScore = 1.0f;
+        instance.setPriorityScore(secondScore);
+        assertThat(instance.getPriorityScore(), equalTo(secondScore));
+    }
+    
+    @Test
+    public void testCanSetAndChangeFilterScore() {
+        float firstScore = 0f;
+        instance.setFilterScore(firstScore);
+        assertThat(instance.getFilterScore(), equalTo(firstScore));
+        
+        float secondScore = 1.0f;
+        instance.setFilterScore(secondScore);
+        assertThat(instance.getFilterScore(), equalTo(secondScore));
+    }
 }

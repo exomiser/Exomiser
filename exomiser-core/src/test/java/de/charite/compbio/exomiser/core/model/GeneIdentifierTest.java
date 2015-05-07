@@ -28,15 +28,24 @@ import static org.junit.Assert.*;
  */
 public class GeneIdentifierTest {
     
-    public GeneIdentifierTest() {
-    }
 
+    @Test
+    public void testGetGeneSymbol_nullGeneSymbolInConstructorReturnsUnknownString() {
+        GeneIdentifier instance = new GeneIdentifier(null, "", "");
+        assertEquals("UNKNOWN", instance.getGeneSymbol());
+    }
+    
+    @Test
+    public void testGetGeneSymbol_emptyGeneSymbolStringInConstructorReturnsUnknownString() {
+        GeneIdentifier instance = new GeneIdentifier("", "", "");
+        assertEquals("UNKNOWN", instance.getGeneSymbol());
+    }
+    
     /**
      * Test of constructor for class GeneIdentifier.
      */
     @Test
     public void testGeneIdentifierAllFieldsOverloadedConstructor() {
-        System.out.println("testGeneIdentifierAllFieldsOverloadedConstructor");
         String geneSymbol = "Fgfr2";
         String databaseIdentifier = "MGI";
         String databaseAccession = "95523";
@@ -51,7 +60,6 @@ public class GeneIdentifierTest {
      */
     @Test
     public void testGeneIdentifierParserOverloadedConstructor() {
-        System.out.println("testGeneIdentifierParserOverloadedConstructor");
         String geneSymbol = "Fgfr2";
         String databaseCompoundIdentifier = "MGI:95523";
         GeneIdentifier instance = new GeneIdentifier(geneSymbol, databaseCompoundIdentifier);
@@ -65,7 +73,6 @@ public class GeneIdentifierTest {
      */
     @Test
     public void testGeneIdentifierParserOverloadedConstructorUnclassifiedHumanOrtholog() {
-        System.out.println("testGeneIdentifierParserOverloadedConstructorUnclassifiedHumanOrtholog");
         String geneSymbol = "";
         String databaseCompoundIdentifier = "";
         GeneIdentifier instance = new GeneIdentifier(geneSymbol, databaseCompoundIdentifier);
