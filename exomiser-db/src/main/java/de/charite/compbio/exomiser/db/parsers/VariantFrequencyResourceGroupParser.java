@@ -10,10 +10,9 @@ import de.charite.compbio.exomiser.db.reference.Frequency;
 import de.charite.compbio.exomiser.db.resources.Resource;
 import de.charite.compbio.exomiser.db.resources.ResourceGroup;
 import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
-import de.charite.compbio.jannovar.io.JannovarData;
-import de.charite.compbio.jannovar.io.JannovarDataSerializer;
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
-import de.charite.compbio.jannovar.io.SerializationException;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -40,6 +38,7 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFrequencyResourceGroupParser.class);
 
+    //TODO: Wouldn't this be easier using a proper DI framework???  
     Resource dbSnpResource;
     Resource espResource;
     Resource jannovarResource;
@@ -63,7 +62,7 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         //this is the Frequency List we're going to populate and the write out to file
         ArrayList<Frequency> frequencyList = new ArrayList<>();
         //provide it to the DbSnpFrequencyParser along with the UCSC data
-        DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(jannovarData.refDict, jannovarData, inDir, frequencyList);
+        DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(jannovarData, inDir, frequencyList);
         dbSnpParser.parseResource(dbSnpResource, inDir, outDir);
 
         if (frequencyList.isEmpty()) {
@@ -72,13 +71,13 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
         
         // Now parseResource the ExAC data using the frequency information generated
         // from the dbSNP and UCSC known gene data.
-        ExACFrequencyParser exacParser = new ExACFrequencyParser(jannovarData.refDict, frequencyList);
+        ExACFrequencyParser exacParser = new ExACFrequencyParser(jannovarData.getRefDict(), frequencyList);
         logger.info("Parsing the ExAC data");
         exacParser.parseResource(exacResource, inDir, outDir);
         
         // Now parseResource the ESP data using the frequency information generated
         // from the dbSNP and UCSC known gene data.
-        EspFrequencyParser espParser = new EspFrequencyParser(jannovarData.refDict, frequencyList);
+        EspFrequencyParser espParser = new EspFrequencyParser(jannovarData.getRefDict(), frequencyList);
         logger.info("Parsing the ESP data");
         espParser.parseResource(espResource, inDir, outDir);
 

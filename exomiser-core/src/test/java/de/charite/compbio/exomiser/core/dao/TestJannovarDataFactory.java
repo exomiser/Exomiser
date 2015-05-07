@@ -2,8 +2,8 @@ package de.charite.compbio.exomiser.core.dao;
 
 import com.google.common.collect.ImmutableList;
 
-import de.charite.compbio.jannovar.io.JannovarData;
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 
@@ -16,8 +16,8 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
  */
 public class TestJannovarDataFactory {
 
-    public final ReferenceDictionary refDict;
-    public final JannovarData jannovarData;
+    private final ReferenceDictionary refDict;
+    private final JannovarData jannovarData;
 
     public TestJannovarDataFactory() {
         this.refDict = HG19RefDictBuilder.build();
@@ -31,6 +31,14 @@ public class TestJannovarDataFactory {
         TranscriptModel tmRBM8A = vfFactory.buildTMForRBM8A();
         TranscriptModel tmSHH = vfFactory.buildTMForSHH();
         return new JannovarData(refDict, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
+    }
+
+    public ReferenceDictionary getRefDict() {
+        return refDict;
+    }
+
+    public JannovarData getJannovarData() {
+        return jannovarData;
     }
 
 }

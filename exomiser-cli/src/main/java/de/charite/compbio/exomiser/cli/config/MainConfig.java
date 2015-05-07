@@ -20,7 +20,8 @@ import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
@@ -28,8 +29,8 @@ import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
-import de.charite.compbio.jannovar.io.JannovarDataSerializer;
-import de.charite.compbio.jannovar.io.SerializationException;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import java.net.URISyntaxException;
@@ -151,25 +152,36 @@ public class MainConfig {
      *
      * @return
      */
-    @Bean
     @Lazy
-    public VariantAnnotator variantAnnotator() {
+    @Bean
+    public VariantAnnotationsFactory variantAnnotator() {
         try {
-            return new VariantAnnotator(new JannovarDataSerializer(ucscFilePath().toString()).load());
+            return new VariantAnnotationsFactory(new JannovarDataSerializer(ucscFilePath().toString()).load());
         } catch (SerializationException e) {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
     }
 
-//    
+    @Lazy
+    @Bean
+    public VariantFactory variantFactory() {
+        return new VariantFactory(variantAnnotator());
+    }
+ 
+    @Lazy
+    @Bean
+    public SampleDataFactory sampleDataFactory() {
+        return new SampleDataFactory();
+    }
+
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
      *
      * @return
      */
-    @Bean
     @Lazy
+    @Bean
     public DataMatrix randomWalkMatrix() {
         String randomWalkFileNameValue = getValueOfProperty("randomWalkFileName");
         Path randomWalkFilePath = dataPath().resolve(randomWalkFileNameValue);
@@ -233,12 +245,6 @@ public class MainConfig {
     @Bean
     ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
         return new ZebraFishPhenotypeOntologyDao();
-    }
-
-    @Bean
-    @Lazy
-    public SampleDataFactory sampleDataFactory() {
-        return new SampleDataFactory();
     }
 
     @Bean

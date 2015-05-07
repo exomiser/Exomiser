@@ -11,19 +11,19 @@ import static de.charite.compbio.exomiser.core.filters.FilterResultStatus.PASS;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.QualityFilterResult;
+import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.reference.GenomeChange;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.Strand;
-import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.GenotypeBuilder;
+import htsjdk.variant.variantcontext.VariantContext;
+import java.util.ArrayList;
+import java.util.Collections;
 
-import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -33,12 +33,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests for non-bean (i.e. logic-containing) methods in
@@ -46,13 +41,18 @@ import org.mockito.runners.MockitoJUnitRunner;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class VariantEvaluationTest {
 
     private VariantEvaluation instance;
-    
-    private static final Integer QUALITY = 2;
-    private static final Integer READ_DEPTH = 6;
+
+    private static final int CHROMOSOME = 1;
+    private static final String CHROMOSOME_NAME = "1";
+    private static final int POSITION = 1;
+    private static final String REF = "C";
+    private static final String ALT = "T";
+
+    private static final double QUALITY = 2.2;
+    private static final int READ_DEPTH = 6;
     private static final Genotype HETEROZYGOUS = Genotype.HETEROZYGOUS;
     private static final String GENE1_GENE_SYMBOL = "GENE1";
     private static final int GENE1_ENTREZ_GENE_ID = 1234567;
@@ -61,76 +61,42 @@ public class VariantEvaluationTest {
     private static final int GENE2_ENTREZ_GENE_ID = 7654321;
 
     private static final FilterResult FAIL_FREQUENCY_RESULT = new FrequencyFilterResult(0.1f, FAIL);
-    private static final FilterResult PASS_FREQUENCY_RESULT = new FrequencyFilterResult(0.1f, PASS);
+    private static final FilterResult PASS_FREQUENCY_RESULT = new FrequencyFilterResult(1.0f, PASS);
 
     private static final FilterResult PASS_QUALITY_RESULT = new QualityFilterResult(0.45f, PASS);
 
-    @Mock
-    private Variant variant;
-
-    @Mock
-    private Variant variantInTwoGeneRegions;
-
-    @Mock
-    private Variant variantWithNullGeneSymbol;
-
-    @Mock
-    private Variant unAnnotatedVariant;
-
     @Before
     public void setUp() {
-        // build HTSJDK genotype call to return
-        GenotypeBuilder gtBuilder = new GenotypeBuilder();
-        gtBuilder.alleles(Arrays.asList(Allele.create("C", true), Allele.create("T", false)));
+        instance = new VariantEvaluation.VariantBuilder(CHROMOSOME, POSITION, REF, ALT)
+                .quality(QUALITY)
+                .geneSymbol(GENE1_GENE_SYMBOL)
+                .geneId(GENE1_ENTREZ_GENE_ID)
+                .build();
+    }
 
-        final GenomePosition gPos = new GenomePosition(HG19RefDictBuilder.build(), Strand.FWD, 1, 1, PositionType.ONE_BASED);
-        final GenomeChange change = new GenomeChange(gPos, "C", "T");
-        
-        Mockito.when(variant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-        Mockito.when(variant.getEntrezGeneID()).thenReturn(GENE1_ENTREZ_GENE_ID);
-        Mockito.when(variant.getChromosome()).thenReturn(1);
-        Mockito.when(variant.getPosition()).thenReturn(1);
-        Mockito.when(variant.getRef()).thenReturn("A");
-        Mockito.when(variant.getAlt()).thenReturn("T");
-        Mockito.when(variant.getGenotype()).thenReturn(gtBuilder.make());
-//        Mockito.when(variant.getGenomeChange()).thenReturn(change);
-        Mockito.when(variant.getPhredScore()).thenReturn(2.2);
-        Mockito.when(variant.getReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(variant.getAnnotations()).thenReturn(Arrays.asList("variant annotations..."));
+    private static VariantEvaluation.VariantBuilder testVariantBuilder() {
+        return new VariantEvaluation.VariantBuilder(CHROMOSOME, POSITION, ALT, REF);
+    }
 
-        Mockito.when(variantInTwoGeneRegions.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL + "," + GENE1_GENE_SYMBOL);
-        Mockito.when(variantInTwoGeneRegions.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
-        Mockito.when(variantInTwoGeneRegions.getChromosome()).thenReturn(1);
-        Mockito.when(variantInTwoGeneRegions.getPosition()).thenReturn(1);
-        Mockito.when(variantInTwoGeneRegions.getRef()).thenReturn("C");
-        Mockito.when(variantInTwoGeneRegions.getAlt()).thenReturn("G");
-        Mockito.when(variantInTwoGeneRegions.getGenotype()).thenReturn(gtBuilder.make());
-//        Mockito.when(variantInTwoGeneRegions.getGenomeChange()).thenReturn(change);
-        Mockito.when(variantInTwoGeneRegions.getPhredScore()).thenReturn(2.2);
-        Mockito.when(variantInTwoGeneRegions.getReadDepth()).thenReturn(READ_DEPTH);
+    @Test
+    public void testgetChromosome() {
+        assertThat(instance.getChromosome(), equalTo(CHROMOSOME));
+    }
 
-        Mockito.when(variantWithNullGeneSymbol.getGeneSymbol()).thenReturn(null);
-
-        // This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(unAnnotatedVariant.getAnnotations()).thenReturn(Arrays.<String> asList());
-
-        instance = new VariantEvaluation(variant);
+    @Test
+    public void testgetChromosomeName() {
+        assertThat(instance.getChromosomeName(), equalTo(CHROMOSOME_NAME));
     }
 
     @Test
     public void testGetRef() {
-        assertThat(instance.getRef(), equalTo("A"));
+        assertThat(instance.getRef(), equalTo(REF));
     }
 
     @Test
     public void testGetAlt() {
-        assertThat(instance.getAlt(), equalTo("T"));
+        assertThat(instance.getAlt(), equalTo(ALT));
 
-    }
-
-    @Test
-    public void testGetVariantReadDepth() {
-        assertThat(instance.getReadDepth(), equalTo(READ_DEPTH));
     }
 
     @Test
@@ -140,19 +106,33 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetGeneSymbolReturnsOnlyFirstGeneSymbol() {
-        instance = new VariantEvaluation(variantInTwoGeneRegions);
+        instance = testVariantBuilder()
+                .geneSymbol(GENE2_GENE_SYMBOL + "," + GENE1_GENE_SYMBOL)
+                .build();
         assertThat(instance.getGeneSymbol(), equalTo(GENE2_GENE_SYMBOL));
     }
 
     @Test
-    public void testGetGeneSymbolReturnsADotIfVariantReturnsANull() {
-        instance = new VariantEvaluation(variantWithNullGeneSymbol);
+    public void testGetGeneSymbolReturnsADotIfGeneSymbolNotDefined() {
+        instance = testVariantBuilder().build();
         assertThat(instance.getGeneSymbol(), equalTo("."));
     }
 
     @Test
+    public void testGetNumIndividuals_EqualsOneIfNotSet() {
+        assertThat(instance.getNumberOfIndividuals(), equalTo(1));
+    }
+
+    @Test
+    public void testGetNumIndividuals_EqualsBuilderValue() {
+        int builderValue = 2;
+        instance = testVariantBuilder().numIndividuals(builderValue).build();
+        assertThat(instance.getNumberOfIndividuals(), equalTo(builderValue));
+    }
+
+    @Test
     public void canGetEntrezGeneID() {
-        assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(instance.getEntrezGeneId(), equalTo(GENE1_ENTREZ_GENE_ID));
     }
 
     @Test
@@ -160,7 +140,14 @@ public class VariantEvaluationTest {
         FrequencyData frequencyData = instance.getFrequencyData();
         assertThat(frequencyData, nullValue());
     }
-
+    
+    @Test
+    public void testThatTheBuilderCanSetAFrequencyDataObject() {
+        FrequencyData frequencyData = new FrequencyData(new RsId(12345), new Frequency(0.1f, FrequencySource.LOCAL));
+        instance = testVariantBuilder().frequencyData(frequencyData).build();
+        assertThat(instance.getFrequencyData(), equalTo(frequencyData));
+    }
+    
     @Test
     public void testThatTheConstructorCreatesAnEmptyPathogenicityDataObject() {
         PathogenicityData pathogenicityData = instance.getPathogenicityData();
@@ -170,6 +157,13 @@ public class VariantEvaluationTest {
         assertThat(pathogenicityData.getSiftScore(), nullValue());
         assertThat(pathogenicityData.getCaddScore(), nullValue());
         assertThat(pathogenicityData.hasPredictedScore(), is(false));
+    }
+    
+    @Test
+    public void testThatTheBuilderCanSetAPathogenicityDataObject() {
+        PathogenicityData pathData = new PathogenicityData(new PolyPhenScore(1.0f), null, null, null);
+        instance = testVariantBuilder().pathogenicityData(pathData).build();
+        assertThat(instance.getPathogenicityData(), equalTo(pathData));
     }
 
     @Test
@@ -353,13 +347,111 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testHasAnnotationsIsFalse() {
-        VariantEvaluation varEvalWithNoVariantAnnotations = new VariantEvaluation(unAnnotatedVariant);
-        assertThat(varEvalWithNoVariantAnnotations.hasAnnotations(), is(false));
+    public void testHasAnnotationsIsFalseByDefault() {
+        assertThat(instance.hasAnnotations(), is(false));
     }
 
     @Test
-    public void testHasAnnotationsIsTrue() {
-        assertThat(instance.hasAnnotations(), is(true));
+    public void testIsXChromosomal_notXchromosomal() {
+        assertThat(instance.isXChromosomal(), is(false));
+    }
+
+    @Test
+    public void testIsXChromosomal_isXchromosomal() {
+        int chrX = 23;
+        instance = new VariantEvaluation.VariantBuilder(chrX, 1, "A", "T").build();
+        assertThat(instance.isXChromosomal(), is(true));
+    }
+
+    @Test
+    public void testIsYChromosomal_notYchromosomal() {
+        assertThat(instance.isYChromosomal(), is(false));
+    }
+
+    @Test
+    public void testIsYChromosomal_isYchromosomal() {
+        int chrY = 24;
+        instance = new VariantEvaluation.VariantBuilder(chrY, 1, "A", "T").build();
+        assertThat(instance.isYChromosomal(), is(true));
+    }
+
+    @Test
+    public void testIsOffExome_isFalseByDefault() {
+        assertThat(instance.isOffExome(), is(false));
+    }
+    
+    @Test
+    public void testIsOffExome_EqualsBuilderValue() {
+        instance = testVariantBuilder().isOffExome(true).build();
+        assertThat(instance.isOffExome(), is(true));
+    }
+    
+    @Test
+    public void testGetChromosomeName_23isX() {
+        instance = new VariantEvaluation.VariantBuilder(23, 1, "A", "T").build();
+        assertThat(instance.getChromosomeName(), equalTo("X"));
+    }
+
+    @Test
+    public void testGetChromosomeName_24isY() {
+        instance = new VariantEvaluation.VariantBuilder(24, 1, "A", "T").build();
+        assertThat(instance.getChromosomeName(), equalTo("Y"));
+    }
+
+    @Test
+    public void testGetChromosomeName_25isM() {
+        instance = new VariantEvaluation.VariantBuilder(25, 1, "A", "T").build();
+        assertThat(instance.getChromosomeName(), equalTo("M"));
+    }
+
+    @Test
+    public void getVariantContext() {
+        VariantContext builtContext = instance.getVariantContext();
+        assertThat(builtContext.getChr(), equalTo("chr" + CHROMOSOME_NAME));
+        assertThat(builtContext.getStart(), equalTo(POSITION));
+        assertThat(builtContext.getEnd(), equalTo(POSITION));
+        assertThat(builtContext.getNAlleles(), equalTo(2));
+        assertThat(builtContext.getReference().getBaseString(), equalTo(instance.getRef()));
+        assertThat(builtContext.getAlternateAllele(instance.getAltAlleleId()).getBaseString(), equalTo(instance.getAlt()));
+        assertThat(builtContext.getNSamples(), equalTo(instance.getNumberOfIndividuals()));
+    }
+
+    @Test
+    public void getAltAlleleId_EqualsZeroWhenNotSet() {
+        assertThat(instance.getAltAlleleId(), equalTo(0));
+    }
+
+    @Test
+    public void getAltAlleleId_EqualsBuilderValue() {
+        int altAlleleId = 2;
+        instance = testVariantBuilder().altAlleleId(altAlleleId).build();
+        assertThat(instance.getAltAlleleId(), equalTo(altAlleleId));
+    }
+
+    @Test
+    public void testCompareTo() {
+        //variants are sorted according to score. The score is calculated from the filter results where 1 is best and 0 is worst.
+        VariantEvaluation first = new VariantEvaluation.VariantBuilder(CHROMOSOME, 3, REF, ALT).build();
+        first.addFilterResult(PASS_FREQUENCY_RESULT);
+        VariantEvaluation last = new VariantEvaluation.VariantBuilder(CHROMOSOME, 2, "C", "T").build();
+        last.addFilterResult(FAIL_FREQUENCY_RESULT);
+
+        List<VariantEvaluation> variants = new ArrayList<>();
+        variants.add(last);
+        variants.add(first);
+        Collections.sort(variants);
+
+        List<VariantEvaluation> expected = new ArrayList<>();
+        expected.add(first);
+        expected.add(last);
+
+        assertThat(variants, equalTo(expected));
+    }
+
+    @Test
+    public void testToString() {
+        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=1.0 failedFilterTypes=[]";
+        System.out.println(instance);
+        assertThat(instance.toString(), equalTo(expected));
     }
 }

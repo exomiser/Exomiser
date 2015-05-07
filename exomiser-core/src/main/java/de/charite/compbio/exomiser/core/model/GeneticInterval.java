@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 
 /**
  * A simple genetic interval defined as "The spatial continuous physical entity
@@ -42,6 +42,7 @@ public class GeneticInterval {
      * Returns a new GeneticInterval from the parsed string. Strings are to be
      * of the format: <li>chr1:123-456 chrY:1234-1220 chr19:345-567</li>
      *
+     * @param refDict
      * @param interval
      * @return
      */
@@ -53,7 +54,7 @@ public class GeneticInterval {
         }
 
         String[] intervalSections = interval.split(":");
-        int localChr = refDict.contigID.get(intervalSections[0]).intValue();
+        int localChr = refDict.getContigNameToID().get(intervalSections[0]);
 
         String positions = intervalSections[1];
         String[] startEnd = positions.split("-");

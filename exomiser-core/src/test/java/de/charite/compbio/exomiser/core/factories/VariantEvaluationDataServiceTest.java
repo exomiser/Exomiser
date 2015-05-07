@@ -49,16 +49,14 @@ public class VariantEvaluationDataServiceTest {
     private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
     
     private VariantEvaluation varEval;
-    private Variant variant;
 
     @Before
     public void setUp() {
-        variant = null; // new Variant((byte) 1, 1, "C", "A", null, 5f, null);
-        varEval = new VariantEvaluation(null, 0, null, null);
+        varEval = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         
         MockitoAnnotations.initMocks(this);
-        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
-        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
+        Mockito.when(mockPathogenicityDao.getPathogenicityData(varEval)).thenReturn(PATH_DATA);
+        Mockito.when(mockFrequencyDao.getFrequencyData(varEval)).thenReturn(FREQ_DATA);
 
     }
 

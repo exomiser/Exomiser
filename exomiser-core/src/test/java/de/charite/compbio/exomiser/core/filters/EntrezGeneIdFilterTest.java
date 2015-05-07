@@ -16,16 +16,11 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class EntrezGeneIdFilterTest {
     
     private EntrezGeneIdFilter instance;
@@ -34,23 +29,21 @@ public class EntrezGeneIdFilterTest {
     private static final int WANTED_GENE_ID = 1;
     private static final int UNWANTED_GENE_ID = 0;
     
-    @Mock
     private VariantEvaluation wantedPassesFilter;
-    @Mock
     private VariantEvaluation unwantedFailsFilter;
 
     @Before
     public void setUp() {
-        initMocks();
+        initVariants();
         
         genesToKeep = new HashSet<>();
         genesToKeep.add(WANTED_GENE_ID);
         instance = new EntrezGeneIdFilter(genesToKeep);
     }
 
-    private void initMocks() {
-        Mockito.when(wantedPassesFilter.getEntrezGeneID()).thenReturn(WANTED_GENE_ID);
-        Mockito.when(unwantedFailsFilter.getEntrezGeneID()).thenReturn(UNWANTED_GENE_ID);
+    private void initVariants() {
+        wantedPassesFilter = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").geneId(WANTED_GENE_ID).build();
+        unwantedFailsFilter = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").geneId(UNWANTED_GENE_ID).build();
     }
 
     @Test
@@ -60,7 +53,7 @@ public class EntrezGeneIdFilterTest {
 
     @Test
     public void testRunFilterOnVariantWithWantedGeneIdPassesFilter() {
-        genesToKeep.add(wantedPassesFilter.getEntrezGeneID());
+        genesToKeep.add(wantedPassesFilter.getEntrezGeneId());
         
         FilterResult filterResult = instance.runFilter(wantedPassesFilter);
 

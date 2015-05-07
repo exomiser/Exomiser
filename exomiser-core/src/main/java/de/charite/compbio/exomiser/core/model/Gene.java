@@ -7,9 +7,7 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -250,18 +248,16 @@ public class Gene implements Comparable<Gene>, Filterable {
         if (variantEvaluations.isEmpty()) {
             return false;
         }
-        VariantEvaluation ve = this.variantEvaluations.get(0);
-        Variant v = ve.getVariant();
-        return v.isXChromosomal();
+        Variant ve = variantEvaluations.get(0);
+        return ve.isXChromosomal();
     }
 
     public boolean isYChromosomal() {
         if (variantEvaluations.isEmpty()) {
             return false;
         }
-        VariantEvaluation ve = this.variantEvaluations.get(0);
-        Variant v = ve.getVariant();
-        return v.isYChromosomal();
+        Variant ve = variantEvaluations.get(0);
+        return ve.isYChromosomal();
     }
 
     /**

@@ -5,7 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
 import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -53,10 +55,9 @@ public class DefaultFrequencyDaoTest {
 
     @Before
     public void setUp() {
-        variantNotInDatabase = new TestVariantFactory().constructVariant(1, 124, "T", "G",
-                Genotype.HOMOZYGOUS_ALT, 30, 1);
-        variantInDatabaseWithRsId = new TestVariantFactory().constructVariant(10, 123256214, "T", "G",
-                Genotype.HOMOZYGOUS_ALT, 30, 1);
+        variantNotInDatabase = new VariantEvaluation.VariantBuilder(1, 124, "T", "G").build();
+        //Exomiser currently uses ONE_BASED numbering - be wary....
+        variantInDatabaseWithRsId = new VariantEvaluation.VariantBuilder(10, 123256215, "T", "G").build();
     }
 
     @Test

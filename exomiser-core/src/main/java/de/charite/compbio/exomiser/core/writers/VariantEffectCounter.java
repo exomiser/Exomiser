@@ -11,8 +11,9 @@ import java.util.Map;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.EnumMap;
 import java.util.List;
 
 public class VariantEffectCounter {
@@ -25,7 +26,7 @@ public class VariantEffectCounter {
     VariantEffectCounter(int numSamples) {
         this.counters = new ArrayList<>();
         for (int i = 0; i < numSamples; ++i) {
-            counters.add(new HashMap<VariantEffect, Integer>());
+            counters.add(new EnumMap<VariantEffect, Integer>(VariantEffect.class));
         }
     }
 
@@ -34,13 +35,13 @@ public class VariantEffectCounter {
      *
      * @param variant
      */
-    public void put(Variant variant) {
+    public void put(VariantEvaluation variant) {
         VariantEffect effect = variant.getVariantEffect();
         if (effect == null) {
             return;
         }
         VariantContext variantContext = variant.getVariantContext();
-        int numSamples = variantContext.getSampleNames().size();
+        int numSamples = variant.getNumberOfIndividuals();
         for (int sampleIdx = 0; sampleIdx < numSamples; ++sampleIdx) {
             final Genotype gt = variantContext.getGenotype(sampleIdx);
             if (gt.getAlleles().size() != 2) {
@@ -49,7 +50,7 @@ public class VariantEffectCounter {
             }
             boolean isAltAllele = false;
             for (int i = 0; i < 2; ++i) {
-                if (gt.getAllele(i).equals(variantContext.getAlternateAllele(variant.getAltAlleleID()))) {
+                if (gt.getAllele(i).equals(variantContext.getAlternateAllele(variant.getAltAlleleId()))) {
                     isAltAllele = true;
                 }
             }

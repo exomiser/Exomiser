@@ -7,6 +7,7 @@ import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.jannovar.htsjdk.InfoFields;
 import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
+import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -127,9 +128,8 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     private void writeUnannotatedVariants(SampleData sampleData, VariantContextWriter writer) {
-        // first, write out unannotated records, then the annotated ones gene-wise
-        for (VariantEvaluation ve : sampleData.getUnAnnotatedVariantEvaluations()) {
-            writeRecord(ve, writer, null);
+        for (VariantEvaluation variant : sampleData.getUnAnnotatedVariantEvaluations()) {
+            writeRecord(variant, writer, null);
         }
     }
 
@@ -144,8 +144,16 @@ public class VcfResultsWriter implements ResultsWriter {
     private void writeRecord(VariantEvaluation ve, VariantContextWriter writer, Gene gene) {
         // create a new VariantContextBuilder, based on the original line
         // n.b. variantContexts with alternative alleles will be shared between 
-        // the alternative allele variant objects - Exomiser works on a 1 Variant = 1 Allele principle 
-        VariantContextBuilder builder = new VariantContextBuilder(ve.getVariantContext());
+        // the alternative allele variant objects - Exomiser works on a 1 Variant = 1 Allele principle
+        VariantContext variantContext = ve.getVariantContext();
+        VariantContextBuilder builder = new VariantContextBuilder(variantContext);
+//        Allele refAllele = variantContext.getReference();
+//        logger.info("Genotypes: {}", variantContext.getGenotypes());
+//        for (int i = 0; i < variantContext.getAlternateAlleles().size(); i++) {
+//            Allele altAllele = variantContext.getAlternateAllele(i);
+//            Genotype genotype = variantContext.getGenotype(0);
+//            logger.info("{} {} {} {}", refAllele, altAllele, genotype.getType(), genotype.getAlleles());
+//        }
         // update filter and info fields and write out to writer.
         updateFilterField(builder, ve);
         updateInfoField(builder, ve, gene);
@@ -176,7 +184,7 @@ public class VcfResultsWriter implements ResultsWriter {
      * <code>builder</code>.
      */
     private void updateFailedFilters(VariantContextBuilder builder, Set<FilterType> failedFilterTypes) {
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
         for (FilterType ft : failedFilterTypes) {
             set.add(ft.toString());
         }
@@ -188,8 +196,6 @@ public class VcfResultsWriter implements ResultsWriter {
      * {@link VariantEvaluation} and <code>gene</code>.
      */
     private void updateInfoField(VariantContextBuilder builder, VariantEvaluation ve, Gene gene) {
-        // TODO: Add in the settings used and other data for Will and Orion here
-        // (Issue #26 https://bitbucket.org/exomiser/exomiser/issue/26/vcf-output-format-requirements)
         if (ve.hasAnnotations() && gene != null) {
             builder.attribute("EXOMISER_GENE", gene.getGeneSymbol());
             builder.attribute("EXOMISER_VARIANT_SCORE", ve.getVariantScore());
@@ -206,7 +212,7 @@ public class VcfResultsWriter implements ResultsWriter {
      * explaining the Jannovar and Exomiser INFO and FILTER fields
      */
     private List<VCFHeaderLine> getAdditionalHeaderLines() {
-        List<VCFHeaderLine> lines = new ArrayList<VCFHeaderLine>();
+        List<VCFHeaderLine> lines = new ArrayList<>();
 
         // add INFO descriptions
         lines.add(new VCFInfoHeaderLine("EXOMISER_GENE", 1, VCFHeaderLineType.String, "Exomiser gene"));

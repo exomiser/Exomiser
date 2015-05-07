@@ -1,5 +1,8 @@
 package de.charite.compbio.exomiser.core.dao;
 
+import com.google.common.collect.ImmutableList;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -8,15 +11,17 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import java.util.Arrays;
 
 import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.AnnotationList;
 import de.charite.compbio.jannovar.annotation.InvalidGenomeChange;
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderDispatcher;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.reference.GenomeChange;
 import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.Strand;
@@ -60,35 +65,36 @@ public class TestVariantFactory {
      * @param qual phred-scale quality
      * @return {@link Variant} with the setting
      */
-    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
+    public VariantEvaluation constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
         // build annotation list (for the one transcript we have below only)
         final GenomePosition gPos = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ZERO_BASED);
-        final GenomeChange change = new GenomeChange(gPos, ref, alt);
+        final GenomeVariant change = new GenomeVariant(gPos, ref, alt);
         final AnnotationBuilderDispatcher dispatcher;
         final TranscriptModel tmFGFR2 = buildTMForFGFR2();
         final TranscriptModel tmSHH = buildTMForSHH();
-        if (tmFGFR2.txRegion.contains(gPos)) {
+        if (tmFGFR2.getTXRegion().contains(gPos)) {
             dispatcher = new AnnotationBuilderDispatcher(tmFGFR2, change, new AnnotationBuilderOptions());
-        } else if (tmSHH.txRegion.contains(gPos)) {
+        } else if (tmSHH.getTXRegion().contains(gPos)) {
             dispatcher = new AnnotationBuilderDispatcher(tmSHH, change, new AnnotationBuilderOptions());
         } else {
             dispatcher = new AnnotationBuilderDispatcher(null, change, new AnnotationBuilderOptions());
         }
-        final AnnotationList annotations;
+        final VariantAnnotations annotations;
         try {
             Annotation anno = dispatcher.build();
             if (anno != null) {
-                annotations = new AnnotationList(change, Arrays.asList(anno));
+                annotations = new VariantAnnotations(change, Arrays.asList(anno));
             } else {
-                annotations = new AnnotationList(change, Arrays.<Annotation>asList());
+                annotations = new VariantAnnotations(change, Arrays.<Annotation>asList());
             }
         } catch (InvalidGenomeChange e) {
             throw new RuntimeException("Problem building annotation", e);
         }
         
-        GenomeChange genomeChange = annotations.get(0).change;
+        VariantFactory variantFactory = new VariantFactory(new VariantAnnotationsFactory(new JannovarData(refDict, ImmutableList.of(buildTMForFGFR2(), buildTMForGNRHR2A(), buildTMForRBM8A(), buildTMForSHH()))));
+        VariantContext variantContext = constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
         
-        return new Variant(constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual), altAlleleID, genomeChange, annotations);
+        return variantFactory.buildVariantEvaluation(variantContext, altAlleleID, annotations);
     }
 
     public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {

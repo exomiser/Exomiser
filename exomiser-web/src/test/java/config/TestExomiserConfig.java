@@ -28,7 +28,8 @@ import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
@@ -117,13 +119,18 @@ public class TestExomiserConfig {
     }
     
     @Bean
+    public VariantFactory variantFactory() {
+        return new VariantFactory(mockVariantAnnotator());
+    }
+ 
+    @Bean
     public SampleDataFactory sampleDataFactory() {
         return Mockito.mock(SampleDataFactory.class);
     }
     
     @Bean
-    public VariantAnnotator mockVariantAnnotator() {
-        return Mockito.mock(VariantAnnotator.class);
+    public VariantAnnotationsFactory mockVariantAnnotator() {
+        return Mockito.mock(VariantAnnotationsFactory.class);
     }
     
     @Bean

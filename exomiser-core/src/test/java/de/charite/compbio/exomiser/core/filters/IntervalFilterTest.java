@@ -6,11 +6,8 @@
 
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -51,22 +48,10 @@ public class IntervalFilterTest {
     }
 
     private void setUpVariants() {
-        TestVariantFactory varFactory = new TestVariantFactory();
-
-        Variant rightChromosomeRightPositionVariant = varFactory.constructVariant(RIGHT_CHR, INSIDE_REGION, "A", "T", Genotype.HETEROZYGOUS, 30, 0);;
-        rightChromosomeRightPosition = new VariantEvaluation(rightChromosomeRightPositionVariant);
-
-        Variant rightChromosomeWrongPositionVariant = varFactory.constructVariant(RIGHT_CHR, BEFORE_REGION, "A", "T",
-                Genotype.HETEROZYGOUS, 30, 0);
-        rightChromosomeWrongPosition = new VariantEvaluation(rightChromosomeWrongPositionVariant);
-
-        Variant wrongChromosomeRightPositionVariant = varFactory.constructVariant(WRONG_CHR, INSIDE_REGION, "A", "T",
-                Genotype.HETEROZYGOUS, 30, 0);
-        wrongChromosomeRightPosition = new VariantEvaluation(wrongChromosomeRightPositionVariant);
-
-        Variant wrongChromosomeWrongPositionVariant = varFactory.constructVariant(RIGHT_CHR, AFTER_REGION, "A", "T",
-                Genotype.HETEROZYGOUS, 30, 0);
-        wrongChromosomeWrongPosition = new VariantEvaluation(wrongChromosomeWrongPositionVariant);
+        rightChromosomeRightPosition = new VariantEvaluation.VariantBuilder(RIGHT_CHR, INSIDE_REGION, "A", "T").build();
+        rightChromosomeWrongPosition = new VariantEvaluation.VariantBuilder(RIGHT_CHR, BEFORE_REGION, "A", "T").build();
+        wrongChromosomeRightPosition = new VariantEvaluation.VariantBuilder(WRONG_CHR, INSIDE_REGION, "A", "T").build();
+        wrongChromosomeWrongPosition = new VariantEvaluation.VariantBuilder(RIGHT_CHR, AFTER_REGION, "A", "T").build();
     }
 
     @Before

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +64,7 @@ public class VCF2FrequencyParser {
 
         byte chrom = 0;
         try {
-            chrom = chromosomeStringToByte(fields[0]);
+            chrom = (byte) refDict.getContigNameToID().get(fields[0]).intValue();
         } catch (NumberFormatException e) {
             logger.error("Unable to parse chromosome: {}. Error occured parsing line: {}", fields[0], line);
             logger.error("", e.getMessage());
@@ -149,42 +149,35 @@ public class VCF2FrequencyParser {
             if (minorFreqs.size() > 0) {
                 if (!minorFreqs.get(minorAlleleCounter).equals(".")) {
                     float maf = Float.parseFloat(minorFreqs.get(minorAlleleCounter));
-                    /*
-                     * NOTE that the dnSNP maf are given as proportion, whereas
-                     * the ESP MAF are given as percent. In order not to loose
-                     * numerical accurary, we will convert all to percent for
-                     * the database.
-                     */
-                     maf = maf * 100f;
                     freq.setDbSnpGmaf(maf);
                 }
             }
 
-            if (exACFreqs.get("AN_AFR") != null && !exACFreqs.get("AN_AFR").equals("0")) {
+            if (exACFreqs.containsKey("AN_AFR") && !exACFreqs.get("AN_AFR").equals("0")) {
                 float afr = 100f * Integer.parseInt(exACFreqs.get("AC_AFR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AFR"));
                 freq.setExACFrequencyAfr(afr);
             }
-            if (exACFreqs.get("AN_AMR") != null && !exACFreqs.get("AN_AMR").equals("0")) {
+            if (exACFreqs.containsKey("AN_AMR") && !exACFreqs.get("AN_AMR").equals("0")) {
                 float amr = 100f * Integer.parseInt(exACFreqs.get("AC_AMR").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_AMR"));
                 freq.setExACFrequencyAmr(amr);
             }
-            if (exACFreqs.get("AN_EAS") != null && !exACFreqs.get("AN_EAS").equals("0")) {
+            if (exACFreqs.containsKey("AN_EAS") && !exACFreqs.get("AN_EAS").equals("0")) {
                 float eas = 100f * Integer.parseInt(exACFreqs.get("AC_EAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_EAS"));
                 freq.setExACFrequencyEas(eas);
             }
-            if (exACFreqs.get("AN_FIN") != null && !exACFreqs.get("AN_FIN").equals("0")) {
+            if (exACFreqs.containsKey("AN_FIN") && !exACFreqs.get("AN_FIN").equals("0")) {
                 float fin = 100f * Integer.parseInt(exACFreqs.get("AC_FIN").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_FIN"));
                 freq.setExACFrequencyFin(fin);
             }
-            if (exACFreqs.get("AN_NFE") != null && !exACFreqs.get("AN_NFE").equals("0")) {
+            if (exACFreqs.containsKey("AN_NFE") && !exACFreqs.get("AN_NFE").equals("0")) {
                 float nfe = 100f * Integer.parseInt(exACFreqs.get("AC_NFE").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_NFE"));
                 freq.setExACFrequencyNfe(nfe);
             }
-            if (exACFreqs.get("AN_OTH") != null && !exACFreqs.get("AN_OTH").equals("0")) {
+            if (exACFreqs.containsKey("AN_OTH") && !exACFreqs.get("AN_OTH").equals("0")) {
                 float oth = 100f * Integer.parseInt(exACFreqs.get("AC_OTH").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_OTH"));
                 freq.setExACFrequencyOth(oth);
             }
-            if (exACFreqs.get("AN_SAS") != null && !exACFreqs.get("AN_SAS").equals("0")) {
+            if (exACFreqs.containsKey("AN_SAS") && !exACFreqs.get("AN_SAS").equals("0")) {
                 float sas = 100f * Integer.parseInt(exACFreqs.get("AC_SAS").split(",")[minorAlleleCounter - 1]) / Integer.parseInt(exACFreqs.get("AN_SAS"));
                 freq.setExACFrequencySas(sas);
             }
@@ -252,11 +245,4 @@ public class VCF2FrequencyParser {
         return 0;
     }
 
-    /**
-     * Gets a byte representation of chromosome. Note that the dbSNP file does
-     * not use "chr"
-     */
-    private byte chromosomeStringToByte(String chrom) {
-        return (byte) refDict.contigID.get(chrom).intValue();
-    }
 }

@@ -5,8 +5,10 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.Person;
 import htsjdk.variant.vcf.VCFHeader;
 
 import java.nio.file.Path;
@@ -18,7 +20,6 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,18 +38,12 @@ public class SampleDataTest {
     private SampleData instance;
 
     @Mock
-    Variant mockAnnotatedVariant;
-    
-    @Mock
-    Variant mockUnAnnotatedVariant;
-    
+    List<Annotation> mockNotEmptyListOfAnnotations;
+   
     @Before
     public void setUp() {
         instance = new SampleData();
-
-        // This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(mockAnnotatedVariant.getAnnotations()).thenReturn(Arrays.asList("Lots of lovely annotations"));
-        Mockito.when(mockUnAnnotatedVariant.getAnnotations()).thenReturn(Arrays.<String> asList());
+        Mockito.when(mockNotEmptyListOfAnnotations.isEmpty()).thenReturn(Boolean.FALSE);
     }
 
     @Test
@@ -108,8 +103,10 @@ public class SampleDataTest {
 
     @Test
     public void testCanReturnUnannotatedVariantEvaluations() {
-        VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation(mockAnnotatedVariant);
-        VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation(mockUnAnnotatedVariant);
+        VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation.VariantBuilder(10, 123353297, "G", "C")
+                .annotations(mockNotEmptyListOfAnnotations).build();
+        
+        VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation.VariantBuilder(7, 155604800, "C", "CTT").build();
 
         List<VariantEvaluation> allVariantEvaluations = new ArrayList<>();
         allVariantEvaluations.add(annotatedVariantEvaluation);

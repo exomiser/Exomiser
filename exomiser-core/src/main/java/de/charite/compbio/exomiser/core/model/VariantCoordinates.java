@@ -3,25 +3,41 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
-
 /**
- * Bean for storing the chromosomal coordinates of a variant.
  * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface VariantCoordinates {
-    /** int representation of the chromosome */
+
+    /**
+     * @return integer representation of the chromosome
+     */
     public int getChromosome();
-    /** Start position of the variant on the chromosome */
-    public int getPos();
-    /** Sequence (one or more nucleotides) of the reference */
+
+    /**
+     * @return String representation of the chromosome. Chromosomes 1-22 will return
+     * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=M.
+     */
+    public String getChromosomeName();
+
+    /**
+     * @return 1-based position of the variant on the chromosome
+     */
+    public int getPosition();
+
+    /**
+     * @return String with the reference allele in the variant, without common
+     * suffix or prefix to reference allele.
+     */
     public String getRef();
-    /** Sequence (one or more nucleotides) of the alt (variant)  sequence */
+
+    /**
+     * @return String with the alternative allele in the variant, without common
+     * suffix or prefix to reference allele.
+     */
     public String getAlt();
-       
-    public ReferenceDictionary getRefDict();
+
 }

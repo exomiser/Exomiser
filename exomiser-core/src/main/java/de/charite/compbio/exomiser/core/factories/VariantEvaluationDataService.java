@@ -44,14 +44,12 @@ public class VariantEvaluationDataService {
     }
 
     public FrequencyData getVariantFrequencyData(VariantEvaluation variantEvaluation) {
-        Variant variant = variantEvaluation.getVariant();
-        FrequencyData freqData = frequencyDao.getFrequencyData(variant);
+        FrequencyData freqData = frequencyDao.getFrequencyData(variantEvaluation);
         return freqData;
     }
     
     public PathogenicityData getVariantPathogenicityData(VariantEvaluation variantEvaluation) {
-        Variant variant = variantEvaluation.getVariant();
-        PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variant);
+        PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variantEvaluation);
         return pathData;
     }
     

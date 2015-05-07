@@ -44,23 +44,22 @@ public class GeneScorerTest {
 
     @Before
     public void setUp() {
-        failedFrequency = new VariantEvaluation(null, 0, null, null);
+        failedFrequency = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         failedFrequency.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
 
-        failedPathogenicity = new VariantEvaluation(null, 0,  null, null);
+        failedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         failedPathogenicity.addFilterResult(new PathogenicityFilterResult(0f, FilterResultStatus.FAIL));
 
-        failedFrequencyPassedPathogenicity = new VariantEvaluation(null, 0,  null, null);
+        failedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         failedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
         failedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(1f, FilterResultStatus.PASS));
         // these are set up so that failedFrequencyPassedPathogenicity has a higher
         // pathogenicity score (1.0)than passedFrequencyPassedPathogenicity (0.75) to ensure that the scoring only
         // includes variants
         // which have actually passed all the filters
-        passedFrequencyPassedPathogenicity = new VariantEvaluation(null, 0,  null, null);
+        passedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         passedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0.75f, FilterResultStatus.PASS));
-        passedFrequencyPassedPathogenicity
-                .addFilterResult(new PathogenicityFilterResult(0.75f, FilterResultStatus.PASS));
+        passedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(0.75f, FilterResultStatus.PASS));
     }
 
     @Test

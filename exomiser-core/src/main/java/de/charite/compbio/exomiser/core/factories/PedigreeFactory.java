@@ -93,14 +93,13 @@ public class PedigreeFactory {
             contents = new PedFileReader(pedigreeFilePath.toFile()).read();
             // filter contents to the individuals from sampleNames
             ImmutableList.Builder<PedPerson> samplePersonsBuilder = new ImmutableList.Builder<>();
-            for (PedPerson person : contents.individuals) {
-                if (sampleNames.contains(person.name)) {
+            for (PedPerson person : contents.getIndividuals()) {
+                if (sampleNames.contains(person.getName())) {
                     samplePersonsBuilder.add(person);
                 }
             }
-            PedFileContents sampleContents = new PedFileContents(ImmutableList.<String>of(),
-                    samplePersonsBuilder.build());
-            final String pedName = sampleContents.individuals.get(0).pedigree;
+            final PedFileContents sampleContents = new PedFileContents(ImmutableList.<String>of(), samplePersonsBuilder.build());
+            final String pedName = sampleContents.getIndividuals().get(0).getPedigree();
             logger.info("Created a pedigree for {} having pedigree name ", new Object[]{sampleNames, pedName});
             return new Pedigree(pedName, new PedigreeExtractor(pedName, sampleContents).run());
         } catch (PedParseException e) {

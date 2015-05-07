@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>7.0.0.BETA</version>
+        <version>7.0.0-RC</version>
     </parent>
   
     <properties>

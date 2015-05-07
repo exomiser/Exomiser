@@ -3,7 +3,7 @@ package de.charite.compbio.exomiser.db.parsers;
 import de.charite.compbio.exomiser.db.reference.VariantPathogenicity;
 import de.charite.compbio.exomiser.db.resources.Resource;
 import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

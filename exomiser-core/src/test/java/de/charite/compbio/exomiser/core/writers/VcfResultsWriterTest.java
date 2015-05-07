@@ -86,10 +86,12 @@ public class VcfResultsWriterTest {
     private SampleData sampleData;
 
     /** VariantEvaluation objects used for testing (annotated ones). */
-    private VariantEvaluation missenseVariantEvaluation, indelVariantEvaluation;
+    private VariantEvaluation missenseVariantEvaluation;
+    private VariantEvaluation indelVariantEvaluation;
 
     /** VariantEvaluation objects used for testing (unannotated ones). */
-    private VariantEvaluation unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2;
+    private VariantEvaluation unAnnotatedVariantEvaluation1;
+    private VariantEvaluation unAnnotatedVariantEvaluation2;
 
     /** Genes used for testing */
     private Gene gene1, gene2;
@@ -122,20 +124,18 @@ public class VcfResultsWriterTest {
         sampleData.setGenes(new ArrayList<Gene>());
 
         TestVariantFactory varFactory = new TestVariantFactory();
-        Variant missenseVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        Variant indelVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
         passTargetResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
         failTargetResult = new TargetFilterResult(0f, FilterResultStatus.FAIL);
         failFrequencyResult = new FrequencyFilterResult(0f, FilterResultStatus.FAIL);
 
-        missenseVariantEvaluation = new VariantEvaluation(missenseVariant);
-        indelVariantEvaluation = new VariantEvaluation(indelVariant);
+        missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
-        gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneID());
+        gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneId());
         gene1.addVariant(missenseVariantEvaluation);
         
-        gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneID());
+        gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
         gene2.addVariant(indelVariantEvaluation);
 
         gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
@@ -146,10 +146,8 @@ public class VcfResultsWriterTest {
         gene1.addPriorityResult(gene1PriorityScore);
         gene2.addPriorityResult(new OMIMPriorityResult());
 
-        Variant unannotatedVariant1 = varFactory.constructVariant(5, 10, "AC", "AT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
-        Variant unannotatedVariant2 = varFactory.constructVariant(5, 13, "T", "TG", Genotype.HETEROZYGOUS, 30, 0, 1.0);
-        unAnnotatedVariantEvaluation1 = new VariantEvaluation(unannotatedVariant1);
-        unAnnotatedVariantEvaluation2 = new VariantEvaluation(unannotatedVariant2);
+        unAnnotatedVariantEvaluation1 = new VariantEvaluation.VariantBuilder(5, 11, "AC", "AT").quality(1).build();
+        unAnnotatedVariantEvaluation2 = new VariantEvaluation.VariantBuilder(5, 14, "T", "TG").quality(1).build();
     }
 
     /* test that the extended header is written out properly */
@@ -160,13 +158,13 @@ public class VcfResultsWriterTest {
 
     /* test writing out unannotated variants */
     @Test
-    public void testWriteUnannotatedVariants() {
+    public void testWriteUnannotatedVariants() {       
         sampleData.setVariantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2));
-
+        
         String vcf = instance.writeString(sampleData, settings);
         final String EXPECTED = EXPECTED_HEADER
-                + "chr5\t11\t.\tAC\tAT\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS;RD=30\tGT:RD\t0/1:30\n"
-                + "chr5\t14\t.\tT\tTG\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS;RD=30\tGT:RD\t0/1:30\n";
+                + "chr5\t11\t.\tAC\tAT\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
+                + "chr5\t14\t.\tT\tTG\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
         Assert.assertEquals(EXPECTED, vcf);
     }
 
@@ -233,6 +231,24 @@ public class VcfResultsWriterTest {
         String vcf = instance.writeString(sampleData, outputPassVariantsOnlySettings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
+        Assert.assertEquals(EXPECTED, vcf);
+    }
+    
+    @Test
+    public void testAlternativeAllelesAreWrittenOnSuccessiveLines() {
+        TestVariantFactory varFactory = new TestVariantFactory();
+        VariantEvaluation alt1 = varFactory.constructVariant(1, 120612040, "T", "TCCGCCG", Genotype.HETEROZYGOUS, 30, 0, 258.62);
+        VariantEvaluation alt2 = varFactory.constructVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HETEROZYGOUS, 30, 1, 258.62);
+        Gene gene = new Gene("TEST", 12345);
+        gene.addVariant(alt1);
+        gene.addVariant(alt2);
+        
+        sampleData.setGenes(Arrays.asList(gene));
+        String vcf = instance.writeString(sampleData, settings);
+        System.out.println(vcf);
+        final String EXPECTED = EXPECTED_HEADER
+                + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n"
+                + "chr1\t120612041\t.\tT\tTCCTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
     }
 }

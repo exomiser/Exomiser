@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.factories.PedigreeFactory.PedigreeCreationException;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Person;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -50,7 +51,8 @@ public class PedigreeFactoryTest {
     @Test
     public void createsSingleSamplePedigreeWithDefaultNameWhenSampleHasNoNameOrPedFile() {      
         Pedigree result = instance.createPedigreeForSampleData(nullPath, singleSampleData);
-        assertThat(result.members.get(0).name, equalTo(PedigreeFactory.DEFAULT_SAMPLE_NAME));
+        Person person = result.getMembers().get(0);
+        assertThat(person.getName(), equalTo(PedigreeFactory.DEFAULT_SAMPLE_NAME));
     }
     
     @Test
@@ -60,7 +62,8 @@ public class PedigreeFactoryTest {
         singleSampleData.setSampleNames(Arrays.asList(joeBloggs));
                         
         Pedigree result = instance.createPedigreeForSampleData(nullPath, singleSampleData);        
-        assertThat(result.members.get(0).name, equalTo(joeBloggs));
+        Person person = result.getMembers().get(0);
+        assertThat(person.getName(), equalTo(joeBloggs));
     }
     
     @Test(expected = PedigreeCreationException.class)
@@ -77,7 +80,7 @@ public class PedigreeFactoryTest {
                         
         Pedigree pedigree = instance.createPedigreeForSampleData(inValidPedFilePath, multiSampleData);        
         System.out.println(pedigree);
-        assertThat(pedigree.members.size(), equalTo(trioNames.size()));
+        assertThat(pedigree.getMembers().size(), equalTo(trioNames.size()));
     }
     
     @Test
@@ -88,7 +91,7 @@ public class PedigreeFactoryTest {
                         
         Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, multiSampleData);        
         System.out.println(pedigree);
-        assertThat(pedigree.members.size(), equalTo(trioNames.size()));
+        assertThat(pedigree.getMembers().size(), equalTo(trioNames.size()));
     }
     
     @Test
@@ -99,19 +102,22 @@ public class PedigreeFactoryTest {
                         
         Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, multiSampleData);        
         System.out.println(pedigree);
-        assertThat(pedigree.members.size(), equalTo(trioNames.size()));
+        assertThat(pedigree.getMembers().size(), equalTo(trioNames.size()));
 
         assertThat(pedigree.hasPerson("Adam"), is(true));
-        assertThat(pedigree.nameToMember.get("Adam").person.isUnaffected(), is(true));
-        assertThat(pedigree.nameToMember.get("Adam").person.isMale(), is(true));
+        Person adam = pedigree.getNameToMember().get("Adam").getPerson();
+        assertThat(adam.isUnaffected(), is(true));
+        assertThat(adam.isMale(), is(true));
         
         assertThat(pedigree.hasPerson("Eva"), is(true));
-        assertThat(pedigree.nameToMember.get("Eva").person.isUnaffected(), is(true));
-        assertThat(pedigree.nameToMember.get("Eva").person.isFemale(), is(true));
+        Person eva = pedigree.getNameToMember().get("Eva").getPerson();
+        assertThat(eva.isUnaffected(), is(true));
+        assertThat(eva.isFemale(), is(true));
 
         assertThat(pedigree.hasPerson("Seth"), is(true));
-        assertThat(pedigree.nameToMember.get("Seth").person.isUnaffected(), is(false));
-        assertThat(pedigree.nameToMember.get("Seth").person.isMale(), is(true));
+        Person seth = pedigree.getNameToMember().get("Seth").getPerson();
+        assertThat(seth.isUnaffected(), is(false));
+        assertThat(seth.isMale(), is(true));
         
     }
 

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.ArrayList;

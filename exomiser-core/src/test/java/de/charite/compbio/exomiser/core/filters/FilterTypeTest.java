@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.filters.FilterType;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

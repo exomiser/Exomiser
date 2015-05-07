@@ -53,9 +53,8 @@ public class TsvGeneResultsWriterTest {
         instance = new TsvGeneResultsWriter();
 
         TestVariantFactory varFactory = new TestVariantFactory();
-        Variant variant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
 
-        VariantEvaluation variantEval = new VariantEvaluation(variant);
+        VariantEvaluation variantEval = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores
                 .getPathogenicityScoreOf(EnumSet.of(VariantEffect.STOP_GAINED)), FilterResultStatus.PASS));
         variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
@@ -63,7 +62,7 @@ public class TsvGeneResultsWriterTest {
         variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
         variantEval.setFrequencyData(new FrequencyData(null));
 
-        gene = new Gene(variantEval.getGeneSymbol(), variantEval.getEntrezGeneID());
+        gene = new Gene(variantEval.getGeneSymbol(), variantEval.getEntrezGeneId());
         gene.addVariant(variantEval);
         
         sampleData = new SampleData();
