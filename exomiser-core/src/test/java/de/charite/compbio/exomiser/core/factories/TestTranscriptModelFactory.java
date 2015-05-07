@@ -1,44 +1,24 @@
-package de.charite.compbio.exomiser.core.dao;
+package de.charite.compbio.exomiser.core.factories;
 
-import com.google.common.collect.ImmutableList;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
-import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.GenotypeBuilder;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.variantcontext.VariantContextBuilder;
-
-import java.util.Arrays;
-
-import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.InvalidGenomeChange;
-import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderDispatcher;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.Strand;
+import static de.charite.compbio.jannovar.reference.Strand.FWD;
+import static de.charite.compbio.jannovar.reference.Strand.REV;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import de.charite.compbio.jannovar.reference.TranscriptModelBuilder;
 
 /**
- * Helper class for constructing {@link Variant} objects for tests.
+ * Allows the easy creation of transcript models from knownGenes.txt.gz lines.
  *
- * The construction of {@link Variant} objects is quite complex but for tests,
- * we would ideally have them for testing our data sets. This class helps us
- * with the construction.
+ * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-public class TestVariantFactory {
+public class TestTranscriptModelFactory {
 
-    private final ReferenceDictionary refDict;
-
+    private static final ReferenceDictionary refDict = HG19RefDictBuilder.build();
+        
     private static final String KG_LINE_FGFR2 = "uc021pzz.1\tchr10\t-\t123237843\t123357972\t123239370\t123353331\t18\t123237843,123243211,123244908,123246867,123247504,123256045,123258008,123260339,123263303,123274630,123276832,123279492,123298105,123310803,123324015,123324951,123353222,123357475,\t123239535,123243317,123245046,123246938,123247627,123256236,123258119,123260461,123263455,123274833,123276977,123279683,123298229,123310973,123324093,123325218,123353481,123357972,\tP21802\tuc021pzz.1";
     private static final String TRANSCRIPT_SEQ_FGFR2 = "ggcggcggctggaggagagcgcggtggagagccgagcgggcgggcggcgggtgcggagcgggcgagggagcgcgcgcggccgccacaaagctcgggcgccgcggggctgcatgcggcgtacctggcccggcgcggcgactgctctccgggctggcgggggccggccgcgagccccgggggccccgaggccgcagcttgcctgcgcgctctgagccttcgcaactcgcgagcaaagtttggtggaggcaacgccaagcctgagtcctttcttcctctcgttccccaaatccgagggcagcccgcgggcgtcatgcccgcgctcctccgcagcctggggtacgcgtgaagcccgggaggcttggcgccggcgaagacccaaggaccactcttctgcgtttggagttgctccccgcaaccccgggctcgtcgctttctccatcccgacccacgcggggcgcggggacaacacaggtcgcggaggagcgttgccattcaagtgactgcagcagcagcggcagcgcctcggttcctgagcccaccgcaggctgaaggcattgcgcgtagtccatgcccgtagaggaagtgtgcagatgggattaacgtccacatggagatatggaagaggaccggggattggtaccgtaaccatggtcagctggggtcgtttcatctgcctggtcgtggtcaccatggcaaccttgtccctggcccggccctccttcagtttagttgaggataccacattagagccagaagagccaccaaccaaataccaaatctctcaaccagaagtgtacgtggctgcgccaggggagtcgctagaggtgcgctgcctgttgaaagatgccgccgtgatcagttggactaaggatggggtgcacttggggcccaacaataggacagtgcttattggggagtacttgcagataaagggcgccacgcctagagactccggcctctatgcttgtactgccagtaggactgtagacagtgaaacttggtacttcatggtgaatgtcacagatgccatctcatccggagatgatgaggatgacaccgatggtgcggaagattttgtcagtgagaacagtaacaacaagagagcaccatactggaccaacacagaaaagatggaaaagcggctccatgctgtgcctgcggccaacactgtcaagtttcgctgcccagccggggggaacccaatgccaaccatgcggtggctgaaaaacgggaaggagtttaagcaggagcatcgcattggaggctacaaggtacgaaaccagcactggagcctcattatggaaagtgtggtcccatctgacaagggaaattatacctgtgtagtggagaatgaatacgggtccatcaatcacacgtaccacctggatgttgtggagcgatcgcctcaccggcccatcctccaagccggactgccggcaaatgcctccacagtggtcggaggagacgtagagtttgtctgcaaggtttacagtgatgcccagccccacatccagtggatcaagcacgtggaaaagaacggcagtaaatacgggcccgacgggctgccctacctcaaggttctcaaggccgccggtgttaacaccacggacaaagagattgaggttctctatattcggaatgtaacttttgaggacgctggggaatatacgtgcttggcgggtaattctattgggatatcctttcactctgcatggttgacagttctgccagcgcctggaagagaaaaggagattacagcttccccagactacctggagatagccatttactgcataggggtcttcttaatcgcctgtatggtggtaacagtcatcctgtgccgaatgaagaacacgaccaagaagccagacttcagcagccagccggctgtgcacaagctgaccaaacgtatccccctgcggagacaggtaacagtttcggctgagtccagctcctccatgaactccaacaccccgctggtgaggataacaacacgcctctcttcaacggcagacacccccatgctggcaggggtctccgagtatgaacttccagaggacccaaaatgggagtttccaagagataagctgacactgggcaagcccctgggagaaggttgctttgggcaagtggtcatggcggaagcagtgggaattgacaaagacaagcccaaggaggcggtcaccgtggccgtgaagatgttgaaagatgatgccacagagaaagacctttctgatctggtgtcagagatggagatgatgaagatgattgggaaacacaagaatatcataaatcttcttggagcctgcacacaggatgggcctctctatgtcatagttgagtatgcctctaaaggcaacctccgagaatacctccgagcccggaggccacccgggatggagtactcctatgacattaaccgtgttcctgaggagcagatgaccttcaaggacttggtgtcatgcacctaccagctggccagaggcatggagtacttggcttcccaaaaatgtattcatcgagatttagcagccagaaatgttttggtaacagaaaacaatgtgatgaaaatagcagactttggactcgccagagatatcaacaatatagactattacaaaaagaccaccaatgggcggcttccagtcaagtggatggctccagaagccctgtttgatagagtatacactcatcagagtgatgtctggtccttcggggtgttaatgtgggagatcttcactttagggggctcgccctacccagggattcccgtggaggaactttttaagctgctgaaggaaggacacagaatggataagccagccaactgcaccaacgaactgtacatgatgatgagggactgttggcatgcagtgccctcccagagaccaacgttcaagcagttggtagaagacttggatcgaattctcactctcacaaccaatgaggaatacttggacctcagccaacctctcgaacagtattcacctagttaccctgacacaagaagttcttgttcttcaggagatgattctgttttttctccagaccccatgccttacgaaccatgccttcctcagtatccacacataaacggcagtgttaaaacatgaatgactgtgtctgcctgtccccaaacaggacagcactgggaacctagctacactgagcagggagaccatgcctcccagagcttgttgtctccacttgtatatatggatcagaggagtaaataattggaaaagtaatcagcatatgtgtaaagatttatacagttgaaaacttgtaatcttccccaggaggagaagaaggtttctggagcagtggactgccacaagccaccatgtaacccctctcacctgccgtgcgtactggctgtggaccagtaggactcaaggtggacgtgcgttctgccttccttgttaattttgtaataattggagaagatttatgtcagcacacacttacagagcacaaatgcagtatataggtgctggatgtatgtaaatatattcaaattatgtataaatatatattatatatttacaaggagttattttttgtattgattttaaatggatgtcccaatgcacctagaaaattggtctctctttttttaatagctatttgctaaatgctgttcttacacataatttcttaattttcaccgagcagaggtggaaaaatacttttgctttcagggaaaatggtataacgttaatttattaataaattggtaatatacaaaacaattaatcatttatagttttttttgtaatttaagtggcatttctatgcaggcagcacagcagactagttaatctattgcttggacttaactagttatcagatcctttgaaaagagaatatttacaatatatgactaatttggggaaaatgaagttttgatttatttgtgtttaaatgctgctgtcagacgattgttcttagacctcctaaatgccccatattaaaagaactcattcataggaaggtgtttcattttggtgtgcaaccctgtcattacgtcaacgcaacgtctaactggacttcccaagataaatggtaccagcgtcctcttaaaagatgccttaatccattccttgaggacagaccttagttgaaatgatagcagaatgtgcttctctctggcagctggccttctgcttctgagttgcacattaatcagattagcctgtattctcttcagtgaattttgataatggcttccagactctttggcgttggagacgcctgttaggatcttcaagtcccatcatagaaaattgaaacacagagttgttctgctgatagttttggggatacgtccatctttttaagggattgctttcatctaattctggcaggacctcaccaaaagatccagcctcatacctacatcagacaaaatatcgccgttgttccttctgtactaaagtattgtgttttgctttggaaacacccactcactttgcaatagccgtgcaagatgaatgcagattacactgatcttatgtgttacaaaattggagaaagtatttaataaaacctgttaatttttatactgacaataaaaatgtttctacagatattaatgttaacaagacaaaataaatgtcacgcaacttatttttttaataaaaaaaaaaaaaaa";
     private static final String KG_LINE_SHH2 = "uc003wmk.1\tchr7\t-\t155595557\t155604967\t155595593\t155604816\t3\t155595557,155598989,155604516,\t155596420,155599251,155604967,\tQ15465\tuc003wmk.1";
@@ -48,105 +28,47 @@ public class TestVariantFactory {
     private static final String KG_LINE_RBM8A = "uc001ent.2\tchr1\t+\t145507556\t145513535\t145507666\t145509211\t6\t145507556,145508015,145508206,145508474,145508915,145509165,\t145507733,145508075,145508284,145508611,145509052,145513535,\tQ9Y5S9uc001ent.2";
     private static final String TRANSCRIPT_SEQ_RBM8A = "agagttagcctttgattggtcagcttgactggcgacctttcccctctgcgacagtttcccgaggtacctagtgtctgagcggcacagacgagatctcgatcgaaggcgagatggcggacgtgctagatcttcacgaggctgggggcgaagatttcgccatggatgaggatggggacgagagcattcacaaactgaaagaaaaagcgaagaaacggaagggtcgcggctttggctccgaagaggggtcccgagcgcggatgcgtgaggattatgacagcgtggagcaggatggcgatgaacccggaccacaacgctctgttgaaggctggattctctttgtaactggagtccatgaggaagccaccgaagaagacatacacgacaaattcgcagaatatggggaaattaaaaacattcatctcaacctcgacaggcgaacaggatatctgaaggggtatactctagttgaatatgaaacatacaaggaagcccaggctgctatggagggactcaatggccaggatttgatgggacagcccatcagcgttgactggtgttttgttcggggtccaccaaaaggcaagaggagaggtggccgaagacgcagcagaagtccagaccggagacgtcgctgacaggtcctctgttgtccaggtgttctcttcaagattccatttgaccatgcagccttggacaaataggactggggtggaacttgctgtgtttatatttaatctcttaccgtatatgcgtagtatttgagttgcgaataaatgttccatttttgttttctacatttaatgttactttcctgtcctaaaattgaaagttctaaagcatagcaaggctgtatggatcattgtgaagatacttctagggactgaactctatgtatttcttttttttcttttttttgagatagagtcttgctgtgttacccagggtggattgcagctgatcatagctcactgcagcttcaaactcttgggctcaagccatccttctgcctcactgtccctagtagttgggattacaggcacatgccaccatgcccagctaaatttttaatatttttgtagagatggggtcttgctgtgttacctgggctagttatgtgagtttctatattagacatagtctcaagtttcaggtagggtttaaagtagagacactggtcagtatttcttttttggggggaactaggagagcaggagtagaagtgagatgttaagatcttatggcactaaagacttactattctgttcctacatactctgttaggatcagatagatgttatagaaatgccttttgtttctcctgcccttcttgatgtcacagttttttgtacttccagctgtctaaaggcatgaatctcctcttggagcattctcccagacccttctttagaagagtctatactaagttcttggtgccctcttcggcagccaagggtgaaggccccatagaggagaggatccaaaggagcattgaggaggcccaagaggaaaaggatgtggctcaggctgggagggacttcagttagcatggtgggggagaaccagtaccacatacccagtaggtaataaggtgtccagcagaggatgaaggtcagcaagataagcagggccagtctcagggcccggagacgaacacggggacaattgtcaaaggagcgggggagggcaaattcaccagcaggggctaggaatttagaaaatatactgtaattcagacactcagcttctgatctgagtatagggtgaattgatggaggggcatagctagtgagacagagctcacctcctacaaggaggagaatgttgcaaaccgttttccccttcccaacctgggactatatgatttcttacccccagggattatgatagaaatatgaagccaccaagtctagacttgatggtgttcaagaataaataatactgattgcctccctagtccttgtccagctaactcagctgtttataattgaagggattcaacaaaattatctctagcatcaggtgctagacatggttagaatctcaccatggtttagtgactggtagatagctattaggtaggtagataaataaatgatgctagaggcaacaggtctagggttaaggattaaggcctgggaattggagtctcaccatggctccccttccttgtctggggcctggacacactgaggacaatgcggctatagcagatggccatggcagtcagtggcagcagaaagaggcagcagaaggtgaagaggttataggtggtctcttgccattgagccttgaagctgcctttggtgacacactgagtgaaagggactgggccagctcagtggaccgtgtggaacaggaacagctggagtggagttgaggactattagaactggttcccctcaccacccaacctacccacctatgtcatactgtctcctcccaattcatccttaattccaagtgaagcagcacagtgctgagaaacagttcatccatggtgccatgttaaagaagttggaaatatatcttgaaaatcctatcttccttttaggcttgaatatgatgctgaacagtaagtttgttaaatcttggaacttaaaacaatcctgctttctcaagtactattctaacattgcgctttataagggatgatatttctaccacctcactcatatttttagctgaaatgattttcctggtatgtctgttattttgtggaaaaagaaatattgtgtaaaatgggtgctgccaaaattccaggccattttgcagggactctgaagtgacctttagtagtaatagtcttatgtgcagtaactataatggtaaagaatgttaaataataaaatttaacattttccaaatgctattgggctgcccctccccctttttgttaaattgctgggttttccaactgaatcagtaaaaactatttctgtttagagctacaaggttaaagtgcctgctttccagtaatggagattgagtcactattaatttgataaaaggtaagctcagtaggcatcagattcctagatacaaggcatttgggaaagtgattttagcagacatgagggacatttaggaaagatgaatagtttcagcctaagagaattttgtgaactgtttggagttacgatcaggctactctgagctagttgggaaatggtctttcctcttcccatctcttgcattcatatatttctaagttttttttttttttttgtttttgtgctctgcctaagaagtgcttgagaattgtgaggagtataaaaatagtcaaagctggctgggcgcggtggctcacgcctgtaatcccagcactttgggaggctgaggcgggcggatcacgaggttaggagatggagaccatcctggctaacacagtgaaaccctgtctgtactaaagatacaaaaaactagccgggcgtggtggtaggtgcctgtagtcccagctacttgggaactcgggaggctgaggcaggagaatgacctgaacccaggaggcggagcttgcagtgagcagagattgcgccattgcactccagcctgggcgacagagtaagactgtctccaaaaaaaaaaaaaataataatcaaagctcttggatttatagtttggtccacagccttgttttgatctttcctttatcctgttttattgccatttaccacgtactgtagaaacatccctttcaactgctgataacttggaaacaagcctacaaaaataagtaatttctaactactcctaatactacctataactacccctaagcccttaccactctaacgtgacattattaaattttttattttattaacactaatattttaactacaattacagcatatgggcaatacagaatttacctaaaaggatactaatttggaacaaaaaaaatcacctttcgcacatgtatcatgtcacaaccagtttgccattgaaacaaatagaggttgcaaatattgtcagattgtcaggctgtaagaaaggatgaaattcatttcccattgcatcatcttgtggcccatggatttcaagtgccttagccaaaatcatatagctagttagcagtagagccgagactcagaaaaaaacaaagtaaaacaggcagactgaaacaaaaagtcttctaattcccagtccacatgtaaaatttgcttcatataaacaaacctaattgtaaatggcactgtagcaacaggcttctttttaacacttggattggtaaaggtcttgtttgcaacatattagaagtattatttttctctttcccccccaccccacccccaacagagtctggctctgccgcccacgccggagtgcagtggtgcagtcttggctcactgcagcctccacttcccaggttcaagcaattctcgtgcctcagcctcctgagtagttgggattacaggtgctcaccactatacccggctaatttttgtatttttagtagagatggggtttcgtcatgttggccaggttggtcttaaactcctgacctcaagtgatccacccaccttggccttccaaaatgctgggattacaggcttgagccaccaggcctttctttgttcttaggagtatagtcagactaacttctagtagttatatttctaataattgaggatgtaagtaaggatcaaatcttaaatcagtataatgcattgtcattccagagataaatcctagacccttcttggcctccttctgacataattctaatcctacagtctcagagatgctgttgtatcctgccccccaaccccatgatagtgatagtggtttttgccttgaaggaattgctttgtatttagcttttccccctctagatttctagttccttttcagtattggattggatttgagatttgattaacctagtactcaggttcagatgctcgcctctttgcaattttaacactcattcgacaataaagtcagtaaaaaacacaaaaaaaaaaaaaaaa";
 
-    public TestVariantFactory() {
-        this.refDict = HG19RefDictBuilder.build();
-    }
-
     /**
-     * Construct a new {@link Variant} object with the given values.
+     * Helper function to parse a knownGenes.txt.gz line into a TranscriptModel.
      *
-     * @param chrom numeric chromosome id
-     * @param pos zero-based position of the variant
-     * @param ref reference string
-     * @param alt alt string
-     * @param gt the Genotype to use
-     * @param readDepth depth the read depth to use
-     * @param altAlleleID alternative allele ID
-     * @param qual phred-scale quality
-     * @return {@link Variant} with the setting
+     * @param refDict reference dictionary
+     * @param s The knownGeneList line to parse.
      */
-    public VariantEvaluation constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
-        // build annotation list (for the one transcript we have below only)
-        final GenomePosition gPos = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ZERO_BASED);
-        final GenomeVariant change = new GenomeVariant(gPos, ref, alt);
-        final AnnotationBuilderDispatcher dispatcher;
-        final TranscriptModel tmFGFR2 = buildTMForFGFR2();
-        final TranscriptModel tmSHH = buildTMForSHH();
-        if (tmFGFR2.getTXRegion().contains(gPos)) {
-            dispatcher = new AnnotationBuilderDispatcher(tmFGFR2, change, new AnnotationBuilderOptions());
-        } else if (tmSHH.getTXRegion().contains(gPos)) {
-            dispatcher = new AnnotationBuilderDispatcher(tmSHH, change, new AnnotationBuilderOptions());
-        } else {
-            dispatcher = new AnnotationBuilderDispatcher(null, change, new AnnotationBuilderOptions());
+    public static TranscriptModelBuilder parseKnownGenesLine(ReferenceDictionary refDict, String s) {
+        String[] fields = s.split("\t");
+        TranscriptModelBuilder result = new TranscriptModelBuilder();
+        result.setAccession(fields[0]);
+
+        int chr = refDict.getContigNameToID().get(fields[1].substring(3));
+
+        result.setStrand(valueOf(fields[2].charAt(0)));
+        GenomeInterval txRegion = new GenomeInterval(refDict, Strand.FWD, chr, Integer.parseInt(fields[3]) + 1,
+                Integer.parseInt(fields[4]), PositionType.ONE_BASED);
+        result.setTXRegion(txRegion);
+        GenomeInterval cdsRegion = new GenomeInterval(refDict, Strand.FWD, chr, Integer.parseInt(fields[5]) + 1,
+                Integer.parseInt(fields[6]), PositionType.ONE_BASED);
+        result.setCDSRegion(cdsRegion);
+
+        int exonCount = Integer.parseInt(fields[7]);
+        String[] startFields = fields[8].split(",");
+        String[] endFields = fields[9].split(",");
+        for (int i = 0; i < exonCount; ++i) {
+            GenomeInterval exonRegion = new GenomeInterval(refDict, Strand.FWD, chr, Integer.parseInt(startFields[i]) + 1,
+                    Integer.parseInt(endFields[i]), PositionType.ONE_BASED);
+            result.addExonRegion(exonRegion);
         }
-        final VariantAnnotations annotations;
-        try {
-            Annotation anno = dispatcher.build();
-            if (anno != null) {
-                annotations = new VariantAnnotations(change, Arrays.asList(anno));
-            } else {
-                annotations = new VariantAnnotations(change, Arrays.<Annotation>asList());
-            }
-        } catch (InvalidGenomeChange e) {
-            throw new RuntimeException("Problem building annotation", e);
-        }
-        
-        VariantFactory variantFactory = new VariantFactory(new VariantAnnotationsFactory(new JannovarData(refDict, ImmutableList.of(buildTMForFGFR2(), buildTMForGNRHR2A(), buildTMForRBM8A(), buildTMForSHH()))));
-        VariantContext variantContext = constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
-        
-        return variantFactory.buildVariantEvaluation(variantContext, altAlleleID, annotations);
+
+        return result;
     }
 
-    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {
-        return constructVariant(chrom, pos, ref, alt, gt, rd, altAlleleID, 20.0);
-    }
-
-    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth) {
-        return constructVariantContext(chrom, pos, ref, alt, gt, readDepth, 20.0);
-    }
-
-    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, double qual) {
-        Allele refAllele = Allele.create(ref, true);
-        Allele altAllele = Allele.create(alt);
-        VariantContextBuilder vcBuilder = new VariantContextBuilder();
-
-        // build Genotype
-        GenotypeBuilder gtBuilder = new GenotypeBuilder("sample");
-        setGenotype(gtBuilder, refAllele, altAllele, gt);
-        gtBuilder.attribute("RD", readDepth);
-        // System.err.println(gtBuilder.make().toString());
-
-        // build VariantContext
-        vcBuilder.loc("chr" + chrom, pos + 1, pos + ref.length());
-        vcBuilder.alleles(Arrays.asList(refAllele, altAllele));
-        vcBuilder.genotypes(gtBuilder.make());
-        vcBuilder.attribute("RD", readDepth);
-        vcBuilder.log10PError(-0.1 * qual);
-        // System.err.println(vcBuilder.make().toString());
-
-        return vcBuilder.make();
-    }
-
-    private void setGenotype(GenotypeBuilder gtb, Allele refAllele, Allele altAllele, Genotype gt) {
-        switch (gt) {
-            case HOMOZYGOUS_ALT:
-                gtb.alleles(Arrays.asList(altAllele, altAllele));
-                break;
-            case HOMOZYGOUS_REF:
-                gtb.alleles(Arrays.asList(refAllele, refAllele));
-                break;
-            case HETEROZYGOUS:
-                gtb.alleles(Arrays.asList(refAllele, altAllele));
-                break;
-            default:
-                break;
-        }
+    private static Strand valueOf(char strand) {
+        return (strand == '-') ? REV : FWD;
     }
 
     /**
      * @return {@link TranscriptModel} for gene FGFR2.
      */
-    public TranscriptModel buildTMForFGFR2() {
+    public static TranscriptModel buildTMForFGFR2() {
         TranscriptModelBuilder builder = TestTranscriptModelFactory.parseKnownGenesLine(refDict, KG_LINE_FGFR2);
         builder.setSequence(TRANSCRIPT_SEQ_FGFR2.toUpperCase());
         builder.setGeneSymbol("FGFR2");
@@ -157,7 +79,7 @@ public class TestVariantFactory {
     /**
      * @return {@link TranscriptModel} for gene SHH.
      */
-    public TranscriptModel buildTMForSHH() {
+    public static TranscriptModel buildTMForSHH() {
         TranscriptModelBuilder builder = TestTranscriptModelFactory.parseKnownGenesLine(refDict, KG_LINE_SHH2);
         builder.setSequence(TRANSCRIPT_SEQ_SHH2.toUpperCase());
         builder.setGeneSymbol("SHH");
@@ -170,7 +92,7 @@ public class TestVariantFactory {
      *
      * @return {@link TranscriptModel} for gene GNRHR2.
      */
-    public TranscriptModel buildTMForGNRHR2A() {
+    public static TranscriptModel buildTMForGNRHR2A() {
         TranscriptModelBuilder builder = TestTranscriptModelFactory.parseKnownGenesLine(refDict, KG_LINE_GNRHR2);
         builder.setSequence(TRANSCRIPT_SEQ_GNRHR2.toUpperCase());
         builder.setGeneSymbol("GNRHR2");
@@ -183,7 +105,7 @@ public class TestVariantFactory {
      *
      * @return {@link TranscriptModel} for gene RBM8A.
      */
-    public TranscriptModel buildTMForRBM8A() {
+    public static TranscriptModel buildTMForRBM8A() {
         TranscriptModelBuilder builder = TestTranscriptModelFactory.parseKnownGenesLine(refDict, KG_LINE_RBM8A);
         builder.setSequence(TRANSCRIPT_SEQ_RBM8A.toUpperCase());
         builder.setGeneSymbol("RBM8A");

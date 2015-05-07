@@ -20,8 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
@@ -39,6 +37,8 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogeni
 public class TsvGeneResultsWriterTest {
 
     private Gene gene;
+    private static final String GENE_SYMBOL = "FGFR2";
+    private static final int GENE_ID = 2263;
     private TsvGeneResultsWriter instance;
     private static final String HEADER = "#GENE_SYMBOL	ENTREZ_GENE_ID	"
             + "EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE	"
@@ -52,9 +52,7 @@ public class TsvGeneResultsWriterTest {
     public void setUp() {
         instance = new TsvGeneResultsWriter();
 
-        TestVariantFactory varFactory = new TestVariantFactory();
-
-        VariantEvaluation variantEval = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        VariantEvaluation variantEval = new VariantEvaluation.VariantBuilder(10, 123353297, "G", "C").geneSymbol(GENE_SYMBOL).geneId(GENE_ID).build();
         variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores
                 .getPathogenicityScoreOf(EnumSet.of(VariantEffect.STOP_GAINED)), FilterResultStatus.PASS));
         variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));

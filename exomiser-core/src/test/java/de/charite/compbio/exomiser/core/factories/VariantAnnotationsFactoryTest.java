@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.pedigree.Genotype;
@@ -43,8 +42,8 @@ public class VariantAnnotationsFactoryTest {
     @Before
     public void setUp() throws Exception {
         varFactory = new TestVariantFactory();
-        tmFGFR2 = varFactory.buildTMForFGFR2();
-        tmSHH = varFactory.buildTMForSHH();
+        tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
+        tmSHH = TestTranscriptModelFactory.buildTMForSHH();
         JannovarData jannovarData = new JannovarData(HG19RefDictBuilder.build(), ImmutableList.<TranscriptModel>of(
                 tmFGFR2, tmSHH));
         instance = new VariantAnnotationsFactory(jannovarData);

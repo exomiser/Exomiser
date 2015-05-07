@@ -5,14 +5,13 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.dao.TestJannovarDataFactory;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
 public class SampleDataFactoryTestConfig {
@@ -25,18 +24,6 @@ public class SampleDataFactoryTestConfig {
     @Bean
     public VariantAnnotationsFactory variantAnnotator() {
         final JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
-
-//        VariantAnnotationsFactory mockVariantAnnotator = Mockito.mock(VariantAnnotationsFactory.class);
-//        final TestVariantFactory testVariantFactory = new TestVariantFactory();
-//        // variantAnnotator to return dummy Variant objects
-//        Mockito.when(mockVariantAnnotator.buildVariantAnnotations(isNotNull(VariantContext.class))).thenAnswer(
-//                new Answer<List<Variant>>() {
-//                    @Override
-//                    public List<Variant> answer(InvocationOnMock invocation) {
-//                        return Arrays.asList(testVariantFactory.constructVariant(10, 123256213, "CA", "CT", Genotype.HETEROZYGOUS, 22, 0));
-//                    }
-//                });
-
         return new VariantAnnotationsFactory(jannovarData);
     }
 

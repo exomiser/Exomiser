@@ -1,4 +1,4 @@
-package de.charite.compbio.exomiser.core.dao;
+package de.charite.compbio.exomiser.core.factories;
 
 import com.google.common.collect.ImmutableList;
 
@@ -18,18 +18,17 @@ public class TestJannovarDataFactory {
 
     private final ReferenceDictionary refDict;
     private final JannovarData jannovarData;
-
+    
     public TestJannovarDataFactory() {
         this.refDict = HG19RefDictBuilder.build();
         this.jannovarData = buildJannovarData();
     }
 
     private JannovarData buildJannovarData() {
-        final TestVariantFactory vfFactory = new TestVariantFactory();
-        TranscriptModel tmFGFR2 = vfFactory.buildTMForFGFR2();
-        TranscriptModel tmGNRHR2A = vfFactory.buildTMForGNRHR2A();
-        TranscriptModel tmRBM8A = vfFactory.buildTMForRBM8A();
-        TranscriptModel tmSHH = vfFactory.buildTMForSHH();
+        TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
+        TranscriptModel tmGNRHR2A = TestTranscriptModelFactory.buildTMForGNRHR2A();
+        TranscriptModel tmRBM8A = TestTranscriptModelFactory.buildTMForRBM8A();
+        TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
         return new JannovarData(refDict, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
     }
 
