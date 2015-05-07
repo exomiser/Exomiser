@@ -60,7 +60,8 @@ public class VariantAnnotationsFactory {
             return annotator.buildAnnotations(variantContext);
         } catch (InvalidCoordinatesException ex) {
             //not all genes can be assigned to a chromosome, so these will fail here. 
-            logger.warn("Cannot build annotations for VariantContext {} - coordinates are invalid: {}", variantContext, ex);
+            //TODO: how to report these? They will not be used in the analysis.
+            logger.warn("Cannot build annotations for VariantContext {} {} {} - coordinates are invalid: {}", variantContext.getChr(), variantContext.getStart(), variantContext.getAlleles(), ex);
             return Collections.emptyList();
         }
     }
