@@ -94,7 +94,7 @@ public class PathogenicityFilter implements VariantFilter {
      * @return
      */
     protected float calculateFilterScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
-        if (pathogenicityData.getCaddScore() != null) {
+        if (pathogenicityData != null && pathogenicityData.getCaddScore() != null) {
             return pathogenicityData.getCaddScore().getScore();
         } else {
             //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
