@@ -68,8 +68,8 @@ public class Exomiser {
 
         //Prioritisers should ALWAYS run last.
         logger.info("MAKING PRIORITISERS");
-        List<Prioritiser> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
-        runPrioritisers(priorityList, exomiserSettings, sampleData);
+        List<Prioritiser> prioritisers = priorityFactory.makePrioritisers(exomiserSettings);
+        runPrioritisers(prioritisers, exomiserSettings, sampleData);
         
         scoreGenes(exomiserSettings, sampleData);
         logger.info("FINISHED ANALYSIS");
