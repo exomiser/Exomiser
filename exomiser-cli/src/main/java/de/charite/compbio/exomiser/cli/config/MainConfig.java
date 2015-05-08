@@ -8,7 +8,6 @@ package de.charite.compbio.exomiser.cli.config;
 import de.charite.compbio.exomiser.cli.Main;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
-import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
@@ -187,7 +186,7 @@ public class MainConfig {
 
     @Bean
     public PathogenicityDao pathogenicityDao() {
-        return new DefaultPathogenicityDao();
+        return new TabixPathogenicityDao();
     }
 
     @Bean
