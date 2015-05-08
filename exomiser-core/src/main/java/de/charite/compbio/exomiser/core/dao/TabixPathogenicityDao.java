@@ -6,13 +6,7 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import htsjdk.tribble.readers.TabixReader;
 
@@ -56,22 +50,16 @@ public class TabixPathogenicityDao implements PathogenicityDao {
             CaddScore caddScore = null;
             String line;
             
-            System.out.println("LOOKING FOR " + chromosome + ":" + start + "-" + start + " " + ref + " " + alt);
                 
             // indel
             if (ref.equals("-") || alt.equals("-")) {
-                //TabixReader tabixReader = new TabixReader("/Users/ds5/exomiser-testing/exomiser-cli-4.0.1/InDels.tsv.gz");
-                TabixReader tabixReader = new TabixReader("/warehouse/team110_wh01/ds5/InDels.tsv.gz");
+                TabixReader tabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/InDels.tsv.gz");
                 TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
                 while ((line = results.next()) != null) {
                     String[] elements = line.split("\t");
                     // deal with fact that Jannovar represents indels differently
-                    String caddRef = elements[2];
-                    //if (elements[2].length() > 1)
-                    caddRef = elements[2].substring(1);
-                    String caddAlt = elements[2];
-                    //if (elements[3].length() > 1)
-                    caddAlt = elements[3].substring(1);
+                    String caddRef = elements[2].substring(1);
+                    String caddAlt = elements[3].substring(1);
                     if (caddRef.equals("")) {
                         caddRef = "-";
                     }
@@ -81,7 +69,6 @@ public class TabixPathogenicityDao implements PathogenicityDao {
                     if (caddRef.equals(ref) && caddAlt.equals(alt)) {
                         cadd = Float.parseFloat(elements[5]);
                         cadd = 1 - (float) Math.pow(10, -(cadd / 10));//rescale log10-Phred based score to a value between 0 and 1
-                        //System.out.println("FOUND INDEL " + chromosome + ":" + start + "-" + start + " " + ref + " " + alt);
                         continue;
                     }
                 }
@@ -89,7 +76,7 @@ public class TabixPathogenicityDao implements PathogenicityDao {
                     caddScore = new CaddScore(cadd);
                 }
             } else {// query SNV file
-                TabixReader tabixReader = new TabixReader("/warehouse/team110_wh01/ds5/whole_genome_SNVs.tsv.gz");
+                TabixReader tabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/whole_genome_SNVs.tsv.gz");
                 TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
                 while ((line = results.next()) != null) {
                     String[] elements = line.split("\t");
@@ -98,11 +85,9 @@ public class TabixPathogenicityDao implements PathogenicityDao {
                     if (caddRef.equals(ref) && caddAlt.equals(alt)) {
                         cadd = Float.parseFloat(elements[5]);
                         cadd = 1 - (float) Math.pow(10, -(cadd / 10));//rescale log10-Phred based score to a value between 0 and 1
-                        //System.out.println("FOUND SNV " + chromosome + ":" + start + "-" + start + " " + ref + " " + alt);
                         continue;
                     }
                 }
-
                 if (!Float.isNaN(cadd)) {
                     caddScore = new CaddScore(cadd);
                 }
