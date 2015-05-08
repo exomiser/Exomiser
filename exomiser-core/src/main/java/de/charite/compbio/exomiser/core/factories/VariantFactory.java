@@ -28,6 +28,10 @@ public class VariantFactory {
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
 
     private final VariantAnnotationsFactory variantAnnotator;
+    /*in cases where a variant cannot be positioned on a chromosome we're going 
+     * to use 0 in order to fulfil the requirement of a variant having an integer chromosome 
+     */
+    private final int UNKNOWN_CHROMOSOME = 0;
 
     public VariantFactory(VariantAnnotationsFactory variantAnnotator) {
         this.variantAnnotator = variantAnnotator;
@@ -51,32 +55,65 @@ public class VariantFactory {
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
         List<VariantEvaluation> variants = new ArrayList<>(variantContexts.size());
         // build Variant objects from VariantContexts
+        int unannotatedVariants = 0;
         for (VariantContext variantContext : variantContexts) {
             List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
             //What about missing annotations? How should these be handled???
-            if (!variantAlleleAnnotations.isEmpty()) {
+            if (variantAlleleAnnotations.isEmpty()) {
+                for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                    unannotatedVariants++;
+                    variants.add(buildUnAnnotatedVariantEvaluation(variantContext, altAlleleId));
+                }
+            } else {
                 //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
                 for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
                     VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
-                    if (variantAnnotations.hasAnnotation() && variantAnnotations.getGenomeVariant() != null) {
-                        //this shouldn't happen, as it should have been dealt with by buildAlleleAnnotations(), but just in case...
-                        variants.add(buildVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
-                    }
+                    variants.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
                 }
             }
         }
-        logger.info("Created {} single allele variants from variant records", variants.size());
+        logger.info("Created {} single allele variants from {} variant records - {} are missing annotations, most likely due to non-numeric chromosome designations", variants.size(), variantContexts.size(), unannotatedVariants);
         return variants;
     }
 
     /**
+     * A basic VariantEvaluation for an alternative allele described by the
+     * VariantContext. These positions will not be trimmed or annotated by
+     * Jannovar. This method is only provided for completeness so that users can
+     * have a list of variants which were not used in any analyses.
+     *
+     * @param variantContext
+     * @param altAlleleId
+     * @return
+     */
+    private VariantEvaluation buildUnAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId) {
+        // Build the GenomeChange object.
+        final String chromosomeName = variantContext.getChr();
+        final String ref = variantContext.getReference().getBaseString();
+        final String alt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
+        final int pos = variantContext.getStart();
+
+        logger.info("Building unannotated variant for {} {} {} {} - assigning to chromosome {}", chromosomeName, pos, ref, alt, UNKNOWN_CHROMOSOME);
+        return new VariantEvaluation.VariantBuilder(UNKNOWN_CHROMOSOME, pos, ref, alt)
+                .variantContext(variantContext)
+                .altAlleleId(altAlleleId)
+                .numIndividuals(variantContext.getNSamples())
+                //quality is the only value from the VCF file directly required for analysis
+                .quality(variantContext.getPhredScaledQual())
+                .chromosomeName(chromosomeName)
+                .build();
+    }
+
+    /**
+     * Creates a VariantEvaluation made from all the relevant bits of the
+     * VariantContext and VariantAnnotations for a given alternative allele.
+     *
      * @param variantContext
      * @param altAlleleId
      * @param variantAnnotations
-     * @return a VariantEvaluation made from all the relevant bits of the
-     * VariantContext and VariantAnnotations for a given alternative allele.
+     * @return
      */
-    public VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
+    public VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
         int chr = variantAnnotations.getChr();
         int pos = buildPos(variantAnnotations);
         String ref = buildRef(variantAnnotations);
@@ -88,21 +125,21 @@ public class VariantFactory {
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
 
         return new VariantEvaluation.VariantBuilder(chr, pos, ref, alt)
-                    //HTSJDK derived data are only used for writing out the
-                    //VCF/TSV-VARIANT formatted files 
-                    .variantContext(variantContext)
-                    .altAlleleId(altAlleleId)
-                    .numIndividuals(variantContext.getNSamples())
-                    //quality is the only value from the VCF file directly required for analysis
-                    .quality(variantContext.getPhredScaledQual())
-                    //jannovar derived data
-                    .chromosomeName(genomeVariant.getChrName())
-                    .isOffExome(variantEffect.isOffExome())
-                    .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
-                    .geneId(buildGeneId(highestImpactAnnotation))
-                    .variantEffect(variantEffect)
-                    .annotations(variantAnnotations.getAnnotations())
-                    .build();        
+                //HTSJDK derived data are only used for writing out the
+                //VCF/TSV-VARIANT formatted files 
+                .variantContext(variantContext)
+                .altAlleleId(altAlleleId)
+                .numIndividuals(variantContext.getNSamples())
+                //quality is the only value from the VCF file directly required for analysis
+                .quality(variantContext.getPhredScaledQual())
+                //jannovar derived data
+                .chromosomeName(genomeVariant.getChrName())
+                .isOffExome(variantEffect.isOffExome())
+                .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
+                .geneId(buildGeneId(highestImpactAnnotation))
+                .variantEffect(variantEffect)
+                .annotations(variantAnnotations.getAnnotations())
+                .build();
     }
 
     /**

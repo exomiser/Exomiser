@@ -55,6 +55,9 @@ public class SampleDataFactory {
         sampleData.setVcfFilePath(vcfFilePath);
 
         // load and annotate VCF data
+        //Issue #56 Currently this will load ALL the VCF data into memory and hold it in the sampleData
+        //this is a bad idea for large exomes and especially whole genomes. We need to have some way of
+        //applying the variant filters at this stage. Make a FilteringVariantFactory?
         List<VariantEvaluation> variantEvaluations = variantFactory.createVariantEvaluations(vcfReader);
         sampleData.setVariantEvaluations(variantEvaluations);
         

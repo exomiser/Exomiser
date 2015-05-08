@@ -22,11 +22,11 @@ import org.junit.Test;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class VariantFactoryTest {
-    
+
     private VariantFactory instance;
-    
+
     private final JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
-    
+
     @Before
     public void setUp() {
         VariantAnnotationsFactory variantAnnotator = new VariantAnnotationsFactory(jannovarData);
@@ -43,7 +43,7 @@ public class VariantFactoryTest {
     private void printVariant(Variant variant) {
         System.out.printf("%s offExome=%s gene=%s%n", variant.getChromosomalVariant(), variant.isOffExome(), variant.getGeneSymbol());
     }
-    
+
     @Test
     public void testCreateVariantContexts_SingleAlleles() {
         VCFFileReader vcfFileReader = makeVcfFileReader("src/test/resources/smallTest.vcf");
@@ -51,10 +51,10 @@ public class VariantFactoryTest {
         assertThat(variants.isEmpty(), is(false));
         assertThat(variants.size(), equalTo(3));
     }
-    
+
     @Test
     public void testCreateVariantContexts_MultipleAlleles() {
-        VCFFileReader vcfFileReader = makeVcfFileReader("src/test/resources/altAllele.vcf"); 
+        VCFFileReader vcfFileReader = makeVcfFileReader("src/test/resources/altAllele.vcf");
         List<VariantContext> variants = instance.createVariantContexts(vcfFileReader);
         assertThat(variants.isEmpty(), is(false));
         assertThat(variants.size(), equalTo(1));
@@ -69,7 +69,7 @@ public class VariantFactoryTest {
         }
         assertThat(variants.isEmpty(), is(false));
         assertThat(variants.size(), equalTo(3));
-        
+
     }
 
     @Test
@@ -77,18 +77,21 @@ public class VariantFactoryTest {
         VCFFileReader vcfFileReader = makeVcfFileReader("src/test/resources/altAllele.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfFileReader);
         for (Variant variant : variants) {
-            System.out.println(variant);
             printVariant(variant);
         }
         assertThat(variants.isEmpty(), is(false));
         assertThat(variants.size(), equalTo(2));
     }
-    
+
     @Test
-    public void testCreateVariants_NoVariantAnnotationsProduceNoVariantEvaluations() {
+    public void testCreateVariants_NoVariantAnnotationsProduceVariantEvaluationsWithNoAnnotations() {
         VCFFileReader vcfFileReader = makeVcfFileReader("src/test/resources/noAnnotations.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfFileReader);
-        assertThat(variants.isEmpty(), is(true));        
+        assertThat(variants.isEmpty(), is(false));
+        for (VariantEvaluation variant : variants) {
+            System.out.println(variant.getChromosomeName() + " " + variant);
+            assertThat(variant.hasAnnotations(), is(false));
+        }
     }
-    
+
 }

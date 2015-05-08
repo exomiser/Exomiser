@@ -50,7 +50,7 @@ public class VariantAnnotationsFactoryTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testAnnotationOfNullThrowsNullPointer() {
+    public void testAnnotationOfNullThrowsNullPointer() throws Exception {
         instance.buildVariantAnnotations(null);
     }
 

@@ -1,8 +1,5 @@
 package de.charite.compbio.exomiser.core.factories;
 
-import com.google.common.collect.ImmutableList;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
-import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -22,11 +19,9 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.reference.GenomePosition;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.PositionType;
 import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import de.charite.compbio.jannovar.reference.TranscriptModelBuilder;
 
 /**
  * Helper class for constructing {@link Variant} objects for tests.
@@ -87,7 +82,7 @@ public class TestVariantFactory {
                 
         VariantContext variantContext = constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
         
-        return variantFactory.buildVariantEvaluation(variantContext, altAlleleID, annotations);
+        return variantFactory.buildAnnotatedVariantEvaluation(variantContext, altAlleleID, annotations);
     }
 
     public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {

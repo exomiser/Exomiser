@@ -33,6 +33,7 @@ import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
+import de.charite.compbio.jannovar.data.JannovarData;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -154,9 +155,9 @@ public class MainConfig {
      */
     @Lazy
     @Bean
-    public VariantAnnotationsFactory variantAnnotator() {
+    public JannovarData jannovarData() {
         try {
-            return new VariantAnnotationsFactory(new JannovarDataSerializer(ucscFilePath().toString()).load());
+            return new JannovarDataSerializer(ucscFilePath().toString()).load();
         } catch (SerializationException e) {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
@@ -164,10 +165,16 @@ public class MainConfig {
 
     @Lazy
     @Bean
+    public VariantAnnotationsFactory variantAnnotator() {
+        return new VariantAnnotationsFactory(jannovarData());
+    }
+
+    @Lazy
+    @Bean
     public VariantFactory variantFactory() {
         return new VariantFactory(variantAnnotator());
     }
- 
+
     @Lazy
     @Bean
     public SampleDataFactory sampleDataFactory() {
@@ -211,37 +218,37 @@ public class MainConfig {
     public PriorityFactory priorityFactory() {
         return new PriorityFactory();
     }
-        
+
     @Bean
     PriorityService priorityService() {
         return new PriorityService();
     }
-    
+
     @Bean
     ModelService modelService() {
         return new ModelServiceImpl();
     }
-    
+
     @Bean
     OntologyService ontologyService() {
         return new OntologyServiceImpl();
     }
-    
+
     @Bean
     DiseaseDao diseaseDao() {
         return new DefaultDiseaseDao();
     }
-           
+
     @Bean
     HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
         return new HumanPhenotypeOntologyDao();
     }
-    
+
     @Bean
     MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
         return new MousePhenotypeOntologyDao();
     }
-    
+
     @Bean
     ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
         return new ZebraFishPhenotypeOntologyDao();
@@ -261,7 +268,7 @@ public class MainConfig {
     public VariantDataService variantEvaluationDataService() {
         return new VariantDataService();
     }
-       
+
     @Bean
     public TemplateEngine templateEngine() {
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -271,15 +278,15 @@ public class MainConfig {
         templateResolver.setCacheable(true);
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
-        
+
         return templateEngine;
     }
-    
+
     @Bean
     public ResultsWriterFactory resultsWriterFactory() {
         return new ResultsWriterFactory();
     }
-    
+
     protected String getValueOfProperty(String property) throws PropertyNotFoundException {
         String value = env.getProperty(property);
         if (value == null) {
