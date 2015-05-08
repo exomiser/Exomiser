@@ -334,7 +334,9 @@ public class HiPhivePriority implements Prioritiser {
             bestMaxScore = Math.max(matchScore, bestMaxScore);
             sumBestScore += matchScore;
         }
-        bestAvgScore = sumBestScore / bestMatches.size();
+        if (bestMatches.size() > 0){// otherwise get a NaN value that escalates to other scores and eventually throws an exception
+            bestAvgScore = sumBestScore / bestMatches.size();
+        }
         //input set: 
         //HP:0010055-HP:0010055=2.805085560382805
         //HP:0001363-HP:0001363=2.4418464446906243
