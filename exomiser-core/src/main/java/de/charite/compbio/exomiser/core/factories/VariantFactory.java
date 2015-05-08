@@ -88,11 +88,13 @@ public class VariantFactory {
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
 
         return new VariantEvaluation.VariantBuilder(chr, pos, ref, alt)
-                    //HTSJDK derived data
+                    //HTSJDK derived data are only used for writing out the
+                    //VCF/TSV-VARIANT formatted files 
                     .variantContext(variantContext)
                     .altAlleleId(altAlleleId)
-                    .quality(variantContext.getPhredScaledQual())
                     .numIndividuals(variantContext.getNSamples())
+                    //quality is the only value from the VCF file directly required for analysis
+                    .quality(variantContext.getPhredScaledQual())
                     //jannovar derived data
                     .chromosomeName(genomeVariant.getChrName())
                     .isOffExome(variantEffect.isOffExome())
