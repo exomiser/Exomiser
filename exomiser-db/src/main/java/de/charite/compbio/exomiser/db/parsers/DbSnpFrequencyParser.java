@@ -72,8 +72,9 @@ public class DbSnpFrequencyParser implements ResourceParser {
     private final List<Frequency> frequencyList;
     /**
      * Threshold distance from an exon to be considered as flanking
+     * Increased to get non-coding variants for Genomiser
      */
-    private final static int FLANKING = 50;
+    private final static int FLANKING = 20000;
 
     /**
      * The VCF parser.
