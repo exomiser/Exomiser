@@ -8,27 +8,17 @@ package de.charite.compbio.exomiser.core.writers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 
 /**
  *
@@ -52,16 +42,7 @@ public class TsvGeneResultsWriterTest {
     public void setUp() {
         instance = new TsvGeneResultsWriter();
 
-        VariantEvaluation variantEval = new VariantEvaluation.VariantBuilder(10, 123353297, "G", "C").geneSymbol(GENE_SYMBOL).geneId(GENE_ID).build();
-        variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores.getPathogenicityScoreOf(VariantEffect.STOP_GAINED), FilterResultStatus.PASS));
-        variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
-
-        variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));
-        variantEval.setFrequencyData(new FrequencyData(null));
-
-        gene = new Gene(variantEval.getGeneSymbol(), variantEval.getEntrezGeneId());
-        gene.addVariant(variantEval);
-        
+        gene = new Gene(GENE_SYMBOL, GENE_ID);        
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
     }
@@ -80,8 +61,7 @@ public class TsvGeneResultsWriterTest {
         ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(
                 EnumSet.of(OutputFormat.TSV_GENE)).build();
         String outString = instance.writeString(sampleData, settings);
-        Assert.assertEquals(HEADER + GENE_STRING, outString);
-        // assertThat(outString, equalTo(HEADER + GENE_STRING));
+        assertThat(outString, equalTo(HEADER + GENE_STRING));
     }
 
     @Test
