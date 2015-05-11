@@ -1,9 +1,9 @@
-package de.charite.compbio.exomiser.core.dao;
+package de.charite.compbio.exomiser.core.factories;
 
 import com.google.common.collect.ImmutableList;
 
-import de.charite.compbio.jannovar.io.JannovarData;
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 
@@ -16,21 +16,28 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
  */
 public class TestJannovarDataFactory {
 
-    public final ReferenceDictionary refDict;
-    public final JannovarData jannovarData;
-
+    private final ReferenceDictionary refDict;
+    private final JannovarData jannovarData;
+    
     public TestJannovarDataFactory() {
         this.refDict = HG19RefDictBuilder.build();
         this.jannovarData = buildJannovarData();
     }
 
     private JannovarData buildJannovarData() {
-        final TestVariantFactory vfFactory = new TestVariantFactory();
-        TranscriptModel tmFGFR2 = vfFactory.buildTMForFGFR2();
-        TranscriptModel tmGNRHR2A = vfFactory.buildTMForGNRHR2A();
-        TranscriptModel tmRBM8A = vfFactory.buildTMForRBM8A();
-        TranscriptModel tmSHH = vfFactory.buildTMForSHH();
+        TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
+        TranscriptModel tmGNRHR2A = TestTranscriptModelFactory.buildTMForGNRHR2A();
+        TranscriptModel tmRBM8A = TestTranscriptModelFactory.buildTMForRBM8A();
+        TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
         return new JannovarData(refDict, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
+    }
+
+    public ReferenceDictionary getRefDict() {
+        return refDict;
+    }
+
+    public JannovarData getJannovarData() {
+        return jannovarData;
     }
 
 }

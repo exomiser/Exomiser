@@ -156,7 +156,7 @@ public class FrequencyData {
 
     @Override
     public String toString() {
-        return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + knownFrequencies + '}';
+        return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + knownFrequencies.values() + '}';
     }
     
 }

@@ -11,7 +11,6 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

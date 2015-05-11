@@ -1,5 +1,6 @@
 package de.charite.compbio.exomiser.core.writers;
 
+import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +25,8 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.pathogenicity.AbstractPathogenicityScore;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import htsjdk.variant.variantcontext.VariantContext;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -31,6 +34,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 
 import java.util.Locale;
+import org.thymeleaf.util.StringUtils;
 
 /**
  *
@@ -124,7 +128,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // REF
         record.add(variantContext.getReference().getDisplayString());
         // ALT
-        record.add(variantContext.getAlternateAllele(ve.getAltAlleleID()).getDisplayString());
+        record.add(variantContext.getAlternateAllele(ve.getAltAlleleId()).getDisplayString());
         // QUAL
         record.add(formatter.format(ve.getPhredScore()));
         // FILTER
@@ -137,19 +141,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // FIXME: use new terms (use .toSequenceOntologyTerm() instead)!
         record.add(ve.getVariantEffect().getLegacyTerm());
         // HGVS
-        record.add(ve.getRepresentativeAnnotation());
-        // FIXME jannovar has no function to use HGVS stuff alone
-        // variantAnnotation like KIAA1751:uc001aim.1:exon18:c.T2287C:p.X763Q
-        // String[] variantAnnotation =
-        // var.getRepresentativeAnnotation().split(":");
-        // TRANSCRIPT
-        // record.add(getColumnOfArrayIfExists(variantAnnotation, ));
-        // // EXON
-        // record.add(getColumnOfArrayIfExists(variantAnnotation, 2));
-        // // BASE_CHANGE
-        // record.add(getColumnOfArrayIfExists(variantAnnotation, 3));
-        // // AA_CHANGE
-        // record.add(getColumnOfArrayIfExists(variantAnnotation, 4));
+        record.add(getRepresentativeAnnotation(ve.getAnnotations()));
         // EXOMISER_GENE
         record.add(ve.getGeneSymbol());
         // CADD
@@ -243,4 +235,31 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         return stringBuilder.substring(0, sbLength - 1);
     }
 
+    /**
+     * @return An annotation for a single transcript, representing one of the
+     * annotations with the most pathogenic annotation.
+     */
+    private String getRepresentativeAnnotation(List<Annotation> annotations) {
+        if (annotations.isEmpty()) {
+            return "?";
+        }
+        
+        Annotation anno = annotations.get(0);
+                     
+        String exonIntron = null;
+        AnnotationLocation annotationLocation = anno.getAnnoLoc();
+        if (annotationLocation != null) {
+            AnnotationLocation.RankType rankType = annotationLocation.getRankType();
+            if (rankType == AnnotationLocation.RankType.EXON) {
+                exonIntron = StringUtils.concat("exon", annotationLocation.getRank() + 1);
+            } else if (rankType == AnnotationLocation.RankType.INTRON) {
+                exonIntron = StringUtils.concat("intron", annotationLocation.getRank() + 1);
+            }
+        }
+
+        final Joiner joiner = Joiner.on(":").skipNulls();
+        return joiner.join(anno.getGeneSymbol(), anno.getTranscript().getAccession(), exonIntron, anno.getNucleotideHGVSDescription(),
+                anno.getAminoAcidHGVSDescription());
+    }
+    
 }

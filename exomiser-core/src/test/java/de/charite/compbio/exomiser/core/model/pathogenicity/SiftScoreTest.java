@@ -6,11 +6,6 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.AbstractPathogenicityScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -22,7 +17,7 @@ import org.junit.Test;
  */
 public class SiftScoreTest {
     
-    SiftScore instance;
+    private SiftScore instance;
     
     //Higher scores are more pathogenic so this is the reverse of what's normal
     //a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
@@ -32,8 +27,11 @@ public class SiftScoreTest {
     
     private static final float SIFT_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_NON_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
-        
-    public SiftScoreTest() {
+       
+    @Test
+    public void testGetSource() {
+        instance = new SiftScore(SIFT_PATHOGENIC_SCORE);
+        assertThat(instance.getSource(), equalTo(PathogenicitySource.SIFT));
     }
     
     @Test

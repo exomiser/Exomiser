@@ -6,8 +6,6 @@
 
 package de.charite.compbio.exomiser.db.parsers;
 
-import de.charite.compbio.exomiser.db.parsers.NSFP2SQLDumpParser;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.junit.Test;
@@ -63,11 +61,6 @@ public class NSFP2SQLDumpParserTest {
     @Test
     public void parseDbNsfpFloatForNoValueReturnsNull() {
         assertThat(instance.valueOfField("."), equalTo(null));
-    }
-    
-    @Test
-    public void parseDbNsfpFloatForMultipleValuesReturnsFirstOne() {
-        assertThat(instance.valueOfField("1;2;3;4"), equalTo(1f));
     }
     
     @Test

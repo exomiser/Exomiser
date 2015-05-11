@@ -15,43 +15,34 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class TargetFilterTest {
 
     private TargetFilter instance;
     
-    @Mock
     VariantEvaluation missensePassesFilter;
-    @Mock
     VariantEvaluation downstreamFailsFilter;
-    @Mock
     VariantEvaluation synonymousFailsFilter;
-    @Mock
     VariantEvaluation upstreamFailsFilter;
-    @Mock
     VariantEvaluation intergenicFailsFilter;
-
-    public TargetFilterTest() {
-    }
 
     @Before
     public void setUp() {
         instance = new TargetFilter();
         
-        Mockito.when(missensePassesFilter.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(downstreamFailsFilter.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
-        Mockito.when(synonymousFailsFilter.getVariantEffect()).thenReturn(VariantEffect.SYNONYMOUS_VARIANT);
-        Mockito.when(upstreamFailsFilter.getVariantEffect()).thenReturn(VariantEffect.UPSTREAM_GENE_VARIANT);
-        Mockito.when(intergenicFailsFilter.getVariantEffect()).thenReturn(VariantEffect.INTERGENIC_VARIANT);
+        missensePassesFilter = testVariantBuilder().variantEffect(VariantEffect.MISSENSE_VARIANT).build();
+        downstreamFailsFilter = testVariantBuilder().variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT).build();
+        synonymousFailsFilter = testVariantBuilder().variantEffect(VariantEffect.SYNONYMOUS_VARIANT).build();
+        upstreamFailsFilter = testVariantBuilder().variantEffect(VariantEffect.UPSTREAM_GENE_VARIANT).build();
+        intergenicFailsFilter = testVariantBuilder().variantEffect(VariantEffect.INTERGENIC_VARIANT).build();
+    }
+
+    private VariantEvaluation.VariantBuilder testVariantBuilder() {
+        return new VariantEvaluation.VariantBuilder(1, 1, "A", "T");
     }
 
     @Test

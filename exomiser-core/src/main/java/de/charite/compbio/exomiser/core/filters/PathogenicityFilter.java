@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * on the basis of "medical genetic intuition".
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.09 (29 December, 2012).
  */
 public class PathogenicityFilter implements VariantFilter {
@@ -98,7 +99,7 @@ public class PathogenicityFilter implements VariantFilter {
             return pathogenicityData.getCaddScore().getScore();
         } else {
             //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect));
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
         }
     }
 
@@ -130,8 +131,7 @@ public class PathogenicityFilter implements VariantFilter {
             //we'll leave it up to the user to decide
             return true;
         } else {
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect)) >= DEFAULT_PATHOGENICITY_THRESHOLD;
-            // need to change for Genomiser so intronic and intergenic variants get through as well
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
         }
     }
 

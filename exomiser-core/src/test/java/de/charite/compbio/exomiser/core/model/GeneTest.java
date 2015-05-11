@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
@@ -22,8 +21,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hamcrest.CoreMatchers;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -32,16 +29,11 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class GeneTest {
 
     private Gene instance;
@@ -56,13 +48,8 @@ public class GeneTest {
     private static final Integer READ_DEPTH = 6;
     private static final Genotype HETEROZYGOUS = Genotype.HETEROZYGOUS;
     
-    private Variant variant1;
-    private VariantEvaluation variantEvaluation1Gene1;
-    
-    private Variant variant3;
+    private VariantEvaluation variantEvaluation1Gene1;    
     private VariantEvaluation variantEvaluation2Gene1;
-
-    private Variant variant2;
     private VariantEvaluation variantEvaluationGene2;
 
     private static final FilterResult PASS_TARGET_FILTER_RESULT = new TargetFilterResult(1f, FilterResultStatus.PASS);
@@ -70,19 +57,16 @@ public class GeneTest {
 
     @Before
     public void setUp() {
-        final TestVariantFactory varFactory = new TestVariantFactory();
         // variant1 is the first one in in FGFR2 gene
-        variant1 = varFactory.constructVariant(10, 123353320, "C", "G", Genotype.HETEROZYGOUS, 30, 0);
+        variantEvaluation1Gene1 = new VariantEvaluation.VariantBuilder(10, 123353320, "C", "G")
+                .geneId(GENE1_ENTREZ_GENE_ID)
+                .geneSymbol(GENE1_SYMBOL).build();
         // variant2 is the second one in in FGFR2 gene
-        variant2 = varFactory.constructVariant(10, 123353325, "T", "A", Genotype.HETEROZYGOUS, 29, 0);
+        variantEvaluation2Gene1 = new VariantEvaluation.VariantBuilder(10, 123353325, "T", "A").build();
         // variant3 is the first one in in SHH gene
-        variant3 = varFactory.constructVariant(7, 155604806, "T", "A", Genotype.HETEROZYGOUS, 40, 0);
-
-        variantEvaluation1Gene1 = new VariantEvaluation(variant1);
-        variantEvaluation2Gene1 = new VariantEvaluation(variant2);
-        variantEvaluationGene2 = new VariantEvaluation(variant3);
+        variantEvaluationGene2 = new VariantEvaluation.VariantBuilder(7, 155604806, "T", "A").build();
         
-        instance = new Gene(variantEvaluation1Gene1.getGeneSymbol(), variantEvaluation1Gene1.getEntrezGeneID());
+        instance = new Gene(variantEvaluation1Gene1.getGeneSymbol(), variantEvaluation1Gene1.getEntrezGeneId());
     }
 
     @Test
@@ -93,7 +77,7 @@ public class GeneTest {
         expectedVariantEvaluations.add(variantEvaluation1Gene1);
 
         assertThat(instance.getGeneSymbol(), equalTo(variantEvaluation1Gene1.getGeneSymbol()));
-        assertThat(instance.getEntrezGeneID(), equalTo(variantEvaluation1Gene1.getEntrezGeneID()));
+        assertThat(instance.getEntrezGeneID(), equalTo(variantEvaluation1Gene1.getEntrezGeneId()));
         assertThat(instance.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
 
         assertThat(instance.passedFilters(), is(true));
@@ -290,5 +274,69 @@ public class GeneTest {
         assertThat(instance.isConsistentWithDominant(), is(false));
         assertThat(instance.isConsistentWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(true));
+    }
+    
+    @Test
+    public void testIsCompatibleWithX_falseWhenVariantsIsEmpty() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        assertThat(instance.isXChromosomal(), is(false));
+    }        
+
+    @Test
+    public void testIsCompatibleWithX_falseWhenVariantIsNotCompatibleWithX() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
+        assertThat(instance.isXChromosomal(), is(false));
+    }
+    
+    @Test
+    public void testIsCompatibleWithX_trueWhenVariantIsCompatibleWithX() {
+        int X_CHROMOSOME = 23;
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(X_CHROMOSOME, 1, "A", "T").build());
+        assertThat(instance.isXChromosomal(), is(true));
+    }
+    
+    @Test
+    public void testIsCompatibleWithY_falseWhenVariantsIsEmpty() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        assertThat(instance.isYChromosomal(), is(false));
+    }        
+
+    @Test
+    public void testIsCompatibleWithY_falseWhenVariantIsNotCompatibleWithX() {
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
+        assertThat(instance.isYChromosomal(), is(false));
+    }
+    
+    @Test
+    public void testIsCompatibleWithY_trueWhenVariantIsCompatibleWithX() {
+        int Y_CHROMOSOME = 24;
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance.addVariant(new VariantEvaluation.VariantBuilder(Y_CHROMOSOME, 1, "A", "T").build());
+        assertThat(instance.isYChromosomal(), is(true));
+    }
+    
+    @Test
+    public void testCanSetAndChangePriorityScore() {
+        float firstScore = 0f;
+        instance.setPriorityScore(firstScore);
+        assertThat(instance.getPriorityScore(), equalTo(firstScore));
+        
+        float secondScore = 1.0f;
+        instance.setPriorityScore(secondScore);
+        assertThat(instance.getPriorityScore(), equalTo(secondScore));
+    }
+    
+    @Test
+    public void testCanSetAndChangeFilterScore() {
+        float firstScore = 0f;
+        instance.setFilterScore(firstScore);
+        assertThat(instance.getFilterScore(), equalTo(firstScore));
+        
+        float secondScore = 1.0f;
+        instance.setFilterScore(secondScore);
+        assertThat(instance.getFilterScore(), equalTo(secondScore));
     }
 }

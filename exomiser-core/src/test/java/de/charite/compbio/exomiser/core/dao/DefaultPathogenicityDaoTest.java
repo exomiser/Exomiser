@@ -6,27 +6,20 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.reference.GenomeChange;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.Strand;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -49,53 +42,21 @@ public class DefaultPathogenicityDaoTest {
     private static final MutationTasterScore MUTATION_TASTER_SCORE = new MutationTasterScore(1.0f);
     private static final CaddScore CADD_SCORE = new CaddScore(23.7f);
 
-    @Mock
-    Variant nonMissenseVariant;
-    @Mock
-    Variant missenseVariantNotInDatabase;
-    @Mock
-    Variant missenseVariantInDatabase;
-    @Mock
-    Variant missenseVariantWithNullSift;
-    @Mock
-    Variant missenseVariantWithNullPolyPhen;
-    @Mock
-    Variant missenseVariantWithNullMutTaster;
-    @Mock
-    Variant missenseVariantWithNullCadd;
-    @Mock
-    Variant missenseVariantWithMultipleRows;
+    private static final PathogenicityData NO_PATH_DATA = new PathogenicityData();
 
-    private static final PathogenicityData NO_PATH_DATA = new PathogenicityData(null, null, null, null);
+    private final Variant missenseVariantInDatabase = makeMissenseVariant(10, 123256215, "T", "G");
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
-        Mockito.when(nonMissenseVariant.getVariantEffect()).thenReturn(VariantEffect.DOWNSTREAM_GENE_VARIANT);
-
-        setUpMockMissenseVariant(missenseVariantNotInDatabase, 0, 0, "T", "G");
-        setUpMockMissenseVariant(missenseVariantInDatabase, 10, 123256215, "T", "G");
-
-        setUpMockMissenseVariant(missenseVariantWithNullSift, 1, 1, "A", "T");
-        setUpMockMissenseVariant(missenseVariantWithNullPolyPhen, 1, 2, "A", "T");
-        setUpMockMissenseVariant(missenseVariantWithNullMutTaster, 1, 3, "A", "T");
-        setUpMockMissenseVariant(missenseVariantWithNullCadd, 1, 4, "A", "T");
-
-        setUpMockMissenseVariant(missenseVariantWithMultipleRows, 1, 5, "A", "T");
-
-    }
-
-    private void setUpMockMissenseVariant(Variant variant, int chr, int pos, String ref, String alt) {
-        Mockito.when(variant.getVariantEffect()).thenReturn(VariantEffect.MISSENSE_VARIANT);
-        Mockito.when(variant.getChromosome()).thenReturn(chr);
-        Mockito.when(variant.getPosition()).thenReturn(pos);
-        Mockito.when(variant.getRef()).thenReturn(ref);
-        Mockito.when(variant.getAlt()).thenReturn(alt);
+    private Variant makeMissenseVariant(int chr, int pos, String ref, String alt) {
+        return new VariantEvaluation.VariantBuilder(chr, pos, ref, alt)
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
     }
 
     @Test
     public void testNonMissenseVariantReturnsAnEmptyPathogenicityData() {
+        Variant nonMissenseVariant = new VariantEvaluation.VariantBuilder(0, 0, "A", "T")
+                .variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT)
+                .build();
         PathogenicityData result = instance.getPathogenicityData(nonMissenseVariant);
 
         assertThat(result, equalTo(NO_PATH_DATA));
@@ -104,6 +65,7 @@ public class DefaultPathogenicityDaoTest {
 
     @Test
     public void testMissenseVariantReturnsAnEmptyPathogenicityDataWhenNotInDatabase() {
+        Variant missenseVariantNotInDatabase = makeMissenseVariant(0, 0, "T", "G");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantNotInDatabase);
 
         assertThat(result, equalTo(NO_PATH_DATA));
@@ -113,42 +75,59 @@ public class DefaultPathogenicityDaoTest {
     @Test
     public void testMissenseVariantReturnsPathogenicityDataWhenInDatabase() {
         PathogenicityData result = instance.getPathogenicityData(missenseVariantInDatabase);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE, CADD_SCORE);
+        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
+    }
+
+    /**
+     * As of 20150511 we're not going to use the CADD data from the database as
+     * it requires normalising and hasn't been using it will COMPLETELY FUBAR
+     * THE PATHOGENICITY FILTER, so don't add it back until it's normalised on
+     * a 0-1 scale.
+     */
+    @Test
+    public void testPathogenicityDaoDoesNotReturnCaddScoreEvenWhenPresentInDatabase() {
+        PathogenicityData result = instance.getPathogenicityData(missenseVariantInDatabase);
+        assertThat(result.hasPredictedScore(PathogenicitySource.CADD), is(false));
     }
 
     @Test
     public void testMissenseVariantInDatabaseWithNullSift() {
+        Variant missenseVariantWithNullSift = makeMissenseVariant(1, 1, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullSift);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, null, CADD_SCORE);
+        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE);
         assertThat(result, equalTo(expected));
     }
 
     @Test
     public void testMissenseVariantInDatabaseWithNullCadd() {
+        Variant missenseVariantWithNullCadd = makeMissenseVariant(1, 4, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullCadd);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE, null);
+        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 
     @Test
     public void testMissenseVariantInDatabaseWithNullPolyPhen() {
+        Variant missenseVariantWithNullPolyPhen = makeMissenseVariant(1, 2, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullPolyPhen);
-        PathogenicityData expected = new PathogenicityData(null, MUTATION_TASTER_SCORE, SIFT_SCORE, CADD_SCORE);
+        PathogenicityData expected = new PathogenicityData(MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 
     @Test
     public void testMissenseVariantInDatabaseWithNullMutTaster() {
+        Variant missenseVariantWithNullMutTaster = makeMissenseVariant(1, 3, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullMutTaster);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, null, SIFT_SCORE, CADD_SCORE);
+        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 
     @Test
     public void testMissenseVariantWithMultipleRowsReturnsBestScores() {
+        Variant missenseVariantWithMultipleRows = makeMissenseVariant(1, 5, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithMultipleRows);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE, CADD_SCORE);
+        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 }

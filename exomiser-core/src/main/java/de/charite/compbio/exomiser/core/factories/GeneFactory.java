@@ -39,7 +39,7 @@ public class GeneFactory {
 
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             String geneSymbol = variantEvaluation.getGeneSymbol();
-            int geneId = variantEvaluation.getEntrezGeneID();
+            int geneId = variantEvaluation.getEntrezGeneId();
             if (geneSymbol != null && !".".equals(geneSymbol)) {
                 // Off target variants do not have gene-symbols.
                 // This if avoids null pointers

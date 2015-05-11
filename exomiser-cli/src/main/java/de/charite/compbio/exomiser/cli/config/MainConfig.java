@@ -10,12 +10,17 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
-import de.charite.compbio.exomiser.core.dao.*;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
@@ -23,10 +28,11 @@ import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
-import de.charite.compbio.jannovar.io.JannovarDataSerializer;
-import de.charite.compbio.jannovar.io.SerializationException;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
+import de.charite.compbio.jannovar.data.JannovarData;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -146,25 +152,42 @@ public class MainConfig {
      *
      * @return
      */
-    @Bean
     @Lazy
-    public VariantAnnotator variantAnnotator() {
+    @Bean
+    public JannovarData jannovarData() {
         try {
-            return new VariantAnnotator(new JannovarDataSerializer(ucscFilePath().toString()).load());
+            return new JannovarDataSerializer(ucscFilePath().toString()).load();
         } catch (SerializationException e) {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
     }
 
-//    
+    @Lazy
+    @Bean
+    public VariantAnnotationsFactory variantAnnotator() {
+        return new VariantAnnotationsFactory(jannovarData());
+    }
+
+    @Lazy
+    @Bean
+    public VariantFactory variantFactory() {
+        return new VariantFactory(variantAnnotator());
+    }
+
+    @Lazy
+    @Bean
+    public SampleDataFactory sampleDataFactory() {
+        return new SampleDataFactory();
+    }
+
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
      *
      * @return
      */
-    @Bean
     @Lazy
+    @Bean
     public DataMatrix randomWalkMatrix() {
         String randomWalkFileNameValue = getValueOfProperty("randomWalkFileName");
         Path randomWalkFilePath = dataPath().resolve(randomWalkFileNameValue);
@@ -194,46 +217,40 @@ public class MainConfig {
     public PriorityFactory priorityFactory() {
         return new PriorityFactory();
     }
-        
+
     @Bean
     PriorityService priorityService() {
         return new PriorityService();
     }
-    
+
     @Bean
     ModelService modelService() {
         return new ModelServiceImpl();
     }
-    
+
     @Bean
     OntologyService ontologyService() {
         return new OntologyServiceImpl();
     }
-    
+
     @Bean
     DiseaseDao diseaseDao() {
         return new DefaultDiseaseDao();
     }
-           
+
     @Bean
     HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
         return new HumanPhenotypeOntologyDao();
     }
-    
+
     @Bean
     MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
         return new MousePhenotypeOntologyDao();
     }
-    
+
     @Bean
     ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
         return new ZebraFishPhenotypeOntologyDao();
-    }
-
-    @Bean
-    @Lazy
-    public SampleDataFactory sampleDataFactory() {
-        return new SampleDataFactory();
     }
 
     @Bean
@@ -247,10 +264,10 @@ public class MainConfig {
     }
 
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return new VariantEvaluationDataService();
+    public VariantDataService variantEvaluationDataService() {
+        return new VariantDataService();
     }
-       
+
     @Bean
     public TemplateEngine templateEngine() {
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -260,15 +277,15 @@ public class MainConfig {
         templateResolver.setCacheable(true);
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
-        
+
         return templateEngine;
     }
-    
+
     @Bean
     public ResultsWriterFactory resultsWriterFactory() {
         return new ResultsWriterFactory();
     }
-    
+
     protected String getValueOfProperty(String property) throws PropertyNotFoundException {
         String value = env.getProperty(property);
         if (value == null) {

@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
     private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterRunner.class);
 
     @Autowired
-    private VariantEvaluationDataService variantEvaluationFactory;
+    private VariantDataService variantEvaluationFactory;
 
     /**
      *

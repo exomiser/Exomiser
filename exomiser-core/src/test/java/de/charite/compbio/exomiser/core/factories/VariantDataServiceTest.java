@@ -18,8 +18,6 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import de.charite.compbio.jannovar.annotation.AnnotationList;
-import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -38,10 +36,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author jj8
  */
 @RunWith(MockitoJUnitRunner.class)
-public class VariantEvaluationDataServiceTest {
+public class VariantDataServiceTest {
 
     @InjectMocks
-    private VariantEvaluationDataService instance;
+    private VariantDataService instance;
     @Mock
     private PathogenicityDao mockPathogenicityDao;
     @Mock
@@ -51,16 +49,14 @@ public class VariantEvaluationDataServiceTest {
     private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
     
     private VariantEvaluation varEval;
-    private Variant variant;
 
     @Before
     public void setUp() {
-        variant = null; // new Variant((byte) 1, 1, "C", "A", null, 5f, null);
-        varEval = new VariantEvaluation(null, 0, null, null);
+        varEval = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         
         MockitoAnnotations.initMocks(this);
-        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
-        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
+        Mockito.when(mockPathogenicityDao.getPathogenicityData(varEval)).thenReturn(PATH_DATA);
+        Mockito.when(mockFrequencyDao.getFrequencyData(varEval)).thenReturn(FREQ_DATA);
 
     }
 

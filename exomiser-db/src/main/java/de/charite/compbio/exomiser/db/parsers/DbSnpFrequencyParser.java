@@ -4,29 +4,24 @@ import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.db.reference.Frequency;
 import de.charite.compbio.exomiser.db.resources.Resource;
 import de.charite.compbio.jannovar.impl.intervals.Interval;
-import de.charite.compbio.jannovar.io.Chromosome;
-import de.charite.compbio.jannovar.io.JannovarData;
-import de.charite.compbio.jannovar.io.JannovarDataSerializer;
-import de.charite.compbio.jannovar.io.ReferenceDictionary;
-import de.charite.compbio.jannovar.io.SerializationException;
+import de.charite.compbio.jannovar.impl.intervals.IntervalArray;
+import de.charite.compbio.jannovar.data.Chromosome;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.GenomeInterval;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
@@ -89,14 +84,14 @@ public class DbSnpFrequencyParser implements ResourceParser {
      */
     private final Map<Integer, ChromosomalExonLocations> chromosomeMap;
 
-    public DbSnpFrequencyParser(ReferenceDictionary refDict, JannovarData jannovarData, Path ucscResourcePath, List<Frequency> frequencyList) {
-        vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
+    public DbSnpFrequencyParser(JannovarData jannovarData, Path ucscResourcePath, List<Frequency> frequencyList) {
+        vcf2FrequencyParser = new VCF2FrequencyParser(jannovarData.getRefDict());
         this.frequencyList = frequencyList;
         chromosomeMap = new HashMap<>();
         //first we need to prepare the serialized ucsc19 data file from Jannovar
         //this is required for parsing the dbSNP data where it is used as a filter to 
         // remove variants outside of exonic regions.
-        makeChromosomeMap(jannovarData);
+        makeChromosomeExonLocations(jannovarData.getChromosomes());
     }
 
     /**
@@ -104,18 +99,20 @@ public class DbSnpFrequencyParser implements ResourceParser {
      * serialized file was originally created by parsing the three UCSC known
      * gene files.
      */
-    private void makeChromosomeMap(JannovarData jannovarData) {
-        for (Entry<Integer, Chromosome> entry : jannovarData.chromosomes.entrySet()) {
-            int chr = entry.getKey();
-            for (Interval<TranscriptModel> itv : entry.getValue().tmIntervalTree.intervals) {
-                if (!chromosomeMap.containsKey(chr)) {
-                    ChromosomalExonLocations exonLocations = new ChromosomalExonLocations(chr);
-                    exonLocations.addGene(itv.value);
+    private void makeChromosomeExonLocations(Map<Integer, Chromosome> chromosomes) {
+        for (Chromosome chromosome : chromosomes.values()) {
+            int chromosomeId = chromosome.getChrID();
+            IntervalArray<TranscriptModel> tmIntervalTree = chromosome.getTmIntervalTree();
+            for (Interval<TranscriptModel> itv : tmIntervalTree.getIntervals()) {
+                TranscriptModel transcriptModel = itv.getValue();
+                if (!chromosomeMap.containsKey(chromosomeId)) {
+                    ChromosomalExonLocations exonLocations = new ChromosomalExonLocations(chromosomeId);
+                    exonLocations.addGeneExonModels(transcriptModel);
                     //System.out.println("Adding chromosome for " + chromosome);
-                    chromosomeMap.put(chr, exonLocations);
+                    chromosomeMap.put(chromosomeId, exonLocations);
                 } else {
-                    ChromosomalExonLocations exonLocations = chromosomeMap.get(chr);
-                    exonLocations.addGene(itv.value);
+                    ChromosomalExonLocations exonLocations = chromosomeMap.get(chromosomeId);
+                    exonLocations.addGeneExonModels(transcriptModel);
                 }
             }
         }
@@ -280,10 +277,10 @@ public class DbSnpFrequencyParser implements ResourceParser {
          *
          * @param kgl A transcript of a human known gene.
          */
-        public void addGene(TranscriptModel tm) {
-            for (GenomeInterval itv : tm.exonRegions) {
-                final int start = itv.beginPos + 1; // convert to 1-based
-                final int stop = itv.endPos;
+        public void addGeneExonModels(TranscriptModel tm) {
+            for (GenomeInterval itv : tm.getExonRegions()) {
+                final int start = itv.getBeginPos() + 1; // convert to 1-based
+                final int stop = itv.getEndPos();
                 Exon exon = new Exon(start, stop);
                 n_exons++;
                 /* 1. There is already an Exon with this start */

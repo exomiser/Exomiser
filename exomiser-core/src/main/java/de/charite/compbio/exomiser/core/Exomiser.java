@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
@@ -45,8 +45,8 @@ public class Exomiser {
     @Autowired
     private PriorityFactory priorityFactory;
     @Autowired
-    private VariantEvaluationDataService variantEvaluationFactory;
-    //TODO: might be better using constructor injection to supply the  VariantEvaluationDataService to the SparseVariantFilterRunner
+    private VariantDataService variantEvaluationFactory;
+    //TODO: might be better using constructor injection to supply the  VariantDataService to the SparseVariantFilterRunner
     @Autowired
     private SparseVariantFilterRunner sparseVariantFilterRunner;
 
@@ -68,8 +68,8 @@ public class Exomiser {
 
         //Prioritisers should ALWAYS run last.
         logger.info("MAKING PRIORITISERS");
-        List<Prioritiser> priorityList = priorityFactory.makePrioritisers(exomiserSettings);
-        runPrioritisers(priorityList, exomiserSettings, sampleData);
+        List<Prioritiser> prioritisers = priorityFactory.makePrioritisers(exomiserSettings);
+        runPrioritisers(prioritisers, exomiserSettings, sampleData);
         
         scoreGenes(exomiserSettings, sampleData);
         logger.info("FINISHED ANALYSIS");

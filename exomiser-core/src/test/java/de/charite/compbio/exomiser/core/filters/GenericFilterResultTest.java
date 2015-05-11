@@ -5,14 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.GenericFilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -21,13 +16,6 @@ import static org.junit.Assert.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class GenericFilterResultTest {
-
-    public GenericFilterResultTest() {
-    }
-
-    @Before
-    public void setUp() {
-    }
 
     @Test
     public void testGetScore() {

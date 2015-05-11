@@ -47,7 +47,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         //the database as we're going to assign it a constant pathogenicity score.
         VariantEffect variantEffect = variant.getVariantEffect();
         if (variantEffect != VariantEffect.MISSENSE_VARIANT) {
-            return new PathogenicityData(null, null, null, null);
+            return new PathogenicityData();
         }
 
         try (
@@ -67,8 +67,10 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         String query = String.format("SELECT "
                 + "sift,"
                 + "polyphen,"
-                + "mut_taster,"
-                + "cadd "
+                + "mut_taster "
+                //As of 20150511 we're not going to use the CADD data from the database as it requires normalising and hasn't been
+                //using it will COMPLETELY FUBAR THE PATHOGENICITY FILTER, so don't add it back until it's normalised on a 0-1 scale.
+//                + "cadd "
                 + "FROM variant "
                 + "WHERE chromosome = ? "
                 + "AND position = ? "
@@ -91,7 +93,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         SiftScore siftScore = null;
         PolyPhenScore polyPhenScore = null;
         MutationTasterScore mutationTasterScore = null;
-        CaddScore caddScore = null;
+
         /* 
          * Switched db back to potentially having multiple rows per variant
          * if alt transcripts leads to diff aa changes and pathogenicities.
@@ -102,10 +104,9 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
             siftScore = getBestSiftScore(rs, siftScore);
             polyPhenScore = getBestPolyPhenScore(rs, polyPhenScore);
             mutationTasterScore = getBestMutationTasterScore(rs, mutationTasterScore);
-            caddScore = getBestCaddScore(rs, caddScore);
         }
 
-        return new PathogenicityData(polyPhenScore, mutationTasterScore, siftScore, caddScore);
+        return new PathogenicityData(polyPhenScore, mutationTasterScore, siftScore);
 
     }
 

@@ -10,7 +10,7 @@ import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
@@ -19,13 +19,17 @@ import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import de.charite.compbio.jannovar.io.JannovarDataSerializer;
-import de.charite.compbio.jannovar.io.SerializationException;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.slf4j.Logger;
@@ -120,12 +124,24 @@ public class ExomiserConfig {
      */
     @Bean
     @Lazy
-    public VariantAnnotator variantAnnotator() {
+    public VariantAnnotationsFactory variantAnnotator() {
         try {
-            return new VariantAnnotator(new JannovarDataSerializer(ucscFilePath().toString()).load());
+            return new VariantAnnotationsFactory(new JannovarDataSerializer(ucscFilePath().toString()).load());
         } catch (SerializationException e) {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
+    }
+
+    @Lazy
+    @Bean
+    public VariantFactory variantFactory() {
+        return new VariantFactory(variantAnnotator());
+    }
+ 
+    @Lazy
+    @Bean
+    public SampleDataFactory sampleDataFactory() {
+        return new SampleDataFactory();
     }
 
     /**
@@ -154,11 +170,15 @@ public class ExomiserConfig {
     }
 
     @Bean
-    @Lazy
-    public SampleDataFactory sampleDataFactory() {
-        return new SampleDataFactory();
+    PriorityService priorityService() {
+        return new PriorityService();
     }
 
+    @Bean
+    ModelService modelService() {
+        return new ModelServiceImpl();
+    }
+ 
     @Bean
     public Exomiser exomiser() {
         return new Exomiser();
@@ -170,8 +190,8 @@ public class ExomiserConfig {
     }
 
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return new VariantEvaluationDataService();
+    public VariantDataService variantEvaluationDataService() {
+        return new VariantDataService();
     }
 
 //cacheable beans

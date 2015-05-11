@@ -65,8 +65,7 @@ public class QualityFilter implements VariantFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        Variant v = variantEvaluation.getVariant();
-        double phredScore = v.getPhredScore();
+        double phredScore = variantEvaluation.getPhredScore();
         if (overQualityThreshold(phredScore)) {
             return passedFilterResult;
         }

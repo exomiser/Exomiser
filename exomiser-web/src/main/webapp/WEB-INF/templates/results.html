@@ -84,7 +84,7 @@ and open the template in the editor.
                     <div class="row" th:each="variantEvaluation: ${unAnalysedVarEvals}"> 
                         <div class="col-sm-12">
                             <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
-                            <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
+                            <b th:text=" |${variantEvaluation.chromosomeName} ${variantEvaluation.position} ${variantEvaluation.ref} ${variantEvaluation.alt} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
                             <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
                                    th:href="@{|http://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
@@ -161,7 +161,7 @@ and open the template in the editor.
                                          th:each="variantEvaluation: ${gene.variantEvaluations}" 
                                          th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
                                         <div class="col-sm-12">
-                                            <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
+                                            <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
                                             <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
                                             <th:block th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
@@ -175,7 +175,7 @@ and open the template in the editor.
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
                                                 <dd th:each="annotation: ${variantEvaluation.annotations}" 
-                                                    th:with="ucscData=${#strings.listSplit(annotation,':')}, ucscId=${ucscData[0]}, text=${annotation.replace(ucscId + ':', '')}">
+                                                    th:with="ucscData=${#strings.listSplit(annotation.symbolAndAnnotation,':')}, ucscId=${ucscData[0]}, text=${annotation.symbolAndAnnotation.replace(ucscId + ':', '')}">
                                                     <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" 
                                                        th:text="${ucscId}">uc001lfg.4</a> <th:block th:text="${text}">exon6:c.518A> C:p.E173A</th:block>
                                                 </dd>

@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
@@ -15,16 +15,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class QualityFilterTest {
     
     private QualityFilter instance;
@@ -36,25 +30,17 @@ public class QualityFilterTest {
     private static VariantEvaluation highQualityPassesFilter;
     private static VariantEvaluation lowQualityFailsFilter;
 
-    @Mock
-    Variant mockHighQualityVariant;
-    @Mock
-    Variant mockLowQualityVariant;
-
-    public QualityFilterTest() {
-    }
-
     @Before
     public void setUp() {
 
-        Mockito.when(mockHighQualityVariant.getPhredScore()).thenReturn(OVER_THRESHOLD);
-        Mockito.when(mockLowQualityVariant.getPhredScore()).thenReturn(UNDER_THRESHOLD);
+        highQualityPassesFilter = testVariantBuilder().quality(OVER_THRESHOLD).build();
+        lowQualityFailsFilter = testVariantBuilder().quality(UNDER_THRESHOLD).build();
         
-        highQualityPassesFilter = new VariantEvaluation(mockHighQualityVariant);
-        lowQualityFailsFilter = new VariantEvaluation(mockLowQualityVariant);
-        
-        instance = new QualityFilter(MIN_QUAL_THRESHOLD);
-        
+        instance = new QualityFilter(MIN_QUAL_THRESHOLD);  
+    }
+
+    private VariantBuilder testVariantBuilder() {
+        return new VariantEvaluation.VariantBuilder(1, 1, "A", "T");
     }
 
     @Test

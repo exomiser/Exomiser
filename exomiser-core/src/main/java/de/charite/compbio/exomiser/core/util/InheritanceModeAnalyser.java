@@ -63,32 +63,26 @@ public class InheritanceModeAnalyser {
     protected Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations) {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         
-        List<Variant> variantList = new ArrayList<>();
-        
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            variantList.add(variantEvaluation.getVariant());
-        }
-        inheritanceModes.addAll(analyseInheritanceModesForVariants(variantList));
+        inheritanceModes.addAll(analyseInheritanceModesForVariants(variantEvaluations));
       
         return inheritanceModes;
     }
 
-    private Set<ModeOfInheritance> analyseInheritanceModesForVariants(List<Variant> variants) {
+    private Set<ModeOfInheritance> analyseInheritanceModesForVariants(List<VariantEvaluation> variants) {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
            
         Variant firstVariant = variants.get(0);
         // Build list of genotypes from the given variants.
         String geneID = firstVariant.getGeneSymbol();
         // Use interval of transcript of first region, only used for the chromosome information anyway.
-        GenomeInterval geneInterval = variants.get(0).getAnnotationList().get(0).transcript.txRegion;
         GenotypeListBuilder genotypeListBuilder = new GenotypeListBuilder(geneID, pedigree.getNames(), firstVariant.isXChromosomal());
-        for (Variant variant : variants) {
-            final int altAlleleID = variant.getAltAlleleID();
+        for (VariantEvaluation variant : variants) {
+            final int altAlleleID = variant.getAltAlleleId();
             VariantContext variantContext = variant.getVariantContext();
             final int numSamples = variantContext.getNSamples();
-            ImmutableList.Builder<Genotype> gtBuilder = new ImmutableList.Builder<Genotype>();
+            ImmutableList.Builder<Genotype> gtBuilder = new ImmutableList.Builder<>();
             for (int i = 0; i < numSamples; ++i) {
-                final String name = pedigree.members.get(i).name;
+                final String name = pedigree.getMembers().get(i).getName();
                 final List<Allele> alleles = variantContext.getGenotype(name).getAlleles();
                 if (alleles.size() != 2) {
                     gtBuilder.add(Genotype.NOT_OBSERVED);

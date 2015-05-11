@@ -53,7 +53,7 @@ public class IntervalFilter implements VariantFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        if (variantIsNotWithinInterval(variantEvaluation.getVariant())) {
+        if (variantIsNotWithinInterval(variantEvaluation)) {
             return failedFilterResult;
         }
         return passFilterResult;

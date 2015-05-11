@@ -5,10 +5,16 @@
  */
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
+import static de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Container for PathogenicityScore data about a variant.
@@ -17,60 +23,57 @@ import java.util.Objects;
  */
 public class PathogenicityData {
 
-    private final PolyPhenScore polyPhenScore;
-    private final MutationTasterScore mutationTasterScore;
-    private final SiftScore siftScore;
-    private final CaddScore caddScore;
-    private final List<PathogenicityScore> predictedPathogenicityScores;
+    private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
 
-    public PathogenicityData(PolyPhenScore polyPhenScore, MutationTasterScore mutationTasterScore, SiftScore siftScore, CaddScore caddScore) {
-    //TODO: this is a bit brittle - adding or removing a score will change the signature - perhaps accept a list of scores only?
-        this.polyPhenScore = polyPhenScore;
-        this.mutationTasterScore = mutationTasterScore;
-        this.siftScore = siftScore;
-        this.caddScore = caddScore;
-        predictedPathogenicityScores = new ArrayList<>();
+    public PathogenicityData(PathogenicityScore... pathScore) {
+        this(new HashSet<>(Arrays.asList(pathScore)));
+    } 
 
-        if (polyPhenScore != null) {
-            predictedPathogenicityScores.add(polyPhenScore);
+    public PathogenicityData(Set<PathogenicityScore> pathScores) {
+        pathogenicityScores = new EnumMap(PathogenicitySource.class);
+        for (PathogenicityScore pathScore : pathScores) {
+            if (pathScore != null) {
+                pathogenicityScores.put(pathScore.getSource(), pathScore);
+            }
         }
-        if (mutationTasterScore != null) {
-            predictedPathogenicityScores.add(mutationTasterScore);
-        }
-        if (siftScore != null) {
-            predictedPathogenicityScores.add(siftScore);
-        }
-        //we're not using CaddRaw or Cadd for the pathogenicity filtering yet so
-        //enabling it here will cause serious scoring issues with the overal scores unless this
-        //is taken into account by the PathogenicityFilter
-//        if (caddScore != null) {
-//            predictedPathogenicityScores.add(caddScore);
-//        }
-
     }
 
     public PolyPhenScore getPolyPhenScore() {
-        return polyPhenScore;
+        return (PolyPhenScore) getPredictedScore(POLYPHEN);
     }
 
     public MutationTasterScore getMutationTasterScore() {
-        return mutationTasterScore;
+        return (MutationTasterScore) getPredictedScore(MUTATION_TASTER);
     }
 
     public SiftScore getSiftScore() {
-        return siftScore;
+        return (SiftScore) getPredictedScore(SIFT);
     }
 
     public CaddScore getCaddScore() {
-        return caddScore;
+        return (CaddScore) getPredictedScore(CADD);
     }
 
     public List<PathogenicityScore> getPredictedPathogenicityScores() {
-        return new ArrayList(predictedPathogenicityScores);
+        return new ArrayList(pathogenicityScores.values());
     }
 
     public boolean hasPredictedScore() {
-        return !predictedPathogenicityScores.isEmpty();
+        return !pathogenicityScores.isEmpty();
+    }
+
+    public boolean hasPredictedScore(PathogenicitySource pathogenicitySource) {
+        return pathogenicityScores.containsKey(pathogenicitySource);
+    }
+    
+    /**
+     * Returns the PathogenicityScore from the requested source, or null if not present.
+     * 
+     * @param pathogenicitySource
+     * @return 
+     */
+    public PathogenicityScore getPredictedScore(PathogenicitySource pathogenicitySource) {
+        return pathogenicityScores.get(pathogenicitySource);
     }
 
     /**
@@ -78,7 +81,7 @@ public class PathogenicityData {
      * @return 
      */
     public PathogenicityScore getMostPathogenicScore() {
-        if (predictedPathogenicityScores.isEmpty()) {
+        if (pathogenicityScores.isEmpty()) {
             return null;
         }
         List<PathogenicityScore> knownPathScores = this.getPredictedPathogenicityScores();
@@ -89,11 +92,8 @@ public class PathogenicityData {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + Objects.hashCode(this.polyPhenScore);
-        hash = 29 * hash + Objects.hashCode(this.mutationTasterScore);
-        hash = 29 * hash + Objects.hashCode(this.siftScore);
-        hash = 29 * hash + Objects.hashCode(this.caddScore);
+        int hash = 3;
+        hash = 19 * hash + Objects.hashCode(this.pathogenicityScores);
         return hash;
     }
 
@@ -106,21 +106,15 @@ public class PathogenicityData {
             return false;
         }
         final PathogenicityData other = (PathogenicityData) obj;
-        if (!Objects.equals(this.polyPhenScore, other.polyPhenScore)) {
+        if (!Objects.equals(this.pathogenicityScores, other.pathogenicityScores)) {
             return false;
         }
-        if (!Objects.equals(this.mutationTasterScore, other.mutationTasterScore)) {
-            return false;
-        }
-        if (!Objects.equals(this.siftScore, other.siftScore)) {
-            return false;
-        }
-        return Objects.equals(this.caddScore, other.caddScore);
+        return true;
     }
 
     @Override
     public String toString() {
-        return String.format("PathogenicityData{%s, %s, %s, %s}", polyPhenScore, mutationTasterScore, siftScore, caddScore);
+        return "PathogenicityData" +  pathogenicityScores.values();
     }
 
 }

@@ -71,7 +71,7 @@ public class PublishedMutationSearcher {
 		"WHERE chromosome = ? AND position = ?;";
 	    PreparedStatement qps = connection.prepareStatement(query);
 	    for (VariantEvaluation ve : lst) {
-		int chr = ve.getChromosomeAsInteger();
+		int chr = ve.getChromosome();
 		int pos = ve.getPosition();
 		qps.setInt(1,chr);
 		qps.setInt(2,pos);
@@ -97,7 +97,7 @@ public class PublishedMutationSearcher {
 		"WHERE chromosome = ? AND position = ?;";
 	    PreparedStatement qps = connection.prepareStatement(query);
 	    for (VariantEvaluation ve : lst) {
-		int chr = ve.getChromosomeAsInteger();
+		int chr = ve.getChromosome();
 		int pos = ve.getPosition();
 		String sym = ve.getGeneSymbol();
 		qps.setInt(1,chr);
@@ -168,7 +168,7 @@ public class PublishedMutationSearcher {
 		"WHERE chromosome = ? AND position = ? AND d.id=p.id;";
 	    PreparedStatement qps = connection.prepareStatement(query);
 	    for (VariantEvaluation ve : varEvalList) {
-		int chr = ve.getChromosomeAsInteger();
+		int chr = ve.getChromosome();
 		int pos = ve.getPosition();
 		String gt = ve.getGenotypeAsString();
 		qps.setInt(1,chr);

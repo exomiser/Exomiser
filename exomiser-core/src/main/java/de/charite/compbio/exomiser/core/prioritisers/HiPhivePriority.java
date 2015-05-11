@@ -1,7 +1,6 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.GeneModel;
 import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
@@ -283,9 +282,9 @@ public class HiPhivePriority implements Prioritiser {
                 }
             }
         }
-//        for (PhenotypeMatch bestMatch : bestMatches.values()) {
-//            logger.info("Best match: {}-{}={}", bestMatch.getQueryPhenotypeId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
-//        }
+        for (PhenotypeMatch bestMatch : bestMatches.values()) {
+            logger.debug("Best match: {}-{}={}", bestMatch.getQueryPhenotypeId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
+        }
         return new HashSet<>(bestMatches.values());
     }
 

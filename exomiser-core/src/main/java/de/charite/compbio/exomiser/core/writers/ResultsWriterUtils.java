@@ -111,7 +111,7 @@ public class ResultsWriterUtils {
         VariantEffectCounter effectCounter = new VariantEffectCounter(numIndividuals);
 
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            effectCounter.put(variantEvaluation.getVariant());
+            effectCounter.put(variantEvaluation);
         }
         return effectCounter;
     }

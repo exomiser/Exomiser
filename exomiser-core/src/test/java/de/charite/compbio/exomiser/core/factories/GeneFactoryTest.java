@@ -60,20 +60,20 @@ public class GeneFactoryTest {
         Mockito.when(offTargetVariantEvaluation.getGeneSymbol()).thenReturn(null);
 
         Mockito.when(firstGene1VariantEvaluation.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-        Mockito.when(firstGene1VariantEvaluation.getEntrezGeneID()).thenReturn(GENE1_GENE_ID);
+        Mockito.when(firstGene1VariantEvaluation.getEntrezGeneId()).thenReturn(GENE1_GENE_ID);
 
         Mockito.when(secondGene1VariantEvaluation.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-        Mockito.when(secondGene1VariantEvaluation.getEntrezGeneID()).thenReturn(GENE1_GENE_ID);
+        Mockito.when(secondGene1VariantEvaluation.getEntrezGeneId()).thenReturn(GENE1_GENE_ID);
 
         Mockito.when(gene2VariantEvaluation.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL);
-        Mockito.when(gene2VariantEvaluation.getEntrezGeneID()).thenReturn(GENE2_GENE_ID);
+        Mockito.when(gene2VariantEvaluation.getEntrezGeneId()).thenReturn(GENE2_GENE_ID);
         
         //the variantEvaluation should only return the first gene symbol listed by Jannovar - see VariantEvaluationTest 
         Mockito.when(variantEvaluationInTwoGeneRegions.getGeneSymbol()).thenReturn(GENE3_GENE_SYMBOL);
-        Mockito.when(variantEvaluationInTwoGeneRegions.getEntrezGeneID()).thenReturn(GENE3_GENE_ID);
+        Mockito.when(variantEvaluationInTwoGeneRegions.getEntrezGeneId()).thenReturn(GENE3_GENE_ID);
         
         Mockito.when(gene3VariantEvaluation.getGeneSymbol()).thenReturn(GENE3_GENE_SYMBOL);
-        Mockito.when(gene3VariantEvaluation.getEntrezGeneID()).thenReturn(GENE3_GENE_ID);
+        Mockito.when(gene3VariantEvaluation.getEntrezGeneId()).thenReturn(GENE3_GENE_ID);
     }
 
     private Gene createNewGene(String geneSymbol, int geneId, VariantEvaluation variantEvaluation) {

@@ -10,7 +10,6 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -20,7 +19,6 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -29,17 +27,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests for FilterReportFactory.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class FilterReportFactoryTest {
 
     private FilterReportFactory instance;
@@ -49,12 +42,8 @@ public class FilterReportFactoryTest {
     private List<Gene> genes;
     private SampleData sampleData;
 
-    @Mock
-    private Variant mockVariant;
-
     @Before
     public void setUp() {
-        initMocks();
         instance = new FilterReportFactory();
         settings = new SettingsBuilder()
                 .vcfFilePath(Paths.get("testVcf.vcf"))
@@ -67,18 +56,14 @@ public class FilterReportFactoryTest {
         sampleData.setGenes(genes);
     }
 
-    private void initMocks() {
-        Mockito.when(mockVariant.getGeneSymbol()).thenReturn("GENE1");
-    }
-
     private VariantEvaluation makeFailedFilterVariantEvaluation(FilterType filterType) {
-        VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation(mockVariant);
+        VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
         failedFilterVariantEvaluation.addFilterResult(new GenericFilterResult(filterType, 0.0f, FilterResultStatus.FAIL));
         return failedFilterVariantEvaluation;
     }
 
     private VariantEvaluation makePassedFilterVariantEvaluation(FilterType filterType) {
-        VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation(mockVariant);
+        VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
         passedFilterVariantEvaluation.addFilterResult(new GenericFilterResult(filterType, 1.0f, FilterResultStatus.PASS));
         return passedFilterVariantEvaluation;
     }

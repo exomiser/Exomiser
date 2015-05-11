@@ -18,7 +18,7 @@ import org.junit.Test;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.dao.TestVariantFactory;
+import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -71,7 +71,7 @@ public class TsvVariantResultsWriterTest {
         makePassVariant(varFactory);
         makeFailVariant(varFactory);
         
-        gene = new Gene(passVariant.getGeneSymbol(), passVariant.getEntrezGeneID());
+        gene = new Gene(passVariant.getGeneSymbol(), passVariant.getEntrezGeneId());
         gene.addVariant(passVariant);
         gene.addVariant(failVariant);
 
@@ -80,14 +80,12 @@ public class TsvVariantResultsWriterTest {
     }
 
     private void makePassVariant(TestVariantFactory varFactory) {
-        Variant missenseVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        passVariant = new VariantEvaluation(missenseVariant);
+        passVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         passVariant.addFilterResult(new TargetFilterResult(1f, FilterResultStatus.PASS));
     }
     
     private void makeFailVariant(TestVariantFactory varFactory) {
-        Variant indelVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
-        failVariant = new VariantEvaluation(indelVariant);
+        failVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
         failVariant.addFilterResult(new TargetFilterResult(0f, FilterResultStatus.FAIL));
     }
 

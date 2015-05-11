@@ -33,7 +33,7 @@ public class SiftScore extends AbstractPathogenicityScore {
     public static final float SIFT_THRESHOLD = 0.06f;
 
     public SiftScore(float score) {
-        super(score);
+        super(score, PathogenicitySource.SIFT);
     }
 
     @Override

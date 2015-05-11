@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Service
-public class VariantEvaluationDataService {
+public class VariantDataService {
     
     @Autowired
     private FrequencyDao frequencyDao;
@@ -43,14 +43,12 @@ public class VariantEvaluationDataService {
         variantEvaluation.setPathogenicityData(pathData);
     }
 
-    public FrequencyData getVariantFrequencyData(VariantEvaluation variantEvaluation) {
-        Variant variant = variantEvaluation.getVariant();
+    public FrequencyData getVariantFrequencyData(Variant variant) {
         FrequencyData freqData = frequencyDao.getFrequencyData(variant);
         return freqData;
     }
     
-    public PathogenicityData getVariantPathogenicityData(VariantEvaluation variantEvaluation) {
-        Variant variant = variantEvaluation.getVariant();
+    public PathogenicityData getVariantPathogenicityData(Variant variant) {
         PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variant);
         return pathData;
     }
