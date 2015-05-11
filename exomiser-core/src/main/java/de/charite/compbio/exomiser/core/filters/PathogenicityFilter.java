@@ -99,7 +99,7 @@ public class PathogenicityFilter implements VariantFilter {
             return returnMissenseScore(pathogenicityData);
         } else {
             //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect));
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
         }
     }
 
@@ -131,7 +131,7 @@ public class PathogenicityFilter implements VariantFilter {
             //we'll leave it up to the user to decide
             return true;
         } else {
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(EnumSet.of(variantEffect)) >= DEFAULT_PATHOGENICITY_THRESHOLD;
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
         }
     }
 

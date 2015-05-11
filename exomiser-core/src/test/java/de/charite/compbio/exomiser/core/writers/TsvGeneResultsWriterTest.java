@@ -53,8 +53,7 @@ public class TsvGeneResultsWriterTest {
         instance = new TsvGeneResultsWriter();
 
         VariantEvaluation variantEval = new VariantEvaluation.VariantBuilder(10, 123353297, "G", "C").geneSymbol(GENE_SYMBOL).geneId(GENE_ID).build();
-        variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores
-                .getPathogenicityScoreOf(EnumSet.of(VariantEffect.STOP_GAINED)), FilterResultStatus.PASS));
+        variantEval.addFilterResult(new PathogenicityFilterResult(VariantTypePathogenicityScores.getPathogenicityScoreOf(VariantEffect.STOP_GAINED), FilterResultStatus.PASS));
         variantEval.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.PASS));
 
         variantEval.setPathogenicityData(new PathogenicityData(null, null, null, null));

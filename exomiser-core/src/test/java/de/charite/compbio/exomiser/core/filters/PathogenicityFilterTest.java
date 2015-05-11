@@ -93,8 +93,7 @@ public class PathogenicityFilterTest {
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
 
-        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(ImmutableList
-                .of(downstreamFailsFilter.getVariantEffect()));
+        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(downstreamFailsFilter.getVariantEffect());
 
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
         assertThat(filterResult.getScore(), equalTo(expectedScore));
@@ -106,8 +105,7 @@ public class PathogenicityFilterTest {
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
 
-        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(ImmutableList
-                .of(downstreamFailsFilter.getVariantEffect()));
+        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(downstreamFailsFilter.getVariantEffect());
 
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
         assertThat(filterResult.getScore(), equalTo(expectedScore));
@@ -159,7 +157,7 @@ public class PathogenicityFilterTest {
     public void testCalculateScoreDownstream() {
         PathogenicityData pathData = new PathogenicityData(null, MTASTER_PASS, null, null);
         VariantEffect type = VariantEffect.DOWNSTREAM_GENE_VARIANT;
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(ImmutableList.of(type));
+        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 
@@ -167,7 +165,7 @@ public class PathogenicityFilterTest {
     public void testCalculateScoreMissenseDefault() {
         PathogenicityData pathData = new PathogenicityData(null, null, null, null);
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(ImmutableList.of(type));
+        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 

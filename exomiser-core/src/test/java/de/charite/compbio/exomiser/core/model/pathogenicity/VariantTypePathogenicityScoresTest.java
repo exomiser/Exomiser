@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
-import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
@@ -32,21 +31,21 @@ public class VariantTypePathogenicityScoresTest {
     @Test
     public void testGetPathogenicityScoreForDefaultMissense() {
         VariantEffect variantEffect = VariantEffect.MISSENSE_VARIANT;
-        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(ImmutableList.of(variantEffect));
+        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
         assertThat(result, equalTo(VariantTypePathogenicityScores.DEFAULT_MISSENSE_SCORE));
     }
     
     @Test
     public void testGetPathogenicityScoreForStartLoss() {
         VariantEffect variantEffect = VariantEffect.START_LOST;
-        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(ImmutableList.of(variantEffect));
+        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
         assertThat(result, equalTo(VariantTypePathogenicityScores.STARTLOSS_SCORE));
     }
     
     @Test
     public void testGetPathogenicityScoreForNonPathogenicVariantType() {
         VariantEffect variantEffect = VariantEffect.DOWNSTREAM_GENE_VARIANT;
-        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(ImmutableList.of(variantEffect));
+        float result = VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
         assertThat(result, equalTo(VariantTypePathogenicityScores.NON_PATHOGENIC_SCORE));
     }
     

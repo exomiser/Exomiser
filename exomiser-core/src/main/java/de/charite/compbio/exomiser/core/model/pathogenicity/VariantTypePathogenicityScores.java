@@ -58,14 +58,12 @@ public abstract class VariantTypePathogenicityScores {
      */
     public static final float STARTLOSS_SCORE = 0.95f;
 
-    public static final float getPathogenicityScoreOf(Collection<VariantEffect> effects) {
-        if (effects.isEmpty()) {
+    public static final float getPathogenicityScoreOf(VariantEffect variantEffect) {
+        if (variantEffect == VariantEffect.SEQUENCE_VARIANT) {
             // no effect annotated
             return NON_PATHOGENIC_SCORE; 
         }
         // highest priority effect
-        VariantEffect variantEffect = effects.iterator().next(); 
-
         // guard against the case that the highest-impact effect is neither high nor moderate
         if (variantEffect.getImpact().ordinal() > PutativeImpact.MODERATE.ordinal()) {
              // neither HIGH nor MODERATE
