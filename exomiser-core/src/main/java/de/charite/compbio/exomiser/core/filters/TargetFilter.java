@@ -1,7 +1,10 @@
 package de.charite.compbio.exomiser.core.filters;
 
+import java.lang.*;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.annotation.Annotation;
+
 
 import java.util.EnumSet;
 import java.util.Objects;
@@ -46,10 +49,7 @@ public class TargetFilter implements VariantFilter {
      * INTERGENIC, that we will runFilter out using this class.
      */
     public TargetFilter() {
-        offTargetVariantTypes = EnumSet.of(VariantEffect.UPSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT,
-                VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-                VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.DOWNSTREAM_GENE_VARIANT,
-                VariantEffect.SPLICE_REGION_VARIANT);
+        offTargetVariantTypes = EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.DOWNSTREAM_GENE_VARIANT);
     }
 
     @Override
@@ -60,7 +60,18 @@ public class TargetFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation filterable) {
         VariantEffect effect = filterable.getVariantEffect();
-        if (offTargetVariantTypes.contains(effect)) {
+        // TODO make below nicer using a Jannovar method hopefully 
+        if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
+            Annotation a = filterable.getAnnotationList().getHighestImpactAnnotation();
+            String intergenicAnnotation = a.toVCFAnnoString(filterable.getAlt());
+            //int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14]));            
+            int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14])); 
+            if (dist > 0 && dist < 5000){
+                return passedFilterResult;
+            }
+            return failedFilterResult;
+        }
+        else if (offTargetVariantTypes.contains(effect)) {
             return failedFilterResult;
         }
         return passedFilterResult;
