@@ -161,7 +161,7 @@ public class VariantEvaluationTest {
     
     @Test
     public void testThatTheBuilderCanSetAPathogenicityDataObject() {
-        PathogenicityData pathData = new PathogenicityData(new PolyPhenScore(1.0f), null, null, null);
+        PathogenicityData pathData = new PathogenicityData(new PolyPhenScore(1.0f));
         instance = testVariantBuilder().pathogenicityData(pathData).build();
         assertThat(instance.getPathogenicityData(), equalTo(pathData));
     }

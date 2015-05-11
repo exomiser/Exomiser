@@ -532,7 +532,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private VariantContext variantContext;
         private int altAlleleId;
 
-        private PathogenicityData pathogenicityData = new PathogenicityData(null, null, null, null);
+        private PathogenicityData pathogenicityData = new PathogenicityData();
         //why not set the frequency data too? Well, not having a null implies that
         //the data has been set from the database and if there is no data then 
         //it must be an extremely rare and therefore interesting variant. 

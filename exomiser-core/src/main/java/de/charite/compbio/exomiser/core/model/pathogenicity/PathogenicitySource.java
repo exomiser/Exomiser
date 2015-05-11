@@ -6,12 +6,18 @@
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
 /**
+ * Enum representing the pathogenicity prediction method/database used to
+ * calculate a given score.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface PathogenicityScore extends Comparable<PathogenicityScore> {
-
-    public float getScore();
-
-    public PathogenicitySource getSource();
+public enum PathogenicitySource {
+    //variant type is from Jannovar
+    VARIANT_TYPE,
+    //these guys are calculated from other sources
+    POLYPHEN,
+    MUTATION_TASTER,
+    SIFT,
+    CADD;
+    
 }

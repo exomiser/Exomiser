@@ -14,7 +14,7 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PolyPhenScore extends AbstractPathogenicityScore {
-
+    
     /**
      * Possibly damaging is > 0.446 with Polyphen2 (this is an intermediate
      * category, thus, we are not being extremely strict with the polyphen
@@ -28,7 +28,7 @@ public class PolyPhenScore extends AbstractPathogenicityScore {
     public static final float POLYPHEN_PROB_DAMAGING_THRESHOLD = 0.956f;
 
     public PolyPhenScore(float score) {
-        super(score);
+        super(score, PathogenicitySource.POLYPHEN);
     }
 
     @Override

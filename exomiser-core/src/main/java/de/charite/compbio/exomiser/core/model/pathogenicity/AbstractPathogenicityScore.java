@@ -12,9 +12,11 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
 public class AbstractPathogenicityScore implements PathogenicityScore {
 
     protected final float score;
+    protected final PathogenicitySource source;
 
-    public AbstractPathogenicityScore(float score) {
+    public AbstractPathogenicityScore(float score, PathogenicitySource source) {
         this.score = score;
+        this.source = source;
     }
 
     @Override
@@ -22,6 +24,11 @@ public class AbstractPathogenicityScore implements PathogenicityScore {
         return score;
     }
 
+    @Override
+    public PathogenicitySource getSource() {
+        return source;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 7;

@@ -47,7 +47,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         //the database as we're going to assign it a constant pathogenicity score.
         VariantEffect variantEffect = variant.getVariantEffect();
         if (variantEffect != VariantEffect.MISSENSE_VARIANT) {
-            return new PathogenicityData(null, null, null, null);
+            return new PathogenicityData();
         }
 
         try (
@@ -93,7 +93,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         SiftScore siftScore = null;
         PolyPhenScore polyPhenScore = null;
         MutationTasterScore mutationTasterScore = null;
-        CaddScore caddScore = null;
+
         /* 
          * Switched db back to potentially having multiple rows per variant
          * if alt transcripts leads to diff aa changes and pathogenicities.
@@ -104,10 +104,9 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
             siftScore = getBestSiftScore(rs, siftScore);
             polyPhenScore = getBestPolyPhenScore(rs, polyPhenScore);
             mutationTasterScore = getBestMutationTasterScore(rs, mutationTasterScore);
-//            caddScore = getBestCaddScore(rs, caddScore);
         }
 
-        return new PathogenicityData(polyPhenScore, mutationTasterScore, siftScore, caddScore);
+        return new PathogenicityData(polyPhenScore, mutationTasterScore, siftScore);
 
     }
 

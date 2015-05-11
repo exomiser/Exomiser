@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * on the basis of "medical genetic intuition".
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.09 (29 December, 2012).
  */
 public class PathogenicityFilter implements VariantFilter {

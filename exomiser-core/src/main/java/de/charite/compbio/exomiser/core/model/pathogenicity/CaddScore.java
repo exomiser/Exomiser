@@ -12,9 +12,9 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class CaddScore extends AbstractPathogenicityScore {
-
+        
     public CaddScore(float score) {
-        super(score);
+        super(score, PathogenicitySource.CADD);
     }
 
     @Override
