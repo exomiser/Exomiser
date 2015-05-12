@@ -62,7 +62,7 @@ public class TargetFilter implements VariantFilter {
         VariantEffect effect = filterable.getVariantEffect();
         // TODO make below nicer using a Jannovar method hopefully 
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
-            Annotation a = filterable.getAnnotationList().getHighestImpactAnnotation();
+            Annotation a = filterable.getAnnotations().get(0);//.getHighestImpactAnnotation();
             String intergenicAnnotation = a.toVCFAnnoString(filterable.getAlt());
             //int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14]));            
             int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14])); 
