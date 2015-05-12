@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
-import htsjdk.variant.vcf.VCFHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
@@ -24,15 +23,13 @@ public class ResultsWriterFactory {
     private TemplateEngine templateEngine;
 
     /**
-     * Build {@link ResultsWriter} for the given {@link VCFReader} and {@link OutputFormat}.
+     * Build {@link ResultsWriter} for the given {@link OutputFormat}.
      * 
-     * @param header
-     *            from the input file, to base output header upon
      * @param outputFormat
      *            the format to use for the output
      * @return the constructed {@link ResultsWriter} implementation
      */
-    public ResultsWriter getResultsWriter(VCFHeader header, OutputFormat outputFormat) {
+    public ResultsWriter getResultsWriter(OutputFormat outputFormat) {
         switch (outputFormat){
             case HTML:
                 return new HtmlResultsWriter(templateEngine);
@@ -41,7 +38,7 @@ public class ResultsWriterFactory {
             case TSV_VARIANT:
                 return new TsvVariantResultsWriter();
             case VCF:
-                return new VcfResultsWriter(header);
+                return new VcfResultsWriter();
             case PHENOGRID:
                 return new PhenogridWriter();
             default:
