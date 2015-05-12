@@ -199,7 +199,13 @@ public class FilterFactory {
     }
 
     public GeneFilter getInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-        GeneFilter filter = new InheritanceFilter(modeOfInheritance);
+        GeneFilter filter = new GeneInheritanceFilter(modeOfInheritance);
+        logger.info("Made new: {}", filter);
+        return filter;
+    }
+
+    public GeneFilter getPriorityScoreFilter(float minPriorityScore) {
+        GeneFilter filter = new GenePriorityScoreFilter(minPriorityScore);
         logger.info("Made new: {}", filter);
         return filter;
     }

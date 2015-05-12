@@ -153,7 +153,7 @@ public class FilterFactoryTest {
 
         List<GeneFilter> expResult = new ArrayList<>();
 
-        GeneFilter inheritanceFilter = new InheritanceFilter(modeOfInheritance);
+        GeneFilter inheritanceFilter = new GeneInheritanceFilter(modeOfInheritance);
         expResult.add(inheritanceFilter);
         
                 
@@ -189,9 +189,9 @@ public class FilterFactoryTest {
 
     @Test
     public void testGetQualityFilter() {
-        float quality_threshold = 8f;
-        Filter expResult = new QualityFilter(quality_threshold);
-        Filter result = instance.getQualityFilter(quality_threshold);
+        float qualityThreshold = 8f;
+        Filter expResult = new QualityFilter(qualityThreshold);
+        Filter result = instance.getQualityFilter(qualityThreshold);
         assertThat(result, equalTo(expResult));
     }
 
@@ -220,10 +220,18 @@ public class FilterFactoryTest {
     }
     
     @Test
-    public void testGetInheritanceFilter() {
+    public void testGetGeneInheritanceFilter() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        Filter expFilter = new InheritanceFilter(modeOfInheritance);
+        Filter expFilter = new GeneInheritanceFilter(modeOfInheritance);
         Filter resultFilter = instance.getInheritanceFilter(modeOfInheritance);
+        assertThat(resultFilter, equalTo(expFilter));
+    }
+    
+    @Test
+    public void testGetGenePriorityScoreFilter() {
+        float minPriorityScore = 0.8f;
+        Filter expFilter = new GenePriorityScoreFilter(minPriorityScore);
+        Filter resultFilter = instance.getPriorityScoreFilter(minPriorityScore);
         assertThat(resultFilter, equalTo(expFilter));
     }
     

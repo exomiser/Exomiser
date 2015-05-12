@@ -53,6 +53,7 @@ public class VcfResultsWriterTest {
             + "##FILTER=<ID=INHERITANCE_FILTER,Description=\"Inheritance\">\n"
             + "##FILTER=<ID=INTERVAL_FILTER,Description=\"Interval\">\n"
             + "##FILTER=<ID=PATHOGENICITY_FILTER,Description=\"Pathogenicity\">\n"
+            + "##FILTER=<ID=PRIORITY_SCORE_FILTER,Description=\"Gene priority score\">\n"
             + "##FILTER=<ID=QUALITY_FILTER,Description=\"Quality\">\n"
             + "##FILTER=<ID=TARGET_FILTER,Description=\"Target\">\n"
             + "##INFO=<ID=ANN,Number=1,Type=String,Description=\"Functional annotations:'Allele|Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|Rank|HGVS.c|HGVS.p|cDNA.pos / cDNA.length|CDS.pos / CDS.length|AA.pos / AA.length|Distance|ERRORS / WARNINGS / INFO'\">\n"
