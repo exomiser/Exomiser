@@ -14,11 +14,7 @@ import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
-import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
-import de.charite.compbio.exomiser.core.dao.DiseaseDao;
-import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.*;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
@@ -33,6 +29,8 @@ import de.charite.compbio.jannovar.data.SerializationException;
 
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import de.charite.compbio.jannovar.data.JannovarData;
+import htsjdk.tribble.readers.TabixReader;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -145,6 +143,28 @@ public class MainConfig {
         return hpoAnnotationFilePath;
     }
 
+    @Bean
+    public TabixReader indelTabixReader() {
+        TabixReader inDelTabixReader = null;
+        try {
+             inDelTabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/InDels.tsv.gz");
+        } catch (IOException e) {
+            throw new RuntimeException("You are not Damian. You don't have the file ", e);
+        }
+        return inDelTabixReader;
+    }
+    
+    @Bean
+    public TabixReader snvTabixReader() {
+        TabixReader snvTabixReader = null;
+        try {
+             snvTabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/whole_genome_SNVs.tsv.gz");
+        } catch (IOException e) {
+            throw new RuntimeException("You are not Damian. You don't have the file ", e);
+        }
+        return snvTabixReader;
+    }
+    
     /**
      * This takes a few seconds to de-serialise. Would be better to be eager in
      * a web-app, but lazy on the command-line as then the input parameters can
@@ -205,7 +225,7 @@ public class MainConfig {
 
     @Bean
     public PathogenicityDao pathogenicityDao() {
-        return new TabixPathogenicityDao();
+        return new TabixPathogenicityDao(indelTabixReader(),snvTabixReader());
     }
 
     @Bean
