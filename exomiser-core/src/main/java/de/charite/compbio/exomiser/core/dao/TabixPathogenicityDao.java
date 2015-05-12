@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import htsjdk.tribble.readers.TabixReader;
 
@@ -20,11 +20,20 @@ import org.springframework.stereotype.Repository;
  * @author jj8
  */
 @Repository
-public class TabixPathogenicityDao implements PathogenicityDao {
+public class TabixPathogenicityDao implements PathogenicityDao{
 
     private final Logger logger = LoggerFactory.getLogger(PathogenicityDao.class);
+    private final TabixReader inDelTabixReader;
+    private final TabixReader snvTabixReader;
+    
 
-    public PathogenicityData getPathogenicityData(Variant variant) {
+    public TabixPathogenicityDao(TabixReader inDelTabixReader, TabixReader snvTabixReader) {
+        this.inDelTabixReader = inDelTabixReader;
+        this.snvTabixReader = snvTabixReader;
+    }
+    
+    
+        public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }
 
@@ -53,8 +62,7 @@ public class TabixPathogenicityDao implements PathogenicityDao {
                 
             // indel
             if (ref.equals("-") || alt.equals("-")) {
-                TabixReader tabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/InDels.tsv.gz");
-                TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
+                TabixReader.Iterator results = inDelTabixReader.query(chromosome + ":" + start + "-" + start);
                 while ((line = results.next()) != null) {
                     String[] elements = line.split("\t");
                     // deal with fact that Jannovar represents indels differently
@@ -76,8 +84,7 @@ public class TabixPathogenicityDao implements PathogenicityDao {
                     caddScore = new CaddScore(cadd);
                 }
             } else {// query SNV file
-                TabixReader tabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/whole_genome_SNVs.tsv.gz");
-                TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
+                TabixReader.Iterator results = snvTabixReader.query(chromosome + ":" + start + "-" + start);
                 while ((line = results.next()) != null) {
                     String[] elements = line.split("\t");
                     String caddRef = elements[2];
@@ -92,7 +99,7 @@ public class TabixPathogenicityDao implements PathogenicityDao {
                     caddScore = new CaddScore(cadd);
                 }
             }
-            return new PathogenicityData(null, null, null, caddScore);
+            return new PathogenicityData(caddScore);
 
         } catch (IOException e) {
         }
