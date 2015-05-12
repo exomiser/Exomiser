@@ -24,7 +24,7 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
     private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterRunner.class);
 
     @Autowired
-    private VariantDataService variantEvaluationFactory;
+    private VariantDataService variantDataService;
 
     /**
      *
@@ -84,10 +84,10 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
     private void fetchMissingFrequencyAndPathogenicityData(FilterType filterType, VariantEvaluation variantEvaluation) {
         switch (filterType) {
             case FREQUENCY_FILTER:
-                variantEvaluationFactory.setVariantFrequencyData(variantEvaluation);
+                variantDataService.setVariantFrequencyData(variantEvaluation);
                 break;
             case PATHOGENICITY_FILTER:
-                variantEvaluationFactory.setVariantPathogenicityData(variantEvaluation);
+                variantDataService.setVariantPathogenicityData(variantEvaluation);
                 break;
         }
     }

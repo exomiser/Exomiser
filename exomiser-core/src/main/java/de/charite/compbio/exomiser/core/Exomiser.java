@@ -45,7 +45,7 @@ public class Exomiser {
     @Autowired
     private PriorityFactory priorityFactory;
     @Autowired
-    private VariantDataService variantEvaluationFactory;
+    private VariantDataService variantDataService;
     //TODO: might be better using constructor injection to supply the  VariantDataService to the SparseVariantFilterRunner
     @Autowired
     private SparseVariantFilterRunner sparseVariantFilterRunner;
@@ -95,7 +95,7 @@ public class Exomiser {
     private void setVariantFrequencyAndPathogenicityData(List<VariantEvaluation> variantEvaluations) {
         logger.info("Setting variant frequency and pathogenicity data");
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            variantEvaluationFactory.setVariantFrequencyAndPathogenicityData(variantEvaluation);
+            variantDataService.setVariantFrequencyAndPathogenicityData(variantEvaluation);
         }
     }
 
