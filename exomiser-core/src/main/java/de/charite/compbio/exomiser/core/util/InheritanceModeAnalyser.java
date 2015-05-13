@@ -40,19 +40,14 @@ public class InheritanceModeAnalyser {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
-    private final Pedigree pedigree;
-
-    public InheritanceModeAnalyser(Pedigree pedigree) {
-        this.pedigree = pedigree;
-    }
-
     /**
      * Analyses the inheritance modes for a gene according to the 
      * @param gene
+     * @param pedigree
      * @return a Set of inheritance modes with which the gene is compatible with.
      */
-    public Set<ModeOfInheritance> analyseInheritanceModesForGene(Gene gene) {
-        return analyseInheritanceModes(gene.getPassedVariantEvaluations());
+    public Set<ModeOfInheritance> analyseInheritanceModesForGene(Gene gene, Pedigree pedigree) {
+        return analyseInheritanceModes(gene.getPassedVariantEvaluations(), pedigree);
     }
 
     /**
@@ -60,15 +55,15 @@ public class InheritanceModeAnalyser {
      * @param variantEvaluations
      * @return 
      */
-    protected Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations) {
+    private Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations, Pedigree pedigree) {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         
-        inheritanceModes.addAll(analyseInheritanceModesForVariants(variantEvaluations));
+        inheritanceModes.addAll(analyseInheritanceModesForVariants(variantEvaluations, pedigree));
       
         return inheritanceModes;
     }
 
-    private Set<ModeOfInheritance> analyseInheritanceModesForVariants(List<VariantEvaluation> variants) {
+    private Set<ModeOfInheritance> analyseInheritanceModesForVariants(List<VariantEvaluation> variants, Pedigree pedigree) {
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
            
         Variant firstVariant = variants.get(0);
