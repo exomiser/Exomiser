@@ -118,7 +118,7 @@ public class Exomiser {
         Pedigree pedigree = sampleData.getPedigree();
         for (Gene gene : sampleData.getGenes()) {
             if (gene.passedFilters()) {
-                gene.setInheritanceModes(inheritanceModeAnalyser.analyseInheritanceModesForGene(gene, pedigree));
+                gene.setInheritanceModes(inheritanceModeAnalyser.analyseInheritanceModes(gene, pedigree));
             }
         }
     }

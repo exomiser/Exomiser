@@ -14,10 +14,8 @@ import de.charite.compbio.jannovar.pedigree.GenotypeListBuilder;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.PedigreeDiseaseCompatibilityDecorator;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
 import htsjdk.variant.variantcontext.Allele;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -46,26 +44,19 @@ public class InheritanceModeAnalyser {
      * @param pedigree
      * @return a Set of inheritance modes with which the gene is compatible with.
      */
-    public Set<ModeOfInheritance> analyseInheritanceModesForGene(Gene gene, Pedigree pedigree) {
+    public Set<ModeOfInheritance> analyseInheritanceModes(Gene gene, Pedigree pedigree) {
         return analyseInheritanceModes(gene.getPassedVariantEvaluations(), pedigree);
     }
 
     /**
-     * Caution - this only really works if 
+     * Analyses the inheritance modes for the variants from a gene.
+     * 
      * @param variantEvaluations
      * @return 
      */
-    private Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variantEvaluations, Pedigree pedigree) {
+    private Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variants, Pedigree pedigree) {           
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         
-        inheritanceModes.addAll(analyseInheritanceModesForVariants(variantEvaluations, pedigree));
-      
-        return inheritanceModes;
-    }
-
-    private Set<ModeOfInheritance> analyseInheritanceModesForVariants(List<VariantEvaluation> variants, Pedigree pedigree) {
-        Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-           
         Variant firstVariant = variants.get(0);
         // Build list of genotypes from the given variants.
         String geneID = firstVariant.getGeneSymbol();
