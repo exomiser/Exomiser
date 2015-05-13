@@ -78,14 +78,14 @@ public class Exomiser {
 
     private void runVariantFilters(List<VariantFilter> variantFilters, ExomiserSettings exomiserSettings, SampleData sampleData) {
         logger.info("FILTERING VARIANTS");
-        FilterRunner variantFilterRunner = prepareFilterRunner(exomiserSettings, sampleData);
+        FilterRunner variantFilterRunner = prepareFilterRunner(exomiserSettings.runFullAnalysis(), sampleData.getVariantEvaluations());
         variantFilterRunner.run(variantFilters, sampleData.getVariantEvaluations());
     }
 
-    private FilterRunner prepareFilterRunner(ExomiserSettings exomiserSettings, SampleData sampleData) {
+    private FilterRunner prepareFilterRunner(boolean runFullAnaylysis, List<VariantEvaluation> variantEvaluations) {
         FilterRunner variantFilterRunner = new SimpleVariantFilterRunner();
-        if (exomiserSettings.runFullAnalysis()) {
-            setVariantFrequencyAndPathogenicityData(sampleData.getVariantEvaluations());
+        if (runFullAnaylysis) {
+            setVariantFrequencyAndPathogenicityData(variantEvaluations);
         } else {
             //the sparseVariantFilterer will handle getting data when it needs it.
             variantFilterRunner = sparseVariantFilterRunner;
