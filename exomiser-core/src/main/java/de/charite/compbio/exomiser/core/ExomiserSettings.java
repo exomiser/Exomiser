@@ -93,7 +93,7 @@ public class ExomiserSettings {
     public static final String EXOMISER2_PARAMS_OPTION = "hiphive-params";
 
     //PRIORITISER variables
-    private final PriorityType prioritiserType;  //required, no default
+    private final PriorityType prioritiserType;  //default is NONE
     //candidate-gene (command-line was: candidate_gene, refered to variable: candidateGene)
     private final String candidateGene;
     //inheritance-mode (command-line was: inheritance, refered to variable: inheritanceMode)
@@ -143,9 +143,6 @@ public class ExomiserSettings {
         //ANALYSIS options
         private boolean runFullAnalysis = false;
 
-        //PRIORITISER
-        private PriorityType prioritiserType = PriorityType.NONE;
-
         //FILTER options
         private float maximumFrequency = 100.00f;
         private float minimumQuality = 0;
@@ -154,6 +151,9 @@ public class ExomiserSettings {
         private boolean removeKnownVariants = false;
         private boolean keepOffTargetVariants = false;
         private Set<Integer> geneIdsToKeep = new LinkedHashSet();
+
+        //PRIORITISER
+        private PriorityType prioritiserType = PriorityType.NONE;
 
         //PRIORITISER options
         private String candidateGene = "";
@@ -290,7 +290,7 @@ public class ExomiserSettings {
             outputPassVariantsOnly = value;
             return this;
         }
-        
+
         @JsonSetter(NUM_GENES_OPTION)
         public SettingsBuilder numberOfGenesToShow(int value) {
             numberOfGenesToShow = value;
@@ -316,7 +316,28 @@ public class ExomiserSettings {
         }
 
         public ExomiserSettings build() {
+            if (outputPrefix.isEmpty() && vcfFilePath != null) {
+                outputPrefix = generateDefaultOutputPrefix(vcfFilePath, buildVersion);
+            }
             return new ExomiserSettings(this);
+        }
+
+        /**
+         * The default output name is set to the vcf file name (minus the full
+         * path), unless the filename is explicitly set by the user.
+         *
+         * @param vcfFilePath
+         */
+        private String generateDefaultOutputPrefix(Path vcfFilePath, String buildVersion) {
+            String defaultOutputPrefix;
+            Path vcfFilename = vcfFilePath.getFileName();
+            if (buildVersion.isEmpty()) {
+                defaultOutputPrefix = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilename);
+            } else {
+                defaultOutputPrefix = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilename, buildVersion);
+            }
+            logger.debug("Output prefix was unspecified. Now set to: {}", defaultOutputPrefix);
+            return defaultOutputPrefix;
         }
     }
 
@@ -359,33 +380,10 @@ public class ExomiserSettings {
         //OUTPUT options
         outputPassVariantsOnly = builder.outputPassVariantsOnly;
         numberOfGenesToShow = builder.numberOfGenesToShow;
-        if (builder.outputPrefix.isEmpty() && builder.vcfFilePath != null) {
-            outputPrefix = generateDefaultOutputPrefix(builder.vcfFilePath, builder.buildVersion);
-        } else {
-            //here the user has explicitly set a path for where and what they want the output file to be called.
-            outputPrefix = builder.outputPrefix;
-        }
+        outputPrefix = builder.outputPrefix;
         outputFormats = builder.outputFormats;
 
         diseaseGeneFamilyName = builder.diseaseGeneFamilyName;
-    }
-
-    /**
-     * The default output name is set to the vcf file name (minus the full
-     * path), unless the filename is explicitly set by the user.
-     *
-     * @param vcfFilePath
-     */
-    private String generateDefaultOutputPrefix(Path vcfFilePath, String buildVersion) {
-        String defaultOutputPrefix;
-        Path vcfFilename = vcfFilePath.getFileName();
-        if (buildVersion.isEmpty()) {
-            defaultOutputPrefix = String.format("%s/%s-exomiser-results", DEFAULT_OUTPUT_DIR, vcfFilename);
-        } else {
-            defaultOutputPrefix = String.format("%s/%s-exomiser-%s-results", DEFAULT_OUTPUT_DIR, vcfFilename, buildVersion);
-        }
-        logger.debug("Output prefix was unspecified. Now set to: {}", defaultOutputPrefix);
-        return defaultOutputPrefix;
     }
 
     @JsonIgnore
@@ -492,7 +490,7 @@ public class ExomiserSettings {
     public boolean outputPassVariantsOnly() {
         return outputPassVariantsOnly;
     }
-    
+
     @JsonProperty(NUM_GENES_OPTION)
     public int getNumberOfGenesToShow() {
         return numberOfGenesToShow;

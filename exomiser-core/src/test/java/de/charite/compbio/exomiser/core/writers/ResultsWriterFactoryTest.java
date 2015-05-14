@@ -3,16 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.writers;
 
-import htsjdk.variant.vcf.VCFHeader;
-import de.charite.compbio.exomiser.core.writers.ResultsWriter;
-import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
-import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.TsvGeneResultsWriter;
-import de.charite.compbio.exomiser.core.writers.HtmlResultsWriter;
-import de.charite.compbio.exomiser.core.writers.VcfResultsWriter;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
@@ -23,7 +15,7 @@ import org.junit.Test;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class ResultsWriterFactoryTest {
-    
+
     private ResultsWriterFactory instance;
 
     public ResultsWriterFactoryTest() {
@@ -36,27 +28,38 @@ public class ResultsWriterFactoryTest {
 
     @Test
     public void testGetHtmlResultsWriter() {
-        VCFHeader header = null;
         OutputFormat outputFormat = OutputFormat.HTML;
-        ResultsWriter result = instance.getResultsWriter(header, outputFormat);
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(HtmlResultsWriter.class));
 
     }
-    
+
     @Test
-    public void testGetTsvlResultsWriter() {
-        VCFHeader header = null;
+    public void testGetTsvGeneResults() {
         OutputFormat outputFormat = OutputFormat.TSV_GENE;
-        ResultsWriter result = instance.getResultsWriter(header, outputFormat);
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(TsvGeneResultsWriter.class));
     }
-    
+
+    @Test
+    public void testGetTsvVariantResultsWriter() {
+        OutputFormat outputFormat = OutputFormat.TSV_VARIANT;
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        assertThat(result, instanceOf(TsvVariantResultsWriter.class));
+    }
+
     @Test
     public void testGetVcfResultsWriter() {
-        VCFHeader header = null;
         OutputFormat outputFormat = OutputFormat.VCF;
-        ResultsWriter result = instance.getResultsWriter(header, outputFormat);
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
         assertThat(result, instanceOf(VcfResultsWriter.class));
     }
-    
+
+    @Test
+    public void testGetPhenoGridResultsWriter() {
+        OutputFormat outputFormat = OutputFormat.PHENOGRID;
+        ResultsWriter result = instance.getResultsWriter(outputFormat);
+        assertThat(result, instanceOf(PhenogridWriter.class));
+    }
+
 }

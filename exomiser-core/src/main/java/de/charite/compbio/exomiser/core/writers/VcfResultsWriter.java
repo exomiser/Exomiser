@@ -46,21 +46,14 @@ public class VcfResultsWriter implements ResultsWriter {
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.VCF;
 
     /**
-     * The original {@link VCFHeader} that of the input file, used to base
-     * output VCF header on.
-     */
-    private final VCFHeader vcfHeader;
-
-    /**
      * Initialize the object, given the original {@link VCFFileReader} from the
      * input.
      *
      * @param vcfHeader original {@link VCFHeader} from the input, used for
      * generating the output header
      */
-    public VcfResultsWriter(VCFHeader vcfHeader) {
+    public VcfResultsWriter() {
         Locale.setDefault(Locale.UK);
-        this.vcfHeader = vcfHeader;
     }
 
     @Override
@@ -68,10 +61,10 @@ public class VcfResultsWriter implements ResultsWriter {
         // create a VariantContextWriter writing to the output file path
         String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
-        VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader,
-                outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines());
-        writeData(settings, sampleData, writer);
-        writer.close();
+        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
+                outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines())) {
+            writeData(settings, sampleData, writer);
+        }
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
     }
 
@@ -79,10 +72,10 @@ public class VcfResultsWriter implements ResultsWriter {
     public String writeString(SampleData sampleData, ExomiserSettings settings) {
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(vcfHeader, baos,
-                InfoFields.BOTH, getAdditionalHeaderLines());
-        writeData(settings, sampleData, writer);
-        writer.close();
+        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(), baos,
+                InfoFields.BOTH, getAdditionalHeaderLines())) {
+            writeData(settings, sampleData, writer);
+        }
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
