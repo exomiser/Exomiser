@@ -48,7 +48,7 @@ public class Main {
 
     private static String buildVersion;
     private static String buildTimestamp;
-        
+    
     public static void main(String[] args) {
 
         setup();
@@ -165,20 +165,24 @@ public class Main {
             logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);    
         }
        
+        return buildAndVerifySampleSettings(settingsBuilders);      
+    }
+
+    private static List<ExomiserSettings> buildAndVerifySampleSettings(List<SettingsBuilder> settingsBuilders) {
         List<ExomiserSettings> sampleSettings = new ArrayList<>();
-
         for (SettingsBuilder settingsBuilder : settingsBuilders) {
-            settingsBuilder.buildVersion(buildVersion);
-            settingsBuilder.buildTimestamp(buildTimestamp);
-
-            ExomiserSettings exomiserSettings = settingsBuilder.build();
-
+            ExomiserSettings exomiserSettings = addVersionAndTimestamp(settingsBuilder).build();
             if (exomiserSettings.isValid()) {
                 sampleSettings.add(exomiserSettings);
             }
         }
-        
         return sampleSettings;
+    }
+
+    private static SettingsBuilder addVersionAndTimestamp(SettingsBuilder settingsBuilder) {
+        settingsBuilder.buildVersion(buildVersion);
+        settingsBuilder.buildTimestamp(buildTimestamp);
+        return settingsBuilder;
     }
 
     private static void printHelp() {
