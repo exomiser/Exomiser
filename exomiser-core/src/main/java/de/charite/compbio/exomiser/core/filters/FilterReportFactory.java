@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -173,28 +174,35 @@ public class FilterReportFactory {
      * @return 
      */
     private FilterReport makeDefaultVariantFilterReport(FilterType filterType, List<VariantEvaluation> variantEvaluations) {
-        int passed = 0;
+        int passed = countVariantsPassingFilter(variantEvaluations, filterType);
+        int failed = variantEvaluations.size() - passed;
+        return new FilterReport(filterType, passed, failed);
+    }
 
+    private int countVariantsPassingFilter(List<VariantEvaluation> variantEvaluations, FilterType filterType) {
+        int passed = 0;
         for (VariantEvaluation ve : variantEvaluations) {
             if (ve.passedFilter(filterType)) {
                 passed++;
             }
         }
-        
-        int failed = variantEvaluations.size() - passed;
-        return new FilterReport(filterType, passed, failed);
+        return passed;
     }
     
     private FilterReport makeDefaultGeneFilterReport(FilterType filterType, List<Gene> genes) {
-        int passed = 0;
-
-        for (Gene gene : genes) {
-            if (gene.passedFilter(filterType)) {
-                passed++;
-            }
-        }
-        
+        int passed = countGenesPassingFilter(genes, filterType);
         int failed = genes.size() - passed;
         return new FilterReport(filterType, passed, failed);
     }
+
+    private int countGenesPassingFilter(List<Gene> genes, FilterType filterType) {
+        int passed = 0;
+        for (Filterable filterable : genes) {
+            if (filterable.passedFilter(filterType)) {
+                passed++;
+            }
+        }
+        return passed;
+    }
+
 }
