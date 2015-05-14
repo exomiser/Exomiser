@@ -358,6 +358,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @param filterResult
      * @return
      */
+    @Override
     public boolean addFilterResult(FilterResult filterResult) {
         reCalculateVariantScore(filterResult);
 
