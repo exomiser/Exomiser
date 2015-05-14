@@ -7,7 +7,9 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,29 +51,33 @@ public class SimpleVariantFilterRunner implements FilterRunner<VariantEvaluation
         }
 
         public List<VariantEvaluation> usingSimpleFiltering() {
-            logger.info("Filtering {} variants using non-destructive simple filtering", variantEvaluations.size());
-            for (VariantEvaluation variantEvaluation : variantEvaluations) {
-                runAllFiltersOverVariantEvaluation(variantFilters, variantEvaluation);
-            }
-            return variantEvaluations;
+            return new SimpleVariantFilterRunner().run(variantFilters, variantEvaluations);
         }
-
     }
 
     @Override
     public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
-        logger.info("Filtering {} variants using non-destructive simple filtering", variantEvaluations.size());
+        logger.info("Filtering {} variants using non-destructive simple filtering...", variantEvaluations.size());
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             runAllFiltersOverVariantEvaluation(variantFilters, variantEvaluation);
         }
+        logger.info("Ran {} filters over {} variants using non-destructive simple filtering.", getFilterTypes(variantFilters), variantEvaluations.size());
         return variantEvaluations;
     }
     
-    private static void runAllFiltersOverVariantEvaluation(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
+    private void runAllFiltersOverVariantEvaluation(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
         for (VariantFilter filter : variantFilters) {
             FilterResult filterResult = filter.runFilter(variantEvaluation);
             variantEvaluation.addFilterResult(filterResult);
         }
     }
 
+    private Set<FilterType> getFilterTypes(List<VariantFilter> filters) {
+        Set<FilterType> filtersRun = new LinkedHashSet<>();
+        for (Filter filter : filters) {
+            filtersRun.add(filter.getFilterType());
+        }
+        return filtersRun;
+    }
+    
 }
