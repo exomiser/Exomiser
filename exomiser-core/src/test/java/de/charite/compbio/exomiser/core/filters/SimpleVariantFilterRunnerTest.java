@@ -42,13 +42,8 @@ public class SimpleVariantFilterRunnerTest {
     private VariantEvaluation passesQualityFrequencyFilter;
     private VariantEvaluation passesTargetQualityFilter;
 
-    @Mock
-    private FrequencyDao frequencyDao;
-
     @Before
     public void setUp() {
-
-        Mockito.when(frequencyDao.getFrequencyData(null)).thenReturn(null);
 
         passesAllFilters = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         failsAllFilters = new VariantEvaluation.VariantBuilder(1, 2, "A", "T").build();
