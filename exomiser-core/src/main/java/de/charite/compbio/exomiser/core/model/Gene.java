@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.model;
 
 import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -53,6 +54,7 @@ public class Gene implements Comparable<Gene>, Filterable {
     private final List<VariantEvaluation> variantEvaluations;
 
     private final Set<FilterType> failedFilterTypes;
+    private Map<FilterType, FilterResult> passedFilterResultsMap;
 
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
@@ -92,6 +94,7 @@ public class Gene implements Comparable<Gene>, Filterable {
         variantEvaluations = new ArrayList();
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         failedFilterTypes = EnumSet.noneOf(FilterType.class);
+        passedFilterResultsMap = new LinkedHashMap<>();
         priorityResultsMap = new LinkedHashMap();
     }
 
@@ -138,17 +141,6 @@ public class Gene implements Comparable<Gene>, Filterable {
 //         */
 //
 //    }
-    /**
-     * @return the nth {@link jannovar.exome.Variant Variant} object for this
-     * gene.
-     */
-    public VariantEvaluation getNthVariant(int n) {
-        if (n >= this.variantEvaluations.size()) {
-            return null;
-        } else {
-            return this.variantEvaluations.get(n);
-        }
-    }
 
     /**
      * This function adds additional variants to the current gene. The variants
@@ -342,38 +334,19 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
-     * Sort this gene based on priority and filter score. This function
-     * satisfies the Interface {@code Comparable}.
-     *
-     * @param other
-     */
-    @Override
-    public int compareTo(Gene other) {
-        float me = combinedScore;
-        float you = other.combinedScore;
-        if (me < you) {
-            return 1;
-        }
-        if (me > you) {
-            return -1;
-        }
-        //if the scores are equal then return an alphabeticised list
-        if (me == you) {
-            return geneSymbol.compareTo(other.geneSymbol);
-        }
-        return 0;
-    }
-
-    /**
      * Returns true if the gene has passed all filters and at least one Variant
      * associated with the Gene has also passed all filters. Will also return
      * true if the gene has no variants associated with it.
      */
     @Override
     public boolean passedFilters() {
-        if (variantEvaluations.isEmpty() && failedFilterTypes.isEmpty()) {
+        if (failedFilterTypes.isEmpty() && variantEvaluations.isEmpty()) {
             return true;
         }
+        return failedFilterTypes.isEmpty() && atLeastOneVariantPassedFilters();
+    }
+
+    private boolean atLeastOneVariantPassedFilters() {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilters()) {
                 return true;
@@ -384,10 +357,13 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-        //TODO: failedFilterTypes isn't actually written to....
-        if (failedFilterTypes.contains(filterType)) {
-            return false;
+        if (!failedFilterTypes.contains(filterType) && passedFilterResultsMap.containsKey(filterType)) {
+            return true;
         }
+        return atLeastOneVariantPassedFilter(filterType);
+    }
+
+    private boolean atLeastOneVariantPassedFilter(FilterType filterType) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilter(filterType)) {
                 return true;
@@ -398,8 +374,20 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
-        //currently non-functional
+        if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
+            return addPassedFilterResult(filterResult);
+        }
+        return addFailedFilterResult(filterResult);
+    }
+
+    private boolean addPassedFilterResult(FilterResult filterResult) {
+        passedFilterResultsMap.put(filterResult.getFilterType(), filterResult);
         return true;
+    }
+
+    private boolean addFailedFilterResult(FilterResult filterResult) {
+        failedFilterTypes.add(filterResult.getFilterType());
+        return false;
     }
 
     @Override
@@ -427,6 +415,30 @@ public class Gene implements Comparable<Gene>, Filterable {
         }
         return true;
     }
+
+    /**
+     * Sort this gene based on priority and filter score. This function
+     * satisfies the Interface {@code Comparable}.
+     *
+     * @param other
+     */
+    @Override
+    public int compareTo(Gene other) {
+        float me = combinedScore;
+        float you = other.combinedScore;
+        if (me < you) {
+            return 1;
+        }
+        if (me > you) {
+            return -1;
+        }
+        //if the scores are equal then return an alphabeticised list
+        if (me == you) {
+            return geneSymbol.compareTo(other.geneSymbol);
+        }
+        return 0;
+    }
+
 
     @Override
     public String toString() {

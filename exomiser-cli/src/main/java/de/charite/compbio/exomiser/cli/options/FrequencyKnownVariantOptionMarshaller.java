@@ -20,7 +20,7 @@ public class FrequencyKnownVariantOptionMarshaller extends AbstractOptionMarshal
                 .hasOptionalArg()
                 .withType(Boolean.class)
                 .withArgName("true/false")
-                .withDescription("Filter out all variants with an entry in dbSNP/ESP (regardless of frequency).")
+                .withDescription("Filter out all variants with an entry in dbSNP/ESP/ExAC (regardless of frequency).")
                 .withLongOpt(REMOVE_KNOWN_VARIANTS_OPTION) 
                 .create();
     }

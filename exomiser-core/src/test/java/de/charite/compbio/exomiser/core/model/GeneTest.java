@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.model;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
+import de.charite.compbio.exomiser.core.filters.InheritanceFilterResult;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
@@ -44,40 +45,35 @@ public class GeneTest {
     private static final String GENE2_SYMBOL = "GENE2";
     private static final int GENE2_ENTREZ_GENE_ID = 654321;
 
-    private static final Integer QUALITY = 2;
-    private static final Integer READ_DEPTH = 6;
-    private static final Genotype HETEROZYGOUS = Genotype.HETEROZYGOUS;
-    
-    private VariantEvaluation variantEvaluation1Gene1;    
-    private VariantEvaluation variantEvaluation2Gene1;
-    private VariantEvaluation variantEvaluationGene2;
+    private VariantEvaluation variantEvaluation1;
+    private VariantEvaluation variantEvaluation2;
 
-    private static final FilterResult PASS_TARGET_FILTER_RESULT = new TargetFilterResult(1f, FilterResultStatus.PASS);
-    private static final FilterResult FAIL_FREQUENCY_FILTER_RESULT = new FrequencyFilterResult(0.0f, FilterResultStatus.FAIL);
+    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new FrequencyFilterResult(1f, FilterResultStatus.PASS);
+    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FrequencyFilterResult(0f, FilterResultStatus.FAIL);
+    //there's nothing really magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
+    //their type is mostly used for reporting which filter was passed or failed and getting the score. 
+    private static final FilterResult PASS_GENE_FILTER_RESULT = new InheritanceFilterResult(1f, FilterResultStatus.PASS);
+    private static final FilterResult FAIL_GENE_FILTER_RESULT = new InheritanceFilterResult(0f, FilterResultStatus.FAIL);
 
     @Before
     public void setUp() {
         // variant1 is the first one in in FGFR2 gene
-        variantEvaluation1Gene1 = new VariantEvaluation.VariantBuilder(10, 123353320, "C", "G")
-                .geneId(GENE1_ENTREZ_GENE_ID)
-                .geneSymbol(GENE1_SYMBOL).build();
+        variantEvaluation1 = new VariantEvaluation.VariantBuilder(10, 123353320, "C", "G").build();
         // variant2 is the second one in in FGFR2 gene
-        variantEvaluation2Gene1 = new VariantEvaluation.VariantBuilder(10, 123353325, "T", "A").build();
-        // variant3 is the first one in in SHH gene
-        variantEvaluationGene2 = new VariantEvaluation.VariantBuilder(7, 155604806, "T", "A").build();
-        
-        instance = new Gene(variantEvaluation1Gene1.getGeneSymbol(), variantEvaluation1Gene1.getEntrezGeneId());
+        variantEvaluation2 = new VariantEvaluation.VariantBuilder(10, 123353325, "T", "A").build();
+
+        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
     }
 
     @Test
     public void testConstructorSetsInstanceVariables() {
-        instance.addVariant(variantEvaluation1Gene1);
+        instance.addVariant(variantEvaluation1);
 
         List<VariantEvaluation> expectedVariantEvaluations = new ArrayList<>();
-        expectedVariantEvaluations.add(variantEvaluation1Gene1);
+        expectedVariantEvaluations.add(variantEvaluation1);
 
-        assertThat(instance.getGeneSymbol(), equalTo(variantEvaluation1Gene1.getGeneSymbol()));
-        assertThat(instance.getEntrezGeneID(), equalTo(variantEvaluation1Gene1.getEntrezGeneId()));
+        assertThat(instance.getGeneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
         assertThat(instance.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
 
         assertThat(instance.passedFilters(), is(true));
@@ -131,66 +127,131 @@ public class GeneTest {
     }
 
     @Test
-    public void testPassesFiltersWhenNoFiltersHaveBeenApplied() {
+    public void testPassesFilters_TrueWhenNoFiltersHaveBeenApplied() {
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
-    public void testPassesFiltersWhenVariantPassesFilter() {
-        variantEvaluation1Gene1.addFilterResult(PASS_TARGET_FILTER_RESULT);
-        instance.addVariant(variantEvaluation1Gene1);
+    public void testPassedFilters_TrueWhenPassesGeneFilterOnly() {
+        instance.addFilterResult(PASS_GENE_FILTER_RESULT);
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
-    public void testPassesFiltersWhenAtLeastOneVariantPassesFilter() {
-        variantEvaluation1Gene1.addFilterResult(PASS_TARGET_FILTER_RESULT);
-        instance.addVariant(variantEvaluation1Gene1);
+    public void testPassedFilters_FalseWhenFailsGeneFilterOnly() {
+        instance.addFilterResult(FAIL_GENE_FILTER_RESULT);
+        assertThat(instance.passedFilters(), is(false));
+    }
 
-        variantEvaluation2Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
-        instance.addVariant(variantEvaluationGene2);
+    @Test
+    public void testPassedFilters_TrueWhenPassesGeneAndVariantFilters() {
+        instance.addFilterResult(PASS_GENE_FILTER_RESULT);
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        assertThat(instance.passedFilters(), is(true));
+    }
+
+    @Test
+    public void testPassedFilters_FalseWhenFailsGeneFilterButPassesVariantFilter() {
+        instance.addFilterResult(FAIL_GENE_FILTER_RESULT);
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        assertThat(instance.passedFilters(), is(false));
+    }
+
+    @Test
+    public void testPassedFilters_FalseWhenPassesGeneFilterButFailsVariantFilters() {
+        instance.addFilterResult(PASS_GENE_FILTER_RESULT);
+        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        assertThat(instance.passedFilters(), is(false));
+    }
+
+    @Test
+    public void testPassedFilters_TrueWhenPassesGeneFilterAndAtLeastOneVariantFilter() {
+        instance.addFilterResult(PASS_GENE_FILTER_RESULT);
+        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        variantEvaluation2.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation2);
+        assertThat(instance.passedFilters(), is(true));
+    }
+
+    @Test 
+    public void testPassedFilter_TrueWhenGenePassesAndVariantsFailFilterOfThatType() {
+        instance.addFilterResult(PASS_GENE_FILTER_RESULT);
+        variantEvaluation1.addFilterResult(FAIL_GENE_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        assertThat(instance.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
+    }
+    
+    @Test 
+    public void testPassedFilter_TrueWhenGeneUnfilteredAndVariantPassesFilterOfThatType() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
+    }
+    
+    @Test 
+    public void testPassedFilter_FalseWhenGeneUnfilteredAndVariantsFailFilterOfThatType() {
+        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        assertThat(instance.passedFilter(FAIL_VARIANT_FILTER_RESULT.getFilterType()), is(false));
+    }
+    
+    @Test 
+    public void testPassedFilter_TrueWhenGeneUnfilteredAndAtLeastOneVariantPassesFilterOfThatType() {
+        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        variantEvaluation2.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation2);
+        assertThat(instance.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
+    }
+
+    @Test
+    public void testPassesFilters_TrueWhenVariantPassesFilter() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+        assertThat(instance.passedFilters(), is(true));
+    }
+
+    @Test
+    public void testPassesFilters_TrueWhenAtLeastOneVariantPassesFilter() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
+
+        variantEvaluation2.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation2);
 
         assertThat(instance.passedFilters(), is(true));
     }
 
     @Test
-    public void testPassesFiltersWhenVariantFailsFilter() {
-        variantEvaluation1Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
-        instance.addVariant(variantEvaluation1Gene1);
+    public void testPassesFilters_FalseWhenVariantFailsFilter() {
+        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
         assertThat(instance.passedFilters(), is(false));
     }
 
     @Test
     public void testGetPassedVariantEvaluationsIsEmptyWhenVariantFailsFilter() {
-        variantEvaluation1Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
-        instance.addVariant(variantEvaluation1Gene1);
+        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
         assertThat(instance.getPassedVariantEvaluations().isEmpty(), is(true));
     }
 
     @Test
     public void testGetPassedVariantEvaluations() {
-        variantEvaluation1Gene1.addFilterResult(PASS_TARGET_FILTER_RESULT);
-        instance.addVariant(variantEvaluation1Gene1);
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation1);
 
-        variantEvaluation2Gene1.addFilterResult(FAIL_FREQUENCY_FILTER_RESULT);
-        instance.addVariant(variantEvaluation2Gene1);
+        variantEvaluation2.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+        instance.addVariant(variantEvaluation2);
 
         List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
-        passedVariantEvaluations.add(variantEvaluation1Gene1);
+        passedVariantEvaluations.add(variantEvaluation1);
 
         assertThat(instance.getPassedVariantEvaluations(), equalTo(passedVariantEvaluations));
-    }
-
-    @Test
-    public void testGetNthVariant() {
-        instance.addVariant(variantEvaluation1Gene1);
-        instance.addVariant(variantEvaluation2Gene1);
-        assertThat(instance.getNthVariant(1), equalTo(variantEvaluation2Gene1));
-    }
-
-    @Test
-    public void testGetNthVariantWhenAskingForElementPastEndOfArray() {
-        assertThat(instance.getNthVariant(1000), equalTo(null));
     }
 
     @Test
@@ -275,12 +336,12 @@ public class GeneTest {
         assertThat(instance.isConsistentWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(true));
     }
-    
+
     @Test
     public void testIsCompatibleWithX_falseWhenVariantsIsEmpty() {
         instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
         assertThat(instance.isXChromosomal(), is(false));
-    }        
+    }
 
     @Test
     public void testIsCompatibleWithX_falseWhenVariantIsNotCompatibleWithX() {
@@ -288,7 +349,7 @@ public class GeneTest {
         instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(false));
     }
-    
+
     @Test
     public void testIsCompatibleWithX_trueWhenVariantIsCompatibleWithX() {
         int X_CHROMOSOME = 23;
@@ -296,12 +357,12 @@ public class GeneTest {
         instance.addVariant(new VariantEvaluation.VariantBuilder(X_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(true));
     }
-    
+
     @Test
     public void testIsCompatibleWithY_falseWhenVariantsIsEmpty() {
         instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
         assertThat(instance.isYChromosomal(), is(false));
-    }        
+    }
 
     @Test
     public void testIsCompatibleWithY_falseWhenVariantIsNotCompatibleWithX() {
@@ -309,7 +370,7 @@ public class GeneTest {
         instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(false));
     }
-    
+
     @Test
     public void testIsCompatibleWithY_trueWhenVariantIsCompatibleWithX() {
         int Y_CHROMOSOME = 24;
@@ -317,24 +378,24 @@ public class GeneTest {
         instance.addVariant(new VariantEvaluation.VariantBuilder(Y_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(true));
     }
-    
+
     @Test
     public void testCanSetAndChangePriorityScore() {
         float firstScore = 0f;
         instance.setPriorityScore(firstScore);
         assertThat(instance.getPriorityScore(), equalTo(firstScore));
-        
+
         float secondScore = 1.0f;
         instance.setPriorityScore(secondScore);
         assertThat(instance.getPriorityScore(), equalTo(secondScore));
     }
-    
+
     @Test
     public void testCanSetAndChangeFilterScore() {
         float firstScore = 0f;
         instance.setFilterScore(firstScore);
         assertThat(instance.getFilterScore(), equalTo(firstScore));
-        
+
         float secondScore = 1.0f;
         instance.setFilterScore(secondScore);
         assertThat(instance.getFilterScore(), equalTo(secondScore));

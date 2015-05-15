@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
@@ -115,7 +114,7 @@ public class VcfResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputPrefix("testWrite").build();
 
-        instance = new VcfResultsWriter(reader.getFileHeader());
+        instance = new VcfResultsWriter();
 
         setUpModel();
     }
@@ -123,7 +122,8 @@ public class VcfResultsWriterTest {
     private void setUpModel() {
         sampleData = new SampleData();
         sampleData.setGenes(new ArrayList<Gene>());
-
+        sampleData.setVcfHeader(reader.getFileHeader());
+        
         TestVariantFactory varFactory = new TestVariantFactory();
 
         passTargetResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
