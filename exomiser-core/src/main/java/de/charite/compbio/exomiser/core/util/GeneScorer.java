@@ -78,7 +78,7 @@ public class GeneScorer {
         logger.info("Scoring genes");
         for (Gene gene : geneList) {
             float filterScore = setGeneFilterScore(gene, modeOfInheritance);
-            float priorityScore = setGenePriorityScore(gene);
+            float priorityScore = gene.getPriorityScore(); //setGenePriorityScore(gene);
             setGeneCombinedScore(filterScore, priorityScore, gene);
         }
     }
@@ -120,28 +120,28 @@ public class GeneScorer {
         return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
     }
 
-    private static float setGenePriorityScore(Gene gene) {
-        if (gene.getPriorityResults().isEmpty()) {
-            return 0f;
-        }
-        float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
-        gene.setPriorityScore(priorityScore);
-        return priorityScore;
-    }
+//    private static float setGenePriorityScore(Gene gene) {
+//        if (gene.getPriorityResults().isEmpty()) {
+//            return 0f;
+//        }
+//        float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
+//        gene.setPriorityScore(priorityScore);
+//        return priorityScore;
+//    }
 
-    /**
-     * Calculate the combined priority score for the gene.
-     *
-     * @param priorityScores of the gene
-     * @return
-     */
-    protected static float calculatePriorityScore(Collection<PriorityResult> priorityScores) {
-        float finalPriorityScore = 1f;
-        for (PriorityResult priorityScore : priorityScores) {
-            finalPriorityScore *= priorityScore.getScore();
-        }
-        return finalPriorityScore;
-    }
+//    /**
+//     * Calculate the combined priority score for the gene.
+//     *
+//     * @param priorityScores of the gene
+//     * @return
+//     */
+//    protected static float calculatePriorityScore(Collection<PriorityResult> priorityScores) {
+//        float finalPriorityScore = 1f;
+//        for (PriorityResult priorityScore : priorityScores) {
+//            finalPriorityScore *= priorityScore.getScore();
+//        }
+//        return finalPriorityScore;
+//    }
 
     private static void setGeneCombinedScore(float filterScore, float priorityScore, Gene gene) {
         float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityResults().keySet());
