@@ -10,11 +10,11 @@ package de.charite.compbio.exomiser.core.filters;
  *
  * @author jj8
  */
-public class GeneInheritanceFilterResult extends GenericFilterResult {
+public class InheritanceFilterResult extends GenericFilterResult {
 
     private static final FilterType FILTER_TYPE = FilterType.INHERITANCE_FILTER;
     
-    public GeneInheritanceFilterResult(float score, FilterResultStatus resultStatus) {
+    public InheritanceFilterResult(float score, FilterResultStatus resultStatus) {
         super(FILTER_TYPE, score, resultStatus);
     }  
 }

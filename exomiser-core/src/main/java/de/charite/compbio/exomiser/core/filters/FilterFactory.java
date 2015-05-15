@@ -199,7 +199,7 @@ public class FilterFactory {
     }
 
     public GeneFilter getInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-        GeneFilter filter = new GeneInheritanceFilter(modeOfInheritance);
+        GeneFilter filter = new InheritanceFilter(modeOfInheritance);
         logger.info("Made new: {}", filter);
         return filter;
     }
