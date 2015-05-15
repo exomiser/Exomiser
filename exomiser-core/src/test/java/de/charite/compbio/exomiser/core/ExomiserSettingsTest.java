@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
@@ -20,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -602,5 +604,40 @@ public class ExomiserSettingsTest {
         } catch (IOException ex) {
             System.out.println(ex);
         }
+    }
+         
+    @Test
+    public void testDetermineFilterTypesToRunOnDefaultSettings() {
+        //make a new default Settings object
+        ExomiserSettings settings = instance.build();
+
+        List<FilterType> expResult = new ArrayList<>();
+
+        expResult.add(FilterType.TARGET_FILTER);
+        expResult.add(FilterType.FREQUENCY_FILTER);
+        expResult.add(FilterType.PATHOGENICITY_FILTER);
+        
+        List<FilterType> result = settings.getFilterTypesToRun();
+        
+        assertThat(result, equalTo(expResult));
+    }
+    
+    @Test
+    public void testDetermineFilterTypesToRun() {
+        //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
+        final GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
+        ExomiserSettings settings = instance.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
+
+        List<FilterType> expResult = new ArrayList<>();
+
+        expResult.add(FilterType.TARGET_FILTER);
+        expResult.add(FilterType.FREQUENCY_FILTER);
+        expResult.add(FilterType.QUALITY_FILTER);
+        expResult.add(FilterType.PATHOGENICITY_FILTER);
+        expResult.add(FilterType.INTERVAL_FILTER);
+        
+        List<FilterType> result = settings.getFilterTypesToRun();
+        
+        assertThat(result, equalTo(expResult));
     }
 }
