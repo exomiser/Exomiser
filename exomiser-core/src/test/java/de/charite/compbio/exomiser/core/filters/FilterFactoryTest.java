@@ -29,7 +29,7 @@ public class FilterFactoryTest {
     private SettingsBuilder settingsBuilder;
     private FilterFactory instance;
     
-    private final GeneticInterval interval = new GeneticInterval((byte) 2, 12345, 67890);
+    private final GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
     
     public FilterFactoryTest() {
     }
@@ -38,40 +38,6 @@ public class FilterFactoryTest {
     public void setUp() {
         settingsBuilder = new ExomiserSettings.SettingsBuilder();
         instance = new FilterFactory();
-    }
-    
-    @Test
-    public void testDetermineFilterTypesToRunOnDefaultSettings() {
-        //make a new default Settings object
-        ExomiserSettings settings = settingsBuilder.build();
-
-        List<FilterType> expResult = new ArrayList<>();
-
-        expResult.add(FilterType.TARGET_FILTER);
-        expResult.add(FilterType.FREQUENCY_FILTER);
-        expResult.add(FilterType.PATHOGENICITY_FILTER);
-        
-        List<FilterType> result = FilterFactory.determineFilterTypesToRun(settings);
-        
-        assertThat(result, equalTo(expResult));
-    }
-    
-    @Test
-    public void testDetermineFilterTypesToRun() {
-        //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        ExomiserSettings settings = settingsBuilder.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
-
-        List<FilterType> expResult = new ArrayList<>();
-
-        expResult.add(FilterType.TARGET_FILTER);
-        expResult.add(FilterType.FREQUENCY_FILTER);
-        expResult.add(FilterType.QUALITY_FILTER);
-        expResult.add(FilterType.PATHOGENICITY_FILTER);
-        expResult.add(FilterType.INTERVAL_FILTER);
-        
-        List<FilterType> result = FilterFactory.determineFilterTypesToRun(settings);
-        
-        assertThat(result, equalTo(expResult));
     }
     
     @Test

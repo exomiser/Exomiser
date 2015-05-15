@@ -11,6 +11,7 @@ import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilterResult;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -255,17 +256,6 @@ public class GeneTest {
     }
 
     @Test
-    public void testCanAddAndRetrievePriorityScoreByPriorityType() {
-        PriorityResult omimPriorityResult = new OMIMPriorityResult();
-        PriorityType priorityType = PriorityType.OMIM_PRIORITY;
-
-        instance.addPriorityResult(omimPriorityResult);
-        instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
-        // TODO: this is odd shouldn't it actually return the Object, not the value?
-        assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
-    }
-
-    @Test
     public void canInheritanceModes() {
         assertThat(instance.getInheritanceModes(), notNullValue());
         assertThat(instance.getInheritanceModes().isEmpty(), is(true));
@@ -380,14 +370,45 @@ public class GeneTest {
     }
 
     @Test
-    public void testCanSetAndChangePriorityScore() {
-        float firstScore = 0f;
+    public void testCanAddAndRetrievePriorityScoreByPriorityType() {
+        PriorityResult omimPriorityResult = new OMIMPriorityResult();
+        PriorityType priorityType = PriorityType.OMIM_PRIORITY;
+
+        instance.addPriorityResult(omimPriorityResult);
+        instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
+        assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
+    }
+
+    @Test
+    public void testAddPriorityResult_updatesPriorityScore() {
+        assertThat(instance.getPriorityScore(), equalTo(0f));
+        PriorityResult zeroPointFiveScore = new TestPriorityResult(0.5f);
+        
+        instance.addPriorityResult(zeroPointFiveScore);
+        assertThat(instance.getPriorityScore(), equalTo(0.5f));
+
+        instance.addPriorityResult(zeroPointFiveScore);
+        assertThat(instance.getPriorityScore(), equalTo(0.25f));
+    }
+    
+    @Test
+    public void testCanSetAndChangePriorityScoreOnlyWhenPrioritised() {
+        float unPrioritisedScore = 0f;
+        
+        float firstScore = 0.1f;
         instance.setPriorityScore(firstScore);
-        assertThat(instance.getPriorityScore(), equalTo(firstScore));
+        assertThat(instance.getPriorityScore(), equalTo(unPrioritisedScore));
 
         float secondScore = 1.0f;
         instance.setPriorityScore(secondScore);
+        assertThat(instance.getPriorityScore(), equalTo(unPrioritisedScore));
+        
+        instance.addPriorityResult(new TestPriorityResult(firstScore));
+        assertThat(instance.getPriorityScore(), equalTo(firstScore));
+        
+        instance.setPriorityScore(secondScore);
         assertThat(instance.getPriorityScore(), equalTo(secondScore));
+
     }
 
     @Test
@@ -399,5 +420,29 @@ public class GeneTest {
         float secondScore = 1.0f;
         instance.setFilterScore(secondScore);
         assertThat(instance.getFilterScore(), equalTo(secondScore));
+    }
+
+    private static class TestPriorityResult implements PriorityResult {
+
+        private final float score;
+        
+        private TestPriorityResult(float f) {
+            this.score = f;
+        }
+
+        @Override
+        public PriorityType getPriorityType() {
+            return PriorityType.NONE;
+        }
+
+        @Override
+        public String getHTMLCode() {
+            return "";
+        }
+
+        @Override
+        public float getScore() {
+            return score;
+        }
     }
 }

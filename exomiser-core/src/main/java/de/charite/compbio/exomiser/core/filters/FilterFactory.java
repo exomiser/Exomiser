@@ -35,7 +35,7 @@ public class FilterFactory {
     public List<VariantFilter> makeVariantFilters(ExomiserSettings settings) {
         List<VariantFilter> variantFilters = new ArrayList<>();
 
-        List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
+        List<FilterType> filtersRequired = settings.getFilterTypesToRun();
 
         for (FilterType filterType : filtersRequired) {
             switch (filterType) {
@@ -60,6 +60,8 @@ public class FilterFactory {
                 case INHERITANCE_FILTER:
                     //this isn't run as a VariantFilter - it's actually a Gene runFilter - currently it's a bastard orphan sitting in Exomiser
                     break;
+                default:
+                    //do nothing
             }
             logger.info("Added {} filter" , filterType);
         }
@@ -76,52 +78,19 @@ public class FilterFactory {
     public List<GeneFilter> makeGeneFilters(ExomiserSettings settings) {
         List<GeneFilter> geneFilters = new ArrayList<>();
 
-        List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
+        List<FilterType> filtersRequired = settings.getFilterTypesToRun();
 
         for (FilterType filterType : filtersRequired) {
             switch (filterType) {
                 case INHERITANCE_FILTER:
                     geneFilters.add(getInheritanceFilter(settings.getModeOfInheritance()));
                     break;
+                default:
+                    //do nothing
             }
         }
 
         return geneFilters;
-    }
-
-    /**
-     * Determines the required {@code FilterType} to be run from the given
-     * {@code ExomiserSettings}.
-     *
-     * @param settings
-     * @return
-     */
-    public static List<FilterType> determineFilterTypesToRun(ExomiserSettings settings) {
-        List<FilterType> filtersToRun = new ArrayList<>();
-
-        if (!settings.getGenesToKeep().isEmpty()) {
-            filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
-        }
-
-        if (!settings.keepOffTargetVariants()) {
-            filtersToRun.add(FilterType.TARGET_FILTER);
-        }
-        filtersToRun.add(FilterType.FREQUENCY_FILTER);
-
-        if (settings.getMinimumQuality() != 0) {
-            filtersToRun.add(FilterType.QUALITY_FILTER);
-        }
-
-        filtersToRun.add(FilterType.PATHOGENICITY_FILTER);
-
-        if (settings.getGeneticInterval() != null) {
-            filtersToRun.add(FilterType.INTERVAL_FILTER);
-        }
-        if (settings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
-            filtersToRun.add(FilterType.INHERITANCE_FILTER);
-        }
-
-        return filtersToRun;
     }
 
     /**

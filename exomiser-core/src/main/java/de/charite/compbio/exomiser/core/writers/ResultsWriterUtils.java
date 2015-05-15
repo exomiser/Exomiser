@@ -122,7 +122,7 @@ public class ResultsWriterUtils {
         // For instance here it would be somewhat simpler to just supply the list of filters applied as they all
         // know what their required parameters were. Sure this will violate the 'Tell Don't Ask' principle but
         // the alternatives are worse
-        List<FilterType> filtersApplied = FilterFactory.determineFilterTypesToRun(settings);
+        List<FilterType> filtersApplied = settings.getFilterTypesToRun();
         return filterReportFactory.makeFilterReports(filtersApplied, settings, sampleData);
 
     }
