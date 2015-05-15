@@ -56,7 +56,7 @@ public class VCF2FrequencyParser {
      * <code>Frequency</code> object created from the input line.
      */
     //TODO: might be an idea to use HTSJDK and new Jannovar like we do in the exomiser-core
-    public List<Frequency> parseVCFline(String line) {
+    public List<Frequency> parseVCFline(String line, byte chromosome) {
 
         List<Frequency> frequencyList = new ArrayList<>();
 
@@ -70,7 +70,9 @@ public class VCF2FrequencyParser {
             logger.error("", e.getMessage());
             System.exit(1);
         }
-
+        if (chrom != chromosome){
+            return frequencyList;
+        }
         pos = Integer.parseInt(fields[1]);
         /*
          * Transform rsID to integer to save space. Note that if there are
@@ -148,8 +150,11 @@ public class VCF2FrequencyParser {
             }        
             if (minorFreqs.size() > 0) {
                 if (!minorFreqs.get(minorAlleleCounter).equals(".")) {
-                    float maf = Float.parseFloat(minorFreqs.get(minorAlleleCounter));
-                    freq.setDbSnpGmaf(maf);
+                    float maf =100f *  Float.parseFloat(minorFreqs.get(minorAlleleCounter));
+                    //code here to exclude variants with no freq data
+                    if (maf != 0){
+                        freq.setDbSnpGmaf(maf);
+                    }
                 }
             }
 

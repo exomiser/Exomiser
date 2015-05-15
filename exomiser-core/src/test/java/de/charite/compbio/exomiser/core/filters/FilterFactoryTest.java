@@ -119,7 +119,7 @@ public class FilterFactoryTest {
 
         List<GeneFilter> expResult = new ArrayList<>();
 
-        GeneFilter inheritanceFilter = new GeneInheritanceFilter(modeOfInheritance);
+        GeneFilter inheritanceFilter = new InheritanceFilter(modeOfInheritance);
         expResult.add(inheritanceFilter);
         
                 
@@ -188,7 +188,7 @@ public class FilterFactoryTest {
     @Test
     public void testGetGeneInheritanceFilter() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        Filter expFilter = new GeneInheritanceFilter(modeOfInheritance);
+        Filter expFilter = new InheritanceFilter(modeOfInheritance);
         Filter resultFilter = instance.getInheritanceFilter(modeOfInheritance);
         assertThat(resultFilter, equalTo(expFilter));
     }

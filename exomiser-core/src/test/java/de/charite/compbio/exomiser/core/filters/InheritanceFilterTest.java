@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneInheritanceFilterTest {
+public class InheritanceFilterTest {
 
     private Gene compatibleWithAutosomalDominant;
     private Gene compatibleWithAutosomalRecessive;
@@ -41,7 +41,7 @@ public class GeneInheritanceFilterTest {
     public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsUnInitialised() {
 
         ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.UNINITIALIZED;
-        GeneInheritanceFilter instance = new GeneInheritanceFilter(desiredInheritanceMode);
+        InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
         
         FilterResult filterResult = instance.runFilter(compatibleWithAutosomalRecessive);
 
@@ -50,7 +50,7 @@ public class GeneInheritanceFilterTest {
 
     @Test
     public void testFilterGenePasses() {
-        GeneInheritanceFilter dominantFilter = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         FilterResult filterResult = dominantFilter.runFilter(compatibleWithAutosomalDominant);
 
@@ -59,7 +59,7 @@ public class GeneInheritanceFilterTest {
 
     @Test
     public void testFilterGeneFails() {
-        GeneInheritanceFilter dominantFilter = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         FilterResult filterResult = dominantFilter.runFilter(compatibleWithAutosomalRecessive);
 
@@ -68,23 +68,23 @@ public class GeneInheritanceFilterTest {
 
     @Test
     public void testGetFilterType() {
-        GeneInheritanceFilter instance = new GeneInheritanceFilter(ModeOfInheritance.X_DOMINANT);
+        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
 
         assertThat(instance.getFilterType(), equalTo(FilterType.INHERITANCE_FILTER));
     }
 
     @Test
     public void testHashCode() {
-        GeneInheritanceFilter instance = new GeneInheritanceFilter(ModeOfInheritance.X_DOMINANT);
-        GeneInheritanceFilter other = new GeneInheritanceFilter(ModeOfInheritance.X_DOMINANT);
+        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
+        InheritanceFilter other = new InheritanceFilter(ModeOfInheritance.X_DOMINANT);
 
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
 
     @Test
     public void testEquals() {
-        GeneInheritanceFilter dominantFilter = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        GeneInheritanceFilter otherDominantFilter = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter otherDominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         assertThat(dominantFilter.equals(otherDominantFilter), is(true));
 
@@ -92,8 +92,8 @@ public class GeneInheritanceFilterTest {
 
     @Test
     public void testNotEquals() {
-        GeneInheritanceFilter recessiveFilter = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        GeneInheritanceFilter dominantFilter = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter recessiveFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         assertThat(recessiveFilter.equals(dominantFilter), is(false));
 
@@ -101,7 +101,7 @@ public class GeneInheritanceFilterTest {
 
     @Test
     public void testNotEqualOtherObject() {
-        GeneInheritanceFilter instance = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         String string = "string";
         assertThat(instance.equals(string), is(false));
         assertThat(string.equals(instance), is(false));
@@ -110,7 +110,7 @@ public class GeneInheritanceFilterTest {
     
     @Test
     public void testNotEqualNull() {
-        GeneInheritanceFilter instance = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         Object object = null;
         
         assertThat(instance.equals(object), is(false));
@@ -118,7 +118,7 @@ public class GeneInheritanceFilterTest {
     
     @Test
     public void testToString() {
-        GeneInheritanceFilter instance = new GeneInheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter instance = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         assertThat(instance.toString(), equalTo("Inheritance filter: ModeOfInheritance=AUTOSOMAL_RECESSIVE"));
     }

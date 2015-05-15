@@ -55,41 +55,44 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
             return;
         }
         JannovarData jannovarData = extractKnownGenesFromJannovarResource(inDir);
-        /*
-         * First parseResource the dnSNP data.
-         */
-        logger.info("Parsing dbSNP data");
-        //this is the Frequency List we're going to populate and the write out to file
-        ArrayList<Frequency> frequencyList = new ArrayList<>();
-        //provide it to the DbSnpFrequencyParser along with the UCSC data
-        DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(jannovarData, inDir, frequencyList);
-        dbSnpParser.parseResource(dbSnpResource, inDir, outDir);
-
-        if (frequencyList.isEmpty()) {
-            logger.error("DbSnpFrequencyParser returned no Frequency data.");
-        }
         
-        // Now parseResource the ExAC data using the frequency information generated
-        // from the dbSNP and UCSC known gene data.
-        ExACFrequencyParser exacParser = new ExACFrequencyParser(jannovarData.getRefDict(), frequencyList);
-        logger.info("Parsing the ExAC data");
-        exacParser.parseResource(exacResource, inDir, outDir);
-        
-        // Now parseResource the ESP data using the frequency information generated
-        // from the dbSNP and UCSC known gene data.
-        EspFrequencyParser espParser = new EspFrequencyParser(jannovarData.getRefDict(), frequencyList);
-        logger.info("Parsing the ESP data");
-        espParser.parseResource(espResource, inDir, outDir);
-
-
         //doesn't matter which resource we choose the parsed file name from as they 
         //should all the the same
         Path outputFile = outDir.resolve(dbSnpResource.getParsedFileName());
         
         try (BufferedWriter writer = Files.newBufferedWriter(outputFile, Charset.defaultCharset())) {
+            // now do one chromosome at a time and then write out results as otherwise was taking ~20G
+            byte[] chromosomes = new byte[]{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24};    
+            for (byte chromosome : chromosomes) {
+                /*
+                 * First parseResource the dnSNP data.
+                 */
+                logger.info("Parsing dbSNP data");
+                //this is the Frequency List we're going to populate and the write out to file
+                ArrayList<Frequency> frequencyList = new ArrayList<>();
+                //provide it to the DbSnpFrequencyParser along with the UCSC data
+                DbSnpFrequencyParser dbSnpParser = new DbSnpFrequencyParser(jannovarData, inDir, frequencyList, chromosome);
+                dbSnpParser.parseResource(dbSnpResource, inDir, outDir);
 
-            for (Frequency f : frequencyList) {
-                writer.write(f.getDumpLine());
+                if (frequencyList.isEmpty()) {
+                    logger.error("DbSnpFrequencyParser returned no Frequency data.");
+                }
+
+                // Now parseResource the ExAC data using the frequency information generated
+                // from the dbSNP and UCSC known gene data.
+                ExACFrequencyParser exacParser = new ExACFrequencyParser(jannovarData.getRefDict(), frequencyList, chromosome);
+                logger.info("Parsing the ExAC data");
+                exacParser.parseResource(exacResource, inDir, outDir);
+
+                // Now parseResource the ESP data using the frequency information generated
+                // from the dbSNP and UCSC known gene data.
+                EspFrequencyParser espParser = new EspFrequencyParser(jannovarData.getRefDict(), frequencyList, chromosome);
+                logger.info("Parsing the ESP data");
+                espParser.parseResource(espResource, inDir, outDir);
+                
+                for (Frequency f : frequencyList) {
+                    writer.write(f.getDumpLine());
+                }
             }
         } catch (IOException e) {
             logger.error("Error writing out frequency files", e);
