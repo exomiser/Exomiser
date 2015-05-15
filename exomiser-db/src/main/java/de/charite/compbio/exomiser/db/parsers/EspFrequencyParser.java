@@ -55,6 +55,7 @@ public class EspFrequencyParser implements ResourceParser {
      * add them to this list until we are finished and then join the two lists.
      */
     private List<Frequency> espFrequencyList;
+    private byte chromosome; 
     /**
      * This object is used to allow binary searches on the FrequencyList
      */
@@ -74,11 +75,12 @@ public class EspFrequencyParser implements ResourceParser {
      * dbSNP information). This is sorted here as it is a requirement for the
      * binary search.
      */
-    public EspFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList) {
+    public EspFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList, byte chromosome) {
         logger.info("Sorting variant frequency list ({} variants)", frequencyList.size());
         vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
         Collections.sort(frequencyList);
         this.frequencyList = frequencyList;
+        this.chromosome = chromosome;
         // list for adding new Frequencies from the ESP files
         espFrequencyList = new ArrayList<>();
     }
@@ -157,7 +159,7 @@ public class EspFrequencyParser implements ResourceParser {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
+                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line,chromosome);
                 for (Frequency frequency : frequencyPerLine) {
                     //parseEspDataFromVCFInfoField(frequency);
                     int idx = Collections.binarySearch(frequencyList, frequency, comparator);
