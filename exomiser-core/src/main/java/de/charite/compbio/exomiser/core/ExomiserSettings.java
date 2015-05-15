@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
@@ -385,6 +386,42 @@ public class ExomiserSettings {
 
         diseaseGeneFamilyName = builder.diseaseGeneFamilyName;
     }
+    
+    /**
+     * Determines the required {@code FilterType} to be run from the given
+     * {@code ExomiserSettings}.
+     *
+     * @param settings
+     * @return
+     */
+    public List<FilterType> getFilterTypesToRun() {
+        List<FilterType> filtersToRun = new ArrayList<>();
+
+        if (!getGenesToKeep().isEmpty()) {
+            filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
+        }
+
+        if (!keepOffTargetVariants()) {
+            filtersToRun.add(FilterType.TARGET_FILTER);
+        }
+        filtersToRun.add(FilterType.FREQUENCY_FILTER);
+
+        if (getMinimumQuality() != 0) {
+            filtersToRun.add(FilterType.QUALITY_FILTER);
+        }
+
+        filtersToRun.add(FilterType.PATHOGENICITY_FILTER);
+
+        if (getGeneticInterval() != null) {
+            filtersToRun.add(FilterType.INTERVAL_FILTER);
+        }
+        if (getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
+            filtersToRun.add(FilterType.INHERITANCE_FILTER);
+        }
+
+        return filtersToRun;
+    }
+
 
     @JsonIgnore
     public boolean isValid() {
