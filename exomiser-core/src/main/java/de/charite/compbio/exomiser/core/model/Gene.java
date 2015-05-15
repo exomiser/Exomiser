@@ -60,8 +60,11 @@ public class Gene implements Comparable<Gene>, Filterable {
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
      * prediction for a disease gene) reflecting the predicted relevance of this
      * gene for the disease under study by exome sequencing.
+     * 
+     * This is initialised as 1.0 in order that adding a PriorityScore will allow
+     * the gene's priorityScore to be multiplied by the PriorityScore's score.
      */
-    private float priorityScore = 0f;
+    private float priorityScore = 1f;
 
     /**
      * A score representing the combined pathogenicity predictions for the
@@ -256,7 +259,12 @@ public class Gene implements Comparable<Gene>, Filterable {
      * @param priorityResult Result of a prioritization algorithm
      */
     public void addPriorityResult(PriorityResult priorityResult) {
+        reCalculatePriorityScore(priorityResult);
         priorityResultsMap.put(priorityResult.getPriorityType(), priorityResult);
+    }
+
+    private void reCalculatePriorityScore(PriorityResult priorityResult) {
+        priorityScore *= priorityResult.getScore();
     }
 
     /**
@@ -281,19 +289,28 @@ public class Gene implements Comparable<Gene>, Filterable {
      * <P>
      * Note that this method assumes we have calculate the scores, which is
      * depending on the function {@link #calculateGeneAndVariantScores} having
-     * been called.
+     * been called. If the Gene has not been prioritised this method will *always*
+     * return 0.0
      *
      * @return a score that will be used to rank the gene.
      */
     public float getPriorityScore() {
+        //this bit came from the GeneScorer... 
+        if (priorityResultsMap.isEmpty()) {
+            return 0f;
+        }
+        //end GeneScorer transplant
         return priorityScore;
     }
 
     /**
-     * Sets the priority score for the gene.
+     * Sets the priority score for the gene ONLY IF A PRIORITY SCORE HAS BEEN ADDED.
+     * CAUTION: This will override any previously calculated score.
      */
     public void setPriorityScore(float score) {
-        priorityScore = score;
+        if (!priorityResultsMap.isEmpty()) {            
+            priorityScore = score;
+        }
     }
 
     /**
