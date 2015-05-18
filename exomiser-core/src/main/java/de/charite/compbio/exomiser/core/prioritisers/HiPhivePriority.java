@@ -464,6 +464,7 @@ public class HiPhivePriority implements Prioritiser {
                 double score = model.getScore();
 
                 // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
+                //set a flag to enable benchmarking in the HiPhiveParams. diseaseId and candidateGeneSymbol are only used here. Then remove these params from constructor. 
                 if ((model.getModelId() == null ? diseaseId == null : model.getModelId().equals(diseaseId))
                         && (model.getHumanGeneSymbol() == null ? candidateGeneSymbol == null : model.getHumanGeneSymbol().equals(candidateGeneSymbol))) {
                     logger.info("Found self hit {}:{} - skipping due to benchmarking", diseaseId, candidateGeneSymbol);
