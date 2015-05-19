@@ -45,13 +45,6 @@ public interface Prioritiser {
     public PriorityType getPriorityType();
 
     /**
-     * @return name of the prioritization method used by the implementing class,
-     * e.g., "OMIM"
-     */
-    public String getPriorityName();
-
-
-    /**
      * Should this prioritizer be displayed in the HTML page?
      * @return 
      */

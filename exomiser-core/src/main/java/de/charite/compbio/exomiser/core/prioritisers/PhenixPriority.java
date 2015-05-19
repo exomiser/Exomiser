@@ -285,14 +285,6 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * @see exomizer.priority.IPriority#getPriorityName()
-     */
-    @Override
-    public String getPriorityName() {
-        return "HPO Phenomizer prioritizer";
-    }
-
-    /**
      * Flag to output results of filtering against Uberpheno data.
      */
     @Override
@@ -495,4 +487,8 @@ public class PhenixPriority implements Prioritiser {
         }
     }
 
+    @Override
+    public String toString() {
+        return "PhenixPriority{'" + getPriorityType().getCommandLineValue() + "'}";
+    }
 }

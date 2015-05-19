@@ -95,11 +95,6 @@ public class HiPhivePriority implements Prioritiser {
     }
 
     @Override
-    public String getPriorityName() {
-        return PRIORITY_TYPE.getCommandLineValue();
-    }
-
-    @Override
     public PriorityType getPriorityType() {
         return PRIORITY_TYPE;
     }
@@ -608,4 +603,8 @@ public class HiPhivePriority implements Prioritiser {
         this.priorityService = priorityService;
     }
 
+    @Override
+    public String toString() {
+        return "HiPhivePriority{'" + getPriorityType().getCommandLineValue() + "', hpoIds=" + hpoIds + '}';
+    }
 }

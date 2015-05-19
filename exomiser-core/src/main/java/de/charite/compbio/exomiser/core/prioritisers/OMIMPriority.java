@@ -46,11 +46,6 @@ public class OMIMPriority implements Prioritiser {
         this.messages = new ArrayList<>();
     }
 
-    @Override
-    public String getPriorityName() {
-        return "OMIM";
-    }
-
     /**
      * Flag for output field representing OMIM.
      */
@@ -220,4 +215,8 @@ public class OMIMPriority implements Prioritiser {
         return "";
     }
 
+    @Override
+    public String toString() {
+        return "OMIMPriority{'" + getPriorityType().getCommandLineValue() + "' }";
+    } 
 }

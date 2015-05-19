@@ -121,14 +121,6 @@ public class ExomeWalkerPriority implements Prioritiser {
     }
 
     /**
-     * @see exomizer.priority.Priority#getPriorityName()
-     */
-    @Override
-    public String getPriorityName() {
-        return "GeneWanderer";
-    }
-
-    /**
      * Flag to output results of filtering against Genewanderer.
      */
     @Override
@@ -282,5 +274,9 @@ public class ExomeWalkerPriority implements Prioritiser {
         double val = combinedProximityVector.get(idx, 0);
         return val;
     }
-    
+
+    @Override
+    public String toString() {
+        return "ExomeWalkerPriority{'" + priorityType.getCommandLineValue() + "', seedGenes=" + seedGenes + '}';
+    }    
 }

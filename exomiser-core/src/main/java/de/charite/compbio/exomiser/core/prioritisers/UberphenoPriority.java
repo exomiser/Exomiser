@@ -161,14 +161,6 @@ public class UberphenoPriority implements Prioritiser {
         this.messages = new ArrayList<String>();
     }
 
-    /* (non-Javadoc)
-     * @see exomizer.priority.FilterType#getPriorityName()
-     */
-    @Override
-    public String getPriorityName() {
-        return "Uberpheno semantic similarity filter";
-    }
-
     /**
      * Flag to output results of filtering against Uberpheno data.
      */
@@ -248,4 +240,8 @@ public class UberphenoPriority implements Prioritiser {
         return "";
     }
 
+    @Override
+    public String toString() {
+        return "UberphenoPriority{'" + getPriorityType().getCommandLineValue() + "' }";
+    }
 }

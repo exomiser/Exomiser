@@ -50,7 +50,7 @@ public class GenePrioritiser {
     public static List<Gene> prioritiseGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
         logger.info("Running prioritisers over {} genes", genes.size());
         for (Prioritiser prioritiser : prioritisers) {
-            logger.info("Starting prioritiser: {}", prioritiser.getPriorityName());
+            logger.info("Starting prioritiser: {}", prioritiser);
             prioritiser.prioritizeGenes(genes);
         }
         logger.info("Done prioritising genes");

@@ -81,14 +81,6 @@ public class PhivePriority implements Prioritiser {
     }
 
     /**
-     * Get the name of this prioritization algorithm.
-     */
-    @Override
-    public String getPriorityName() {
-        return PRIORITY_TYPE.getCommandLineValue();
-    }
-
-    /**
      * Flag to output results of filtering against PhenoDigm data.
      */
     @Override
@@ -384,4 +376,8 @@ public class PhivePriority implements Prioritiser {
         setUpSQLPreparedStatements();
     }
 
+    @Override
+    public String toString() {
+        return "PhivePriority{'" + PRIORITY_TYPE.getCommandLineValue() + "' hpoIds=" + hpoIds + '}';
+    }
 }
