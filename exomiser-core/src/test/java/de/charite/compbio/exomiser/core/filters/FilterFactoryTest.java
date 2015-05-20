@@ -41,7 +41,7 @@ public class FilterFactoryTest {
     }
     
     @Test
-    public void testMakeVariantFilters() {
+    public void testMakeVariantFiltersCanMakeAllTypesOfVariantFilter() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
         Set<Integer> geneIdsToKeep = new HashSet<>();
         geneIdsToKeep.add(1);
@@ -56,23 +56,12 @@ public class FilterFactoryTest {
 
         List<VariantFilter> expResult = new ArrayList<>();
 
-        VariantFilter geneIdFilter = new EntrezGeneIdFilter(geneIdsToKeep);
-        expResult.add(geneIdFilter);
-
-        VariantFilter targetFilter = new TargetFilter();
-        expResult.add(targetFilter);
-        
-        VariantFilter frequencyFilter = new FrequencyFilter(0.25f, false);
-        expResult.add(frequencyFilter);
-        
-        VariantFilter qualityFilter = new QualityFilter(2f);
-        expResult.add(qualityFilter);
-        
-        VariantFilter pathogenicityFilter = new PathogenicityFilter(true);
-        expResult.add(pathogenicityFilter);
-        
-        VariantFilter intervalFilter = new IntervalFilter(interval);
-        expResult.add(intervalFilter);
+        expResult.add(new EntrezGeneIdFilter(geneIdsToKeep));
+        expResult.add(new TargetFilter());
+        expResult.add(new FrequencyFilter(0.25f, false));
+        expResult.add(new QualityFilter(2f));
+        expResult.add(new PathogenicityFilter(true));
+        expResult.add(new IntervalFilter(interval));
         
         List<VariantFilter> result = instance.makeVariantFilters(settings);
         assertThat(result, equalTo(expResult));
@@ -92,20 +81,11 @@ public class FilterFactoryTest {
 
         List<VariantFilter> expResult = new ArrayList<>();
 
-        VariantFilter targetFilter = new TargetFilter();
-        expResult.add(targetFilter);
-        
-        VariantFilter frequencyFilter = new FrequencyFilter(0.25f, false);
-        expResult.add(frequencyFilter);
-        
-        VariantFilter qualityFilter = new QualityFilter(2f);
-        expResult.add(qualityFilter);
-        
-        VariantFilter pathogenicityFilter = new PathogenicityFilter(true);
-        expResult.add(pathogenicityFilter);
-        
-        VariantFilter intervalFilter = new IntervalFilter(interval);
-        expResult.add(intervalFilter);
+        expResult.add(new TargetFilter());
+        expResult.add(new FrequencyFilter(0.25f, false));
+        expResult.add(new QualityFilter(2f));
+        expResult.add(new PathogenicityFilter(true));
+        expResult.add(new IntervalFilter(interval));
         
         List<VariantFilter> result = instance.makeVariantFilters(settings);
         assertThat(result, equalTo(expResult));
@@ -118,10 +98,7 @@ public class FilterFactoryTest {
         ExomiserSettings settings = settingsBuilder.modeOfInheritance(modeOfInheritance).build();
 
         List<GeneFilter> expResult = new ArrayList<>();
-
-        GeneFilter inheritanceFilter = new InheritanceFilter(modeOfInheritance);
-        expResult.add(inheritanceFilter);
-        
+        expResult.add(new InheritanceFilter(modeOfInheritance));
                 
         List<GeneFilter> result = instance.makeGeneFilters(settings);
         assertThat(result, equalTo(expResult));

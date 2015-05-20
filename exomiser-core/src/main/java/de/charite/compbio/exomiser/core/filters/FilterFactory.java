@@ -63,8 +63,8 @@ public class FilterFactory {
                 default:
                     //do nothing
             }
-            logger.info("Added {} filter" , filterType);
         }
+        logger.info("{} new filters ready to run" , variantFilters.size());
 
         return variantFilters;
     }
@@ -113,8 +113,8 @@ public class FilterFactory {
      *
      * @return
      */
-    public VariantFilter getEntrezGeneIdFilter(Set<Integer> genesToKeep) {
-        VariantFilter geneListFilter = new EntrezGeneIdFilter(genesToKeep);
+    public EntrezGeneIdFilter getEntrezGeneIdFilter(Set<Integer> genesToKeep) {
+        EntrezGeneIdFilter geneListFilter = new EntrezGeneIdFilter(genesToKeep);
         logger.info("Made new: {}", geneListFilter);
         return geneListFilter;
     }
@@ -130,22 +130,19 @@ public class FilterFactory {
      * @param filterOutAllDbsnp
      * @return
      */
-    public VariantFilter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
-
-        VariantFilter frequencyFilter = new FrequencyFilter(maxFrequency, filterOutAllDbsnp);
-
+    public FrequencyFilter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
+        FrequencyFilter frequencyFilter = new FrequencyFilter(maxFrequency, filterOutAllDbsnp);
         logger.info("Made new: {}", frequencyFilter);
         return frequencyFilter;
     }
 
-    public VariantFilter getQualityFilter(float qualityThreshold) {
-        VariantFilter filter = new QualityFilter(qualityThreshold);
-
-        logger.info("Made new Quality Filter: {}", filter);
+    public QualityFilter getQualityFilter(float qualityThreshold) {
+        QualityFilter filter = new QualityFilter(qualityThreshold);
+        logger.info("Made new: {}", filter);
         return filter;
     }
 
-    public VariantFilter getPathogenicityFilter(boolean removePathFilterCutOff) {
+    public PathogenicityFilter getPathogenicityFilter(boolean removePathFilterCutOff) {
         // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always 
         // pass the pathogenicity filter and still get scored for pathogenicity
         PathogenicityFilter filter = new PathogenicityFilter(removePathFilterCutOff);
@@ -153,22 +150,20 @@ public class FilterFactory {
         return filter;
     }
 
-    public VariantFilter getIntervalFilter(GeneticInterval interval) {
-
-        VariantFilter filter = new IntervalFilter(interval);
-
+    public IntervalFilter getIntervalFilter(GeneticInterval interval) {
+        IntervalFilter filter = new IntervalFilter(interval);
         logger.info("Made new: {}", filter);
         return filter;
     }
 
-    public VariantFilter getBedFilter(Set<String> commalist) {
-        VariantFilter filter = new BedFilter(commalist);
+    public BedFilter getBedFilter(Set<String> commalist) {
+        BedFilter filter = new BedFilter(commalist);
         logger.info("Made new: {}", filter);
         return filter;
     }
 
-    public GeneFilter getInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-        GeneFilter filter = new InheritanceFilter(modeOfInheritance);
+    public InheritanceFilter getInheritanceFilter(ModeOfInheritance modeOfInheritance) {
+        InheritanceFilter filter = new InheritanceFilter(modeOfInheritance);
         logger.info("Made new: {}", filter);
         return filter;
     }
