@@ -67,9 +67,14 @@ public class SimpleVariantFilterRunner implements FilterRunner<VariantEvaluation
     
     private void runAllFiltersOverVariantEvaluation(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
         for (VariantFilter filter : variantFilters) {
-            FilterResult filterResult = filter.runFilter(variantEvaluation);
-            variantEvaluation.addFilterResult(filterResult);
+            runFilterAndAddResult(filter, variantEvaluation);
         }
+    }
+
+    private FilterResult runFilterAndAddResult(Filter filter, VariantEvaluation variantEvaluation) {
+        FilterResult filterResult = filter.runFilter(variantEvaluation);
+        variantEvaluation.addFilterResult(filterResult);
+        return filterResult;
     }
 
     private Set<FilterType> getFilterTypes(List<VariantFilter> filters) {

@@ -28,19 +28,28 @@ public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
             //Gene filtering needs to happen after variant filtering and only on genes which have passed the variant filtering steps
             //TODO: does this really have to be the case???
             if (gene.passedFilters()) {
-                for (Filter filter : filters) {
-                    FilterResult filterResult = filter.runFilter(gene);
-                    addFilterResultToGeneVariantEvaluations(filterResult, gene);
-                }
+                runAllFiltersOverGene(filters, gene);
             }
         }
         logger.info("Ran {} filters over {} genes using non-destructive simple filtering.", getFilterTypes(filters), genes.size());
         return genes;
     }
 
-    private void addFilterResultToGeneVariantEvaluations(FilterResult filterResult, Gene gene) {
+    private void runAllFiltersOverGene(List<GeneFilter> filters, Gene gene) {
+        for (Filter filter : filters) {
+            FilterResult filterResult = runFilterAndAddResult(filter, gene);
+            addFilterResultToGeneVariantEvaluations(filterResult, gene.getVariantEvaluations());
+        }
+    }
+
+    private FilterResult runFilterAndAddResult(Filter filter, Gene gene) {
+        FilterResult filterResult = filter.runFilter(gene);
         gene.addFilterResult(filterResult);
-        for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+        return filterResult;
+    }
+
+    private void addFilterResultToGeneVariantEvaluations(FilterResult filterResult, List<VariantEvaluation> variantEvaluations) {
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
             variantEvaluation.addFilterResult(filterResult);
         }
     }
