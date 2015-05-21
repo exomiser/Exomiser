@@ -93,7 +93,7 @@ public class VariantFactory {
         final String alt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
         final int pos = variantContext.getStart();
 
-        logger.info("Building unannotated variant for {} {} {} {} - assigning to chromosome {}", chromosomeName, pos, ref, alt, UNKNOWN_CHROMOSOME);
+        logger.trace("Building unannotated variant for {} {} {} {} - assigning to chromosome {}", chromosomeName, pos, ref, alt, UNKNOWN_CHROMOSOME);
         return new VariantEvaluation.VariantBuilder(UNKNOWN_CHROMOSOME, pos, ref, alt)
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)

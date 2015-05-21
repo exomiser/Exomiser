@@ -18,7 +18,6 @@ import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.htsjdk.InvalidCoordinatesException;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.PositionType;
 import java.util.Collections;
 
@@ -59,7 +58,7 @@ public class VariantAnnotationsFactory {
         } catch (InvalidCoordinatesException ex) {
             //Not all genes can be assigned to a chromosome, so these will fail here. 
             //Should we report these? They will not be used in the analysis or appear in the output anywhere.
-            logger.warn("Cannot build annotations for VariantContext {} {} {}: {}", variantContext.getChr(), variantContext.getStart(), variantContext.getAlleles(), ex);
+            logger.trace("Cannot build annotations for VariantContext {} {} {}: {}", variantContext.getChr(), variantContext.getStart(), variantContext.getAlleles(), ex);
         }
         return variantAnnotations;
     }
