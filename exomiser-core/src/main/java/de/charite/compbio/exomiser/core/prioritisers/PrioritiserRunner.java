@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GenePrioritiser {
+public class PrioritiserRunner {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenePrioritiser.class);
+    private static final Logger logger = LoggerFactory.getLogger(PrioritiserRunner.class);
 
     /**
      * Applies the prioritisation criteria from the prioritisers to only those
@@ -28,7 +28,7 @@ public class GenePrioritiser {
      * @param genes
      * @return
      */
-    public static List<Gene> prioritiseFilteredGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
+    public List<Gene> prioritiseFilteredGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
         List<Gene> filteredGenes = new ArrayList<>();
         for (Gene gene : genes) {
             if (gene.passedFilters()) {
@@ -47,7 +47,7 @@ public class GenePrioritiser {
      * @param genes
      * @return
      */
-    public static List<Gene> prioritiseGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
+    public List<Gene> prioritiseGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
         logger.info("Running prioritisers over {} genes", genes.size());
         for (Prioritiser prioritiser : prioritisers) {
             logger.info("Starting prioritiser: {}", prioritiser);

@@ -52,13 +52,13 @@ public class UberphenoPriority implements Prioritiser {
     /**
      * A list of error-messages
      */
-    private List<String> error_record = null;
+    private List<String> errorMessages = new ArrayList<>();
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = null;
+    private List<String> messages = new ArrayList<>();
 
     /**
      * Keeps track of the number of variants for which data was available in
@@ -157,7 +157,7 @@ public class UberphenoPriority implements Prioritiser {
         annotationsOfDisease = new ArrayList<Term>(annotationsOfCurrentDiseaseHs);
 
         /* some logging stuff */
-        this.error_record = new ArrayList<String>();
+        this.errorMessages = new ArrayList<String>();
         this.messages = new ArrayList<String>();
     }
 
@@ -174,8 +174,8 @@ public class UberphenoPriority implements Prioritiser {
      * of score filtering.
      */
     public List<String> getMessages() {
-        if (this.error_record.size() > 0) {
-            for (String s : error_record) {
+        if (this.errorMessages.size() > 0) {
+            for (String s : errorMessages) {
                 this.messages.add("Error: " + s);
             }
         }
@@ -199,14 +199,12 @@ public class UberphenoPriority implements Prioritiser {
                 UberphenoPriorityResult uberphenoRelScore = scoreVariantUberpheno(gene);
                 gene.addPriorityResult(uberphenoRelScore);
             } catch (Exception e) {
-                error_record.add(e.toString());
+                errorMessages.add(e.toString());
             }
         }
 
-        String s
-                = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)",
-                        analysedGenes);
-        this.messages.add(s);
+        String s = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)", analysedGenes);
+        messages.add(s);
     }
 
     /**
@@ -225,23 +223,8 @@ public class UberphenoPriority implements Prioritiser {
         return new UberphenoPriorityResult(similarityScore);
     }
 
-    /**
-     * To do
-     *
-     * @return
-     */
-    @Override
-    public boolean displayInHTML() {
-        return false;
-    }
-
-    @Override
-    public String getHTMLCode() {
-        return "";
-    }
-
     @Override
     public String toString() {
-        return "UberphenoPriority{'" + getPriorityType().getCommandLineValue() + "' }";
+        return getPriorityType().getCommandLineValue();
     }
 }

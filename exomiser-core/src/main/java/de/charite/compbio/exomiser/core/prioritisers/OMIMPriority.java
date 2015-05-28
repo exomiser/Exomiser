@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -37,29 +38,11 @@ public class OMIMPriority implements Prioritiser {
     private DataSource dataSource;
 
     /**
-     * A list of messages that can be used to create a display in a HTML page or
-     * elsewhere.
-     */
-    private final List<String> messages;
-
-    public OMIMPriority() {
-        this.messages = new ArrayList<>();
-    }
-
-    /**
      * Flag for output field representing OMIM.
      */
     @Override
     public PriorityType getPriorityType() {
         return PriorityType.OMIM_PRIORITY;
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of frequency filtering.
-     */
-    public List<String> getMessages() {
-        return this.messages;
     }
 
     /**
@@ -200,23 +183,16 @@ public class OMIMPriority implements Prioritiser {
     }
 
     /**
-     * Since no filtering of prioritizing is done with the OMIM data for now, it
-     * does not make sense to display this in the HTML table.
-     *
-     * @return
+     * @return list of messages representing process, result, and if any, errors
+     * of frequency filtering.
      */
     @Override
-    public boolean displayInHTML() {
-        return false;
-    }
-
-    @Override
-    public String getHTMLCode() {
-        return "";
+    public List<String> getMessages() {
+        return Collections.emptyList();
     }
 
     @Override
     public String toString() {
-        return "OMIMPriority{'" + getPriorityType().getCommandLineValue() + "' }";
+        return getPriorityType().getCommandLineValue();
     } 
 }

@@ -41,44 +41,80 @@ public class PriorityFactory {
     @Autowired
     private Path phenixDataDirectory;
 
+    /**
+     * Returns a list of prioritisers, ready to run according to the settings
+     * provided. This list will *ALWAYS* contain a single OMIM prioritiser,
+     * unless the NONE or NOT_SET types have been set, in which case the list
+     * will be empty.
+     *
+     * @param exomiserSettings
+     * @return
+     */
     public List<Prioritiser> makePrioritisers(ExomiserSettings exomiserSettings) {
-
-        String diseaseId = exomiserSettings.getDiseaseId();
-        String candidateGene = exomiserSettings.getCandidateGene();
-        List<String> hpoIds = exomiserSettings.getHpoIds();
-        List<Integer> entrezSeedGenes = exomiserSettings.getSeedGeneList();
-        String exomiser2Params = exomiserSettings.getExomiser2Params();
-
-        PriorityType priorityType = exomiserSettings.getPrioritiserType();
-        if (priorityType == PriorityType.NONE) {
+        //TODO: Should this move into the Exomiser class? The only reason this
+        //method exists is that we always run OMIM, even when not specified. 
+        //There is no actual evidence that doing this improves the overall performance though. 
+        
+        PriorityType prioritiserType = exomiserSettings.getPrioritiserType();
+        if (prioritiserType == PriorityType.NONE || prioritiserType == PriorityType.NOT_SET) {
             return Collections.emptyList();
         }
 
-        List<Prioritiser> genePriorityList = new ArrayList<>();
+        List<Prioritiser> prioritisers = new ArrayList<>();
         //TODO: OmimPrioritizer is specified implicitly - perhaps they should be different types of ExomiserSettings?
         //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. 
         //These might be badly named as the OMIM proritiser is currently the default.
         //always run OMIM unless the user specified what they really don't want to run any prioritisers
-        genePriorityList.add(getOmimPrioritizer());
+        prioritisers.add(makePrioritiser(PriorityType.OMIM_PRIORITY, exomiserSettings));
+        if (prioritiserType == PriorityType.OMIM_PRIORITY) {
+            return prioritisers;
+        } else {
+            Prioritiser prioritiser = makePrioritiser(prioritiserType, exomiserSettings);
+            if (prioritiser.getPriorityType() != PriorityType.NONE) {
+                prioritisers.add(prioritiser);
+            }
+        }
+        return prioritisers;
+    }
+
+    /**
+     * Returns a Prioritiser of the given type, ready to run according to the
+     * settings provided. Will return a non-functional prioritiser in cases
+     * where the type is not recognised.
+     *
+     * @param priorityType
+     * @param settings
+     * @return
+     */
+    public Prioritiser makePrioritiser(PriorityType priorityType, ExomiserSettings settings) {
+        //These should form the PrioritySettings interface
+        String diseaseId = settings.getDiseaseId();
+        String candidateGene = settings.getCandidateGene();
+        List<String> hpoIds = settings.getHpoIds();
+        List<Integer> entrezSeedGenes = settings.getSeedGeneList();
+        String exomiser2Params = settings.getExomiser2Params();
+
+        hpoIds = addDiseasePhenotypeTermsIfHpoIdsIsEmpty(diseaseId, hpoIds);
 
         switch (priorityType) {
+            case OMIM_PRIORITY:
+                return getOmimPrioritizer();
             case PHENIX_PRIORITY:
-                genePriorityList.add(getPhenixPrioritiser(hpoIds));
-                break;
+                return getPhenixPrioritiser(hpoIds);
             case HI_PHIVE_PRIORITY:
-                hpoIds = addDiseasePhenotypeTermsIfHpoIdsIsEmpty(diseaseId, hpoIds);
-                genePriorityList.add(getHiPhivePrioritiser(hpoIds, candidateGene, diseaseId, exomiser2Params));
-                break;
+                return getHiPhivePrioritiser(hpoIds, candidateGene, diseaseId, exomiser2Params);
             case PHIVE_PRIORITY:
-                hpoIds = addDiseasePhenotypeTermsIfHpoIdsIsEmpty(diseaseId, hpoIds);
-                genePriorityList.add(getPhivePrioritiser(hpoIds, diseaseId));
-                break;
+                return getPhivePrioritiser(hpoIds, diseaseId);
             case EXOMEWALKER_PRIORITY:
-                genePriorityList.add(getExomeWalkerPrioritiser(entrezSeedGenes));
-                break;
+                return getExomeWalkerPrioritiser(entrezSeedGenes);
+            case NONE:
+            case NOT_SET:
+                return new NoneTypePrioritiser();
+            default:
+                logger.warn("Prioritiser: '{}' not supported. Returning '{}' type", priorityType, PriorityType.NONE.getCommandLineValue());
+                return new NoneTypePrioritiser();
         }
 
-        return genePriorityList;
     }
 
     private List<String> addDiseasePhenotypeTermsIfHpoIdsIsEmpty(String diseaseId, List<String> hpoIds) {
@@ -89,40 +125,40 @@ public class PriorityFactory {
         return hpoIds;
     }
 
-    public OMIMPriority getOmimPrioritizer() {
+    private OMIMPriority getOmimPrioritizer() {
         OMIMPriority priority = new OMIMPriority();
         priority.setDataSource(dataSource);
-        logger.info("Made new OMIM Priority: {}", priority);
+        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
-    public PhenixPriority getPhenixPrioritiser(List<String> hpoIds) {
+    private PhenixPriority getPhenixPrioritiser(List<String> hpoIds) {
         Set<String> hpoIDset = new HashSet<>();
         hpoIDset.addAll(hpoIds);
 
         boolean symmetric = false;
         PhenixPriority priority = new PhenixPriority(phenixDataDirectory.toString(), hpoIDset, symmetric);
-        logger.info("Made new PhenIX Priority: {}", priority);
+        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
-    public PhivePriority getPhivePrioritiser(List<String> hpoIds, String disease) {
+    private PhivePriority getPhivePrioritiser(List<String> hpoIds, String disease) {
         PhivePriority priority = new PhivePriority(hpoIds, disease);
         priority.setDataSource(dataSource);
-        logger.info("Made new PHIVE Priority: {}", priority);
+        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
-    public ExomeWalkerPriority getExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
+    private ExomeWalkerPriority getExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
         ExomeWalkerPriority priority = new ExomeWalkerPriority(randomWalkMatrix, entrezSeedGenes);
-        logger.info("Made new GeneWanderer Priority: {}", priority);
+        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
-    public HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
+    private HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
         HiPhivePriority priority = new HiPhivePriority(hpoIds, candGene, disease, hiPhiveParams, randomWalkMatrix);
         priority.setPriorityService(priorityService);
-        logger.info("Made new HiPHIVE Priority: {}", priority);
+        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 

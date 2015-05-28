@@ -26,7 +26,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = PriorityFactoryTestConfig.class)
-@Sql(scripts = {"file:src/test/resources/sql/create_disease.sql", "file:src/test/resources/sql/create_disease_hp.sql"})
+@Sql(scripts = {"file:src/test/resources/sql/create_disease.sql", "file:src/test/resources/sql/create_disease_hp.sql", "file:src/test/resources/sql/diseaseDaoTestData.sql"})
 public class PriorityFactoryTest {
 
     @Autowired
@@ -43,20 +43,29 @@ public class PriorityFactoryTest {
         settingsBuilder.usePrioritiser(priorityType);
         return settingsBuilder.build();
     }
-    
+
     private SettingsBuilder getValidSettingsWithPrioritiser(PriorityType priorityType) {
         settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
         settingsBuilder.usePrioritiser(priorityType);
         return settingsBuilder;
     }
-        
+
     @Test
-    public void testmakePrioritisersForNotSetPriorityReturnsJustOmimPrioritiser() {
+    public void testmakePrioritisersForNonePriorityReturnsEmptyList() {
+        PriorityType type = PriorityType.NONE;
+        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+
+        List<Prioritiser> prioritisers = instance.makePrioritisers(settings);
+        assertThat(prioritisers.isEmpty(), is(true));
+    }
+
+    @Test
+    public void testmakePrioritisersForNotSetPriorityReturnsEmptyList() {
         PriorityType type = PriorityType.NOT_SET;
         ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         List<Prioritiser> prioritisers = instance.makePrioritisers(settings);
-        assertJustOmimPrioritiserPresent(prioritisers);
+        assertThat(prioritisers.isEmpty(), is(true));
     }
 
     @Test
@@ -67,11 +76,13 @@ public class PriorityFactoryTest {
         List<Prioritiser> prioritisers = instance.makePrioritisers(settings);
         assertJustOmimPrioritiserPresent(prioritisers);
     }
-    
+
     @Test
-    public void testGetOmimPrioritizer() {
-        OMIMPriority prioritiser = instance.getOmimPrioritizer();
-        assertThat(prioritiser, isA(OMIMPriority.class));
+    public void testCanGetOmimPrioritizerByType() {
+        PriorityType type = PriorityType.OMIM_PRIORITY;
+        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
     @Test
@@ -91,7 +102,7 @@ public class PriorityFactoryTest {
         List<Prioritiser> prioritisers = instance.makePrioritisers(settings);
         assertOmimAndOtherSpecifiedPrioritiserPresent(prioritisers, type);
     }
-    
+
     @Test
     public void testmakeHiPhivePrioritiserWithDiseaseIdAndEmptyHpoListReturnsThatAndOmimPrioritisers() {
         PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
@@ -132,6 +143,15 @@ public class PriorityFactoryTest {
         assertJustOmimPrioritiserPresent(prioritisers);
     }
 
+    @Test
+    public void testmakePrioritiserForUberPhenoPriorityReturnsNoneTypePrioritiser() {
+        PriorityType type = PriorityType.UBERPHENO_PRIORITY;
+        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+
+        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
+    }
+
     private void assertJustOmimPrioritiserPresent(List<Prioritiser> prioritisers) {
         assertThat(prioritisers.size(), equalTo(1));
         assertThat(prioritisers.get(0).getPriorityType(), equalTo(PriorityType.OMIM_PRIORITY));
@@ -142,14 +162,22 @@ public class PriorityFactoryTest {
         assertThat(prioritisers.get(0).getPriorityType(), equalTo(PriorityType.OMIM_PRIORITY));
         assertThat(prioritisers.get(1).getPriorityType(), equalTo(type));
     }
-
+    
     @Test
-    public void testmakePrioritisersForNonePriorityReturnsEmptyList() {
+    public void testmakePrioritiserNonePriorityReturnsNoneTypePrioritiser() {
         PriorityType type = PriorityType.NONE;
         ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        List<Prioritiser> prioritisers = instance.makePrioritisers(settings);
-        assertThat(prioritisers.isEmpty(), is(true));
+        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
     }
     
+    @Test
+    public void testmakePrioritiserNotSetPriorityReturnsNoneTypePrioritiser() {
+        PriorityType type = PriorityType.NOT_SET;
+        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+
+        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
+    }
 }

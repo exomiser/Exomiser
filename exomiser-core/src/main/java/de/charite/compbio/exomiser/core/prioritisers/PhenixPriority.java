@@ -55,12 +55,13 @@ public class PhenixPriority implements Prioritiser {
     /**
      * A list of error-messages
      */
-    private List<String> error_record = null;
+    private List<String> errorMessages = null;
+
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = null;
+    private final List<String> messages = new ArrayList<>();
 
     /**
      * The semantic similarity measure used to calculate phenotypic similarity
@@ -159,10 +160,6 @@ public class PhenixPriority implements Prioritiser {
 
         ResnikSimilarity resnik = new ResnikSimilarity(hpo, (HashMap<Term, Double>) term2ic);
         similarityMeasure = new InformationContentObjectSimilarity(resnik, symmetric, false);
-
-        /* some logging stuff */
-        this.error_record = new ArrayList<>();
-        this.messages = new ArrayList<>();
     }
 
     private void parseData(String hpoOboFile, String hpoAnnotationFile) {
@@ -293,19 +290,6 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    public List<String> getMessages() {
-        if (this.error_record.size() > 0) {
-            for (String s : error_record) {
-                this.messages.add("Error: " + s);
-            }
-        }
-        return this.messages;
-    }
-
-    /**
      * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      *
@@ -370,7 +354,7 @@ public class PhenixPriority implements Prioritiser {
             maxSemSim = similarityScore;
         }
         if (Double.isNaN(similarityScore)) {
-            error_record.add("score was NAN for gene:" + g + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
+            errorMessages.add("Error: score was NAN for gene:" + g + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
         }
 
         ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(entrezGeneIdString, numberQueryTerms, symmetric,
@@ -426,35 +410,6 @@ public class PhenixPriority implements Prioritiser {
         // return new PhenixPriorityResult(avg);
     }
 
-    /**
-     * Flag to show results of this analysis in the HTML page.
-     *
-     * @return
-     */
-    @Override
-    public boolean displayInHTML() {
-        return true;
-    }
-
-    /**
-     * @return an ul list with summary of phenomizer prioritization.
-     */
-    @Override
-    public String getHTMLCode() {
-        String s = String.format("Phenomizer: %d genes were evaluated; no phenotype data available for %d of them",
-                this.analysedGenes, this.offTargetGenes);
-        String t = null;
-        if (symmetric) {
-            t = String.format("Symmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
-        } else {
-            t = String.format("Asymmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
-        }
-        String u = String.format("Maximum semantic similarity score: %.2f, maximum negative log. of p-value: %.2f",
-                this.maxSemSim, this.maxNegLogP);
-        return String.format("<ul><li>%s</li><li>%s</li><li>%s</li></ul>\n", s, t, u);
-
-    }
-
     private Map<Term, Double> caclulateTermIC(Ontology ontology, Map<Term, Set<String>> term2objectIdsAnnotated) {
 
         Term root = ontology.getRootTerm();
@@ -487,8 +442,38 @@ public class PhenixPriority implements Prioritiser {
         }
     }
 
+    /**
+     * @return list of messages representing process, result, and if any, errors
+     * of score filtering.
+     */
+    @Override
+    public List<String> getMessages() {
+        messages.addAll(errorMessages);
+        return messages;
+    }
+
+//TODO move this to the messages
+//    /**
+//     * @return an ul list with summary of phenomizer prioritization.
+//     */
+//    @Override
+//    public String getHTMLCode() {
+//        String s = String.format("Phenomizer: %d genes were evaluated; no phenotype data available for %d of them",
+//                this.analysedGenes, this.offTargetGenes);
+//        String t = null;
+//        if (symmetric) {
+//            t = String.format("Symmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
+//        } else {
+//            t = String.format("Asymmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
+//        }
+//        String u = String.format("Maximum semantic similarity score: %.2f, maximum negative log. of p-value: %.2f",
+//                this.maxSemSim, this.maxNegLogP);
+//        return String.format("<ul><li>%s</li><li>%s</li><li>%s</li></ul>\n", s, t, u);
+//
+//    }
+
     @Override
     public String toString() {
-        return "PhenixPriority{'" + getPriorityType().getCommandLineValue() + "'}";
+        return getPriorityType().getCommandLineValue();
     }
 }

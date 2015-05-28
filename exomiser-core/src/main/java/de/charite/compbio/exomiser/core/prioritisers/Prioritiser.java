@@ -1,5 +1,6 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import de.charite.compbio.exomiser.core.AnalysisStep;
 import java.util.List;
 
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -21,7 +22,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
  * @version 0.13 (13 May, 2013).
  * @see de.charite.compbio.exomiser.filter.Filter
  */
-public interface Prioritiser {
+public interface Prioritiser extends AnalysisStep {
 
     /**
      * Apply a prioritization algorithm to a list of
@@ -43,17 +44,6 @@ public interface Prioritiser {
      * @return an enum constant representing the type of the implementing class.
      */
     public PriorityType getPriorityType();
-
-    /**
-     * Should this prioritizer be displayed in the HTML page?
-     * @return 
-     */
-    public boolean displayInHTML();
-
-    /**
-     * @return HTML code for display in box "Summary of Exome Filtering"
-     */
-    public String getHTMLCode();
 
     public List<String> getMessages();
 

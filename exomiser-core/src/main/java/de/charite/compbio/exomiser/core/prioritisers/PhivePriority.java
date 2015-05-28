@@ -64,6 +64,8 @@ public class PhivePriority implements Prioritiser {
     public PhivePriority(List<String> hpoIds, String disease) {
         this.hpoIds = hpoIds;
         this.disease = disease;
+        //This can be moved into a report section - FilterReport should probably turn into an AnalysisStepReport
+        //Then can remove getMessages from the interface. 
         messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
         if (disease != null) {
             String url = String.format("http://omim.org/%s", disease);
@@ -86,15 +88,6 @@ public class PhivePriority implements Prioritiser {
     @Override
     public PriorityType getPriorityType() {
         return PRIORITY_TYPE;
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    @Override
-    public List<String> getMessages() {
-        return messages;
     }
 
     @Override
@@ -347,23 +340,13 @@ public class PhivePriority implements Prioritiser {
         }
     }
 
-    @Override
-    public boolean displayInHTML() {
-        return true;
-    }
-
     /**
-     * @return an HTML message for the table describing the action of filters
+     * @return list of messages representing process, result, and if any, errors
+     * of score filtering.
      */
     @Override
-    public String getHTMLCode() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<ul>\n");
-        for (String message : messages) {
-            sb.append("<li>" + message + "</li>\n");
-        }
-        sb.append("</ul>\n");
-        return sb.toString();
+    public List<String> getMessages() {
+        return messages;
     }
 
     public void setDataSource(DataSource dataSource) {
@@ -378,6 +361,6 @@ public class PhivePriority implements Prioritiser {
 
     @Override
     public String toString() {
-        return "PhivePriority{'" + PRIORITY_TYPE.getCommandLineValue() + "' hpoIds=" + hpoIds + '}';
+        return PRIORITY_TYPE.getCommandLineValue() + "  hpoIds=" + hpoIds;
     }
 }

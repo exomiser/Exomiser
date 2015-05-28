@@ -561,50 +561,21 @@ public class HiPhivePriority implements Prioritiser {
         return bestHitIndex;
     }
 
+    public void setPriorityService(PriorityService priorityService) {
+        this.priorityService = priorityService;
+    }
+
     /**
      * @return list of messages representing process, result, and if any, errors
      * of score filtering.
      */
     @Override
     public List<String> getMessages() {
-        return this.messages;
-    }
-
-    /**
-     * This causes a summary of RW prioritization to appear in the HTML output
-     * of the exomizer
-     *
-     * @return
-     */
-    @Override
-    public boolean displayInHTML() {
-        return true;
-    }
-
-    /**
-     * @return HTML code for displaying the HTML output of the Exomizer.
-     */
-    @Override
-    public String getHTMLCode() {
-        if (messages.isEmpty()) {
-            return "Error running HiPhive Prioritiser";
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<ul>\n");
-            for (String m : messages) {
-                sb.append(String.format("<li>%s</li>\n", m));
-            }
-            sb.append("</ul>\n");
-            return sb.toString();
-        }
-    }
-
-    public void setPriorityService(PriorityService priorityService) {
-        this.priorityService = priorityService;
+        return messages;
     }
 
     @Override
     public String toString() {
-        return "HiPhivePriority{'" + getPriorityType().getCommandLineValue() + "', hpoIds=" + hpoIds + '}';
+        return getPriorityType().getCommandLineValue() + ", hpoIds=" + hpoIds;
     }
 }

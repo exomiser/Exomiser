@@ -33,11 +33,6 @@ public class ExomeWalkerPriority implements Prioritiser {
     private final PriorityType priorityType = PriorityType.EXOMEWALKER_PRIORITY;
 
     /**
-     * A list of error-messages
-     */
-    private List<String> error_record = new ArrayList<>();
-
-    /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
@@ -169,17 +164,6 @@ public class ExomeWalkerPriority implements Prioritiser {
     }
 
     /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    public List<String> getMessages() {
-        for (String s : error_record) {
-            messages.add("Error: " + s);
-        }
-        return messages;
-    }
-
-    /**
      * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      * <P>
@@ -238,30 +222,11 @@ public class ExomeWalkerPriority implements Prioritiser {
     }
 
     /**
-     * This causes a summary of RW prioritization to appear in the HTML output
-     * of the exomizer
+     * @return list of messages representing process, result, and if any, errors
+     * of score filtering.
      */
-    public boolean displayInHTML() {
-        return true;
-    }
-
-    /**
-     * @return HTML code for displaying the HTML output of the Exomizer.
-     */
-    public String getHTMLCode() {
-        if (messages == null) {
-            return "Error initializing Random Walk matrix";
-        } else if (messages.size() == 1) {
-            return String.format("<ul><li>%s</li></ul>", messages.get(0));
-        } else {
-            StringBuffer sb = new StringBuffer();
-            sb.append("<ul>\n");
-            for (String m : messages) {
-                sb.append(String.format("<li>%s</li>\n", m));
-            }
-            sb.append("</ul>\n");
-            return sb.toString();
-        }
+    public List<String> getMessages() {
+        return messages;
     }
 
     /**
@@ -277,6 +242,6 @@ public class ExomeWalkerPriority implements Prioritiser {
 
     @Override
     public String toString() {
-        return "ExomeWalkerPriority{'" + priorityType.getCommandLineValue() + "', seedGenes=" + seedGenes + '}';
+        return priorityType.getCommandLineValue() + ", seedGenes=" + seedGenes;
     }    
 }
