@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import htsjdk.variant.variantcontext.VariantContext;
+import java.util.Collections;
 
 /**
  *
@@ -39,7 +40,7 @@ public class InheritanceModeAnalyser {
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
     /**
-     * Analyses the inheritance modes for a gene according to the 
+     * Analyses the inheritance modes for a gene according to the variants which have *PASSED* filtering.
      * @param gene
      * @param pedigree
      * @return a Set of inheritance modes with which the gene is compatible with.
@@ -55,6 +56,11 @@ public class InheritanceModeAnalyser {
      * @return 
      */
     private Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variants, Pedigree pedigree) {           
+        
+        if (variants.isEmpty()) {
+            return Collections.emptySet();
+        }
+        
         Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
         
         Variant firstVariant = variants.get(0);
