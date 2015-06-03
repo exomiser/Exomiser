@@ -167,4 +167,10 @@ public class FilterFactory {
         logger.info("Made new: {}", filter);
         return filter;
     }
+    
+    public GeneFilter getPriorityScoreFilter(float minPriorityScore) {
+        GeneFilter filter = new GenePriorityScoreFilter(minPriorityScore);
+        logger.info("Made new: {}", filter);
+        return filter;
+    }
 }

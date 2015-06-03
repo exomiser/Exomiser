@@ -169,5 +169,13 @@ public class FilterFactoryTest {
         Filter resultFilter = instance.getInheritanceFilter(modeOfInheritance);
         assertThat(resultFilter, equalTo(expFilter));
     }
-    
+ 
+    @Test
+    public void testGetGenePriorityScoreFilter() {
+        float minPriorityScore = 0.8f;
+        Filter expFilter = new GenePriorityScoreFilter(minPriorityScore);
+        Filter resultFilter = instance.getPriorityScoreFilter(minPriorityScore);
+        assertThat(resultFilter, equalTo(expFilter));
+    }
+
 }

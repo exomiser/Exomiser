@@ -45,7 +45,10 @@ public enum FilterType {
     /**
      * Filter for target regions in a BED file
      */
-    BED_FILTER;
+    BED_FILTER, 
+    
+    //Gene Priority score
+    PRIORITY_SCORE_FILTER;
 
     @Override
     public String toString() {
@@ -66,6 +69,8 @@ public enum FilterType {
                 return "Inheritance";
             case BED_FILTER:
                 return "Gene panel target region (Bed filter)";
+            case PRIORITY_SCORE_FILTER:
+                return "Gene priority score";
         }
         return "Unidentified Filter";
     }
