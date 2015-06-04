@@ -10,6 +10,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -359,6 +360,33 @@ public class PhivePriority implements Prioritiser {
         setUpSQLPreparedStatements();
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + Objects.hashCode(this.hpoIds);
+        hash = 47 * hash + Objects.hashCode(this.disease);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PhivePriority other = (PhivePriority) obj;
+        if (!Objects.equals(this.hpoIds, other.hpoIds)) {
+            return false;
+        }
+        if (!Objects.equals(this.disease, other.disease)) {
+            return false;
+        }
+        return true;
+    }
+
+    
     @Override
     public String toString() {
         return PRIORITY_TYPE.getCommandLineValue() + "  hpoIds=" + hpoIds;

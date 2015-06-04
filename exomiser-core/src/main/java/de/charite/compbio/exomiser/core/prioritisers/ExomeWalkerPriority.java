@@ -4,6 +4,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,6 +241,33 @@ public class ExomeWalkerPriority implements Prioritiser {
         return val;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.priorityType);
+        hash = 37 * hash + Objects.hashCode(this.seedGenes);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ExomeWalkerPriority other = (ExomeWalkerPriority) obj;
+        if (this.priorityType != other.priorityType) {
+            return false;
+        }
+        if (!Objects.equals(this.seedGenes, other.seedGenes)) {
+            return false;
+        }
+        return true;
+    }
+
+    
     @Override
     public String toString() {
         return priorityType.getCommandLineValue() + ", seedGenes=" + seedGenes;

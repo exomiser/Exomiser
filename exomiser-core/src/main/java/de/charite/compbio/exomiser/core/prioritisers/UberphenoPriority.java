@@ -16,6 +16,7 @@ import sonumina.math.graph.SlimDirectedGraphView;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
 import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -221,6 +222,32 @@ public class UberphenoPriority implements Prioritiser {
         List<Term> termsAl = new ArrayList<>(terms);
         double similarityScore = similarityMeasure.computeObjectSimilarity((ArrayList) annotationsOfDisease, (ArrayList) termsAl);
         return new UberphenoPriorityResult(similarityScore);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.uberpheno);
+        hash = 29 * hash + Objects.hashCode(this.annotationsOfDisease);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final UberphenoPriority other = (UberphenoPriority) obj;
+        if (!Objects.equals(this.uberpheno, other.uberpheno)) {
+            return false;
+        }
+        if (!Objects.equals(this.annotationsOfDisease, other.annotationsOfDisease)) {
+            return false;
+        }
+        return true;
     }
 
     @Override

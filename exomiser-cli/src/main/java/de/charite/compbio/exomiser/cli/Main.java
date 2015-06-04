@@ -10,7 +10,9 @@ import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
@@ -125,7 +127,10 @@ public class Main {
         SampleData sampleData = sampleDataFactory.createSampleData(vcfFile, pedigreeFile);
 
         //run the analysis....
-        Exomiser exomiser = applicationContext.getBean(Exomiser.class);
+        VariantDataService variantDataService = applicationContext.getBean(VariantDataService.class);
+        PriorityFactory priorityFactory = applicationContext.getBean(PriorityFactory.class);
+        
+        Exomiser exomiser = new Exomiser(variantDataService, priorityFactory);
         exomiser.analyse(sampleData, exomiserSettings);
 
         logger.info("Writing results");

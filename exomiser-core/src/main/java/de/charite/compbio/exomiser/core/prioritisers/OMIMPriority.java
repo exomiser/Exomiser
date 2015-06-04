@@ -192,6 +192,24 @@ public class OMIMPriority implements Prioritiser {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 5;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final OMIMPriority other = (OMIMPriority) obj;
+        return true;
+    }
+  
+    @Override
     public String toString() {
         return getPriorityType().getCommandLineValue();
     } 

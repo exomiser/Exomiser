@@ -45,8 +45,8 @@ public class PriorityFactoryTestConfig {
     }
     
     @Bean
-    PriorityFactory priorityFactory() {
-        return new PriorityFactory();
+    PriorityFactoryImpl priorityFactory() {
+        return new PriorityFactoryImpl();
     }
     
     @Bean

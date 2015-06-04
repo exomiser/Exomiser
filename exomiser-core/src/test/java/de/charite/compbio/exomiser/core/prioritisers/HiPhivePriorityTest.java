@@ -7,8 +7,13 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.charite.compbio.exomiser.core.model.Gene;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 /**
@@ -35,27 +40,26 @@ public class HiPhivePriorityTest {
         disease = "OMIM:100100";
         exomiser2params = "";
         
-        instance = new HiPhivePriority(hpoIds, candidateGene, disease, exomiser2params, null);
+        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions(), null);
     }
 
     @Test
     public void testGetPriorityType() {
+        assertThat(instance.getPriorityType(), equalTo(PriorityType.HI_PHIVE_PRIORITY));
     }
 
+    @Ignore
     @Test
     public void testPrioritizeGenes() {
+        instance.prioritizeGenes(new ArrayList<Gene>());
     }
 
-    @Test
-    public void testGetMessages() {
-    }
 
+    @Ignore
     @Test
-    public void testDisplayInHTML() {
-    }
-
-    @Test
-    public void testGetHTMLCode() {
+    public void testPrioritizeGenesInBenchmarkingMode() {
+        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions(disease, candidateGene), null);
+        instance.prioritizeGenes(new ArrayList<Gene>());
     }
 
     @Test

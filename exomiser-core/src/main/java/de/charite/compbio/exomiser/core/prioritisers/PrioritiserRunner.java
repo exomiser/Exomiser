@@ -50,10 +50,14 @@ public class PrioritiserRunner {
     public List<Gene> prioritiseGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
         logger.info("Running prioritisers over {} genes", genes.size());
         for (Prioritiser prioritiser : prioritisers) {
-            logger.info("Starting prioritiser: {}", prioritiser);
-            prioritiser.prioritizeGenes(genes);
+            run(prioritiser, genes);
         }
         logger.info("Done prioritising genes");
         return genes;
     }
+
+    public void run(Prioritiser prioritiser, List<Gene> genes) {
+        prioritiser.prioritizeGenes(genes);
+    }
+   
 }

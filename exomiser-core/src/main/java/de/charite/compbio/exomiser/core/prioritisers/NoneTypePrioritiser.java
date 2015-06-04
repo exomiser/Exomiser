@@ -15,7 +15,7 @@ import java.util.List;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class NoneTypePrioritiser implements Prioritiser {
-
+    
     @Override
     public void prioritizeGenes(List<Gene> geneList) {
         //Deliberately empty - this prioritiser does nothing.
@@ -31,6 +31,24 @@ public class NoneTypePrioritiser implements Prioritiser {
         return Collections.emptyList();
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NoneTypePrioritiser other = (NoneTypePrioritiser) obj;
+        return true;
+    } 
+  
     @Override
     public String toString() {
         return getPriorityType().getCommandLineValue();

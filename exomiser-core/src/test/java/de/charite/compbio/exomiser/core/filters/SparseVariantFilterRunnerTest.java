@@ -32,8 +32,8 @@ public class SparseVariantFilterRunnerTest {
     private SparseVariantFilterRunner instance;
     
     @Mock
-    private VariantDataService variantEvaluationFactory;
-    
+    private VariantDataService variantDataService;
+
     @Mock
     private TargetFilter targetFilter;
     @Mock
@@ -54,9 +54,9 @@ public class SparseVariantFilterRunnerTest {
     public void setUp() {
 
         passesAllFilters = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failsAllFilters = new VariantEvaluation.VariantBuilder(1, 2, "A", "T").build();
-        passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(1, 3, "A", "T").build();
-        passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(1, 4, "A", "T").build();
+        failsAllFilters = new VariantEvaluation.VariantBuilder(2, 2, "A", "T").build();
+        passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(3, 3, "A", "T").build();
+        passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(4, 4, "A", "T").build();
 
         makeVariantEvaluations(); 
                 
@@ -151,5 +151,34 @@ public class SparseVariantFilterRunnerTest {
       
         List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
         assertThat(result, equalTo(variantEvaluations));
+    }
+    
+    @Test
+    public void testRunWithOneFilter_OnlyReturnsVariantPassingAllFilters() {
+        
+        VariantFilter filterToPass = qualityFilter;
+        
+        List<VariantEvaluation> expResult = new ArrayList<>();
+        expResult.add(passesTargetQualityFilter);
+        expResult.add(passesQualityFrequencyFilter);
+        expResult.add(passesAllFilters);
+                
+        List<VariantEvaluation> result = instance.run(filterToPass, variantEvaluations);
+        
+        assertThat(result, equalTo(expResult));
+        for (VariantEvaluation variantEvaluation : result) {
+            assertPassedFilterAndFailedAllOthers(variantEvaluation, filterToPass);
+        }
+        
+    }
+
+    private void assertPassedFilterAndFailedAllOthers(VariantEvaluation variantEvaluation, VariantFilter filterToPass) {
+        assertThat(variantEvaluation.passedFilters(), is(true));
+        assertThat(variantEvaluation.passedFilter(filterToPass.getFilterType()), is(true));
+        //filters not run should return false
+        assertThat(variantEvaluation.passedFilter(FilterType.TARGET_FILTER), is(false));
+        assertThat(variantEvaluation.passedFilter(FilterType.FREQUENCY_FILTER), is(false));
+        assertThat(variantEvaluation.passedFilter(FilterType.PATHOGENICITY_FILTER), is(false));
+        assertThat(variantEvaluation.passedFilter(FilterType.ENTREZ_GENE_ID_FILTER), is(false));
     }
 }

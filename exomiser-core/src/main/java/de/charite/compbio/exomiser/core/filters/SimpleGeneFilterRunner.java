@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.LinkedHashSet;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
+public class SimpleGeneFilterRunner implements FilterRunner<GeneFilter, Gene> {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleGeneFilterRunner.class);
 
@@ -35,23 +36,36 @@ public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
         return genes;
     }
 
+    @Override
+    public List<Gene> run(GeneFilter filter, List<Gene> genes) {
+        for (Gene gene : genes) {
+            if (gene.passedFilters()) {
+                runFilterAndAddResult(filter, gene);
+            }
+        }
+        return genes;
+    }
+
     private void runAllFiltersOverGene(List<GeneFilter> filters, Gene gene) {
         for (Filter filter : filters) {
             FilterResult filterResult = runFilterAndAddResult(filter, gene);
-            addFilterResultToGeneVariantEvaluations(filterResult, gene.getVariantEvaluations());
+            //TODO: should this always be the case?
+            addFilterResultToVariants(filterResult, gene.getVariantEvaluations());
         }
     }
 
-    private FilterResult runFilterAndAddResult(Filter filter, Gene gene) {
-        FilterResult filterResult = filter.runFilter(gene);
-        gene.addFilterResult(filterResult);
-        return filterResult;
-    }
-
-    private void addFilterResultToGeneVariantEvaluations(FilterResult filterResult, List<VariantEvaluation> variantEvaluations) {
+    private void addFilterResultToVariants(FilterResult filterResult, List<VariantEvaluation> variantEvaluations) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             variantEvaluation.addFilterResult(filterResult);
         }
+    }
+
+    private FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {
+        FilterResult filterResult = filter.runFilter(filterable);
+        if (filterResult.getResultStatus() != FilterResultStatus.NOT_RUN) {
+            filterable.addFilterResult(filterResult);
+        }
+        return filterResult;
     }
 
     private Set<FilterType> getFilterTypes(List<GeneFilter> filters) {

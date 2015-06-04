@@ -450,7 +450,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=1.0 failedFilterTypes=[]";
+        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=1.0 filterStatus=UNFILTERED failedFilters=[] passedFilters=[]";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }

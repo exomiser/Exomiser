@@ -5,8 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,63 +27,68 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleVariantFilterRunner implements FilterRunner<VariantEvaluation, VariantFilter> {
+public class SimpleVariantFilterRunner implements FilterRunner<VariantFilter, VariantEvaluation> {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleVariantFilterRunner.class);
 
-    public static class VariantFilterRunner {
+    private final VariantDataService variantDataService;
 
-        private List<VariantFilter> variantFilters = new ArrayList<>();
-        private List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-
-        public VariantFilterRunner run(VariantFilter frequencyFilter) {
-            variantFilters.add(frequencyFilter);
-            return this;
-        }
-
-        public VariantFilterRunner run(List<VariantFilter> variantFilters) {
-            this.variantFilters = variantFilters;
-            return this;
-        }
-
-        public VariantFilterRunner over(List<VariantEvaluation> variantEvaluations) {
-            this.variantEvaluations = variantEvaluations;
-            return this;
-        }
-
-        public List<VariantEvaluation> usingSimpleFiltering() {
-            return new SimpleVariantFilterRunner().run(variantFilters, variantEvaluations);
-        }
+    public SimpleVariantFilterRunner(VariantDataService variantDataService) {
+        this.variantDataService = variantDataService;
     }
-
+   
     @Override
     public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
         logger.info("Filtering {} variants using non-destructive simple filtering...", variantEvaluations.size());
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            runAllFiltersOverVariantEvaluation(variantFilters, variantEvaluation);
+            run(variantFilters, variantEvaluation);
         }
         logger.info("Ran {} filters over {} variants using non-destructive simple filtering.", getFilterTypes(variantFilters), variantEvaluations.size());
         return variantEvaluations;
     }
-    
-    private void runAllFiltersOverVariantEvaluation(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
+
+    @Override
+    public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> filterables) {
+        for (VariantEvaluation variantEvaluation : filterables) {
+            addMissingDataAndRunFilter(filter, variantEvaluation);
+        }
+        return filterables;
+    }
+
+    private void run(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
         for (VariantFilter filter : variantFilters) {
-            runFilterAndAddResult(filter, variantEvaluation);
+            addMissingDataAndRunFilter(filter, variantEvaluation);
         }
     }
 
-    private FilterResult runFilterAndAddResult(Filter filter, VariantEvaluation variantEvaluation) {
-        FilterResult filterResult = filter.runFilter(variantEvaluation);
-        variantEvaluation.addFilterResult(filterResult);
+    protected void addMissingDataAndRunFilter(Filter filter, VariantEvaluation variantEvaluation) {
+        addMissingFrequencyAndPathogenicityData(filter.getFilterType(), variantEvaluation);
+        FilterResult result = runFilterAndAddResult(filter, variantEvaluation);
+    }
+
+    protected void addMissingFrequencyAndPathogenicityData(FilterType filterType, VariantEvaluation variantEvaluation) {
+        switch (filterType) {
+            case FREQUENCY_FILTER:
+                variantDataService.setVariantFrequencyData(variantEvaluation);
+                break;
+            case PATHOGENICITY_FILTER:
+                variantDataService.setVariantPathogenicityData(variantEvaluation);
+                break;
+        }
+    }
+
+    protected FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {
+        FilterResult filterResult = filter.runFilter(filterable);
+        filterable.addFilterResult(filterResult);
         return filterResult;
     }
 
-    private Set<FilterType> getFilterTypes(List<VariantFilter> filters) {
+    protected Set<FilterType> getFilterTypes(List<VariantFilter> filters) {
         Set<FilterType> filtersRun = new LinkedHashSet<>();
         for (Filter filter : filters) {
             filtersRun.add(filter.getFilterType());
         }
         return filtersRun;
     }
-    
+
 }

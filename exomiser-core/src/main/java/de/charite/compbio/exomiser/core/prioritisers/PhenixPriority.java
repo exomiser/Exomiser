@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import ontologizer.go.OBOParser;
 import ontologizer.go.OBOParserException;
@@ -471,6 +472,31 @@ public class PhenixPriority implements Prioritiser {
 //        return String.format("<ul><li>%s</li><li>%s</li><li>%s</li></ul>\n", s, t, u);
 //
 //    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 13 * hash + Objects.hashCode(this.hpoQueryTerms);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PhenixPriority other = (PhenixPriority) obj;
+        if (!Objects.equals(this.hpoQueryTerms, other.hpoQueryTerms)) {
+            return false;
+        }
+        if (this.symmetric != other.symmetric) {
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public String toString() {

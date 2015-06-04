@@ -506,7 +506,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public String toString() {
-        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + variantScore + " failedFilterTypes=" + failedFilterTypes;
+        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + variantScore + " filterStatus=" + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet();
     }
 
     /**

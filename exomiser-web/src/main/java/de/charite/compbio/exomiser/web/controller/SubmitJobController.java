@@ -24,9 +24,11 @@ import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
 import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -65,7 +67,9 @@ public class SubmitJobController {
     private SampleDataFactory sampleDataFactory;
 
     @Autowired
-    private Exomiser exomiser;
+    VariantDataService variantDataService;
+    @Autowired
+    PriorityFactory priorityFactory;
     
     @Autowired
     private int maxVariants;
@@ -120,6 +124,8 @@ public class SubmitJobController {
             model.addAttribute("numVariants", numVariantsInSample);
             return "resubmitWithFewerVariants";
         }
+         
+        Exomiser exomiser = new Exomiser(variantDataService, priorityFactory);
         exomiser.analyse(sampleData, settings);
 
         buildResultsModel(model, settings, sampleData);

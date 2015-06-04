@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
@@ -33,13 +32,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(MockitoJUnitRunner.class)
-public class VariantDataServiceTest {
+public class VariantDataServiceImplTest {
 
     @InjectMocks
-    private VariantDataService instance;
+    private VariantDataServiceImpl instance;
     @Mock
     private PathogenicityDao mockPathogenicityDao;
     @Mock

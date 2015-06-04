@@ -44,6 +44,7 @@ import java.util.Set;
  * hardcoded to 5) was added).
  *
  * @author Peter Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
 public class Gene implements Comparable<Gene>, Filterable {
@@ -62,24 +63,19 @@ public class Gene implements Comparable<Gene>, Filterable {
      * gene for the disease under study by exome sequencing.
      */
     private float priorityScore = 0f;
-
     /**
      * A score representing the combined pathogenicity predictions for the
      * {@link jannovar.exome.Variant Variant} objects associated with this gene.
      */
     private float filterScore = 0f;
-
     /**
      * A score representing the combined filter and priority scores.
      */
     private float combinedScore = 0f;
-
+    
     private final Map<PriorityType, PriorityResult> priorityResultsMap;
-
     private Set<ModeOfInheritance> inheritanceModes;
-
     private final String geneSymbol;
-
     private final int entrezGeneId;
 
     /**

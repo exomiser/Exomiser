@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.pedigree.Genotype;

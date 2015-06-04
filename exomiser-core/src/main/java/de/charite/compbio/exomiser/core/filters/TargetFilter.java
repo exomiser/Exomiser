@@ -46,10 +46,15 @@ public class TargetFilter implements VariantFilter {
      * INTERGENIC, that we will runFilter out using this class.
      */
     public TargetFilter() {
-        offTargetVariantTypes = EnumSet.of(VariantEffect.UPSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT,
-                VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-                VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.DOWNSTREAM_GENE_VARIANT,
-                VariantEffect.SPLICE_REGION_VARIANT);
+        offTargetVariantTypes = EnumSet.of(
+                VariantEffect.UPSTREAM_GENE_VARIANT, 
+                VariantEffect.INTERGENIC_VARIANT,
+                VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, 
+                VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+                VariantEffect.SYNONYMOUS_VARIANT, 
+                VariantEffect.DOWNSTREAM_GENE_VARIANT,
+                VariantEffect.SPLICE_REGION_VARIANT
+        );
     }
 
     @Override

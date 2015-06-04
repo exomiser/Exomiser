@@ -7,67 +7,153 @@ package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.Exomiser;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
+import de.charite.compbio.exomiser.core.filters.GeneFilter;
+import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
+import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
+import de.charite.compbio.exomiser.core.filters.TargetFilter;
+import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
+import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
+import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
-import static org.springframework.util.Assert.isTrue;
 
 /**
 * Tests for Exomiser class.
 *
 * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
 */
-@RunWith(MockitoJUnitRunner.class)
 public class ExomiserTest {
 
-    private SettingsBuilder settingsBuilder;
     private Exomiser instance;
+            
+    private SettingsBuilder settingsBuilder;
+    private ExomiserSettings settings;
     private SampleData sampleData;
 
-    @Mock
-    private FilterFactory filterFactory;
-
-    public ExomiserTest() {
-    }
-
     @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-
-
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
-        instance = new Exomiser();
+    public void setUp() {       
+        VariantDataService stubVariantDataService = new VariantDataServiceStub();
+        PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
+        instance = new Exomiser(stubVariantDataService, stubPriorityFactory);
+        
+        settingsBuilder = new ExomiserSettings.SettingsBuilder().vcfFilePath(Paths.get("testFile"));
         sampleData = new SampleData();
     }
 
-    @Ignore
     @Test
-    public void testFullAnalysis() {
-        //given
-        sampleData = new SampleData();
-        ExomiserSettings exomiserSettings = settingsBuilder.runFullAnalysis(true).build();
-        //when
-        instance.analyse(sampleData, exomiserSettings);
-        //then
+    public void testDefaultAnalysisIsTargetFrequencyAndPathogenicityFilters() {
+        VariantFilter targetFilter = new TargetFilter();
+        VariantFilter frequencyFilter = new FrequencyFilter(100f, false);
+        VariantFilter pathogenicityFilter = new PathogenicityFilter(false);
+        
+        ExomiserSettings settings = settingsBuilder.build();
+        
+        Analysis expected = new Analysis(sampleData, settings);
+        expected.addStep(targetFilter);
+        expected.addStep(frequencyFilter);
+        expected.addStep(pathogenicityFilter);
+        
+        Analysis result = instance.analyse(sampleData, settings);
+        assertThat(result, equalTo(expected));
     }
 
-    @Ignore
     @Test
-    public void testQuickAnalysis() {
-        sampleData = new SampleData();
-        ExomiserSettings exomiserSettings = settingsBuilder.runFullAnalysis(false).build();
-        instance.analyse(sampleData, exomiserSettings);
-        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-    }
+    public void testSpecifyingInheritanceModeAddsAnInheritanceFilter() {
+        final ModeOfInheritance dominantInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
 
+        VariantFilter targetFilter = new TargetFilter();
+        VariantFilter frequencyFilter = new FrequencyFilter(100f, false);
+        VariantFilter pathogenicityFilter = new PathogenicityFilter(false);
+        GeneFilter inheritanceFilter = new InheritanceFilter(dominantInheritance);
+        
+        settings = settingsBuilder.runFullAnalysis(false)
+                .modeOfInheritance(dominantInheritance).build();
+        
+        Analysis expected = new Analysis(sampleData, settings);
+        expected.addStep(targetFilter);
+        expected.addStep(frequencyFilter);
+        expected.addStep(pathogenicityFilter);
+        expected.addStep(inheritanceFilter);
+        
+        Analysis result = instance.analyse(sampleData, settings);
+        assertThat(result, equalTo(expected));
+        
+    }
+    
+    @Test
+    public void testSpecifyingOmimPrioritiserOnlyAddsOmimPrioritiser() {
+        final ModeOfInheritance dominantInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+
+        VariantFilter targetFilter = new TargetFilter();
+        VariantFilter frequencyFilter = new FrequencyFilter(100f, false);
+        VariantFilter pathogenicityFilter = new PathogenicityFilter(false);
+        GeneFilter inheritanceFilter = new InheritanceFilter(dominantInheritance);
+        Prioritiser omimPrioritiser = new NoneTypePrioritiser();
+        
+        settings = settingsBuilder.runFullAnalysis(false)
+                .modeOfInheritance(dominantInheritance)
+                .usePrioritiser(PriorityType.OMIM_PRIORITY)
+                .build();
+        
+        Analysis expected = new Analysis(sampleData, settings);
+        expected.addStep(targetFilter);
+        expected.addStep(frequencyFilter);
+        expected.addStep(pathogenicityFilter);
+        expected.addStep(inheritanceFilter);
+        expected.addStep(omimPrioritiser);
+        
+        Analysis result = instance.analyse(sampleData, settings);
+        assertThat(result, equalTo(expected));
+        
+    }
+    
+    @Test
+    public void testSpecifyingPrioritiserAddsAnOmimAndTheSpecifiedPrioritiser() {
+        final ModeOfInheritance dominantInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+
+        VariantFilter targetFilter = new TargetFilter();
+        VariantFilter frequencyFilter = new FrequencyFilter(100f, false);
+        VariantFilter pathogenicityFilter = new PathogenicityFilter(false);
+        GeneFilter inheritanceFilter = new InheritanceFilter(dominantInheritance);
+        Prioritiser omimPrioritiser = new NoneTypePrioritiser();
+        List<String> hpoIds = new ArrayList<>();
+        hpoIds.add("HP:000001");
+        hpoIds.add("HP:000002");
+        hpoIds.add("HP:000003");
+        Prioritiser phivePrioritiser = new NoneTypePrioritiser();
+        
+        settings = settingsBuilder.runFullAnalysis(false)
+                .modeOfInheritance(dominantInheritance)
+                .usePrioritiser(PriorityType.PHIVE_PRIORITY)
+                .hpoIdList(hpoIds)
+                .build();
+        
+        Analysis expected = new Analysis(sampleData, settings);
+        expected.addStep(targetFilter);
+        expected.addStep(frequencyFilter);
+        expected.addStep(pathogenicityFilter);
+        expected.addStep(inheritanceFilter);
+        expected.addStep(omimPrioritiser);
+        expected.addStep(phivePrioritiser);
+        
+        Analysis result = instance.analyse(sampleData, settings);
+        assertThat(result, equalTo(expected));        
+    }
+    
 }

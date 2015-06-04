@@ -5,18 +5,20 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import static de.charite.compbio.exomiser.core.filters.FilterType.*;
-import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -28,6 +30,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SimpleVariantFilterRunnerTest {
 
+    @InjectMocks
+    private SimpleVariantFilterRunner instance;
+    
+    @Mock
+    private VariantDataService variantDataService;
+    
     //Frequency run data
     @Mock
     private FrequencyFilter frequencyFilter;
@@ -49,9 +57,9 @@ public class SimpleVariantFilterRunnerTest {
     public void setUp() {
 
         passesAllFilters = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failsAllFilters = new VariantEvaluation.VariantBuilder(1, 2, "A", "T").build();
-        passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(1, 3, "A", "T").build();
-        passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(1, 4, "A", "T").build();
+        failsAllFilters = new VariantEvaluation.VariantBuilder(2, 2, "A", "T").build();
+        passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(3, 3, "A", "T").build();
+        passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(4, 4, "A", "T").build();
 
         makeVariantEvaluations();
                 
@@ -62,10 +70,10 @@ public class SimpleVariantFilterRunnerTest {
 
     private void makeVariantEvaluations() {
         variantEvaluations = new ArrayList<>();
-        variantEvaluations.add(passesTargetQualityFilter);
-        variantEvaluations.add(passesQualityFrequencyFilter);
-        variantEvaluations.add(failsAllFilters);
         variantEvaluations.add(passesAllFilters);
+        variantEvaluations.add(failsAllFilters);
+        variantEvaluations.add(passesQualityFrequencyFilter);
+        variantEvaluations.add(passesTargetQualityFilter);
     }
 
     private void setUpFrequencyMocks() {
@@ -105,7 +113,8 @@ public class SimpleVariantFilterRunnerTest {
     }
 
     private void printVariantFilterStatus(String variantName, VariantEvaluation varEval) {
-        System.out.printf("%s: Passed:%s Failed:%s%n", variantName, varEval.getFilterResults().keySet(), varEval.getFailedFilterTypes());
+//        System.out.printf("%s: Passed:%s Failed:%s%n", variantName, varEval.getFilterResults().keySet(), varEval.getFailedFilterTypes());
+        System.out.printf("%s: %s%n", variantName, varEval);
     }
     
     private void assertPassedFilters(VariantEvaluation variant, FilterType... filterTypes) {
@@ -120,109 +129,118 @@ public class SimpleVariantFilterRunnerTest {
         }
     }
     
-    @Test
-    public void testRun_AddsFilterResultsToVariant() {
-        List<VariantFilter> filters = new ArrayList<>();
-        filters.add(targetFilter);
-        filters.add(qualityFilter);
-        filters.add(frequencyFilter);
-
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        variantEvaluations.add(passesAllFilters);
-
-        List<VariantEvaluation> result = new VariantFilterRunner().run(filters).over(variantEvaluations).usingSimpleFiltering();
-        assertThat(result, equalTo(variantEvaluations));
-
-        printVariantFilterStatus("passesAllFilters", passesAllFilters);
-        assertThat(passesAllFilters.passedFilters(), is(true));
-        assertPassedFilters(passesAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+    private void assertFailsEverything(VariantEvaluation variantEvaluation) {
+        assertThat(variantEvaluation.passedFilters(), is(false));
+        Set<FilterType> allFilterTypes = EnumSet.allOf(FilterType.class);
+        //filters not run should return false
+        for (FilterType filterType : allFilterTypes) {
+            assertThat(variantEvaluation.passedFilter(filterType), is(false));
+        }
     }
 
-    @Test
-    public void testUseNonDestructiveFilteringReturnsAllVariantEvaluations() {
-        List<VariantFilter> filters = new ArrayList<>();
-        filters.add(targetFilter);
-        filters.add(qualityFilter);
-        filters.add(frequencyFilter);
-
-        List<VariantEvaluation> result = new VariantFilterRunner().run(filters).over(variantEvaluations).usingSimpleFiltering();
-        assertThat(result, equalTo(variantEvaluations));
-
-        printVariantFilterStatus("passesAllFilters", passesAllFilters);
-        assertThat(passesAllFilters.passedFilters(), is(true));
-        assertPassedFilters(passesAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
-
-        printVariantFilterStatus("failsAllFilters", failsAllFilters);
-        assertThat(failsAllFilters.passedFilters(), is(false));
-        assertPassedFilters(failsAllFilters);
-        assertFailedFilters(failsAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
-
-        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
-        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
-        assertPassedFilters(passesQualityFrequencyFilter, QUALITY_FILTER, FREQUENCY_FILTER);
-        assertFailedFilters(passesQualityFrequencyFilter, TARGET_FILTER);
-
-        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
-        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
-        assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, TARGET_FILTER);
-        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
-    }
-
-    @Test
-    public void testUseNonDestructiveFilteringWithOneFilterReturnsAllVariantEvaluations() {
-
-        List<VariantEvaluation> result = new VariantFilterRunner()
-                .run(frequencyFilter)
-                .over(variantEvaluations)
-                .usingSimpleFiltering();
-
-        assertThat(result, equalTo(variantEvaluations));
-
-        printVariantFilterStatus("passesAllFilters", passesAllFilters);
-        assertThat(passesAllFilters.passedFilters(), is(true));
-        assertPassedFilters(passesAllFilters, FREQUENCY_FILTER);
-
-        printVariantFilterStatus("failsAllFilters", failsAllFilters);
-        assertThat(failsAllFilters.passedFilters(), is(false));
-        assertFailedFilters(failsAllFilters, FREQUENCY_FILTER);
-
-        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
-        assertThat(passesQualityFrequencyFilter.passedFilters(), is(true));
-        assertPassedFilters(passesQualityFrequencyFilter, FREQUENCY_FILTER);
-
-        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
-        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
-        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
-    }
-
-    @Test
-    public void testUseNonDestructiveFilteringWithTwoChainedFiltersReturnsAllVariantEvaluations() {
-
-        List<VariantEvaluation> result = new VariantFilterRunner()
-                .run(frequencyFilter)
-                .run(targetFilter)
-                .over(variantEvaluations)
-                .usingSimpleFiltering();
-
-        assertThat(result, equalTo(variantEvaluations));
-
-        printVariantFilterStatus("passesAllFilters", passesAllFilters);
-        assertPassedFilters(passesAllFilters, TARGET_FILTER, FREQUENCY_FILTER);
-
-        printVariantFilterStatus("failsAllFilters", failsAllFilters);
-        assertThat(failsAllFilters.passedFilters(), is(false));
-        assertFailedFilters(failsAllFilters, TARGET_FILTER, FREQUENCY_FILTER);
-
-        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
-        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
-        assertPassedFilters(passesQualityFrequencyFilter, FREQUENCY_FILTER);
-        assertFailedFilters(passesQualityFrequencyFilter, TARGET_FILTER);
-
-        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
-        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
-        assertPassedFilters(passesTargetQualityFilter, TARGET_FILTER);
-        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
-    }
+//    @Test
+//    public void testRun_AddsFilterResultsToVariant() {
+//        List<VariantFilter> filters = new ArrayList<>();
+//        filters.add(targetFilter);
+//        filters.add(qualityFilter);
+//        filters.add(frequencyFilter);
+//
+//        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+//        variantEvaluations.add(passesAllFilters);
+//
+//        List<VariantEvaluation> result = new VariantFilterRunner().run(filters).over(variantEvaluations).usingSimpleFiltering();
+//        assertThat(result, equalTo(variantEvaluations));
+//
+//        printVariantFilterStatus("passesAllFilters", passesAllFilters);
+//        assertThat(passesAllFilters.passedFilters(), is(true));
+//        assertPassedFilters(passesAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+//    }
+//
+//    @Test
+//    public void testUseNonDestructiveFilteringReturnsAllVariantEvaluations() {
+//        List<VariantFilter> filters = new ArrayList<>();
+//        filters.add(targetFilter);
+//        filters.add(qualityFilter);
+//        filters.add(frequencyFilter);
+//
+//        List<VariantEvaluation> result = new VariantFilterRunner().run(filters).over(variantEvaluations).usingSimpleFiltering();
+//        assertThat(result, equalTo(variantEvaluations));
+//
+//        printVariantFilterStatus("passesAllFilters", passesAllFilters);
+//        assertThat(passesAllFilters.passedFilters(), is(true));
+//        assertPassedFilters(passesAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+//
+//        printVariantFilterStatus("failsAllFilters", failsAllFilters);
+//        assertThat(failsAllFilters.passedFilters(), is(false));
+//        assertPassedFilters(failsAllFilters);
+//        assertFailedFilters(failsAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+//
+//        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
+//        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
+//        assertPassedFilters(passesQualityFrequencyFilter, QUALITY_FILTER, FREQUENCY_FILTER);
+//        assertFailedFilters(passesQualityFrequencyFilter, TARGET_FILTER);
+//
+//        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
+//        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
+//        assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, TARGET_FILTER);
+//        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
+//    }
+//
+//    @Test
+//    public void testUseNonDestructiveFilteringWithOneFilterReturnsAllVariantEvaluations() {
+//
+//        List<VariantEvaluation> result = new VariantFilterRunner()
+//                .run(frequencyFilter)
+//                .over(variantEvaluations)
+//                .usingSimpleFiltering();
+//
+//        assertThat(result, equalTo(variantEvaluations));
+//
+//        printVariantFilterStatus("passesAllFilters", passesAllFilters);
+//        assertThat(passesAllFilters.passedFilters(), is(true));
+//        assertPassedFilters(passesAllFilters, FREQUENCY_FILTER);
+//
+//        printVariantFilterStatus("failsAllFilters", failsAllFilters);
+//        assertThat(failsAllFilters.passedFilters(), is(false));
+//        assertFailedFilters(failsAllFilters, FREQUENCY_FILTER);
+//
+//        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
+//        assertThat(passesQualityFrequencyFilter.passedFilters(), is(true));
+//        assertPassedFilters(passesQualityFrequencyFilter, FREQUENCY_FILTER);
+//
+//        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
+//        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
+//        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
+//    }
+//
+//    @Test
+//    public void testUseNonDestructiveFilteringWithTwoChainedFiltersReturnsAllVariantEvaluations() {
+//
+//        List<VariantEvaluation> result = new VariantFilterRunner()
+//                .run(frequencyFilter)
+//                .run(targetFilter)
+//                .over(variantEvaluations)
+//                .usingSimpleFiltering();
+//
+//        assertThat(result, equalTo(variantEvaluations));
+//
+//        printVariantFilterStatus("passesAllFilters", passesAllFilters);
+//        assertPassedFilters(passesAllFilters, TARGET_FILTER, FREQUENCY_FILTER);
+//
+//        printVariantFilterStatus("failsAllFilters", failsAllFilters);
+//        assertThat(failsAllFilters.passedFilters(), is(false));
+//        assertFailedFilters(failsAllFilters, TARGET_FILTER, FREQUENCY_FILTER);
+//
+//        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
+//        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
+//        assertPassedFilters(passesQualityFrequencyFilter, FREQUENCY_FILTER);
+//        assertFailedFilters(passesQualityFrequencyFilter, TARGET_FILTER);
+//
+//        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
+//        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
+//        assertPassedFilters(passesTargetQualityFilter, TARGET_FILTER);
+//        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
+//    }
 
     @Test
     public void testUseNonDestructiveFilteringUsingInterfaceRunReturnsAllVariantEvaluations() {
@@ -231,8 +249,7 @@ public class SimpleVariantFilterRunnerTest {
         filters.add(qualityFilter);
         filters.add(frequencyFilter);
 
-        FilterRunner variantFilterRunner = new SimpleVariantFilterRunner();
-        List<VariantEvaluation> result = variantFilterRunner.run(filters, variantEvaluations);
+        List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
 
         assertThat(result, equalTo(variantEvaluations));
 
@@ -253,6 +270,69 @@ public class SimpleVariantFilterRunnerTest {
         assertThat(passesTargetQualityFilter.passedFilters(), is(false));
         assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, TARGET_FILTER);
         assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
+    }
+
+    @Test
+    public void testRun_WithOneFilterReturnsAllVariants() {
+        
+        VariantFilter filterToPass = qualityFilter;
+                  
+        List<VariantEvaluation> result = instance.run(filterToPass, variantEvaluations);
+        
+        assertThat(result, equalTo(variantEvaluations));
+        
+        assertPassedFilterAndFailedAllOthers(passesAllFilters, filterToPass);
+        assertPassedFilterAndFailedAllOthers(passesQualityFrequencyFilter, filterToPass);
+        assertPassedFilterAndFailedAllOthers(passesTargetQualityFilter, filterToPass);
+
+        assertFailsEverything(failsAllFilters);
+        
+    }
+
+    private void assertPassedFilterAndFailedAllOthers(VariantEvaluation variantEvaluation, VariantFilter filterToPass) {
+        assertThat(variantEvaluation.passedFilters(), is(true));
+        assertThat(variantEvaluation.passedFilter(filterToPass.getFilterType()), is(true));
+        
+        Set<FilterType> allOtherFilterTypes = EnumSet.allOf(FilterType.class);
+        allOtherFilterTypes.remove(filterToPass.getFilterType());
+        //filters not run should return false
+        for (FilterType otherFilterType : allOtherFilterTypes) {
+            assertThat(variantEvaluation.passedFilter(otherFilterType), is(false));
+        }
+    }
+       
+    @Test
+    public void testRun_WithTwoFiltersInSuccessionReturnsAllVariants() {
+        
+        VariantFilter firstFilterToPass = qualityFilter;
+                  
+        List<VariantEvaluation> result = instance.run(qualityFilter, variantEvaluations);
+        assertThat(result, equalTo(variantEvaluations));     
+        
+        assertPassedFilterAndFailedAllOthers(passesAllFilters, firstFilterToPass);
+        assertPassedFilterAndFailedAllOthers(passesQualityFrequencyFilter, firstFilterToPass);
+        assertPassedFilterAndFailedAllOthers(passesTargetQualityFilter, firstFilterToPass);
+
+        assertFailsEverything(failsAllFilters);
+
+        //run a second filter
+        VariantFilter secondFilterToPass = targetFilter;
+        
+        List<VariantEvaluation> secondResults = instance.run(secondFilterToPass, variantEvaluations);
+        
+        assertThat(secondResults, equalTo(variantEvaluations));     
+        assertPassedFilters(passesAllFilters, firstFilterToPass.getFilterType(), secondFilterToPass.getFilterType());     
+        System.out.println(passesAllFilters);
+
+        assertPassedFilters(passesQualityFrequencyFilter, firstFilterToPass.getFilterType());    
+        assertFailedFilters(passesQualityFrequencyFilter, secondFilterToPass.getFilterType());
+        System.out.println(passesQualityFrequencyFilter);
+
+        assertPassedFilters(passesTargetQualityFilter, firstFilterToPass.getFilterType(), secondFilterToPass.getFilterType());     
+        System.out.println(passesTargetQualityFilter);
+
+        assertFailsEverything(failsAllFilters);     
+        System.out.println(failsAllFilters);
     }
 
 }

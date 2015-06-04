@@ -30,7 +30,7 @@ import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
@@ -139,8 +139,8 @@ public class TestExomiserConfig {
     }
     
     @Bean
-    public PriorityFactory mockPriorityFactory() {
-        return Mockito.mock(PriorityFactory.class);
+    public PriorityFactoryImpl mockPriorityFactory() {
+        return Mockito.mock(PriorityFactoryImpl.class);
     }
     
     //cacheable beans
