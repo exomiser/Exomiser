@@ -63,7 +63,7 @@ public class VcfResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
                 outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines())) {
-            writeData(settings, sampleData, writer);
+            writeData(sampleData, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
     }
@@ -74,15 +74,15 @@ public class VcfResultsWriter implements ResultsWriter {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(), baos,
                 InfoFields.BOTH, getAdditionalHeaderLines())) {
-            writeData(settings, sampleData, writer);
+            writeData(sampleData, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
 
-    private void writeData(ExomiserSettings settings, SampleData sampleData, VariantContextWriter writer) {
+    private void writeData(SampleData sampleData, boolean writeOnlyPassVariants, VariantContextWriter writer) {
         // actually write the data and close writer again
-        if (settings.outputPassVariantsOnly()) {
+        if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
             writeOnlyPassSampleData(sampleData, writer);
         } else {

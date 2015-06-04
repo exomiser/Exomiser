@@ -70,7 +70,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE), format)){
-            writeData(sampleData, settings, printer);
+            writeData(sampleData, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -82,15 +82,15 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     public String writeString(SampleData sampleData, ExomiserSettings settings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(sampleData, settings, printer);
+            writeData(sampleData, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}.", output, ex);
         }
         return output.toString();
     }
 
-    private void writeData(SampleData sampleData, ExomiserSettings settings, CSVPrinter printer) throws IOException {
-        if (settings.outputPassVariantsOnly()) {
+    private void writeData(SampleData sampleData, boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
+        if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
             for (Gene gene : sampleData.getGenes()) {
                 writeOnlyPassVariantsOfGene(gene, printer);
