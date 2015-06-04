@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleVariantFilterRunner implements FilterRunner<VariantFilter, VariantEvaluation> {
+public class SimpleVariantFilterRunner implements VariantFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleVariantFilterRunner.class);
 

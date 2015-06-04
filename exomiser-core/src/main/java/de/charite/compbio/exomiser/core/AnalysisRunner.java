@@ -6,13 +6,14 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.FilterRunner;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.GeneFilter;
+import de.charite.compbio.exomiser.core.filters.GeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
+import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
@@ -41,16 +42,16 @@ public class AnalysisRunner {
     //TODO: variantFilterRunner is not typed here as there is something a bit mis-aligned with the interfaces and what they can work on - this needs fixing
     //probably by removing the FilterRunner interface and just using the VariantFilterRunner and GeneFilterRunner interfaces VariantFilterRunners can then 
     //also implement the GeneFilterRunner interface which is what we need here but type erasure is preventing this from being possible.
-    private final FilterRunner variantFilterRunner;
-    private final FilterRunner<GeneFilter, Gene> geneFilterRunner = new SimpleGeneFilterRunner();
+    private final VariantFilterRunner variantFilterRunner;
+    private final GeneFilterRunner geneFilterRunner = new SimpleGeneFilterRunner();
     private final PrioritiserRunner prioritiserRunner = new PrioritiserRunner();
 
     public AnalysisRunner(VariantDataService variantDataService, ExomiserSettings settings) {
         this.variantDataService = variantDataService;
-        this.variantFilterRunner = makeFilterRunner(settings.runFullAnalysis());
+        this.variantFilterRunner = makeVariantFilterRunner(settings.runFullAnalysis());
     }
 
-    private FilterRunner makeFilterRunner(boolean runFullAnalysis) {
+    private VariantFilterRunner makeVariantFilterRunner(boolean runFullAnalysis) {
         //the VariantFilterRunner will handle getting variant data when it needs it.
         //perhaps this ought to be two classes? A SimpleAnalysisRunner and a SparseAnalysisRunner?
         if (runFullAnalysis) {

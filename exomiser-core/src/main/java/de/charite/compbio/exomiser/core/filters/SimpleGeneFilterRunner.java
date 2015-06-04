@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleGeneFilterRunner implements FilterRunner<GeneFilter, Gene> {
+public class SimpleGeneFilterRunner implements GeneFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleGeneFilterRunner.class);
 
