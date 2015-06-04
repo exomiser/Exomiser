@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
@@ -36,7 +35,7 @@ public class FilterFactoryTest {
 
     @Before
     public void setUp() {
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new SettingsBuilder();
         instance = new FilterFactory();
     }
     
@@ -46,7 +45,7 @@ public class FilterFactoryTest {
         Set<Integer> geneIdsToKeep = new HashSet<>();
         geneIdsToKeep.add(1);
         
-        ExomiserSettings settings = settingsBuilder
+        FilterSettings settings = settingsBuilder
                 .genesToKeepList(geneIdsToKeep)
                 .removePathFilterCutOff(true)
                 .maximumFrequency(0.25f)
@@ -70,7 +69,7 @@ public class FilterFactoryTest {
     @Test
     public void testMakeVariantFiltersDoesNotIncludeGeneFiltersInReturnedList() {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval VariantFilters 
-        ExomiserSettings settings = settingsBuilder
+        FilterSettings settings = settingsBuilder
                 .removePathFilterCutOff(true)
                 .maximumFrequency(0.25f)
                 .minimumQuality(2f)
@@ -95,7 +94,7 @@ public class FilterFactoryTest {
     public void testMakeGeneFilters() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_RECESSIVE;
         //make a new Settings object specifying an Inheritance GeneFilter
-        ExomiserSettings settings = settingsBuilder.modeOfInheritance(modeOfInheritance).build();
+        FilterSettings settings = settingsBuilder.modeOfInheritance(modeOfInheritance).build();
 
         List<GeneFilter> expResult = new ArrayList<>();
         expResult.add(new InheritanceFilter(modeOfInheritance));

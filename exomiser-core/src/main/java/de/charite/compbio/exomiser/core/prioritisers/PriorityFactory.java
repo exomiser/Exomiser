@@ -5,8 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -22,6 +20,6 @@ public interface PriorityFactory {
      * @param settings
      * @return
      */
-    Prioritiser makePrioritiser(PriorityType priorityType, ExomiserSettings settings);
+    Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings);
     
 }

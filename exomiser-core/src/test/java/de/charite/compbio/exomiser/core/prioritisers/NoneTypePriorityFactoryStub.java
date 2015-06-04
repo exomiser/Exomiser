@@ -5,8 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-
 /**
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -14,7 +12,7 @@ import de.charite.compbio.exomiser.core.ExomiserSettings;
 public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
-    public Prioritiser makePrioritiser(PriorityType priorityType, ExomiserSettings settings) {
+    public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings) {
         return new NoneTypePrioritiser();
     }
 

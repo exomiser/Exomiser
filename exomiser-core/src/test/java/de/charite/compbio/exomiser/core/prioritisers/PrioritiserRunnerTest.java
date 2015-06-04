@@ -6,9 +6,6 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.GenericFilterResult;
-import de.charite.compbio.exomiser.core.filters.GenericFilterResultTest;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.ArrayList;

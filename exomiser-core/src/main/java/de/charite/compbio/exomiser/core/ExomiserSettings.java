@@ -10,8 +10,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.filters.FilterSettings;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
+import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
@@ -31,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = SettingsBuilder.class)
-public class ExomiserSettings {
+public class ExomiserSettings implements FilterSettings, PrioritiserSettings {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserSettings.class);
 
@@ -391,9 +393,9 @@ public class ExomiserSettings {
      * Determines the required {@code FilterType} to be run from the given
      * {@code ExomiserSettings}.
      *
-     * @param settings
      * @return
      */
+    @Override
     public List<FilterType> getFilterTypesToRun() {
         List<FilterType> filtersToRun = new ArrayList<>();
 
@@ -454,31 +456,37 @@ public class ExomiserSettings {
     }
 
     @JsonProperty(PRIORITISER_OPTION)
+    @Override
     public PriorityType getPrioritiserType() {
         return prioritiserType;
     }
 
     @JsonProperty(MAX_FREQ_OPTION)
+    @Override
     public float getMaximumFrequency() {
         return maximumFrequency;
     }
 
     @JsonProperty(MIN_QUAL_OPTION)
+    @Override
     public float getMinimumQuality() {
         return minimumQuality;
     }
 
     @JsonProperty(GENETIC_INTERVAL_OPTION)
+    @Override
     public GeneticInterval getGeneticInterval() {
         return geneticInterval;
     }
 
     @JsonProperty(REMOVE_PATHOGENICITY_FILTER_CUTOFF)
+    @Override
     public boolean removePathFilterCutOff() {
         return removePathFilterCutOff;
     }
 
     @JsonProperty(REMOVE_KNOWN_VARIANTS_OPTION)
+    @Override
     public boolean removeKnownVariants() {
         return removeKnownVariants;
     }
@@ -489,36 +497,43 @@ public class ExomiserSettings {
     }
 
     @JsonProperty(CANDIDATE_GENE_OPTION)
+    @Override
     public String getCandidateGene() {
         return candidateGene;
     }
 
     @JsonProperty(MODE_OF_INHERITANCE_OPTION)
+    @Override
     public ModeOfInheritance getModeOfInheritance() {
         return modeOfInheritance;
     }
 
     @JsonProperty(DISEASE_ID_OPTION)
+    @Override
     public String getDiseaseId() {
         return diseaseId;
     }
 
     @JsonProperty(EXOMISER2_PARAMS_OPTION)
+    @Override
     public String getExomiser2Params() {
         return exomiser2Params;
     }
 
     @JsonProperty(HPO_IDS_OPTION)
+    @Override
     public List<String> getHpoIds() {
         return hpoIds;
     }
 
     @JsonProperty(SEED_GENES_OPTION)
+    @Override
     public List<Integer> getSeedGeneList() {
         return seedGeneList;
     }
 
     @JsonProperty(GENES_TO_KEEP_OPTION)
+    @Override
     public Set<Integer> getGenesToKeep() {
         return genesToKeep;
     }

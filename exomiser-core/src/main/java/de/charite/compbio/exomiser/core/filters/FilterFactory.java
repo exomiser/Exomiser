@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
@@ -32,7 +31,7 @@ public class FilterFactory {
      * @param settings
      * @return A list of {@code VariantFilter} objects
      */
-    public List<VariantFilter> makeVariantFilters(ExomiserSettings settings) {
+    public List<VariantFilter> makeVariantFilters(FilterSettings settings) {
         List<VariantFilter> variantFilters = new ArrayList<>();
 
         List<FilterType> filtersRequired = settings.getFilterTypesToRun();
@@ -75,7 +74,7 @@ public class FilterFactory {
      * @param settings
      * @return GeneFilters to run
      */
-    public List<GeneFilter> makeGeneFilters(ExomiserSettings settings) {
+    public List<GeneFilter> makeGeneFilters(FilterSettings settings) {
         List<GeneFilter> geneFilters = new ArrayList<>();
 
         List<FilterType> filtersRequired = settings.getFilterTypesToRun();

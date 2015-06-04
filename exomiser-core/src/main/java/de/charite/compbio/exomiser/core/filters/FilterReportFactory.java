@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -38,7 +37,7 @@ public class FilterReportFactory {
      * @param sampleData
      * @return a List of {@code FilterReport} 
      */
-    public List<FilterReport> makeFilterReports(List<FilterType> filterTypes, ExomiserSettings settings, SampleData sampleData) {
+    public List<FilterReport> makeFilterReports(List<FilterType> filterTypes, FilterSettings settings, SampleData sampleData) {
 
         List<FilterReport> filterReports = new ArrayList<>();
 
@@ -59,7 +58,7 @@ public class FilterReportFactory {
      * @param sampleData
      * @return
      */
-    public FilterReport makeFilterReport(FilterType filterType, ExomiserSettings settings, SampleData sampleData) {
+    public FilterReport makeFilterReport(FilterType filterType, FilterSettings settings, SampleData sampleData) {
         switch (filterType) {
             case TARGET_FILTER:
                 return makeTargetFilterReport(settings, sampleData.getVariantEvaluations());
@@ -78,7 +77,7 @@ public class FilterReportFactory {
         }
     }
 
-    private FilterReport makeTargetFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    private FilterReport makeTargetFilterReport(FilterSettings settings, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.TARGET_FILTER, variantEvaluations);
         
         report.addMessage(String.format("Removed a total of %d off-target variants from further consideration", report.getFailed()));
@@ -87,7 +86,7 @@ public class FilterReportFactory {
         return report;
     }
 
-    private FilterReport makeFrequencyFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    private FilterReport makeFrequencyFilterReport(FilterSettings settings, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.FREQUENCY_FILTER, variantEvaluations);
         
         int numDbSnpFreqData = 0;
@@ -125,14 +124,14 @@ public class FilterReportFactory {
         return report;
     }
 
-    private FilterReport makeQualityFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    private FilterReport makeQualityFilterReport(FilterSettings settings, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.QUALITY_FILTER, variantEvaluations);
 
         report.addMessage(String.format("PHRED quality %.1f", settings.getMinimumQuality()));
         return report;
     }
 
-    private FilterReport makePathogenicityFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    private FilterReport makePathogenicityFilterReport(FilterSettings settings, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.PATHOGENICITY_FILTER, variantEvaluations);
         
         if (settings.removePathFilterCutOff()) {
@@ -150,7 +149,7 @@ public class FilterReportFactory {
         return report;
     }
 
-    private FilterReport makeIntervalFilterReport(ExomiserSettings settings, List<VariantEvaluation> variantEvaluations) {
+    private FilterReport makeIntervalFilterReport(FilterSettings settings, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.INTERVAL_FILTER, variantEvaluations);
 
         report.addMessage(String.format("Restricted variants to interval: %s", settings.getGeneticInterval()));
@@ -158,7 +157,7 @@ public class FilterReportFactory {
         return report;
     }
 
-    private FilterReport makeInheritanceFilterReport(ExomiserSettings settings, List<Gene> genes) {
+    private FilterReport makeInheritanceFilterReport(FilterSettings settings, List<Gene> genes) {
         FilterReport report = makeDefaultGeneFilterReport(FilterType.INHERITANCE_FILTER, genes);
         
         report.addMessage(String.format("Total of %d genes were analyzed. %d had genes with distribution compatible with %s inheritance.",

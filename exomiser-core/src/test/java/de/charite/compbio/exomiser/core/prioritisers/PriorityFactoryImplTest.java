@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -38,7 +37,7 @@ public class PriorityFactoryImplTest {
         settingsBuilder = new SettingsBuilder();
     }
 
-    private ExomiserSettings buildValidSettingsWithPrioritiser(PriorityType priorityType) {
+    private PrioritiserSettings buildValidSettingsWithPrioritiser(PriorityType priorityType) {
         settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
         settingsBuilder.usePrioritiser(priorityType);
         return settingsBuilder.build();
@@ -53,7 +52,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testmakePrioritiserForNotSetPriorityReturnsNoneType() {
         PriorityType type = PriorityType.NOT_SET;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
@@ -62,7 +61,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testCanGetOmimPrioritizerByType() {
         PriorityType type = PriorityType.OMIM_PRIORITY;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
         
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
@@ -71,7 +70,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testmakePrioritiserForExomeWalkerPriority() {
         PriorityType type = PriorityType.EXOMEWALKER_PRIORITY;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
@@ -80,7 +79,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testmakePrioritiserForHiPhivePriority() {
         PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
@@ -90,7 +89,7 @@ public class PriorityFactoryImplTest {
     public void testmakeHiPhivePrioritiserWithDiseaseIdAndEmptyHpoList() {
         PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
         List<String> emptyStringList = Collections.emptyList();
-        ExomiserSettings settings = getValidSettingsWithPrioritiser(type)
+        PrioritiserSettings settings = getValidSettingsWithPrioritiser(type)
                 .diseaseId("OMIM:101600")
                 .hpoIdList(emptyStringList)
                 .build();
@@ -102,7 +101,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testmakePrioritiserForPhivePriority() {
         PriorityType type = PriorityType.PHIVE_PRIORITY;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
@@ -111,7 +110,7 @@ public class PriorityFactoryImplTest {
     @Test(expected = RuntimeException.class)
     public void testmakePrioritiserForPhenixPriorityThrowsRuntimeExceptionDueToMissingPhenixData() {
         PriorityType type = PriorityType.PHENIX_PRIORITY;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
@@ -120,7 +119,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testmakePrioritiserForUberPhenoPriorityReturnsNoneTypePrioritiser() {
         PriorityType type = PriorityType.UBERPHENO_PRIORITY;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
@@ -129,7 +128,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testmakePrioritiserNonePriorityReturnsNoneTypePrioritiser() {
         PriorityType type = PriorityType.NONE;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
@@ -138,7 +137,7 @@ public class PriorityFactoryImplTest {
     @Test
     public void testmakePrioritiserNotSetPriorityReturnsNoneTypePrioritiser() {
         PriorityType type = PriorityType.NOT_SET;
-        ExomiserSettings settings = buildValidSettingsWithPrioritiser(type);
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));

@@ -9,7 +9,6 @@ import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.OntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;

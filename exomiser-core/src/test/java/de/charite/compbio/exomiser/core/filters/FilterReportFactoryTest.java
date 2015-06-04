@@ -8,7 +8,6 @@ package de.charite.compbio.exomiser.core.filters;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -37,7 +36,7 @@ public class FilterReportFactoryTest {
 
     private FilterReportFactory instance;
 
-    private ExomiserSettings settings;
+    private FilterSettings settings;
     private List<VariantEvaluation> variantEvaluations;
     private List<Gene> genes;
     private SampleData sampleData;

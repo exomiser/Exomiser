@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import java.nio.file.Path;
@@ -49,7 +48,7 @@ public class PriorityFactoryImpl implements PriorityFactory {
      * @return
      */
     @Override
-    public Prioritiser makePrioritiser(PriorityType priorityType, ExomiserSettings settings) {
+    public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings) {
         //These should form the PrioritySettings interface
         String diseaseId = settings.getDiseaseId();
         String candidateGene = settings.getCandidateGene();
