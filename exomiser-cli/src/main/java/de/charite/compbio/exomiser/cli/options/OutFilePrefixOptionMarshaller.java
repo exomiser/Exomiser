@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import static de.charite.compbio.exomiser.core.ExomiserSettings.OUT_FILE_PREFIX_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.Option;
 
@@ -16,7 +16,7 @@ import org.apache.commons.cli.Option;
 public class OutFilePrefixOptionMarshaller extends AbstractOptionMarshaller {
     
     public OutFilePrefixOptionMarshaller() {
-        option = new Option("o", ExomiserSettings.OUT_FILE_PREFIX_OPTION, true, "Out file prefix. Will default to vcf-filename-exomiser-results");
+        option = new Option("o", OUT_FILE_PREFIX_OPTION, true, "Out file prefix. Will default to vcf-filename-exomiser-results");
     }
 
     @Override

@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -28,7 +28,7 @@ public class PathogenicityFilterCutOffOptionMarshaller extends AbstractOptionMar
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         if (values == null) {
             //default is to remove the non-pathogenic variants, so this should be false
             settingsBuilder.removePathFilterCutOff(true);

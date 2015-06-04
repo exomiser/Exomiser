@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.MIN_QUAL_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.Option;
 
 /**
@@ -20,7 +20,7 @@ public class QualityThresholdOptionMarshaller extends AbstractOptionMarshaller {
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.minimumQuality(Float.parseFloat(values[0]));
     }    
     

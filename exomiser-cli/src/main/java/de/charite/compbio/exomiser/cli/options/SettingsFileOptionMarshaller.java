@@ -26,7 +26,7 @@ public class SettingsFileOptionMarshaller extends AbstractOptionMarshaller {
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
-        //not direct ExomiserSettings value to set
+        //no direct ExomiserSettings value to set
     }
     
 }

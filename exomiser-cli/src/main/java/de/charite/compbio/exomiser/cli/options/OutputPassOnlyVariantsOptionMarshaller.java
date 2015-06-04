@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.OUTPUT_PASS_VARIANTS_ONLY_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -27,7 +27,7 @@ public class OutputPassOnlyVariantsOptionMarshaller extends AbstractOptionMarsha
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         if (values == null) {
             //default is to output all variants, regardless of their filtered status.
             //having this triggered from the command line is the same as saying values[0] == true

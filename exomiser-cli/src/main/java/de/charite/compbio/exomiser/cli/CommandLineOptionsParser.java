@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.io.BufferedReader;
@@ -46,7 +45,7 @@ public class CommandLineOptionsParser {
 
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
 
-        SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        SettingsBuilder settingsBuilder = new SettingsBuilder();
 
         if (commandLine.hasOption(SETTINGS_FILE_OPTION)) {
             settingsBuilder = parseSettingsFile(Paths.get(commandLine.getOptionValue(SETTINGS_FILE_OPTION)));
@@ -72,7 +71,7 @@ public class CommandLineOptionsParser {
      */
     public SettingsBuilder parseSettingsFile(Path settingsFile) {
 
-        SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        SettingsBuilder settingsBuilder = new SettingsBuilder();
 
         try (Reader reader = Files.newBufferedReader(settingsFile, Charset.defaultCharset())) {
             Properties settingsProperties = new Properties();

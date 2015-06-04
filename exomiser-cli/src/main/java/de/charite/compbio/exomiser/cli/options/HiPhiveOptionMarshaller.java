@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.EXOMISER2_PARAMS_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -30,7 +30,7 @@ public class HiPhiveOptionMarshaller extends AbstractOptionMarshaller {
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.exomiser2Params(parseExomiser2Params(values));
     }
 

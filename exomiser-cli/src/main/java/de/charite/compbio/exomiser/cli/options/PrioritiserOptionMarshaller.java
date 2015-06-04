@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.PRIORITISER_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         String value = values[0];
         settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(value));
         if (PriorityType.valueOfCommandLine(value) == PriorityType.NOT_SET) {

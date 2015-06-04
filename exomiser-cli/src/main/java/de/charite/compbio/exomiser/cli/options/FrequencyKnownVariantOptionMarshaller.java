@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_KNOWN_VARIANTS_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -26,7 +26,7 @@ public class FrequencyKnownVariantOptionMarshaller extends AbstractOptionMarshal
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         if (values == null) {
             //default is not to remove variants with a frequency from a study
             //having this triggered from the command line is the same as saying values[0] == true
