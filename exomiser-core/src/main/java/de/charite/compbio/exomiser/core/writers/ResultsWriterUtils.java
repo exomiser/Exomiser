@@ -115,6 +115,7 @@ public class ResultsWriterUtils {
         return effectCounter;
     }
 
+    //TODO: This should take an Analysis instead of the FilterSettings and SampleData
     public static List<FilterReport> makeFilterReports(FilterSettings settings, SampleData sampleData) {
         // TODO: ExomiserSettings is really sticking it's nose into everything might be a good idea to scale
         // this back so that it's only really needed in to cli package as it is tightly coupled with that anyway.

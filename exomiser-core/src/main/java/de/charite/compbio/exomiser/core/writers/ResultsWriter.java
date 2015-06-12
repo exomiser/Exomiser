@@ -21,8 +21,9 @@ public interface ResultsWriter {
      * @param sampleData
      * @param settings
      */
+    //TODO: change to writeFile(Analysis analysis, OutputSettings settings);
     public void writeFile(SampleData sampleData, ExomiserSettings settings);
-    
+       
     /**
      * Writes the result data out to a String.
      * 
@@ -30,5 +31,6 @@ public interface ResultsWriter {
      * @param settings
      * @return  
      */
+    //TODO: change to writeString(Analysis analysis, OutputSettings settings);
     public String writeString(SampleData sampleData, ExomiserSettings settings);
 }

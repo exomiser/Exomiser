@@ -16,6 +16,7 @@ import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
+import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = SettingsBuilder.class)
-public class ExomiserSettings implements FilterSettings, PrioritiserSettings {
+public class ExomiserSettings implements FilterSettings, PrioritiserSettings, OutputSettings {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserSettings.class);
 
@@ -539,21 +540,25 @@ public class ExomiserSettings implements FilterSettings, PrioritiserSettings {
     }
 
     @JsonSetter(OUTPUT_PASS_VARIANTS_ONLY_OPTION)
+    @Override
     public boolean outputPassVariantsOnly() {
         return outputPassVariantsOnly;
     }
 
     @JsonProperty(NUM_GENES_OPTION)
+    @Override
     public int getNumberOfGenesToShow() {
         return numberOfGenesToShow;
     }
 
     @JsonProperty(OUT_FILE_FORMAT_OPTION)
+    @Override
     public Set<OutputFormat> getOutputFormats() {
         return outputFormats;
     }
 
     @JsonProperty(OUT_FILE_PREFIX_OPTION)
+    @Override
     public String getOutputPrefix() {
         return outputPrefix;
     }
