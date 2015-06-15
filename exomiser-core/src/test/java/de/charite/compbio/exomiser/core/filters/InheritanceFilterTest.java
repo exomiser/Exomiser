@@ -38,6 +38,13 @@ public class InheritanceFilterTest {
     }
 
     @Test
+    public void testGetModeOfInheritance() {
+        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+        InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
+        assertThat(instance.getModeOfInheritance(), equalTo(desiredInheritanceMode));
+    }
+    
+    @Test
     public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsUnInitialised() {
 
         ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.UNINITIALIZED;

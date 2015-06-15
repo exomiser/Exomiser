@@ -38,15 +38,7 @@ public class TargetFilter implements VariantFilter {
      * A set of off-target variant types such as Intergenic that we will
      * runFilter out from further consideration.
      */
-    private final Set<VariantEffect> offTargetVariantTypes;
-
-    /**
-     * The constructor initializes the set of off-target
-     * {@link jannovar.common.VariantType VariantType} constants, e.g.,
-     * INTERGENIC, that we will runFilter out using this class.
-     */
-    public TargetFilter() {
-        offTargetVariantTypes = EnumSet.of(
+    private static final Set<VariantEffect> offTargetVariantTypes = EnumSet.of(
                 VariantEffect.UPSTREAM_GENE_VARIANT, 
                 VariantEffect.INTERGENIC_VARIANT,
                 VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, 
@@ -55,6 +47,18 @@ public class TargetFilter implements VariantFilter {
                 VariantEffect.DOWNSTREAM_GENE_VARIANT,
                 VariantEffect.SPLICE_REGION_VARIANT
         );
+
+    /**
+     * The constructor initializes the set of off-target
+     * {@link jannovar.common.VariantType VariantType} constants, e.g.,
+     * INTERGENIC, that we will runFilter out using this class.
+     * 
+     */
+    public TargetFilter() {
+    }
+
+    public Set<VariantEffect> getOffTargetVariantTypes() {
+        return offTargetVariantTypes;
     }
 
     @Override

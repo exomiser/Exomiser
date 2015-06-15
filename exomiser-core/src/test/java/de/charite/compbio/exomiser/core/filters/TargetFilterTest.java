@@ -7,6 +7,8 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.EnumSet;
+import java.util.Set;
 
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,15 +25,26 @@ import org.junit.Test;
 public class TargetFilterTest {
 
     private TargetFilter instance;
+    private Set<VariantEffect> offTargetVariantEffects;
     
-    VariantEvaluation missensePassesFilter;
-    VariantEvaluation downstreamFailsFilter;
-    VariantEvaluation synonymousFailsFilter;
-    VariantEvaluation upstreamFailsFilter;
-    VariantEvaluation intergenicFailsFilter;
+    private VariantEvaluation missensePassesFilter;
+    private VariantEvaluation downstreamFailsFilter;
+    private VariantEvaluation synonymousFailsFilter;
+    private VariantEvaluation upstreamFailsFilter;
+    private VariantEvaluation intergenicFailsFilter;
 
     @Before
     public void setUp() {
+        offTargetVariantEffects = EnumSet.of(
+                VariantEffect.UPSTREAM_GENE_VARIANT, 
+                VariantEffect.INTERGENIC_VARIANT,
+                VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, 
+                VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+                VariantEffect.SYNONYMOUS_VARIANT, 
+                VariantEffect.DOWNSTREAM_GENE_VARIANT,
+                VariantEffect.SPLICE_REGION_VARIANT
+        );
+        
         instance = new TargetFilter();
         
         missensePassesFilter = testVariantBuilder().variantEffect(VariantEffect.MISSENSE_VARIANT).build();
@@ -45,6 +58,11 @@ public class TargetFilterTest {
         return new VariantEvaluation.VariantBuilder(1, 1, "A", "T");
     }
 
+    @Test
+    public void testGetOffTargetTypes() {
+        assertThat(instance.getOffTargetVariantTypes(), equalTo(offTargetVariantEffects));
+    }
+    
     @Test
     public void testGetFilterType() {
         assertThat(instance.getFilterType(), equalTo(FilterType.TARGET_FILTER));

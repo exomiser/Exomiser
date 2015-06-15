@@ -41,6 +41,10 @@ public class IntervalFilter implements VariantFilter {
 
     }
 
+    public GeneticInterval getInterval() {
+        return interval;
+    }
+
     /**
      * @return an integer constant (as defined in exomizer.common.Constants)
      * that will act as a flag to generate the output HTML dynamically depending

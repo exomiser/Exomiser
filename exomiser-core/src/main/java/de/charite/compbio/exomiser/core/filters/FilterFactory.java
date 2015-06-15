@@ -100,6 +100,7 @@ public class FilterFactory {
      * @return
      */
     public VariantFilter getTargetFilter() {
+        
         VariantFilter targetFilter = new TargetFilter();
         logger.info("Made new: {}", targetFilter);
         return targetFilter;

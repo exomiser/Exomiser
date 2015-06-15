@@ -19,7 +19,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 
 /**
@@ -85,6 +84,11 @@ public class PathogenicityFilterTest {
 
     private VariantBuilder testVariantBuilder() {
         return new VariantBuilder(1, 1, "A", "T");
+    }
+    
+    @Test
+    public void test() {
+        assertThat(instance.keepNonPathogenic(), equalTo(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS));
     }
     
     @Test
@@ -195,7 +199,7 @@ public class PathogenicityFilterTest {
 
     @Test
     public void testToString() {
-        String expResult = "Pathogenicity filter: removePathFilterCutOff=false";
+        String expResult = "Pathogenicity filter: keepNonPathogenic=false";
         String result = instance.toString();
         assertThat(result, equalTo(expResult));
     }

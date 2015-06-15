@@ -32,6 +32,10 @@ public class EntrezGeneIdFilter implements VariantFilter {
         this.genesToKeep = genesToKeep;
     }
 
+    public Set<Integer> getGeneIds() {
+        return genesToKeep;
+    }
+
     @Override
     public FilterType getFilterType() {
         return filterType;

@@ -1,6 +1,5 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 
 import java.util.Objects;
@@ -53,6 +52,10 @@ public class QualityFilter implements VariantFilter {
             throw new IllegalArgumentException(String.format("Illegal value for minimum quality threshold: %2f. Minimum quality threshold must be greater than 0.0", mimimumQualityThreshold));
         }
         this.mimimumQualityThreshold = mimimumQualityThreshold;
+    }
+
+    public double getMimimumQualityThreshold() {
+        return mimimumQualityThreshold;
     }
 
     /**

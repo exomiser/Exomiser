@@ -47,6 +47,11 @@ public class EntrezGeneIdFilterTest {
     }
 
     @Test
+    public void testGetGeneIds() {
+        assertThat(instance.getGeneIds(), equalTo(genesToKeep));
+    }
+    
+    @Test
     public void testGetFilterType() {
         assertThat(instance.getFilterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
     }

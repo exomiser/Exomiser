@@ -24,6 +24,10 @@ public class GenePriorityScoreFilter implements GeneFilter {
         this.minPriorityScore = minPriorityScore;
     }
 
+    public float getMinPriorityScore() {
+        return minPriorityScore;
+    }
+
     @Override
     public FilterType getFilterType() {
         return filterType;

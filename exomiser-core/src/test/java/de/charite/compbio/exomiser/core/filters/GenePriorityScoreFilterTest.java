@@ -44,6 +44,11 @@ public class GenePriorityScoreFilterTest {
         assertThat(result.getResultStatus(), equalTo(FilterResultStatus.FAIL));
         assertThat(result.getFilterType(), equalTo(instance.getFilterType()));
     }
+        
+    @Test
+    public void testGetMinPriorityScore() {
+        assertThat(instance.getMinPriorityScore(), equalTo(minPriorityScore));
+    }
     
     @Test
     public void testGetFilterType() {

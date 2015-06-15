@@ -28,6 +28,10 @@ public class InheritanceFilter implements GeneFilter {
         this.modeOfInheritance = modeOfInheritance;
     }
 
+    public ModeOfInheritance getModeOfInheritance() {
+        return modeOfInheritance;
+    }
+    
     @Override
     public FilterResult runFilter(Gene gene) {
         if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
