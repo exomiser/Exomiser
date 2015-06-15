@@ -20,8 +20,10 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserRunner;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.exomiser.core.util.RawScoreGeneScorer;
 import de.charite.compbio.exomiser.core.util.GeneScorer;
 import de.charite.compbio.exomiser.core.util.InheritanceModeAnalyser;
+import de.charite.compbio.exomiser.core.util.RankBasedGeneScorer;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import java.util.List;
@@ -63,7 +65,6 @@ public class AnalysisRunner {
 
     public void runAnalysis(Analysis analysis) {
         final SampleData sampleData = analysis.getSampleData();
-        final ExomiserSettings settings = analysis.getSettings();
         final List<Gene> genes = sampleData.getGenes();
         final Pedigree pedigree = sampleData.getPedigree();
         boolean inheritanceModesCalculated = false;
@@ -78,7 +79,7 @@ public class AnalysisRunner {
             }
             runStep(analysisStep, genes);
         }
-        scoreGenes(settings, genes);
+        scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
 
         long endTimeinMillis = System.currentTimeMillis();
         double analysisTimeInSecs = (double) (endTimeinMillis - startTimeinMillis) / 1000;
@@ -133,13 +134,16 @@ public class AnalysisRunner {
         }
     }
 
-    private void scoreGenes(ExomiserSettings exomiserSettings, List<Gene> genes) {
-        logger.info("Scoring genes");
-        //prioritser needs to provide the mode of scoring it requires. Mostly it is RAW_SCORE.
-        //Either RANK_BASED or RAW_SCORE
-        PriorityType prioritiserType = exomiserSettings.getPrioritiserType();
-        ScoringMode scoreMode = prioritiserType.getScoringMode();
+    private void scoreGenes(List<Gene> genes, ScoringMode scoreMode, ModeOfInheritance modeOfInheritance) {
+        logger.info("Scoring genes");       
+        GeneScorer geneScorer = getGeneScorer(scoreMode);
+        geneScorer.scoreGenes(genes, modeOfInheritance);
+    }
 
-        GeneScorer.scoreGenes(genes, exomiserSettings.getModeOfInheritance(), scoreMode);
+    private GeneScorer getGeneScorer(ScoringMode scoreMode) {
+        if (scoreMode == ScoringMode.RANK_BASED) {
+            return new RankBasedGeneScorer();
+        }             
+        return new RawScoreGeneScorer();
     }
 }

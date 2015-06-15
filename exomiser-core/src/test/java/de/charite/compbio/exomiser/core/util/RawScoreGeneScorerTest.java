@@ -5,22 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.util;
 
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
-import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
@@ -32,18 +24,19 @@ import org.junit.Test;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneScorerTest {
+public class RawScoreGeneScorerTest {
 
+    private RawScoreGeneScorer instance;
+    
     private VariantEvaluation failedFrequency;
     private VariantEvaluation failedPathogenicity;
     private VariantEvaluation failedFrequencyPassedPathogenicity;
     private VariantEvaluation passedFrequencyPassedPathogenicity;
 
-    public GeneScorerTest() {
-    }
-
     @Before
     public void setUp() {
+        instance = new RawScoreGeneScorer();
+        
         failedFrequency = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         failedFrequency.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
 
@@ -63,28 +56,10 @@ public class GeneScorerTest {
     }
 
     @Test
-    public void testScoreGenesWithRawScoreMode() {
-        List<Gene> geneList = new ArrayList<>();
-        ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        ScoringMode scoringMode = ScoringMode.RAW_SCORE;
-        GeneScorer.scoreGenes(geneList, modeOfInheritance, scoringMode);
-
-    }
-
-    @Test
-    public void testScoreGenesWithRankScoreMode() {
-        List<Gene> geneList = new ArrayList<>();
-        ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        ScoringMode scoringMode = ScoringMode.RANK_BASED;
-        GeneScorer.scoreGenes(geneList, modeOfInheritance, scoringMode);
-
-    }
-
-    @Test
     public void testCalculateNonAutosomalRecessiveFilterScoreReturnsZeroIfVariantListIsEmpty() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
 
-        float calculatedScore = GeneScorer.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
+        float calculatedScore = instance.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
 
         assertThat(calculatedScore, equalTo(0f));
     }
@@ -97,7 +72,7 @@ public class GeneScorerTest {
         variantEvaluations.add(failedPathogenicity);
         variantEvaluations.add(failedFrequencyPassedPathogenicity);
 
-        float calculatedScore = GeneScorer.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
+        float calculatedScore = instance.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
 
         assertThat(calculatedScore, equalTo(0f));
     }
@@ -112,7 +87,7 @@ public class GeneScorerTest {
 
         float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
 
-        float calculatedScore = GeneScorer.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
+        float calculatedScore = instance.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
 
         assertThat(calculatedScore, equalTo(bestScore));
     }
@@ -122,7 +97,7 @@ public class GeneScorerTest {
 
         List<VariantEvaluation> emptyVariantEvaluations = new ArrayList<>();
 
-        float calculatedScore = GeneScorer.calculateFilterScore(emptyVariantEvaluations, ModeOfInheritance.UNINITIALIZED);
+        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, ModeOfInheritance.UNINITIALIZED);
 
         assertThat(calculatedScore, equalTo(0f));
     }
@@ -136,7 +111,7 @@ public class GeneScorerTest {
 
         float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
 
-        float calculatedScore = GeneScorer.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED);
+        float calculatedScore = instance.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED);
 
         assertThat(calculatedScore, equalTo(bestScore));
     }
