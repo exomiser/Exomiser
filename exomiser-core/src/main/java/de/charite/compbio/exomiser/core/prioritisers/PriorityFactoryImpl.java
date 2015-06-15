@@ -50,12 +50,12 @@ public class PriorityFactoryImpl implements PriorityFactory {
     @Override
     public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings) {
         //These should form the PrioritySettings interface
-        String diseaseId = settings.getDiseaseId();
-        String candidateGene = settings.getCandidateGene();
         List<String> hpoIds = settings.getHpoIds();
         List<Integer> entrezSeedGenes = settings.getSeedGeneList();
-        String exomiser2Params = settings.getExomiser2Params();
-
+        String diseaseId = settings.getDiseaseId();
+        String candidateGene = settings.getCandidateGene();
+        String hiPhiveParams = settings.getExomiser2Params();
+        
         hpoIds = addDiseasePhenotypeTermsIfHpoIdsIsEmpty(diseaseId, hpoIds);
 
         switch (priorityType) {
@@ -64,9 +64,9 @@ public class PriorityFactoryImpl implements PriorityFactory {
             case PHENIX_PRIORITY:
                 return getPhenixPrioritiser(hpoIds);
             case HI_PHIVE_PRIORITY:
-                return getHiPhivePrioritiser(hpoIds, candidateGene, diseaseId, exomiser2Params);
+                return getHiPhivePrioritiser(hpoIds, new HiPhiveOptions(diseaseId, candidateGene, hiPhiveParams));
             case PHIVE_PRIORITY:
-                return getPhivePrioritiser(hpoIds, diseaseId);
+                return getPhivePrioritiser(hpoIds);
             case EXOMEWALKER_PRIORITY:
                 return getExomeWalkerPrioritiser(entrezSeedGenes);
             case NONE:
@@ -104,8 +104,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
         return priority;
     }
 
-    private PhivePriority getPhivePrioritiser(List<String> hpoIds, String disease) {
-        PhivePriority priority = new PhivePriority(hpoIds, disease);
+    private PhivePriority getPhivePrioritiser(List<String> hpoIds) {
+        PhivePriority priority = new PhivePriority(hpoIds);
         priority.setDataSource(dataSource);
         logger.info("Made new prioritiser: {}", priority);
         return priority;
@@ -117,8 +117,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
         return priority;
     }
 
-    private HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
-        HiPhivePriority priority = new HiPhivePriority(hpoIds, new HiPhiveOptions(disease, candGene, hiPhiveParams), randomWalkMatrix);
+    private HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
+        HiPhivePriority priority = new HiPhivePriority(hpoIds, hiPhiveOptions, randomWalkMatrix);
         priority.setPriorityService(priorityService);
         logger.info("Made new prioritiser: {}", priority);
         return priority;

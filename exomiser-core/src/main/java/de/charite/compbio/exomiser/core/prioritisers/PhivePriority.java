@@ -42,7 +42,6 @@ public class PhivePriority implements Prioritiser {
     static final float NO_MOUSE_MODEL_SCORE = 0.6f;
 
     private List<String> hpoIds;
-    private final String disease;
 
     private Connection connection;
     private DataSource dataSource;
@@ -62,25 +61,24 @@ public class PhivePriority implements Prioritiser {
      */
     private int foundDataForMgiPhenodigm;
 
-    public PhivePriority(List<String> hpoIds, String disease) {
+    public PhivePriority(List<String> hpoIds) {
         this.hpoIds = hpoIds;
-        this.disease = disease;
         //This can be moved into a report section - FilterReport should probably turn into an AnalysisStepReport
         //Then can remove getMessages from the interface. 
-        messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
-        if (disease != null) {
-            String url = String.format("http://omim.org/%s", disease);
-            if (disease.contains("ORPHANET")) {
-                String diseaseId = disease.split(":")[1];
-                url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s", diseaseId);
-            }
-            String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n", url, disease);
-            this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
-            messages.add(anchor);
-        } else {
-            String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
-            messages.add(anchor);
-        }
+//        messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
+//        if (disease != null) {
+//            String url = String.format("http://omim.org/%s", disease);
+//            if (disease.contains("ORPHANET")) {
+//                String diseaseId = disease.split(":")[1];
+//                url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s", diseaseId);
+//            }
+//            String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n", url, disease);
+//            this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
+//            messages.add(anchor);
+//        } else {
+//            String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
+//            messages.add(anchor);
+//        }
     }
 
     /**
@@ -364,7 +362,6 @@ public class PhivePriority implements Prioritiser {
     public int hashCode() {
         int hash = 5;
         hash = 47 * hash + Objects.hashCode(this.hpoIds);
-        hash = 47 * hash + Objects.hashCode(this.disease);
         return hash;
     }
 
@@ -378,9 +375,6 @@ public class PhivePriority implements Prioritiser {
         }
         final PhivePriority other = (PhivePriority) obj;
         if (!Objects.equals(this.hpoIds, other.hpoIds)) {
-            return false;
-        }
-        if (!Objects.equals(this.disease, other.disease)) {
             return false;
         }
         return true;
