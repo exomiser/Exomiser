@@ -49,7 +49,7 @@ public class TargetFilter implements VariantFilter {
      * INTERGENIC, that we will runFilter out using this class.
      */
     public TargetFilter() {
-        offTargetVariantTypes = EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.DOWNSTREAM_GENE_VARIANT);
+        offTargetVariantTypes = EnumSet.of(VariantEffect.DOWNSTREAM_GENE_VARIANT);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class TargetFilter implements VariantFilter {
             String intergenicAnnotation = a.toVCFAnnoString(filterable.getAlt());
             //int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14]));            
             int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14])); 
-            if (dist > 0 && dist < 5000){
+            if (dist > 0 && dist < 20000){
                 return passedFilterResult;
             }
             return failedFilterResult;

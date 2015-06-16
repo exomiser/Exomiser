@@ -81,7 +81,7 @@ public class PathogenicityFilter implements VariantFilter {
         if (removePathFilterCutOff) {
             return returnPassResult(filterScore);
         }
-        if (variantIsPredictedPathogenic(variantEffect)) {
+        if (variantIsPredictedPathogenic(variantEffect,pathData)) {
             return returnPassResult(filterScore);
         }
         return returnFailResult(filterScore);
@@ -124,13 +124,11 @@ public class PathogenicityFilter implements VariantFilter {
      * @param pathData
      * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
      */
-    protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect) {
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            //we're making the assumption that a miissense variant is always 
-            //potentially pathogenic as the prediction scores are predictions, 
-            //we'll leave it up to the user to decide
+    protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
+        if (pathogenicityData != null && pathogenicityData.getCaddScore() != null) {
             return true;
-        } else {
+        }
+        else {
             return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
         }
     }
