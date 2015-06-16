@@ -7,16 +7,16 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Factory class for handling creation of VariantFilter objects.
+ * Factory class for handling creation of Filter objects.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -34,36 +34,38 @@ public class FilterFactory {
     public List<VariantFilter> makeVariantFilters(FilterSettings settings) {
         List<VariantFilter> variantFilters = new ArrayList<>();
 
-        List<FilterType> filtersRequired = settings.getFilterTypesToRun();
+        List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
         for (FilterType filterType : filtersRequired) {
             switch (filterType) {
                 case ENTREZ_GENE_ID_FILTER:
-                    variantFilters.add(getEntrezGeneIdFilter(settings.getGenesToKeep()));
+                    variantFilters.add(new EntrezGeneIdFilter(settings.getGenesToKeep()));
                     break;
                 case TARGET_FILTER:
-                    variantFilters.add(getTargetFilter());
+                    variantFilters.add(new TargetFilter());
                     break;
                 case FREQUENCY_FILTER:
-                    variantFilters.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeKnownVariants()));
+                    variantFilters.add(new FrequencyFilter(settings.getMaximumFrequency(), settings.removeKnownVariants()));
                     break;
                 case QUALITY_FILTER:
-                    variantFilters.add(getQualityFilter(settings.getMinimumQuality()));
+                    variantFilters.add(new QualityFilter(settings.getMinimumQuality()));
                     break;
                 case PATHOGENICITY_FILTER:
-                    variantFilters.add(getPathogenicityFilter(settings.removePathFilterCutOff()));
+                    // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always
+                    // pass the pathogenicity filter and still get scored for pathogenicity
+                    variantFilters.add(new PathogenicityFilter(settings.removePathFilterCutOff()));
                     break;
                 case INTERVAL_FILTER:
-                    variantFilters.add(getIntervalFilter(settings.getGeneticInterval()));
+                    variantFilters.add(new IntervalFilter(settings.getGeneticInterval()));
                     break;
                 case INHERITANCE_FILTER:
                     //this isn't run as a VariantFilter - it's actually a Gene runFilter - currently it's a bastard orphan sitting in Exomiser
                     break;
                 default:
-                    //do nothing
+                //do nothing
             }
         }
-        logger.info("{} new filters ready to run" , variantFilters.size());
+        logger.info("{} new filters ready to run", variantFilters.size());
 
         return variantFilters;
     }
@@ -77,15 +79,15 @@ public class FilterFactory {
     public List<GeneFilter> makeGeneFilters(FilterSettings settings) {
         List<GeneFilter> geneFilters = new ArrayList<>();
 
-        List<FilterType> filtersRequired = settings.getFilterTypesToRun();
+        List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
 
         for (FilterType filterType : filtersRequired) {
             switch (filterType) {
                 case INHERITANCE_FILTER:
-                    geneFilters.add(getInheritanceFilter(settings.getModeOfInheritance()));
+                    geneFilters.add(new InheritanceFilter(settings.getModeOfInheritance()));
                     break;
                 default:
-                    //do nothing
+                //do nothing
             }
         }
 
@@ -93,84 +95,39 @@ public class FilterFactory {
     }
 
     /**
-     * VariantFilter on variant type that is expected potential pathogenic
-     * (Missense, Intergenic etc and not off target (INTERGENIC, UPSTREAM,
-     * DOWNSTREAM).
+     * Determines the required {@code FilterType} to be run from the given
+     * {@code FilterSettings}.
      *
+     * @param filterSettings
      * @return
      */
-    public VariantFilter getTargetFilter() {
-        
-        VariantFilter targetFilter = new TargetFilter();
-        logger.info("Made new: {}", targetFilter);
-        return targetFilter;
-    }
+    protected List<FilterType> determineFilterTypesToRun(FilterSettings filterSettings) {
+        List<FilterType> filtersToRun = new ArrayList<>();
 
-    /**
-     * VariantFilter to remove any variants belonging to genes not on a
-     * user-entered list of genes. Note: this could be done as a GeneFilter but
-     * will be most efficient to run as the first variantFilter.
-     *
-     * @return
-     */
-    public EntrezGeneIdFilter getEntrezGeneIdFilter(Set<Integer> genesToKeep) {
-        EntrezGeneIdFilter geneListFilter = new EntrezGeneIdFilter(genesToKeep);
-        logger.info("Made new: {}", geneListFilter);
-        return geneListFilter;
-    }
+        if (!filterSettings.getGenesToKeep().isEmpty()) {
+            filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
+        }
 
-    /**
-     * Add a frequency runFilter. There are several options. If the argument
-     * filterOutAllDbsnp is true, then all dbSNP entries are removed
-     * (dangerous). Else if the frequency is set to some value, we set this as
-     * the maximum MAF. else we set the frequency runFilter to 100%, i.e., no
-     * filtering.
-     *
-     * @param maxFrequency
-     * @param filterOutAllDbsnp
-     * @return
-     */
-    public FrequencyFilter getFrequencyFilter(float maxFrequency, boolean filterOutAllDbsnp) {
-        FrequencyFilter frequencyFilter = new FrequencyFilter(maxFrequency, filterOutAllDbsnp);
-        logger.info("Made new: {}", frequencyFilter);
-        return frequencyFilter;
-    }
+        //this would make more sense to be called 'removeOffTargetVariants'
+        if (!filterSettings.keepOffTargetVariants()) {
+            filtersToRun.add(FilterType.TARGET_FILTER);
+        }
+        filtersToRun.add(FilterType.FREQUENCY_FILTER);
 
-    public QualityFilter getQualityFilter(float qualityThreshold) {
-        QualityFilter filter = new QualityFilter(qualityThreshold);
-        logger.info("Made new: {}", filter);
-        return filter;
-    }
+        if (filterSettings.getMinimumQuality() != 0) {
+            filtersToRun.add(FilterType.QUALITY_FILTER);
+        }
 
-    public PathogenicityFilter getPathogenicityFilter(boolean removePathFilterCutOff) {
-        // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always 
-        // pass the pathogenicity filter and still get scored for pathogenicity
-        PathogenicityFilter filter = new PathogenicityFilter(removePathFilterCutOff);
-        logger.info("Made new: {}", filter);
-        return filter;
-    }
+        filtersToRun.add(FilterType.PATHOGENICITY_FILTER);
 
-    public IntervalFilter getIntervalFilter(GeneticInterval interval) {
-        IntervalFilter filter = new IntervalFilter(interval);
-        logger.info("Made new: {}", filter);
-        return filter;
-    }
+        if (filterSettings.getGeneticInterval() != null) {
+            filtersToRun.add(FilterType.INTERVAL_FILTER);
+        }
+        if (filterSettings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
+            filtersToRun.add(FilterType.INHERITANCE_FILTER);
+        }
 
-    public BedFilter getBedFilter(Set<String> commalist) {
-        BedFilter filter = new BedFilter(commalist);
-        logger.info("Made new: {}", filter);
-        return filter;
-    }
-
-    public InheritanceFilter getInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-        InheritanceFilter filter = new InheritanceFilter(modeOfInheritance);
-        logger.info("Made new: {}", filter);
-        return filter;
+        return filtersToRun;
     }
     
-    public GeneFilter getPriorityScoreFilter(float minPriorityScore) {
-        GeneFilter filter = new GenePriorityScoreFilter(minPriorityScore);
-        logger.info("Made new: {}", filter);
-        return filter;
-    }
 }
