@@ -20,7 +20,6 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
@@ -131,11 +130,6 @@ public class TestExomiserConfig {
     @Bean
     public VariantAnnotationsFactory mockVariantAnnotator() {
         return Mockito.mock(VariantAnnotationsFactory.class);
-    }
-    
-    @Bean
-    public FilterFactory mockFilterFactory() {
-        return Mockito.mock(FilterFactory.class);
     }
     
     @Bean

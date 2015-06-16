@@ -5,14 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
@@ -31,7 +31,6 @@ import de.charite.compbio.jannovar.pedigree.Genotype;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.junit.After;
@@ -55,7 +54,10 @@ public class HtmlResultsWriterTest {
 
     private HtmlResultsWriter instance;
 
-    /** The temporary folder to write files to, automatically removed after tests finish. */
+    /**
+     * The temporary folder to write files to, automatically removed after tests
+     * finish.
+     */
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
@@ -94,15 +96,15 @@ public class HtmlResultsWriterTest {
         missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f), new MutationTasterScore(1f), new SiftScore(0f), new CaddScore(1f)));
         missenseVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
         missenseVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
-        
+
         indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
         gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneId());
         gene1.addVariant(missenseVariantEvaluation);
-        
+
         gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
         gene2.addVariant(indelVariantEvaluation);
-        
+
         gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
         gene2.addPriorityResult(new PhivePriorityResult("MGI:54321", "Gene2", 0.98f));
 
@@ -120,8 +122,8 @@ public class HtmlResultsWriterTest {
         Paths.get(testOutFilePrefix).toFile().delete();
     }
 
-    private static ExomiserSettings.SettingsBuilder getSettingsBuilder() {
-        return new ExomiserSettings.SettingsBuilder()
+    private static SettingsBuilder getSettingsBuilder() {
+        return new SettingsBuilder()
                 .vcfFilePath(Paths.get(System.getProperty("java.io.tmpdir"), "temp.vcf"))
                 .usePrioritiser(PriorityType.NONE);
     }
@@ -138,13 +140,15 @@ public class HtmlResultsWriterTest {
     }
 
     @Test
-    public void testWriteTemplateWithEmptyData() throws Exception{
+    public void testWriteTemplateWithEmptyData() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWrite.html").toString();
-        
-        SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
-        ExomiserSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(sampleData, settings);
+        SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
+        Analysis analysis = new Analysis(sampleData);
+        
+        OutputSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+
+        instance.writeFile(analysis, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
 
@@ -157,9 +161,11 @@ public class HtmlResultsWriterTest {
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
         SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
-        ExomiserSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+        Analysis analysis = new Analysis(sampleData);
 
-        instance.writeFile(sampleData, settings);
+        OutputSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+
+        instance.writeFile(analysis, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
@@ -177,9 +183,10 @@ public class HtmlResultsWriterTest {
         genes.add(gene2);
 
         SampleData sampleData = makeSampleData(genes, variantData);
-        ExomiserSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+        Analysis analysis = new Analysis(sampleData);
+        OutputSettings settings = getSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(sampleData, settings);
+        instance.writeFile(analysis, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
     }

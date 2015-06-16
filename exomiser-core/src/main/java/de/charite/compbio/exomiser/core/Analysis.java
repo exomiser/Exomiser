@@ -6,6 +6,8 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,12 +23,28 @@ public class Analysis {
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
     
     private final SampleData sampleData;
-    private final ExomiserSettings settings;
+    private final ModeOfInheritance modeOfInheritance;
+    private final ScoringMode scoringMode;
     private final List<AnalysisStep> analysisSteps;
 
-    public Analysis(SampleData sampleData, ExomiserSettings settings) {
+    public Analysis(SampleData sampleData) {
         this.sampleData = sampleData;
-        this.settings = settings;
+        this.modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
+        this.scoringMode = ScoringMode.RAW_SCORE;
+        this.analysisSteps = new ArrayList<>();
+    }
+    
+    public Analysis(SampleData sampleData, ModeOfInheritance modeOfInheritance) {
+        this.sampleData = sampleData;
+        this.modeOfInheritance = modeOfInheritance;
+        this.scoringMode = ScoringMode.RAW_SCORE;
+        this.analysisSteps = new ArrayList<>();
+    }
+    
+    public Analysis(SampleData sampleData, ModeOfInheritance modeOfInheritance, ScoringMode geneScoringMode) {
+        this.sampleData = sampleData;
+        this.modeOfInheritance = modeOfInheritance;
+        this.scoringMode = geneScoringMode;
         this.analysisSteps = new ArrayList<>();
     }
 
@@ -34,8 +52,12 @@ public class Analysis {
         return sampleData;
     }
 
-    public ExomiserSettings getSettings() {
-        return settings;
+    public ModeOfInheritance getModeOfInheritance() {
+        return modeOfInheritance;
+    }
+
+    public ScoringMode getScoringMode() {
+        return scoringMode;
     }
 
     public void addStep(AnalysisStep step) {
@@ -50,7 +72,6 @@ public class Analysis {
     public int hashCode() {
         int hash = 3;
         hash = 83 * hash + Objects.hashCode(this.sampleData);
-        hash = 83 * hash + Objects.hashCode(this.settings);
         hash = 83 * hash + Objects.hashCode(this.analysisSteps);
         return hash;
     }
@@ -67,14 +88,15 @@ public class Analysis {
         if (!Objects.equals(this.sampleData, other.sampleData)) {
             return false;
         }
-        if (!Objects.equals(this.settings, other.settings)) {
-            return false;
-        }
         if (!Objects.equals(this.analysisSteps, other.analysisSteps)) {
             return false;
         }
         return true;
     }
 
-    
+    @Override
+    public String toString() {
+        return "Analysis{" + "sampleData=" + sampleData + ", modeOfInheritance=" + modeOfInheritance + ", scoringMode=" + scoringMode + ", analysisSteps=" + analysisSteps + '}';
+    }
+
 }

@@ -5,9 +5,11 @@
  */
 package de.charite.compbio.exomiser.core;
 
+import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.GeneFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -15,6 +17,8 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -31,10 +35,12 @@ public class Exomiser {
 
     private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
 
+    private final FilterFactory filterFactory;
     private final PriorityFactory prioritiserFactory;
     private final VariantDataService variantDataService;
 
     public Exomiser(VariantDataService variantDataService, PriorityFactory prioritiserFactory) {
+        this.filterFactory = new FilterFactory();
         this.variantDataService = variantDataService;
         this.prioritiserFactory = prioritiserFactory;
     }
@@ -49,7 +55,11 @@ public class Exomiser {
         //AnalysisRunner is kind of the new Exomiser - exomiser is now just a brand and a set of immutable steps 
         //from setUpExomiserAnalysis played out by the AnalysisRunner and stored in an Analysis
         logger.info("STARTING ANALYSIS");
-        AnalysisRunner analysisRunner = new AnalysisRunner(variantDataService, exomiserSettings);
+        AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
+        if (exomiserSettings.runFullAnalysis()) {
+            analysisMode = AnalysisMode.FULL;
+        } 
+        AnalysisRunner analysisRunner = new AnalysisRunner(variantDataService, analysisMode);
         analysisRunner.runAnalysis(analysis);
         logger.info("FINISHED ANALYSIS");
         return analysis;
@@ -65,7 +75,11 @@ public class Exomiser {
      */
     private Analysis setUpExomiserAnalysis(SampleData sampleData, ExomiserSettings exomiserSettings) {
         logger.info("SETTING-UP ANALYSIS");
-        Analysis analysis = new Analysis(sampleData, exomiserSettings);
+        ModeOfInheritance modeOfInheritance = exomiserSettings.getModeOfInheritance();
+        PriorityType prioritiserType = exomiserSettings.getPrioritiserType();
+        ScoringMode scoreMode = prioritiserType.getScoringMode();
+        
+        Analysis analysis = new Analysis(sampleData, modeOfInheritance, scoreMode);
         
         //don't change the order here - variants should ALWAYS be filtered before
         addVariantFilters(exomiserSettings, analysis);
@@ -80,7 +94,6 @@ public class Exomiser {
     }
 
     private List<VariantFilter> addVariantFilters(FilterSettings settings, Analysis analysis) {
-        FilterFactory filterFactory = new FilterFactory();
         logger.info("MAKING VARIANT FILTERS");
         List<VariantFilter> variantFilters = filterFactory.makeVariantFilters(settings);
         for (VariantFilter variantFilter : variantFilters) {
@@ -90,7 +103,6 @@ public class Exomiser {
     }
 
     private List<GeneFilter> addGeneFilters(FilterSettings settings, Analysis analysis) {
-        FilterFactory filterFactory = new FilterFactory();
         logger.info("MAKING GENE FILTERS");
         List<GeneFilter> geneFilters = filterFactory.makeGeneFilters(settings);
         for (GeneFilter geneFilter : geneFilters) {

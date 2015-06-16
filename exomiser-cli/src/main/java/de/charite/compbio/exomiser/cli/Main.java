@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
@@ -131,14 +132,14 @@ public class Main {
         PriorityFactory priorityFactory = applicationContext.getBean(PriorityFactory.class);
         
         Exomiser exomiser = new Exomiser(variantDataService, priorityFactory);
-        exomiser.analyse(sampleData, exomiserSettings);
+        Analysis analysis = exomiser.analyse(sampleData, exomiserSettings);
 
         logger.info("Writing results");
         ResultsWriterFactory resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         
         for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
             ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(sampleData, exomiserSettings);
+            resultsWriter.writeFile(analysis, exomiserSettings);
         }
 
         logger.info("Finished analysis");

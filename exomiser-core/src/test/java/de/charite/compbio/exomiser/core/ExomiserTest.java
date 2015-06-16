@@ -5,18 +5,21 @@
 */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.Exomiser;
-import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
+import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
+import de.charite.compbio.exomiser.core.filters.FilterSettings;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.GeneFilter;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
+import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
+import de.charite.compbio.exomiser.core.filters.QualityFilter;
 import de.charite.compbio.exomiser.core.filters.TargetFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
+import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
@@ -26,7 +29,9 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -62,9 +67,9 @@ public class ExomiserTest {
         VariantFilter frequencyFilter = new FrequencyFilter(100f, false);
         VariantFilter pathogenicityFilter = new PathogenicityFilter(false);
         
-        ExomiserSettings settings = settingsBuilder.build();
+        settings = settingsBuilder.build();
         
-        Analysis expected = new Analysis(sampleData, settings);
+        Analysis expected = new Analysis(sampleData);
         expected.addStep(targetFilter);
         expected.addStep(frequencyFilter);
         expected.addStep(pathogenicityFilter);
@@ -85,7 +90,7 @@ public class ExomiserTest {
         settings = settingsBuilder.runFullAnalysis(false)
                 .modeOfInheritance(dominantInheritance).build();
         
-        Analysis expected = new Analysis(sampleData, settings);
+        Analysis expected = new Analysis(sampleData);
         expected.addStep(targetFilter);
         expected.addStep(frequencyFilter);
         expected.addStep(pathogenicityFilter);
@@ -111,7 +116,7 @@ public class ExomiserTest {
                 .usePrioritiser(PriorityType.OMIM_PRIORITY)
                 .build();
         
-        Analysis expected = new Analysis(sampleData, settings);
+        Analysis expected = new Analysis(sampleData);
         expected.addStep(targetFilter);
         expected.addStep(frequencyFilter);
         expected.addStep(pathogenicityFilter);
@@ -143,8 +148,8 @@ public class ExomiserTest {
                 .usePrioritiser(PriorityType.PHIVE_PRIORITY)
                 .hpoIdList(hpoIds)
                 .build();
-        
-        Analysis expected = new Analysis(sampleData, settings);
+
+        Analysis expected = new Analysis(sampleData);
         expected.addStep(targetFilter);
         expected.addStep(frequencyFilter);
         expected.addStep(pathogenicityFilter);

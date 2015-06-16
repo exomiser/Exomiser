@@ -13,8 +13,8 @@ import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
+import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,13 +33,11 @@ public class AnalysisTest {
     private Analysis instance;
     
     private SampleData sampleData;
-    private ExomiserSettings settings;
     
     @Before
     public void setUp() {
         sampleData = new SampleData();
-        settings = new ExomiserSettings.SettingsBuilder().vcfFilePath(Paths.get("test.vcf")).outputPrefix("results/test").build();
-        instance = new Analysis(sampleData, settings);
+        instance = new Analysis(sampleData);
     }
 
     @Test
@@ -48,9 +46,25 @@ public class AnalysisTest {
     }
     
     @Test
-    public void testCanGetSettings() {
-        assertThat(instance.getSettings(), equalTo(settings));
+    public void modeOfInheritanceDefaultsToUnspecified() {
+        assertThat(instance.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
     }
+    
+    @Test
+    public void canSetModeOfInheritanceViaOptionalConstructor() {
+        instance = new Analysis(sampleData, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        assertThat(instance.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+    }
+    
+    @Test
+    public void canGeneScoringModeDefaultsToRawScore() {
+        assertThat(instance.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
+    }
+    
+//    @Test
+//    public void testCanGetSettings() {
+//        assertThat(instance.getSettings(), equalTo(settings));
+//    }
     
     @Test
     public void testCanAddVariantFilterAsAnAnalysisStep() {

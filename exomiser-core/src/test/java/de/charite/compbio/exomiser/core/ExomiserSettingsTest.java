@@ -597,7 +597,7 @@ public class ExomiserSettingsTest {
     public void testJsonRead() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
-        String jsonString = "{\"prioritiser\":\"phenodigm-mgi\",\"max-freq\":0.1,\"min-qual\":0.0,\"restrict-interval\":\"\",\"include-pathogenic\":false,\"remove-dbsnp\":false,\"remove-off-target-syn\":true,\"candidate-gene\":\"FGFR2\",\"inheritance-mode\":\"AUTOSOMAL_DOMINANT\",\"disease-id\":\"\",\"hpo-ids\":[\"HP:0987654\",\"HP:1234567\"],\"seed-genes\":[123,4567],\"num-genes\":0,\"out-file\":\"\",\"out-format\":\"HTML\",\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
+        String jsonString = "{\"prioritiser\":\"phive\",\"max-freq\":0.1,\"min-qual\":0.0,\"keep-non-pathogenic\":false,\"remove-known-variants\":false,\"keep-off-target\":false,\"candidate-gene\":\"FGFR2\",\"inheritance-mode\":\"AUTOSOMAL_DOMINANT\",\"disease-id\":\"\",\"hpo-ids\":[\"HP:0987654\",\"HP:1234567\"],\"seed-genes\":[123,4567],\"num-genes\":0,\"out-prefix\":\"wibble\",\"out-format\":[\"HTML\"],\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
         try {
             ExomiserSettings defaultSettings = mapper.readValue(jsonString, ExomiserSettings.class);
             System.out.println(defaultSettings);
@@ -606,38 +606,4 @@ public class ExomiserSettingsTest {
         }
     }
          
-    @Test
-    public void testDetermineFilterTypesToRunOnDefaultSettings() {
-        //make a new default Settings object
-        ExomiserSettings settings = instance.build();
-
-        List<FilterType> expResult = new ArrayList<>();
-
-        expResult.add(FilterType.TARGET_FILTER);
-        expResult.add(FilterType.FREQUENCY_FILTER);
-        expResult.add(FilterType.PATHOGENICITY_FILTER);
-        
-        List<FilterType> result = settings.getFilterTypesToRun();
-        
-        assertThat(result, equalTo(expResult));
-    }
-    
-    @Test
-    public void testDetermineFilterTypesToRun() {
-        //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        final GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
-        ExomiserSettings settings = instance.removePathFilterCutOff(true).maximumFrequency(0.25f).minimumQuality(2f).geneticInterval(interval).build();
-
-        List<FilterType> expResult = new ArrayList<>();
-
-        expResult.add(FilterType.TARGET_FILTER);
-        expResult.add(FilterType.FREQUENCY_FILTER);
-        expResult.add(FilterType.QUALITY_FILTER);
-        expResult.add(FilterType.PATHOGENICITY_FILTER);
-        expResult.add(FilterType.INTERVAL_FILTER);
-        
-        List<FilterType> result = settings.getFilterTypesToRun();
-        
-        assertThat(result, equalTo(expResult));
-    }
 }

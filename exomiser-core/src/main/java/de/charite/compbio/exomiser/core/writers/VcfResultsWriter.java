@@ -1,9 +1,9 @@
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.jannovar.htsjdk.InfoFields;
 import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
@@ -57,10 +57,11 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
+    public void writeFile(Analysis analysis, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
         String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
+        SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
                 outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines())) {
             writeData(sampleData, settings.outputPassVariantsOnly(), writer);
@@ -69,9 +70,10 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings) {
+    public String writeString(Analysis analysis, OutputSettings settings) {
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(), baos,
                 InfoFields.BOTH, getAdditionalHeaderLines())) {
             writeData(sampleData, settings.outputPassVariantsOnly(), writer);

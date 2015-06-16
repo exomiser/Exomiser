@@ -7,9 +7,7 @@ package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.filters.FilterReportFactory;
-import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
@@ -21,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
-import de.charite.compbio.exomiser.core.filters.FilterSettings;
+import de.charite.compbio.exomiser.core.Analysis;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -115,16 +113,8 @@ public class ResultsWriterUtils {
         return effectCounter;
     }
 
-    //TODO: This should take an Analysis instead of the FilterSettings and SampleData
-    public static List<FilterReport> makeFilterReports(FilterSettings settings, SampleData sampleData) {
-        // TODO: ExomiserSettings is really sticking it's nose into everything might be a good idea to scale
-        // this back so that it's only really needed in to cli package as it is tightly coupled with that anyway.
-        // For instance here it would be somewhat simpler to just supply the list of filters applied as they all
-        // know what their required parameters were. Sure this will violate the 'Tell Don't Ask' principle but
-        // the alternatives are worse
-        List<FilterType> filtersApplied = settings.getFilterTypesToRun();
-        return filterReportFactory.makeFilterReports(filtersApplied, settings, sampleData);
-
+    public static List<FilterReport> makeFilterReports(Analysis analysis) {
+        return filterReportFactory.makeFilterReports(analysis);
     }
 
     public static List<Gene> getMaxPassedGenes(List<Gene> genes, int maxGenes) {

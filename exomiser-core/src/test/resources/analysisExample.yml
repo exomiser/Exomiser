@@ -1,0 +1,42 @@
+## Exomiser Analysis Template.
+# These are all the possible options for running exomiser. Use this as a template for
+# your own set-up.
+---
+analysis:
+    vcf: test.vcf
+    ped:
+    # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE or UNDEFINED
+    modeOfInheritance: UNDEFINED
+    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
+    steps: [ 
+        intervalFilter: {interval: 'chr10:122892600-122892700'}, 
+        geneIdFilter: {geneIds: [12345, 34567, 98765]},
+        qualityFilter: {minQuality: 50.0},
+        targetFilter: {},
+        frequencyFilter: {maxFreq: 1.0, removeKnownVariants: false},
+        pathogenicityFilter: {keepNonPathogenic: false},
+        #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
+        inheritanceFilter: {},
+        omimPrioritiser: {},
+        # run in benchmarking mode: 
+#        hiPhivePrioritiser: {hpoIds: hpoIds, diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}
+        hiPhivePrioritiser: {} 
+    ]
+    runOptions:
+        #FULL or PASS_ONLY
+        analysisMode: PASS_ONLY 
+        #RAW_SCORE or RANK_BASED
+        geneScoreMode: RAW_SCORE
+    
+outputOptions:
+    outputPassVariantsOnly: false
+    #numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results  
+    numGenes: 0
+    #outputPrefix options: specify the path/filename without an extension and this will be added
+    # according to the outputFormats option. If unspecified this will default to the following: 
+    # {exomiserDir}/results/input-vcf-name-exomiser-results.html
+    # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
+    outputPrefix: results/Pfeiffer-hiphive
+    #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
+    outputFormats: [TSV-GENE, TSV-VARIANT, VCF, HTML]
+    

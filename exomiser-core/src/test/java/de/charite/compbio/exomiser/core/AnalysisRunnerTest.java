@@ -5,10 +5,10 @@
  */
 package de.charite.compbio.exomiser.core;
 
+import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,20 +19,16 @@ import org.junit.Test;
 public class AnalysisRunnerTest {
     
     private AnalysisRunner instance;
-    
-    private ExomiserSettings settings;
-    
+        
     @Before
     public void setUp() {
-        VariantDataService stubDataService = new VariantDataServiceStub();
-        settings = new ExomiserSettings.SettingsBuilder().vcfFilePath(Paths.get("testVcf")).build();
-        
-        instance = new AnalysisRunner(stubDataService, settings);
+        VariantDataService stubDataService = new VariantDataServiceStub();      
+        instance = new AnalysisRunner(stubDataService, AnalysisMode.PASS_ONLY);
     }
 
     @Test
     public void canRunAnalysis() {
-        Analysis analysis = new Analysis(new SampleData(), settings);
+        Analysis analysis = new Analysis(new SampleData());
         instance.runAnalysis(analysis);
     }
     

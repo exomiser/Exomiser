@@ -1,5 +1,6 @@
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.Analysis;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -19,7 +20,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
@@ -66,25 +67,18 @@ public class VcfResultsWriterTest {
             + "##INFO=<ID=HGVS,Number=1,Type=String,Description=\"HGVS Nomenclature\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
 
-    /** VCF reader, initialized from minimal.vcf (that only contains a header). */
-    private static VCFFileReader reader;
-
-    /** The instance under test. */
     private VcfResultsWriter instance;
 
-    /** The temporary folder to write files to, automatically removed after tests finish. */
+    private static VCFFileReader reader;
+
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    /** The currently used output path. */
     private Path outPath;
-
-    /** The current settings to use. */
-    private ExomiserSettings settings;
-
-    /** Sample data used for testing. */
+    private OutputSettings settings;
     private SampleData sampleData;
 
+    private Analysis analysis; 
     /** VariantEvaluation objects used for testing (annotated ones). */
     private VariantEvaluation missenseVariantEvaluation;
     private VariantEvaluation indelVariantEvaluation;
@@ -93,11 +87,8 @@ public class VcfResultsWriterTest {
     private VariantEvaluation unAnnotatedVariantEvaluation1;
     private VariantEvaluation unAnnotatedVariantEvaluation2;
 
-    /** Genes used for testing */
     private Gene gene1, gene2;
-
-    /** Filters used for testing. */
-    FilterResult passTargetResult, failTargetResult, failFrequencyResult;
+    private FilterResult passTargetResult, failTargetResult, failFrequencyResult;
 
     @BeforeClass
     public static void loadVCFHeader() throws URISyntaxException {
@@ -108,7 +99,7 @@ public class VcfResultsWriterTest {
     @Before
     public void setUp() throws IOException {
         outPath = tmpFolder.newFile().toPath();
-        settings = new ExomiserSettings.SettingsBuilder()
+        settings = new SettingsBuilder()
                 .vcfFilePath(outPath)
                 .usePrioritiser(PriorityType.OMIM_PRIORITY)
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
@@ -123,6 +114,8 @@ public class VcfResultsWriterTest {
         sampleData = new SampleData();
         sampleData.setGenes(new ArrayList<Gene>());
         sampleData.setVcfHeader(reader.getFileHeader());
+        
+        analysis = new Analysis(sampleData);
         
         TestVariantFactory varFactory = new TestVariantFactory();
 
@@ -154,7 +147,7 @@ public class VcfResultsWriterTest {
     /* test that the extended header is written out properly */
     @Test
     public void testWriteHeaderFile() {
-        Assert.assertEquals(EXPECTED_HEADER, instance.writeString(sampleData, settings));
+        Assert.assertEquals(EXPECTED_HEADER, instance.writeString(analysis, settings));
     }
 
     /* test writing out unannotated variants */
@@ -162,7 +155,7 @@ public class VcfResultsWriterTest {
     public void testWriteUnannotatedVariants() {       
         sampleData.setVariantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2));
         
-        String vcf = instance.writeString(sampleData, settings);
+        String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr5\t11\t.\tAC\tAT\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
                 + "chr5\t14\t.\tT\tTG\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
@@ -174,7 +167,7 @@ public class VcfResultsWriterTest {
     public void testWriteAnnotatedVariants() {
         sampleData.setGenes(Arrays.asList(gene1, gene2));
 
-        String vcf = instance.writeString(sampleData, settings);
+        String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\t.\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n"
                 + "chr7\t155604801\t.\tC\tCTT\t1\t.\tEXOMISER_GENE=SHH;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
@@ -187,7 +180,7 @@ public class VcfResultsWriterTest {
         missenseVariantEvaluation.addFilterResult(passTargetResult);
         sampleData.setGenes(Arrays.asList(gene1));
 
-        String vcf = instance.writeString(sampleData, settings);
+        String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
@@ -199,7 +192,7 @@ public class VcfResultsWriterTest {
         missenseVariantEvaluation.addFilterResult(failFrequencyResult);
         sampleData.setGenes(Arrays.asList(gene1));
 
-        String vcf = instance.writeString(sampleData, settings);
+        String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\tFrequency\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
@@ -211,7 +204,7 @@ public class VcfResultsWriterTest {
         missenseVariantEvaluation.addFilterResult(failTargetResult);
         sampleData.setGenes(Arrays.asList(gene1));
 
-        String vcf = instance.writeString(sampleData, settings);
+        String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
@@ -223,13 +216,13 @@ public class VcfResultsWriterTest {
         indelVariantEvaluation.addFilterResult(failTargetResult);
         sampleData.setGenes(Arrays.asList(gene1, gene2));
         
-        ExomiserSettings outputPassVariantsOnlySettings = new ExomiserSettings.SettingsBuilder()
+        OutputSettings outputPassVariantsOnlySettings = new SettingsBuilder()
                 .vcfFilePath(outPath)
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputPassVariantsOnly(true)
                 .outputPrefix("testWrite").build();
         
-        String vcf = instance.writeString(sampleData, outputPassVariantsOnlySettings);
+        String vcf = instance.writeString(analysis, outputPassVariantsOnlySettings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
@@ -245,7 +238,7 @@ public class VcfResultsWriterTest {
         gene.addVariant(alt2);
         
         sampleData.setGenes(Arrays.asList(gene));
-        String vcf = instance.writeString(sampleData, settings);
+        String vcf = instance.writeString(analysis, settings);
         System.out.println(vcf);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n"

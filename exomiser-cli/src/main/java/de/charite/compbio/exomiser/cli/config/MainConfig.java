@@ -12,8 +12,6 @@ import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
-import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
@@ -207,11 +205,6 @@ public class MainConfig {
     @Bean
     public PathogenicityDao pathogenicityDao() {
         return new DefaultPathogenicityDao();
-    }
-
-    @Bean
-    public FilterFactory filterFactory() {
-        return new FilterFactory();
     }
 
     @Bean

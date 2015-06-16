@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.Analysis;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -15,9 +16,7 @@ import java.util.EnumSet;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
@@ -57,6 +56,7 @@ public class TsvVariantResultsWriterTest {
     private static final String FAIL_VARIANT_LINE = FAIL_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + FAIL_VARIANT_EXOMISER_SCORES;
 
     private SettingsBuilder settingsBuilder;
+    private Analysis analysis;
     private SampleData sampleData;
     private Gene gene;
     private VariantEvaluation passVariant;
@@ -77,6 +77,8 @@ public class TsvVariantResultsWriterTest {
 
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
+        
+        analysis = new Analysis(sampleData);
     }
 
     private void makePassVariant(TestVariantFactory varFactory) {
@@ -91,16 +93,16 @@ public class TsvVariantResultsWriterTest {
 
     @Test
     public void testWrite() {
-        ExomiserSettings settings = settingsBuilder.outputPrefix("testWrite").build();
-        instance.writeFile(sampleData, settings);
+        OutputSettings settings = settingsBuilder.outputPrefix("testWrite").build();
+        instance.writeFile(analysis, settings);
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().delete());
     }
 
     @Test
     public void testWriteStringContainsAllVariants() {
-        ExomiserSettings settings = settingsBuilder.build();
-        String outString = instance.writeString(sampleData, settings);
+        OutputSettings settings = settingsBuilder.build();
+        String outString = instance.writeString(analysis, settings);
         String expected = HEADER
                 + PASS_VARIANT_LINE
                 + FAIL_VARIANT_LINE;
@@ -109,8 +111,8 @@ public class TsvVariantResultsWriterTest {
     
     @Test
     public void testWritePassVariantsOnlyStringContainsOnlyPassedVariants() {
-        ExomiserSettings settings = settingsBuilder.outputPassVariantsOnly(true).build();
-        String outString = instance.writeString(sampleData, settings);
+        OutputSettings settings = settingsBuilder.outputPassVariantsOnly(true).build();
+        String outString = instance.writeString(analysis, settings);
         String expected = HEADER +
                 PASS_VARIANT_LINE;
         assertThat(outString, equalTo(expected));

@@ -5,10 +5,11 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import static de.charite.compbio.exomiser.core.ExomiserSettings.DEFAULT_OUTPUT_DIR;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.filters.TargetFilter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -44,7 +45,7 @@ public class ResultsWriterUtilsTest {
     
     @Before
     public void before() {
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("wibble"));
         
         Mockito.when(passedGeneOne.passedFilters()).thenReturn(Boolean.TRUE);
@@ -63,7 +64,7 @@ public class ResultsWriterUtilsTest {
     @Test
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.TSV_GENE;
-        ExomiserSettings settings = settingsBuilder.build();
+        OutputSettings settings = settingsBuilder.build();
         String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -72,7 +73,7 @@ public class ResultsWriterUtilsTest {
     @Test
     public void testThatSpecifiedVcfFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.VCF;
-        ExomiserSettings settings = settingsBuilder.build();
+        OutputSettings settings = settingsBuilder.build();
         String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -83,7 +84,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat testedFormat = OutputFormat.VCF;
         String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
         settingsBuilder.outputPrefix(outputPrefix);
-        ExomiserSettings settings = settingsBuilder.build();        
+        OutputSettings settings = settingsBuilder.build();        
         String expResult = String.format("%s.%s", outputPrefix, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -93,7 +94,7 @@ public class ResultsWriterUtilsTest {
     public void testDefaultOutputFormatIsNotDestroyedByIncorrectFileExtensionDetection() {
         OutputFormat testedFormat = OutputFormat.HTML;
         settingsBuilder.buildVersion("2.1.0");
-        ExomiserSettings settings = settingsBuilder.build();
+        OutputSettings settings = settingsBuilder.build();
         String expResult = DEFAULT_OUTPUT_DIR + "/wibble-exomiser-2.1.0-results.html";
         String result = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -104,7 +105,7 @@ public class ResultsWriterUtilsTest {
         OutputFormat outFormat = OutputFormat.TSV_GENE;
         String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009.vcf";
         settingsBuilder.outputPrefix(outFilePrefix);
-        ExomiserSettings settings = settingsBuilder.build();
+        OutputSettings settings = settingsBuilder.build();
         assertThat(ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), outFormat), equalTo(outFilePrefix + "." + outFormat.getFileExtension()));
     }
     
@@ -120,11 +121,22 @@ public class ResultsWriterUtilsTest {
     }
     
     @Test
-    public void canMakeFilterReportsFromSettingsAndVariantEvaluations(){
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().build();
+    public void canMakeFilterReportsFromAnalysis_returnsEmptyListWhenNoFiltersAdded(){
         SampleData sampleData = new SampleData();
         sampleData.setVariantEvaluations(new ArrayList<VariantEvaluation>());
-        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(settings, sampleData);
+        Analysis analysis = new Analysis(sampleData);
+        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis);
+        
+        assertThat(results.isEmpty(), is(true));
+    }
+    
+    @Test
+    public void canMakeFilterReportsFromAnalysis(){
+        SampleData sampleData = new SampleData();
+        sampleData.setVariantEvaluations(new ArrayList<VariantEvaluation>());
+        Analysis analysis = new Analysis(sampleData);
+        analysis.addStep(new TargetFilter());
+        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis);
         
         for (FilterReport result : results) {
             System.out.println(result);

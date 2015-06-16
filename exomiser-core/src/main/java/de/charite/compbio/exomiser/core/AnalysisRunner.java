@@ -39,6 +39,10 @@ public class AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisRunner.class);
 
+    public enum AnalysisMode {
+        FULL, PASS_ONLY;
+    }
+
     private final VariantDataService variantDataService;
 
     //TODO: variantFilterRunner is not typed here as there is something a bit mis-aligned with the interfaces and what they can work on - this needs fixing
@@ -48,15 +52,15 @@ public class AnalysisRunner {
     private final GeneFilterRunner geneFilterRunner = new SimpleGeneFilterRunner();
     private final PrioritiserRunner prioritiserRunner = new PrioritiserRunner();
 
-    public AnalysisRunner(VariantDataService variantDataService, ExomiserSettings settings) {
+    public AnalysisRunner(VariantDataService variantDataService, AnalysisMode analysisMode) {
         this.variantDataService = variantDataService;
-        this.variantFilterRunner = makeVariantFilterRunner(settings.runFullAnalysis());
+        this.variantFilterRunner = makeVariantFilterRunner(analysisMode);
     }
 
-    private VariantFilterRunner makeVariantFilterRunner(boolean runFullAnalysis) {
+    private VariantFilterRunner makeVariantFilterRunner(AnalysisMode analysisMode) {
         //the VariantFilterRunner will handle getting variant data when it needs it.
         //perhaps this ought to be two classes? A SimpleAnalysisRunner and a SparseAnalysisRunner?
-        if (runFullAnalysis) {
+        if (analysisMode == AnalysisMode.FULL) {
             return new SimpleVariantFilterRunner(variantDataService);
         } else {
             return new SparseVariantFilterRunner(variantDataService);
@@ -86,7 +90,7 @@ public class AnalysisRunner {
         logger.info("Finished analysis in {} secs", analysisTimeInSecs);
     }
 
-    public void runStep(AnalysisStep analysisStep, List<Gene> genes) {
+    protected void runStep(AnalysisStep analysisStep, List<Gene> genes) {
         if (VariantFilter.class.isInstance(analysisStep)) {
             VariantFilter filter = (VariantFilter) analysisStep;
             logger.info("Running VariantFilter: {}", filter);
@@ -135,7 +139,7 @@ public class AnalysisRunner {
     }
 
     private void scoreGenes(List<Gene> genes, ScoringMode scoreMode, ModeOfInheritance modeOfInheritance) {
-        logger.info("Scoring genes");       
+        logger.info("Scoring genes");
         GeneScorer geneScorer = getGeneScorer(scoreMode);
         geneScorer.scoreGenes(genes, modeOfInheritance);
     }
@@ -143,7 +147,7 @@ public class AnalysisRunner {
     private GeneScorer getGeneScorer(ScoringMode scoreMode) {
         if (scoreMode == ScoringMode.RANK_BASED) {
             return new RankBasedGeneScorer();
-        }             
+        }
         return new RawScoreGeneScorer();
     }
 }

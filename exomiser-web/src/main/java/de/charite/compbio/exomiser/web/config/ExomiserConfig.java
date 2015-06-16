@@ -11,8 +11,6 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
-import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
@@ -157,11 +155,6 @@ public class ExomiserConfig {
         Path randomWalkIndexFilePath = dataPath().resolve(env.getProperty("randomWalkIndexFileName"));
 
         return new DataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
-    }
-
-    @Bean
-    public FilterFactory filterFactory() {
-        return new FilterFactory();
     }
 
     @Bean
