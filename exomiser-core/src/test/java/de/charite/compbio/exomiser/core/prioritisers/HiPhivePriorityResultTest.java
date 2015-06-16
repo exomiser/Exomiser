@@ -12,6 +12,7 @@ import de.charite.compbio.exomiser.core.model.Organism;
 import java.util.ArrayList;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -29,13 +30,14 @@ public class HiPhivePriorityResultTest {
     private List<Model> phenotypeEvidence;
     private List<Model> ppiEvidence;
     private final double walkerScore = 0.6d;
+    private final boolean matchesCandidateGene = true;
     
     @Before
     public void setUp() {
         queryPhenotypeTerms = new ArrayList<>();
         phenotypeEvidence = new ArrayList<>();
         ppiEvidence = new ArrayList<>();
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, phenotypeEvidence, ppiEvidence, walkerScore);
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, phenotypeEvidence, ppiEvidence, walkerScore, matchesCandidateGene);
     }
 
     private GeneModel makeStubGeneModelForOrganismWithScore(Organism organism, double score) {
@@ -98,7 +100,7 @@ public class HiPhivePriorityResultTest {
                 
         List<Model> models = new ArrayList<>();
         models.add(geneModel);
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore);
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
         assertThat(instance.getHumanScore(), equalTo((float) modelScore));
     }
@@ -115,7 +117,7 @@ public class HiPhivePriorityResultTest {
                 
         List<Model> models = new ArrayList<>();
         models.add(geneModel);
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore);
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
         assertThat(instance.getMouseScore(), equalTo((float) modelScore));
     }
@@ -132,7 +134,7 @@ public class HiPhivePriorityResultTest {
                 
         List<Model> models = new ArrayList<>();
         models.add(geneModel);
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore);
+        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
         assertThat(instance.getFishScore(), equalTo((float) modelScore));
     }
@@ -142,4 +144,8 @@ public class HiPhivePriorityResultTest {
         assertThat(instance.getWalkerScore(), equalTo((float) walkerScore));
     }
     
+    @Test
+    public void testIsCandidateGeneMatch_MatchesConstructorArg() {
+        assertThat(instance.isCandidateGeneMatch(), is(matchesCandidateGene));
+    }
 }

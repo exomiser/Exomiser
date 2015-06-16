@@ -164,9 +164,14 @@ public class HiPhivePriority implements Prioritiser {
             }
         }
         logger.debug("Making result for {} {} score={}", gene.getGeneSymbol(), entrezGeneId, score);
-        return new HiPhivePriorityResult(gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore);
+        return new HiPhivePriorityResult(gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore, matchesCandidateGene(gene));
     }
 
+    private boolean matchesCandidateGene(Gene gene) {
+        //new Jannovar labelling can have multiple genes per var but first one is most pathogenic- we'll take this one.
+        return options.getCandidateGeneSymbol().equals(gene.getGeneSymbol()) || gene.getGeneSymbol().startsWith(options.getCandidateGeneSymbol() + ",");
+    }
+    
     private List<Model> getBestPhenotypeMatchesForGene(Integer entrezGeneId, final Map<Integer, Model> bestDiseaseModelForGene, final Map<Integer, Model> bestMouseModelForGene, final Map<Integer, Model> bestFishModelForGene) {
         List<Model> bestPhenotypeMatchModels = new ArrayList<>();
         if (bestDiseaseModelForGene.containsKey(entrezGeneId)) {
