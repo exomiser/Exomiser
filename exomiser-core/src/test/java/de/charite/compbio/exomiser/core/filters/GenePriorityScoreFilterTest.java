@@ -6,6 +6,8 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,7 +55,8 @@ public class GenePriorityScoreFilterTest {
 
     @Test
     public void testRunFilter_PassesGeneWithPriorityScoreSameAsThreshold() {
-        gene.setPriorityScore(minPriorityScore);
+        PriorityResult priorityResult = new PhivePriorityResult(null, null, minPriorityScore);
+        gene.addPriorityResult(priorityResult);
         FilterResult result = instance.runFilter(gene);
         
         assertPasses(result);
@@ -61,7 +64,8 @@ public class GenePriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_PassesGeneWithPriorityScoreOverThreshold() {
-        gene.setPriorityScore(minPriorityScore + 0.2f);
+        PriorityResult priorityResult = new PhivePriorityResult(null, null, minPriorityScore + 0.2f);
+        gene.addPriorityResult(priorityResult);
         FilterResult result = instance.runFilter(gene);
         
         assertPasses(result);
@@ -69,7 +73,8 @@ public class GenePriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_FailsGeneWithPriorityScoreUnderThreshold() {
-        gene.setPriorityScore(minPriorityScore - 0.2f);
+        PriorityResult priorityResult = new PhivePriorityResult(null, null, minPriorityScore - 0.2f);
+        gene.addPriorityResult(priorityResult);
         FilterResult result = instance.runFilter(gene);
         
         assertFails(result);
