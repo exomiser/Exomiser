@@ -41,7 +41,7 @@ public class IntervalFilter implements VariantFilter {
 
     }
 
-    public GeneticInterval getInterval() {
+    public GeneticInterval getGeneticInterval() {
         return interval;
     }
 

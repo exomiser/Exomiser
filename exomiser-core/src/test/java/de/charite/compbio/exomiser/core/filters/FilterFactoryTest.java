@@ -27,7 +27,7 @@ public class FilterFactoryTest {
    
     private SettingsBuilder settingsBuilder;
     private FilterFactory instance;
-    
+        
     private final GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
     
     public FilterFactoryTest() {
@@ -102,79 +102,44 @@ public class FilterFactoryTest {
         List<GeneFilter> result = instance.makeGeneFilters(settings);
         assertThat(result, equalTo(expResult));
     }
-
+    
     @Test
-    public void testGetEntrezGeneIdFilter() {
-        Set<Integer> geneIdentifiers = new HashSet<>();
-        Filter expResult = new EntrezGeneIdFilter(geneIdentifiers);
-        Filter result = instance.getEntrezGeneIdFilter(geneIdentifiers);
+    public void testDetermineFilterTypesToRunOnDefaultSettings() {
+        //make a new default Settings object
+        FilterSettings settings = settingsBuilder.build();
+
+        List<FilterType> expResult = new ArrayList<>();
+
+        expResult.add(FilterType.TARGET_FILTER);
+        expResult.add(FilterType.FREQUENCY_FILTER);
+        expResult.add(FilterType.PATHOGENICITY_FILTER);
+        
+        List<FilterType> result = instance.determineFilterTypesToRun(settings);
+        
         assertThat(result, equalTo(expResult));
     }
     
     @Test
-    public void testGetTargetFilter() {
-        Filter expResult = new TargetFilter();
-        Filter result = instance.getTargetFilter();
-        assertThat(result, equalTo(expResult));
-    }
+    public void testDetermineFilterTypesToRun() {
+        //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
+        FilterSettings settings = settingsBuilder
+                .removePathFilterCutOff(true)
+                .maximumFrequency(0.25f)
+                .minimumQuality(2f)
+                .geneticInterval(interval)
+                .build();
 
-    @Test
-    public void testGetFrequencyFilter() {
-        float maxFrequency = 0.0F;
-        boolean filterOutAllDbsnp = false;
-        Filter expResult = new FrequencyFilter(maxFrequency, filterOutAllDbsnp);
+        List<FilterType> expResult = new ArrayList<>();
+
+        expResult.add(FilterType.TARGET_FILTER);
+        expResult.add(FilterType.FREQUENCY_FILTER);
+        expResult.add(FilterType.QUALITY_FILTER);
+        expResult.add(FilterType.PATHOGENICITY_FILTER);
+        expResult.add(FilterType.INTERVAL_FILTER);
         
-        Filter result = instance.getFrequencyFilter(maxFrequency, filterOutAllDbsnp);
+        List<FilterType> result = instance.determineFilterTypesToRun(settings);
         
-        assertThat(result, equalTo(expResult));
-    }
-
-    @Test
-    public void testGetQualityFilter() {
-        float quality_threshold = 8f;
-        Filter expResult = new QualityFilter(quality_threshold);
-        Filter result = instance.getQualityFilter(quality_threshold);
-        assertThat(result, equalTo(expResult));
-    }
-
-    @Test
-    public void testGetPathogenicityFilter() {
-        boolean filterOutNonpathogenic = false;
-        Filter expResult = new PathogenicityFilter(filterOutNonpathogenic);
-        Filter result = instance.getPathogenicityFilter(filterOutNonpathogenic);
-        assertThat(result, equalTo(expResult));
-
-    }
-
-    @Test
-    public void testGetIntervalFilter() {
-        Filter expResult = new IntervalFilter(interval);
-        Filter result = instance.getIntervalFilter(interval);
-        assertThat(result, equalTo(expResult));
-    }
-   
-    @Test
-    public void testGetBedFilter() {
-        Set<String> genes = new TreeSet<>();
-        Filter expResult = new BedFilter(genes);
-        Filter result = instance.getBedFilter(genes);
         assertThat(result, equalTo(expResult));
     }
     
-    @Test
-    public void testGetInheritanceFilter() {
-        ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        Filter expFilter = new InheritanceFilter(modeOfInheritance);
-        Filter resultFilter = instance.getInheritanceFilter(modeOfInheritance);
-        assertThat(resultFilter, equalTo(expFilter));
-    }
- 
-    @Test
-    public void testGetGenePriorityScoreFilter() {
-        float minPriorityScore = 0.8f;
-        Filter expFilter = new GenePriorityScoreFilter(minPriorityScore);
-        Filter resultFilter = instance.getPriorityScoreFilter(minPriorityScore);
-        assertThat(resultFilter, equalTo(expFilter));
-    }
-
 }

@@ -58,6 +58,10 @@ public class FrequencyFilter implements VariantFilter {
         this.strictFiltering = filterOutAllKnownVariants;
     }
 
+    public float getMaxFreq() {
+        return maxFreq;
+    }
+
     /**
      * Flag to output results of filtering against frequency with Thousand
      * Genomes and ESP data.

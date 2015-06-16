@@ -77,6 +77,11 @@ public class FrequencyFilterTest {
     }
 
     @Test
+    public void getMaxFrequencyCutoff() {
+        assertThat(instance.getMaxFreq(), equalTo(FREQ_THRESHOLD));
+    } 
+    
+    @Test
     public void testGetFilterType() {
         assertThat(instance.getFilterType(), equalTo(FilterType.FREQUENCY_FILTER));
     }

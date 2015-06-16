@@ -61,7 +61,7 @@ public class IntervalFilterTest {
 
     @Test
     public void testGetInterval() {
-        assertThat(instance.getInterval(), equalTo(SEARCH_INTERVAL));
+        assertThat(instance.getGeneticInterval(), equalTo(SEARCH_INTERVAL));
     }
     
     @Test
