@@ -17,8 +17,6 @@ import java.util.Set;
  */
 public interface FilterSettings {
 
-    public List<FilterType> getFilterTypesToRun();
-
     public Set<Integer> getGenesToKeep();
 
     public float getMaximumFrequency();
@@ -32,4 +30,6 @@ public interface FilterSettings {
     public GeneticInterval getGeneticInterval();
 
     public ModeOfInheritance getModeOfInheritance();
+
+    public boolean keepOffTargetVariants();
 }

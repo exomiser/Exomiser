@@ -390,42 +390,6 @@ public class ExomiserSettings implements FilterSettings, PrioritiserSettings, Ou
         diseaseGeneFamilyName = builder.diseaseGeneFamilyName;
     }
     
-    /**
-     * Determines the required {@code FilterType} to be run from the given
-     * {@code ExomiserSettings}.
-     *
-     * @return
-     */
-    @Override
-    public List<FilterType> getFilterTypesToRun() {
-        List<FilterType> filtersToRun = new ArrayList<>();
-
-        if (!getGenesToKeep().isEmpty()) {
-            filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
-        }
-
-        if (!keepOffTargetVariants()) {
-            filtersToRun.add(FilterType.TARGET_FILTER);
-        }
-        filtersToRun.add(FilterType.FREQUENCY_FILTER);
-
-        if (getMinimumQuality() != 0) {
-            filtersToRun.add(FilterType.QUALITY_FILTER);
-        }
-
-        filtersToRun.add(FilterType.PATHOGENICITY_FILTER);
-
-        if (getGeneticInterval() != null) {
-            filtersToRun.add(FilterType.INTERVAL_FILTER);
-        }
-        if (getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
-            filtersToRun.add(FilterType.INHERITANCE_FILTER);
-        }
-
-        return filtersToRun;
-    }
-
-
     @JsonIgnore
     public boolean isValid() {
         return isValid;
@@ -493,6 +457,7 @@ public class ExomiserSettings implements FilterSettings, PrioritiserSettings, Ou
     }
 
     @JsonProperty(KEEP_OFF_TARGET_OPTION)
+    @Override
     public boolean keepOffTargetVariants() {
         return removeOffTargetVariants;
     }
