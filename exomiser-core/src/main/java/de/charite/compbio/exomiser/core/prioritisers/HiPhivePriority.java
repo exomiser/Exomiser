@@ -168,6 +168,9 @@ public class HiPhivePriority implements Prioritiser {
                 HiPhivePriorityResult result = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY);
                 if (newScore > result.getScore()) {
                     result.setScore(newScore);
+                    // with new resetPriorityScore which is only called when a priorityResult is first set it fails to get reset
+                    // HACK for now until Jules is back
+                    gene.setPriorityScore(newScore);
                 }
             }
         }
@@ -466,7 +469,7 @@ public class HiPhivePriority implements Prioritiser {
                 double score = model.getScore();
 
                 // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
-                if ((model.getModelId() == null ? diseaseId == null : model.getModelId().equals(diseaseId))
+                if ((model.getModelId() == null ? diseaseId == null : model.getModelId().equals(diseaseId + "_" + entrezId))
                         && (model.getHumanGeneSymbol() == null ? candidateGeneSymbol == null : model.getHumanGeneSymbol().equals(candidateGeneSymbol))) {
                     logger.info("Found self hit {}:{} - skipping due to benchmarking", diseaseId, candidateGeneSymbol);
                 } else {
