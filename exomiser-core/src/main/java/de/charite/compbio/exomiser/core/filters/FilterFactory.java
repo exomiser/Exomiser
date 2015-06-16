@@ -5,13 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.ArrayList;
 import java.util.List;
-
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +61,6 @@ public class FilterFactory {
                 //do nothing
             }
         }
-        logger.info("{} new filters ready to run", variantFilters.size());
 
         return variantFilters;
     }
@@ -129,5 +124,5 @@ public class FilterFactory {
 
         return filtersToRun;
     }
-    
+
 }

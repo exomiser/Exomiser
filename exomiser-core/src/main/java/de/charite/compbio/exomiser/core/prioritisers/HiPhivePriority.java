@@ -579,18 +579,11 @@ public class HiPhivePriority implements Prioritiser {
         return true;
     }
 
-    
-//    @Override
-//    public String toString() {
-//        return getPriorityType().getCommandLineValue() + ", hpoIds=" + hpoIds;
-//    }
-
-
     @Override
     public String toString() {
-        return "HiPhivePriority{" +
-                "hpoIds=" + hpoIds +
-                ", options=" + options +
-                '}';
+        return "HiPhivePriority{"
+                + "hpoIds=" + hpoIds
+                + ", options=" + options
+                + '}';
     }
 }

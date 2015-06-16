@@ -90,7 +90,6 @@ public class PriorityFactoryImpl implements PriorityFactory {
     private OMIMPriority getOmimPrioritizer() {
         OMIMPriority priority = new OMIMPriority();
         priority.setDataSource(dataSource);
-        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
@@ -100,27 +99,23 @@ public class PriorityFactoryImpl implements PriorityFactory {
 
         boolean symmetric = false;
         PhenixPriority priority = new PhenixPriority(phenixDataDirectory.toString(), hpoIDset, symmetric);
-        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
     private PhivePriority getPhivePrioritiser(List<String> hpoIds) {
         PhivePriority priority = new PhivePriority(hpoIds);
         priority.setDataSource(dataSource);
-        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
     private ExomeWalkerPriority getExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
         ExomeWalkerPriority priority = new ExomeWalkerPriority(randomWalkMatrix, entrezSeedGenes);
-        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
     private HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
         HiPhivePriority priority = new HiPhivePriority(hpoIds, hiPhiveOptions, randomWalkMatrix);
         priority.setPriorityService(priorityService);
-        logger.info("Made new prioritiser: {}", priority);
         return priority;
     }
 
