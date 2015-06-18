@@ -12,6 +12,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class to encapsulate the patient data from a VCF file and their pedigree.
@@ -23,7 +24,8 @@ public class SampleData {
     /**
      * Store the path of the file used to create this data.
      */
-    private Path vcfFilePath;
+    private Path vcfPath;
+    private Path pedPath;
     
     /**
      * Header of the VCF file.
@@ -77,14 +79,22 @@ public class SampleData {
         this.numSamples = numSamples;
     }
 
-    public Path getVcfFilePath() {
-        return vcfFilePath;
+    public Path getVcfPath() {
+        return vcfPath;
     }
 
-    public void setVcfFilePath(Path vcfFilePath) {
-        this.vcfFilePath = vcfFilePath;
+    public void setVcfPath(Path vcfPath) {
+        this.vcfPath = vcfPath;
     }
 
+    public void setPedPath(Path pedPath) {
+        this.pedPath = pedPath;
+    }
+    
+    public Path getPedPath() {
+        return pedPath;
+    }
+    
     public VCFHeader getVcfHeader() {
         return vcfHeader;
     }
@@ -126,4 +136,36 @@ public class SampleData {
         }  
         return unannotatedList;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.vcfPath);
+        hash = 59 * hash + Objects.hashCode(this.pedPath);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SampleData other = (SampleData) obj;
+        if (!Objects.equals(this.vcfPath, other.vcfPath)) {
+            return false;
+        }
+        if (!Objects.equals(this.pedPath, other.pedPath)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "SampleData{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + '}';
+    }
+    
 }

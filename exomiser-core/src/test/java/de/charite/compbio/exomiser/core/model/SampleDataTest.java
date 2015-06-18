@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -66,8 +67,15 @@ public class SampleDataTest {
     @Test
     public void testCanSetAndGetVcfFilePath() {
         Path vcfPath = Paths.get("vcf");
-        instance.setVcfFilePath(vcfPath);
-        assertThat(instance.getVcfFilePath(), equalTo(vcfPath));
+        instance.setVcfPath(vcfPath);
+        assertThat(instance.getVcfPath(), equalTo(vcfPath));
+    }
+    
+    @Test
+    public void testCanSetAndGetPedFilePath() {
+        Path pedPath = Paths.get("ped");
+        instance.setPedPath(pedPath);
+        assertThat(instance.getPedPath(), equalTo(pedPath));
     }
 
     @Test
@@ -114,5 +122,32 @@ public class SampleDataTest {
         unAnnotatedVariantEvaluations.add(unAnnotatedVariantEvaluation);
 
         assertThat(instance.getUnAnnotatedVariantEvaluations(), equalTo(unAnnotatedVariantEvaluations));
+    }
+    
+    @Test 
+    public void testHashCode() {
+        SampleData other = new SampleData();
+        assertThat(instance.hashCode(), equalTo(other.hashCode()));
+    }
+    
+    @Test 
+    public void testEquals() {
+        Path vcf = Paths.get("test.vcf");
+        instance.setVcfPath(vcf);
+        
+        SampleData other = new SampleData();
+        other.setVcfPath(vcf);
+        
+        assertThat(instance, equalTo(other));
+    }
+    
+    @Test 
+    public void testNotEquals() {
+        instance.setVcfPath(Paths.get("test.vcf"));
+        
+        SampleData other = new SampleData();
+        other.setPedPath(Paths.get("other.ped"));
+        
+        assertThat(instance, not(equalTo(other)));
     }
 }
