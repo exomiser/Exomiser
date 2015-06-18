@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,11 +56,11 @@ public class FilterFactoryTest {
         List<VariantFilter> expResult = new ArrayList<>();
 
         expResult.add(new EntrezGeneIdFilter(geneIdsToKeep));
-        expResult.add(new TargetFilter());
-        expResult.add(new FrequencyFilter(0.25f, false));
-        expResult.add(new QualityFilter(2f));
-        expResult.add(new PathogenicityFilter(true));
         expResult.add(new IntervalFilter(interval));
+        expResult.add(new TargetFilter());
+        expResult.add(new QualityFilter(2f));
+        expResult.add(new FrequencyFilter(0.25f, false));
+        expResult.add(new PathogenicityFilter(true));
         
         List<VariantFilter> result = instance.makeVariantFilters(settings);
         assertThat(result, equalTo(expResult));
@@ -79,11 +80,11 @@ public class FilterFactoryTest {
 
         List<VariantFilter> expResult = new ArrayList<>();
 
-        expResult.add(new TargetFilter());
-        expResult.add(new FrequencyFilter(0.25f, false));
-        expResult.add(new QualityFilter(2f));
-        expResult.add(new PathogenicityFilter(true));
         expResult.add(new IntervalFilter(interval));
+        expResult.add(new TargetFilter());
+        expResult.add(new QualityFilter(2f));
+        expResult.add(new FrequencyFilter(0.25f, false));
+        expResult.add(new PathogenicityFilter(true));
         
         List<VariantFilter> result = instance.makeVariantFilters(settings);
         assertThat(result, equalTo(expResult));
@@ -103,42 +104,52 @@ public class FilterFactoryTest {
     }
     
     @Test
-    public void testDetermineFilterTypesToRunOnDefaultSettings() {
-        //make a new default Settings object
-        FilterSettings settings = settingsBuilder.build();
-
-        List<FilterType> expResult = new ArrayList<>();
-
-        expResult.add(FilterType.TARGET_FILTER);
-        expResult.add(FilterType.FREQUENCY_FILTER);
-        expResult.add(FilterType.PATHOGENICITY_FILTER);
-        
-        List<FilterType> result = instance.determineFilterTypesToRun(settings);
-        
-        assertThat(result, equalTo(expResult));
+    public void testMakeGeneFilters_returnsEmptyListWhenUnspecified() {
+        ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
+        //make a new Settings object specifying an Inheritance GeneFilter
+        FilterSettings settings = settingsBuilder.modeOfInheritance(modeOfInheritance).build();
+              
+        List<GeneFilter> result = instance.makeGeneFilters(settings);
+        assertThat(result.isEmpty(),  is(true));
     }
     
-    @Test
-    public void testDetermineFilterTypesToRun() {
-        //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        FilterSettings settings = settingsBuilder
-                .removePathFilterCutOff(true)
-                .maximumFrequency(0.25f)
-                .minimumQuality(2f)
-                .geneticInterval(interval)
-                .build();
-
-        List<FilterType> expResult = new ArrayList<>();
-
-        expResult.add(FilterType.TARGET_FILTER);
-        expResult.add(FilterType.FREQUENCY_FILTER);
-        expResult.add(FilterType.QUALITY_FILTER);
-        expResult.add(FilterType.PATHOGENICITY_FILTER);
-        expResult.add(FilterType.INTERVAL_FILTER);
-        
-        List<FilterType> result = instance.determineFilterTypesToRun(settings);
-        
-        assertThat(result, equalTo(expResult));
-    }
+//    @Test
+//    public void testDetermineFilterTypesToRunOnDefaultSettings() {
+//        //make a new default Settings object
+//        FilterSettings settings = settingsBuilder.build();
+//
+//        List<FilterType> expResult = new ArrayList<>();
+//
+//        expResult.add(FilterType.TARGET_FILTER);
+//        expResult.add(FilterType.FREQUENCY_FILTER);
+//        expResult.add(FilterType.PATHOGENICITY_FILTER);
+//        
+//        List<FilterType> result = instance.determineFilterTypesToRun(settings);
+//        
+//        assertThat(result, equalTo(expResult));
+//    }
+//    
+//    @Test
+//    public void testDetermineFilterTypesToRun() {
+//        //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
+//        FilterSettings settings = settingsBuilder
+//                .removePathFilterCutOff(true)
+//                .maximumFrequency(0.25f)
+//                .minimumQuality(2f)
+//                .geneticInterval(interval)
+//                .build();
+//
+//        List<FilterType> expResult = new ArrayList<>();
+//
+//        expResult.add(FilterType.TARGET_FILTER);
+//        expResult.add(FilterType.FREQUENCY_FILTER);
+//        expResult.add(FilterType.QUALITY_FILTER);
+//        expResult.add(FilterType.PATHOGENICITY_FILTER);
+//        expResult.add(FilterType.INTERVAL_FILTER);
+//        
+//        List<FilterType> result = instance.determineFilterTypesToRun(settings);
+//        
+//        assertThat(result, equalTo(expResult));
+//    }
     
 }

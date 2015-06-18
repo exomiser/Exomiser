@@ -30,37 +30,33 @@ public class FilterFactory {
     public List<VariantFilter> makeVariantFilters(FilterSettings settings) {
         List<VariantFilter> variantFilters = new ArrayList<>();
 
-        List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
-
-        for (FilterType filterType : filtersRequired) {
-            switch (filterType) {
-                case ENTREZ_GENE_ID_FILTER:
-                    variantFilters.add(new EntrezGeneIdFilter(settings.getGenesToKeep()));
-                    break;
-                case TARGET_FILTER:
-                    variantFilters.add(new TargetFilter());
-                    break;
-                case FREQUENCY_FILTER:
-                    variantFilters.add(new FrequencyFilter(settings.getMaximumFrequency(), settings.removeKnownVariants()));
-                    break;
-                case QUALITY_FILTER:
-                    variantFilters.add(new QualityFilter(settings.getMinimumQuality()));
-                    break;
-                case PATHOGENICITY_FILTER:
-                    // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always
-                    // pass the pathogenicity filter and still get scored for pathogenicity
-                    variantFilters.add(new PathogenicityFilter(settings.removePathFilterCutOff()));
-                    break;
-                case INTERVAL_FILTER:
-                    variantFilters.add(new IntervalFilter(settings.getGeneticInterval()));
-                    break;
-                case INHERITANCE_FILTER:
-                    //this isn't run as a VariantFilter - it's actually a Gene runFilter - currently it's a bastard orphan sitting in Exomiser
-                    break;
-                default:
-                //do nothing
-            }
+        //IMPORTANT: These are ordered by increasing computational difficulty and
+        //the number of variants they will remove.
+        //Don't change them as this will negatively effect performance.
+        
+        //GENE_ID
+        if (!settings.getGenesToKeep().isEmpty()) {
+            variantFilters.add(new EntrezGeneIdFilter(settings.getGenesToKeep()));
         }
+        //INTERVAL
+        if (settings.getGeneticInterval() != null) {
+            variantFilters.add(new IntervalFilter(settings.getGeneticInterval()));
+        }
+        //TARGET
+        //this would make more sense to be called 'removeOffTargetVariants'
+        if (!settings.keepOffTargetVariants()) {
+            variantFilters.add(new TargetFilter());
+        }
+        //QUALITY
+        if (settings.getMinimumQuality() != 0) {
+            variantFilters.add(new QualityFilter(settings.getMinimumQuality()));
+        }
+        //FREQUENCY
+        variantFilters.add(new FrequencyFilter(settings.getMaximumFrequency(), settings.removeKnownVariants()));
+        //PATHOGENICITY
+        // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always
+        // pass the pathogenicity filter and still get scored for pathogenicity
+        variantFilters.add(new PathogenicityFilter(settings.removePathFilterCutOff()));
 
         return variantFilters;
     }
@@ -74,55 +70,11 @@ public class FilterFactory {
     public List<GeneFilter> makeGeneFilters(FilterSettings settings) {
         List<GeneFilter> geneFilters = new ArrayList<>();
 
-        List<FilterType> filtersRequired = determineFilterTypesToRun(settings);
-
-        for (FilterType filterType : filtersRequired) {
-            switch (filterType) {
-                case INHERITANCE_FILTER:
-                    geneFilters.add(new InheritanceFilter(settings.getModeOfInheritance()));
-                    break;
-                default:
-                //do nothing
-            }
+        if (settings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
+            geneFilters.add(new InheritanceFilter(settings.getModeOfInheritance()));
         }
 
         return geneFilters;
-    }
-
-    /**
-     * Determines the required {@code FilterType} to be run from the given
-     * {@code FilterSettings}.
-     *
-     * @param filterSettings
-     * @return
-     */
-    protected List<FilterType> determineFilterTypesToRun(FilterSettings filterSettings) {
-        List<FilterType> filtersToRun = new ArrayList<>();
-
-        if (!filterSettings.getGenesToKeep().isEmpty()) {
-            filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
-        }
-
-        //this would make more sense to be called 'removeOffTargetVariants'
-        if (!filterSettings.keepOffTargetVariants()) {
-            filtersToRun.add(FilterType.TARGET_FILTER);
-        }
-        filtersToRun.add(FilterType.FREQUENCY_FILTER);
-
-        if (filterSettings.getMinimumQuality() != 0) {
-            filtersToRun.add(FilterType.QUALITY_FILTER);
-        }
-
-        filtersToRun.add(FilterType.PATHOGENICITY_FILTER);
-
-        if (filterSettings.getGeneticInterval() != null) {
-            filtersToRun.add(FilterType.INTERVAL_FILTER);
-        }
-        if (filterSettings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
-            filtersToRun.add(FilterType.INHERITANCE_FILTER);
-        }
-
-        return filtersToRun;
     }
 
 }
