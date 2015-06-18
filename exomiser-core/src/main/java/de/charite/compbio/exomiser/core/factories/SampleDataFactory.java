@@ -52,7 +52,7 @@ public class SampleDataFactory {
 
         // create sample information from header (names of samples)
         SampleData sampleData = createSampleDataFromVcfMetaData(vcfReader.getFileHeader());
-        sampleData.setVcfFilePath(vcfFilePath);
+        sampleData.setVcfPath(vcfFilePath);
 
         // load and annotate VCF data
         //Issue #56 Currently this will load ALL the VCF data into memory and hold it in the sampleData
