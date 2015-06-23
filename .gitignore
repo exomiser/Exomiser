@@ -1,5 +1,6 @@
 # Exomiser specific bits
 /exomiser-db/data/
+distribute.sh
 
 #Java stuff
 *.class
@@ -37,6 +38,7 @@ gradle-app.setting
 
 # NetBeans stuff
 nbactions.xml
+exomiser-db/nbactions.xml
 
 # IntelliJ stuff
 /.idea
@@ -53,3 +55,4 @@ nbactions.xml
 .project
 .settings
 .classpath
+.DS_Store
