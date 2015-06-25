@@ -58,12 +58,12 @@ public class FilterFactoryTest {
 
         VariantFilter geneIdFilter = new EntrezGeneIdFilter(geneIdsToKeep);
         expResult.add(geneIdFilter);
-
-        VariantFilter targetFilter = new TargetFilter();
-        expResult.add(targetFilter);
         
         VariantFilter frequencyFilter = new FrequencyFilter(0.25f, false);
         expResult.add(frequencyFilter);
+        
+        VariantFilter targetFilter = new TargetFilter();
+        expResult.add(targetFilter);
         
         VariantFilter qualityFilter = new QualityFilter(2f);
         expResult.add(qualityFilter);
@@ -91,12 +91,12 @@ public class FilterFactoryTest {
                 .build();
 
         List<VariantFilter> expResult = new ArrayList<>();
-
-        VariantFilter targetFilter = new TargetFilter();
-        expResult.add(targetFilter);
         
         VariantFilter frequencyFilter = new FrequencyFilter(0.25f, false);
         expResult.add(frequencyFilter);
+        
+        VariantFilter targetFilter = new TargetFilter();
+        expResult.add(targetFilter);
         
         VariantFilter qualityFilter = new QualityFilter(2f);
         expResult.add(qualityFilter);
