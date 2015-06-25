@@ -79,7 +79,7 @@ public class VariantDataServiceTest {
     
     @Test
     public void serviceAddsBothFrequencyAndPAthogenicityDataToAVariantEvaluation() {
-        instance.setVariantFrequencyAndPathogenicityData(varEval);
+        instance.setVariantFrequencyRegulatoryFeatureAndPathogenicityData(varEval);
         assertThat(varEval.getPathogenicityData(), equalTo(PATH_DATA));
         assertThat(varEval.getFrequencyData(), equalTo(FREQ_DATA));
     }
