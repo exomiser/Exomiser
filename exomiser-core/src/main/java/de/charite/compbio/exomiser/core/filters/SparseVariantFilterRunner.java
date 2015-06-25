@@ -88,6 +88,9 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
             case PATHOGENICITY_FILTER:
                 variantDataService.setVariantPathogenicityData(variantEvaluation);
                 break;
+            case TARGET_FILTER:
+                variantDataService.setVariantRegulatoryFeatureData(variantEvaluation);
+                break;
         }
     }
 

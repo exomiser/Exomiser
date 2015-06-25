@@ -9,9 +9,11 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
+import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,13 @@ public class VariantDataService {
     private FrequencyDao frequencyDao;
     @Autowired
     private PathogenicityDao pathogenicityDao;
+    @Autowired
+    private RegulatoryFeatureDao regulatoryFeatureDao;
     
-    public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation) {
+    public void setVariantFrequencyRegulatoryFeatureAndPathogenicityData(VariantEvaluation variantEvaluation) {
         setVariantFrequencyData(variantEvaluation);
         setVariantPathogenicityData(variantEvaluation);
+        setVariantRegulatoryFeatureData(variantEvaluation);
     }
         
     public void setVariantFrequencyData(VariantEvaluation variantEvaluation) {
@@ -41,6 +46,13 @@ public class VariantDataService {
     public void setVariantPathogenicityData(VariantEvaluation variantEvaluation) {
         PathogenicityData pathData = getVariantPathogenicityData(variantEvaluation);
         variantEvaluation.setPathogenicityData(pathData);
+    }
+    
+    public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation) {
+        if (variantEvaluation.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variantEvaluation.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
+            VariantEffect variantEffect = getVariantRegulatoryFeatureData(variantEvaluation);
+            variantEvaluation.setVariantEffect(variantEffect);
+        }
     }
 
     public FrequencyData getVariantFrequencyData(Variant variant) {
@@ -53,4 +65,8 @@ public class VariantDataService {
         return pathData;
     }
     
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
+        VariantEffect variantEffect = regulatoryFeatureDao.getRegulatoryFeatureData(variant);
+        return variantEffect;
+    }
 }

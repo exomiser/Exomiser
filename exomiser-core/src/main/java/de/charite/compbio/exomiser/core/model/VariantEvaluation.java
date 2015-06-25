@@ -58,7 +58,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     //Jannovar annotations
     private final boolean isOffExome;
-    private final VariantEffect variantEffect;
+    private VariantEffect variantEffect;
     private final List<Annotation> annotations;
     private final String geneSymbol;
     private final int entrezGeneId;
@@ -165,6 +165,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     @Override
     public VariantEffect getVariantEffect() {
         return variantEffect;
+    }
+    
+    @Override
+    public void setVariantEffect (VariantEffect ve){
+        variantEffect = ve;
     }
 
     /**

@@ -229,6 +229,11 @@ public class MainConfig {
     }
 
     @Bean
+    public RegulatoryFeatureDao regulatoryFeatureDao() {
+        return new RegulatoryFeatureDao();
+    }
+
+    @Bean
     public FilterFactory filterFactory() {
         return new FilterFactory();
     }
