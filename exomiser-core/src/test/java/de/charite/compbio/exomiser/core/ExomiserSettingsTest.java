@@ -613,8 +613,8 @@ public class ExomiserSettingsTest {
 
         List<FilterType> expResult = new ArrayList<>();
 
-        expResult.add(FilterType.TARGET_FILTER);
         expResult.add(FilterType.FREQUENCY_FILTER);
+        expResult.add(FilterType.TARGET_FILTER);
         expResult.add(FilterType.PATHOGENICITY_FILTER);
         
         List<FilterType> result = settings.getFilterTypesToRun();
@@ -630,8 +630,8 @@ public class ExomiserSettingsTest {
 
         List<FilterType> expResult = new ArrayList<>();
 
-        expResult.add(FilterType.TARGET_FILTER);
         expResult.add(FilterType.FREQUENCY_FILTER);
+        expResult.add(FilterType.TARGET_FILTER);
         expResult.add(FilterType.QUALITY_FILTER);
         expResult.add(FilterType.PATHOGENICITY_FILTER);
         expResult.add(FilterType.INTERVAL_FILTER);
