@@ -400,11 +400,12 @@ public class ExomiserSettings {
         if (!getGenesToKeep().isEmpty()) {
             filtersToRun.add(FilterType.ENTREZ_GENE_ID_FILTER);
         }
-
+        // for Genomiser best if freq runs first
+        filtersToRun.add(FilterType.FREQUENCY_FILTER);
         if (!keepOffTargetVariants()) {
             filtersToRun.add(FilterType.TARGET_FILTER);
         }
-        filtersToRun.add(FilterType.FREQUENCY_FILTER);
+        //filtersToRun.add(FilterType.FREQUENCY_FILTER);
 
         if (getMinimumQuality() != 0) {
             filtersToRun.add(FilterType.QUALITY_FILTER);
