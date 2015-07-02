@@ -4,6 +4,7 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
@@ -95,7 +96,7 @@ public class PathogenicityFilter implements VariantFilter {
      * @return
      */
     protected float calculateFilterScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
-        if (pathogenicityData != null && pathogenicityData.getCaddScore() != null) {
+        if (pathogenicityData.hasPredictedScore(PathogenicitySource.CADD)) {
             return pathogenicityData.getCaddScore().getScore();
         } else {
             //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
@@ -125,7 +126,7 @@ public class PathogenicityFilter implements VariantFilter {
      * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
      */
     protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
-        if (pathogenicityData != null && pathogenicityData.getCaddScore() != null) {
+        if (pathogenicityData.hasPredictedScore(PathogenicitySource.CADD)) {
             return true;
         }
         else {

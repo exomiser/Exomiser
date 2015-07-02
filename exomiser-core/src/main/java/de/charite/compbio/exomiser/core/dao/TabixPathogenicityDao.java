@@ -104,6 +104,6 @@ public class TabixPathogenicityDao implements PathogenicityDao{
         } catch (IOException e) {
         }
 
-        return null;
+        return new PathogenicityData();
     }
 }
