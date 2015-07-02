@@ -53,6 +53,7 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation filterable) {
         VariantEffect effect = filterable.getVariantEffect();
+        // Note the INTERGENIC/UPSTREAM variants have already been assessed by the RegFeatureDAO and VariantEffect set to REGULATORY_FEATURE if in a known region
         // TODO make below nicer using a Jannovar method hopefully 
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
             Annotation a = filterable.getAnnotations().get(0);//.getHighestImpactAnnotation();
