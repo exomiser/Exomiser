@@ -169,8 +169,6 @@ public class PathogenicityFilterTest {
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 
-    // now using CADD scores so these need updating    
-    @Ignore
     @Test
     public void testCalculateScoreMissenseSiftPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS);
@@ -179,7 +177,6 @@ public class PathogenicityFilterTest {
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 
-    @Ignore    
     @Test
     public void testCalculateScoreMissensePolyPhenAndSiftPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS);
@@ -188,7 +185,6 @@ public class PathogenicityFilterTest {
         assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
     
-    @Ignore    
     @Test
     public void testCalculateScoreMissensePolyPhenSiftAndMutTasterPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS);
