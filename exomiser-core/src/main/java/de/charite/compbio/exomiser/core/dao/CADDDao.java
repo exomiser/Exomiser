@@ -13,17 +13,24 @@ import htsjdk.tribble.readers.TabixReader;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author jj8
  */
-@Repository
+@Component
 public class CADDDao {
 
     private final Logger logger = LoggerFactory.getLogger(PathogenicityDao.class);
+    @Autowired
+    @Lazy
     private final TabixReader inDelTabixReader;
+    @Autowired
+    @Lazy
     private final TabixReader snvTabixReader;
 
     public CADDDao(TabixReader inDelTabixReader, TabixReader snvTabixReader) {
