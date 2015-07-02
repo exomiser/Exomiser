@@ -33,6 +33,8 @@ public class VariantDataService {
     @Autowired
     private PathogenicityDao pathogenicityDao;
     @Autowired
+    private PathogenicityDao caddDao;
+    @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
     
     private static final Logger logger = LoggerFactory.getLogger(VariantDataService.class);
@@ -40,6 +42,7 @@ public class VariantDataService {
     public void setVariantFrequencyRegulatoryFeatureAndPathogenicityData(VariantEvaluation variantEvaluation) {
         setVariantFrequencyData(variantEvaluation);
         setVariantPathogenicityData(variantEvaluation);
+        setVariantCADDData(variantEvaluation);
         setVariantRegulatoryFeatureData(variantEvaluation);
     }
         
@@ -50,6 +53,11 @@ public class VariantDataService {
 
     public void setVariantPathogenicityData(VariantEvaluation variantEvaluation) {
         PathogenicityData pathData = getVariantPathogenicityData(variantEvaluation);
+        variantEvaluation.setPathogenicityData(pathData);
+    }
+    
+    public void setVariantCADDData(VariantEvaluation variantEvaluation) {
+        PathogenicityData pathData = getVariantCADDData(variantEvaluation);
         variantEvaluation.setPathogenicityData(pathData);
     }
     
@@ -67,6 +75,11 @@ public class VariantDataService {
     
     public PathogenicityData getVariantPathogenicityData(Variant variant) {
         PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variant);
+        return pathData;
+    }
+    
+    public PathogenicityData getVariantCADDData(Variant variant) {
+        PathogenicityData pathData = caddDao.getPathogenicityData(variant);
         return pathData;
     }
     

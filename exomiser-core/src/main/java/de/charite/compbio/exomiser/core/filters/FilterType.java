@@ -32,6 +32,7 @@ public enum FilterType {
      * taster.
      */
     PATHOGENICITY_FILTER,
+    CADD_FILTER,
     /**
      * Flag to output results of filtering against frequency with Thousand
      * Genomes and ESP data.
@@ -66,6 +67,8 @@ public enum FilterType {
                 return "Interval";
             case PATHOGENICITY_FILTER:
                 return "Pathogenicity";
+            case CADD_FILTER:
+                return "CADD";    
             case FREQUENCY_FILTER:
                 return "Frequency";
             case TARGET_FILTER:

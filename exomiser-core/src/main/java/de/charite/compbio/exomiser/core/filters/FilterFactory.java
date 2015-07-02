@@ -57,6 +57,9 @@ public class FilterFactory {
                 case PATHOGENICITY_FILTER:
                     variantFilters.add(getPathogenicityFilter(settings.removePathFilterCutOff()));
                     break;
+                case CADD_FILTER:
+                    variantFilters.add(getCADDFilter(settings.removePathFilterCutOff()));
+                    break;    
                 case INTERVAL_FILTER:
                     variantFilters.add(getIntervalFilter(settings.getGeneticInterval()));
                     break;
@@ -162,6 +165,14 @@ public class FilterFactory {
         return filter;
     }
 
+    public VariantFilter getCADDFilter(boolean removePathFilterCutOff) {
+        // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always 
+        // pass the pathogenicity filter and still get scored for pathogenicity
+        CADDFilter filter = new CADDFilter(removePathFilterCutOff);
+        logger.info("Made new: {}", filter);
+        return filter;
+    }
+    
     public VariantFilter getIntervalFilter(GeneticInterval interval) {
 
         VariantFilter filter = new IntervalFilter(interval);

@@ -412,7 +412,8 @@ public class ExomiserSettings {
             filtersToRun.add(FilterType.QUALITY_FILTER);
         }
 
-        filtersToRun.add(FilterType.PATHOGENICITY_FILTER);
+        filtersToRun.add(FilterType.CADD_FILTER);
+        //filtersToRun.add(FilterType.PATHOGENICITY_FILTER);
 
         if (getGeneticInterval() != null) {
             filtersToRun.add(FilterType.INTERVAL_FILTER);
