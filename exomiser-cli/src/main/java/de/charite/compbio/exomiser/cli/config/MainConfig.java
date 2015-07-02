@@ -143,7 +143,8 @@ public class MainConfig {
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
-
+    
+    @Lazy
     @Bean
     public TabixReader indelTabixReader() {
         TabixReader inDelTabixReader = null;
@@ -155,6 +156,7 @@ public class MainConfig {
         return inDelTabixReader;
     }
     
+    @Lazy
     @Bean
     public TabixReader snvTabixReader() {
         TabixReader snvTabixReader = null;
@@ -229,6 +231,7 @@ public class MainConfig {
         return new DefaultPathogenicityDao();
     }
     
+    @Lazy
     @Bean
     public CADDDao caddDao() {
         return new CADDDao(indelTabixReader(),snvTabixReader());
