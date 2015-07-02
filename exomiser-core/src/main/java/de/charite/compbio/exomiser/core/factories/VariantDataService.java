@@ -10,10 +10,13 @@ import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
+import de.charite.compbio.exomiser.core.filters.RegulatoryFeatureFilter;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,8 @@ public class VariantDataService {
     private PathogenicityDao pathogenicityDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
+    
+    private static final Logger logger = LoggerFactory.getLogger(VariantDataService.class);
     
     public void setVariantFrequencyRegulatoryFeatureAndPathogenicityData(VariantEvaluation variantEvaluation) {
         setVariantFrequencyData(variantEvaluation);

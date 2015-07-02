@@ -38,6 +38,11 @@ public enum FilterType {
      */
     FREQUENCY_FILTER,
     /**
+     * Flag to represent non-coding regulatory feature filter
+     */
+    REGULATORY_FEATURE_FILTER,
+    /**
+     *
      * Flag to represent target filter
      */
     TARGET_FILTER,
@@ -65,6 +70,8 @@ public enum FilterType {
                 return "Frequency";
             case TARGET_FILTER:
                 return "Target"; //Exome target region
+            case REGULATORY_FEATURE_FILTER:
+                return "Regulatory Feature";    
             case INHERITANCE_FILTER:
                 return "Inheritance";
             case BED_FILTER:

@@ -402,6 +402,7 @@ public class ExomiserSettings {
         }
         // for Genomiser best if freq runs first
         filtersToRun.add(FilterType.FREQUENCY_FILTER);
+        filtersToRun.add(FilterType.REGULATORY_FEATURE_FILTER);
         if (!keepOffTargetVariants()) {
             filtersToRun.add(FilterType.TARGET_FILTER);
         }

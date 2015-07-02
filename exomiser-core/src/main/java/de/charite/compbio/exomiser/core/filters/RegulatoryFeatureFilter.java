@@ -27,29 +27,22 @@ import org.slf4j.LoggerFactory;
  * @author Peter N Robinson
  * @version 0.16 (20 December, 2013)
  */
-public class TargetFilter implements VariantFilter {
+public class RegulatoryFeatureFilter implements VariantFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(TargetFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(RegulatoryFeatureFilter.class);
 
-    private static final FilterType filterType = FilterType.TARGET_FILTER;
+    private static final FilterType filterType = FilterType.REGULATORY_FEATURE_FILTER;
 
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passedFilterResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
-    private final FilterResult failedFilterResult = new TargetFilterResult(0f, FilterResultStatus.FAIL);
-
-    /**
-     * A set of off-target variant types such as Intergenic that we will
-     * runFilter out from further consideration.
-     */
-    private final Set<VariantEffect> offTargetVariantTypes;
+    private final FilterResult passedFilterResult = new RegulatoryFeatureFilterResult(1f, FilterResultStatus.PASS);
+    private final FilterResult failedFilterResult = new RegulatoryFeatureFilterResult(0f, FilterResultStatus.FAIL);
 
     /**
      * The constructor initializes the set of off-target
      * {@link jannovar.common.VariantType VariantType} constants, e.g.,
      * INTERGENIC, that we will runFilter out using this class.
      */
-    public TargetFilter() {
-        offTargetVariantTypes = EnumSet.of(VariantEffect.DOWNSTREAM_GENE_VARIANT);
+    public RegulatoryFeatureFilter() {
     }
 
     @Override
@@ -60,7 +53,14 @@ public class TargetFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation filterable) {
         VariantEffect effect = filterable.getVariantEffect();
-        if (offTargetVariantTypes.contains(effect)) {
+        // TODO make below nicer using a Jannovar method hopefully 
+        if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
+            Annotation a = filterable.getAnnotations().get(0);//.getHighestImpactAnnotation();
+            String intergenicAnnotation = a.toVCFAnnoString(filterable.getAlt());        
+            int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14])); 
+            if (dist > 0 && dist < 20000){
+                return passedFilterResult;
+            }
             return failedFilterResult;
         }
         return passedFilterResult;
@@ -69,8 +69,7 @@ public class TargetFilter implements VariantFilter {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 37 * hash + Objects.hashCode(TargetFilter.filterType);
-        hash = 37 * hash + Objects.hashCode(this.offTargetVariantTypes);
+        hash = 37 * hash + Objects.hashCode(RegulatoryFeatureFilter.filterType);
         return hash;
     }
 
@@ -82,13 +81,13 @@ public class TargetFilter implements VariantFilter {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final TargetFilter other = (TargetFilter) obj;
-        return Objects.equals(this.offTargetVariantTypes, other.offTargetVariantTypes);
+        final RegulatoryFeatureFilter other = (RegulatoryFeatureFilter) obj;
+        return Objects.equals(this.getFilterType(), other.getFilterType());
     }
 
     @Override
     public String toString() {
-        return filterType + " filter offTarget=" + offTargetVariantTypes;
+        return filterType.toString();
     }
 
 }

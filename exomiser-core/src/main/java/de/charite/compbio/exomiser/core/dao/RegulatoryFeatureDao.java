@@ -60,7 +60,7 @@ public class RegulatoryFeatureDao {
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
-        String enhancerQuery = "SELECT gene, tissue FROM enhancers WHERE chromosome = ? AND start <  ? AND \"end\" > ?";
+        String enhancerQuery = "SELECT feature_type, tissue FROM regulatory_features WHERE chromosome = ? AND start <  ? AND \"end\" > ?";
         PreparedStatement ps = connection.prepareStatement(enhancerQuery);
         ps.setInt(1, variant.getChromosome());
         ps.setInt(2, variant.getPosition());

@@ -45,6 +45,9 @@ public class FilterFactory {
                 case TARGET_FILTER:
                     variantFilters.add(getTargetFilter());
                     break;
+                case REGULATORY_FEATURE_FILTER:
+                    variantFilters.add(getRegulatoryFeatureFilter());
+                    break;    
                 case FREQUENCY_FILTER:
                     variantFilters.add(getFrequencyFilter(settings.getMaximumFrequency(), settings.removeKnownVariants()));
                     break;
@@ -106,6 +109,12 @@ public class FilterFactory {
         return targetFilter;
     }
 
+    public VariantFilter getRegulatoryFeatureFilter() {
+        VariantFilter regulatoryFeatureFilter = new RegulatoryFeatureFilter();
+        logger.info("Made new: {}", regulatoryFeatureFilter);
+        return regulatoryFeatureFilter;
+    }
+    
     /**
      * VariantFilter to remove any variants belonging to genes not on a
      * user-entered list of genes. Note: this could be done as a GeneFilter but
