@@ -47,6 +47,7 @@ public class VcfResultsWriterTest {
 
     final static String EXPECTED_HEADER = "##fileformat=VCFv4.1\n"
             + "##FILTER=<ID=BED_FILTER,Description=\"Gene panel target region (Bed filter)\">\n"
+            + "##FILTER=<ID=CADD_FILTER,Description=\"CADD\">\n"
             + "##FILTER=<ID=ENTREZ_GENE_ID_FILTER,Description=\"Genes to keep\">\n"
             + "##FILTER=<ID=FREQUENCY_FILTER,Description=\"Frequency\">\n"
             + "##FILTER=<ID=INHERITANCE_FILTER,Description=\"Inheritance\">\n"
@@ -54,6 +55,7 @@ public class VcfResultsWriterTest {
             + "##FILTER=<ID=PATHOGENICITY_FILTER,Description=\"Pathogenicity\">\n"
             + "##FILTER=<ID=PRIORITY_SCORE_FILTER,Description=\"Gene priority score\">\n"
             + "##FILTER=<ID=QUALITY_FILTER,Description=\"Quality\">\n"
+            + "##FILTER=<ID=REGULATORY_FEATURE_FILTER,Description=\"Regulatory Feature\">\n"
             + "##FILTER=<ID=TARGET_FILTER,Description=\"Target\">\n"
             + "##INFO=<ID=ANN,Number=1,Type=String,Description=\"Functional annotations:'Allele|Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|Rank|HGVS.c|HGVS.p|cDNA.pos / cDNA.length|CDS.pos / CDS.length|AA.pos / AA.length|Distance|ERRORS / WARNINGS / INFO'\">\n"
             + "##INFO=<ID=EFFECT,Number=1,Type=String,Description=\"variant effect (UTR5,UTR3,intronic,splicing,missense,stoploss,stopgain,startloss,duplication,frameshift-insertion,frameshift-deletion,non-frameshift-deletion,non-frameshift-insertion,synonymous)\">\n"
