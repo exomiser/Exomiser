@@ -8,7 +8,8 @@ package de.charite.compbio.exomiser.cli.config;
 import de.charite.compbio.exomiser.cli.Main;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
-import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
+import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
+import de.charite.compbio.exomiser.core.dao.CADDDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.FilterFactory;
@@ -147,7 +148,7 @@ public class MainConfig {
     public TabixReader indelTabixReader() {
         TabixReader inDelTabixReader = null;
         try {
-             inDelTabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/InDels.tsv.gz");
+             inDelTabixReader = new TabixReader("/warehouse/team110_wh01/ds5/InDels.tsv.gz");
         } catch (IOException e) {
             throw new RuntimeException("You are not Damian. You don't have the file ", e);
         }
@@ -158,7 +159,7 @@ public class MainConfig {
     public TabixReader snvTabixReader() {
         TabixReader snvTabixReader = null;
         try {
-             snvTabixReader = new TabixReader("/lustre/scratch109/sanger/ds5/whole_genome_SNVs.tsv.gz");
+             snvTabixReader = new TabixReader("/warehouse/team110_wh01/ds5/whole_genome_SNVs.tsv.gz");
         } catch (IOException e) {
             throw new RuntimeException("You are not Damian. You don't have the file ", e);
         }
@@ -224,8 +225,13 @@ public class MainConfig {
     }
 
     @Bean
-    public PathogenicityDao pathogenicityDao() {
-        return new TabixPathogenicityDao(indelTabixReader(),snvTabixReader());
+    public DefaultPathogenicityDao pathogenicityDao() {
+        return new DefaultPathogenicityDao();
+    }
+    
+    @Bean
+    public CADDDao caddDao() {
+        return new CADDDao(indelTabixReader(),snvTabixReader());
     }
 
     @Bean
