@@ -147,11 +147,12 @@ public class MainConfig {
     @Lazy
     @Bean
     public TabixReader indelTabixReader() {
+        String indelCaddPathValue = getValueOfProperty("indelCaddPath");
         TabixReader inDelTabixReader = null;
         try {
-             inDelTabixReader = new TabixReader("/warehouse/team110_wh01/ds5/InDels.tsv.gz");
+             inDelTabixReader = new TabixReader(indelCaddPathValue);
         } catch (IOException e) {
-            throw new RuntimeException("You are not Damian. You don't have the file ", e);
+            throw new RuntimeException("inDel CADD file not found ", e);
         }
         return inDelTabixReader;
     }
@@ -159,11 +160,12 @@ public class MainConfig {
     @Lazy
     @Bean
     public TabixReader snvTabixReader() {
+        String snvCaddPathValue = getValueOfProperty("snvCaddPath");
         TabixReader snvTabixReader = null;
         try {
-             snvTabixReader = new TabixReader("/warehouse/team110_wh01/ds5/whole_genome_SNVs.tsv.gz");
+             snvTabixReader = new TabixReader(snvCaddPathValue);
         } catch (IOException e) {
-            throw new RuntimeException("You are not Damian. You don't have the file ", e);
+            throw new RuntimeException("SNV CADD file not found ", e);
         }
         return snvTabixReader;
     }
