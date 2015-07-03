@@ -6,6 +6,7 @@
 
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.dao.CADDDao;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,17 +34,19 @@ public class VariantDataService {
     private FrequencyDao frequencyDao;
     @Autowired
     private PathogenicityDao pathogenicityDao;
+    @Lazy
     @Autowired
-    private PathogenicityDao caddDao;
+    private CADDDao caddDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
     
     private static final Logger logger = LoggerFactory.getLogger(VariantDataService.class);
     
-    public void setVariantFrequencyRegulatoryFeatureAndPathogenicityData(VariantEvaluation variantEvaluation) {
+    //todo: move this method into SimpleVariantFilterRunner
+    public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation) {
         setVariantFrequencyData(variantEvaluation);
         setVariantPathogenicityData(variantEvaluation);
-        setVariantCADDData(variantEvaluation);
+        setVariantCADDData(variantEvaluation);// TODO - this method is called by the simpleVariantFilterRunner so what will happen if no Tabix files - needs to check FilterType
         setVariantRegulatoryFeatureData(variantEvaluation);
     }
         
@@ -57,6 +61,7 @@ public class VariantDataService {
     }
     
     public void setVariantCADDData(VariantEvaluation variantEvaluation) {
+        // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
         PathogenicityData pathData = getVariantCADDData(variantEvaluation);
         variantEvaluation.setPathogenicityData(pathData);
     }
