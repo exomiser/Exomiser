@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.SETTINGS_FILE_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -14,6 +13,8 @@ import org.apache.commons.cli.OptionBuilder;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SettingsFileOptionMarshaller extends AbstractOptionMarshaller {
+    
+    public static final String SETTINGS_FILE_OPTION = "settings-file";
     
     public SettingsFileOptionMarshaller() {
         option = OptionBuilder

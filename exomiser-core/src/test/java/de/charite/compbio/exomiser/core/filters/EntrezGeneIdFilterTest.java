@@ -89,7 +89,7 @@ public class EntrezGeneIdFilterTest {
 
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("Genes to keep filter gene list = [1]"));
+        assertThat(instance.toString(), equalTo("EntrezGeneIdFilter{genesToKeep=[1]}"));
     }
     
 }

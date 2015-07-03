@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.MIN_QUAL_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.Option;
 
@@ -14,6 +13,8 @@ import org.apache.commons.cli.Option;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class QualityThresholdOptionMarshaller extends AbstractOptionMarshaller {
+
+    public static final String MIN_QUAL_OPTION = "min-qual";
 
     public QualityThresholdOptionMarshaller() {
         option = new Option("Q", MIN_QUAL_OPTION, true, "Mimimum quality threshold for variants as specifed in VCF 'QUAL' column.  Default: 0");

@@ -5,6 +5,8 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import java.util.List;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -20,6 +22,15 @@ public interface PriorityFactory {
      * @param settings
      * @return
      */
-    Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings);
-    
+    public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings);
+
+    public OMIMPriority makeOmimPrioritiser();
+
+    public PhenixPriority makePhenixPrioritiser(List<String> hpoIds);
+
+    public PhivePriority makePhivePrioritiser(List<String> hpoIds);
+
+    public ExomeWalkerPriority makeExomeWalkerPrioritiser(List<Integer> entrezSeedGenes);
+
+    public HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions);
 }

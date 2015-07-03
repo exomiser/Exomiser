@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.DISEASE_ID_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
@@ -18,6 +17,8 @@ import org.slf4j.LoggerFactory;
 public class DiseaseIdOptionMarshaller extends AbstractOptionMarshaller {
 
     private static final Logger logger = LoggerFactory.getLogger(DiseaseIdOptionMarshaller.class);
+
+    public static final String DISEASE_ID_OPTION = "disease-id";
 
     public DiseaseIdOptionMarshaller() {
         option = new Option("D", DISEASE_ID_OPTION, true, "OMIM ID for disease being sequenced. e.g. OMIM:101600");

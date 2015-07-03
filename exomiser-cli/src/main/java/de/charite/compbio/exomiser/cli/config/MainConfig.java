@@ -6,6 +6,8 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
+import de.charite.compbio.exomiser.core.AnalysisParser;
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
@@ -143,7 +145,17 @@ public class MainConfig {
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
-
+    
+    @Bean
+    public Exomiser exomiser() {
+        return new Exomiser(variantDataService(), priorityFactory());
+    }
+    
+    @Bean
+    public AnalysisParser analysisParser() {
+        return new AnalysisParser(priorityFactory());
+    }
+    
     /**
      * This takes a few seconds to de-serialise. Would be better to be eager in
      * a web-app, but lazy on the command-line as then the input parameters can

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.PED_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.nio.file.Paths;
 import org.apache.commons.cli.OptionBuilder;
@@ -15,6 +14,8 @@ import org.apache.commons.cli.OptionBuilder;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PedFileOptionMarshaller extends AbstractOptionMarshaller {
+
+    public static final String PED_OPTION = "ped";
 
     public PedFileOptionMarshaller() {
         option = OptionBuilder

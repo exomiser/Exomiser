@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -15,6 +14,8 @@ import org.apache.commons.cli.OptionBuilder;
  */
 public class PathogenicityFilterCutOffOptionMarshaller extends AbstractOptionMarshaller {
 
+    public static final String KEEP_NON_PATHOGENIC_VARIANTS_OPTION = "keep-non-pathogenic";
+
     public PathogenicityFilterCutOffOptionMarshaller() {
         option = OptionBuilder
                 .hasOptionalArg()
@@ -23,7 +24,7 @@ public class PathogenicityFilterCutOffOptionMarshaller extends AbstractOptionMar
                 .withDescription("Keep the predicted non-pathogenic variants that are normally removed by default. "
                         + "These are defined as syonymous, intergenic, intronic, upstream, downstream or intronic ncRNA variants. "
                         + "This setting can optionally take a true/false argument. Not including the argument is equivalent to specifying 'true'.")
-                .withLongOpt(REMOVE_PATHOGENICITY_FILTER_CUTOFF) 
+                .withLongOpt(KEEP_NON_PATHOGENIC_VARIANTS_OPTION) 
                 .create("P");
     }
 

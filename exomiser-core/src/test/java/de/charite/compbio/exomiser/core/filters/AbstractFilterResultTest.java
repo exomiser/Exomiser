@@ -15,12 +15,12 @@ import static org.junit.Assert.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GenericFilterResultTest {
+public class AbstractFilterResultTest {
 
     @Test
     public void testGetScore() {
         float expResult = 0.0F;
-        GenericFilterResult instance = new GenericFilterResult(FilterType.BED_FILTER, expResult, FilterResultStatus.PASS);
+        FilterResult instance = new PassFilterResult(FilterType.BED_FILTER, expResult);
         float result = instance.getScore();
         assertEquals(expResult, result, 0.0);
     }
@@ -29,7 +29,7 @@ public class GenericFilterResultTest {
     public void testGetFilterType() {
         FilterType expResult = FilterType.FREQUENCY_FILTER;
 
-        GenericFilterResult instance = new GenericFilterResult(expResult, 0.0f, FilterResultStatus.PASS);
+        FilterResult instance = new PassFilterResult(expResult, 0.0f);
 
         FilterType result = instance.getFilterType();
         assertEquals(expResult, result);
@@ -37,34 +37,26 @@ public class GenericFilterResultTest {
 
     @Test
     public void testPassedFilterIsTrueWhenFilterResultStatusIsPass() {
-        FilterResultStatus resultStatus = FilterResultStatus.PASS;
-
-        GenericFilterResult instance = new GenericFilterResult(FilterType.FREQUENCY_FILTER, 0.0f, resultStatus);
-
+        FilterResult instance = new PassFilterResult(FilterType.FREQUENCY_FILTER, 0.0f);
         assertThat(instance.passedFilter(), is(true));
     }
 
     @Test
     public void testPassedFilterIsFalseWhenFilterResultStatusIsFail() {
-        FilterResultStatus resultStatus = FilterResultStatus.FAIL;
-
-        GenericFilterResult instance = new GenericFilterResult(FilterType.FREQUENCY_FILTER, 0.0f, resultStatus);
-
+        FilterResult instance = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0.0f);
         assertThat(instance.passedFilter(), is(false));
     }
 
     @Test
     public void testGetResultStatus() {
-        FilterResultStatus expResult = FilterResultStatus.PASS;
-        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, expResult);
-        FilterResultStatus result = instance.getResultStatus();
-        assertEquals(expResult, result);
+        FilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER, 0.0f);
+        assertThat(instance.getResultStatus(), equalTo(FilterResultStatus.PASS));
     }
 
     @Test
     public void testHashCode() {
-        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
-        GenericFilterResult another = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
+        FilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER, 0.0f);
+        FilterResult another = new FailFilterResult(FilterType.INTERVAL_FILTER, 0.0f);
         int expResult = another.hashCode();
         int result = instance.hashCode();
         assertEquals(expResult, result);
@@ -73,27 +65,27 @@ public class GenericFilterResultTest {
     @Test
     public void testNotEqualToNullObject() {
         Object obj = null;
-        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
+        AbstractFilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER, 0.0f);
         assertThat(instance, not(equalTo(obj)));
     }
     
     @Test
     public void testNotEqualToDifferentFilterType() {
-        GenericFilterResult other = new GenericFilterResult(FilterType.BED_FILTER, 0.0f, FilterResultStatus.FAIL);
-        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
+        AbstractFilterResult other = new FailFilterResult(FilterType.BED_FILTER, 0.0f);
+        AbstractFilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER, 0.0f);
         assertThat(instance, not(equalTo(other)));
     }
     
     @Test
     public void testEqualToOtherFilterResult() {
-        GenericFilterResult other = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
-        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 0.0f, FilterResultStatus.FAIL);
+        AbstractFilterResult other = new FailFilterResult(FilterType.INTERVAL_FILTER, 0.0f);
+        AbstractFilterResult instance = new FailFilterResult(FilterType.INTERVAL_FILTER, 0.0f);
         assertThat(instance, equalTo(other));
     }
 
     @Test
     public void testToString() {
-        GenericFilterResult instance = new GenericFilterResult(FilterType.INTERVAL_FILTER, 1.0f, FilterResultStatus.PASS);
+        AbstractFilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER, 1.0f);
         String expResult = "Filter=Interval score=1.000 status=PASS";
         String result = instance.toString();
         assertEquals(expResult, result);

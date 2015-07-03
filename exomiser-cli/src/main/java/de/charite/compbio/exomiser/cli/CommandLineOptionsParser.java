@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
+import static de.charite.compbio.exomiser.cli.options.SettingsFileOptionMarshaller.SETTINGS_FILE_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class CommandLineOptionsParser {
     
     @Resource
     private Map<String, OptionMarshaller> optionMarshallers;
-        
+    
     public SettingsBuilder parseCommandLine(CommandLine commandLine) {
 
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
@@ -48,7 +48,12 @@ public class CommandLineOptionsParser {
         SettingsBuilder settingsBuilder = new SettingsBuilder();
 
         if (commandLine.hasOption(SETTINGS_FILE_OPTION)) {
-            settingsBuilder = parseSettingsFile(Paths.get(commandLine.getOptionValue(SETTINGS_FILE_OPTION)));
+            Path settingsFile = Paths.get(commandLine.getOptionValue(SETTINGS_FILE_OPTION));
+            //check file type.. oooh this is getting brittle...
+            if (settingsFile.toString().endsWith("yml")) {
+                
+            }
+            settingsBuilder = parseSettingsFile(settingsFile);
             logger.warn("Settings file parameters will be overridden by command-line parameters!");
         }
         for (Option option : commandLine.getOptions()) {
@@ -57,7 +62,8 @@ public class CommandLineOptionsParser {
             String[] values = option.getValues();
             setBuilderValue(key, values, settingsBuilder);
         }
-
+        
+        //return a Map<Analysis, OutputSettings>
         return settingsBuilder;
 
     }

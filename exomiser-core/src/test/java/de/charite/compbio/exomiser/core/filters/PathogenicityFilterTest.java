@@ -199,7 +199,7 @@ public class PathogenicityFilterTest {
 
     @Test
     public void testToString() {
-        String expResult = "Pathogenicity filter: keepNonPathogenic=false";
+        String expResult = "PathogenicityFilter{keepNonPathogenic=false}";
         String result = instance.toString();
         assertThat(result, equalTo(expResult));
     }
@@ -221,7 +221,7 @@ public class PathogenicityFilterTest {
     @Test
     public void testNotEqualToOtherFilterType() {
         instance = new PathogenicityFilter(false);
-        Filter other = new FrequencyFilter(0.1f, true);
+        Filter other = new FrequencyFilter(0.1f);
         assertThat(instance.equals(other), is(false));
     }
 

@@ -380,9 +380,9 @@ public class PhivePriority implements Prioritiser {
         return true;
     }
 
-    
     @Override
     public String toString() {
-        return PRIORITY_TYPE.getCommandLineValue() + "  hpoIds=" + hpoIds;
+        return "PhivePriority{" + "hpoIds=" + hpoIds + '}';
     }
+
 }

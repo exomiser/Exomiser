@@ -7,20 +7,28 @@ package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
+import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
+import de.charite.compbio.exomiser.core.filters.Filter;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
-import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.GeneFilter;
+import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
+import de.charite.compbio.exomiser.core.filters.IntervalFilter;
+import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
+import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
+import de.charite.compbio.exomiser.core.filters.QualityFilter;
+import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
-import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,89 +43,124 @@ public class Exomiser {
 
     private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
 
-    private final FilterFactory filterFactory;
-    private final PriorityFactory prioritiserFactory;
+    public static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = EnumSet.of(
+                    VariantEffect.UPSTREAM_GENE_VARIANT,
+                    VariantEffect.INTERGENIC_VARIANT,
+                    VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
+                    VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+                    VariantEffect.SYNONYMOUS_VARIANT,
+                    VariantEffect.DOWNSTREAM_GENE_VARIANT,
+                    VariantEffect.SPLICE_REGION_VARIANT
+            );
+    
     private final VariantDataService variantDataService;
+    private final PriorityFactory prioritiserFactory;
 
     public Exomiser(VariantDataService variantDataService, PriorityFactory prioritiserFactory) {
-        this.filterFactory = new FilterFactory();
         this.variantDataService = variantDataService;
         this.prioritiserFactory = prioritiserFactory;
     }
 
-    //TODO: this could be made more programmatically configurable by also allowing
-    //the Filters and Prioritisers be passsed in / set so as to remove the dependency on ExomiserSettings
-    //will happen, but not through here - Analysis, AnalysisRunner and some missing bits will do that.
-    public Analysis analyse(SampleData sampleData, ExomiserSettings exomiserSettings) {
-        
-        Analysis analysis = setUpExomiserAnalysis(sampleData, exomiserSettings);
-        //TODO: make run the functional entry point, remove all the other methods or push them into AnalysisRunner
-        //AnalysisRunner is kind of the new Exomiser - exomiser is now just a brand and a set of immutable steps 
-        //from setUpExomiserAnalysis played out by the AnalysisRunner and stored in an Analysis
-        logger.info("STARTING ANALYSIS");
-        AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
-        if (exomiserSettings.runFullAnalysis()) {
-            analysisMode = AnalysisMode.FULL;
-        } 
-        AnalysisRunner analysisRunner = new AnalysisRunner(variantDataService, analysisMode);
-        analysisRunner.runAnalysis(analysis);
-        logger.info("FINISHED ANALYSIS");
-        return analysis;
+    public AnalysisRunner getFullAnalysisRunner() {
+        return new AnalysisRunner(variantDataService, AnalysisMode.FULL);
+    }
+
+    public AnalysisRunner getPassOnlyAnalysisRunner() {
+        return new AnalysisRunner(variantDataService, AnalysisMode.PASS_ONLY);
     }
 
     /**
      * Sets up an Analysis using the published Exomiser algorithm where variants
      * are filtered first, then genes and finally the prioritisers are run.
      *
-     * @param sampleData
      * @param exomiserSettings
      * @return
      */
-    private Analysis setUpExomiserAnalysis(SampleData sampleData, ExomiserSettings exomiserSettings) {
+    public Analysis setUpExomiserAnalysis(ExomiserSettings exomiserSettings) {
         logger.info("SETTING-UP ANALYSIS");
-        ModeOfInheritance modeOfInheritance = exomiserSettings.getModeOfInheritance();
         PriorityType prioritiserType = exomiserSettings.getPrioritiserType();
-        ScoringMode scoreMode = prioritiserType.getScoringMode();
-        
-        Analysis analysis = new Analysis(sampleData, modeOfInheritance, scoreMode);
-        
-        //don't change the order here - variants should ALWAYS be filtered before
-        addVariantFilters(exomiserSettings, analysis);
-        //genes have their inheritance modes filtered otherwise the inheritance mode will break leading to altered
-        //predictions downstream as we only want to test the mode for candidate variants.
-        addGeneFilters(exomiserSettings, analysis);
-        //inheritance modes are needed even if we don't have an inheritance gene filter set as the OMIM prioritiser relies on it
-        //Prioritisers should ALWAYS run last.
-        addPrioritisers(exomiserSettings, analysis);
+
+        Analysis analysis = new Analysis();
+        analysis.setVcfPath(exomiserSettings.getVcfPath());
+        analysis.setPedPath(exomiserSettings.getPedPath());
+        analysis.setModeOfInheritance(exomiserSettings.getModeOfInheritance());
+        analysis.setHpoIds(exomiserSettings.getHpoIds());
+        analysis.setScoringMode(prioritiserType.getScoringMode());
+        if (exomiserSettings.runFullAnalysis()) {
+            analysis.setAnalysisMode(AnalysisMode.FULL);
+        }
+
+        List<AnalysisStep> analysisSteps = makeAnalysisSteps(exomiserSettings, exomiserSettings);
+        for (AnalysisStep step : analysisSteps) {
+            logger.info("ADDING ANALYSIS STEP {}", step);
+            analysis.addStep(step);
+        }
 
         return analysis;
     }
 
-    private List<VariantFilter> addVariantFilters(FilterSettings settings, Analysis analysis) {
-        logger.info("MAKING VARIANT FILTERS");
-        List<VariantFilter> variantFilters = filterFactory.makeVariantFilters(settings);
-        for (VariantFilter variantFilter : variantFilters) {
-            analysis.addStep(variantFilter);
+    public List<AnalysisStep> makeAnalysisSteps(FilterSettings filterSettings, PrioritiserSettings prioritiserSettings) {
+        List<AnalysisStep> steps = new ArrayList<>();
+        steps.addAll(makeFilters(filterSettings));
+        //Prioritisers should ALWAYS run last.
+        steps.addAll(makePrioritisers(prioritiserSettings));
+        return steps;
+    }
+
+    private List<Filter> makeFilters(FilterSettings filterSettings) {
+        List<Filter> filters = new ArrayList<>();
+        //don't change the order here - variants should ALWAYS be filtered before
+        //genes have their inheritance modes filtered otherwise the inheritance mode will break leading to altered
+        //predictions downstream as we only want to test the mode for candidate variants.
+        //inheritance modes are needed even if we don't have an inheritance gene filter set as the OMIM prioritiser relies on it
+        filters.addAll(makeVariantFilters(filterSettings));
+        filters.addAll(makeGeneFilters(filterSettings));
+        return filters;
+    }
+
+    private List<VariantFilter> makeVariantFilters(FilterSettings settings) {
+        List<VariantFilter> variantFilters = new ArrayList<>();
+        //IMPORTANT: These are ordered by increasing computational difficulty and
+        //the number of variants they will remove.
+        //Don't change them as this will negatively effect performance.
+        //GENE_ID
+        if (!settings.getGenesToKeep().isEmpty()) {
+            variantFilters.add(new EntrezGeneIdFilter(settings.getGenesToKeep()));
         }
+        //INTERVAL
+        if (settings.getGeneticInterval() != null) {
+            variantFilters.add(new IntervalFilter(settings.getGeneticInterval()));
+        }
+        //TARGET
+        //this would make more sense to be called 'removeOffTargetVariants'
+        if (settings.keepOffTargetVariants() == false) {
+            //add off target variant effect here
+            variantFilters.add(new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS));
+        }
+        //QUALITY
+        if (settings.getMinimumQuality() != 0) {
+            variantFilters.add(new QualityFilter(settings.getMinimumQuality()));
+        }
+        //KNOWN VARIANTS
+        if (settings.removeKnownVariants()) {
+            variantFilters.add(new KnownVariantFilter());
+        }
+        //FREQUENCY
+        variantFilters.add(new FrequencyFilter(settings.getMaximumFrequency()));
+        //PATHOGENICITY
+        // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always
+        // pass the pathogenicity filter and still get scored for pathogenicity
+        variantFilters.add(new PathogenicityFilter(settings.removePathFilterCutOff()));
         return variantFilters;
     }
 
-    private List<GeneFilter> addGeneFilters(FilterSettings settings, Analysis analysis) {
-        logger.info("MAKING GENE FILTERS");
-        List<GeneFilter> geneFilters = filterFactory.makeGeneFilters(settings);
-        for (GeneFilter geneFilter : geneFilters) {
-            analysis.addStep(geneFilter);
+    private List<GeneFilter> makeGeneFilters(FilterSettings settings) {
+        List<GeneFilter> geneFilters = new ArrayList<>();
+        //INHERITANCE
+        if (settings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
+            geneFilters.add(new InheritanceFilter(settings.getModeOfInheritance()));
         }
         return geneFilters;
-    }
-
-    private List<Prioritiser> addPrioritisers(PrioritiserSettings settings, Analysis analysis) {
-        logger.info("MAKING PRIORITISERS");
-        List<Prioritiser> prioritisers = makePrioritisers(settings);
-        for (Prioritiser prioritiser : prioritisers) {
-            analysis.addStep(prioritiser);
-        }
-        return prioritisers;
     }
 
     private List<Prioritiser> makePrioritisers(PrioritiserSettings settings) {
@@ -129,7 +172,7 @@ public class Exomiser {
         }
 
         //always run OMIM unless the user specified what they really don't want to run any prioritisers
-        Prioritiser omimPrioritiser = prioritiserFactory.makePrioritiser(PriorityType.OMIM_PRIORITY, settings);
+        Prioritiser omimPrioritiser = prioritiserFactory.makeOmimPrioritiser();
         prioritisers.add(omimPrioritiser);
         //don't add OMIM prioritiser twice to the list
         if (prioritiserType != PriorityType.OMIM_PRIORITY) {

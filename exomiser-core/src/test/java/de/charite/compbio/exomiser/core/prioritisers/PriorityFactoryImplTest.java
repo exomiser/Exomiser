@@ -5,12 +5,10 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import java.nio.file.Paths;
+import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettingsImpl.PrioritiserSettingsBuilder;
 import java.util.Collections;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.*;
-import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -30,23 +28,11 @@ public class PriorityFactoryImplTest {
 
     @Autowired
     private PriorityFactoryImpl instance;
-    private SettingsBuilder settingsBuilder;
-
-    @Before
-    public void setUp() {
-        settingsBuilder = new SettingsBuilder();
-    }
 
     private PrioritiserSettings buildValidSettingsWithPrioritiser(PriorityType priorityType) {
-        settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
+        PrioritiserSettingsBuilder settingsBuilder = new PrioritiserSettingsBuilder();
         settingsBuilder.usePrioritiser(priorityType);
         return settingsBuilder.build();
-    }
-
-    private SettingsBuilder getValidSettingsWithPrioritiser(PriorityType priorityType) {
-        settingsBuilder.vcfFilePath(Paths.get("stubFilePath"));
-        settingsBuilder.usePrioritiser(priorityType);
-        return settingsBuilder;
     }
 
     @Test
@@ -62,7 +48,7 @@ public class PriorityFactoryImplTest {
     public void testCanGetOmimPrioritizerByType() {
         PriorityType type = PriorityType.OMIM_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
-        
+
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
@@ -89,7 +75,8 @@ public class PriorityFactoryImplTest {
     public void testmakeHiPhivePrioritiserWithDiseaseIdAndEmptyHpoList() {
         PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
         List<String> emptyStringList = Collections.emptyList();
-        PrioritiserSettings settings = getValidSettingsWithPrioritiser(type)
+        PrioritiserSettings settings = new PrioritiserSettingsBuilder()
+                .usePrioritiser(type)
                 .diseaseId("OMIM:101600")
                 .hpoIdList(emptyStringList)
                 .build();
@@ -133,7 +120,7 @@ public class PriorityFactoryImplTest {
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
     }
-    
+
     @Test
     public void testmakePrioritiserNotSetPriorityReturnsNoneTypePrioritiser() {
         PriorityType type = PriorityType.NOT_SET;

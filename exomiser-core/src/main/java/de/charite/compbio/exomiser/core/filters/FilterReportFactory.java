@@ -76,8 +76,10 @@ public class FilterReportFactory {
     public FilterReport makeFilterReport(Filter filter, SampleData sampleData) {
         FilterType filterType = filter.getFilterType();
         switch (filterType) {
-            case TARGET_FILTER:
-                return makeTargetFilterReport( (TargetFilter) filter, sampleData.getVariantEvaluations());
+            case VARIANT_EFFECT_FILTER:
+                return makeTargetFilterReport( (VariantEffectFilter) filter, sampleData.getVariantEvaluations());
+            case KNOWN_VARIANT_FILTER:
+                return makeKnownVariantFilterReport( (KnownVariantFilter) filter, sampleData.getVariantEvaluations());
             case FREQUENCY_FILTER:
                 return makeFrequencyFilterReport( (FrequencyFilter) filter, sampleData.getVariantEvaluations());
             case QUALITY_FILTER:
@@ -93,8 +95,8 @@ public class FilterReportFactory {
         }
     }
 
-    private FilterReport makeTargetFilterReport(TargetFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.TARGET_FILTER, variantEvaluations);
+    private FilterReport makeTargetFilterReport(VariantEffectFilter filter, List<VariantEvaluation> variantEvaluations) {
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.VARIANT_EFFECT_FILTER, variantEvaluations);
         
         report.addMessage(String.format("Removed a total of %d off-target variants from further consideration", report.getFailed()));
         report.addMessage(String.format("Off target variants are defined as variants with effect: %s", filter.getOffTargetVariantTypes()));
@@ -102,9 +104,10 @@ public class FilterReportFactory {
         return report;
     }
 
-    private FilterReport makeFrequencyFilterReport(FrequencyFilter filter, List<VariantEvaluation> variantEvaluations) {
-        FilterReport report = makeDefaultVariantFilterReport(FilterType.FREQUENCY_FILTER, variantEvaluations);
+    private FilterReport makeKnownVariantFilterReport(KnownVariantFilter filter, List<VariantEvaluation> variantEvaluations) {
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.KNOWN_VARIANT_FILTER, variantEvaluations);
         
+        int numNotInDatabase = 0;
         int numDbSnpFreqData = 0;
         int numDbSnpRsId = 0;
         int numEspFreqData = 0;
@@ -113,8 +116,8 @@ public class FilterReportFactory {
         for (VariantEvaluation ve : variantEvaluations) {
             FrequencyData frequencyData = ve.getFrequencyData();
 
-            if (frequencyData == null) {
-                continue;
+            if (!frequencyData.isRepresentedInDatabase()) {
+                numNotInDatabase++;
             }
             if (frequencyData.hasDbSnpData()) {
                 numDbSnpFreqData++;
@@ -132,11 +135,18 @@ public class FilterReportFactory {
         
         int before = report.getPassed() + report.getFailed();
         
-        report.addMessage(String.format("Allele frequency < %.2f %%", filter.getMaxFreq()));
-        report.addMessage(String.format("Frequency Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, 100f * (double) numDbSnpFreqData / before));
+        report.addMessage(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, 100f * (double) numNotInDatabase / before));
         report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, 100 * (double) numDbSnpRsId / before));
+        report.addMessage(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, 100f * (double) numDbSnpFreqData / before));
         report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, 100f * (double) numEspFreqData / before));
         report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, 100f * (double) numExaCFreqData / before));
+        return report;
+    }
+    
+    private FilterReport makeFrequencyFilterReport(FrequencyFilter filter, List<VariantEvaluation> variantEvaluations) {
+        FilterReport report = makeDefaultVariantFilterReport(FilterType.FREQUENCY_FILTER, variantEvaluations);
+        
+        report.addMessage(String.format("Allele frequency < %.2f%%", filter.getMaxFreq()));
         return report;
     }
 

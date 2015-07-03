@@ -44,7 +44,7 @@ public class SimpleVariantFilterRunnerTest {
     private QualityFilter qualityFilter;
     //Target run data
     @Mock
-    private TargetFilter targetFilter;
+    private VariantEffectFilter targetFilter;
 
     private VariantEvaluation passesAllFilters;
     private VariantEvaluation failsAllFilters;
@@ -79,8 +79,8 @@ public class SimpleVariantFilterRunnerTest {
     private void setUpFrequencyMocks() {
         Mockito.when(frequencyFilter.getFilterType()).thenReturn(FREQUENCY_FILTER);
 
-        FilterResult passFrequencyResult = new FrequencyFilterResult(1f, FilterResultStatus.PASS);
-        FilterResult failFrequencyResult = new FrequencyFilterResult(0f, FilterResultStatus.FAIL);
+        FilterResult passFrequencyResult = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1f);
+        FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
 
         Mockito.when(frequencyFilter.runFilter(passesAllFilters)).thenReturn(passFrequencyResult);
         Mockito.when(frequencyFilter.runFilter(failsAllFilters)).thenReturn(failFrequencyResult);
@@ -91,8 +91,8 @@ public class SimpleVariantFilterRunnerTest {
     private void setUpQualityMocks() {
         Mockito.when(qualityFilter.getFilterType()).thenReturn(QUALITY_FILTER);
 
-        FilterResult passQualityResult = new QualityFilterResult(1f, FilterResultStatus.PASS);
-        FilterResult failQualityResult = new QualityFilterResult(0f, FilterResultStatus.FAIL);
+        FilterResult passQualityResult = new PassFilterResult(FilterType.QUALITY_FILTER, 1f);
+        FilterResult failQualityResult = new FailFilterResult(FilterType.QUALITY_FILTER, 0f);
 
         Mockito.when(qualityFilter.runFilter(passesAllFilters)).thenReturn(passQualityResult);
         Mockito.when(qualityFilter.runFilter(failsAllFilters)).thenReturn(failQualityResult);
@@ -101,10 +101,10 @@ public class SimpleVariantFilterRunnerTest {
     }
 
     private void setUpTargetMocks() {
-        Mockito.when(targetFilter.getFilterType()).thenReturn(TARGET_FILTER);
+        Mockito.when(targetFilter.getFilterType()).thenReturn(VARIANT_EFFECT_FILTER);
 
-        FilterResult passTargetResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
-        FilterResult failTargetResult = new TargetFilterResult(0f, FilterResultStatus.FAIL);
+        FilterResult passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER, 1f);
+        FilterResult failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER, 0f);
 
         Mockito.when(targetFilter.runFilter(passesAllFilters)).thenReturn(passTargetResult);
         Mockito.when(targetFilter.runFilter(failsAllFilters)).thenReturn(failTargetResult);
@@ -153,7 +153,7 @@ public class SimpleVariantFilterRunnerTest {
 //
 //        printVariantFilterStatus("passesAllFilters", passesAllFilters);
 //        assertThat(passesAllFilters.passedFilters(), is(true));
-//        assertPassedFilters(passesAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+//        assertPassedFilters(passesAllFilters, VARIANT_EFFECT_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
 //    }
 //
 //    @Test
@@ -168,21 +168,21 @@ public class SimpleVariantFilterRunnerTest {
 //
 //        printVariantFilterStatus("passesAllFilters", passesAllFilters);
 //        assertThat(passesAllFilters.passedFilters(), is(true));
-//        assertPassedFilters(passesAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+//        assertPassedFilters(passesAllFilters, VARIANT_EFFECT_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
 //
 //        printVariantFilterStatus("failsAllFilters", failsAllFilters);
 //        assertThat(failsAllFilters.passedFilters(), is(false));
 //        assertPassedFilters(failsAllFilters);
-//        assertFailedFilters(failsAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+//        assertFailedFilters(failsAllFilters, VARIANT_EFFECT_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
 //
 //        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
 //        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
 //        assertPassedFilters(passesQualityFrequencyFilter, QUALITY_FILTER, FREQUENCY_FILTER);
-//        assertFailedFilters(passesQualityFrequencyFilter, TARGET_FILTER);
+//        assertFailedFilters(passesQualityFrequencyFilter, VARIANT_EFFECT_FILTER);
 //
 //        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
 //        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
-//        assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, TARGET_FILTER);
+//        assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, VARIANT_EFFECT_FILTER);
 //        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
 //    }
 //
@@ -225,20 +225,20 @@ public class SimpleVariantFilterRunnerTest {
 //        assertThat(result, equalTo(variantEvaluations));
 //
 //        printVariantFilterStatus("passesAllFilters", passesAllFilters);
-//        assertPassedFilters(passesAllFilters, TARGET_FILTER, FREQUENCY_FILTER);
+//        assertPassedFilters(passesAllFilters, VARIANT_EFFECT_FILTER, FREQUENCY_FILTER);
 //
 //        printVariantFilterStatus("failsAllFilters", failsAllFilters);
 //        assertThat(failsAllFilters.passedFilters(), is(false));
-//        assertFailedFilters(failsAllFilters, TARGET_FILTER, FREQUENCY_FILTER);
+//        assertFailedFilters(failsAllFilters, VARIANT_EFFECT_FILTER, FREQUENCY_FILTER);
 //
 //        printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
 //        assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
 //        assertPassedFilters(passesQualityFrequencyFilter, FREQUENCY_FILTER);
-//        assertFailedFilters(passesQualityFrequencyFilter, TARGET_FILTER);
+//        assertFailedFilters(passesQualityFrequencyFilter, VARIANT_EFFECT_FILTER);
 //
 //        printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
 //        assertThat(passesTargetQualityFilter.passedFilters(), is(false));
-//        assertPassedFilters(passesTargetQualityFilter, TARGET_FILTER);
+//        assertPassedFilters(passesTargetQualityFilter, VARIANT_EFFECT_FILTER);
 //        assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
 //    }
 
@@ -255,20 +255,20 @@ public class SimpleVariantFilterRunnerTest {
 
         printVariantFilterStatus("passesAllFilters", passesAllFilters);
         assertThat(passesAllFilters.passedFilters(), is(true));
-        assertPassedFilters(passesAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+        assertPassedFilters(passesAllFilters, VARIANT_EFFECT_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
 
         printVariantFilterStatus("failsAllFilters", failsAllFilters);
         assertThat(failsAllFilters.passedFilters(), is(false));
-        assertFailedFilters(failsAllFilters, TARGET_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
+        assertFailedFilters(failsAllFilters, VARIANT_EFFECT_FILTER, QUALITY_FILTER, FREQUENCY_FILTER);
 
         printVariantFilterStatus("passesQualityFrequencyFilter", passesQualityFrequencyFilter);
         assertThat(passesQualityFrequencyFilter.passedFilters(), is(false));
         assertPassedFilters(passesQualityFrequencyFilter, QUALITY_FILTER, FREQUENCY_FILTER);
-        assertFailedFilters(passesQualityFrequencyFilter, TARGET_FILTER);
+        assertFailedFilters(passesQualityFrequencyFilter, VARIANT_EFFECT_FILTER);
 
         printVariantFilterStatus("passesTargetQualityFilter", passesTargetQualityFilter);
         assertThat(passesTargetQualityFilter.passedFilters(), is(false));
-        assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, TARGET_FILTER);
+        assertPassedFilters(passesTargetQualityFilter, QUALITY_FILTER, VARIANT_EFFECT_FILTER);
         assertFailedFilters(passesTargetQualityFilter, FREQUENCY_FILTER);
     }
 

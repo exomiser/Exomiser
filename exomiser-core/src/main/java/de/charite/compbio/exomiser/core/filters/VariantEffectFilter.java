@@ -22,39 +22,22 @@ import org.slf4j.LoggerFactory;
  * pass the runFilter are simply removed.
  *
  * @author Peter N Robinson
- * @version 0.16 (20 December, 2013)
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TargetFilter implements VariantFilter {
+public class VariantEffectFilter implements VariantFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(TargetFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantEffectFilter.class);
 
-    private static final FilterType filterType = FilterType.TARGET_FILTER;
+    private static final FilterType filterType = FilterType.VARIANT_EFFECT_FILTER;
 
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passedFilterResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
-    private final FilterResult failedFilterResult = new TargetFilterResult(0f, FilterResultStatus.FAIL);
+    private final FilterResult passedFilterResult = new PassFilterResult(filterType, 1f);
+    private final FilterResult failedFilterResult = new FailFilterResult(filterType, 0f);
 
-    /**
-     * A set of off-target variant types such as Intergenic that we will
-     * runFilter out from further consideration.
-     */
-    private static final Set<VariantEffect> offTargetVariantTypes = EnumSet.of(
-                VariantEffect.UPSTREAM_GENE_VARIANT, 
-                VariantEffect.INTERGENIC_VARIANT,
-                VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, 
-                VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-                VariantEffect.SYNONYMOUS_VARIANT, 
-                VariantEffect.DOWNSTREAM_GENE_VARIANT,
-                VariantEffect.SPLICE_REGION_VARIANT
-        );
-
-    /**
-     * The constructor initializes the set of off-target
-     * {@link jannovar.common.VariantType VariantType} constants, e.g.,
-     * INTERGENIC, that we will runFilter out using this class.
-     * 
-     */
-    public TargetFilter() {
+    private final Set<VariantEffect> offTargetVariantTypes;
+    
+    public VariantEffectFilter(Set<VariantEffect> notWanted) {
+        offTargetVariantTypes = notWanted;
     }
 
     public Set<VariantEffect> getOffTargetVariantTypes() {
@@ -78,7 +61,7 @@ public class TargetFilter implements VariantFilter {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 37 * hash + Objects.hashCode(TargetFilter.filterType);
+        hash = 37 * hash + Objects.hashCode(VariantEffectFilter.filterType);
         hash = 37 * hash + Objects.hashCode(this.offTargetVariantTypes);
         return hash;
     }
@@ -91,13 +74,13 @@ public class TargetFilter implements VariantFilter {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final TargetFilter other = (TargetFilter) obj;
+        final VariantEffectFilter other = (VariantEffectFilter) obj;
         return Objects.equals(this.offTargetVariantTypes, other.offTargetVariantTypes);
     }
 
     @Override
     public String toString() {
-        return filterType + " filter offTarget=" + offTargetVariantTypes;
+        return "VariantEffectFilter{" + "offTargetVariantTypes=" + offTargetVariantTypes + '}';
     }
 
 }

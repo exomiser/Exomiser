@@ -55,7 +55,7 @@ public class BedFilterTest {
 
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo(FilterType.BED_FILTER + " filter targetGenes=[GENE1]"));
+        assertThat(instance.toString(), equalTo("BedFilter{targetGeneSymbols=[GENE1]}"));
     }
     
 }

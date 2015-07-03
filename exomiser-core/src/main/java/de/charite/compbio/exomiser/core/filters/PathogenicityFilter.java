@@ -125,7 +125,6 @@ public class PathogenicityFilter implements VariantFilter {
 
     /**
      * @param variantEffect
-     * @param pathData
      * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
      */
     protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect) {
@@ -141,14 +140,12 @@ public class PathogenicityFilter implements VariantFilter {
 
     private FilterResult returnPassResult(float filterScore) {
         // We passed the filter (Variant is predicted pathogenic).
-        FilterResult passResult = new PathogenicityFilterResult(filterScore, FilterResultStatus.PASS);
-        return passResult;
+        return new PassFilterResult(filterType, filterScore);
     }
 
     private FilterResult returnFailResult(float filterScore) {
         // Variant is not predicted pathogenic, return failed.
-        FilterResult failResult = new PathogenicityFilterResult(filterScore, FilterResultStatus.FAIL);
-        return failResult;
+        return new FailFilterResult(filterType, filterScore);
     }
 
     @Override
@@ -173,7 +170,7 @@ public class PathogenicityFilter implements VariantFilter {
 
     @Override
     public String toString() {
-        return String.format("%s filter: keepNonPathogenic=%s", filterType, keepNonPathogenic);
+        return "PathogenicityFilter{" + "keepNonPathogenic=" + keepNonPathogenic + '}';
     }
 
 }

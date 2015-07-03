@@ -78,8 +78,6 @@ public class PhenixPriority implements Prioritiser {
 
     private Map<String, List<Term>> geneId2annotations;
 
-    private Map<Term, Set<String>> annotationTerm2geneIds;
-
     private Map<Term, Double> term2ic;
 
     private final ScoreDistributionContainer scoredistributionContainer = new ScoreDistributionContainer();
@@ -127,7 +125,7 @@ public class PhenixPriority implements Prioritiser {
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      * Hudson page</a>
      */
-    public PhenixPriority(String scoreDistributionFolder, Set<String> hpoQueryTermIds, boolean symmetric) {
+    public PhenixPriority(String scoreDistributionFolder, List<String> hpoQueryTermIds, boolean symmetric) {
 
         if (hpoQueryTermIds.isEmpty()) {
             throw new PhenixException("Please supply some HPO terms. PhenIX is unable to prioritise genes without these.");
@@ -163,6 +161,15 @@ public class PhenixPriority implements Prioritiser {
         similarityMeasure = new InformationContentObjectSimilarity(resnik, symmetric, false);
     }
 
+    /**
+     * STUB CONSTRUCTOR - ONLY USED FOR TESTING PURPOSES TO AVOID NULL POINTERS FROM ORIGINAL CONSTRUCTOR. DO NOT USE FOR PRODUCTION CODE!!!!
+     * @param hpoIds
+     * @param symmetric 
+     */
+    protected PhenixPriority (List<String> hpoIds, boolean symmetric) {
+        this.symmetric = symmetric;
+    }
+    
     private void parseData(String hpoOboFile, String hpoAnnotationFile) {
         //The phenomizerData directory must contain the files "hp.obo", "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt" 
         //as well as the score distribution files "*.out", all of which can be downloaded from the HPO hudson server.
@@ -189,7 +196,6 @@ public class PhenixPriority implements Prioritiser {
      * @param hpoAnnotationFile path to the file
      */
     private void parseAnnotations(String hpoAnnotationFile) throws IOException {
-        geneId2annotations = new HashMap<>();
 
         BufferedReader in = new BufferedReader(new FileReader(hpoAnnotationFile));
         String line = null;
@@ -200,30 +206,33 @@ public class PhenixPriority implements Prioritiser {
 
             String[] split = line.split("\t");
             String entrez = split[0];
-            Term t = null;
+            Term term = null;
             try {
                 /* split[4] is the HPO term field of an annotation line. */
-                t = hpo.getTermIncludingAlternatives(split[3]);
+                term = hpo.getTermIncludingAlternatives(split[3]);
             } catch (IllegalArgumentException e) {
                 logger.error("Unable to get term for line \n{}\n", line);
                 logger.error("The offending field was '{}'", split[3]);
                 for (int k = 0; k < split.length; ++k) {
                     logger.error("{} '{}'", k, split[k]);
                 }
-                t = null;
+                term = null;
             }
-            if (t == null) {
+            if (term == null) {
                 continue;
             }
 
-            List<Term> annot;
+            List<Term> annotations;
+            
+            geneId2annotations = new HashMap<>();
+
             if (geneId2annotations.containsKey(entrez)) {
-                annot = geneId2annotations.get(entrez);
+                annotations = geneId2annotations.get(entrez);
             } else {
-                annot = new ArrayList<>();
+                annotations = new ArrayList<>();
             }
-            annot.add(t);
-            geneId2annotations.put(entrez, annot);
+            annotations.add(term);
+            geneId2annotations.put(entrez, annotations);
         }
         in.close();
 
@@ -238,22 +247,22 @@ public class PhenixPriority implements Prioritiser {
         }
 
         // prepare IC computation
-        annotationTerm2geneIds = new HashMap<>();
+        final Map<Term, Set<String>> annotationTerm2geneIds = new HashMap<>();
         for (String oId : geneId2annotations.keySet()) {
             List<Term> annotations = geneId2annotations.get(oId);
             for (Term annot : annotations) {
                 List<Term> termAndAncestors = hpoSlim.getAncestors(annot);
-                for (Term t : termAndAncestors) {
+                for (Term term : termAndAncestors) {
                     Set<String> objectsAnnotatedByTerm; 
                     // here we store which objects have been annotated with this term
-                    if (annotationTerm2geneIds.containsKey(t)) {
-                        objectsAnnotatedByTerm = annotationTerm2geneIds.get(t);
+                    if (annotationTerm2geneIds.containsKey(term)) {
+                        objectsAnnotatedByTerm = annotationTerm2geneIds.get(term);
                     } else {
                         objectsAnnotatedByTerm = new HashSet<>();
                     }
                     // add the current object
                     objectsAnnotatedByTerm.add(oId); 
-                    annotationTerm2geneIds.put(t, objectsAnnotatedByTerm);
+                    annotationTerm2geneIds.put(term, objectsAnnotatedByTerm);
                 }
             }
         }
@@ -500,6 +509,7 @@ public class PhenixPriority implements Prioritiser {
 
     @Override
     public String toString() {
-        return getPriorityType().getCommandLineValue();
+        return "PhenixPriority{" + "hpoQueryTerms=" + hpoQueryTerms + '}';
     }
+
 }

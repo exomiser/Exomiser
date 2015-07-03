@@ -445,21 +445,6 @@ public class ExomiserSettingsTest {
     }
 
     @Test
-    public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileName() {
-        instance.vcfFilePath(VCF_PATH);
-        ExomiserSettings settings = instance.build();
-        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT_WHEN_VCF_SET));
-    }
-    
-    @Test
-    public void testThatBuilderProducesDefaultOutFileNameBasedOnInputVcfFileNameAndBuildVersion() {
-        instance.vcfFilePath(VCF_PATH);
-        instance.buildVersion(BUILD_VERSION);
-        ExomiserSettings settings = instance.build();
-        assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT_WHEN_VCF_AND_BUILD_VERSION_SET));
-    }
-
-    @Test
     public void testThatBuilderProducesSetOutFileName() {
         instance.outputPrefix(OUTPUT_PREFIX_NAME);
         ExomiserSettings settings = instance.build();
@@ -597,7 +582,7 @@ public class ExomiserSettingsTest {
     public void testJsonRead() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
-        String jsonString = "{\"prioritiser\":\"phive\",\"max-freq\":0.1,\"min-qual\":0.0,\"keep-non-pathogenic\":false,\"remove-known-variants\":false,\"keep-off-target\":false,\"candidate-gene\":\"FGFR2\",\"inheritance-mode\":\"AUTOSOMAL_DOMINANT\",\"disease-id\":\"\",\"hpo-ids\":[\"HP:0987654\",\"HP:1234567\"],\"seed-genes\":[123,4567],\"num-genes\":0,\"out-prefix\":\"wibble\",\"out-format\":[\"HTML\"],\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
+        String jsonString = "{\"prioritiser\":\"phive\",\"maxFrequency\":0.1,\"minQuality\":0.0,\"keepNonPathogenic\":false,\"removeKnownVariants\":false,\"keep-off-target\":false,\"candidate-gene\":\"FGFR2\",\"inheritance-mode\":\"AUTOSOMAL_DOMINANT\",\"disease-id\":\"\",\"hpo-ids\":[\"HP:0987654\",\"HP:1234567\"],\"seed-genes\":[123,4567],\"num-genes\":0,\"out-prefix\":\"wibble\",\"out-format\":[\"HTML\"],\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
         try {
             ExomiserSettings defaultSettings = mapper.readValue(jsonString, ExomiserSettings.class);
             System.out.println(defaultSettings);

@@ -69,6 +69,7 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
     protected void addMissingFrequencyAndPathogenicityData(FilterType filterType, VariantEvaluation variantEvaluation) {
         switch (filterType) {
             case FREQUENCY_FILTER:
+            case KNOWN_VARIANT_FILTER:
                 variantDataService.setVariantFrequencyData(variantEvaluation);
                 break;
             case PATHOGENICITY_FILTER:

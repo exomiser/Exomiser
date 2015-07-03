@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class PrioritiserRunnerTest {
         genes = new ArrayList<>();
         genePassedFilters = new Gene("PASSED_FILTERS", 12345);
         geneFailedFilters = new Gene("FAILED_FILTERS", 23456);
-        geneFailedFilters.addFilterResult(new TargetFilterResult(0f, FilterResultStatus.FAIL));
+        geneFailedFilters.addFilterResult(new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER, 0f));
         genes.add(genePassedFilters);
         genes.add(geneFailedFilters);
     }

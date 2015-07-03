@@ -41,10 +41,9 @@ public class NoneTypePrioritiserTest {
         List<String> emptyList = Collections.emptyList();
         assertThat(instance.getMessages(), equalTo(emptyList));
     }
-
-    @Test
-    public void testToStringReturnsCommandLineValue() {
-        assertThat(instance.toString(), equalTo(PriorityType.NONE.getCommandLineValue()));
-    }
     
+    @Test
+    public void testToString(){
+        assertThat(instance.toString(), equalTo("NoneTypePrioritiser{}"));
+    }
 }

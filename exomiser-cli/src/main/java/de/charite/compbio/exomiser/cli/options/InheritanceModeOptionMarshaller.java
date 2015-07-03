@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.MODE_OF_INHERITANCE_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.apache.commons.cli.Option;
@@ -19,6 +18,8 @@ import org.slf4j.LoggerFactory;
 public class InheritanceModeOptionMarshaller extends AbstractOptionMarshaller {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeOptionMarshaller.class);
+
+    public static final String MODE_OF_INHERITANCE_OPTION = "inheritance-mode";
 
     public InheritanceModeOptionMarshaller() {
         option = new Option("I", MODE_OF_INHERITANCE_OPTION, true, "Filter variants for inheritance pattern (AR, AD, X)");

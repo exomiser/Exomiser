@@ -5,10 +5,10 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
@@ -46,12 +46,12 @@ public class GeneTest {
     private VariantEvaluation variantEvaluation1;
     private VariantEvaluation variantEvaluation2;
 
-    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new FrequencyFilterResult(1f, FilterResultStatus.PASS);
-    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FrequencyFilterResult(0f, FilterResultStatus.FAIL);
+    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1f);
+    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
     //there's nothing really magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
     //their type is mostly used for reporting which filter was passed or failed and getting the score. 
-    private static final FilterResult PASS_GENE_FILTER_RESULT = new InheritanceFilterResult(1f, FilterResultStatus.PASS);
-    private static final FilterResult FAIL_GENE_FILTER_RESULT = new InheritanceFilterResult(0f, FilterResultStatus.FAIL);
+    private static final FilterResult PASS_GENE_FILTER_RESULT = new PassFilterResult(FilterType.INHERITANCE_FILTER, 1f);
+    private static final FilterResult FAIL_GENE_FILTER_RESULT = new FailFilterResult(FilterType.INHERITANCE_FILTER, 0f);
 
     @Before
     public void setUp() {

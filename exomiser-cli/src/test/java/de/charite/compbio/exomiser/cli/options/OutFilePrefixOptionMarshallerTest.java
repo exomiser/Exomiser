@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,7 +23,7 @@ public class OutFilePrefixOptionMarshallerTest {
     
     private OutFilePrefixOptionMarshaller instance;
     private Option option;
-    private ExomiserSettings.SettingsBuilder settingsBuilder;
+    private SettingsBuilder settingsBuilder;
     
     private static final String OUTFILE_PREFIX = "/users/jules/vcf/analysis/exome";
     private static final String LONG_OPTION = "out-prefix";

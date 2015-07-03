@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.OUTPUT_PASS_VARIANTS_ONLY_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -14,7 +13,8 @@ import org.apache.commons.cli.OptionBuilder;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class OutputPassOnlyVariantsOptionMarshaller extends AbstractOptionMarshaller {
-//    output-pass-variants-only
+
+    public static final String OUTPUT_PASS_VARIANTS_ONLY_OPTION = "output-pass-variants-only";
 
     public OutputPassOnlyVariantsOptionMarshaller () {
         option = OptionBuilder

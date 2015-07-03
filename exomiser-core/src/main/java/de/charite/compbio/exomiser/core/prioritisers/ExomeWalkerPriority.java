@@ -267,9 +267,9 @@ public class ExomeWalkerPriority implements Prioritiser {
         return true;
     }
 
-    
     @Override
     public String toString() {
-        return priorityType.getCommandLineValue() + ", seedGenes=" + seedGenes;
-    }    
+        return "ExomeWalkerPriority{" + "seedGenes=" + seedGenes + '}';
+    }
+  
 }

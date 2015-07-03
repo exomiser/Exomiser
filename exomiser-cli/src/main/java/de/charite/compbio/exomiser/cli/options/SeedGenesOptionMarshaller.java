@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.SEED_GENES_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +21,8 @@ import org.slf4j.LoggerFactory;
 public class SeedGenesOptionMarshaller extends AbstractOptionMarshaller {
 
     private static final Logger logger = LoggerFactory.getLogger(SeedGenesOptionMarshaller.class);
+
+    public static final String SEED_GENES_OPTION = "seed-genes";
 
     public SeedGenesOptionMarshaller() {
         option = OptionBuilder

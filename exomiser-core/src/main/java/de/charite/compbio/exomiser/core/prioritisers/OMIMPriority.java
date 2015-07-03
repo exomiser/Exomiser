@@ -211,6 +211,6 @@ public class OMIMPriority implements Prioritiser {
   
     @Override
     public String toString() {
-        return getPriorityType().getCommandLineValue();
+        return "OmimPrioritiser{}";
     } 
 }

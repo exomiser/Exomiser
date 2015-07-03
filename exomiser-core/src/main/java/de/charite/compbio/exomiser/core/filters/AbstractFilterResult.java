@@ -12,13 +12,13 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GenericFilterResult implements FilterResult {
+abstract class AbstractFilterResult implements FilterResult {
     
     private final FilterType filterType;
     private final float score;
     private final FilterResultStatus filterResultStatus;
 
-    protected GenericFilterResult(FilterType filterType, float score, FilterResultStatus filterResultStatus) {
+    AbstractFilterResult(FilterType filterType, float score, FilterResultStatus filterResultStatus) {
         this.filterType = filterType;
         this.score = score;
         this.filterResultStatus = filterResultStatus;
@@ -61,7 +61,7 @@ public class GenericFilterResult implements FilterResult {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GenericFilterResult other = (GenericFilterResult) obj;
+        final AbstractFilterResult other = (AbstractFilterResult) obj;
         if (this.filterType != other.filterType) {
             return false;
         }

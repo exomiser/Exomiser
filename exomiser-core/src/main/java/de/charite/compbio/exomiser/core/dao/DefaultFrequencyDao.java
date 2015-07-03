@@ -77,7 +77,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
         } catch (SQLException e) {
             logger.error("Error executing frequency query: ", e);
         }
-        return null;
+        return new FrequencyData();
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {

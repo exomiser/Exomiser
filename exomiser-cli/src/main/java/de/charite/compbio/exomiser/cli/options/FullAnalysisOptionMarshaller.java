@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.RUN_FULL_ANALYSIS_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -14,6 +13,8 @@ import org.apache.commons.cli.OptionBuilder;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FullAnalysisOptionMarshaller extends AbstractOptionMarshaller {
+
+    public static final String RUN_FULL_ANALYSIS_OPTION = "full-analysis";
 
     public FullAnalysisOptionMarshaller() {
         option = OptionBuilder

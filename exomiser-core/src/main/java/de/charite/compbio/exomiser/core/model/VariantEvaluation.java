@@ -540,7 +540,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         //This will then erroneously pass the frequency filter.
         //TODO: check the ramifications of having a placeholder frequencyData
         //private FrequencyData frequencyData = new FrequencyData(null, Collections.EMPTY_SET);
-        private FrequencyData frequencyData = null;
+        private FrequencyData frequencyData = new FrequencyData();
 
         /**
          * Creates a minimal variant

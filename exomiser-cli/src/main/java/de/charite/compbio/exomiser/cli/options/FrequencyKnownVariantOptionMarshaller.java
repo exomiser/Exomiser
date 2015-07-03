@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.REMOVE_KNOWN_VARIANTS_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -14,6 +13,8 @@ import org.apache.commons.cli.OptionBuilder;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FrequencyKnownVariantOptionMarshaller extends AbstractOptionMarshaller {
+
+    public static final String REMOVE_KNOWN_VARIANTS_OPTION = "remove-known-variants";
 
     public FrequencyKnownVariantOptionMarshaller() {
         option = OptionBuilder

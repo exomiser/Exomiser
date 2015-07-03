@@ -9,8 +9,8 @@ public class BedFilter implements VariantFilter {
     private static final FilterType filterType = FilterType.BED_FILTER;
 
     //add a token failed score - this is essentially a boolean pass/fail so we're using 0 here.
-    FilterResult passesScore = new BedFilterResult(1f, FilterResultStatus.PASS);
-    FilterResult failedScore = new BedFilterResult(0f, FilterResultStatus.FAIL);
+    FilterResult passesScore = new PassFilterResult(filterType, 1f);
+    FilterResult failedScore = new FailFilterResult(filterType, 0f);
 
     /**
      * A set of off-target variant types such as Intergenic that we will
@@ -102,6 +102,7 @@ public class BedFilter implements VariantFilter {
 
     @Override
     public String toString() {
-        return filterType + " filter targetGenes=" + targetGeneSymbols;
+        return "BedFilter{" + "targetGeneSymbols=" + targetGeneSymbols + '}';
     }
+    
 }

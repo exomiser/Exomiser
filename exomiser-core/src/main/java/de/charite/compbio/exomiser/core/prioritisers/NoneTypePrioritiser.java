@@ -48,10 +48,10 @@ public class NoneTypePrioritiser implements Prioritiser {
         final NoneTypePrioritiser other = (NoneTypePrioritiser) obj;
         return true;
     } 
-  
+
     @Override
     public String toString() {
-        return getPriorityType().getCommandLineValue();
+        return "NoneTypePrioritiser{}";
     }
-   
+     
 }

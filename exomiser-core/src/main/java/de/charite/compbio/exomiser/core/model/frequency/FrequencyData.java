@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.model.frequency;
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,11 @@ public class FrequencyData {
     private final RsId rsId;
 
     private final Map<FrequencySource, Frequency> knownFrequencies;
+
+    public FrequencyData() {
+        this.rsId = null;
+        this.knownFrequencies = Collections.emptyMap();
+    }
 
     public FrequencyData(RsId rsId, Frequency... frequency) {
         this(rsId, new HashSet<>(Arrays.asList(frequency)));
@@ -57,7 +63,7 @@ public class FrequencyData {
      * regardless of frequency. That is, if the variant has an RS id in dbSNP or
      * any frequency data at all, return true, otherwise false.
      */
-    public boolean representedInDatabase() {
+    public boolean isRepresentedInDatabase() {
         if (rsId != null) {
             return true;
         }

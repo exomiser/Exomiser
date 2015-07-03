@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.PRIORITISER_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.util.ArrayList;
@@ -21,6 +20,8 @@ import org.slf4j.LoggerFactory;
 public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
 
     private static final Logger logger = LoggerFactory.getLogger(PrioritiserOptionMarshaller.class);
+
+    public static final String PRIORITISER_OPTION = "prioritiser"; //values for this are handled by PriorityType
 
     public PrioritiserOptionMarshaller() {
         option = OptionBuilder

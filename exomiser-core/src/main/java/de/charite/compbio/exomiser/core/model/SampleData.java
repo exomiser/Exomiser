@@ -56,7 +56,15 @@ public class SampleData {
         this.variantEvaluations = new ArrayList<>();
         this.genes = new ArrayList<>();
     }
-        
+    
+    public SampleData(Path vcfPath, Path pedPath) {
+        this.vcfPath = vcfPath;
+        this.pedPath = pedPath;
+        this.sampleNames = new ArrayList<>();
+        this.variantEvaluations = new ArrayList<>();
+        this.genes = new ArrayList<>();
+    }
+    
     /**
      * @return List of Strings representing the sample names in the VCF file.
      */

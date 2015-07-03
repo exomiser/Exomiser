@@ -8,7 +8,6 @@ package de.charite.compbio.exomiser.core;
 import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
-import de.charite.compbio.exomiser.core.model.SampleData;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,8 +27,7 @@ public class AnalysisRunnerTest {
 
     @Test
     public void canRunAnalysis() {
-        Analysis analysis = new Analysis(new SampleData());
-        instance.runAnalysis(analysis);
+        instance.runAnalysis(new Analysis());
     }
     
 }

@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.writers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -47,7 +48,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     @Override
     public void writeFile(Analysis analysis, OutputSettings settings) {
 
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
@@ -65,14 +66,15 @@ public class HtmlResultsWriter implements ResultsWriter {
     public String writeString(Analysis analysis, OutputSettings settings) {
         Context context = new Context();
         //write the settings
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+//        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
         String jsonSettings = "";
         try {
-            jsonSettings = mapper.writeValueAsString(settings);
+            jsonSettings = mapper.writeValueAsString(analysis);
+            jsonSettings += mapper.writeValueAsString(settings);
         } catch (JsonProcessingException ex) {
             logger.error("Unable to process JSON settings", ex);
         }

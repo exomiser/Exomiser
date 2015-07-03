@@ -90,6 +90,7 @@ public class AnalysisRunner {
         logger.info("Finished analysis in {} secs", analysisTimeInSecs);
     }
 
+    //TODO: would this be better using the Visitor pattern? 
     protected void runStep(AnalysisStep analysisStep, List<Gene> genes) {
         if (VariantFilter.class.isInstance(analysisStep)) {
             VariantFilter filter = (VariantFilter) analysisStep;

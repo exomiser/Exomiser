@@ -43,7 +43,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(Analysis analysis, OutputSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {

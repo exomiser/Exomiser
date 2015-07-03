@@ -5,9 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.util;
 
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilterResult;
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
@@ -38,21 +38,21 @@ public class RawScoreGeneScorerTest {
         instance = new RawScoreGeneScorer();
         
         failedFrequency = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedFrequency.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
+        failedFrequency.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f));
 
         failedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedPathogenicity.addFilterResult(new PathogenicityFilterResult(0f, FilterResultStatus.FAIL));
+        failedPathogenicity.addFilterResult(new FailFilterResult(FilterType.PATHOGENICITY_FILTER, 0f));
 
         failedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0f, FilterResultStatus.FAIL));
-        failedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(1f, FilterResultStatus.PASS));
+        failedFrequencyPassedPathogenicity.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f));
+        failedFrequencyPassedPathogenicity.addFilterResult(new FailFilterResult(FilterType.PATHOGENICITY_FILTER, 1f));
         // these are set up so that failedFrequencyPassedPathogenicity has a higher
         // pathogenicity score (1.0)than passedFrequencyPassedPathogenicity (0.75) to ensure that the scoring only
         // includes variants
         // which have actually passed all the filters
         passedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        passedFrequencyPassedPathogenicity.addFilterResult(new FrequencyFilterResult(0.75f, FilterResultStatus.PASS));
-        passedFrequencyPassedPathogenicity.addFilterResult(new PathogenicityFilterResult(0.75f, FilterResultStatus.PASS));
+        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.FREQUENCY_FILTER, 0.75f));
+        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.PATHOGENICITY_FILTER, 0.75f));
     }
 
     @Test

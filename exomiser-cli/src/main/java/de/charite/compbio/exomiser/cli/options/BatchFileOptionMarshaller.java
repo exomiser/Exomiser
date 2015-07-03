@@ -12,16 +12,16 @@ import org.apache.commons.cli.OptionBuilder;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class BatchFileOptionMarshaller  extends AbstractOptionMarshaller {
+public class BatchFileOptionMarshaller extends AbstractOptionMarshaller {
     
-    private static final String BATCH_FILE = "batch-file";
+    private static final String BATCH_FILE_OPTION = "batch-file";
     
     public BatchFileOptionMarshaller() {
         option = OptionBuilder
                 .withArgName("file")
                 .hasArg()
                 .withDescription("Path to batch file. This should contain a list of fully qualified path names for the settings files you wish to process. There should be one file name on each line.")
-                .withLongOpt(BATCH_FILE)
+                .withLongOpt(BATCH_FILE_OPTION)
                 .create();
     }
 

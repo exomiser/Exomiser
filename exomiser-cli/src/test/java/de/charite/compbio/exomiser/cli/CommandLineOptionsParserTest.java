@@ -274,7 +274,7 @@ public class CommandLineOptionsParserTest {
 
     @Test
     public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsTrueWhenSet() {
-        String option = ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
+        String option = "keep-non-pathogenic";
         String input = String.format("-v 123.vcf --%s --prioritiser=phive", option);
         System.out.println(input);
 
@@ -285,7 +285,6 @@ public class CommandLineOptionsParserTest {
 
     @Test
     public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsFalseWhenNotSet() {
-        String option = ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
         String input = "-v 123.vcf --prioritiser=phive";
 
         ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
@@ -635,7 +634,7 @@ public class CommandLineOptionsParserTest {
 
     @Test
     public void shouldProduceSettingsWhereRunFullAnalysisIsTrueWhenSpecifiedTrue() {
-        String option = ExomiserSettings.RUN_FULL_ANALYSIS_OPTION;
+        String option ="full-analysis";
         String value = "true";
         String input = String.format("-v 123.vcf --prioritiser=phive --%s=%s", option, value);
 
@@ -646,7 +645,7 @@ public class CommandLineOptionsParserTest {
 
     @Test
     public void shouldProduceSettingsWhereRunFullAnalysisIsFalseWhenSpecifiedFalse() {
-        String option = ExomiserSettings.RUN_FULL_ANALYSIS_OPTION;
+        String option = "full-analysis";
         String value = "false";
         String input = String.format("-v 123.vcf --prioritiser=phive --%s=%s", option, value);
 

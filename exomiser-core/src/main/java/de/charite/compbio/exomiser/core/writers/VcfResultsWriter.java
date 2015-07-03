@@ -59,7 +59,7 @@ public class VcfResultsWriter implements ResultsWriter {
     @Override
     public void writeFile(Analysis analysis, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),

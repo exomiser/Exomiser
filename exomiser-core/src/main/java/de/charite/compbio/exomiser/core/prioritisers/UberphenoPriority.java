@@ -252,6 +252,7 @@ public class UberphenoPriority implements Prioritiser {
 
     @Override
     public String toString() {
-        return getPriorityType().getCommandLineValue();
+        return "UberphenoPriority{" + '}';
     }
+    
 }

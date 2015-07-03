@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.GENES_TO_KEEP_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -23,6 +22,8 @@ public class GenesToKeepFilterOptionMarshaller extends AbstractOptionMarshaller 
 
     private static final Logger logger = LoggerFactory.getLogger(SeedGenesOptionMarshaller.class);
     
+    public static final String GENES_TO_KEEP_OPTION = "genes-to-keep";
+
     public GenesToKeepFilterOptionMarshaller() {
         option = OptionBuilder
                 .hasArgs()

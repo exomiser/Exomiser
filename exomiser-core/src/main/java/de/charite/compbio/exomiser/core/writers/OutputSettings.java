@@ -20,5 +20,5 @@ public interface OutputSettings {
     public Set<OutputFormat> getOutputFormats();
 
     public String getOutputPrefix();
-    
+
 }

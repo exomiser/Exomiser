@@ -19,8 +19,8 @@ public class InheritanceFilter implements GeneFilter {
     private static final FilterType filterType = FilterType.INHERITANCE_FILTER;
     
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passResult = new InheritanceFilterResult(1f, FilterResultStatus.PASS);
-    private final FilterResult failResult = new InheritanceFilterResult(0f, FilterResultStatus.FAIL);
+    private final FilterResult passResult = new PassFilterResult(filterType, 1f);
+    private final FilterResult failResult = new FailFilterResult(filterType, 0f);
 
     private final ModeOfInheritance modeOfInheritance;
     
@@ -36,7 +36,7 @@ public class InheritanceFilter implements GeneFilter {
     public FilterResult runFilter(Gene gene) {
         if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
             //if ModeOfInheritance.UNINITIALIZED pass the runFilter - ideally it shouldn't be applied in the first place.
-            return new InheritanceFilterResult(1f, FilterResultStatus.NOT_RUN);
+            return new NotRunFilterResult(filterType, 1f);
         }
         if (gene.isConsistentWith(modeOfInheritance)) {
             return passResult;

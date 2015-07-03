@@ -16,9 +16,9 @@ import org.junit.Test;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GenePriorityScoreFilterTest {
+public class PriorityScoreFilterTest {
 
-    private GenePriorityScoreFilter instance;
+    private PriorityScoreFilter instance;
 
     private final float minPriorityScore = 0.8f;
 
@@ -26,7 +26,7 @@ public class GenePriorityScoreFilterTest {
 
     @Before
     public void setUp() {
-        instance = new GenePriorityScoreFilter(minPriorityScore);
+        instance = new PriorityScoreFilter(minPriorityScore);
         
         gene = new Gene("GENE1", 12345);
     }
@@ -52,7 +52,7 @@ public class GenePriorityScoreFilterTest {
     
     @Test
     public void testGetFilterType() {
-        instance = new GenePriorityScoreFilter(0f);
+        instance = new PriorityScoreFilter(0f);
         assertThat(instance.getFilterType(), equalTo(FilterType.PRIORITY_SCORE_FILTER));
     }
 
@@ -90,14 +90,14 @@ public class GenePriorityScoreFilterTest {
     
     @Test
     public void testHashCode() {
-        GenePriorityScoreFilter other = new GenePriorityScoreFilter(minPriorityScore);
+        PriorityScoreFilter other = new PriorityScoreFilter(minPriorityScore);
 
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
 
     @Test
     public void testEquals() {
-        GenePriorityScoreFilter other = new GenePriorityScoreFilter(minPriorityScore);
+        PriorityScoreFilter other = new PriorityScoreFilter(minPriorityScore);
 
         assertThat(instance.equals(other), is(true));
 
@@ -105,7 +105,7 @@ public class GenePriorityScoreFilterTest {
 
     @Test
     public void testNotEquals() {
-        GenePriorityScoreFilter other = new GenePriorityScoreFilter(minPriorityScore + .03f);
+        PriorityScoreFilter other = new PriorityScoreFilter(minPriorityScore + .03f);
 
         assertThat(instance.equals(other), is(false));
 
@@ -127,7 +127,7 @@ public class GenePriorityScoreFilterTest {
     
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("Gene priority score filter: minPriorityScore=0.8"));
+        assertThat(instance.toString(), equalTo("PriorityScoreFilter{minPriorityScore=0.8}"));
     }
 
 }

@@ -14,9 +14,11 @@ import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -51,18 +53,19 @@ public class FilterReportFactoryTest {
         sampleData.setVariantEvaluations(variantEvaluations);
         sampleData.setGenes(genes);
         
-        analysis = new Analysis(sampleData);
+        analysis = new Analysis();
+        analysis.setSampleData(sampleData);
     }
 
     private VariantEvaluation makeFailedFilterVariantEvaluation(FilterType filterType) {
         VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
-        failedFilterVariantEvaluation.addFilterResult(new GenericFilterResult(filterType, 0.0f, FilterResultStatus.FAIL));
+        failedFilterVariantEvaluation.addFilterResult(new FailFilterResult(filterType, 0.0f));
         return failedFilterVariantEvaluation;
     }
 
     private VariantEvaluation makePassedFilterVariantEvaluation(FilterType filterType) {
         VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
-        passedFilterVariantEvaluation.addFilterResult(new GenericFilterResult(filterType, 1.0f, FilterResultStatus.PASS));
+        passedFilterVariantEvaluation.addFilterResult(new PassFilterResult(filterType, 1.0f));
         return passedFilterVariantEvaluation;
     }
     
@@ -91,7 +94,7 @@ public class FilterReportFactoryTest {
 
     @Test
     public void testMakeFilterReportsFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
-        analysis.addStep(new FrequencyFilter(0.1f, true));
+        analysis.addStep(new FrequencyFilter(0.1f));
         analysis.addStep(new PathogenicityFilter(true));
         
         List<FilterReport> reports = instance.makeFilterReports(analysis);
@@ -134,7 +137,7 @@ public class FilterReportFactoryTest {
 
     @Test
     public void testMakeTargetFilterReport() {
-        TargetFilter filter = new TargetFilter();      
+        VariantEffectFilter filter = new VariantEffectFilter(EnumSet.noneOf(VariantEffect.class));      
 
         FilterReport report = new FilterReport(filter.getFilterType(), 0, 0);
         report.addMessage("Removed a total of 0 off-target variants from further consideration");
@@ -147,7 +150,7 @@ public class FilterReportFactoryTest {
 
     @Test
     public void testMakeFrequencyFilterReportCanCopeWithNullFrequencyData() {
-        Filter filter = new FrequencyFilter(0.1f, true);
+        Filter filter = new FrequencyFilter(0.1f);
         FilterType filterType = filter.getFilterType();
 
         VariantEvaluation variantEvalWithNullFrequencyData = makeFailedFilterVariantEvaluation(filterType);
@@ -160,12 +163,12 @@ public class FilterReportFactoryTest {
     }
     
     @Test
-    public void testMakeFrequencyFilterReportProducesCorrectStatistics() {
-        Filter filter = new FrequencyFilter(0.0f, true);
+    public void testMakeFrequencyFilterReport() {
+        Filter filter = new FrequencyFilter(0.0f);
         FilterType filterType = filter.getFilterType();
 
         VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
-        completelyNovelVariantEval.setFrequencyData(new FrequencyData(null));
+        completelyNovelVariantEval.setFrequencyData(new FrequencyData());
         variantEvaluations.add(completelyNovelVariantEval);
         
         VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedFilterVariantEvaluation(filterType);
@@ -174,12 +177,34 @@ public class FilterReportFactoryTest {
         
         FilterReport report = new FilterReport(filterType, 1, 1);
         
-        report.addMessage("Allele frequency < 0.00 %");
-        report.addMessage("Frequency Data available in dbSNP (for 1000 Genomes Phase I) for 1 variants (50.0%)");
+        report.addMessage("Allele frequency < 0.00%");   
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
+        System.out.println(result);
+        assertThat(result, equalTo(report));
+    }
+    
+    @Test
+    public void testMakeKnownVariantFilterReportProducesCorrectStatistics() {
+        Filter filter = new KnownVariantFilter();
+        FilterType filterType = filter.getFilterType();
+
+        VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
+        completelyNovelVariantEval.setFrequencyData(new FrequencyData());
+        variantEvaluations.add(completelyNovelVariantEval);
+        
+        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedFilterVariantEvaluation(filterType);
+        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
+        variantEvaluations.add(mostCommonVariantEvalInTheWorld);
+        
+        FilterReport report = new FilterReport(filterType, 1, 1);
+        
+        report.addMessage("Removed 1 variants with no RSID or frequency data (50.0%)");
         report.addMessage("dbSNP \"rs\" id available for 1 variants (50.0%)");
+        report.addMessage("Data available in dbSNP (for 1000 Genomes Phase I) for 1 variants (50.0%)");
         report.addMessage("Data available in Exome Server Project for 1 variants (50.0%)");
         report.addMessage("Data available from ExAC Project for 1 variants (50.0%)");        
         FilterReport result = instance.makeFilterReport(filter, sampleData);
+        System.out.println(result);
 
         assertThat(result, equalTo(report));
     }

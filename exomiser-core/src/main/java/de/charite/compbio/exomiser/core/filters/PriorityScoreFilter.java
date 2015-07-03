@@ -11,16 +11,16 @@ import de.charite.compbio.exomiser.core.model.Gene;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GenePriorityScoreFilter implements GeneFilter {
+public class PriorityScoreFilter implements GeneFilter {
 
     private static final FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
 
     private final float minPriorityScore;
     
-    private final FilterResult passResult = new GenericFilterResult(filterType, 1.0f, FilterResultStatus.PASS);
-    private final FilterResult failResult = new GenericFilterResult(filterType, 0.0f, FilterResultStatus.FAIL);
+    private final FilterResult passResult = new PassFilterResult(filterType, 1.0f);
+    private final FilterResult failResult = new FailFilterResult(filterType, 0.0f);
 
-    public GenePriorityScoreFilter(float minPriorityScore) {
+    public PriorityScoreFilter(float minPriorityScore) {
         this.minPriorityScore = minPriorityScore;
     }
 
@@ -64,7 +64,7 @@ public class GenePriorityScoreFilter implements GeneFilter {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GenePriorityScoreFilter other = (GenePriorityScoreFilter) obj;
+        final PriorityScoreFilter other = (PriorityScoreFilter) obj;
         if (Float.floatToIntBits(this.minPriorityScore) != Float.floatToIntBits(other.minPriorityScore)) {
             return false;
         }
@@ -73,7 +73,7 @@ public class GenePriorityScoreFilter implements GeneFilter {
 
     @Override
     public String toString() {
-        return filterType + " filter: minPriorityScore=" + minPriorityScore;
+        return "PriorityScoreFilter{" + "minPriorityScore=" + minPriorityScore + '}';
     }
 
 }

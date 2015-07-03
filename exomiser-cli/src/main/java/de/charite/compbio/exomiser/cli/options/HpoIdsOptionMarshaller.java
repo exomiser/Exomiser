@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.HPO_IDS_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +21,8 @@ import org.slf4j.LoggerFactory;
 public class HpoIdsOptionMarshaller extends AbstractOptionMarshaller {
 
     private static final Logger logger = LoggerFactory.getLogger(HpoIdsOptionMarshaller.class);
+
+    public static final String HPO_IDS_OPTION = "hpo-ids";
 
     public HpoIdsOptionMarshaller() {
         option = OptionBuilder

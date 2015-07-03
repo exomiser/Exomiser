@@ -10,7 +10,6 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.EnumSet;
 import java.util.Set;
 
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -22,36 +21,22 @@ import org.junit.Test;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TargetFilterTest {
+public class VariantEffectFilterTest {
 
-    private TargetFilter instance;
+    private VariantEffectFilter instance;
     private Set<VariantEffect> offTargetVariantEffects;
-    
+
     private VariantEvaluation missensePassesFilter;
-    private VariantEvaluation downstreamFailsFilter;
     private VariantEvaluation synonymousFailsFilter;
-    private VariantEvaluation upstreamFailsFilter;
-    private VariantEvaluation intergenicFailsFilter;
 
     @Before
     public void setUp() {
-        offTargetVariantEffects = EnumSet.of(
-                VariantEffect.UPSTREAM_GENE_VARIANT, 
-                VariantEffect.INTERGENIC_VARIANT,
-                VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, 
-                VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-                VariantEffect.SYNONYMOUS_VARIANT, 
-                VariantEffect.DOWNSTREAM_GENE_VARIANT,
-                VariantEffect.SPLICE_REGION_VARIANT
-        );
-        
-        instance = new TargetFilter();
-        
+        offTargetVariantEffects = EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT);
+
+        instance = new VariantEffectFilter(offTargetVariantEffects);
+
         missensePassesFilter = testVariantBuilder().variantEffect(VariantEffect.MISSENSE_VARIANT).build();
-        downstreamFailsFilter = testVariantBuilder().variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT).build();
         synonymousFailsFilter = testVariantBuilder().variantEffect(VariantEffect.SYNONYMOUS_VARIANT).build();
-        upstreamFailsFilter = testVariantBuilder().variantEffect(VariantEffect.UPSTREAM_GENE_VARIANT).build();
-        intergenicFailsFilter = testVariantBuilder().variantEffect(VariantEffect.INTERGENIC_VARIANT).build();
     }
 
     private VariantEvaluation.VariantBuilder testVariantBuilder() {
@@ -62,10 +47,10 @@ public class TargetFilterTest {
     public void testGetOffTargetTypes() {
         assertThat(instance.getOffTargetVariantTypes(), equalTo(offTargetVariantEffects));
     }
-    
+
     @Test
     public void testGetFilterType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.TARGET_FILTER));
+        assertThat(instance.getFilterType(), equalTo(FilterType.VARIANT_EFFECT_FILTER));
     }
 
     @Test
@@ -76,33 +61,12 @@ public class TargetFilterTest {
     }
 
     @Test
-    public void testDownstreamVariantFailsFilter() {
-        FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
-        
+    public void testSynonymousVariantFailsFilter() {
+        FilterResult filterResult = instance.runFilter(synonymousFailsFilter);
+
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
     }
 
-    @Test
-    public void testIntergenicVariantFailsFilter() {
-        FilterResult filterResult = instance.runFilter(intergenicFailsFilter);
-        
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
-    }
-    
-    @Test
-    public void testUpstreamVariantFailsFilter() {
-        FilterResult filterResult = instance.runFilter(upstreamFailsFilter);
-        
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
-    }
-    
-    @Test
-    public void testSynonymousVariantFailsFilter() {
-       FilterResult filterResult = instance.runFilter(synonymousFailsFilter);
-        
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
-    }
-    
     @Test
     public void testNotEqualNull() {
         Object obj = null;
@@ -117,13 +81,13 @@ public class TargetFilterTest {
 
     @Test
     public void testEqualOtherTagetFilter() {
-        TargetFilter obj = new TargetFilter();
+        VariantEffectFilter obj = new VariantEffectFilter(offTargetVariantEffects);
         assertThat(instance.equals(obj), is(true));
     }
 
     @Test
     public void testHashCode() {
-        TargetFilter anotherTargetFilter = new TargetFilter();
+        VariantEffectFilter anotherTargetFilter = new VariantEffectFilter(offTargetVariantEffects);
         assertThat(instance.hashCode(), equalTo(anotherTargetFilter.hashCode()));
     }
 }

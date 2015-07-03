@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.VCF_OPTION;
 import java.nio.file.Paths;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -16,6 +15,8 @@ import org.apache.commons.cli.OptionBuilder;
  */
 public class VcfFileOptionMarshaller extends AbstractOptionMarshaller  {
             
+    public static final String VCF_OPTION = "vcf";
+
     public VcfFileOptionMarshaller() {
         option = OptionBuilder
                 .withArgName("file")

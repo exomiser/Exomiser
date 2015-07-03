@@ -67,7 +67,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(Analysis analysis, OutputSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE), format)){
             writeData(analysis, settings.outputPassVariantsOnly(), printer);

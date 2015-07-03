@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.exomiser.core.Analysis;
+import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -33,15 +34,23 @@ public class ResultsWriterUtils {
 
     private static final FilterReportFactory filterReportFactory = new FilterReportFactory();
 
+    private static final String DEFAULT_OUTPUT_DIR = "results";
+    
     /**
      * Determines the correct file extension for a file given what was specified
      * in the {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
      *
+     * @param vcfPath
      * @param outputPrefix
      * @param outputFormat
      * @return
      */
-    public static String makeOutputFilename(String outputPrefix, OutputFormat outputFormat) {
+    public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat) {
+        if (outputPrefix.isEmpty()) {
+            String defaultOutputPrefix = String.format("%s/%s-exomiser-results", ResultsWriterUtils.DEFAULT_OUTPUT_DIR, vcfPath.getFileName());
+            logger.debug("Output prefix was unspecified. Will write out to: {}", defaultOutputPrefix);
+            outputPrefix = defaultOutputPrefix;
+        }
         return String.format("%s.%s", outputPrefix, outputFormat.getFileExtension());
     }
 
@@ -70,7 +79,7 @@ public class ResultsWriterUtils {
                 VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT,
                 VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT,
                 VariantEffect.DOWNSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT);
-        
+
         VariantEffectCounter variantTypeCounter = makeVariantEffectCounter(variantEvaluations);
         final List<Map<VariantEffect, Integer>> freqMaps = variantTypeCounter.getFrequencyMap(variantEffects);
 
