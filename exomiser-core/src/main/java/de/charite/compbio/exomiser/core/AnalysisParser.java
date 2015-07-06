@@ -374,10 +374,6 @@ public class AnalysisParser {
             if (maxFreq == null) {
                 throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 1.0}", options);
             }
-//            Boolean removeKnownVariants = (Boolean) options.get("removeKnownVariants", null);
-//            if (removeKnownVariants == null) {
-//                throw new AnalysisParserException("Frequency filter requires a boolean value for removeKnownVariants e.g. {removeKnownVariants: false}", options);
-//            }
             return new FrequencyFilter(maxFreq.floatValue());
         }
 
