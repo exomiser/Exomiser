@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
-import org.junit.Ignore;
 
 /**
  *

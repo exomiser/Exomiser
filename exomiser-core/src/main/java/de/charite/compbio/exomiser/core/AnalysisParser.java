@@ -342,7 +342,7 @@ public class AnalysisParser {
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("GeneId filter requires a list of ENTREZ geneIds e.g. {geneIds: [12345, 34567, 98765]}", options);
             }
-            return new EntrezGeneIdFilter(new LinkedHashSet<>(geneIds));
+            return new EntrezGeneIdFilter(new LinkedHashSet<Integer>(geneIds));
         }
 
         private VariantEffectFilter makeVariantEffectFilter(Map<String, List> options) {

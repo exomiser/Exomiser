@@ -55,8 +55,6 @@ public class VcfResultsWriterTest {
             + "##FILTER=<ID=INTERVAL_FILTER,Description=\"Interval\">\n"
             + "##FILTER=<ID=KNOWN_VARIANT_FILTER,Description=\"Known variant\">\n"
             + "##FILTER=<ID=PATHOGENICITY_FILTER,Description=\"Pathogenicity\">\n"
-            + "##FILTER=<ID=QUALITY_FILTER,Description=\"Quality\">\n"
-            + "##FILTER=<ID=REGULATORY_FEATURE_FILTER,Description=\"Regulatory Feature\">\n"
             + "##FILTER=<ID=PRIORITY_SCORE_FILTER,Description=\"Gene priority score\">\n" 
             + "##FILTER=<ID=QUALITY_FILTER,Description=\"Quality\">\n"
             + "##FILTER=<ID=REGULATORY_FEATURE_FILTER,Description=\"Regulatory Feature\">\n"
