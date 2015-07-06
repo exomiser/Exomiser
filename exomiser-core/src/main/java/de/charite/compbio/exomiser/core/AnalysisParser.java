@@ -29,7 +29,11 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
+import static java.nio.file.Files.newInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -97,7 +101,9 @@ public class AnalysisParser {
 
     private BufferedReader readPath(Path analysisDoc) {
         try {
-            return Files.newBufferedReader(analysisDoc);
+            CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
+            Reader reader = new InputStreamReader(newInputStream(analysisDoc), decoder);
+            return new BufferedReader(reader);
         } catch (IOException ex) {
             throw new AnalysisFileNotFoundException("Unable to find analysis file: " + ex.getMessage());
         }
