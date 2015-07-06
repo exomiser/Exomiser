@@ -1,0 +1,49 @@
+## Exomiser Analysis Template.
+# These are all the possible options for running exomiser. Use this as a template for
+# your own set-up.
+---
+analysis:
+    vcf: test.vcf
+    ped:
+    # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE or UNDEFINED
+    modeOfInheritance: AUTOSOMAL_DOMINANT
+    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
+    #FULL or PASS_ONLY
+    analysisMode: PASS_ONLY 
+    #RAW_SCORE or RANK_BASED
+    geneScoreMode: RAW_SCORE
+    #this is the standard exomiser order.
+    #all steps are optional
+    steps: [ 
+        intervalFilter: {interval: 'chr10:123256200-123256300'}, 
+        geneIdFilter: {geneIds: [12345, 34567, 98765]},
+        qualityFilter: {minQuality: 50.0},
+        variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
+        knownVariantFilter: {},
+        frequencyFilter: {maxFrequency: 1.0},
+        pathogenicityFilter: {keepNonPathogenic: false},
+        #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
+        inheritanceFilter: {},
+        #omimPrioritiser isn't mandatory.
+        omimPrioritiser: {},
+        #Other prioritisers: Only combine omimPrioritiser with one of these.
+        #Don't include any if you only want to filter the variants.
+        hiPhivePrioritiser: {},
+        # or run hiPhive in benchmarking mode: 
+        hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}
+        #phivePrioritiser: {}
+        #phenixPrioritiser: {}
+        #exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}
+    ]
+outputOptions:
+    outputPassVariantsOnly: false
+    #numGenes options: 0 = all or specify a limit e.g. 500 for the first 500 results  
+    numGenes: 0
+    #outputPrefix options: specify the path/filename without an extension and this will be added
+    # according to the outputFormats option. If unspecified this will default to the following: 
+    # {exomiserDir}/results/input-vcf-name-exomiser-results.html
+    # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
+    outputPrefix: results/Pfeiffer-hiphive
+    #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
+    outputFormats: [TSV-GENE, TSV-VARIANT, VCF, HTML]
+    

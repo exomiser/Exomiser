@@ -32,10 +32,10 @@ public class SparseVariantFilterRunnerTest {
     private SparseVariantFilterRunner instance;
     
     @Mock
-    private VariantDataService variantEvaluationFactory;
-    
+    private VariantDataService variantDataService;
+
     @Mock
-    private TargetFilter targetFilter;
+    private VariantEffectFilter targetFilter;
     @Mock
     private QualityFilter qualityFilter;
     @Mock
@@ -54,9 +54,9 @@ public class SparseVariantFilterRunnerTest {
     public void setUp() {
 
         passesAllFilters = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failsAllFilters = new VariantEvaluation.VariantBuilder(1, 2, "A", "T").build();
-        passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(1, 3, "A", "T").build();
-        passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(1, 4, "A", "T").build();
+        failsAllFilters = new VariantEvaluation.VariantBuilder(2, 2, "A", "T").build();
+        passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(3, 3, "A", "T").build();
+        passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(4, 4, "A", "T").build();
 
         makeVariantEvaluations(); 
                 
@@ -78,8 +78,8 @@ public class SparseVariantFilterRunnerTest {
     private void setUpFrequencyMocks() {
         Mockito.when(frequencyFilter.getFilterType()).thenReturn(FilterType.FREQUENCY_FILTER);
         
-        FilterResult passFrequencyResult = new FrequencyFilterResult(1f, FilterResultStatus.PASS);
-        FilterResult failFrequencyResult = new FrequencyFilterResult(0f, FilterResultStatus.FAIL);
+        FilterResult passFrequencyResult = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1f);
+        FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
         
         Mockito.when(frequencyFilter.runFilter(passesAllFilters)).thenReturn(passFrequencyResult);
         Mockito.when(frequencyFilter.runFilter(failsAllFilters)).thenReturn(failFrequencyResult);
@@ -90,8 +90,8 @@ public class SparseVariantFilterRunnerTest {
     private void setUpPathogenicityMocks() {
         Mockito.when(pathogenicityFilter.getFilterType()).thenReturn(FilterType.PATHOGENICITY_FILTER);
 
-        FilterResult pass = new PathogenicityFilterResult(1f, FilterResultStatus.PASS);
-        FilterResult fail = new PathogenicityFilterResult(0f, FilterResultStatus.FAIL);
+        FilterResult pass = new PassFilterResult(FilterType.PATHOGENICITY_FILTER, 1f);
+        FilterResult fail = new FailFilterResult(FilterType.PATHOGENICITY_FILTER, 0f);
         
         Mockito.when(pathogenicityFilter.runFilter(passesAllFilters)).thenReturn(pass);
         Mockito.when(pathogenicityFilter.runFilter(failsAllFilters)).thenReturn(fail);
@@ -102,8 +102,8 @@ public class SparseVariantFilterRunnerTest {
     private void setUpQualityMocks() {
         Mockito.when(qualityFilter.getFilterType()).thenReturn(FilterType.QUALITY_FILTER);
 
-        FilterResult passQualityResult = new QualityFilterResult(1f, FilterResultStatus.PASS);
-        FilterResult failQualityResult = new QualityFilterResult(0f, FilterResultStatus.FAIL);
+        FilterResult passQualityResult = new PassFilterResult(FilterType.QUALITY_FILTER, 1f);
+        FilterResult failQualityResult = new FailFilterResult(FilterType.QUALITY_FILTER, 0f);
         
         Mockito.when(qualityFilter.runFilter(passesAllFilters)).thenReturn(passQualityResult);
         Mockito.when(qualityFilter.runFilter(failsAllFilters)).thenReturn(failQualityResult);
@@ -112,10 +112,10 @@ public class SparseVariantFilterRunnerTest {
     }
 
     private void setUpTargetMocks() {
-        Mockito.when(targetFilter.getFilterType()).thenReturn(FilterType.TARGET_FILTER);
+        Mockito.when(targetFilter.getFilterType()).thenReturn(FilterType.VARIANT_EFFECT_FILTER);
 
-        FilterResult passTargetResult = new TargetFilterResult(1f, FilterResultStatus.PASS);
-        FilterResult failTargetResult = new TargetFilterResult(0f, FilterResultStatus.FAIL);
+        FilterResult passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER, 1f);
+        FilterResult failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER, 0f);
 
         Mockito.when(targetFilter.runFilter(passesAllFilters)).thenReturn(passTargetResult);
         Mockito.when(targetFilter.runFilter(failsAllFilters)).thenReturn(failTargetResult);
@@ -137,7 +137,7 @@ public class SparseVariantFilterRunnerTest {
         List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
         assertThat(result, equalTo(expResult));
         assertThat(passesAllFilters.passedFilters(), is(true));
-        assertThat(passesAllFilters.passedFilter(FilterType.TARGET_FILTER), is(true));
+        assertThat(passesAllFilters.passedFilter(FilterType.VARIANT_EFFECT_FILTER), is(true));
         assertThat(passesAllFilters.passedFilter(FilterType.QUALITY_FILTER), is(true));
         assertThat(passesAllFilters.passedFilter(FilterType.FREQUENCY_FILTER), is(true));
         assertThat(passesAllFilters.passedFilter(FilterType.PATHOGENICITY_FILTER), is(true));
@@ -151,5 +151,34 @@ public class SparseVariantFilterRunnerTest {
       
         List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
         assertThat(result, equalTo(variantEvaluations));
+    }
+    
+    @Test
+    public void testRunWithOneFilter_OnlyReturnsVariantPassingAllFilters() {
+        
+        VariantFilter filterToPass = qualityFilter;
+        
+        List<VariantEvaluation> expResult = new ArrayList<>();
+        expResult.add(passesTargetQualityFilter);
+        expResult.add(passesQualityFrequencyFilter);
+        expResult.add(passesAllFilters);
+                
+        List<VariantEvaluation> result = instance.run(filterToPass, variantEvaluations);
+        
+        assertThat(result, equalTo(expResult));
+        for (VariantEvaluation variantEvaluation : result) {
+            assertPassedFilterAndFailedAllOthers(variantEvaluation, filterToPass);
+        }
+        
+    }
+
+    private void assertPassedFilterAndFailedAllOthers(VariantEvaluation variantEvaluation, VariantFilter filterToPass) {
+        assertThat(variantEvaluation.passedFilters(), is(true));
+        assertThat(variantEvaluation.passedFilter(filterToPass.getFilterType()), is(true));
+        //filters not run should return false
+        assertThat(variantEvaluation.passedFilter(FilterType.VARIANT_EFFECT_FILTER), is(false));
+        assertThat(variantEvaluation.passedFilter(FilterType.FREQUENCY_FILTER), is(false));
+        assertThat(variantEvaluation.passedFilter(FilterType.PATHOGENICITY_FILTER), is(false));
+        assertThat(variantEvaluation.passedFilter(FilterType.ENTREZ_GENE_ID_FILTER), is(false));
     }
 }

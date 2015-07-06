@@ -57,14 +57,14 @@
     - Prioritisers now release database connections when finished (affects batch-mode performance)
     - Inheritance filter now performs correctly in all cases.
 
-#### 3.0.2 2014-09-08
+## 3.0.2 2014-09-08
 - VCF output now contains original VCF INFO field with exomiser info appended onto this.
 - Bug-fix for crash when Jannovar found no annotations for a variant.
 
-#### 3.0.1 2014-09-04
+## 3.0.1 2014-09-04
 - Bug-fix for duplicate variants in Frequency table where the RSID was different.
 
-#### 3.0.0 2014-08-22
+## 3.0.0 2014-08-22
 - Completely re-worked under the hood code
 - New extensible API
 - Simplified command-line usage
@@ -73,6 +73,6 @@
 - Settings file input
 - Zero-config installation
 
-#### 2.1.0 2014-05-06
+## 2.1.0 2014-05-06
 - Embedded H2 database or PostgreSQL
 - Simplified set-up/installation

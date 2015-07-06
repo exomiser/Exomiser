@@ -35,27 +35,22 @@ public class FrequencyFilter implements VariantFilter {
     private static final float PASS_FREQUENCY_FILTER_SCORE = 1f;
 
     /**
-     * VariantFilter out variants if they are represented at all in dbSNP or
-     * ESP, regardless of frequency.
-     */
-    private boolean strictFiltering = false;
-
-    /**
      * Creates a runFilter with a maximum frequency threshold for variants.
      *
      * @param maxFreq sets the maximum frequency threshold (percent value) of
      * the minor allele required to pass the filer. For example a value of 1
      * will set the threshold of the minor allele frequency to under 1%.
-     * @param filterOutAllKnownVariants removes all variants found in the dbSNP
-     * or in the ESP database regardless of their frequency.
      *
      */
-    public FrequencyFilter(float maxFreq, boolean filterOutAllKnownVariants) {
+    public FrequencyFilter(float maxFreq) {
         if (maxFreq < 0f || maxFreq > 100f) {
             throw new IllegalArgumentException(String.format("Illegal value for maximum frequency threshold: %2f. Value should be between 0 and 100", maxFreq));
         }
         this.maxFreq = maxFreq;
-        this.strictFiltering = filterOutAllKnownVariants;
+    }
+
+    public float getMaxFreq() {
+        return maxFreq;
     }
 
     /**
@@ -82,65 +77,13 @@ public class FrequencyFilter implements VariantFilter {
         FrequencyData frequencyData = variantEvaluation.getFrequencyData();
         //frequency data is derived from the database and depending on whether the full-analysis option has been specified the data may not have been set
         //by the time it gets here. It should have been, so this will issue a warning.
-        if (frequencyDataIsNull(frequencyData)) {
-            logger.warn("{} frequency data has not been set - {} filter failed.", variantEvaluation.getChromosomalVariant(), filterType);
-            return returnFailedFilterResult(FAIL_FREQUENCY_FILTER_SCORE);
-        }
-
         float filterScore = calculateFilterScore(frequencyData);
 
-        if (strictFiltering) {
-            return applyStrictFiltering(frequencyData, filterScore);
-        } else {
-            return applyFrequencyBasedFiltering(frequencyData, filterScore);
-        }
-    }
-
-    private boolean frequencyDataIsNull(FrequencyData frequencyData) {
-        return frequencyData == null;
-    }
-
-    private FilterResult applyStrictFiltering(FrequencyData frequencyData, float filterScore) {
-        if (frequencyData.representedInDatabase()) {
-            return returnFailedFilterResult(filterScore);
-        }
-        return returnPassedFilterResult(filterScore);
-    }
-
-    private FilterResult applyFrequencyBasedFiltering(FrequencyData frequencyData, float filterScore) {
         if (passesFilter(frequencyData)) {
-            return returnPassedFilterResult(filterScore);
+            return new PassFilterResult(filterType, filterScore);
         } else {
-            return returnFailedFilterResult(filterScore);
+            return new FailFilterResult(filterType, filterScore);
         }
-    }
-
-    private FilterResult returnPassedFilterResult(float filterScore) {
-        //wow - a really rare variant, this could be interesting!
-        return new FrequencyFilterResult(filterScore, FilterResultStatus.PASS);
-    }
-
-    private FilterResult returnFailedFilterResult(float filterScore) {
-        //not rare enough!
-        return new FrequencyFilterResult(filterScore, FilterResultStatus.FAIL);
-    }
-
-    /**
-     * This method returns false if the variant is more common than the
-     * threshold in any one of the dbSNP data, or the ESP data for European
-     * Americans, African Americans, or All comers.
-     *
-     * @param frequencyData
-     * @return true if the variant being analyzed is rarer than the threshold
-     */
-    protected boolean passesFilter(FrequencyData frequencyData) {
-
-        for (Frequency frequency : frequencyData.getKnownFrequencies()) {
-            if (frequency.isOverThreshold(maxFreq)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -168,12 +111,29 @@ public class FrequencyFilter implements VariantFilter {
         }
     }
 
+    /**
+     * This method returns false if the variant is more common than the
+     * threshold in any one of the dbSNP data, or the ESP data for European
+     * Americans, African Americans, or All comers.
+     *
+     * @param frequencyData
+     * @return true if the variant being analyzed is rarer than the threshold
+     */
+    protected boolean passesFilter(FrequencyData frequencyData) {
+
+        for (Frequency frequency : frequencyData.getKnownFrequencies()) {
+            if (frequency.isOverThreshold(maxFreq)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 29 * hash + Float.floatToIntBits(this.maxFreq);
         hash = 29 * hash + Objects.hashCode(FrequencyFilter.filterType);
-        hash = 29 * hash + (this.strictFiltering ? 1 : 0);
         return hash;
     }
 
@@ -189,11 +149,11 @@ public class FrequencyFilter implements VariantFilter {
         if (Float.floatToIntBits(this.maxFreq) != Float.floatToIntBits(other.maxFreq)) {
             return false;
         }
-        return this.strictFiltering == other.strictFiltering;
+        return true;
     }
 
     @Override
     public String toString() {
-        return String.format("%s filter: Maximum frequency threshold=%s, Remove known variants=%s", filterType, maxFreq, strictFiltering);
+        return "FrequencyFilter{" + "maxFreq=" + maxFreq + '}';
     }
 }

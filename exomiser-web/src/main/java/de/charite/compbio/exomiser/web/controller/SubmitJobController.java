@@ -20,13 +20,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
 import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -65,7 +68,9 @@ public class SubmitJobController {
     private SampleDataFactory sampleDataFactory;
 
     @Autowired
-    private Exomiser exomiser;
+    VariantDataService variantDataService;
+    @Autowired
+    PriorityFactory priorityFactory;
     
     @Autowired
     private int maxVariants;
@@ -104,6 +109,7 @@ public class SubmitJobController {
         logger.info("Selected phenotypes: {}", phenotypes);
         Set<Integer> genesToKeep = makeGenesToKeep(genesToFilter);
      
+        //TODO: remove this - build an analysis directly from the input.
         ExomiserSettings settings = buildSettings(vcfPath, pedPath, diseaseId, phenotypes, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
 
         if (!settings.isValid()) {
@@ -120,16 +126,18 @@ public class SubmitJobController {
             model.addAttribute("numVariants", numVariantsInSample);
             return "resubmitWithFewerVariants";
         }
-        exomiser.analyse(sampleData, settings);
+         
+        Exomiser exomiser = new Exomiser(variantDataService, priorityFactory);
+        Analysis analysis = exomiser.analyse(sampleData, settings);
 
-        buildResultsModel(model, settings, sampleData);
+        buildResultsModel(model, settings, analysis);
         
         logger.info("Returning {} results to user", vcfPath.getFileName());
         cleanUpSampleFiles(vcfPath, pedPath);
         return "results";
     }
 
-    private void buildResultsModel(Model model, ExomiserSettings settings, SampleData sampleData) {
+    private void buildResultsModel(Model model, ExomiserSettings settings, Analysis analysis) {
         ObjectMapper mapper = new ObjectMapper();
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
@@ -143,12 +151,13 @@ public class SubmitJobController {
         }
         model.addAttribute("settings", jsonSettings);
 
+        SampleData sampleData = analysis.getSampleData();
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
         model.addAttribute("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the filter reports section
-        List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(settings, sampleData);
+        List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis);
         model.addAttribute("filterReports", filterReports);
         
         List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();

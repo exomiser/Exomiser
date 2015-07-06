@@ -5,12 +5,10 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
-import static de.charite.compbio.exomiser.core.filters.FilterResultStatus.FAIL;
-import static de.charite.compbio.exomiser.core.filters.FilterResultStatus.PASS;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.QualityFilterResult;
+import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -28,7 +26,6 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 
@@ -60,10 +57,10 @@ public class VariantEvaluationTest {
     private static final String GENE2_GENE_SYMBOL = "GENE2";
     private static final int GENE2_ENTREZ_GENE_ID = 7654321;
 
-    private static final FilterResult FAIL_FREQUENCY_RESULT = new FrequencyFilterResult(0.1f, FAIL);
-    private static final FilterResult PASS_FREQUENCY_RESULT = new FrequencyFilterResult(1.0f, PASS);
+    private static final FilterResult FAIL_FREQUENCY_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0.1f);
+    private static final FilterResult PASS_FREQUENCY_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1.0f);
 
-    private static final FilterResult PASS_QUALITY_RESULT = new QualityFilterResult(0.45f, PASS);
+    private static final FilterResult PASS_QUALITY_RESULT = new PassFilterResult(FilterType.QUALITY_FILTER, 0.45f);
 
     @Before
     public void setUp() {
@@ -136,9 +133,9 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testThatTheConstructorDoesNotSetAFrequencyDataObject() {
+    public void testThatTheConstructorCreatesAnEmptyFrequencyDataObject() {
         FrequencyData frequencyData = instance.getFrequencyData();
-        assertThat(frequencyData, nullValue());
+        assertThat(frequencyData, equalTo(new FrequencyData()));
     }
     
     @Test
@@ -151,7 +148,7 @@ public class VariantEvaluationTest {
     @Test
     public void testThatTheConstructorCreatesAnEmptyPathogenicityDataObject() {
         PathogenicityData pathogenicityData = instance.getPathogenicityData();
-        assertThat(pathogenicityData, notNullValue());
+        assertThat(pathogenicityData, equalTo(new PathogenicityData()));
         assertThat(pathogenicityData.getMutationTasterScore(), nullValue());
         assertThat(pathogenicityData.getPolyPhenScore(), nullValue());
         assertThat(pathogenicityData.getSiftScore(), nullValue());
@@ -253,7 +250,7 @@ public class VariantEvaluationTest {
         assertThat(instance.getVariantScore(), equalTo(qualScore));
 
         float freqScore = 0.1f;
-        FilterResult frequencyScore = new FrequencyFilterResult(freqScore, FAIL);
+        FilterResult frequencyScore = new FailFilterResult(FilterType.FREQUENCY_FILTER, freqScore);
         // adding a failed FilterResult also updates the score of the VariantEvaluation
         instance.addFilterResult(frequencyScore);
 
@@ -450,7 +447,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=1.0 failedFilterTypes=[]";
+        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=1.0 filterStatus=UNFILTERED failedFilters=[] passedFilters=[]";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }

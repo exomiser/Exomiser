@@ -46,17 +46,14 @@ public class SampleDataFactory {
 
     public SampleData createSampleData(Path vcfFilePath, Path pedigreeFilePath) {
         logger.info("Creating sample data from VCF and PED files: {}, {}", vcfFilePath, pedigreeFilePath);
+        SampleData sampleData = new SampleData(vcfFilePath, pedigreeFilePath); 
 
-        // open VCF file (will read header)
         VCFFileReader vcfReader = new VCFFileReader(vcfFilePath.toFile(), false); // false => do not require index
-
-        // create sample information from header (names of samples)
-        SampleData sampleData = createSampleDataFromVcfMetaData(vcfReader.getFileHeader());
-        sampleData.setVcfFilePath(vcfFilePath);
+        setSampleVcfMetaData(vcfReader, sampleData);
 
         // load and annotate VCF data
-        //Issue #56 Currently this will load ALL the VCF data into memory and hold it in the sampleData
-        //this is a bad idea for large exomes and especially whole genomes. We need to have some way of
+        //Issue #56 This will load ALL the VCF data into memory and hold it in the sampleData
+        //this requires a lot of RAM for large exomes and especially whole genomes. We could have some way of
         //applying the variant filters at this stage. Make a FilteringVariantFactory?
         List<VariantEvaluation> variantEvaluations = variantFactory.createVariantEvaluations(vcfReader);
         sampleData.setVariantEvaluations(variantEvaluations);
@@ -71,12 +68,12 @@ public class SampleDataFactory {
         return sampleData;
     }
 
-    private SampleData createSampleDataFromVcfMetaData(VCFHeader vcfHeader) {
-        SampleData sampleData = new SampleData();
+    private void setSampleVcfMetaData(VCFFileReader vcfReader, SampleData sampleData) {
+        // create sample information from header (names of samples)
+        VCFHeader vcfHeader = vcfReader.getFileHeader();
         sampleData.setVcfHeader(vcfHeader);
         sampleData.setSampleNames(vcfHeader.getGenotypeSamples());
         sampleData.setNumberOfSamples(vcfHeader.getNGenotypeSamples());
-
-        return sampleData;
     }
+    
 }

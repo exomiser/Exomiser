@@ -16,6 +16,7 @@ import sonumina.math.graph.SlimDirectedGraphView;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
 import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,13 +53,13 @@ public class UberphenoPriority implements Prioritiser {
     /**
      * A list of error-messages
      */
-    private List<String> error_record = null;
+    private List<String> errorMessages = new ArrayList<>();
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = null;
+    private List<String> messages = new ArrayList<>();
 
     /**
      * Keeps track of the number of variants for which data was available in
@@ -157,16 +158,8 @@ public class UberphenoPriority implements Prioritiser {
         annotationsOfDisease = new ArrayList<Term>(annotationsOfCurrentDiseaseHs);
 
         /* some logging stuff */
-        this.error_record = new ArrayList<String>();
+        this.errorMessages = new ArrayList<String>();
         this.messages = new ArrayList<String>();
-    }
-
-    /* (non-Javadoc)
-     * @see exomizer.priority.FilterType#getPriorityName()
-     */
-    @Override
-    public String getPriorityName() {
-        return "Uberpheno semantic similarity filter";
     }
 
     /**
@@ -182,8 +175,8 @@ public class UberphenoPriority implements Prioritiser {
      * of score filtering.
      */
     public List<String> getMessages() {
-        if (this.error_record.size() > 0) {
-            for (String s : error_record) {
+        if (this.errorMessages.size() > 0) {
+            for (String s : errorMessages) {
                 this.messages.add("Error: " + s);
             }
         }
@@ -207,14 +200,12 @@ public class UberphenoPriority implements Prioritiser {
                 UberphenoPriorityResult uberphenoRelScore = scoreVariantUberpheno(gene);
                 gene.addPriorityResult(uberphenoRelScore);
             } catch (Exception e) {
-                error_record.add(e.toString());
+                errorMessages.add(e.toString());
             }
         }
 
-        String s
-                = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)",
-                        analysedGenes);
-        this.messages.add(s);
+        String s = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)", analysedGenes);
+        messages.add(s);
     }
 
     /**
@@ -233,19 +224,35 @@ public class UberphenoPriority implements Prioritiser {
         return new UberphenoPriorityResult(similarityScore);
     }
 
-    /**
-     * To do
-     *
-     * @return
-     */
     @Override
-    public boolean displayInHTML() {
-        return false;
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.uberpheno);
+        hash = 29 * hash + Objects.hashCode(this.annotationsOfDisease);
+        return hash;
     }
 
     @Override
-    public String getHTMLCode() {
-        return "";
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final UberphenoPriority other = (UberphenoPriority) obj;
+        if (!Objects.equals(this.uberpheno, other.uberpheno)) {
+            return false;
+        }
+        if (!Objects.equals(this.annotationsOfDisease, other.annotationsOfDisease)) {
+            return false;
+        }
+        return true;
     }
 
+    @Override
+    public String toString() {
+        return "UberphenoPriority{" + '}';
+    }
+    
 }

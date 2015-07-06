@@ -17,7 +17,7 @@ import java.util.List;
  * @param <T>
  * @param <U>
  */
-public interface FilterRunner<T extends Filterable, U extends Filter> {
+public interface FilterRunner<T extends Filter, U extends Filterable> {
 
     /**
      * Runs the {@code de.charite.compbio.exomiser.core.model.Filterable}
@@ -25,8 +25,11 @@ public interface FilterRunner<T extends Filterable, U extends Filter> {
      * {@code de.charite.compbio.exomiser.core.model.Filter}
      *
      * @param filters
-     * @param filterable
+     * @param filterables
      * @return
      */
-    public List<T> run(List<U> filters, List<T> filterable);
+    public List<U> run(List<T> filters, List<U> filterables);
+
+    public List<U> run(T filter, List<U> filterables);
+
 }

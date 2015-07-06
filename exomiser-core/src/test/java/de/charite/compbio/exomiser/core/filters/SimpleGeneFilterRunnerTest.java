@@ -24,6 +24,10 @@ public class SimpleGeneFilterRunnerTest {
     
     private SimpleGeneFilterRunner instance;
     
+    private InheritanceFilter inheritanceFilter;
+    private final ModeOfInheritance PASS_MODE = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+    private final ModeOfInheritance FAIL_MODE = ModeOfInheritance.AUTOSOMAL_RECESSIVE;
+        
     private List<GeneFilter> filters;
     
     private List<Gene> genes;
@@ -34,21 +38,25 @@ public class SimpleGeneFilterRunnerTest {
     @Before
     public void setUp() {
         instance = new SimpleGeneFilterRunner();
-        
+        inheritanceFilter = new InheritanceFilter(PASS_MODE);
+
         passGene = new Gene("GENE1", 12345);
         failGene = new Gene("GENE2", 56789);
         
         filters = new ArrayList<>();
+        filters.add(inheritanceFilter);
         
+        passGene.setInheritanceModes(EnumSet.of(PASS_MODE));
+        failGene.setInheritanceModes(EnumSet.of(FAIL_MODE));
+                
         genes = new ArrayList<>();
         genes.add(passGene);
         genes.add(failGene);
     }
 
     @Test
-    public void testRun() {
-        setUpForInheritanceModeFiltering();
-        
+    public void testRunFiltersOverGenes() {
+       
         instance.run(filters, genes);
         
         assertThat(passGene.passedFilters(), is (true));
@@ -56,8 +64,16 @@ public class SimpleGeneFilterRunnerTest {
     }
     
     @Test
+    public void testRunFilterOverGenes() {
+        
+        instance.run(inheritanceFilter, genes);
+        
+        assertThat(passGene.passedFilters(), is (true));
+        assertThat(failGene.passedFilters(), is (false));
+    }
+    
+    @Test
     public void testRun_appliesFilterResultToVariantsInGene() {
-        setUpForInheritanceModeFiltering();
        
         VariantEvaluation passGeneVariant1 = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         VariantEvaluation passGeneVariant2 = new VariantEvaluation.VariantBuilder(1, 2, "G", "T").build();
@@ -86,16 +102,6 @@ public class SimpleGeneFilterRunnerTest {
         assertThat(failGene.passedFilters(), is (false));
         assertThat(failGeneVariant1.passedFilter(FilterType.INHERITANCE_FILTER), is(false));
         assertThat(failGeneVariant2.passedFilter(FilterType.INHERITANCE_FILTER), is(false));
-    }
-
-    private void setUpForInheritanceModeFiltering() {
-        ModeOfInheritance passMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        ModeOfInheritance failMode = ModeOfInheritance.AUTOSOMAL_RECESSIVE;
-        
-        filters.add(new InheritanceFilter(passMode));
-        
-        passGene.setInheritanceModes(EnumSet.of(passMode));
-        failGene.setInheritanceModes(EnumSet.of(failMode));
     }
     
 }

@@ -9,8 +9,8 @@ public class BedFilter implements VariantFilter {
     private static final FilterType filterType = FilterType.BED_FILTER;
 
     //add a token failed score - this is essentially a boolean pass/fail so we're using 0 here.
-    FilterResult passesScore = new BedFilterResult(1f, FilterResultStatus.PASS);
-    FilterResult failedScore = new BedFilterResult(0f, FilterResultStatus.FAIL);
+    FilterResult passesScore = new PassFilterResult(filterType, 1f);
+    FilterResult failedScore = new FailFilterResult(filterType, 0f);
 
     /**
      * A set of off-target variant types such as Intergenic that we will
@@ -19,14 +19,15 @@ public class BedFilter implements VariantFilter {
     private final Set<String> targetGeneSymbols;
 
     /**
-     * The constructor initializes the set of off-target
-     * {@link jannovar.common.VariantType VariantType} constants, e.g.,
-     * INTERGENIC, that we will runFilter out using this class.
-     *
-     * @param genes
+     * A set of human gene symbols which the sample will be filtered against. 
+     * @param geneSymbols
      */
-    public BedFilter(Set<String> genes) {
-        this.targetGeneSymbols = genes;
+    public BedFilter(Set<String> geneSymbols) {
+        this.targetGeneSymbols = geneSymbols;
+    }
+
+    public Set<String> getTargetGeneSymbols() {
+        return targetGeneSymbols;
     }
 
     /**
@@ -57,7 +58,6 @@ public class BedFilter implements VariantFilter {
         FilterReport report = new FilterReport(filterType, passed, failed);
 
         report.addMessage(String.format("Removed a total of %d off-target variants from further consideration", failed));
-        report.addMessage("Off target variants are defined as intergenic or intronic but not in splice sequences");
 
         StringBuilder sb = new StringBuilder();
 
@@ -71,7 +71,7 @@ public class BedFilter implements VariantFilter {
                 notfirst = true;
                 sb.append(gene);
             }
-            sb.append(". Variants in these off-target genes were not further considered in the analysis.");
+            sb.append(". Variants in these off-target genes were not considered further in the analysis.");
             report.addMessage(sb.toString());
         }
         return report;
@@ -102,6 +102,7 @@ public class BedFilter implements VariantFilter {
 
     @Override
     public String toString() {
-        return filterType + " filter targetGenes=" + targetGeneSymbols;
+        return "BedFilter{" + "targetGeneSymbols=" + targetGeneSymbols + '}';
     }
+    
 }

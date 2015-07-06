@@ -60,6 +60,11 @@ public class IntervalFilterTest {
     }
 
     @Test
+    public void testGetInterval() {
+        assertThat(instance.getGeneticInterval(), equalTo(SEARCH_INTERVAL));
+    }
+    
+    @Test
     public void testThatRightChromosomeRightPositionPassesFilter() {
         FilterResult filterResult = instance.runFilter(rightChromosomeRightPosition);
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));

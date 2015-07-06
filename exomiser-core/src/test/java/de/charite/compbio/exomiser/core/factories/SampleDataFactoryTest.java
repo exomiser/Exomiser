@@ -51,7 +51,7 @@ public class SampleDataFactoryTest {
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree(sampleName);
                 
         assertThat(sampleData, notNullValue());
-        assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
+        assertThat(sampleData.getVcfPath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
         assertThat(sampleData.getPedigree().getMembers().get(0), equalTo(pedigree.getMembers().get(0)));
@@ -72,7 +72,7 @@ public class SampleDataFactoryTest {
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree(sampleName);
         
         assertThat(sampleData, notNullValue());
-        assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
+        assertThat(sampleData.getVcfPath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
         assertThat(sampleData.getPedigree().getMembers().get(0), equalTo(pedigree.getMembers().get(0)));

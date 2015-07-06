@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +45,14 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testNoArgsConstructorHasNullRsIdAndNoKnownFrequencies() {
+        instance = new FrequencyData();
+        assertThat(instance.getRsId(), nullValue());
+        assertThat(instance.getKnownFrequencies().isEmpty(), is(true));
+        assertThat(instance.isRepresentedInDatabase(), is(false));
+    }
+    
+    @Test
     public void testGetRsId() {
         assertThat(instance.getRsId(), equalTo(RSID));
     }
@@ -70,13 +79,13 @@ public class FrequencyDataTest {
 
     @Test
     public void testNotRepresentedInDatabase() {
-        assertThat(noFreqData.representedInDatabase(), is(false));
+        assertThat(noFreqData.isRepresentedInDatabase(), is(false));
     }
     
      @Test
     public void testRepresentedInDatabaseEspAllOnly() {
         instance = new FrequencyData(RSID, ESP_ALL_PASS);
-        assertThat(instance.representedInDatabase(), is(true));
+        assertThat(instance.isRepresentedInDatabase(), is(true));
     }
 
     @Test
@@ -86,7 +95,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testRepresentedInDatabaseRsIdOnly() {
-        assertThat(rsIdOnlyData.representedInDatabase(), is(true));
+        assertThat(rsIdOnlyData.isRepresentedInDatabase(), is(true));
     }
     
     @Test

@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import com.google.common.base.Joiner;
+import de.charite.compbio.exomiser.core.Analysis;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -66,11 +66,11 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+    public void writeFile(Analysis analysis, OutputSettings settings) {
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE), format)){
-            writeData(sampleData, settings, printer);
+            writeData(analysis, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -79,18 +79,19 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings) {
+    public String writeString(Analysis analysis, OutputSettings settings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(sampleData, settings, printer);
+            writeData(analysis, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}.", output, ex);
         }
         return output.toString();
     }
 
-    private void writeData(SampleData sampleData, ExomiserSettings settings, CSVPrinter printer) throws IOException {
-        if (settings.outputPassVariantsOnly()) {
+    private void writeData(Analysis analysis, boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
+        SampleData sampleData = analysis.getSampleData();
+        if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
             for (Gene gene : sampleData.getGenes()) {
                 writeOnlyPassVariantsOfGene(gene, printer);

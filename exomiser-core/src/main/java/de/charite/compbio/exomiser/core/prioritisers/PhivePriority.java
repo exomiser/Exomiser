@@ -10,6 +10,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -41,7 +42,6 @@ public class PhivePriority implements Prioritiser {
     static final float NO_MOUSE_MODEL_SCORE = 0.6f;
 
     private List<String> hpoIds;
-    private final String disease;
 
     private Connection connection;
     private DataSource dataSource;
@@ -61,31 +61,24 @@ public class PhivePriority implements Prioritiser {
      */
     private int foundDataForMgiPhenodigm;
 
-    public PhivePriority(List<String> hpoIds, String disease) {
+    public PhivePriority(List<String> hpoIds) {
         this.hpoIds = hpoIds;
-        this.disease = disease;
-        messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
-        if (disease != null) {
-            String url = String.format("http://omim.org/%s", disease);
-            if (disease.contains("ORPHANET")) {
-                String diseaseId = disease.split(":")[1];
-                url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s", diseaseId);
-            }
-            String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n", url, disease);
-            this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
-            messages.add(anchor);
-        } else {
-            String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
-            messages.add(anchor);
-        }
-    }
-
-    /**
-     * Get the name of this prioritization algorithm.
-     */
-    @Override
-    public String getPriorityName() {
-        return PRIORITY_TYPE.getCommandLineValue();
+        //This can be moved into a report section - FilterReport should probably turn into an AnalysisStepReport
+        //Then can remove getMessages from the interface. 
+//        messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
+//        if (disease != null) {
+//            String url = String.format("http://omim.org/%s", disease);
+//            if (disease.contains("ORPHANET")) {
+//                String diseaseId = disease.split(":")[1];
+//                url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s", diseaseId);
+//            }
+//            String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n", url, disease);
+//            this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
+//            messages.add(anchor);
+//        } else {
+//            String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
+//            messages.add(anchor);
+//        }
     }
 
     /**
@@ -94,15 +87,6 @@ public class PhivePriority implements Prioritiser {
     @Override
     public PriorityType getPriorityType() {
         return PRIORITY_TYPE;
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    @Override
-    public List<String> getMessages() {
-        return messages;
     }
 
     @Override
@@ -355,23 +339,13 @@ public class PhivePriority implements Prioritiser {
         }
     }
 
-    @Override
-    public boolean displayInHTML() {
-        return true;
-    }
-
     /**
-     * @return an HTML message for the table describing the action of filters
+     * @return list of messages representing process, result, and if any, errors
+     * of score filtering.
      */
     @Override
-    public String getHTMLCode() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<ul>\n");
-        for (String message : messages) {
-            sb.append("<li>" + message + "</li>\n");
-        }
-        sb.append("</ul>\n");
-        return sb.toString();
+    public List<String> getMessages() {
+        return messages;
     }
 
     public void setDataSource(DataSource dataSource) {
@@ -382,6 +356,33 @@ public class PhivePriority implements Prioritiser {
             logger.error("Unable to get connection from datasource", ex);
         }
         setUpSQLPreparedStatements();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + Objects.hashCode(this.hpoIds);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PhivePriority other = (PhivePriority) obj;
+        if (!Objects.equals(this.hpoIds, other.hpoIds)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "PhivePriority{" + "hpoIds=" + hpoIds + '}';
     }
 
 }

@@ -26,9 +26,11 @@ public class HiPhivePriority implements Prioritiser {
 
     private static final PriorityType PRIORITY_TYPE = PriorityType.HI_PHIVE_PRIORITY;
 
-    private PriorityService priorityService;
+    private final List<String> hpoIds;
+    private final HiPhiveOptions options;
     private final DataMatrix randomWalkMatrix;
 
+    private PriorityService priorityService;
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
@@ -36,19 +38,13 @@ public class HiPhivePriority implements Prioritiser {
     private final List<String> messages = new ArrayList<>();
 
     private List<Integer> highQualityPhenoMatchedGenes = new ArrayList<>();
-    private List<String> hpoIds;
-    private String candidateGeneSymbol;
-    private String diseaseId;
+
 
     private Map<Integer, Double> geneScores = new HashMap<>();
 
     private double bestMaxScore = 0d;
     private double bestAvgScore = 0d;
 
-    private boolean runPpi = false;
-    private boolean runHuman = false;
-    private boolean runMouse = false;
-    private boolean runFish = false;
 
     /**
      * This is the matrix of similarities between the seeed genes and all genes
@@ -59,44 +55,14 @@ public class HiPhivePriority implements Prioritiser {
     /**
      *
      * @param hpoIds
-     * @param candidateGene
-     * @param disease
-     * @param exomiser2Params
+     * @param options
      * @param randomWalkMatrix
      */
-    public HiPhivePriority(List<String> hpoIds, String candidateGene, String disease, String exomiser2Params, DataMatrix randomWalkMatrix) {
+    public HiPhivePriority(List<String> hpoIds, HiPhiveOptions options, DataMatrix randomWalkMatrix) {
         this.hpoIds = hpoIds;
-        this.candidateGeneSymbol = candidateGene;
-        this.diseaseId = disease;
+        this.options = options;
+
         this.randomWalkMatrix = randomWalkMatrix;
-        parseParams(exomiser2Params);
-    }
-
-    private void parseParams(String exomiser2Params) {
-        if (exomiser2Params.isEmpty()) {
-            this.runPpi = true;
-            this.runHuman = true;
-            this.runMouse = true;
-            this.runFish = true;
-        } else {
-            logger.info("Received extra params: " + exomiser2Params);
-            for (String param : exomiser2Params.split(",")) {
-                if (param.equals("ppi")) {
-                    this.runPpi = true;
-                } else if (param.equals("human")) {
-                    this.runHuman = true;
-                } else if (param.equals("mouse")) {
-                    this.runMouse = true;
-                } else if (param.equals("fish")) {
-                    this.runFish = true;
-                }
-            }
-        }
-    }
-
-    @Override
-    public String getPriorityName() {
-        return PRIORITY_TYPE.getCommandLineValue();
     }
 
     @Override
@@ -105,24 +71,25 @@ public class HiPhivePriority implements Prioritiser {
     }
 
     /**
-     * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
-     * (the candidate genes have rare, potentially pathogenic variants).
+     * Prioritize a list of candidate genes. These candidate genes may have rare, potentially pathogenic variants.
      * <P>
      *
      * @param genes List of candidate genes.
      */
     @Override
     public void prioritizeGenes(List<Gene> genes) {
-
+        if (options.isBenchmarkingEnabled()) {
+            logger.info("Running in benchmarking mode for disease: {} and candidateGene: {}", options.getDiseaseId(), options.getCandidateGeneSymbol());
+        }
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
         //TODO: this is repetitive, surely there must be a better way to deal with these, perhaps a GeneModelMatrix class?
-        final Map<Integer, Model> bestDiseaseModelForGene = makeHpToHumanMatches(runHuman, hpoPhenotypeTerms, Organism.HUMAN);
-        final Map<Integer, Model> bestMouseModelForGene = makeHpToOtherSpeciesMatches(runMouse, hpoPhenotypeTerms, Organism.MOUSE);
-        final Map<Integer, Model> bestFishModelForGene = makeHpToOtherSpeciesMatches(runFish, hpoPhenotypeTerms, Organism.FISH);
+        final Map<Integer, Model> bestDiseaseModelForGene = makeHpToHumanMatches(options.runHuman(), hpoPhenotypeTerms, Organism.HUMAN);
+        final Map<Integer, Model> bestMouseModelForGene = makeHpToOtherSpeciesMatches(options.runMouse(), hpoPhenotypeTerms, Organism.MOUSE);
+        final Map<Integer, Model> bestFishModelForGene = makeHpToOtherSpeciesMatches(options.runFish(), hpoPhenotypeTerms, Organism.FISH);
 
 //        FloatMatrix weightedHighQualityMatrix = new FloatMatrix();
-        if (runPpi) {
+        if (options.runPpi()) {
             //TODO: make this local if possible
             weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(highQualityPhenoMatchedGenes, geneScores);
         }
@@ -188,7 +155,7 @@ public class HiPhivePriority implements Prioritiser {
         }
         List<Model> closestPhysicallyInteractingGeneModels = new ArrayList<>();
         double walkerScore = 0d;
-        if (runPpi && randomWalkMatrix.containsGene(entrezGeneId) && !highQualityPhenoMatchedGenes.isEmpty()) {
+        if (options.runPpi() && randomWalkMatrix.containsGene(entrezGeneId) && !highQualityPhenoMatchedGenes.isEmpty()) {
             Integer columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(gene, highQualityPhenoMatchedGenes);
             Integer rowIndex = randomWalkMatrix.getRowIndexForGene(entrezGeneId);
             walkerScore = weightedHighQualityMatrix.get(rowIndex, columnIndex);
@@ -200,9 +167,14 @@ public class HiPhivePriority implements Prioritiser {
             }
         }
         logger.debug("Making result for {} {} score={}", gene.getGeneSymbol(), entrezGeneId, score);
-        return new HiPhivePriorityResult(gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore);
+        return new HiPhivePriorityResult(gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore, matchesCandidateGene(gene));
     }
 
+    private boolean matchesCandidateGene(Gene gene) {
+        //new Jannovar labelling can have multiple genes per var but first one is most pathogenic- we'll take this one.
+        return options.getCandidateGeneSymbol().equals(gene.getGeneSymbol()) || gene.getGeneSymbol().startsWith(options.getCandidateGeneSymbol() + ",");
+    }
+    
     private List<Model> getBestPhenotypeMatchesForGene(Integer entrezGeneId, final Map<Integer, Model> bestDiseaseModelForGene, final Map<Integer, Model> bestMouseModelForGene, final Map<Integer, Model> bestFishModelForGene) {
         List<Model> bestPhenotypeMatchModels = new ArrayList<>();
         if (bestDiseaseModelForGene.containsKey(entrezGeneId)) {
@@ -468,10 +440,9 @@ public class HiPhivePriority implements Prioritiser {
             for (Model model : entry.getValue()) {
                 double score = model.getScore();
 
-                // code to catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
-                if ((model.getModelId() == null ? diseaseId == null : model.getModelId().equals(diseaseId + "_" + entrezId))
-                        && (model.getHumanGeneSymbol() == null ? candidateGeneSymbol == null : model.getHumanGeneSymbol().equals(candidateGeneSymbol))) {
-                    logger.info("Found self hit {}:{} - skipping due to benchmarking", diseaseId, candidateGeneSymbol);
+                // catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
+                if (options.isBenchmarkingEnabled() && options.isBenchmarkHit(model)) {
+                    logger.info("Found benchmarking hit {}:{} - skipping model", options.getDiseaseId(), options.getCandidateGeneSymbol());
                 } else {
                     // normal behaviour when not trying to exclude candidate gene to simulate novel gene disovery in benchmarking
                     // only build PPI network for high qual hits
@@ -570,46 +541,54 @@ public class HiPhivePriority implements Prioritiser {
         return bestHitIndex;
     }
 
+    public void setPriorityService(PriorityService priorityService) {
+        this.priorityService = priorityService;
+    }
+
     /**
      * @return list of messages representing process, result, and if any, errors
      * of score filtering.
      */
     @Override
     public List<String> getMessages() {
-        return this.messages;
+        return messages;
     }
 
-    /**
-     * This causes a summary of RW prioritization to appear in the HTML output
-     * of the exomizer
-     *
-     * @return
-     */
     @Override
-    public boolean displayInHTML() {
+    public int hashCode() {
+        int hash = 3;
+        hash = 73 * hash + Objects.hashCode(this.randomWalkMatrix);
+        hash = 73 * hash + Objects.hashCode(this.hpoIds);
+        hash = 73 * hash + Objects.hashCode(this.options);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HiPhivePriority other = (HiPhivePriority) obj;
+        if (!Objects.equals(this.randomWalkMatrix, other.randomWalkMatrix)) {
+            return false;
+        }
+        if (!Objects.equals(this.hpoIds, other.hpoIds)) {
+            return false;
+        }
+        if (!Objects.equals(this.options, other.options)) {
+            return false;
+        }
         return true;
     }
 
-    /**
-     * @return HTML code for displaying the HTML output of the Exomizer.
-     */
     @Override
-    public String getHTMLCode() {
-        if (messages.isEmpty()) {
-            return "Error running HiPhive Prioritiser";
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<ul>\n");
-            for (String m : messages) {
-                sb.append(String.format("<li>%s</li>\n", m));
-            }
-            sb.append("</ul>\n");
-            return sb.toString();
-        }
+    public String toString() {
+        return "HiPhivePriority{"
+                + "hpoIds=" + hpoIds
+                + ", options=" + options
+                + '}';
     }
-
-    public void setPriorityService(PriorityService priorityService) {
-        this.priorityService = priorityService;
-    }
-
 }

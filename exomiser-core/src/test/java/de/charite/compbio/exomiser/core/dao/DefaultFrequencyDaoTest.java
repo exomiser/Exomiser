@@ -5,14 +5,12 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -51,7 +49,7 @@ public class DefaultFrequencyDaoTest {
     Frequency espAa = new Frequency(0.03f, FrequencySource.ESP_AFRICAN_AMERICAN);
     Frequency espEa = new Frequency(0.04f, FrequencySource.ESP_EUROPEAN_AMERICAN);
 
-    private static final FrequencyData NO_DATA = new FrequencyData(null, Collections.EMPTY_SET);
+    private static final FrequencyData NO_DATA = new FrequencyData();
 
     @Before
     public void setUp() {
@@ -65,7 +63,7 @@ public class DefaultFrequencyDaoTest {
         FrequencyData result = instance.getFrequencyData(variantNotInDatabase);
 
         assertThat(result, equalTo(NO_DATA));
-        assertThat(result.representedInDatabase(), is(false));
+        assertThat(result.isRepresentedInDatabase(), is(false));
     }
 
     @Test
@@ -73,7 +71,7 @@ public class DefaultFrequencyDaoTest {
         FrequencyData result = instance.getFrequencyData(variantInDatabaseWithRsId);
         FrequencyData expected = new FrequencyData(rsId, dbSnp, espAa, espAll, espEa);
         assertThat(result, equalTo(expected));
-        assertThat(result.representedInDatabase(), is(true));
+        assertThat(result.isRepresentedInDatabase(), is(true));
     }
        
 }

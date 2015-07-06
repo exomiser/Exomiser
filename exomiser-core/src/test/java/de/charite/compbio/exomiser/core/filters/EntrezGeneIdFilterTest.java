@@ -47,6 +47,11 @@ public class EntrezGeneIdFilterTest {
     }
 
     @Test
+    public void testGetGeneIds() {
+        assertThat(instance.getGeneIds(), equalTo(genesToKeep));
+    }
+    
+    @Test
     public void testGetFilterType() {
         assertThat(instance.getFilterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
     }
@@ -84,7 +89,7 @@ public class EntrezGeneIdFilterTest {
 
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("Genes to keep filter gene list = [1]"));
+        assertThat(instance.toString(), equalTo("EntrezGeneIdFilter{genesToKeep=[1]}"));
     }
     
 }

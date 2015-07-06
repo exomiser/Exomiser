@@ -6,7 +6,6 @@
 
 package de.charite.compbio.exomiser.core.filters;
 
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Test;
 import static org.junit.Assert.*;

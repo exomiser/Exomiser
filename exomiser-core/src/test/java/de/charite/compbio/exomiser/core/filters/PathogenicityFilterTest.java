@@ -88,6 +88,11 @@ public class PathogenicityFilterTest {
     }
     
     @Test
+    public void test() {
+        assertThat(instance.keepNonPathogenic(), equalTo(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS));
+    }
+    
+    @Test
     public void testThatOffTargetNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
@@ -195,7 +200,7 @@ public class PathogenicityFilterTest {
 
     @Test
     public void testToString() {
-        String expResult = "Pathogenicity filter: removePathFilterCutOff=false";
+        String expResult = "PathogenicityFilter{keepNonPathogenic=false}";
         String result = instance.toString();
         assertThat(result, equalTo(expResult));
     }
@@ -217,7 +222,7 @@ public class PathogenicityFilterTest {
     @Test
     public void testNotEqualToOtherFilterType() {
         instance = new PathogenicityFilter(false);
-        Filter other = new FrequencyFilter(0.1f, true);
+        Filter other = new FrequencyFilter(0.1f);
         assertThat(instance.equals(other), is(false));
     }
 

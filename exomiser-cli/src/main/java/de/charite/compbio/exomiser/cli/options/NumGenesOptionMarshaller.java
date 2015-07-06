@@ -5,8 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.NUM_GENES_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.Option;
 
 /**
@@ -15,12 +14,14 @@ import org.apache.commons.cli.Option;
  */
 public class NumGenesOptionMarshaller extends AbstractOptionMarshaller {
 
+    public static final String NUM_GENES_OPTION = "num-genes";
+
     public NumGenesOptionMarshaller() {
         option = new Option(null, NUM_GENES_OPTION, true, "Number of genes to show in output");
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.numberOfGenesToShow(Integer.parseInt(values[0]));
     }
     

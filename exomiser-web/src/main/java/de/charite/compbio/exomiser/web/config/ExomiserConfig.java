@@ -10,18 +10,16 @@ import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
@@ -160,13 +158,8 @@ public class ExomiserConfig {
     }
 
     @Bean
-    public FilterFactory filterFactory() {
-        return new FilterFactory();
-    }
-
-    @Bean
-    public PriorityFactory priorityFactory() {
-        return new PriorityFactory();
+    public PriorityFactoryImpl priorityFactory() {
+        return new PriorityFactoryImpl();
     }
 
     @Bean
@@ -178,20 +171,10 @@ public class ExomiserConfig {
     ModelService modelService() {
         return new ModelServiceImpl();
     }
- 
-    @Bean
-    public Exomiser exomiser() {
-        return new Exomiser();
-    }
 
     @Bean
-    public SparseVariantFilterRunner sparseVariantFilterer() {
-        return new SparseVariantFilterRunner();
-    }
-
-    @Bean
-    public VariantDataService variantEvaluationDataService() {
-        return new VariantDataService();
+    public VariantDataService variantDataService() {
+        return new VariantDataServiceImpl();
     }
 
 //cacheable beans

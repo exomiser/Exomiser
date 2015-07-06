@@ -20,7 +20,6 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
@@ -30,7 +29,7 @@ import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
@@ -134,13 +133,8 @@ public class TestExomiserConfig {
     }
     
     @Bean
-    public FilterFactory mockFilterFactory() {
-        return Mockito.mock(FilterFactory.class);
-    }
-    
-    @Bean
-    public PriorityFactory mockPriorityFactory() {
-        return Mockito.mock(PriorityFactory.class);
+    public PriorityFactoryImpl mockPriorityFactory() {
+        return Mockito.mock(PriorityFactoryImpl.class);
     }
     
     //cacheable beans

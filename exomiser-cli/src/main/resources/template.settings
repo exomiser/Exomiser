@@ -11,6 +11,9 @@ vcf=
 #SAMPLE DATA OPTIONS
 ped=
 
+#ANALYSIS MODE OPTIONS
+full-analysis=false
+
 #FILTER OPTIONS
 max-freq=100.00
 restrict-interval=
@@ -18,17 +21,16 @@ min-qual=0
 keep-non-pathogenic=false
 remove-known-variants=false
 keep-off-target=false
-full-analysis=false
+#inheritance-mode options: AD, AR or X
+inheritance-mode=
 
 #PRIORITISER OPTIONS
 prioritiser=none
-candidate-gene=
 hpo-ids=
 seed-genes=
 #disease-id option: OMIM identifier e.g. OMIM:101500
 disease-id=
-#inheritance-mode options: AD, AR or X
-inheritance-mode=
+candidate-gene=
 
 #OUTPUT OPTIONS
 output-pass-variants-only=false

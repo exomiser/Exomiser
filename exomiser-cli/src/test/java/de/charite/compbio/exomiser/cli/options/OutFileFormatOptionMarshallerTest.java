@@ -22,15 +22,15 @@ import static org.junit.Assert.*;
  * @author jj8
  */
 public class OutFileFormatOptionMarshallerTest {
-    
+
     private OutFileFormatOptionMarshaller instance;
     private Option option;
     private ExomiserSettings.SettingsBuilder settingsBuilder;
-    
+
     private static final Set<OutputFormat> OUTFILE_FORMATS = EnumSet.allOf(OutputFormat.class);
     private static final String LONG_OPTION = "out-format";
     private static final String SHORT_OPTION = "f";
-    
+
     @Before
     public void setUp() {
         instance = new OutFileFormatOptionMarshaller();
@@ -39,12 +39,11 @@ public class OutFileFormatOptionMarshallerTest {
         settingsBuilder.vcfFilePath(Paths.get("user/analysis/vcf/test.vcf"));
     }
 
-
     @Test
     public void testGetCommandLineParameter() {
         assertThat(instance.getCommandLineParameter(), equalTo(LONG_OPTION));
     }
-    
+
     @Test
     public void testApplyValuesToSettingsBuilder() {
         String[] inputValues = {"HTML", "VCF", "TSV-GENE", "TSV-VARIANT", "PHENOGRID"};
@@ -52,7 +51,7 @@ public class OutFileFormatOptionMarshallerTest {
         ExomiserSettings settings = settingsBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTFILE_FORMATS));
     }
-    
+
     @Test
     public void testApplyValuesToSettingsBuilderWithAlternateNames() {
         String[] inputValues = {"HTML", "VCF", "TAB-GENE", "TAB-VARIANT", "PHENOGRID"};
@@ -60,7 +59,7 @@ public class OutFileFormatOptionMarshallerTest {
         ExomiserSettings settings = settingsBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTFILE_FORMATS));
     }
-    
+
     @Test
     public void testApplyValuesToSettingsBuilderWithEnumSrings() {
         String[] inputValues = {"HTML", "VCF", "TSV_GENE", "TSV_VARIANT", "PHENOGRID"};
@@ -68,26 +67,31 @@ public class OutFileFormatOptionMarshallerTest {
         ExomiserSettings settings = settingsBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTFILE_FORMATS));
     }
-    
+
     @Test
     public void testOptionIsSingleValueOption() {
         assertThat(option.hasArg(), is(true));
         assertThat(option.hasArgs(), is(true));
     }
-    
+
     @Test
     public void testOptionHasLongOption() {
         assertThat(option.hasLongOpt(), is(true));
     }
-    
+
+    @Test
+    public void testOptionTakesCommaSeperatedValues() {
+        assertThat(option.getValueSeparator(), equalTo(','));
+    }
+
     @Test
     public void testLongOption() {
         assertThat(option.getLongOpt(), equalTo(LONG_OPTION));
     }
-    
-     @Test
+
+    @Test
     public void testShortOption() {
         assertThat(option.getOpt(), equalTo(SHORT_OPTION));
     }
-    
+
 }

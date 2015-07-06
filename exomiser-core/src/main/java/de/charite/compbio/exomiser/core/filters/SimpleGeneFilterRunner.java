@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.LinkedHashSet;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
+public class SimpleGeneFilterRunner implements GeneFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleGeneFilterRunner.class);
 
@@ -28,21 +29,43 @@ public class SimpleGeneFilterRunner implements FilterRunner<Gene, GeneFilter> {
             //Gene filtering needs to happen after variant filtering and only on genes which have passed the variant filtering steps
             //TODO: does this really have to be the case???
             if (gene.passedFilters()) {
-                for (Filter filter : filters) {
-                    FilterResult filterResult = filter.runFilter(gene);
-                    addFilterResultToGeneVariantEvaluations(filterResult, gene);
-                }
+                runAllFiltersOverGene(filters, gene);
             }
         }
         logger.info("Ran {} filters over {} genes using non-destructive simple filtering.", getFilterTypes(filters), genes.size());
         return genes;
     }
 
-    private void addFilterResultToGeneVariantEvaluations(FilterResult filterResult, Gene gene) {
-        gene.addFilterResult(filterResult);
-        for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+    @Override
+    public List<Gene> run(GeneFilter filter, List<Gene> genes) {
+        for (Gene gene : genes) {
+            if (gene.passedFilters()) {
+                runFilterAndAddResult(filter, gene);
+            }
+        }
+        return genes;
+    }
+
+    private void runAllFiltersOverGene(List<GeneFilter> filters, Gene gene) {
+        for (Filter filter : filters) {
+            FilterResult filterResult = runFilterAndAddResult(filter, gene);
+            //TODO: should this always be the case?
+            addFilterResultToVariants(filterResult, gene.getVariantEvaluations());
+        }
+    }
+
+    private void addFilterResultToVariants(FilterResult filterResult, List<VariantEvaluation> variantEvaluations) {
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
             variantEvaluation.addFilterResult(filterResult);
         }
+    }
+
+    private FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {
+        FilterResult filterResult = filter.runFilter(filterable);
+        if (filterResult.getResultStatus() != FilterResultStatus.NOT_RUN) {
+            filterable.addFilterResult(filterResult);
+        }
+        return filterResult;
     }
 
     private Set<FilterType> getFilterTypes(List<GeneFilter> filters) {

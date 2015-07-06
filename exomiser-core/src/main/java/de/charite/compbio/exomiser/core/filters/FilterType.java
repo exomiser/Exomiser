@@ -11,49 +11,21 @@ package de.charite.compbio.exomiser.core.filters;
  */
 public enum FilterType {
 
-    /**
-     * Flag for output of field representing the Quality filter for the VCF
-     * entry
-     *//**
-     * Flag for output of field representing the Quality filter for the VCF
-     * entry
-     */
     QUALITY_FILTER,
-    /**
-     * Flag for filter type "interval"
-     */
     INTERVAL_FILTER,
-    /**
-     * Flag to represent filtering by a user entered set of genes
-     */
     ENTREZ_GENE_ID_FILTER,
-    /**
-     * Flag to output results of filtering against polyphen, SIFT, and mutation
-     * taster.
-     */
     PATHOGENICITY_FILTER,
     CADD_FILTER,
-    /**
-     * Flag to output results of filtering against frequency with Thousand
-     * Genomes and ESP data.
-     */
     FREQUENCY_FILTER,
-    /**
-     * Flag to represent non-coding regulatory feature filter
-     */
     REGULATORY_FEATURE_FILTER,
-    /**
-     *
-     * Flag to represent target filter
-     */
     TARGET_FILTER,
     INHERITANCE_FILTER,
-    /**
-     * Filter for target regions in a BED file
-     */
     BED_FILTER, 
-    
-    //Gene Priority score
+    FREQUENCY_FILTER,
+    KNOWN_VARIANT_FILTER,
+    VARIANT_EFFECT_FILTER,
+    INHERITANCE_FILTER,
+    BED_FILTER, 
     PRIORITY_SCORE_FILTER;
 
     @Override
@@ -69,9 +41,11 @@ public enum FilterType {
                 return "Pathogenicity";
             case CADD_FILTER:
                 return "CADD";    
+            case KNOWN_VARIANT_FILTER:
+                return "Known variant";
             case FREQUENCY_FILTER:
                 return "Frequency";
-            case TARGET_FILTER:
+            case VARIANT_EFFECT_FILTER:
                 return "Target"; //Exome target region
             case REGULATORY_FEATURE_FILTER:
                 return "Regulatory Feature";    
@@ -81,7 +55,8 @@ public enum FilterType {
                 return "Gene panel target region (Bed filter)";
             case PRIORITY_SCORE_FILTER:
                 return "Gene priority score";
+            default:
+                return "Unidentified Filter";
         }
-        return "Unidentified Filter";
     }
 }

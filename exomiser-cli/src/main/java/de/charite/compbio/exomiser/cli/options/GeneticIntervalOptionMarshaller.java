@@ -5,8 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.GENETIC_INTERVAL_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 
@@ -20,14 +19,16 @@ import org.slf4j.LoggerFactory;
  */
 public class GeneticIntervalOptionMarshaller extends AbstractOptionMarshaller {
 
-    Logger logger = LoggerFactory.getLogger(GeneticIntervalOptionMarshaller.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeneticIntervalOptionMarshaller.class);
     
+    public static final String GENETIC_INTERVAL_OPTION = "restrict-interval";
+
     public GeneticIntervalOptionMarshaller() {
         option = new Option("R", GENETIC_INTERVAL_OPTION, true, "Restrict to region/interval (e.g., chr2:12345-67890)");
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         if (values == null || values.length == 0 || values[0].isEmpty()) {
             //use the default builder value
             return;

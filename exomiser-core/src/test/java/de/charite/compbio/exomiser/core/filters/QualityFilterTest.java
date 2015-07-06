@@ -20,13 +20,13 @@ import static org.junit.Assert.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class QualityFilterTest {
-    
+
     private QualityFilter instance;
 
     private static final double MIN_QUAL_THRESHOLD = 3.0f;
     private static final double OVER_THRESHOLD = MIN_QUAL_THRESHOLD + 1.0f;
     private static final double UNDER_THRESHOLD = MIN_QUAL_THRESHOLD - 1.0f;
-    
+
     private static VariantEvaluation highQualityPassesFilter;
     private static VariantEvaluation lowQualityFailsFilter;
 
@@ -35,13 +35,18 @@ public class QualityFilterTest {
 
         highQualityPassesFilter = testVariantBuilder().quality(OVER_THRESHOLD).build();
         lowQualityFailsFilter = testVariantBuilder().quality(UNDER_THRESHOLD).build();
-        
-        instance = new QualityFilter(MIN_QUAL_THRESHOLD);  
+
+        instance = new QualityFilter(MIN_QUAL_THRESHOLD);
     }
 
     private VariantBuilder testVariantBuilder() {
         return new VariantEvaluation.VariantBuilder(1, 1, "A", "T");
     }
+
+    @Test
+    public void testGetMimimumQualityThreshold() {
+        assertThat(instance.getMimimumQualityThreshold(), equalTo(MIN_QUAL_THRESHOLD));
+    }   
 
     @Test
     public void testGetFilterType() {
@@ -52,18 +57,18 @@ public class QualityFilterTest {
     public void filterThrowIllegalArgumentExceptionWhenInitialisedWithNegativeValue() {
         instance = new QualityFilter(-1);
     }
-    
+
     @Test
     public void testFilterVariantOfHighQualityPassesFilter() {
         FilterResult filterResult = instance.runFilter(highQualityPassesFilter);
-        
+
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
     }
-    
+
     @Test
     public void testFilterVariantOfLowQualityFailsFilter() {
         FilterResult filterResult = instance.runFilter(lowQualityFailsFilter);
-        
+
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
     }
 
@@ -77,7 +82,6 @@ public class QualityFilterTest {
         assertThat(instance.overQualityThreshold(UNDER_THRESHOLD), is(false));
     }
 
-    
     @Test
     public void testHashCode() {
         VariantFilter qualityFilter = new QualityFilter(MIN_QUAL_THRESHOLD);
@@ -89,19 +93,19 @@ public class QualityFilterTest {
         Object obj = null;
         assertThat(instance.equals(obj), is(false));
     }
-    
+
     @Test
     public void testNotEqualAnotherClass() {
-        Object obj = new TargetFilter();
+        Object obj = new String();
         assertThat(instance.equals(obj), is(false));
     }
-    
+
     @Test
     public void testNotEqualToOtherWithDifferentQualityThreshold() {
         Object obj = new QualityFilter(8.0f);
         assertThat(instance.equals(obj), is(false));
     }
-    
+
     @Test
     public void testEqualToOtherWithSameQualityThreshold() {
         Object obj = new QualityFilter(MIN_QUAL_THRESHOLD);

@@ -6,8 +6,7 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Analysis;
 
 /**
  * 
@@ -18,17 +17,17 @@ public interface ResultsWriter {
     /**
      * Writes the result data out to the file specified in the ExomiserSettings object.
      * 
-     * @param sampleData
+     * @param analysis
      * @param settings
      */
-    public void writeFile(SampleData sampleData, ExomiserSettings settings);
-    
+    public void writeFile(Analysis analysis, OutputSettings settings);
+       
     /**
      * Writes the result data out to a String.
      * 
-     * @param sampleData
+     * @param analysis
      * @param settings
      * @return  
      */
-    public String writeString(SampleData sampleData, ExomiserSettings settings);
+    public String writeString(Analysis analysis, OutputSettings settings);
 }

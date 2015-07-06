@@ -5,13 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.filters.FilterReportFactory;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
@@ -23,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
+import de.charite.compbio.exomiser.core.Analysis;
+import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Map;
 
@@ -36,15 +34,23 @@ public class ResultsWriterUtils {
 
     private static final FilterReportFactory filterReportFactory = new FilterReportFactory();
 
+    private static final String DEFAULT_OUTPUT_DIR = "results";
+    
     /**
      * Determines the correct file extension for a file given what was specified
      * in the {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
      *
+     * @param vcfPath
      * @param outputPrefix
      * @param outputFormat
      * @return
      */
-    public static String makeOutputFilename(String outputPrefix, OutputFormat outputFormat) {
+    public static String makeOutputFilename(Path vcfPath, String outputPrefix, OutputFormat outputFormat) {
+        if (outputPrefix.isEmpty()) {
+            String defaultOutputPrefix = String.format("%s/%s-exomiser-results", ResultsWriterUtils.DEFAULT_OUTPUT_DIR, vcfPath.getFileName());
+            logger.debug("Output prefix was unspecified. Will write out to: {}", defaultOutputPrefix);
+            outputPrefix = defaultOutputPrefix;
+        }
         return String.format("%s.%s", outputPrefix, outputFormat.getFileExtension());
     }
 
@@ -73,7 +79,7 @@ public class ResultsWriterUtils {
                 VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_EXON_VARIANT,
                 VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT,
                 VariantEffect.DOWNSTREAM_GENE_VARIANT, VariantEffect.INTERGENIC_VARIANT);
-        
+
         VariantEffectCounter variantTypeCounter = makeVariantEffectCounter(variantEvaluations);
         final List<Map<VariantEffect, Integer>> freqMaps = variantTypeCounter.getFrequencyMap(variantEffects);
 
@@ -116,15 +122,8 @@ public class ResultsWriterUtils {
         return effectCounter;
     }
 
-    public static List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {
-        // TODO: ExomiserSettings is really sticking it's nose into everything might be a good idea to scale
-        // this back so that it's only really needed in to cli package as it is tightly coupled with that anyway.
-        // For instance here it would be somewhat simpler to just supply the list of filters applied as they all
-        // know what their required parameters were. Sure this will violate the 'Tell Don't Ask' principle but
-        // the alternatives are worse
-        List<FilterType> filtersApplied = settings.getFilterTypesToRun();
-        return filterReportFactory.makeFilterReports(filtersApplied, settings, sampleData);
-
+    public static List<FilterReport> makeFilterReports(Analysis analysis) {
+        return filterReportFactory.makeFilterReports(analysis);
     }
 
     public static List<Gene> getMaxPassedGenes(List<Gene> genes, int maxGenes) {

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import static de.charite.compbio.exomiser.core.ExomiserSettings.OUT_FILE_FORMAT_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import java.util.ArrayList;
@@ -23,6 +22,8 @@ import org.slf4j.LoggerFactory;
 public class OutFileFormatOptionMarshaller extends AbstractOptionMarshaller {
     
     private static final Logger logger = LoggerFactory.getLogger(OutFileFormatOptionMarshaller.class);
+    
+    public static final String OUT_FILE_FORMAT_OPTION = "out-format";
 
     public OutFileFormatOptionMarshaller() {
         option = OptionBuilder

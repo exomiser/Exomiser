@@ -5,17 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilterResult;
-import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
-import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
@@ -49,12 +46,12 @@ public class GeneTest {
     private VariantEvaluation variantEvaluation1;
     private VariantEvaluation variantEvaluation2;
 
-    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new FrequencyFilterResult(1f, FilterResultStatus.PASS);
-    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FrequencyFilterResult(0f, FilterResultStatus.FAIL);
+    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1f);
+    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
     //there's nothing really magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
     //their type is mostly used for reporting which filter was passed or failed and getting the score. 
-    private static final FilterResult PASS_GENE_FILTER_RESULT = new InheritanceFilterResult(1f, FilterResultStatus.PASS);
-    private static final FilterResult FAIL_GENE_FILTER_RESULT = new InheritanceFilterResult(0f, FilterResultStatus.FAIL);
+    private static final FilterResult PASS_GENE_FILTER_RESULT = new PassFilterResult(FilterType.INHERITANCE_FILTER, 1f);
+    private static final FilterResult FAIL_GENE_FILTER_RESULT = new FailFilterResult(FilterType.INHERITANCE_FILTER, 0f);
 
     @Before
     public void setUp() {
@@ -177,7 +174,21 @@ public class GeneTest {
         instance.addVariant(variantEvaluation2);
         assertThat(instance.passedFilters(), is(true));
     }
-
+//TODO: behaviour under consideration - better in the gene or the gene filter runner? Should it apply to all gene filters?
+//    @Test
+//    public void testAddingFilterResultToGeneAppliesThatResultToAllVariantsOfTheGene() {
+//        //set-up gene
+//        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+//        instance.addVariant(variantEvaluation1);
+//        //simluate filtering
+//        instance.addFilterResult(PASS_GENE_FILTER_RESULT);
+//        
+//        //test the variant still fails the original filter
+//        assertThat(variantEvaluation1.passedFilter(FAIL_VARIANT_FILTER_RESULT.getFilterType()), is(false));
+//        //but that the variant also passes the gene filter - this is OK behaviour as Variants fail fast - i.e. we really only care if a variant passed ALL filters
+//        assertThat(variantEvaluation1.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
+//    }
+    
     @Test 
     public void testPassedFilter_TrueWhenGenePassesAndVariantsFailFilterOfThatType() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
@@ -253,6 +264,16 @@ public class GeneTest {
         passedVariantEvaluations.add(variantEvaluation1);
 
         assertThat(instance.getPassedVariantEvaluations(), equalTo(passedVariantEvaluations));
+    }
+
+    @Test
+    public void testCanAddAndRetrievePriorityScoreByPriorityType() {
+        PriorityResult omimPriorityResult = new OMIMPriorityResult();
+        PriorityType priorityType = PriorityType.OMIM_PRIORITY;
+
+        instance.addPriorityResult(omimPriorityResult);
+        instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
+        assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
     }
 
     @Test
@@ -370,45 +391,14 @@ public class GeneTest {
     }
 
     @Test
-    public void testCanAddAndRetrievePriorityScoreByPriorityType() {
-        PriorityResult omimPriorityResult = new OMIMPriorityResult();
-        PriorityType priorityType = PriorityType.OMIM_PRIORITY;
-
-        instance.addPriorityResult(omimPriorityResult);
-        instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
-        assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
-    }
-
-    @Test
-    public void testAddPriorityResult_updatesPriorityScore() {
-        assertThat(instance.getPriorityScore(), equalTo(0f));
-        PriorityResult zeroPointFiveScore = new TestPriorityResult(0.5f);
-        
-        instance.addPriorityResult(zeroPointFiveScore);
-        assertThat(instance.getPriorityScore(), equalTo(0.5f));
-
-        instance.addPriorityResult(zeroPointFiveScore);
-        assertThat(instance.getPriorityScore(), equalTo(0.25f));
-    }
-    
-    @Test
-    public void testCanSetAndChangePriorityScoreOnlyWhenPrioritised() {
-        float unPrioritisedScore = 0f;
-        
-        float firstScore = 0.1f;
+    public void testCanSetAndChangePriorityScore() {
+        float firstScore = 0f;
         instance.setPriorityScore(firstScore);
-        assertThat(instance.getPriorityScore(), equalTo(unPrioritisedScore));
+        assertThat(instance.getPriorityScore(), equalTo(firstScore));
 
         float secondScore = 1.0f;
         instance.setPriorityScore(secondScore);
-        assertThat(instance.getPriorityScore(), equalTo(unPrioritisedScore));
-        
-        instance.addPriorityResult(new TestPriorityResult(firstScore));
-        assertThat(instance.getPriorityScore(), equalTo(firstScore));
-        
-        instance.setPriorityScore(secondScore);
         assertThat(instance.getPriorityScore(), equalTo(secondScore));
-
     }
 
     @Test
@@ -421,28 +411,4 @@ public class GeneTest {
         instance.setFilterScore(secondScore);
         assertThat(instance.getFilterScore(), equalTo(secondScore));
     }
-
-    private static class TestPriorityResult implements PriorityResult {
-
-        private final float score;
-        
-        private TestPriorityResult(float f) {
-            this.score = f;
         }
-
-        @Override
-        public PriorityType getPriorityType() {
-            return PriorityType.NONE;
-        }
-
-        @Override
-        public String getHTMLCode() {
-            return "";
-        }
-
-        @Override
-        public float getScore() {
-            return score;
-        }
-    }
-}

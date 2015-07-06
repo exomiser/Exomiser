@@ -8,8 +8,9 @@ package de.charite.compbio.exomiser.core.writers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
@@ -20,7 +21,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.slf4j.Logger;
@@ -46,14 +46,14 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
+    public void writeFile(Analysis analysis, OutputSettings settings) {
 
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
 
-            writer.write(writeString(sampleData, settings));
+            writer.write(writeString(analysis, settings));
 
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
@@ -63,29 +63,31 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings) {
+    public String writeString(Analysis analysis, OutputSettings settings) {
         Context context = new Context();
         //write the settings
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+//        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
         String jsonSettings = "";
         try {
-            jsonSettings = mapper.writeValueAsString(settings);
+            jsonSettings = mapper.writeValueAsString(analysis);
+            jsonSettings += mapper.writeValueAsString(settings);
         } catch (JsonProcessingException ex) {
             logger.error("Unable to process JSON settings", ex);
         }
         context.setVariable("settings", jsonSettings);
-
+        
+        SampleData sampleData = analysis.getSampleData();
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
         
-        //write out the filter reports section
-        List<FilterReport> filterReports = makeFilterReports(settings, sampleData);
-        context.setVariable("filterReports", filterReports);
+        //write out the analysis reports section
+        List<FilterReport> analysisStepReports = makeAnalysisStepReports(analysis);
+        context.setVariable("filterReports", analysisStepReports);
         //write out the variant type counters
         List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(sampleData.getVariantEvaluations());
         List<String> sampleNames= sampleData.getSampleNames();
@@ -107,8 +109,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
     }
     
-    protected List<FilterReport> makeFilterReports(ExomiserSettings settings, SampleData sampleData) {  
-        return ResultsWriterUtils.makeFilterReports(settings, sampleData);   
+    protected List<FilterReport> makeAnalysisStepReports(Analysis analysis) {  
+        return ResultsWriterUtils.makeFilterReports(analysis);   
     }
 
     //TODO:

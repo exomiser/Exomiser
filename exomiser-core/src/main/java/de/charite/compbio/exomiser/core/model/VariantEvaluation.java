@@ -511,7 +511,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public String toString() {
-        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + variantScore + " failedFilterTypes=" + failedFilterTypes;
+        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + variantScore + " filterStatus=" + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet();
     }
 
     /**
@@ -545,7 +545,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         //This will then erroneously pass the frequency filter.
         //TODO: check the ramifications of having a placeholder frequencyData
         //private FrequencyData frequencyData = new FrequencyData(null, Collections.EMPTY_SET);
-        private FrequencyData frequencyData = null;
+        private FrequencyData frequencyData = new FrequencyData();
 
         /**
          * Creates a minimal variant

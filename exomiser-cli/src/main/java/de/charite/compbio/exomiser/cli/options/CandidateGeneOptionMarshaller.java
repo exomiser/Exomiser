@@ -5,8 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.CANDIDATE_GENE_OPTION;
+import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import org.apache.commons.cli.Option;
 
 /**
@@ -15,12 +14,14 @@ import org.apache.commons.cli.Option;
  */
 public class CandidateGeneOptionMarshaller extends AbstractOptionMarshaller {
 
+    public static final String CANDIDATE_GENE_OPTION = "candidate-gene";
+
     public CandidateGeneOptionMarshaller() {
         option = new Option(null, CANDIDATE_GENE_OPTION, true, "Gene symbol of known or suspected gene association e.g. FGFR2");
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.candidateGene(values[0]);
     }
     

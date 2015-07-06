@@ -9,10 +9,10 @@ public enum PriorityType {
     //Prioritises against PPI-RandomWalk-proximity and dynamic human, mouse and fish phenotypes
     HI_PHIVE_PRIORITY("hiphive", ScoringMode.RAW_SCORE),
 
-    //Prioritises against PPI-RandomWalk-proximity
+    //Prioritises against PPI-RandomWalk-proximity A.K.A "GeneWanderer"
     EXOMEWALKER_PRIORITY("exomewalker", ScoringMode.RAW_SCORE),
     
-    //Prioritises against human phenotypes
+    //Prioritises against human phenotypes A.K.A. "HPO Phenomizer prioritizer"
     PHENIX_PRIORITY("phenix", ScoringMode.RAW_SCORE),
 
     //Prioritises against human-mouse phenotype similarities
@@ -21,7 +21,7 @@ public enum PriorityType {
     //Prioritises against OMIM data
     OMIM_PRIORITY("omim", ScoringMode.RAW_SCORE),
     
-    //Prioritises  against phenotype data (Uberpheno)
+    //Prioritises  against phenotype data (Uberpheno) A.K.A. "Uberpheno semantic similarity filter"
     UBERPHENO_PRIORITY("uber-pheno", ScoringMode.RAW_SCORE),
 
     //None - for when you don't want to run any prioritisation

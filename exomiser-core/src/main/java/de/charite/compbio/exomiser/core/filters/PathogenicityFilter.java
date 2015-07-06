@@ -8,7 +8,6 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-import java.util.EnumSet;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -36,20 +35,25 @@ public class PathogenicityFilter implements VariantFilter {
     private static final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
     private static final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
     public static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
-    private final boolean removePathFilterCutOff;
+
+    private final boolean keepNonPathogenic;
 
     /**
      * Produces a Pathogenicity filter using a user-defined pathogenicity
-     * threshold. The removePathFilterCutOff parameter will apply the
-     * pathogenicity scoring, but no further filtering will be applied so all
-     * variants will pass irrespective of their score.
+     * threshold. The keepNonPathogenic parameter will apply the pathogenicity
+     * scoring, but no further filtering will be applied so all variants will
+     * pass irrespective of their score.
      *
-     * @param removePathFilterCutOff
+     * @param keepNonPathogenic
      */
-    public PathogenicityFilter(boolean removePathFilterCutOff) {
-        this.removePathFilterCutOff = removePathFilterCutOff;
+    public PathogenicityFilter(boolean keepNonPathogenic) {
+        this.keepNonPathogenic = keepNonPathogenic;
     }
 
+    public boolean keepNonPathogenic() {
+        return keepNonPathogenic;
+    }
+    
     /**
      * Flag to output results of filtering against polyphen, SIFT, and mutation
      * taster.
@@ -70,7 +74,8 @@ public class PathogenicityFilter implements VariantFilter {
         PathogenicityData pathData = variantEvaluation.getPathogenicityData();
         VariantEffect variantEffect = variantEvaluation.getVariantEffect();
         float filterScore = calculateFilterScore(variantEffect, pathData);
-        if (removePathFilterCutOff) {
+
+        if (keepNonPathogenic) {
             return returnPassResult(filterScore);
         }
         if (variantIsPredictedPathogenic(variantEffect)) {
@@ -113,9 +118,7 @@ public class PathogenicityFilter implements VariantFilter {
 
     /**
      * @param variantEffect
-     * @param pathData
-     * @return true if the variant being analysed passes the runFilter (e.g.,
-     * has high quality )
+     * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
      */
     protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect) {
         if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
@@ -130,21 +133,19 @@ public class PathogenicityFilter implements VariantFilter {
 
     private FilterResult returnPassResult(float filterScore) {
         // We passed the filter (Variant is predicted pathogenic).
-        FilterResult passResult = new PathogenicityFilterResult(filterScore, FilterResultStatus.PASS);
-        return passResult;
+        return new PassFilterResult(filterType, filterScore);
     }
 
     private FilterResult returnFailResult(float filterScore) {
         // Variant is not predicted pathogenic, return failed.
-        FilterResult failResult = new PathogenicityFilterResult(filterScore, FilterResultStatus.FAIL);
-        return failResult;
+        return new FailFilterResult(filterType, filterScore);
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
         hash = 97 * hash + Objects.hashCode(PathogenicityFilter.filterType);
-        hash = 97 * hash + (this.removePathFilterCutOff ? 1 : 0);
+        hash = 97 * hash + (this.keepNonPathogenic ? 1 : 0);
         return hash;
     }
 
@@ -157,11 +158,11 @@ public class PathogenicityFilter implements VariantFilter {
             return false;
         }
         final PathogenicityFilter other = (PathogenicityFilter) obj;
-        return this.removePathFilterCutOff == other.removePathFilterCutOff;
+        return this.keepNonPathogenic == other.keepNonPathogenic;
     }
 
     @Override
     public String toString() {
-        return String.format("%s filter: removePathFilterCutOff=%s", filterType, removePathFilterCutOff);
+        return "PathogenicityFilter{" + "keepNonPathogenic=" + keepNonPathogenic + '}';
     }
 }
