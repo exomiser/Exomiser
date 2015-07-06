@@ -99,45 +99,48 @@ public class HiPhivePriority implements Prioritiser {
             HiPhivePriorityResult priorityResult = makePriorityResultForGene(gene, hpoPhenotypeTerms, bestDiseaseModelForGene, bestMouseModelForGene, bestFishModelForGene);
             gene.addPriorityResult(priorityResult);
         }
+        
+        // now just set walker score directly so no need for this re-ranking
+        
         /*
          * refactor all scores for genes that are not direct pheno-hits but in
          * PPI with them to a linear range
          */
-        logger.info("Adjusting gene scores for non-pheno hits with protein-protein interactions");
-        TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<>();
-        for (Gene g : genes) {
-            Float geneScore = ((HiPhivePriorityResult) g.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY)).getWalkerScore();
-            if (geneScore == 0f) {
-                continue;
-            }
-            if (geneScoreMap.containsKey(geneScore)) {
-                List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
-                geneScoreGeneList.add(g);
-            } else {
-                List<Gene> geneScoreGeneList = new ArrayList<>();
-                geneScoreGeneList.add(g);
-                geneScoreMap.put(geneScore, geneScoreGeneList);
-            }
-        }
-        //changed so when have only 2 genes say in filtered set 1st one will get 0.6 and second 0.3 rather than 0.3 and 0
-        float rank = 0;
-        for (Float score : geneScoreMap.descendingKeySet()) {
-            List<Gene> geneScoreGeneList = geneScoreMap.get(score);
-            int sharedHits = geneScoreGeneList.size();
-            float adjustedRank = rank;
-            if (sharedHits > 1) {
-                adjustedRank = rank + (sharedHits / 2);
-            }
-            float newScore = 0.6f - 0.6f * (adjustedRank / genes.size());
-            rank = rank + sharedHits;
-            for (Gene gene : geneScoreGeneList) {
-                //i.e. only overwrite phenotype-based score if PPI score is larger
-                HiPhivePriorityResult result = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY);
-                if (newScore > result.getScore()) {
-                    result.setScore(newScore);
-                }
-            }
-        }
+//        logger.info("Adjusting gene scores for non-pheno hits with protein-protein interactions");
+//        TreeMap<Float, List<Gene>> geneScoreMap = new TreeMap<>();
+//        for (Gene g : genes) {
+//            Float geneScore = ((HiPhivePriorityResult) g.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY)).getWalkerScore();
+//            if (geneScore == 0f) {
+//                continue;
+//            }
+//            if (geneScoreMap.containsKey(geneScore)) {
+//                List<Gene> geneScoreGeneList = geneScoreMap.get(geneScore);
+//                geneScoreGeneList.add(g);
+//            } else {
+//                List<Gene> geneScoreGeneList = new ArrayList<>();
+//                geneScoreGeneList.add(g);
+//                geneScoreMap.put(geneScore, geneScoreGeneList);
+//            }
+//        }
+//        //changed so when have only 2 genes say in filtered set 1st one will get 0.6 and second 0.3 rather than 0.3 and 0
+//        float rank = 0;
+//        for (Float score : geneScoreMap.descendingKeySet()) {
+//            List<Gene> geneScoreGeneList = geneScoreMap.get(score);
+//            int sharedHits = geneScoreGeneList.size();
+//            float adjustedRank = rank;
+//            if (sharedHits > 1) {
+//                adjustedRank = rank + (sharedHits / 2);
+//            }
+//            float newScore = 0.6f - 0.6f * (adjustedRank / genes.size());
+//            rank = rank + sharedHits;
+//            for (Gene gene : geneScoreGeneList) {
+//                //i.e. only overwrite phenotype-based score if PPI score is larger
+//                HiPhivePriorityResult result = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY);
+//                if (newScore > result.getScore()) {
+//                    result.setScore(newScore);
+//                }
+//            }
+//        }
         String message = makeStatsMessage(genes);
         messages.add(message);
     }
@@ -156,6 +159,9 @@ public class HiPhivePriority implements Prioritiser {
             Integer columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(gene, highQualityPhenoMatchedGenes);
             Integer rowIndex = randomWalkMatrix.getRowIndexForGene(entrezGeneId);
             walkerScore = weightedHighQualityMatrix.get(rowIndex, columnIndex);
+            // optimal adjustment based on benchmarking to allow walker scores to compete with low phenotype scores
+            walkerScore = 0.5 +  walkerScore;
+            score = Math.max(score, walkerScore);
             if (walkerScore <= 0.00001) {
                 walkerScore = 0d;
             } else {
