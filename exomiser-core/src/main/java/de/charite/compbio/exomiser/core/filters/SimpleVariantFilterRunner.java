@@ -75,6 +75,12 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
             case PATHOGENICITY_FILTER:
                 variantDataService.setVariantPathogenicityData(variantEvaluation);
                 break;
+            case CADD_FILTER:
+                variantDataService.setVariantCADDData(variantEvaluation);
+                break;    
+            case REGULATORY_FEATURE_FILTER:
+                variantDataService.setVariantRegulatoryFeatureData(variantEvaluation);
+                break;
         }
     }
 

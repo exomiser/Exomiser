@@ -45,7 +45,7 @@ public class VariantDataServiceImplTest {
     private PathogenicityDao mockPathogenicityDao;
     @Mock
     private FrequencyDao mockFrequencyDao;
-    private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
     private static final PathogenicityData PATH_DATA = new PathogenicityData(new PolyPhenScore(1), new MutationTasterScore(1), new SiftScore(0));
     private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
     private VariantEvaluation varEval;

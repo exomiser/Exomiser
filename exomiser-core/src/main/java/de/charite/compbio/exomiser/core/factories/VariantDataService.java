@@ -5,14 +5,11 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.dao.CADDDao;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -20,23 +17,22 @@ import org.slf4j.LoggerFactory;
  */
 public interface VariantDataService {
 
-    FrequencyData getVariantFrequencyData(Variant variant);
+    public FrequencyData getVariantFrequencyData(Variant variant);
 
-    PathogenicityData getVariantPathogenicityData(Variant variant);
-
-    void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation);
-
-    void setVariantFrequencyData(VariantEvaluation variantEvaluation);
-
-    void setVariantPathogenicityData(VariantEvaluation variantEvaluation);
+    public PathogenicityData getVariantPathogenicityData(Variant variant);
+    //TODO: this is messy - only want one PathogenicityData call here.
+    public PathogenicityData getVariantCADDData(Variant variant);
     
-    public PathogenicityData getVariantCADDData(Variant variant) {
-        PathogenicityData pathData = caddDao.getPathogenicityData(variant);
-        return pathData;
-    }
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant);
     
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
-        VariantEffect variantEffect = regulatoryFeatureDao.getRegulatoryFeatureData(variant);
-        return variantEffect;
-    }
+    public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation);
+
+    public void setVariantFrequencyData(VariantEvaluation variantEvaluation);
+
+    public void setVariantPathogenicityData(VariantEvaluation variantEvaluation);
+    
+    public void setVariantCADDData(VariantEvaluation variantEvaluation);
+    
+    public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation);
+        
 }

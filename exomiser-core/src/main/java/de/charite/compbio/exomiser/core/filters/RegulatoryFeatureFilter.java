@@ -1,15 +1,9 @@
 package de.charite.compbio.exomiser.core.filters;
 
-import java.lang.*;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.annotation.Annotation;
-
-
-import java.util.EnumSet;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.Objects;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +28,8 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     private static final FilterType filterType = FilterType.REGULATORY_FEATURE_FILTER;
 
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passedFilterResult = new RegulatoryFeatureFilterResult(1f, FilterResultStatus.PASS);
-    private final FilterResult failedFilterResult = new RegulatoryFeatureFilterResult(0f, FilterResultStatus.FAIL);
+    private final FilterResult passedFilterResult = new PassFilterResult(filterType, 1f);
+    private final FilterResult failedFilterResult = new FailFilterResult(filterType, 0f);
 
     /**
      * The constructor initializes the set of off-target
@@ -88,7 +82,7 @@ public class RegulatoryFeatureFilter implements VariantFilter {
 
     @Override
     public String toString() {
-        return filterType.toString();
+        return "RegulatoryFeatureFilter{" + '}';
     }
-
+    
 }

@@ -119,13 +119,13 @@ public class CADDFilter implements VariantFilter {
 
     private FilterResult returnPassResult(float filterScore) {
         // We passed the filter (Variant is predicted pathogenic).
-        FilterResult passResult = new CADDFilterResult(filterScore, FilterResultStatus.PASS);
+        FilterResult passResult = new PassFilterResult(filterType, filterScore);
         return passResult;
     }
 
     private FilterResult returnFailResult(float filterScore) {
         // Variant is not predicted pathogenic, return failed.
-        FilterResult failResult = new CADDFilterResult(filterScore, FilterResultStatus.FAIL);
+        FilterResult failResult = new FailFilterResult(filterType, filterScore);
         return failResult;
     }
 
@@ -151,7 +151,7 @@ public class CADDFilter implements VariantFilter {
 
     @Override
     public String toString() {
-        return String.format("%s filter: removePathFilterCutOff=%s", filterType, removePathFilterCutOff);
+        return "CADDFilter{" + "removePathFilterCutOff=" + removePathFilterCutOff + '}';
     }
 
 }

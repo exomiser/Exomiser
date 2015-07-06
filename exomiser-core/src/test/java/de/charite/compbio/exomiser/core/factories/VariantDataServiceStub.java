@@ -13,6 +13,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.LinkedHashSet;
 
 /**
@@ -44,6 +45,26 @@ public class VariantDataServiceStub implements VariantDataService {
     @Override
     public void setVariantPathogenicityData(VariantEvaluation variantEvaluation) {
         //deliberately empty
+    }
+
+    @Override
+    public PathogenicityData getVariantCADDData(Variant variant) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setVariantCADDData(VariantEvaluation variantEvaluation) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }

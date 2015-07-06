@@ -17,8 +17,8 @@ public class GenePriorityScoreFilter implements GeneFilter {
 
     private final float minPriorityScore;
     
-    private final FilterResult passResult = new GenericFilterResult(filterType, 1.0f, FilterResultStatus.PASS);
-    private final FilterResult failResult = new GenericFilterResult(filterType, 0.0f, FilterResultStatus.FAIL);
+    private final FilterResult passResult = new PassFilterResult(filterType, 1.0f);
+    private final FilterResult failResult = new FailFilterResult(filterType, 0.0f);
 
     public GenePriorityScoreFilter(float minPriorityScore) {
         this.minPriorityScore = minPriorityScore;
