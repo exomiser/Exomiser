@@ -411,4 +411,4 @@ public class GeneTest {
         instance.setFilterScore(secondScore);
         assertThat(instance.getFilterScore(), equalTo(secondScore));
     }
-        }
+}

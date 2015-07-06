@@ -63,6 +63,7 @@ public class Gene implements Comparable<Gene>, Filterable {
      * gene for the disease under study by exome sequencing.
      */
     private float priorityScore = 0f;
+
     /**
      * A score representing the combined pathogenicity predictions for the
      * {@link jannovar.exome.Variant Variant} objects associated with this gene.
