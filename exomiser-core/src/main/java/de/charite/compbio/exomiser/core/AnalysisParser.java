@@ -122,7 +122,7 @@ public class AnalysisParser {
         }
 
         private Boolean parseOutputPassVariantsOnly(Map<String, Boolean> analysisMap) {
-            Boolean outputPassOnly = analysisMap.getOrDefault("outputPassVariantsOnly", false);
+            Boolean outputPassOnly = analysisMap.get("outputPassVariantsOnly");
             if (outputPassOnly == null) {
                 throw new AnalysisParserException("outputPassVariantsOnly cannot be null.", analysisMap);
             }
@@ -130,25 +130,25 @@ public class AnalysisParser {
         }
 
         private int parseNumberOfGenesToShow(Map<String, Integer> analysisMap) {
-            Integer genesToShow = analysisMap.getOrDefault("numGenes", 0);
+            Integer genesToShow = analysisMap.get("numGenes");
             if (genesToShow == null) {
-                throw new AnalysisParserException("numGenes cannot be null.", analysisMap);
+                genesToShow = 0;
             }
             return genesToShow;
         }
 
         private String parseOutputPrefix(Map<String, String> analysisMap) {
-            String outputPrefix = analysisMap.getOrDefault("outputPrefix", "exomiser-results");
+            String outputPrefix = analysisMap.get("outputPrefix");
             if (outputPrefix == null) {
-                throw new AnalysisParserException("outputPrefix cannot be null.", analysisMap);
+                outputPrefix = "exomiser-results";
             }
             return outputPrefix;
         }
 
         private Set<OutputFormat> parseOutputFormats(Map<String, List<String>> analysisMap) {
-            List<String> givenOutputFormats = analysisMap.getOrDefault("outputFormats", new ArrayList<String>());
+            List<String> givenOutputFormats = analysisMap.get("outputFormats");
             if (givenOutputFormats == null) {
-                throw new AnalysisParserException("outputFormats cannot be null.", analysisMap);
+                givenOutputFormats = new ArrayList<>();
             }
             Set<OutputFormat> parsedOutputFormats = new LinkedHashSet<>();
             for (String name : givenOutputFormats) {
@@ -215,7 +215,7 @@ public class AnalysisParser {
         }
 
         private Path parseVcf(Map<String, String> analysisMap) {
-            String vcfValue = analysisMap.getOrDefault("vcf", null);
+            String vcfValue = analysisMap.get("vcf");
             //VCF file paths are not allowed to be null
             if (vcfValue == null) {
                 throw new AnalysisParserException("VCF path cannot be null.", analysisMap);
@@ -224,7 +224,7 @@ public class AnalysisParser {
         }
 
         private Path parsePed(Map<String, String> analysisMap) {
-            String pedValue = analysisMap.getOrDefault("ped", null);
+            String pedValue = analysisMap.get("ped");
             //PED file paths are allowed to be null
             if (pedValue == null) {
                 return null;
@@ -233,7 +233,10 @@ public class AnalysisParser {
         }
 
         private ModeOfInheritance parseModeOfInheritance(Map<String, String> analysisMap) {
-            String value = analysisMap.getOrDefault("modeOfInheritance", "UNDEFINED");
+            String value = analysisMap.get("modeOfInheritance");
+            if (value == null) {
+                return ModeOfInheritance.UNINITIALIZED;
+            }
             if (value.equals("UNDEFINED")) {
                 return ModeOfInheritance.UNINITIALIZED;
             }
@@ -241,25 +244,35 @@ public class AnalysisParser {
         }
 
         private AnalysisMode parseAnalysisMode(Map<String, String> analysisMap) {
-            String value = analysisMap.getOrDefault("analysisMode", "PASS_ONLY");
-            if (value.equals("PASS_ONLY")) {
+            String value = analysisMap.get("analysisMode");
+            if (value == null) {
                 return AnalysisMode.PASS_ONLY;
             }
             return AnalysisMode.valueOf(value);
         }
 
         private ScoringMode parseScoringMode(Map<String, String> analysisMap) {
-            String value = analysisMap.getOrDefault("geneScoreMode", "RAW_SCORE");
-
+            String value = analysisMap.get("geneScoreMode");
+            if (value == null) {
+                return ScoringMode.RAW_SCORE;
+            }
             return ScoringMode.valueOf(value);
         }
 
         private List<String> parseHpoIds(Map<String, List> analysisMap) {
-            return analysisMap.getOrDefault("hpoIds", new ArrayList());
+            List<String> hpoIds = analysisMap.get("hpoIds");
+            if (hpoIds == null) {
+                hpoIds = new ArrayList();
+            }
+            return hpoIds;
         }
 
         private List<Map<String, Map>> parseAnalysisSteps(Map analysisMap) {
-            return (List) analysisMap.getOrDefault("steps", new ArrayList());
+            List steps = (List) analysisMap.get("steps");
+            if (steps == null) {
+                steps = new ArrayList();
+            }
+            return steps;
         }
 
         /**
@@ -311,7 +324,7 @@ public class AnalysisParser {
         }
 
         private IntervalFilter makeIntervalFilter(Map<String, String> options) {
-            String interval = options.getOrDefault("interval", null);
+            String interval = options.get("interval");
             if (interval == null) {
                 throw new AnalysisParserException("Interval filter requires a valid genetic interval e.g. {interval: 'chr10:122892600-122892700'}", options);
             }
@@ -319,7 +332,7 @@ public class AnalysisParser {
         }
 
         private EntrezGeneIdFilter makeGeneIdFilter(Map<String, List> options) {
-            List geneIds = options.getOrDefault("geneIds", null);
+            List geneIds = options.get("geneIds");
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("GeneId filter requires a list of ENTREZ geneIds e.g. {geneIds: [12345, 34567, 98765]}", options);
             }
@@ -327,8 +340,8 @@ public class AnalysisParser {
         }
 
         private VariantEffectFilter makeVariantEffectFilter(Map<String, List> options) {
-            List<String> effectsToRemove = options.getOrDefault("remove", new ArrayList());
-            if (effectsToRemove.isEmpty()) {
+            List<String> effectsToRemove = options.get("remove");
+            if (effectsToRemove == null) {
                 throw new AnalysisParserException("VariantEffect filter requires a list of VariantEffects to be removed e.g. {remove: [UPSTREAM_GENE_VARIANT, INTERGENIC_VARIANT, SYNONYMOUS_VARIANT]}", options);
             }
             List<VariantEffect> variantEffects = new ArrayList<>();
@@ -344,7 +357,7 @@ public class AnalysisParser {
         }
 
         private QualityFilter makeQualityFilter(Map<String, Double> options) {
-            Double quality = options.getOrDefault("minQuality", null);
+            Double quality = options.get("minQuality");
             if (quality == null) {
                 throw new AnalysisParserException("Quality filter requires a floating point value for the minimum PHRED score e.g. {minQuality: 50.0}", options);
             }
@@ -357,11 +370,11 @@ public class AnalysisParser {
         }
 
         private FrequencyFilter makeFrequencyFilter(Map<String, Object> options) {
-            Double maxFreq = (Double) options.getOrDefault("maxFrequency", null);
+            Double maxFreq = (Double) options.get("maxFrequency");
             if (maxFreq == null) {
                 throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 1.0}", options);
             }
-//            Boolean removeKnownVariants = (Boolean) options.getOrDefault("removeKnownVariants", null);
+//            Boolean removeKnownVariants = (Boolean) options.get("removeKnownVariants", null);
 //            if (removeKnownVariants == null) {
 //                throw new AnalysisParserException("Frequency filter requires a boolean value for removeKnownVariants e.g. {removeKnownVariants: false}", options);
 //            }
@@ -369,7 +382,7 @@ public class AnalysisParser {
         }
 
         private PathogenicityFilter makePathogenicityFilter(Map<String, Object> options) {
-            Boolean keepNonPathogenic = (Boolean) options.getOrDefault("keepNonPathogenic", null);
+            Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
             if (keepNonPathogenic == null) {
                 throw new AnalysisParserException("Pathogenicity filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
             }
@@ -377,7 +390,7 @@ public class AnalysisParser {
         }
 
         private PriorityScoreFilter makePriorityScoreFilter(Map<String, Double> options) {
-            Double minPriorityScore = options.getOrDefault("minPriorityScore", null);
+            Double minPriorityScore = options.get("minPriorityScore");
             if (minPriorityScore == null) {
                 throw new AnalysisParserException("Priority score filter requires a floating point value for the minimum prioritiser score e.g. {minPriorityScore: 0.65}", options);
             }
@@ -395,9 +408,18 @@ public class AnalysisParser {
         private HiPhivePriority makeHiPhivePrioritiser(Map<String, String> options, List<String> hpoIds) {
             HiPhiveOptions hiPhiveOptions = new HiPhiveOptions();
             if (!options.isEmpty()) {
-                String diseaseId = options.getOrDefault("diseaseId", "");
-                String candidateGeneSymbol = options.getOrDefault("candidateGeneSymbol", "");
-                String runParams = options.getOrDefault("runParams", "");
+                String diseaseId = options.get("diseaseId");
+                if (diseaseId == null) {
+                    diseaseId = "";
+                }
+                String candidateGeneSymbol = options.get("candidateGeneSymbol");
+                if (candidateGeneSymbol == null) {
+                    candidateGeneSymbol = "";
+                }
+                String runParams = options.get("runParams");
+                if (runParams == null) {
+                    runParams = "";
+                }
                 hiPhiveOptions = new HiPhiveOptions(diseaseId, candidateGeneSymbol, runParams);
                 logger.info("Made {}", hiPhiveOptions);
             }
@@ -405,7 +427,7 @@ public class AnalysisParser {
         }
 
         private ExomeWalkerPriority makeWalkerPrioritiser(Map<String, List> options) {
-            List geneIds = options.getOrDefault("seedGeneIds", null);
+            List geneIds = options.get("seedGeneIds");
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("ExomeWalker prioritiser requires a list of ENTREZ geneIds e.g. {seedGeneIds: [11111, 22222, 33333]}", options);
             }
