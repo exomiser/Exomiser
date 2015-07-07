@@ -269,11 +269,24 @@ public class FilterReportFactoryTest {
         FilterType filterType = FilterType.INHERITANCE_FILTER;
 
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage(String.format("Total of 0 genes were analyzed. 0 had genes with distribution compatible with %s inheritance.", expectedInheritanceMode));
+        report.addMessage(String.format("Total of 0 genes were analysed. 0 had distribution compatible with %s inheritance.", expectedInheritanceMode));
 
         FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, equalTo(report));
     }
 
+    @Test
+    public void testMakePriorityScoreFilterReport() {
+        float minimumPriorityScore = 0.5f;
+        Filter filter = new PriorityScoreFilter(minimumPriorityScore);
+        FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
+
+        FilterReport report = new FilterReport(filterType, 0, 0);
+        report.addMessage("Total of 0 genes were analysed. 0 had priority scores over 0.5");
+        
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
+
+        assertThat(result, equalTo(report));
+    }
 }

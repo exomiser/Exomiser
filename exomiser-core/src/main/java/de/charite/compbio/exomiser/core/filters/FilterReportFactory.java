@@ -90,6 +90,8 @@ public class FilterReportFactory {
                 return makeIntervalFilterReport( (IntervalFilter) filter, sampleData.getVariantEvaluations());
             case INHERITANCE_FILTER:
                 return makeInheritanceFilterReport( (InheritanceFilter) filter, sampleData.getGenes());
+            case PRIORITY_SCORE_FILTER:
+                return makePriorityScoreFilterReport((PriorityScoreFilter) filter, sampleData.getGenes());
             default:
                 return makeDefaultVariantFilterReport(filterType, sampleData.getVariantEvaluations());
         }
@@ -186,8 +188,17 @@ public class FilterReportFactory {
     private FilterReport makeInheritanceFilterReport(InheritanceFilter filter, List<Gene> genes) {
         FilterReport report = makeDefaultGeneFilterReport(FilterType.INHERITANCE_FILTER, genes);
         
-        report.addMessage(String.format("Total of %d genes were analyzed. %d had genes with distribution compatible with %s inheritance.",
+        report.addMessage(String.format("Total of %d genes were analysed. %d had distribution compatible with %s inheritance.",
                 genes.size(), report.getPassed(), filter.getModeOfInheritance()));
+        
+        return report;
+    }
+    
+    private FilterReport makePriorityScoreFilterReport(PriorityScoreFilter filter, List<Gene> genes) {
+        FilterReport report = makeDefaultGeneFilterReport(FilterType.PRIORITY_SCORE_FILTER, genes);
+        
+        report.addMessage(String.format("Total of %d genes were analysed. %d had priority scores over %s",
+                genes.size(), report.getPassed(), filter.getMinPriorityScore()));
         
         return report;
     }
