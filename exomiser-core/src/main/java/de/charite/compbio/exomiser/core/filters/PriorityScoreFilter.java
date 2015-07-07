@@ -6,6 +6,9 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import java.util.Objects;
 
 /**
  *
@@ -16,12 +19,18 @@ public class PriorityScoreFilter implements GeneFilter {
     private static final FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
 
     private final float minPriorityScore;
+    private final PriorityType priorityType;
     
     private final FilterResult passResult = new PassFilterResult(filterType, 1.0f);
     private final FilterResult failResult = new FailFilterResult(filterType, 0.0f);
 
-    public PriorityScoreFilter(float minPriorityScore) {
+    public PriorityScoreFilter(PriorityType priorityType, float minPriorityScore) {
         this.minPriorityScore = minPriorityScore;
+        this.priorityType = priorityType;
+    }
+
+    public PriorityType getPriorityType() {
+        return priorityType;
     }
 
     public float getMinPriorityScore() {
@@ -43,7 +52,11 @@ public class PriorityScoreFilter implements GeneFilter {
      */
     @Override
     public FilterResult runFilter(Gene gene) {
-        if (gene.getPriorityScore() >= minPriorityScore) {
+        PriorityResult priorityResult = gene.getPriorityResult(priorityType);
+        if (priorityResult == null) {
+            return failResult;
+        }
+        if (priorityResult.getScore() >= minPriorityScore) {
             return passResult;
         }
         return failResult;
@@ -51,8 +64,9 @@ public class PriorityScoreFilter implements GeneFilter {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 37 * hash + Float.floatToIntBits(this.minPriorityScore);
+        int hash = 7;
+        hash = 17 * hash + Float.floatToIntBits(this.minPriorityScore);
+        hash = 17 * hash + Objects.hashCode(this.priorityType);
         return hash;
     }
 
@@ -68,12 +82,12 @@ public class PriorityScoreFilter implements GeneFilter {
         if (Float.floatToIntBits(this.minPriorityScore) != Float.floatToIntBits(other.minPriorityScore)) {
             return false;
         }
-        return true;
+        return this.priorityType == other.priorityType;
     }
 
     @Override
     public String toString() {
-        return "PriorityScoreFilter{" + "minPriorityScore=" + minPriorityScore + '}';
+        return "PriorityScoreFilter{" + "priorityType=" + priorityType + ", minPriorityScore=" + minPriorityScore + '}';
     }
 
 }

@@ -69,7 +69,7 @@ public class PriorityFactoryImpl implements PriorityFactory {
                 return makeOmimPrioritiser();
             case PHENIX_PRIORITY:
                 return makePhenixPrioritiser(hpoIds);
-            case HI_PHIVE_PRIORITY:
+            case HIPHIVE_PRIORITY:
                 return makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions(diseaseId, candidateGene, hiPhiveParams));
             case PHIVE_PRIORITY:
                 return makePhivePrioritiser(hpoIds);

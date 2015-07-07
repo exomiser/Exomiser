@@ -14,6 +14,7 @@ import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
@@ -177,7 +178,7 @@ public class FilterReportFactoryTest {
         
         FilterReport report = new FilterReport(filterType, 1, 1);
         
-        report.addMessage("Allele frequency < 0.00%");   
+        report.addMessage("Variants filtered for maximum allele frequency of 0.00%");   
         FilterReport result = instance.makeFilterReport(filter, sampleData);
         System.out.println(result);
         assertThat(result, equalTo(report));
@@ -215,7 +216,7 @@ public class FilterReportFactoryTest {
         FilterType filterType = filter.getFilterType();
 
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage("PHRED quality 100.0");
+        report.addMessage("Variants filtered for mimimum PHRED quality of 100.0");
 
         FilterReport result = instance.makeFilterReport(filter, sampleData);
 
@@ -269,7 +270,7 @@ public class FilterReportFactoryTest {
         FilterType filterType = FilterType.INHERITANCE_FILTER;
 
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage(String.format("Total of 0 genes were analysed. 0 had distribution compatible with %s inheritance.", expectedInheritanceMode));
+        report.addMessage("Genes filtered for compatibility with AUTOSOMAL_DOMINANT inheritance.");
 
         FilterReport result = instance.makeFilterReport(filter, sampleData);
 
@@ -279,11 +280,11 @@ public class FilterReportFactoryTest {
     @Test
     public void testMakePriorityScoreFilterReport() {
         float minimumPriorityScore = 0.5f;
-        Filter filter = new PriorityScoreFilter(minimumPriorityScore);
+        Filter filter = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, minimumPriorityScore);
         FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
 
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage("Total of 0 genes were analysed. 0 had priority scores over 0.5");
+        report.addMessage("Genes filtered for prioritiser scores from PHIVE_PRIORITY under 0.5");
         
         FilterReport result = instance.makeFilterReport(filter, sampleData);
 

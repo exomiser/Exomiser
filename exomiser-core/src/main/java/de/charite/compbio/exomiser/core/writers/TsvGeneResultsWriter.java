@@ -93,7 +93,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         // priority score calculation
         for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
             PriorityType type = prioritiserResult.getPriorityType();
-            if (type == PriorityType.HI_PHIVE_PRIORITY) {
+            if (type == PriorityType.HIPHIVE_PRIORITY) {
                 HiPhivePriorityResult phenoScore = (HiPhivePriorityResult) prioritiserResult;
                 phiveAllSpeciesScore = phenoScore.getScore();
                 humanPhenScore = phenoScore.getHumanScore();

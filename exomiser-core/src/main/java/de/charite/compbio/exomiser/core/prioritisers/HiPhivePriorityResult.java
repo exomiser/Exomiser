@@ -63,7 +63,7 @@ public class HiPhivePriorityResult implements PriorityResult {
 
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.HI_PHIVE_PRIORITY;
+        return PriorityType.HIPHIVE_PRIORITY;
     }
 
     public String getGeneSymbol() {

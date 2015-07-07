@@ -24,6 +24,7 @@ import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriority;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
@@ -177,8 +178,8 @@ public class AnalysisParserTest {
 
     @Test
     public void testParseAnalysisStep_PriorityScoreFilter() {
-        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("priorityScoreFilter: {minPriorityScore: 0.65}"));
-        analysisSteps.add(new PriorityScoreFilter(0.65f));
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.65}"));
+        analysisSteps.add(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.65f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -268,6 +269,7 @@ public class AnalysisParserTest {
         analysisSteps.add(new OMIMPriority());
         analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions(), null));
         analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions("OMIM:101600", "FGFR2", "mouse,fish,human,ppi"), null));
+        analysisSteps.add(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.7f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 

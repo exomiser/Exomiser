@@ -24,7 +24,7 @@ public class HiPhiveOptionMarshaller extends AbstractOptionMarshaller {
                 .withType(String.class)
                 .withValueSeparator(',')
                 .withDescription(String.format("Comma separated list of optional parameters for %s: human, mouse, fish, ppi. "
-                                + "e.g. --%s=human or --%s=human,mouse,ppi", PriorityType.HI_PHIVE_PRIORITY, HIPHIVE_PARAMS_OPTION, HIPHIVE_PARAMS_OPTION))
+                                + "e.g. --%s=human or --%s=human,mouse,ppi", PriorityType.HIPHIVE_PRIORITY.getCommandLineValue(), HIPHIVE_PARAMS_OPTION, HIPHIVE_PARAMS_OPTION))
                 .withLongOpt(HIPHIVE_PARAMS_OPTION)
                 .create("E");
     }

@@ -64,7 +64,7 @@ public class PriorityFactoryImplTest {
 
     @Test
     public void testmakePrioritiserForHiPhivePriority() {
-        PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
+        PriorityType type = PriorityType.HIPHIVE_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(type, settings);
@@ -73,7 +73,7 @@ public class PriorityFactoryImplTest {
 
     @Test
     public void testmakeHiPhivePrioritiserWithDiseaseIdAndEmptyHpoList() {
-        PriorityType type = PriorityType.HI_PHIVE_PRIORITY;
+        PriorityType type = PriorityType.HIPHIVE_PRIORITY;
         List<String> emptyStringList = Collections.emptyList();
         PrioritiserSettings settings = new PrioritiserSettingsBuilder()
                 .usePrioritiser(type)

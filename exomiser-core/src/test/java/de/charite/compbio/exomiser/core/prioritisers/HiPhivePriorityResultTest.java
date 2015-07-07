@@ -48,7 +48,7 @@ public class HiPhivePriorityResultTest {
         
     @Test
     public void testGetPriorityType() {
-        assertThat(instance.getPriorityType(), equalTo(PriorityType.HI_PHIVE_PRIORITY));
+        assertThat(instance.getPriorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
 
     @Test
