@@ -57,12 +57,14 @@ public class VariantDataServiceImpl implements VariantDataService {
         variantEvaluation.setPathogenicityData(pathData);
     }
 
+    @Override
     public void setVariantCADDData(VariantEvaluation variantEvaluation) {
         // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
         PathogenicityData pathData = getVariantCADDData(variantEvaluation);
         variantEvaluation.setPathogenicityData(pathData);
     }
     
+    @Override
     public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation) {
         if (variantEvaluation.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variantEvaluation.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
             VariantEffect variantEffect = getVariantRegulatoryFeatureData(variantEvaluation);
