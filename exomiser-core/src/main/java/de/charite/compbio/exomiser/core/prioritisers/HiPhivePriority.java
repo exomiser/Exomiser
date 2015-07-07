@@ -24,7 +24,7 @@ public class HiPhivePriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(HiPhivePriority.class);
 
-    private static final PriorityType PRIORITY_TYPE = PriorityType.HI_PHIVE_PRIORITY;
+    private static final PriorityType PRIORITY_TYPE = PriorityType.HIPHIVE_PRIORITY;
 
     private final List<String> hpoIds;
     private final HiPhiveOptions options;

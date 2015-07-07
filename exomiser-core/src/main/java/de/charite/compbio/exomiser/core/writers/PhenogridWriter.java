@@ -57,8 +57,8 @@ public class PhenogridWriter implements ResultsWriter {
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleData.getGenes(), settings.getNumberOfGenesToShow());       
         List<HiPhivePriorityResult> hiPhiveResults = new ArrayList<>();
         for (Gene gene : passedGenes) {
-            if (gene.getPriorityResults().containsKey(PriorityType.HI_PHIVE_PRIORITY)) {
-               HiPhivePriorityResult hiPhiveResult = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY);
+            if (gene.getPriorityResults().containsKey(PriorityType.HIPHIVE_PRIORITY)) {
+               HiPhivePriorityResult hiPhiveResult = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HIPHIVE_PRIORITY);
                hiPhiveResults.add(hiPhiveResult);
             }
         }

@@ -44,9 +44,7 @@ public class PriorityTypeTest {
     @Test
     public void testToString() {
         PriorityType instance = PriorityType.PHIVE_PRIORITY;
-        String expResult = "phive";
-        String result = instance.toString();
-        assertEquals(expResult, result);
+        assertThat(instance.toString(), equalTo("PHIVE_PRIORITY"));
     }
     
     @Test

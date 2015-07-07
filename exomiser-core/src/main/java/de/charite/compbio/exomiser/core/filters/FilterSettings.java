@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -17,19 +16,19 @@ import java.util.Set;
  */
 public interface FilterSettings {
 
-    public Set<Integer> getGenesToKeep();
-
     public float getMaximumFrequency();
-
-    public boolean removeKnownVariants();
 
     public float getMinimumQuality();
 
-    public boolean removePathFilterCutOff();
-
     public GeneticInterval getGeneticInterval();
+
+    public boolean keepOffTargetVariants();
+
+    public boolean removeKnownVariants();
+
+    public boolean removePathFilterCutOff();
 
     public ModeOfInheritance getModeOfInheritance();
 
-    public boolean keepOffTargetVariants();
+    public Set<Integer> getGenesToKeep();
 }

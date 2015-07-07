@@ -22,6 +22,7 @@ import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriority;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriority;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
@@ -344,7 +345,7 @@ public class AnalysisParser {
         }
 
         private EntrezGeneIdFilter makeGeneIdFilter(Map<String, List> options) {
-            List geneIds = options.get("geneIds");
+            List<Integer> geneIds = options.get("geneIds");
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("GeneId filter requires a list of ENTREZ geneIds e.g. {geneIds: [12345, 34567, 98765]}", options);
             }
@@ -397,12 +398,18 @@ public class AnalysisParser {
             return new PathogenicityFilter(keepNonPathogenic);
         }
 
-        private PriorityScoreFilter makePriorityScoreFilter(Map<String, Double> options) {
-            Double minPriorityScore = options.get("minPriorityScore");
+        private PriorityScoreFilter makePriorityScoreFilter(Map<String, Object> options) {          
+            String priorityTypeString = (String) options.get("priorityType");
+            if (priorityTypeString == null) {
+                throw new AnalysisParserException("Priority score filter requires a string value for the prioritiser type e.g. {priorityType: HIPHIVE_PRIORITY}", options);
+            }
+            PriorityType priorityType = PriorityType.valueOf(priorityTypeString);
+            
+            Double minPriorityScore = (Double) options.get("minPriorityScore");
             if (minPriorityScore == null) {
                 throw new AnalysisParserException("Priority score filter requires a floating point value for the minimum prioritiser score e.g. {minPriorityScore: 0.65}", options);
             }
-            return new PriorityScoreFilter(minPriorityScore.floatValue());
+            return new PriorityScoreFilter(priorityType, minPriorityScore.floatValue());
         }
 
         private RegulatoryFeatureFilter makeRegulatoryFeatureFilter(Map<String, Double> options) {

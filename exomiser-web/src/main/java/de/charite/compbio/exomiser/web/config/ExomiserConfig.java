@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.web.config;
 
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
@@ -56,6 +57,11 @@ public class ExomiserConfig {
     @Autowired
     private Environment env;
 
+    @Bean
+    public Exomiser exomiser(){
+        return new Exomiser(variantDataService(), priorityFactory());
+    }
+    
     /**
      * This is critical for the application to run as it points to the data
      * directory where all the required resources are found. Without this being

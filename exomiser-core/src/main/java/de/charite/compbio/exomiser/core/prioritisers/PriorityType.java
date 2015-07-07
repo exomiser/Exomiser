@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 public enum PriorityType {
    
     //Prioritises against PPI-RandomWalk-proximity and dynamic human, mouse and fish phenotypes
-    HI_PHIVE_PRIORITY("hiphive", ScoringMode.RAW_SCORE),
+    HIPHIVE_PRIORITY("hiphive", ScoringMode.RAW_SCORE),
 
     //Prioritises against PPI-RandomWalk-proximity A.K.A "GeneWanderer"
     EXOMEWALKER_PRIORITY("exomewalker", ScoringMode.RAW_SCORE),
@@ -63,9 +63,9 @@ public enum PriorityType {
         return PriorityType.NOT_SET;
     }
 
-    @Override
-    public String toString() {
-        return commandLineValue;
-    } 
-    
+//    @Override
+//    public String toString() {
+//        return commandLineValue;
+//    } 
+//    
 }

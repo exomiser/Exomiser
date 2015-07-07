@@ -137,17 +137,33 @@ public class HiPhiveOptions {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         HiPhiveOptions that = (HiPhiveOptions) o;
 
-        if (benchmarkingEnabled != that.benchmarkingEnabled) return false;
-        if (runPpi != that.runPpi) return false;
-        if (runHuman != that.runHuman) return false;
-        if (runMouse != that.runMouse) return false;
-        if (runFish != that.runFish) return false;
-        if (diseaseId != null ? !diseaseId.equals(that.diseaseId) : that.diseaseId != null) return false;
+        if (benchmarkingEnabled != that.benchmarkingEnabled) {
+            return false;
+        }
+        if (runPpi != that.runPpi) {
+            return false;
+        }
+        if (runHuman != that.runHuman) {
+            return false;
+        }
+        if (runMouse != that.runMouse) {
+            return false;
+        }
+        if (runFish != that.runFish) {
+            return false;
+        }
+        if (diseaseId != null ? !diseaseId.equals(that.diseaseId) : that.diseaseId != null) {
+            return false;
+        }
         return !(candidateGeneSymbol != null ? !candidateGeneSymbol.equals(that.candidateGeneSymbol) : that.candidateGeneSymbol != null);
 
     }

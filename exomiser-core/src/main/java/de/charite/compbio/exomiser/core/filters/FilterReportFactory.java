@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Factory class for producing {@code FilterReport} lists from the list of
- * filtered {@code VariantEvaluation}. 
+ * filtered {@code VariantEvaluation}.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -34,9 +34,9 @@ public class FilterReportFactory {
 
     /**
      * Makes a List of {@code FilterReport} for the specified {@code Analysis}.
-     * 
+     *
      * @param analysis
-     * @return a List of {@code FilterReport} 
+     * @return a List of {@code FilterReport}
      */
     public List<FilterReport> makeFilterReports(Analysis analysis) {
 
@@ -44,7 +44,7 @@ public class FilterReportFactory {
         List<FilterReport> filterReports = new ArrayList<>();
 
         List<Filter> filters = getFiltersFromAnalysis(analysis);
-        
+
         for (Filter filter : filters) {
             filterReports.add(makeFilterReport(filter, sampleData));
         }
@@ -54,20 +54,20 @@ public class FilterReportFactory {
 
     private List<Filter> getFiltersFromAnalysis(Analysis analysis) {
         List<Filter> filters = new ArrayList<>();
-        
+
         for (AnalysisStep step : analysis.getAnalysisSteps()) {
             if (Filter.class.isInstance(step)) {
-                filters.add( (Filter) step);
+                filters.add((Filter) step);
             }
         }
-        
+
         return filters;
     }
 
     /**
-     * Returns a FilterReport for the SampleData and the specified
-     * FilterType. If the FilterType is not recognised or supported then this
-     * method will return a default report with no messages.
+     * Returns a FilterReport for the SampleData and the specified FilterType.
+     * If the FilterType is not recognised or supported then this method will
+     * return a default report with no messages.
      *
      * @param filter
      * @param sampleData
@@ -77,19 +77,21 @@ public class FilterReportFactory {
         FilterType filterType = filter.getFilterType();
         switch (filterType) {
             case VARIANT_EFFECT_FILTER:
-                return makeTargetFilterReport( (VariantEffectFilter) filter, sampleData.getVariantEvaluations());
+                return makeTargetFilterReport((VariantEffectFilter) filter, sampleData.getVariantEvaluations());
             case KNOWN_VARIANT_FILTER:
-                return makeKnownVariantFilterReport( (KnownVariantFilter) filter, sampleData.getVariantEvaluations());
+                return makeKnownVariantFilterReport((KnownVariantFilter) filter, sampleData.getVariantEvaluations());
             case FREQUENCY_FILTER:
-                return makeFrequencyFilterReport( (FrequencyFilter) filter, sampleData.getVariantEvaluations());
+                return makeFrequencyFilterReport((FrequencyFilter) filter, sampleData.getVariantEvaluations());
             case QUALITY_FILTER:
-                return makeQualityFilterReport( (QualityFilter) filter, sampleData.getVariantEvaluations());
+                return makeQualityFilterReport((QualityFilter) filter, sampleData.getVariantEvaluations());
             case PATHOGENICITY_FILTER:
-                return makePathogenicityFilterReport( (PathogenicityFilter) filter, sampleData.getVariantEvaluations());
+                return makePathogenicityFilterReport((PathogenicityFilter) filter, sampleData.getVariantEvaluations());
             case INTERVAL_FILTER:
-                return makeIntervalFilterReport( (IntervalFilter) filter, sampleData.getVariantEvaluations());
+                return makeIntervalFilterReport((IntervalFilter) filter, sampleData.getVariantEvaluations());
             case INHERITANCE_FILTER:
-                return makeInheritanceFilterReport( (InheritanceFilter) filter, sampleData.getGenes());
+                return makeInheritanceFilterReport((InheritanceFilter) filter, sampleData.getGenes());
+            case PRIORITY_SCORE_FILTER:
+                return makePriorityScoreFilterReport((PriorityScoreFilter) filter, sampleData.getGenes());
             default:
                 return makeDefaultVariantFilterReport(filterType, sampleData.getVariantEvaluations());
         }
@@ -97,7 +99,7 @@ public class FilterReportFactory {
 
     private FilterReport makeTargetFilterReport(VariantEffectFilter filter, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.VARIANT_EFFECT_FILTER, variantEvaluations);
-        
+
         report.addMessage(String.format("Removed a total of %d off-target variants from further consideration", report.getFailed()));
         report.addMessage(String.format("Off target variants are defined as variants with effect: %s", filter.getOffTargetVariantTypes()));
 
@@ -106,7 +108,7 @@ public class FilterReportFactory {
 
     private FilterReport makeKnownVariantFilterReport(KnownVariantFilter filter, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.KNOWN_VARIANT_FILTER, variantEvaluations);
-        
+
         int numNotInDatabase = 0;
         int numDbSnpFreqData = 0;
         int numDbSnpRsId = 0;
@@ -132,9 +134,9 @@ public class FilterReportFactory {
                 numExaCFreqData++;
             }
         }
-        
+
         int before = report.getPassed() + report.getFailed();
-        
+
         report.addMessage(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, 100f * (double) numNotInDatabase / before));
         report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, 100 * (double) numDbSnpRsId / before));
         report.addMessage(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, 100f * (double) numDbSnpFreqData / before));
@@ -142,24 +144,24 @@ public class FilterReportFactory {
         report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, 100f * (double) numExaCFreqData / before));
         return report;
     }
-    
+
     private FilterReport makeFrequencyFilterReport(FrequencyFilter filter, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.FREQUENCY_FILTER, variantEvaluations);
-        
-        report.addMessage(String.format("Allele frequency < %.2f%%", filter.getMaxFreq()));
+
+        report.addMessage(String.format("Variants filtered for maximum allele frequency of %.2f%%", filter.getMaxFreq()));
         return report;
     }
 
     private FilterReport makeQualityFilterReport(QualityFilter filter, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.QUALITY_FILTER, variantEvaluations);
 
-        report.addMessage(String.format("PHRED quality %.1f", filter.getMimimumQualityThreshold()));
+        report.addMessage(String.format("Variants filtered for mimimum PHRED quality of %.1f", filter.getMimimumQualityThreshold()));
         return report;
     }
 
     private FilterReport makePathogenicityFilterReport(PathogenicityFilter filter, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.PATHOGENICITY_FILTER, variantEvaluations);
-        
+
         if (filter.keepNonPathogenic()) {
             report.addMessage("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
         } else {
@@ -179,24 +181,32 @@ public class FilterReportFactory {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.INTERVAL_FILTER, variantEvaluations);
 
         report.addMessage(String.format("Restricted variants to interval: %s", filter.getGeneticInterval()));
-        
+
         return report;
     }
 
     private FilterReport makeInheritanceFilterReport(InheritanceFilter filter, List<Gene> genes) {
         FilterReport report = makeDefaultGeneFilterReport(FilterType.INHERITANCE_FILTER, genes);
-        
-        report.addMessage(String.format("Total of %d genes were analyzed. %d had genes with distribution compatible with %s inheritance.",
-                genes.size(), report.getPassed(), filter.getModeOfInheritance()));
-        
+
+        report.addMessage(String.format("Genes filtered for compatibility with %s inheritance.", filter.getModeOfInheritance()));
+
+        return report;
+    }
+
+    private FilterReport makePriorityScoreFilterReport(PriorityScoreFilter filter, List<Gene> genes) {
+        FilterReport report = makeDefaultGeneFilterReport(FilterType.PRIORITY_SCORE_FILTER, genes);
+
+        report.addMessage(String.format("Genes filtered for prioritiser scores from %s under %s",
+                filter.getPriorityType(), filter.getMinPriorityScore()));
+
         return report;
     }
 
     /**
-     * 
+     *
      * @param filterType
      * @param variantEvaluations
-     * @return 
+     * @return
      */
     private FilterReport makeDefaultVariantFilterReport(FilterType filterType, List<VariantEvaluation> variantEvaluations) {
         int passed = countVariantsPassingFilter(variantEvaluations, filterType);
@@ -213,7 +223,7 @@ public class FilterReportFactory {
         }
         return passed;
     }
-    
+
     private FilterReport makeDefaultGeneFilterReport(FilterType filterType, List<Gene> genes) {
         int passed = countGenesPassingFilter(genes, filterType);
         int failed = genes.size() - passed;

@@ -6,6 +6,9 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import java.util.Objects;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,14 +23,14 @@ public class PriorityScoreFilterTest {
 
     private PriorityScoreFilter instance;
 
+    private final PriorityType priorityType = PriorityType.PHIVE_PRIORITY;
     private final float minPriorityScore = 0.8f;
 
     private Gene gene;
 
     @Before
     public void setUp() {
-        instance = new PriorityScoreFilter(minPriorityScore);
-        
+        instance = new PriorityScoreFilter(priorityType, minPriorityScore);
         gene = new Gene("GENE1", 12345);
     }
 
@@ -44,7 +47,12 @@ public class PriorityScoreFilterTest {
         assertThat(result.getResultStatus(), equalTo(FilterResultStatus.FAIL));
         assertThat(result.getFilterType(), equalTo(instance.getFilterType()));
     }
-        
+     
+    @Test
+    public void testGetPriorityType() {
+        assertThat(instance.getPriorityType(), equalTo(priorityType));
+    }
+    
     @Test
     public void testGetMinPriorityScore() {
         assertThat(instance.getMinPriorityScore(), equalTo(minPriorityScore));
@@ -52,29 +60,44 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testGetFilterType() {
-        instance = new PriorityScoreFilter(0f);
         assertThat(instance.getFilterType(), equalTo(FilterType.PRIORITY_SCORE_FILTER));
     }
 
     @Test
-    public void testRunFilter_PassesGeneWithPriorityScoreSameAsThreshold() {
-        gene.setPriorityScore(minPriorityScore);
+    public void testRunFilter_FailsGeneWithWrongPriorityType_ScoreSameAsThreshold() {
+        PriorityResult priorityResult = new GenericPriorityResult(PriorityType.OMIM_PRIORITY, minPriorityScore);
+        gene.addPriorityResult(priorityResult);
+        
+        FilterResult result = instance.runFilter(gene);
+        
+        assertFails(result);
+    }
+    
+    @Test
+    public void testRunFilter_PassesGeneWithCorrectPriorityType_ScoreSameAsThreshold() {
+        PriorityResult priorityResult = new GenericPriorityResult(priorityType, minPriorityScore);
+        gene.addPriorityResult(priorityResult);
+        
         FilterResult result = instance.runFilter(gene);
         
         assertPasses(result);
     }
     
     @Test
-    public void testRunFilter_PassesGeneWithPriorityScoreOverThreshold() {
-        gene.setPriorityScore(minPriorityScore + 0.2f);
+    public void testRunFilter_PassesGeneWithCorrectPriorityType_ScoreOverThreshold() {
+        PriorityResult priorityResult = new GenericPriorityResult(priorityType, minPriorityScore + 0.2f);
+        gene.addPriorityResult(priorityResult);
+
         FilterResult result = instance.runFilter(gene);
         
         assertPasses(result);
     }
     
     @Test
-    public void testRunFilter_FailsGeneWithPriorityScoreUnderThreshold() {
-        gene.setPriorityScore(minPriorityScore - 0.2f);
+    public void testRunFilter_FailsGeneWithCorrectPriorityType_ScoreUnderThreshold() {
+        PriorityResult priorityResult = new GenericPriorityResult(priorityType, minPriorityScore - 0.2f);
+        gene.addPriorityResult(priorityResult);
+        
         FilterResult result = instance.runFilter(gene);
         
         assertFails(result);
@@ -90,25 +113,27 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testHashCode() {
-        PriorityScoreFilter other = new PriorityScoreFilter(minPriorityScore);
-
+        PriorityScoreFilter other = new PriorityScoreFilter(priorityType, minPriorityScore);
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
 
     @Test
     public void testEquals() {
-        PriorityScoreFilter other = new PriorityScoreFilter(minPriorityScore);
-
+        PriorityScoreFilter other = new PriorityScoreFilter(priorityType, minPriorityScore);
         assertThat(instance.equals(other), is(true));
 
     }
 
     @Test
-    public void testNotEquals() {
-        PriorityScoreFilter other = new PriorityScoreFilter(minPriorityScore + .03f);
-
+    public void testNotEquals_differentScore() {
+        PriorityScoreFilter other = new PriorityScoreFilter(priorityType, minPriorityScore + .03f);
         assertThat(instance.equals(other), is(false));
-
+    }
+    
+    @Test
+    public void testNotEquals_differentPrioritiser() {
+        PriorityScoreFilter other = new PriorityScoreFilter(PriorityType.NONE, minPriorityScore);
+        assertThat(instance.equals(other), is(false));
     }
 
     @Test
@@ -127,8 +152,66 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("PriorityScoreFilter{minPriorityScore=0.8}"));
+        assertThat(instance.toString(), equalTo("PriorityScoreFilter{priorityType=PHIVE_PRIORITY, minPriorityScore=0.8}"));
     }
 
+    private class GenericPriorityResult implements PriorityResult {
+
+        private final PriorityType priorityType;
+        private final float priorityScore;
+
+        GenericPriorityResult(PriorityType PriorityType, float priorityScore) {
+            this.priorityType = PriorityType;
+            this.priorityScore = priorityScore;
+        } 
+                       
+        @Override
+        public PriorityType getPriorityType() {
+            return priorityType;
+        }
+
+        @Override
+        public String getHTMLCode() {
+            return "Not implemented here";
+        }
+
+        @Override
+        public float getScore() {
+            return priorityScore;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 47 * hash + Objects.hashCode(this.priorityType);
+            hash = 47 * hash + Float.floatToIntBits(this.priorityScore);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final GenericPriorityResult other = (GenericPriorityResult) obj;
+            if (this.priorityType != other.priorityType) {
+                return false;
+            }
+            if (Float.floatToIntBits(this.priorityScore) != Float.floatToIntBits(other.priorityScore)) {
+                return false;
+            }
+            return true;
+        }
+        
+        @Override
+        public String toString() {
+            return "MockPriorityResult{" + "priorityType=" + priorityType + ", priorityScore=" + priorityScore + '}';
+        }
+        
+    }
+    
 }
 

@@ -19,6 +19,7 @@ analysis:
         geneIdFilter: {geneIds: [12345, 34567, 98765]},
         qualityFilter: {minQuality: 50.0},
         variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
+        #knownVariantFilter removes any variant contained in dbSNP, ESP, EXAC databases
         knownVariantFilter: {},
         frequencyFilter: {maxFrequency: 1.0},
         pathogenicityFilter: {keepNonPathogenic: false},
@@ -30,7 +31,8 @@ analysis:
         #Don't include any if you only want to filter the variants.
         hiPhivePrioritiser: {},
         # or run hiPhive in benchmarking mode: 
-        hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}
+        hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'},
+        priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.7}
         #phivePrioritiser: {}
         #phenixPrioritiser: {}
         #exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}

@@ -63,6 +63,11 @@ public class TestExomiserConfig {
     private Environment env;
     
     @Bean
+    public Exomiser mockExomiser() {
+        return Mockito.mock(Exomiser.class);
+    }
+    
+    @Bean
     public Path dataPath() {
         Path dataPath = Paths.get(env.getProperty("dataDir"));
         logger.debug("Root data source directory set to: {}", dataPath.toAbsolutePath());
@@ -112,11 +117,6 @@ public class TestExomiserConfig {
         return hpoAnnotationFilePath;
     }
 
-    @Bean
-    public Exomiser mockExomiser() {
-        return Mockito.mock(Exomiser.class);
-    }
-    
     @Bean
     public VariantFactory variantFactory() {
         return new VariantFactory(mockVariantAnnotator());
