@@ -3,12 +3,8 @@ package de.charite.compbio.exomiser.db.parsers;
 import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.db.reference.Frequency;
 import de.charite.compbio.exomiser.db.resources.Resource;
-import de.charite.compbio.jannovar.impl.intervals.Interval;
-import de.charite.compbio.jannovar.impl.intervals.IntervalArray;
-import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.reference.GenomeInterval;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -18,11 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
@@ -43,7 +35,6 @@ import org.slf4j.LoggerFactory;
 public class DbSnpFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DbSnpFrequencyParser.class);
-
     /**
      * Total number of unique exons
      */
@@ -66,29 +57,30 @@ public class DbSnpFrequencyParser implements ResourceParser {
      */
     private final List<Frequency> frequencyList;
     /**
-     * Threshold distance from an exon to be considered as flanking
-     * Increased to get non-coding variants for Genomiser
+     * Threshold distance from an exon to be considered as flanking Increased to
+     * get non-coding variants for Genomiser
      */
     //private final static int FLANKING = 50;
-
     /**
      * The VCF parser.
      */
     private final VCF2FrequencyParser vcf2FrequencyParser;
-
-    /* use to avoid duplicate entries. */
+    private final ReferenceDictionary refDict;
+    /*
+     * use to avoid duplicate entries.
+     */
     Frequency previous = null;
-
     byte chromosome;
+
     /**
      * Map of Chromosomes
      */
     //private final Map<Integer, ChromosomalExonLocations> chromosomeMap;
-
     public DbSnpFrequencyParser(JannovarData jannovarData, Path ucscResourcePath, List<Frequency> frequencyList, byte chromosome) {
         vcf2FrequencyParser = new VCF2FrequencyParser(jannovarData.getRefDict());
         this.frequencyList = frequencyList;
         this.chromosome = chromosome;
+        this.refDict = jannovarData.getRefDict();
         //chromosomeMap = new HashMap<>();
         //first we need to prepare the serialized ucsc19 data file from Jannovar
         //this is required for parsing the dbSNP data where it is used as a filter to 
@@ -120,7 +112,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
 //        }
 //        logger.info("{} Added {} exons from JannovarData", ResourceOperationStatus.SUCCESS, n_exons);
 //    }
-
     /**
      * Parse the main dbSNP file
      *
@@ -151,7 +142,10 @@ public class DbSnpFrequencyParser implements ResourceParser {
             FileInputStream fis = new FileInputStream(inFile.toString());
             InputStream is;
 
-            /* First, attempt to use a gzip input stream, if this doesn't work, open it as usual */
+            /*
+             * First, attempt to use a gzip input stream, if this doesn't work,
+             * open it as usual
+             */
             try {
                 is = new GZIPInputStream(fis);
             } catch (IOException exp) {
@@ -171,7 +165,22 @@ public class DbSnpFrequencyParser implements ResourceParser {
                     continue; // comment.
                 }
                 vcount++;
-                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line,chromosome);
+
+                String[] fields = line.split("\t");
+                byte chrom = 0;
+                try {
+                    chrom = (byte) refDict.getContigNameToID().get(fields[0]).intValue();
+                } catch (NumberFormatException e) {
+                    logger.error("Unable to parse chromosome: {}. Error occured parsing line: {}", fields[0], line);
+                    logger.error("", e.getMessage());
+                    System.exit(1);
+                }
+                if (chrom > chromosome) {
+                    break;
+                }
+
+                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line, chromosome);
+                //TODO - once gone past chromosome should just break here rather than scanning
                 for (Frequency frequency : frequencyPerLine) {
                     // now just take all coding and non-coding variants
                     //checkVariantForExomalLocationAndOutput(frequency);
@@ -211,7 +220,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
         resource.setParseStatus(status);
         logger.info("{}", status);
     }
-
 //    /**
 //     * This function is to be called following the processing of the VCF line
 //     * with the function parseVCFline from the Superclass
