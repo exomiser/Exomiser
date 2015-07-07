@@ -338,7 +338,7 @@ public class AnalysisParser {
         }
 
         private EntrezGeneIdFilter makeGeneIdFilter(Map<String, List> options) {
-            List geneIds = options.get("geneIds");
+            List<Integer> geneIds = options.get("geneIds");
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("GeneId filter requires a list of ENTREZ geneIds e.g. {geneIds: [12345, 34567, 98765]}", options);
             }
