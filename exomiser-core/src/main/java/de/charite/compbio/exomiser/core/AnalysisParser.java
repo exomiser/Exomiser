@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
+import de.charite.compbio.exomiser.core.filters.CADDFilter;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
@@ -14,6 +15,7 @@ import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.QualityFilter;
+import de.charite.compbio.exomiser.core.filters.RegulatoryFeatureFilter;
 import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriority;
@@ -312,6 +314,10 @@ public class AnalysisParser {
                     return makeInheritanceFilter(modeOfInheritance);
                 case "priorityScoreFilter":
                     return makePriorityScoreFilter(analysisStepMap);
+                case "regulatoryFeatureFilter":
+                    return makeRegulatoryFeatureFilter(analysisStepMap);
+                case "caddFilter":
+                    return makeCaddFilter(analysisStepMap);    
                 case "omimPrioritiser":
                     return prioritiserFactory.makeOmimPrioritiser();
                 case "hiPhivePrioritiser":
@@ -399,6 +405,18 @@ public class AnalysisParser {
             return new PriorityScoreFilter(minPriorityScore.floatValue());
         }
 
+        private RegulatoryFeatureFilter makeRegulatoryFeatureFilter(Map<String, Double> options) {
+            return new RegulatoryFeatureFilter();
+        }
+        
+        private CADDFilter makeCaddFilter(Map<String, Object> options) {
+            Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
+            if (keepNonPathogenic == null) {
+                throw new AnalysisParserException("CADD filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
+            }
+            return new CADDFilter(true);
+        }
+        
         private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {
             if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
                 logger.info("Not making an inheritance filter for {} mode of inheritance", modeOfInheritance);
