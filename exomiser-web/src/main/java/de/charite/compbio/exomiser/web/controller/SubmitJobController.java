@@ -16,8 +16,10 @@
  */
 package de.charite.compbio.exomiser.web.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.AnalysisRunner;
@@ -42,6 +44,7 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -143,7 +146,7 @@ public class SubmitJobController {
     private int countVariantLinesInVcf(Path vcfPath) {
         int variantCount = 0;
         try {
-            BufferedReader fileReader = Files.newBufferedReader(vcfPath);
+            BufferedReader fileReader = Files.newBufferedReader(vcfPath, StandardCharsets.UTF_8);
             boolean readingVariants = false;
             String line;
             for (line = fileReader.readLine(); fileReader.readLine() != null;) {
@@ -200,17 +203,17 @@ public class SubmitJobController {
     }
 
     private void buildResultsModel(Model model, Analysis analysis) {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
         String jsonSettings = "";
-//        try {
-//            jsonSettings = mapper.writeValueAsString(settings);
-//        } catch (JsonProcessingException ex) {
-//            logger.error("Unable to process JSON settings", ex);
-//        }
+        try {
+            jsonSettings = mapper.writeValueAsString(analysis);
+        } catch (JsonProcessingException ex) {
+            logger.error("Unable to process JSON settings", ex);
+        }
         model.addAttribute("settings", jsonSettings);
 
         SampleData sampleData = analysis.getSampleData();
