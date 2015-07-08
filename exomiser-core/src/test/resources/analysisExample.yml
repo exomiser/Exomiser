@@ -32,6 +32,7 @@ analysis:
         hiPhivePrioritiser: {},
         # or run hiPhive in benchmarking mode: 
         hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'},
+        #make sure that the priorityScoreFilter runs after the prioritiser you want to filter the scores for...
         priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.7}
         #phivePrioritiser: {}
         #phenixPrioritiser: {}
