@@ -31,11 +31,6 @@ public class HiPhivePriority implements Prioritiser {
     private final DataMatrix randomWalkMatrix;
 
     private PriorityService priorityService;
-    /**
-     * A list of messages that can be used to create a display in a HTML page or
-     * elsewhere.
-     */
-    private final List<String> messages = new ArrayList<>();
 
     private List<Integer> highQualityPhenoMatchedGenes = new ArrayList<>();
 
@@ -141,8 +136,8 @@ public class HiPhivePriority implements Prioritiser {
 //                }
 //            }
 //        }
-        String message = makeStatsMessage(genes);
-        messages.add(message);
+
+//        String message = makeStatsMessage(genes);
     }
 
     private HiPhivePriorityResult makePriorityResultForGene(Gene gene, List<PhenotypeTerm> hpoPhenotypeTerms, final Map<Integer, Model> bestDiseaseModelForGene, final Map<Integer, Model> bestMouseModelForGene, final Map<Integer, Model> bestFishModelForGene) {
@@ -544,15 +539,6 @@ public class HiPhivePriority implements Prioritiser {
 
     public void setPriorityService(PriorityService priorityService) {
         this.priorityService = priorityService;
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    @Override
-    public List<String> getMessages() {
-        return messages;
     }
 
     @Override

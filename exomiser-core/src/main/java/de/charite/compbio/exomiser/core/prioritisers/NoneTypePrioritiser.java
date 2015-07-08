@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.Gene;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,11 +23,6 @@ public class NoneTypePrioritiser implements Prioritiser {
     @Override
     public PriorityType getPriorityType() {
         return PriorityType.NONE;
-    }
-
-    @Override
-    public List<String> getMessages() {
-        return Collections.emptyList();
     }
 
     @Override

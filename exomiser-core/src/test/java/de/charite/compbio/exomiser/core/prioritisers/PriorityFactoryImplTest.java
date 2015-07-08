@@ -36,15 +36,6 @@ public class PriorityFactoryImplTest {
     }
 
     @Test
-    public void testmakePrioritiserForNotSetPriorityReturnsNoneType() {
-        PriorityType type = PriorityType.NOT_SET;
-        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
-
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
-        assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
-    }
-
-    @Test
     public void testCanGetOmimPrioritizerByType() {
         PriorityType type = PriorityType.OMIM_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
@@ -121,12 +112,4 @@ public class PriorityFactoryImplTest {
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
     }
 
-    @Test
-    public void testmakePrioritiserNotSetPriorityReturnsNoneTypePrioritiser() {
-        PriorityType type = PriorityType.NOT_SET;
-        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
-
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
-        assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
-    }
 }
