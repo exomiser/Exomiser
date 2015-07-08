@@ -167,7 +167,7 @@ public class Exomiser {
         List<Prioritiser> prioritisers = new ArrayList<>();
 
         PriorityType prioritiserType = settings.getPrioritiserType();
-        if (prioritiserType == PriorityType.NONE || prioritiserType == PriorityType.NOT_SET) {
+        if (prioritiserType == PriorityType.NONE) {
             return prioritisers;
         }
 

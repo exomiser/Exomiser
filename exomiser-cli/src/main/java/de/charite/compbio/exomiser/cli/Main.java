@@ -49,7 +49,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    
+
     private static final String DEFAULT_OUTPUT_DIR = "results";
 
     private AnnotationConfigApplicationContext applicationContext;
@@ -60,7 +60,7 @@ public class Main {
     private SampleDataFactory sampleDataFactory;
     private ResultsWriterFactory resultsWriterFactory;
     private AnalysisParser analysisParser;
-    
+
     private String buildVersion;
 
     public static void main(String[] args) {
@@ -80,7 +80,7 @@ public class Main {
             OutputSettings outputSettings = entry.getValue();
             createAndSetSampleData(analysis);
             runAnalysis(analysis);
-            writeResults(analysis, outputSettings);       
+            writeResults(analysis, outputSettings);
         }
         logger.info("Finished analyses");
     }
@@ -117,7 +117,7 @@ public class Main {
         sampleDataFactory = applicationContext.getBean(SampleDataFactory.class);
         resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         analysisParser = applicationContext.getBean(AnalysisParser.class);
-                
+
         buildVersion = (String) applicationContext.getBean("buildVersion");
     }
 
@@ -163,9 +163,8 @@ public class Main {
                 + "                                                               \n"
                 + " A Tool to Annotate and Prioritize Exome Variants     v" + buildVersion + "\n";
 
-        logger.info("{}", splash);
+        System.out.println(splash);
     }
-
 
     private Map<Analysis, OutputSettings> makeAnalyses(String[] args) {
         Map<Analysis, OutputSettings> analysesToRun = new LinkedHashMap();
@@ -175,9 +174,11 @@ public class Main {
             CommandLine commandLine = parser.parse(options, args);
             if (args.length == 0) {
                 printHelp();
+                System.exit(0);
             }
             if (commandLine.hasOption("help")) {
                 printHelp();
+                System.exit(0);
             }
             //check the args for a batch file first as this option is otherwise ignored 
             if (commandLine.hasOption("batch-file")) {
@@ -185,21 +186,18 @@ public class Main {
                 for (SettingsBuilder settingsBuilder : commandLineOptionsParser.parseBatchFile(batchFilePath)) {
                     makeAnalysisAndAddToListIfSettingsAreValid(settingsBuilder, analysesToRun);
                 }
-            }
-            else if (commandLine.hasOption("analysis")) {
+            } else if (commandLine.hasOption("analysis")) {
                 Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
                 Analysis analysis = analysisParser.parseAnalysis(analysisScript);
                 OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
                 analysesToRun.put(analysis, outputSettings);
-            }
-            else if (commandLine.hasOption("analysis-batch")) {
+            } else if (commandLine.hasOption("analysis-batch")) {
                 logger.info("implement the analysis-batch option!");
 //                Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
 //                Analysis analysis = analysisParser.parseAnalysis(analysisScript);
 //                OutputSettings outputSettings = new OutputSettingsBuilder().outputPrefix("results/" + analysis.getVcfPath().getFileName().toString() + "-analysis").build();
 //                analysesToRun.put(analysis, outputSettings);
-            }
-            else {
+            } else {
                 //make a single SettingsBuilder
                 SettingsBuilder settingsBuilder = commandLineOptionsParser.parseCommandLine(commandLine);
                 makeAnalysisAndAddToListIfSettingsAreValid(settingsBuilder, analysesToRun);
@@ -230,7 +228,7 @@ public class Main {
         }
         return exomiser.getPassOnlyAnalysisRunner();
     }
-    
+
     private void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         String launchCommand = String.format("java -jar exomizer-cli-%s.jar [...]", buildVersion);

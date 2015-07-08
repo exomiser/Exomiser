@@ -106,14 +106,11 @@ public class CommandLineOptionsParserTest {
         assertThat(exomiserSettings.isValid(), is(false));
     }
 
-    @Test
-    public void shouldProduceInvalidSettingsWhenInvalidSettingsFileIsProvided() {
+    @Test(expected = CommandLineParseError.class)
+    public void throwsExceptionsWhenInvalidSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testInvalidSettings.properties";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
-
-        System.out.println(exomiserSettings);
-        assertThat(exomiserSettings.isValid(), is(false));
+        parseSettingsFromInput(input);
     }
 
     @Test
