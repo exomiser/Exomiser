@@ -25,7 +25,7 @@ public class FrequencyFilter implements VariantFilter {
      * (expressed as a percentage) is below this threshold. The default value is
      * 100%, i.e., no filtering out.
      */
-    private float maxFreq = 100.0f;
+    private final float maxFreq;
 
     private static final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
 
