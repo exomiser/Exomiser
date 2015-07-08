@@ -23,7 +23,7 @@ public class V2_10__Insert_regulatory_features implements JdbcMigration {
     public void migrate(Connection connection) throws Exception {
         CopyManager copyManager = new CopyManager((BaseConnection) connection);
         try (FileReader fileReader = new FileReader("data/regulatory_features.pg")) {
-            copyManager.copyIn("COPY metadata from STDIN WITH DELIMITER '|';", fileReader, 1024);
+            copyManager.copyIn("COPY regulatory_features from STDIN WITH DELIMITER '|';", fileReader, 1024);
         }
     }
 }
