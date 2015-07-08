@@ -40,7 +40,8 @@ public class SimpleGeneFilterRunner implements GeneFilterRunner {
     public List<Gene> run(GeneFilter filter, List<Gene> genes) {
         for (Gene gene : genes) {
             if (gene.passedFilters()) {
-                runFilterAndAddResult(filter, gene);
+                FilterResult filterResult = runFilterAndAddResult(filter, gene);
+                addFilterResultToVariants(filterResult, gene.getVariantEvaluations());
             }
         }
         return genes;
