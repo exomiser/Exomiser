@@ -97,7 +97,6 @@ public class RankBasedGeneScorer extends RawScoreGeneScorer {
         }
         
         Collections.sort(genes);
-        logger.info("Done scoring genes");
     }
 
 }
