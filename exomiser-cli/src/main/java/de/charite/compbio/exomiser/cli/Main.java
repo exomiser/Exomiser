@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
 import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.AnalysisParser;
 import de.charite.compbio.exomiser.core.AnalysisRunner;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
@@ -15,7 +16,6 @@ import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
@@ -25,9 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -223,7 +221,7 @@ public class Main {
     }
 
     private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
-        if (analysis.getAnalysisMode() == AnalysisRunner.AnalysisMode.FULL) {
+        if (analysis.getAnalysisMode() == AnalysisMode.FULL) {
             return exomiser.getFullAnalysisRunner();
         }
         return exomiser.getPassOnlyAnalysisRunner();

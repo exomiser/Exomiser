@@ -5,20 +5,25 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
+import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.Filter;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.GeneFilter;
+import de.charite.compbio.exomiser.core.filters.GeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.QualityFilter;
+import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
+import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
+import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
+import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
@@ -44,15 +49,15 @@ public class Exomiser {
     private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
 
     public static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = EnumSet.of(
-                    VariantEffect.UPSTREAM_GENE_VARIANT,
-                    VariantEffect.INTERGENIC_VARIANT,
-                    VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
-                    VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-                    VariantEffect.SYNONYMOUS_VARIANT,
-                    VariantEffect.DOWNSTREAM_GENE_VARIANT,
-                    VariantEffect.SPLICE_REGION_VARIANT
-            );
-    
+            VariantEffect.UPSTREAM_GENE_VARIANT,
+            VariantEffect.INTERGENIC_VARIANT,
+            VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
+            VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+            VariantEffect.SYNONYMOUS_VARIANT,
+            VariantEffect.DOWNSTREAM_GENE_VARIANT,
+            VariantEffect.SPLICE_REGION_VARIANT
+    );
+
     private final VariantDataService variantDataService;
     private final PriorityFactory prioritiserFactory;
 
@@ -62,11 +67,15 @@ public class Exomiser {
     }
 
     public AnalysisRunner getFullAnalysisRunner() {
-        return new AnalysisRunner(variantDataService, AnalysisMode.FULL);
+        VariantFilterRunner variantFilterRunner = new SimpleVariantFilterRunner(variantDataService);
+        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
     }
 
     public AnalysisRunner getPassOnlyAnalysisRunner() {
-        return new AnalysisRunner(variantDataService, AnalysisMode.PASS_ONLY);
+        VariantFilterRunner variantFilterRunner = new SparseVariantFilterRunner(variantDataService);
+//        GeneFilterRunner geneFilterRunner = new SparseGeneFilterRunner();        
+        //TODO: make a SparseGeneFilterRunner
+        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
     }
 
     /**

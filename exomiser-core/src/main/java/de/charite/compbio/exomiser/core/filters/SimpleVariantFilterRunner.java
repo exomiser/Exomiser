@@ -39,11 +39,11 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
    
     @Override
     public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
-        logger.info("Filtering {} variants using non-destructive simple filtering...", variantEvaluations.size());
+        logger.info("Filtering {} variants using simple filtering...", variantEvaluations.size());
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             run(variantFilters, variantEvaluation);
         }
-        logger.info("Ran {} filters over {} variants using non-destructive simple filtering.", getFilterTypes(variantFilters), variantEvaluations.size());
+        logger.info("Ran {} filters over {} variants using simple filtering.", getFilterTypes(variantFilters), variantEvaluations.size());
         return variantEvaluations;
     }
 

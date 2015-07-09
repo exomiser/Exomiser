@@ -62,14 +62,12 @@ public class AnalysisFactoryTest {
     @Test
     public void testCanMakeFullAnalysisRunner() {
         AnalysisRunner analysisRunner = instance.getFullAnalysisRunner();
-        //TODO: make these proper types instead of relying on an enum
         assertThat(analysisRunner, notNullValue());
     }
     
     @Test
     public void testCanMakePassOnlyAnalysisRunner() {
         AnalysisRunner analysisRunner = instance.getPassOnlyAnalysisRunner();
-        //TODO: make these proper types instead of relying on an enum
         assertThat(analysisRunner, notNullValue());
     }
     

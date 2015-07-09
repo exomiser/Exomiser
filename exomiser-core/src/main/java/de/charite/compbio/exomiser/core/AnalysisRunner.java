@@ -39,41 +39,26 @@ public class AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisRunner.class);
 
-    public enum AnalysisMode {
-        FULL, PASS_ONLY;
-    }
-
-    private final VariantDataService variantDataService;
-
     //TODO: variantFilterRunner is not typed here as there is something a bit mis-aligned with the interfaces and what they can work on - this needs fixing
     //probably by removing the FilterRunner interface and just using the VariantFilterRunner and GeneFilterRunner interfaces VariantFilterRunners can then 
     //also implement the GeneFilterRunner interface which is what we need here but type erasure is preventing this from being possible.
     private final VariantFilterRunner variantFilterRunner;
-    private final GeneFilterRunner geneFilterRunner = new SimpleGeneFilterRunner();
-    private final PrioritiserRunner prioritiserRunner = new PrioritiserRunner();
-
-    public AnalysisRunner(VariantDataService variantDataService, AnalysisMode analysisMode) {
-        this.variantDataService = variantDataService;
-        this.variantFilterRunner = makeVariantFilterRunner(analysisMode);
+    private final GeneFilterRunner geneFilterRunner;
+    private final PrioritiserRunner prioritiserRunner;
+  
+    public AnalysisRunner(VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+        this.variantFilterRunner = variantFilterRunner;
+        this.geneFilterRunner = geneFilterRunner;
+        this.prioritiserRunner = new PrioritiserRunner();
     }
-
-    private VariantFilterRunner makeVariantFilterRunner(AnalysisMode analysisMode) {
-        //the VariantFilterRunner will handle getting variant data when it needs it.
-        //perhaps this ought to be two classes? A SimpleAnalysisRunner and a SparseAnalysisRunner?
-        if (analysisMode == AnalysisMode.FULL) {
-            return new SimpleVariantFilterRunner(variantDataService);
-        } else {
-            return new SparseVariantFilterRunner(variantDataService);
-        }
-    }
-
+    
     public void runAnalysis(Analysis analysis) {
         final SampleData sampleData = analysis.getSampleData();
         final List<Gene> genes = sampleData.getGenes();
         final Pedigree pedigree = sampleData.getPedigree();
         boolean inheritanceModesCalculated = false;
 
-        logger.info("Running analysis on {} genes ({} variants)", genes.size(), sampleData.getVariantEvaluations().size());
+        logger.info("Running analysis on sample: {} ({} genes, {} variants)", sampleData.getSampleNames(), genes.size(), sampleData.getVariantEvaluations().size());
         long startTimeinMillis = System.currentTimeMillis();
 
         for (AnalysisStep analysisStep : analysis.getAnalysisSteps()) {
@@ -96,9 +81,7 @@ public class AnalysisRunner {
             VariantFilter filter = (VariantFilter) analysisStep;
             logger.info("Running VariantFilter: {}", filter);
             for (Gene gene : genes) {
-                if (gene.passedFilters()) {
-                    variantFilterRunner.run(filter, gene.getVariantEvaluations());
-                }
+                variantFilterRunner.run(filter, gene.getVariantEvaluations());
             }
             return;
         }

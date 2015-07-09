@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
+import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
