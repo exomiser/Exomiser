@@ -6,24 +6,18 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.AnalysisMode;
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.Filter;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.GeneFilter;
-import de.charite.compbio.exomiser.core.filters.GeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
-import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
-import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
@@ -58,24 +52,10 @@ public class Exomiser {
             VariantEffect.SPLICE_REGION_VARIANT
     );
 
-    private final VariantDataService variantDataService;
     private final PriorityFactory prioritiserFactory;
 
-    public Exomiser(VariantDataService variantDataService, PriorityFactory prioritiserFactory) {
-        this.variantDataService = variantDataService;
+    public Exomiser(PriorityFactory prioritiserFactory) {
         this.prioritiserFactory = prioritiserFactory;
-    }
-
-    public AnalysisRunner getFullAnalysisRunner() {
-        VariantFilterRunner variantFilterRunner = new SimpleVariantFilterRunner(variantDataService);
-        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
-    }
-
-    public AnalysisRunner getPassOnlyAnalysisRunner() {
-        VariantFilterRunner variantFilterRunner = new SparseVariantFilterRunner(variantDataService);
-//        GeneFilterRunner geneFilterRunner = new SparseGeneFilterRunner();        
-        //TODO: make a SparseGeneFilterRunner
-        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
     }
 
     /**

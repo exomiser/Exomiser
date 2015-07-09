@@ -16,6 +16,7 @@
  */
 package config;
 
+import de.charite.compbio.exomiser.core.AnalysisFactory;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
@@ -65,6 +66,11 @@ public class TestExomiserConfig {
     @Bean
     public Exomiser mockExomiser() {
         return Mockito.mock(Exomiser.class);
+    }
+    
+    @Bean
+    public AnalysisFactory mockAnalysisFactory() {
+        return Mockito.mock(AnalysisFactory.class);
     }
     
     @Bean

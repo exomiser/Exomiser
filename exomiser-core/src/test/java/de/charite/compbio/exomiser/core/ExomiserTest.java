@@ -51,9 +51,8 @@ public class ExomiserTest {
     
     @Before
     public void setUp() {       
-        VariantDataService stubVariantDataService = new VariantDataServiceStub();
         PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
-        instance = new Exomiser(stubVariantDataService, stubPriorityFactory);
+        instance = new Exomiser(stubPriorityFactory);
         
         settingsBuilder = new SettingsBuilder().vcfFilePath(Paths.get("vcf"));
         analysis = new Analysis(); 

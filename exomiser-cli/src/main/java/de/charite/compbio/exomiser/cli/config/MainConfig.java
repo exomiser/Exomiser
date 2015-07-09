@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
+import de.charite.compbio.exomiser.core.AnalysisFactory;
 import de.charite.compbio.exomiser.core.AnalysisParser;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
@@ -148,9 +149,14 @@ public class MainConfig {
     
     @Bean
     public Exomiser exomiser() {
-        return new Exomiser(variantDataService(), priorityFactory());
+        return new Exomiser(priorityFactory());
     }
     
+    @Bean
+    AnalysisFactory analysisFactory() {
+        return new AnalysisFactory(sampleDataFactory(), variantDataService(), priorityFactory());
+    }
+
     @Bean
     public AnalysisParser analysisParser() {
         return new AnalysisParser(priorityFactory());

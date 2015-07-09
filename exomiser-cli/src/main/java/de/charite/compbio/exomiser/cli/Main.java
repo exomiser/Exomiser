@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
 import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.AnalysisFactory;
 import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.AnalysisParser;
 import de.charite.compbio.exomiser.core.AnalysisRunner;
@@ -58,7 +59,7 @@ public class Main {
     private SampleDataFactory sampleDataFactory;
     private ResultsWriterFactory resultsWriterFactory;
     private AnalysisParser analysisParser;
-
+    private AnalysisFactory analysisFactory;
     private String buildVersion;
 
     public static void main(String[] args) {
@@ -115,7 +116,8 @@ public class Main {
         sampleDataFactory = applicationContext.getBean(SampleDataFactory.class);
         resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         analysisParser = applicationContext.getBean(AnalysisParser.class);
-
+        analysisFactory = applicationContext.getBean(AnalysisFactory.class);
+        
         buildVersion = (String) applicationContext.getBean("buildVersion");
     }
 
@@ -222,9 +224,9 @@ public class Main {
 
     private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
         if (analysis.getAnalysisMode() == AnalysisMode.FULL) {
-            return exomiser.getFullAnalysisRunner();
+            return analysisFactory.getFullAnalysisRunner();
         }
-        return exomiser.getPassOnlyAnalysisRunner();
+        return analysisFactory.getPassOnlyAnalysisRunner();
     }
 
     private void printHelp() {
