@@ -38,12 +38,6 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
             return variantEvaluations;
         }
 
-        //TODO: actually performance test this using an entire genome - it's not appreciably slower 
-        //(perhaps about 0.5 secs) using runFilters() for a few tens of thousand variants. 
-        //old way- this should be the most performant way as this loops through the longest list once running the shortest list for each of the elements in the longest list.
-//        List<VariantEvaluation> filteredVariantEvaluations = runFiltersPerVariant(filters, variantEvaluations);
-
-        //new way - this should be the least performant as it is running the longest list through each of the shortest lists.
         List<VariantEvaluation> filteredVariantEvaluations = runFilters(filters, variantEvaluations);
 
         int numRemoved = variantEvaluations.size() - filteredVariantEvaluations.size();
@@ -71,17 +65,6 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
         return false;
     }
 
-    private List<VariantEvaluation> runFiltersPerVariant(List<VariantFilter> filters, List<VariantEvaluation> variantEvaluations) {
-        List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
-
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            runFiltersOverVariantUntilFailure(filters, variantEvaluation);
-            addFilteredVariantToFilteredList(variantEvaluation, filteredVariantEvaluations);
-        }
-
-        return filteredVariantEvaluations;
-    }
-
     private List<VariantEvaluation> runFilters(List<VariantFilter> filters, List<VariantEvaluation> variantEvaluations) {
 
         for (Filter filter : filters) {
@@ -99,30 +82,11 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
     private List<VariantEvaluation> makeListofFilteredVariants(List<VariantEvaluation> variantEvaluations) {
         List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
         for (VariantEvaluation variant : variantEvaluations) {
-            addFilteredVariantToFilteredList(variant, filteredVariantEvaluations);
-        }
-        return filteredVariantEvaluations;
-    }
-
-    private void runFiltersOverVariantUntilFailure(List<VariantFilter> filters, VariantEvaluation variantEvaluation) {
-        for (Filter filter : filters) {
-            addMissingDataAndRunFilter(filter, variantEvaluation);
-            //we want to know which filter the variant failed and then don't run any more
-            //this can be an expensive operation when looking up frequency and pathogenicity info from the database
-            if (variantFailedTheFilter(variantEvaluation)) {
-                break;
+            if (variant.passedFilters()) {
+                filteredVariantEvaluations.add(variant);
             }
         }
-    }
-
-    private void addFilteredVariantToFilteredList(VariantEvaluation variant, List<VariantEvaluation> filteredVariantEvaluations) {
-        if (variant.passedFilters()) {
-            filteredVariantEvaluations.add(variant);
-        }
-    }
-
-    private boolean variantFailedTheFilter(VariantEvaluation variantEvaluation) {
-        return !variantEvaluation.passedFilters();
+        return filteredVariantEvaluations;
     }
 
 }

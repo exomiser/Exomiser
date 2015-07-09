@@ -61,9 +61,9 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
         }
     }
 
-    protected void addMissingDataAndRunFilter(Filter filter, VariantEvaluation variantEvaluation) {
+    protected FilterResult addMissingDataAndRunFilter(Filter filter, VariantEvaluation variantEvaluation) {
         addMissingFrequencyAndPathogenicityData(filter.getFilterType(), variantEvaluation);
-        FilterResult result = runFilterAndAddResult(filter, variantEvaluation);
+        return runFilterAndAddResult(filter, variantEvaluation);
     }
 
     protected void addMissingFrequencyAndPathogenicityData(FilterType filterType, VariantEvaluation variantEvaluation) {

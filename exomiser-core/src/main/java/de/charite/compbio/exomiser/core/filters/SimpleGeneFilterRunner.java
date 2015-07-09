@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.LinkedHashSet;
@@ -26,8 +25,6 @@ public class SimpleGeneFilterRunner implements GeneFilterRunner {
     public List<Gene> run(List<GeneFilter> filters, List<Gene> genes) {
         logger.info("Filtering {} genes using non-destructive simple filtering", genes.size());
         for (Gene gene : genes) {
-            //Gene filtering needs to happen after variant filtering and only on genes which have passed the variant filtering steps
-            //TODO: does this really have to be the case???
             if (gene.passedFilters()) {
                 runAllFiltersOverGene(filters, gene);
             }
@@ -48,24 +45,24 @@ public class SimpleGeneFilterRunner implements GeneFilterRunner {
 
     private void runAllFiltersOverGene(List<GeneFilter> filters, Gene gene) {
         for (Filter filter : filters) {
-            FilterResult filterResult = runFilterAndAddResult(filter, gene);
-            //TODO: should this always be the case?
-            addFilterResultToVariants(filterResult, gene.getVariantEvaluations());
+            runFilterAndAddResult(filter, gene);
         }
+    }
+
+    private FilterResult runFilterAndAddResult(Filter filter, Gene gene) {
+        FilterResult filterResult = filter.runFilter(gene);
+        if (filterResult.getResultStatus() != FilterResultStatus.NOT_RUN) {
+            gene.addFilterResult(filterResult);
+        }
+        //TODO: should this always be the case?
+        addFilterResultToVariants(filterResult, gene.getVariantEvaluations());
+        return filterResult;
     }
 
     private void addFilterResultToVariants(FilterResult filterResult, List<VariantEvaluation> variantEvaluations) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             variantEvaluation.addFilterResult(filterResult);
         }
-    }
-
-    private FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {
-        FilterResult filterResult = filter.runFilter(filterable);
-        if (filterResult.getResultStatus() != FilterResultStatus.NOT_RUN) {
-            filterable.addFilterResult(filterResult);
-        }
-        return filterResult;
     }
 
     private Set<FilterType> getFilterTypes(List<GeneFilter> filters) {
