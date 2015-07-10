@@ -134,6 +134,7 @@
                                     <include>Pfeiffer.vcf</include>
                                     <include>Pfeiffer-quartet.vcf.gz</include>
                                     <include>Pfeiffer-quartet.ped</include>
+                                    <include>genomiser.yaml</include>
                                 </resource>                                                            
                             </resources>              
                         </configuration>            
