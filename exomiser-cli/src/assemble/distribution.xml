@@ -33,7 +33,6 @@
                 <include>*.settings</include>
                 <include>test-batchFiles.txt</include>
                 <include>application.properties</include>
-                <include>log4j2.xml</include>
                 <include>ehcache.xml</include>
             </includes>
         </fileSet>
