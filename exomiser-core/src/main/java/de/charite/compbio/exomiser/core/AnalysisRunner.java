@@ -16,6 +16,7 @@ import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserRunner;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -95,17 +96,27 @@ public class AnalysisRunner {
         if (VariantFilter.class.isInstance(analysisStep)) {
             VariantFilter filter = (VariantFilter) analysisStep;
             logger.info("Running VariantFilter: {}", filter);
+            int counter = 0;
             for (Gene gene : genes) {
                 if (gene.passedFilters()) {
-                    variantFilterRunner.run(filter, gene.getVariantEvaluations());
+                    List<VariantEvaluation> filteredVariantEvaluations = variantFilterRunner.run(filter, gene.getVariantEvaluations());
+                    counter = counter + filteredVariantEvaluations.size();
                 }
             }
+            logger.info(counter + " variants after filtering");
             return;
         }
         if (GeneFilter.class.isInstance(analysisStep)) {
             GeneFilter filter = (GeneFilter) analysisStep;
             logger.info("Running GeneFilter: {}", filter);
             geneFilterRunner.run(filter, genes);
+            int counter = 0;
+            for (Gene gene : genes) {
+                if (gene.passedFilters()) {
+                    counter = counter + gene.getPassedVariantEvaluations().size();
+                }
+            }
+            logger.info(counter + " variants passed GeneFilter");
             return;
         }
         if (Prioritiser.class.isInstance(analysisStep)) {
