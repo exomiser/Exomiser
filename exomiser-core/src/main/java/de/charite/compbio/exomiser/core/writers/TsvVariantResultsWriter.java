@@ -140,7 +140,8 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         record.add(variantContext.getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
         // FIXME: use new terms (use .toSequenceOntologyTerm() instead)!
-        record.add(ve.getVariantEffect().getLegacyTerm());
+        //record.add(ve.getVariantEffect().getLegacyTerm());
+        record.add(ve.getVariantEffect().getSequenceOntologyTerm());
         // HGVS
         record.add(getRepresentativeAnnotation(ve.getAnnotations()));
         // EXOMISER_GENE
