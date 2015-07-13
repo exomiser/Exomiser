@@ -211,15 +211,17 @@ public class ExomeWalkerPriority implements Prioritiser {
 //            newscore = factorMaxPossible * (scr - (float) min);
 //            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
 //        }
-        String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
-                PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
-        this.messages.add(s);
-        StringBuilder sb = new StringBuilder();
-        sb.append("Seed genes:");
-        for (Integer seed : seedGenes) {
-            sb.append(seed + "&nbsp;");
-        }
-        this.messages.add(sb.toString());
+        
+        //TODO: move this into a report if required 
+//        String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
+//                PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
+//        this.messages.add(s);
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("Seed genes:");
+//        for (Integer seed : seedGenes) {
+//            sb.append(seed + "&nbsp;");
+//        }
+//        this.messages.add(sb.toString());
     }
 
     /**

@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;

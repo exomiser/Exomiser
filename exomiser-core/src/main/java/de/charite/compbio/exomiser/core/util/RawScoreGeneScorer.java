@@ -48,7 +48,6 @@ public class RawScoreGeneScorer implements GeneScorer {
             scoreGene(gene, modeOfInheritance);
         }
         Collections.sort(genes);
-        logger.info("Done scoring genes");
     }
 
     protected void scoreGene(Gene gene, ModeOfInheritance modeOfInheritance) {

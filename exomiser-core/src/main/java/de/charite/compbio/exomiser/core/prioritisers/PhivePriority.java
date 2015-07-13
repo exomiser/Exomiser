@@ -50,12 +50,6 @@ public class PhivePriority implements Prioritiser {
     private PreparedStatement findMouseAnnotationStatement;
 
     /**
-     * A list of messages that can be used to create a display in a HTML page or
-     * elsewhere.
-     */
-    private List<String> messages = new ArrayList<>();
-
-    /**
      * Keeps track of the number of variants for which data was available in
      * Phenodigm.
      */
@@ -98,7 +92,7 @@ public class PhivePriority implements Prioritiser {
 //            PhivePriorityResult rscore = retrieve_score_data(g);
 //            g.addPriorityResult(rscore, PRIORITY_TYPE);          
 //	}
-        this.messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", genes.size()));
+//        this.messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", genes.size()));
         closeConnection();
     }
 
@@ -337,15 +331,6 @@ public class PhivePriority implements Prioritiser {
         } catch (SQLException ex) {
             logger.error(null, ex);
         }
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    @Override
-    public List<String> getMessages() {
-        return messages;
     }
 
     public void setDataSource(DataSource dataSource) {

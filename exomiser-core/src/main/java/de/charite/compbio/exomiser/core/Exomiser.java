@@ -5,8 +5,7 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.Filter;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
@@ -44,29 +43,19 @@ public class Exomiser {
     private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
 
     public static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = EnumSet.of(
-                    VariantEffect.UPSTREAM_GENE_VARIANT,
-                    VariantEffect.INTERGENIC_VARIANT,
-                    VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
-                    VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
-                    VariantEffect.SYNONYMOUS_VARIANT,
-                    VariantEffect.DOWNSTREAM_GENE_VARIANT,
-                    VariantEffect.SPLICE_REGION_VARIANT
-            );
-    
-    private final VariantDataService variantDataService;
+            VariantEffect.UPSTREAM_GENE_VARIANT,
+            VariantEffect.INTERGENIC_VARIANT,
+            VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
+            VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+            VariantEffect.SYNONYMOUS_VARIANT,
+            VariantEffect.DOWNSTREAM_GENE_VARIANT,
+            VariantEffect.SPLICE_REGION_VARIANT
+    );
+
     private final PriorityFactory prioritiserFactory;
 
-    public Exomiser(VariantDataService variantDataService, PriorityFactory prioritiserFactory) {
-        this.variantDataService = variantDataService;
+    public Exomiser(PriorityFactory prioritiserFactory) {
         this.prioritiserFactory = prioritiserFactory;
-    }
-
-    public AnalysisRunner getFullAnalysisRunner() {
-        return new AnalysisRunner(variantDataService, AnalysisMode.FULL);
-    }
-
-    public AnalysisRunner getPassOnlyAnalysisRunner() {
-        return new AnalysisRunner(variantDataService, AnalysisMode.PASS_ONLY);
     }
 
     /**
@@ -167,7 +156,7 @@ public class Exomiser {
         List<Prioritiser> prioritisers = new ArrayList<>();
 
         PriorityType prioritiserType = settings.getPrioritiserType();
-        if (prioritiserType == PriorityType.NONE || prioritiserType == PriorityType.NOT_SET) {
+        if (prioritiserType == PriorityType.NONE) {
             return prioritisers;
         }
 

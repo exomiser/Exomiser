@@ -5,9 +5,11 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
+import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
+import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
+import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,8 +23,9 @@ public class AnalysisRunnerTest {
         
     @Before
     public void setUp() {
-        VariantDataService stubDataService = new VariantDataServiceStub();      
-        instance = new AnalysisRunner(stubDataService, AnalysisMode.PASS_ONLY);
+        VariantDataService stubDataService = new VariantDataServiceStub();
+        VariantFilterRunner variantFilterRunner = new SimpleVariantFilterRunner(stubDataService);
+        instance = new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
     }
 
     @Test

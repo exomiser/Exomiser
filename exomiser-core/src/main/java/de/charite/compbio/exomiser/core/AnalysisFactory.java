@@ -5,9 +5,13 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.filters.GeneFilterRunner;
+import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
+import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
+import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
+import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
@@ -35,11 +39,15 @@ public class AnalysisFactory {
     }
 
     public AnalysisRunner getFullAnalysisRunner() {
-        return new AnalysisRunner(variantDataService, AnalysisRunner.AnalysisMode.FULL);
+        VariantFilterRunner variantFilterRunner = new SimpleVariantFilterRunner(variantDataService);
+        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
     }
 
     public AnalysisRunner getPassOnlyAnalysisRunner() {
-        return new AnalysisRunner(variantDataService, AnalysisRunner.AnalysisMode.PASS_ONLY);
+        VariantFilterRunner variantFilterRunner = new SparseVariantFilterRunner(variantDataService);
+//        GeneFilterRunner geneFilterRunner = new SparseGeneFilterRunner();
+        //TODO: make a SparseGeneFilterRunner
+        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
     }
 
     public AnalysisBuilder getAnalysisBuilder() {

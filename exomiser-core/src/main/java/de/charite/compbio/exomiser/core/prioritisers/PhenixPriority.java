@@ -58,11 +58,6 @@ public class PhenixPriority implements Prioritiser {
      */
     private List<String> errorMessages = null;
 
-    /**
-     * A list of messages that can be used to create a display in a HTML page or
-     * elsewhere.
-     */
-    private final List<String> messages = new ArrayList<>();
 
     /**
      * The semantic similarity measure used to calculate phenotypic similarity
@@ -303,22 +298,21 @@ public class PhenixPriority implements Prioritiser {
      * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      *
-     * @param gene_list List of candidate genes.
+     * @param genes List of candidate genes.
      * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
-    public void prioritizeGenes(List<Gene> gene_list) {
-        analysedGenes = gene_list.size();
+    public void prioritizeGenes(List<Gene> genes) {
+        analysedGenes = genes.size();
 
-        for (Gene gene : gene_list) {
+        for (Gene gene : genes) {
             PhenixPriorityResult phenomizerRelScore = scoreVariantHPO(gene);
             gene.addPriorityResult(phenomizerRelScore);
             //System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getScore());
         }
-        String s = String.format("Data investigated in HPO for %d genes. No data for %d genes", analysedGenes, this.offTargetGenes);
+//        String s = String.format("Data investigated in HPO for %d genes. No data for %d genes", analysedGenes, this.offTargetGenes);
         //System.out.println(s);
-        normalizePhenomizerScores(gene_list);
-        this.messages.add(s);
+        normalizePhenomizerScores(genes);
     }
 
     /**
@@ -330,12 +324,12 @@ public class PhenixPriority implements Prioritiser {
      * similarity scores, but we should also try the P value version (TODO).
      * Note that this is not the same as rank normalization!
      */
-    private void normalizePhenomizerScores(List<Gene> gene_list) {
+    private void normalizePhenomizerScores(List<Gene> genes) {
         if (maxSemSim < 1) {
             return;
         }
         PhenixPriorityResult.setNormalizationFactor(1d / maxSemSim);
-        /*for (Gene g : gene_list) {
+        /*for (Gene g : genes) {
          float score = g.getRelevagetScorepe.PHENIX_PRIORITY);
          score /= this.maxSemSim;
          g.setScore(FilterType.PHENIX_PRIORITY, score);
@@ -343,12 +337,12 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * @param g A {@link exomizer.exome.Gene Gene} whose score is to be
+     * @param gene A {@link exomizer.exome.Gene Gene} whose score is to be
      * determined.
      */
-    private PhenixPriorityResult scoreVariantHPO(Gene g) {
+    private PhenixPriorityResult scoreVariantHPO(Gene gene) {
 
-        int entrezGeneId = g.getEntrezGeneID();
+        int entrezGeneId = gene.getEntrezGeneID();
         String entrezGeneIdString = entrezGeneId + "";
 
         if (!geneId2annotations.containsKey(entrezGeneIdString)) {
@@ -364,7 +358,7 @@ public class PhenixPriority implements Prioritiser {
             maxSemSim = similarityScore;
         }
         if (Double.isNaN(similarityScore)) {
-            errorMessages.add("Error: score was NAN for gene:" + g + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
+            errorMessages.add("Error: score was NAN for gene:" + gene + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
         }
 
         ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(entrezGeneIdString, numberQueryTerms, symmetric,
@@ -450,16 +444,6 @@ public class PhenixPriority implements Prioritiser {
         private PhenixException(String message) {
             super(message);
         }
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    @Override
-    public List<String> getMessages() {
-        messages.addAll(errorMessages);
-        return messages;
     }
 
 //TODO move this to the messages

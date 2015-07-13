@@ -182,15 +182,6 @@ public class OMIMPriority implements Prioritiser {
         this.dataSource = dataSource;
     }
 
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of frequency filtering.
-     */
-    @Override
-    public List<String> getMessages() {
-        return Collections.emptyList();
-    }
-
     @Override
     public int hashCode() {
         int hash = 5;

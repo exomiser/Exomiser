@@ -76,10 +76,9 @@ public class PriorityFactoryImpl implements PriorityFactory {
             case EXOMEWALKER_PRIORITY:
                 return makeExomeWalkerPrioritiser(entrezSeedGenes);
             case NONE:
-            case NOT_SET:
                 return new NoneTypePrioritiser();
             default:
-                logger.warn("Prioritiser: '{}' not supported. Returning '{}' type", priorityType, PriorityType.NONE.getCommandLineValue());
+                logger.warn("Prioritiser: '{}' not supported. Returning '{}' type", priorityType, PriorityType.NONE);
                 return new NoneTypePrioritiser();
         }
 

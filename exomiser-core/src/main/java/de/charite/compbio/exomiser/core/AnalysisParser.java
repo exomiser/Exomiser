@@ -89,14 +89,12 @@ public class AnalysisParser {
     }
 
     private Analysis constructAnalysisFromMap(Map settingsMap) {
-        logger.info("{}", settingsMap);
         AnalysisConstructor analysisConstructor = new AnalysisConstructor();
         Analysis analysis = analysisConstructor.construct((Map) settingsMap.get("analysis"));
         return analysis;
     }
 
     private OutputSettings constructOutputSettingsFromMap(Map settingsMap) {
-        logger.info("{}", settingsMap);
         OutputSettingsConstructor outputSettingsConstructor = new OutputSettingsConstructor();
         OutputSettings outputSettings = outputSettingsConstructor.construct((Map) settingsMap.get("outputOptions"));
         return outputSettings;
@@ -204,19 +202,19 @@ public class AnalysisParser {
             analysis.setAnalysisMode(parseAnalysisMode(analysisMap));
             analysis.addAllSteps(makeAnalysisSteps(analysisMap));
 
-            logger.info("Made analysis: {}", analysis);
+            logger.debug("Made analysis: {}", analysis);
             return analysis;
         }
 
         private List<AnalysisStep> makeAnalysisSteps(Map analysisMap) {
             List<AnalysisStep> analysisSteps = new ArrayList<>();
             for (Map<String, Map> analysisStepMap : parseAnalysisSteps(analysisMap)) {
-                logger.info("Analysis step: {}", analysisStepMap);
+                logger.debug("Analysis step: {}", analysisStepMap);
                 for (Entry<String, Map> entry : analysisStepMap.entrySet()) {
                     AnalysisStep analysisStep = makeAnalysisStep(entry, parseHpoIds(analysisMap), parseModeOfInheritance(analysisMap));
                     if (analysisStep != null) {
                         analysisSteps.add(analysisStep);
-                        logger.info("Added {}", entry.getKey());
+                        logger.debug("Added {}", entry.getKey());
                     }
                 }
             }

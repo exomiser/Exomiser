@@ -7,65 +7,31 @@ package de.charite.compbio.exomiser.core.prioritisers;
 public enum PriorityType {
    
     //Prioritises against PPI-RandomWalk-proximity and dynamic human, mouse and fish phenotypes
-    HIPHIVE_PRIORITY("hiphive", ScoringMode.RAW_SCORE),
-
+    HIPHIVE_PRIORITY(ScoringMode.RAW_SCORE),
     //Prioritises against PPI-RandomWalk-proximity A.K.A "GeneWanderer"
-    EXOMEWALKER_PRIORITY("exomewalker", ScoringMode.RAW_SCORE),
-    
+    EXOMEWALKER_PRIORITY(ScoringMode.RAW_SCORE),
     //Prioritises against human phenotypes A.K.A. "HPO Phenomizer prioritizer"
-    PHENIX_PRIORITY("phenix", ScoringMode.RAW_SCORE),
-
+    PHENIX_PRIORITY(ScoringMode.RAW_SCORE),
     //Prioritises against human-mouse phenotype similarities
-    PHIVE_PRIORITY("phive", ScoringMode.RAW_SCORE),
-
+    PHIVE_PRIORITY(ScoringMode.RAW_SCORE),
     //Prioritises against OMIM data
-    OMIM_PRIORITY("omim", ScoringMode.RAW_SCORE),
-    
+    OMIM_PRIORITY(ScoringMode.RAW_SCORE),
     //Prioritises  against phenotype data (Uberpheno) A.K.A. "Uberpheno semantic similarity filter"
-    UBERPHENO_PRIORITY("uber-pheno", ScoringMode.RAW_SCORE),
-
+    UBERPHENO_PRIORITY(ScoringMode.RAW_SCORE),
     //None - for when you don't want to run any prioritisation
-    NONE("none", ScoringMode.RAW_SCORE),
-    
-    //Not set type - default for when things go wrong.
-    NOT_SET("", ScoringMode.RAW_SCORE);
-    
+    NONE(ScoringMode.RAW_SCORE);
+        
     /**
      * The string representation of the FilterType as used when specifying the type on the command-line.
      */
-    private final String commandLineValue;
     private final ScoringMode scoringMode;
     
-    private PriorityType(String commandLineValue, ScoringMode scoringMode) {
-        this.commandLineValue = commandLineValue;
+    private PriorityType(ScoringMode scoringMode) {
         this.scoringMode = scoringMode;
     }
     
-    public String getCommandLineValue() {
-        return commandLineValue;
-    }
-
     public ScoringMode getScoringMode() {
         return scoringMode;
     }
-    
-    /**
-     * Returns the type of Priority for the 
-     * @param value
-     * @return 
-     */
-    public static PriorityType valueOfCommandLine(String value) {
-        for (PriorityType priorityType : values()) {
-            if (priorityType.commandLineValue.equalsIgnoreCase(value)) {
-                return priorityType;
-            }
-        }
-        return PriorityType.NOT_SET;
-    }
-
-//    @Override
-//    public String toString() {
-//        return commandLineValue;
-//    } 
-//    
+       
 }

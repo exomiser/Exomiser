@@ -35,12 +35,6 @@ public class NoneTypePrioritiserTest {
     public void testGetPriorityTypeReturnsNoneType() {
         assertThat(instance.getPriorityType(), equalTo(PriorityType.NONE));
     }
-
-    @Test
-    public void testGetMessagesReturnsReturnsAnEmptyList() {
-        List<String> emptyList = Collections.emptyList();
-        assertThat(instance.getMessages(), equalTo(emptyList));
-    }
     
     @Test
     public void testToString(){

@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -24,7 +23,7 @@ public class HiPhiveOptionMarshaller extends AbstractOptionMarshaller {
                 .withType(String.class)
                 .withValueSeparator(',')
                 .withDescription(String.format("Comma separated list of optional parameters for %s: human, mouse, fish, ppi. "
-                                + "e.g. --%s=human or --%s=human,mouse,ppi", PriorityType.HIPHIVE_PRIORITY.getCommandLineValue(), HIPHIVE_PARAMS_OPTION, HIPHIVE_PARAMS_OPTION))
+                                + "e.g. --%s=human or --%s=human,mouse,ppi", "hiphive", HIPHIVE_PARAMS_OPTION, HIPHIVE_PARAMS_OPTION))
                 .withLongOpt(HIPHIVE_PARAMS_OPTION)
                 .create("E");
     }

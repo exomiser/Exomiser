@@ -36,15 +36,13 @@ public interface Prioritiser extends AnalysisStep {
      * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects if they do not conform to the
      * Prioritizer.
      *
-     * @param geneList
+     * @param genes
      */
-    public void prioritizeGenes(List<Gene> geneList);
+    public void prioritizeGenes(List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.
      */
     public PriorityType getPriorityType();
-
-    public List<String> getMessages();
 
 }

@@ -22,8 +22,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.AnalysisFactory;
 import de.charite.compbio.exomiser.core.AnalysisRunner;
-import de.charite.compbio.exomiser.core.AnalysisRunner.AnalysisMode;
+import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.Exomiser;
@@ -80,6 +81,9 @@ public class SubmitJobController {
 
     @Autowired
     Exomiser exomiser;
+    
+    @Autowired
+    AnalysisFactory analysisFactory;
 
     @Autowired
     private int maxVariants;
@@ -133,7 +137,7 @@ public class SubmitJobController {
 
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
         Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
-        AnalysisRunner analysisRunner = exomiser.getPassOnlyAnalysisRunner();
+        AnalysisRunner analysisRunner = analysisFactory.getPassOnlyAnalysisRunner();
         analysisRunner.runAnalysis(analysis);
 
         buildResultsModel(model, analysis);
