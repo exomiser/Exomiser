@@ -8,16 +8,12 @@ package de.charite.compbio.exomiser.cli;
 import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
 import static de.charite.compbio.exomiser.cli.options.SettingsFileOptionMarshaller.SETTINGS_FILE_OPTION;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Resource;
@@ -37,10 +33,10 @@ import org.springframework.stereotype.Component;
 public class CommandLineOptionsParser {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandLineOptionsParser.class);
-    
+
     @Resource
     private Map<String, OptionMarshaller> optionMarshallers;
-    
+
     public SettingsBuilder parseCommandLine(CommandLine commandLine) {
 
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
@@ -49,10 +45,6 @@ public class CommandLineOptionsParser {
 
         if (commandLine.hasOption(SETTINGS_FILE_OPTION)) {
             Path settingsFile = Paths.get(commandLine.getOptionValue(SETTINGS_FILE_OPTION));
-            //check file type.. oooh this is getting brittle...
-            if (settingsFile.toString().endsWith("yml")) {
-                
-            }
             settingsBuilder = parseSettingsFile(settingsFile);
             logger.warn("Settings file parameters will be overridden by command-line parameters!");
         }
@@ -62,7 +54,7 @@ public class CommandLineOptionsParser {
             String[] values = option.getValues();
             setBuilderValue(key, values, settingsBuilder);
         }
-        
+
         //return a Map<Analysis, OutputSettings>
         return settingsBuilder;
 
@@ -94,28 +86,9 @@ public class CommandLineOptionsParser {
         }
         return settingsBuilder;
     }
-
-    public Collection<SettingsBuilder> parseBatchFile(Path batchFilePath) {
-
-        List<SettingsBuilder> settingsBuilders = new ArrayList<>();
-
-        logger.info("Parsing settings from batch file {}", batchFilePath);
-        try (BufferedReader reader = Files.newBufferedReader(batchFilePath, Charset.defaultCharset())) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Path settingsFile = Paths.get(line);
-                SettingsBuilder settingsBuilder = parseSettingsFile(settingsFile);
-                settingsBuilders.add(settingsBuilder);
-            }
-
-        } catch (IOException ex) {
-            logger.error("Unable to parse batch file {}", batchFilePath, ex);
-        }
-        return settingsBuilders;
-    }
-
+    
     private void setBuilderValue(String key, String[] values, SettingsBuilder settingsBuilder) {
-              
+
         if (optionMarshallers.containsKey(key)) {
             OptionMarshaller optionMarshaller = optionMarshallers.get(key);
             optionMarshaller.applyValuesToSettingsBuilder(values, settingsBuilder);

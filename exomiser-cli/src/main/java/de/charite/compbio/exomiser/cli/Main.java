@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,6 +96,13 @@ public class Main {
         runner.runAnalysis(analysis);
     }
 
+    private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
+        if (analysis.getAnalysisMode() == AnalysisMode.FULL) {
+            return analysisFactory.getFullAnalysisRunner();
+        }
+        return analysisFactory.getPassOnlyAnalysisRunner();
+    }
+
     private void writeResults(Analysis analysis, OutputSettings outputSettings) {
         logger.info("Writing results");
         for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
@@ -123,14 +131,13 @@ public class Main {
 
     private Path getJarFilePath() {
         //Get Spring started - this contains the configuration of the application
-        Path jarFilePath = null;
         CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
         try {
-            jarFilePath = Paths.get(codeSource.getLocation().toURI()).getParent();
+            return Paths.get(codeSource.getLocation().toURI()).getParent();
         } catch (URISyntaxException ex) {
             logger.error("Unable to find jar file", ex);
+            throw new RuntimeException("Unable to find jar file", ex);
         }
-        return jarFilePath;
     }
 
     private AnnotationConfigApplicationContext setUpApplicationContext(Path jarFilePath) {
@@ -180,27 +187,41 @@ public class Main {
                 printHelp();
                 System.exit(0);
             }
-            //check the args for a batch file first as this option is otherwise ignored 
-            if (commandLine.hasOption("batch-file")) {
-                Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
-                for (SettingsBuilder settingsBuilder : commandLineOptionsParser.parseBatchFile(batchFilePath)) {
-                    makeAnalysisAndAddToListIfSettingsAreValid(settingsBuilder, analysesToRun);
-                }
-            } else if (commandLine.hasOption("analysis")) {
+            if (commandLine.hasOption("analysis")) {
                 Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
                 Analysis analysis = analysisParser.parseAnalysis(analysisScript);
                 OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
                 analysesToRun.put(analysis, outputSettings);
             } else if (commandLine.hasOption("analysis-batch")) {
-                logger.info("implement the analysis-batch option!");
-//                Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
-//                Analysis analysis = analysisParser.parseAnalysis(analysisScript);
-//                OutputSettings outputSettings = new OutputSettingsBuilder().outputPrefix("results/" + analysis.getVcfPath().getFileName().toString() + "-analysis").build();
-//                analysesToRun.put(analysis, outputSettings);
-            } else {
+                Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
+                List<Path> analysisScripts = new BatchFileReader().readPathsFromBatchFile(analysisBatchFile);
+                for (Path analysisScript : analysisScripts) {
+                    Analysis analysis = analysisParser.parseAnalysis(analysisScript);
+                    OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
+                    analysesToRun.put(analysis, outputSettings);
+                }                
+            } 
+            //check the args for a batch file first as this option is otherwise ignored 
+            else if (commandLine.hasOption("batch-file")) {
+                Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
+                logger.info("Parsing settings from batch file {}", batchFilePath);
+                List<Path> settingsFiles = new BatchFileReader().readPathsFromBatchFile(batchFilePath);
+                for (Path settingsFile : settingsFiles) {
+                    SettingsBuilder settingsBuilder = commandLineOptionsParser.parseSettingsFile(settingsFile);
+                    ExomiserSettings settings = settingsBuilder.build();
+                    if (settings.isValid()) {
+                        Analysis analysis = makeAnalysis(settings);
+                        analysesToRun.put(analysis, settings);
+                    }
+                }
+            }  else {
                 //make a single SettingsBuilder
                 SettingsBuilder settingsBuilder = commandLineOptionsParser.parseCommandLine(commandLine);
-                makeAnalysisAndAddToListIfSettingsAreValid(settingsBuilder, analysesToRun);
+                ExomiserSettings settings = settingsBuilder.build();
+                if (settings.isValid()) {
+                    Analysis analysis = makeAnalysis(settings);
+                    analysesToRun.put(analysis, settings);
+                }
             }
         } catch (ParseException ex) {
             printHelp();
@@ -209,24 +230,10 @@ public class Main {
         return analysesToRun;
     }
 
-    private void makeAnalysisAndAddToListIfSettingsAreValid(SettingsBuilder settingsBuilder, Map<Analysis, OutputSettings> analyses) {
-        ExomiserSettings settings = settingsBuilder.build();
-        if (settings.isValid()) {
-            Analysis analysis = makeAnalysis(settings);
-            analyses.put(analysis, settings);
-        }
-    }
 
     private Analysis makeAnalysis(ExomiserSettings settings) {
         Analysis analysis = exomiser.setUpExomiserAnalysis(settings);
         return analysis;
-    }
-
-    private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
-        if (analysis.getAnalysisMode() == AnalysisMode.FULL) {
-            return analysisFactory.getFullAnalysisRunner();
-        }
-        return analysisFactory.getPassOnlyAnalysisRunner();
     }
 
     private void printHelp() {
