@@ -49,7 +49,7 @@ public class SampleDataFactory {
         SampleData sampleData = new SampleData(vcfFilePath, pedigreeFilePath); 
 
         VCFFileReader vcfReader = new VCFFileReader(vcfFilePath.toFile(), false); // false => do not require index
-        setSampleVcfMetaData(vcfReader, sampleData);
+        setSampleVcfMetaData(vcfReader.getFileHeader(), sampleData);
 
         // load and annotate VCF data
         //Issue #56 This will load ALL the VCF data into memory and hold it in the sampleData
@@ -68,9 +68,8 @@ public class SampleDataFactory {
         return sampleData;
     }
 
-    private void setSampleVcfMetaData(VCFFileReader vcfReader, SampleData sampleData) {
+    private void setSampleVcfMetaData(VCFHeader vcfHeader, SampleData sampleData) {
         // create sample information from header (names of samples)
-        VCFHeader vcfHeader = vcfReader.getFileHeader();
         sampleData.setVcfHeader(vcfHeader);
         sampleData.setSampleNames(vcfHeader.getGenotypeSamples());
         sampleData.setNumberOfSamples(vcfHeader.getNGenotypeSamples());
