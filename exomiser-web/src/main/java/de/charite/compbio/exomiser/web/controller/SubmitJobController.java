@@ -43,7 +43,10 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -81,7 +84,7 @@ public class SubmitJobController {
 
     @Autowired
     Exomiser exomiser;
-    
+
     @Autowired
     AnalysisFactory analysisFactory;
 
@@ -136,7 +139,7 @@ public class SubmitJobController {
         }
 
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
-        Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
+        Analysis analysis = buildAnalysis(Paths.get(vcfFile.getOriginalFilename()), Paths.get(pedFile.getOriginalFilename()), diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
         AnalysisRunner analysisRunner = analysisFactory.getPassOnlyAnalysisRunner();
         analysisRunner.runAnalysis(analysis);
 
@@ -172,7 +175,7 @@ public class SubmitJobController {
         Analysis analysis = new Analysis();
         analysis.setVcfPath(vcfPath);
         analysis.setPedPath(pedPath);
-        analysis.setHpoIds(phenotypes);       
+        analysis.setHpoIds(phenotypes);
         analysis.setModeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance));
 
         analysis.setScoringMode(PriorityType.valueOf(prioritiser).getScoringMode());
@@ -187,22 +190,22 @@ public class SubmitJobController {
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .maximumFrequency(Float.valueOf(frequency))
                 .genesToKeep(genesToKeep);
-                if (geneticInterval != null) { 
-                    filterSettingsBuilder.geneticInterval(GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval));
-                }       
+        if (geneticInterval != null) {
+            filterSettingsBuilder.geneticInterval(GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval));
+        }
         FilterSettings filterSettings = filterSettingsBuilder.build();
-        
+
         PrioritiserSettings prioritiserSettings = new PrioritiserSettingsBuilder()
                 .usePrioritiser(PriorityType.valueOf(prioritiser))
                 .diseaseId(diseaseId)
                 .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
                 .build();
-        
+
         analysis.addAllSteps(exomiser.makeAnalysisSteps(filterSettings, prioritiserSettings));
-        
+
         SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
         analysis.setSampleData(sampleData);
-        
+
         return analysis;
     }
 
@@ -267,13 +270,14 @@ public class SubmitJobController {
     }
 
     private void cleanUpSampleFiles(Path vcfPath, Path pedPath) {
+        logger.info("Deleting input files VCF: {} and PED: {}", vcfPath, pedPath);
         try {
             Files.deleteIfExists(vcfPath);
             if (pedPath != null) {
                 Files.deleteIfExists(pedPath);
             }
         } catch (IOException ex) {
-            logger.error(null, ex);
+            logger.error("Unable to delete sample files", ex);
         }
     }
 
@@ -296,17 +300,19 @@ public class SubmitJobController {
     }
 
     private Path createPathFromMultipartFile(MultipartFile multipartFile) {
-        Path path = null;
+        Path tempDirPath = Paths.get(System.getProperty("java.io.tmpdir"));
         if (!multipartFile.isEmpty()) {
             logger.info("Uploading multipart file: {}", multipartFile.getOriginalFilename());
             try {
-                path = Paths.get(System.getProperty("java.io.tmpdir"), multipartFile.getOriginalFilename());
+                Path path = Files.createTempFile(tempDirPath, "temp",  multipartFile.getOriginalFilename());
+//                Path path = Paths.get(tempDirPath.toString(), multipartFile.getOriginalFilename());
                 multipartFile.transferTo(path.toFile());
+                return path;
             } catch (IOException e) {
                 logger.error("Failed to upload file {}", multipartFile.getOriginalFilename(), e);
             }
         }
         //PED files are permitted to be null so this is OK really.
-        return path;
+        return null;
     }
 }
