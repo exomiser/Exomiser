@@ -42,6 +42,7 @@ public class KnownVariantFilterTest {
         assertThat(filterResult, equalTo(FAIL_RESULT));
     }
     
+    @Test
     public void testRunFilter_ReturnsFailResultWhenFilteringVariantWithKnownFrequency() {
         FrequencyData frequencyData = new FrequencyData(null, new Frequency(1f));
         VariantEvaluation variantEvaluation = buildVariantWithFrequencyData(frequencyData);

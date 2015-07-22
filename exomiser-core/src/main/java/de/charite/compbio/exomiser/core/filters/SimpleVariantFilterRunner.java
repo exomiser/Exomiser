@@ -50,18 +50,18 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
     @Override
     public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> filterables) {
         for (VariantEvaluation variantEvaluation : filterables) {
-            addMissingDataAndRunFilter(filter, variantEvaluation);
+            run(filter, variantEvaluation);
         }
         return filterables;
     }
 
     private void run(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
         for (VariantFilter filter : variantFilters) {
-            addMissingDataAndRunFilter(filter, variantEvaluation);
+            run(filter, variantEvaluation);
         }
     }
 
-    protected FilterResult addMissingDataAndRunFilter(Filter filter, VariantEvaluation variantEvaluation) {
+    public FilterResult run(Filter filter, VariantEvaluation variantEvaluation) {
         addMissingFrequencyAndPathogenicityData(filter.getFilterType(), variantEvaluation);
         return runFilterAndAddResult(filter, variantEvaluation);
     }

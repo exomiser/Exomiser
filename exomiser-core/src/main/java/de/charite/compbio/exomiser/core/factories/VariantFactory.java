@@ -13,10 +13,17 @@ import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Produces Variants from VCF files.
@@ -37,43 +44,51 @@ public class VariantFactory {
         this.variantAnnotator = variantAnnotator;
     }
 
-    public List<VariantContext> createVariantContexts(VCFFileReader vcfReader) {
+    public List<VariantContext> createVariantContexts(Path vcfPath) {
         logger.info("Loading variants from VCF...");
-        List<VariantContext> records = new ArrayList<>();
-        for (VariantContext vc : vcfReader) {
-            records.add(vc);
-        }
-        vcfReader.close();
+        Stream<VariantContext> variantContextStream = streamVariantContexts(vcfPath);
+        List<VariantContext> records = variantContextStream.collect(toList());
+        variantContextStream.close();
         logger.info("Created {} variant records from VCF", records.size());
         return records;
     }
 
-    public List<VariantEvaluation> createVariantEvaluations(VCFFileReader vcfFileReader) {
-        List<VariantContext> variantContexts = createVariantContexts(vcfFileReader);
+    public Stream<VariantContext> streamVariantContexts(Path vcfPath) {
+        logger.info("Streaming variants from VCF...");
+        VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false); // false => do not require index
+        Iterable<VariantContext> variantIterable = () -> vcfReader.iterator();
+        boolean runParallel = false;
+        return StreamSupport.stream(variantIterable.spliterator(), runParallel);
+    }
 
+    public List<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
+        Stream<VariantEvaluation> variantEvaluationStream = streamVariantEvaluations(vcfPath);
+        List<VariantEvaluation> variantEvaluations = variantEvaluationStream.collect(toList());
+        variantEvaluationStream.close();
+        logger.info("Created {} single allele variants from {} variant records - {} are missing annotations, most likely due to non-numeric chromosome designations", variantEvaluations.size());
+        return variantEvaluations;
+    }
+
+    public Stream<VariantEvaluation> streamVariantEvaluations(Path vcfPath) {
         //note - VariantContexts with with unknown references will not create a Variant.
-        logger.info("Annotating variant records, trimming sequences and normalising positions...");
-        List<VariantEvaluation> variants = new ArrayList<>(variantContexts.size());
-        // build Variant objects from VariantContexts
-        int unannotatedVariants = 0;
-        for (VariantContext variantContext : variantContexts) {
+        Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath).flatMap(variantContext -> {
+            List<VariantEvaluation> variantEvaluations = new ArrayList<>();
             List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
-            //What about missing annotations? How should these be handled???
             if (variantAlleleAnnotations.isEmpty()) {
                 for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                    unannotatedVariants++;
-                    variants.add(buildUnAnnotatedVariantEvaluation(variantContext, altAlleleId));
+                    variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
                 }
             } else {
                 //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
                 for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
                     VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
-                    variants.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
+                    variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
                 }
             }
-        }
-        logger.info("Created {} single allele variants from {} variant records - {} are missing annotations, most likely due to non-numeric chromosome designations", variants.size(), variantContexts.size(), unannotatedVariants);
-        return variants;
+            return variantEvaluations.stream();
+        });
+        logger.info("Annotating variant records, trimming sequences and normalising positions...");
+        return variantEvaluationStream;
     }
 
     /**
@@ -86,7 +101,7 @@ public class VariantFactory {
      * @param altAlleleId
      * @return
      */
-    private VariantEvaluation buildUnAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId) {
+    private VariantEvaluation buildUnknownVariantEvaluation(VariantContext variantContext, int altAlleleId) {
         // Build the GenomeChange object.
         final String chromosomeName = variantContext.getChr();
         final String ref = variantContext.getReference().getBaseString();
@@ -98,7 +113,7 @@ public class VariantFactory {
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
-                //quality is the only value from the VCF file directly required for analysis
+                        //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
                 .chromosomeName(chromosomeName)
                 .build();
@@ -113,7 +128,7 @@ public class VariantFactory {
      * @param variantAnnotations
      * @return
      */
-    public VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
+    protected VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
         int chr = variantAnnotations.getChr();
         int pos = buildPos(variantAnnotations);
         String ref = buildRef(variantAnnotations);
@@ -130,9 +145,9 @@ public class VariantFactory {
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
-                //quality is the only value from the VCF file directly required for analysis
+                        //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
-                //jannovar derived data
+                        //jannovar derived data
                 .chromosomeName(genomeVariant.getChrName())
                 .isOffExome(variantEffect.isOffExome())
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))

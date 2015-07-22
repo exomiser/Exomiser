@@ -7,14 +7,21 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,7 +29,6 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -30,7 +36,7 @@ public class SparseVariantFilterRunnerTest {
 
     @InjectMocks
     private SparseVariantFilterRunner instance;
-    
+
     @Mock
     private VariantDataService variantDataService;
 
@@ -42,14 +48,14 @@ public class SparseVariantFilterRunnerTest {
     private FrequencyFilter frequencyFilter;
     @Mock
     private PathogenicityFilter pathogenicityFilter;
-    
+
     private VariantEvaluation passesAllFilters;
     private VariantEvaluation failsAllFilters;
     private VariantEvaluation passesQualityFrequencyFilter;
     private VariantEvaluation passesTargetQualityFilter;
 
     private List<VariantEvaluation> variantEvaluations;
-    
+
     @Before
     public void setUp() {
 
@@ -58,15 +64,15 @@ public class SparseVariantFilterRunnerTest {
         passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(3, 3, "A", "T").build();
         passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(4, 4, "A", "T").build();
 
-        makeVariantEvaluations(); 
-                
+        makeVariantEvaluations();
+
         setUpFrequencyMocks();
         setUpPathogenicityMocks();
         setUpQualityMocks();
         setUpTargetMocks();
 
     }
-    
+
     private void makeVariantEvaluations() {
         variantEvaluations = new ArrayList<>();
         variantEvaluations.add(passesTargetQualityFilter);
@@ -77,10 +83,10 @@ public class SparseVariantFilterRunnerTest {
 
     private void setUpFrequencyMocks() {
         Mockito.when(frequencyFilter.getFilterType()).thenReturn(FilterType.FREQUENCY_FILTER);
-        
+
         FilterResult passFrequencyResult = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1f);
         FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
-        
+
         Mockito.when(frequencyFilter.runFilter(passesAllFilters)).thenReturn(passFrequencyResult);
         Mockito.when(frequencyFilter.runFilter(failsAllFilters)).thenReturn(failFrequencyResult);
         Mockito.when(frequencyFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(passFrequencyResult);
@@ -92,7 +98,7 @@ public class SparseVariantFilterRunnerTest {
 
         FilterResult pass = new PassFilterResult(FilterType.PATHOGENICITY_FILTER, 1f);
         FilterResult fail = new FailFilterResult(FilterType.PATHOGENICITY_FILTER, 0f);
-        
+
         Mockito.when(pathogenicityFilter.runFilter(passesAllFilters)).thenReturn(pass);
         Mockito.when(pathogenicityFilter.runFilter(failsAllFilters)).thenReturn(fail);
         Mockito.when(pathogenicityFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(fail);
@@ -104,7 +110,7 @@ public class SparseVariantFilterRunnerTest {
 
         FilterResult passQualityResult = new PassFilterResult(FilterType.QUALITY_FILTER, 1f);
         FilterResult failQualityResult = new FailFilterResult(FilterType.QUALITY_FILTER, 0f);
-        
+
         Mockito.when(qualityFilter.runFilter(passesAllFilters)).thenReturn(passQualityResult);
         Mockito.when(qualityFilter.runFilter(failsAllFilters)).thenReturn(failQualityResult);
         Mockito.when(qualityFilter.runFilter(passesQualityFrequencyFilter)).thenReturn(passQualityResult);
@@ -148,28 +154,52 @@ public class SparseVariantFilterRunnerTest {
     @Test
     public void testRun_WithNoFiltersReturnsOriginalVariantEvaluations() {
         List<VariantFilter> filters = Collections.emptyList();
-      
+
         List<VariantEvaluation> result = instance.run(filters, variantEvaluations);
         assertThat(result, equalTo(variantEvaluations));
     }
-    
+
     @Test
     public void testRunWithOneFilter_OnlyReturnsVariantPassingAllFilters() {
-        
+
         VariantFilter filterToPass = qualityFilter;
-        
+
         List<VariantEvaluation> expResult = new ArrayList<>();
         expResult.add(passesTargetQualityFilter);
         expResult.add(passesQualityFrequencyFilter);
         expResult.add(passesAllFilters);
-                
+
         List<VariantEvaluation> result = instance.run(filterToPass, variantEvaluations);
-        
+
         assertThat(result, equalTo(expResult));
         for (VariantEvaluation variantEvaluation : result) {
             assertPassedFilterAndFailedAllOthers(variantEvaluation, filterToPass);
         }
-        
+
+    }
+
+    @Test
+    public void testRunWithOneFilterUsingStream_OnlyReturnsVariantPassingAllFilters() {
+
+        VariantFilter filterToPass = qualityFilter;
+
+        List<VariantEvaluation> expResult = new ArrayList<>();
+        expResult.add(passesTargetQualityFilter);
+        expResult.add(passesQualityFrequencyFilter);
+        expResult.add(passesAllFilters);
+
+        List<VariantEvaluation> result = variantEvaluations.stream()
+                .filter(variantEvaluation -> {
+                    instance.run(filterToPass, variantEvaluation);
+                    return variantEvaluation.passedFilters();
+                })
+                .collect(toList());
+
+        assertThat(result, equalTo(expResult));
+        for (VariantEvaluation variantEvaluation : result) {
+            assertPassedFilterAndFailedAllOthers(variantEvaluation, filterToPass);
+        }
+
     }
 
     private void assertPassedFilterAndFailedAllOthers(VariantEvaluation variantEvaluation, VariantFilter filterToPass) {
