@@ -49,7 +49,7 @@ public class SampleDataFactoryTest {
         sampleNames.add(sampleName);
         
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree(sampleName);
-                
+
         assertThat(sampleData, notNullValue());
         assertThat(sampleData.getVcfPath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));

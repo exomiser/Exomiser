@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.AnalysisFactory.AnalysisBuilder;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactoryStub;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
@@ -61,13 +62,19 @@ public class AnalysisFactoryTest {
     
     @Test
     public void testCanMakeFullAnalysisRunner() {
-        AnalysisRunner analysisRunner = instance.getFullAnalysisRunner();
+        SimpleAnalysisRunner analysisRunner = instance.getFullAnalysisRunner();
         assertThat(analysisRunner, notNullValue());
     }
-    
+
+    @Test
+    public void testCanMakeSparseAnalysisRunner() {
+        SparseAnalysisRunner analysisRunner = instance.getSparseAnalysisRunner();
+        assertThat(analysisRunner, notNullValue());
+    }
+
     @Test
     public void testCanMakePassOnlyAnalysisRunner() {
-        AnalysisRunner analysisRunner = instance.getPassOnlyAnalysisRunner();
+        PassOnlyAnalysisRunner analysisRunner = instance.getPassOnlyAnalysisRunner();
         assertThat(analysisRunner, notNullValue());
     }
     

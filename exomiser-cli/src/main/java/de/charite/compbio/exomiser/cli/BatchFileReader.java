@@ -28,16 +28,18 @@ public class BatchFileReader {
     private static final Logger logger = LoggerFactory.getLogger(BatchFileReader.class);
     
     public List<Path> readPathsFromBatchFile(Path batchFile) {
+        logger.info("Processing batch file {}", batchFile);
         List<Path> filePaths = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(batchFile, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
-                Path settingsFile = Paths.get(line);
+                Path settingsFile = Paths.get(line.trim());
                 filePaths.add(settingsFile);
             }
         } catch (IOException ex) {
             logger.error("Unable to read batch file {}", batchFile, ex);
         }
+        logger.info("Returning {} settings from batch file.", filePaths.size());
         return filePaths;
     }
 

@@ -29,8 +29,8 @@ public interface Prioritiser extends AnalysisStep {
      * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects. This will have the side effect
      * of setting the Class variable {@link de.charite.compbio.exomiser.exome.Gene#priorityScore}
      * correspondingly. This, together with the filter scores of the {@link jannovar.exome.Variant Variant}
-     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects can then be used to sort the
-     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects.
+     * {@link de.charite.compbio.exomiser.core.model.Gene Gene} objects can then be used to sort the
+     * {@link de.charite.compbio.exomiser.core.model.Gene Gene} objects.
      * <p>
      * Note that this may result in the removal of
      * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects if they do not conform to the

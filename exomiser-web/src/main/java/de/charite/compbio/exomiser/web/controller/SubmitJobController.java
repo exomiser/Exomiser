@@ -25,7 +25,6 @@ import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.AnalysisFactory;
 import de.charite.compbio.exomiser.core.AnalysisRunner;
 import de.charite.compbio.exomiser.core.AnalysisMode;
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
@@ -43,10 +42,7 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -80,13 +76,10 @@ public class SubmitJobController {
     private final ReferenceDictionary referenceDictionary = new ReferenceDictionaryBuilder().build();
 
     @Autowired
-    private SampleDataFactory sampleDataFactory;
+    private Exomiser exomiser;
 
     @Autowired
-    Exomiser exomiser;
-
-    @Autowired
-    AnalysisFactory analysisFactory;
+    private AnalysisFactory analysisFactory;
 
     @Autowired
     private int maxVariants;
@@ -202,9 +195,6 @@ public class SubmitJobController {
                 .build();
 
         analysis.addAllSteps(exomiser.makeAnalysisSteps(filterSettings, prioritiserSettings));
-
-        SampleData sampleData = sampleDataFactory.createSampleData(vcfPath, pedPath);
-        analysis.setSampleData(sampleData);
 
         return analysis;
     }

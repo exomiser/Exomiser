@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.GeneFilterRunner;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
@@ -28,26 +28,26 @@ import java.util.List;
  */
 public class AnalysisFactory {
 
-    private final SampleDataFactory sampleDataFactory;
+    private final VariantFactory variantFactory;
     private final VariantDataService variantDataService;
     private final PriorityFactory priorityFactory;
 
-    public AnalysisFactory(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, PriorityFactory priorityFactory) {
-        this.sampleDataFactory = sampleDataFactory;
+    public AnalysisFactory(VariantFactory variantFactory, VariantDataService variantDataService, PriorityFactory priorityFactory) {
+        this.variantFactory = variantFactory;
         this.variantDataService = variantDataService;
         this.priorityFactory = priorityFactory;
     }
 
-    public AnalysisRunner getFullAnalysisRunner() {
-        VariantFilterRunner variantFilterRunner = new SimpleVariantFilterRunner(variantDataService);
-        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
+    public SimpleAnalysisRunner getFullAnalysisRunner() {
+        return new SimpleAnalysisRunner(variantFactory, variantDataService);
     }
 
-    public AnalysisRunner getPassOnlyAnalysisRunner() {
-        VariantFilterRunner variantFilterRunner = new SparseVariantFilterRunner(variantDataService);
-//        GeneFilterRunner geneFilterRunner = new SparseGeneFilterRunner();
-        //TODO: make a SparseGeneFilterRunner
-        return new AnalysisRunner(variantFilterRunner, new SimpleGeneFilterRunner());
+    public SparseAnalysisRunner getSparseAnalysisRunner() {
+        return new SparseAnalysisRunner(variantFactory, variantDataService);
+    }
+
+    public PassOnlyAnalysisRunner getPassOnlyAnalysisRunner() {
+        return new PassOnlyAnalysisRunner(variantFactory, variantDataService);
     }
 
     public AnalysisBuilder getAnalysisBuilder() {
