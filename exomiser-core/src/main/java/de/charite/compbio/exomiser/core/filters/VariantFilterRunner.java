@@ -19,5 +19,7 @@ public interface VariantFilterRunner extends FilterRunner<VariantFilter, Variant
 
     @Override
     public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations);
+
+    public FilterResult run(Filter filter, VariantEvaluation variantEvaluation);
     
 }

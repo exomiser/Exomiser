@@ -7,13 +7,14 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
@@ -25,7 +26,6 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
     }
 
     /**
-     *
      * @param filters
      * @param variantEvaluations
      * @return
@@ -49,14 +49,12 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
     public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> variantEvaluations) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilters()) {
-                addMissingDataAndRunFilter(filter, variantEvaluation);
+                run(filter, variantEvaluation);
             }
         }
-        List<VariantEvaluation> filteredVariantEvaluations = makeListofFilteredVariants(variantEvaluations);
-
-        return filteredVariantEvaluations;
+        return makeListofFilteredVariants(variantEvaluations);
     }
-    
+
     private boolean ifThereAreNoFiltersToRun(List<VariantFilter> filters) {
         if (filters.isEmpty()) {
             logger.info("Unable to filter variants against empty Filter list - returning all variants");
@@ -71,11 +69,10 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
             for (VariantEvaluation variantEvaluation : variantEvaluations) {
                 //the only difference between sparse and full filtering is this if clause here...
                 if (variantEvaluation.passedFilters()) {
-                    addMissingDataAndRunFilter(filter, variantEvaluation);
+                    run(filter, variantEvaluation);
                 }
             }
         }
-
         return makeListofFilteredVariants(variantEvaluations);
     }
 
