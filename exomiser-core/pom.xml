@@ -123,6 +123,6 @@
                 <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
                 <filtering>true</filtering>
             </resource>
-        </resources> 
+        </resources>
     </build>
 </project>
