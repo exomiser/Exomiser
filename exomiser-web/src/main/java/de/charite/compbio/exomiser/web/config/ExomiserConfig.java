@@ -65,7 +65,7 @@ public class ExomiserConfig {
     
     @Bean
     AnalysisFactory analysisFactory() {
-        return new AnalysisFactory(sampleDataFactory(), variantDataService(), priorityFactory());
+        return new AnalysisFactory(variantFactory(), variantDataService(), priorityFactory());
     }
     
     /**

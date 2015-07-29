@@ -20,16 +20,16 @@ import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.*;
+import java.util.stream.Stream;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -56,7 +56,6 @@ public class Main {
     private Options options;
 
     private Exomiser exomiser;
-    private SampleDataFactory sampleDataFactory;
     private ResultsWriterFactory resultsWriterFactory;
     private AnalysisParser analysisParser;
     private AnalysisFactory analysisFactory;
@@ -72,35 +71,8 @@ public class Main {
         showSplash();
         //TODO: this should return a list of Analysis- either convert the settings/cli input to an Analysis or add one directly from an analysis yaml file
         //then move ExomiserSettings into this package from core.
-        Map<Analysis, OutputSettings> analyses = makeAnalyses(args);
-        logger.info("Running exome analyis on {} samples:", analyses.size());
-        for (Entry<Analysis, OutputSettings> entry : analyses.entrySet()) {
-            Analysis analysis = entry.getKey();
-            OutputSettings outputSettings = entry.getValue();
-            createAndSetSampleData(analysis);
-            runAnalysis(analysis);
-            writeResults(analysis, outputSettings);
-        }
-        logger.info("Finished analyses");
-    }
-
-    private void createAndSetSampleData(Analysis analysis) {
-        logger.info("Creating and annotating sample data for {}", analysis.getVcfPath());
-        SampleData sampleData = sampleDataFactory.createSampleData(analysis.getVcfPath(), analysis.getPedPath());
-        analysis.setSampleData(sampleData);
-    }
-
-    private void runAnalysis(Analysis analysis) {
-        AnalysisRunner runner = makeAnalysisRunner(analysis);
-        runner.runAnalysis(analysis);
-    }
-
-    private void writeResults(Analysis analysis, OutputSettings outputSettings) {
-        logger.info("Writing results");
-        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, outputSettings);
-        }
+        runAnalyses(args);
+        logger.info("Exomising finished - Bye!");
     }
 
     private void setup() {
@@ -113,24 +85,22 @@ public class Main {
         options = applicationContext.getBean(Options.class);
 
         exomiser = applicationContext.getBean(Exomiser.class);
-        sampleDataFactory = applicationContext.getBean(SampleDataFactory.class);
         resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         analysisParser = applicationContext.getBean(AnalysisParser.class);
         analysisFactory = applicationContext.getBean(AnalysisFactory.class);
-        
+
         buildVersion = (String) applicationContext.getBean("buildVersion");
     }
 
     private Path getJarFilePath() {
         //Get Spring started - this contains the configuration of the application
-        Path jarFilePath = null;
         CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
         try {
-            jarFilePath = Paths.get(codeSource.getLocation().toURI()).getParent();
+            return Paths.get(codeSource.getLocation().toURI()).getParent();
         } catch (URISyntaxException ex) {
             logger.error("Unable to find jar file", ex);
+            throw new RuntimeException("Unable to find jar file", ex);
         }
-        return jarFilePath;
     }
 
     private AnnotationConfigApplicationContext setUpApplicationContext(Path jarFilePath) {
@@ -166,67 +136,91 @@ public class Main {
         System.out.println(splash);
     }
 
-    private Map<Analysis, OutputSettings> makeAnalyses(String[] args) {
-        Map<Analysis, OutputSettings> analysesToRun = new LinkedHashMap();
+    private void runAnalyses(String[] args) {
         CommandLineOptionsParser commandLineOptionsParser = applicationContext.getBean(CommandLineOptionsParser.class);
         try {
             Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);
-            if (args.length == 0) {
+            if (args.length == 0 || commandLine.hasOption("help")) {
                 printHelp();
                 System.exit(0);
             }
-            if (commandLine.hasOption("help")) {
-                printHelp();
-                System.exit(0);
-            }
-            //check the args for a batch file first as this option is otherwise ignored 
-            if (commandLine.hasOption("batch-file")) {
-                Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
-                for (SettingsBuilder settingsBuilder : commandLineOptionsParser.parseBatchFile(batchFilePath)) {
-                    makeAnalysisAndAddToListIfSettingsAreValid(settingsBuilder, analysesToRun);
-                }
-            } else if (commandLine.hasOption("analysis")) {
+
+            if (commandLine.hasOption("analysis")) {
                 Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
-                Analysis analysis = analysisParser.parseAnalysis(analysisScript);
-                OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
-                analysesToRun.put(analysis, outputSettings);
+                runAnalysisFromScript(analysisScript);
             } else if (commandLine.hasOption("analysis-batch")) {
-                logger.info("implement the analysis-batch option!");
-//                Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
-//                Analysis analysis = analysisParser.parseAnalysis(analysisScript);
-//                OutputSettings outputSettings = new OutputSettingsBuilder().outputPrefix("results/" + analysis.getVcfPath().getFileName().toString() + "-analysis").build();
-//                analysesToRun.put(analysis, outputSettings);
+                Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
+                List<Path> analysisScripts = new BatchFileReader().readPathsFromBatchFile(analysisBatchFile);
+                //this *can* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
+                //like this:
+                //analysisScripts.parallelStream().forEach(this::runAnalysisFromScript);
+                //HOWEVER there may be threading issues so this needs investigation.
+                analysisScripts.forEach(this::runAnalysisFromScript);
+            }
+
+            //check the args for a batch file first as this option is otherwise ignored 
+            else if (commandLine.hasOption("batch-file")) {
+                Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
+                List<Path> settingsFiles = new BatchFileReader().readPathsFromBatchFile(batchFilePath);
+                for (Path settingsFile : settingsFiles) {
+                    SettingsBuilder settingsBuilder = commandLineOptionsParser.parseSettingsFile(settingsFile);
+                    runAnalysisFromSettings(settingsBuilder);
+                }
             } else {
                 //make a single SettingsBuilder
                 SettingsBuilder settingsBuilder = commandLineOptionsParser.parseCommandLine(commandLine);
-                makeAnalysisAndAddToListIfSettingsAreValid(settingsBuilder, analysesToRun);
+                runAnalysisFromSettings(settingsBuilder);
             }
         } catch (ParseException ex) {
             printHelp();
             logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);
         }
-        return analysesToRun;
     }
 
-    private void makeAnalysisAndAddToListIfSettingsAreValid(SettingsBuilder settingsBuilder, Map<Analysis, OutputSettings> analyses) {
+    private void runAnalysisFromScript(Path analysisScript) {
+        Analysis analysis = analysisParser.parseAnalysis(analysisScript);
+        OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
+        runAnalysis(analysis);
+        writeResults(analysis, outputSettings);
+    }
+
+    private void runAnalysisFromSettings(SettingsBuilder settingsBuilder) {
         ExomiserSettings settings = settingsBuilder.build();
         if (settings.isValid()) {
-            Analysis analysis = makeAnalysis(settings);
-            analyses.put(analysis, settings);
+            Analysis analysis = exomiser.setUpExomiserAnalysis(settings);
+            runAnalysis(analysis);
+            writeResults(analysis, settings);
         }
     }
 
-    private Analysis makeAnalysis(ExomiserSettings settings) {
-        Analysis analysis = exomiser.setUpExomiserAnalysis(settings);
-        return analysis;
+    private void runAnalysis(Analysis analysis) {
+        AnalysisRunner runner = makeAnalysisRunner(analysis);
+        runner.runAnalysis(analysis);
     }
 
     private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
-        if (analysis.getAnalysisMode() == AnalysisMode.FULL) {
-            return analysisFactory.getFullAnalysisRunner();
+        AnalysisMode analysisMode = analysis.getAnalysisMode();
+        logger.info("Running analysis in {} mode", analysisMode);
+        switch (analysisMode) {
+            case FULL:
+                return analysisFactory.getFullAnalysisRunner();
+            case SPARSE:
+                return analysisFactory.getSparseAnalysisRunner();
+            case PASS_ONLY:
+                return analysisFactory.getPassOnlyAnalysisRunner();
+            default:
+                //this guy takes up the least RAM
+                return analysisFactory.getPassOnlyAnalysisRunner();
         }
-        return analysisFactory.getPassOnlyAnalysisRunner();
+    }
+
+    private void writeResults(Analysis analysis, OutputSettings outputSettings) {
+        logger.info("Writing results");
+        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
+            resultsWriter.writeFile(analysis, outputSettings);
+        }
     }
 
     private void printHelp() {

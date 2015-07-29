@@ -10,5 +10,5 @@ package de.charite.compbio.exomiser.core;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum AnalysisMode {
-    FULL, PASS_ONLY;
+    FULL, SPARSE, PASS_ONLY;
 }

@@ -174,7 +174,7 @@ public class MainConfig {
     
     @Bean
     AnalysisFactory analysisFactory() {
-        return new AnalysisFactory(sampleDataFactory(), variantDataService(), priorityFactory());
+        return new AnalysisFactory(variantFactory(), variantDataService(), priorityFactory());
     }
 
     @Bean
