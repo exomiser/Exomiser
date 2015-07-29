@@ -17,7 +17,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-htsjdk</artifactId>
-            <version>0.14-SNAPSHOT</version>
+            <version>0.14</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.testng</groupId>

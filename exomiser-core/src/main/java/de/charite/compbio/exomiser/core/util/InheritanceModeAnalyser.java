@@ -8,7 +8,7 @@ package de.charite.compbio.exomiser.core.util;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.pedigree.CompatibilityCheckerException;
+import de.charite.compbio.jannovar.pedigree.compatibilitychecker.CompatibilityCheckerException;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.GenotypeListBuilder;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;

@@ -28,7 +28,6 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     private final VariantFactory variantFactory;
 
     public PassOnlyAnalysisRunner(VariantFactory variantFactory, VariantDataService variantDataService) {
-        //TODO: simplify constructor to VariantFactory and VariantDataService only - the VariantFilterRunner and GeneFilterRunner are specific to the AnalysisRunner implementation and supplying them could mean the wrong thing happens.
         //TODO: make a SparseGeneFilterRunner?
         //geneFilterRunner = new SparseGeneFilterRunner();
         super(variantFactory, new SparseVariantFilterRunner(variantDataService), new SimpleGeneFilterRunner());
@@ -38,7 +37,7 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     @Override
     public void runAnalysis(Analysis analysis) {
 
-        SampleData sampleData = makeSampleData(analysis);
+        final SampleData sampleData = makeSampleData(analysis);
 
         logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
         long startAnalysisTimeMillis = System.currentTimeMillis();
@@ -47,8 +46,8 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         //so for whole genomes this is best run as a stream to filter out the unwanted variants
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysis);
         Path vcfPath = analysis.getVcfPath();
-        List<VariantEvaluation> variantEvaluations = streamAndFilterVariantEvaluations(vcfPath, variantFilters);
-
+        final List<VariantEvaluation> variantEvaluations = streamAndFilterVariantEvaluations(vcfPath, variantFilters);
+        sampleData.setVariantEvaluations(variantEvaluations);
         final List<Gene> genes = sampleDataFactory.createGenes(variantEvaluations);
         sampleData.setGenes(genes);
         final Pedigree pedigree = sampleData.getPedigree();
