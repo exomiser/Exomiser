@@ -141,8 +141,7 @@ public class FilterReportFactoryTest {
         VariantEffectFilter filter = new VariantEffectFilter(EnumSet.noneOf(VariantEffect.class));      
 
         FilterReport report = new FilterReport(filter.getFilterType(), 0, 0);
-        report.addMessage("Removed a total of 0 off-target variants from further consideration");
-        report.addMessage(String.format("Off target variants are defined as variants with effect: %s", filter.getOffTargetVariantTypes()));
+        report.addMessage(String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes()));
 
         FilterReport result = instance.makeFilterReport(filter, sampleData);
 
@@ -284,7 +283,7 @@ public class FilterReportFactoryTest {
         FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
 
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage("Genes filtered for prioritiser scores from PHIVE_PRIORITY under 0.5");
+        report.addMessage("Genes filtered for minimum PHIVE_PRIORITY score of 0.5");
         
         FilterReport result = instance.makeFilterReport(filter, sampleData);
 

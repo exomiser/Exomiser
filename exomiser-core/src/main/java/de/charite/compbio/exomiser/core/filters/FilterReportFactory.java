@@ -99,10 +99,7 @@ public class FilterReportFactory {
 
     private FilterReport makeTargetFilterReport(VariantEffectFilter filter, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.VARIANT_EFFECT_FILTER, variantEvaluations);
-
-        report.addMessage(String.format("Removed a total of %d off-target variants from further consideration", report.getFailed()));
-        report.addMessage(String.format("Off target variants are defined as variants with effect: %s", filter.getOffTargetVariantTypes()));
-
+        report.addMessage(String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes()));
         return report;
     }
 
@@ -196,7 +193,7 @@ public class FilterReportFactory {
     private FilterReport makePriorityScoreFilterReport(PriorityScoreFilter filter, List<Gene> genes) {
         FilterReport report = makeDefaultGeneFilterReport(FilterType.PRIORITY_SCORE_FILTER, genes);
 
-        report.addMessage(String.format("Genes filtered for prioritiser scores from %s under %s",
+        report.addMessage(String.format("Genes filtered for minimum %s score of %s",
                 filter.getPriorityType(), filter.getMinPriorityScore()));
 
         return report;
