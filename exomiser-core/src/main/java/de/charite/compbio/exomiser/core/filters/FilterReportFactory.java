@@ -73,7 +73,7 @@ public class FilterReportFactory {
      * @param sampleData
      * @return
      */
-    public FilterReport makeFilterReport(Filter filter, SampleData sampleData) {
+    protected FilterReport makeFilterReport(Filter filter, SampleData sampleData) {
         FilterType filterType = filter.getFilterType();
         switch (filterType) {
             case VARIANT_EFFECT_FILTER:
@@ -132,13 +132,13 @@ public class FilterReportFactory {
             }
         }
 
-        int before = report.getPassed() + report.getFailed();
+        int total = report.getPassed() + report.getFailed();
 
-        report.addMessage(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, 100f * (double) numNotInDatabase / before));
-        report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, 100 * (double) numDbSnpRsId / before));
-        report.addMessage(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, 100f * (double) numDbSnpFreqData / before));
-        report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, 100f * (double) numEspFreqData / before));
-        report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, 100f * (double) numExaCFreqData / before));
+        report.addMessage(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, 100f * (double) numNotInDatabase / total));
+        report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, 100 * (double) numDbSnpRsId / total));
+        report.addMessage(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, 100f * (double) numDbSnpFreqData / total));
+        report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, 100f * (double) numEspFreqData / total));
+        report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, 100f * (double) numExaCFreqData / total));
         return report;
     }
 

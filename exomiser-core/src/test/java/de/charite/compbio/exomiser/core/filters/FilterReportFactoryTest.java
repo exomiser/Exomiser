@@ -58,27 +58,27 @@ public class FilterReportFactoryTest {
         analysis.setSampleData(sampleData);
     }
 
-    private VariantEvaluation makeFailedFilterVariantEvaluation(FilterType filterType) {
+    private VariantEvaluation makeFailedVariant(FilterType filterType) {
         VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
         failedFilterVariantEvaluation.addFilterResult(new FailFilterResult(filterType, 0.0f));
         return failedFilterVariantEvaluation;
     }
 
-    private VariantEvaluation makePassedFilterVariantEvaluation(FilterType filterType) {
+    private VariantEvaluation makePassedVariant(FilterType filterType) {
         VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
         passedFilterVariantEvaluation.addFilterResult(new PassFilterResult(filterType, 1.0f));
         return passedFilterVariantEvaluation;
     }
     
-    private Gene makeFailedFilterGene(FilterType filterType) {
-        VariantEvaluation failedFilterVariantEvaluation = makeFailedFilterVariantEvaluation(filterType);
+    private Gene makeFailedGene(FilterType filterType) {
+        VariantEvaluation failedFilterVariantEvaluation = makeFailedVariant(filterType);
         Gene failedFilterGene = new Gene("GENE1", 12345);
         failedFilterGene.addVariant(failedFilterVariantEvaluation);
         return failedFilterGene;
     }
 
-    private Gene makePassedFilterGene(FilterType filterType) {
-        VariantEvaluation passedFilterVariantEvaluation = makePassedFilterVariantEvaluation(filterType);
+    private Gene makePassedGene(FilterType filterType) {
+        VariantEvaluation passedFilterVariantEvaluation = makePassedVariant(filterType);
         Gene passedFilterGene = new Gene("GENE2", 67890);
         passedFilterGene.addVariant(passedFilterVariantEvaluation);
         return passedFilterGene;
@@ -107,11 +107,8 @@ public class FilterReportFactoryTest {
     public void testMakeDefaultVariantFilterReportContainsCorrectNumberOfPassedAndFailedVariants() {
         FilterType filterType = FilterType.BED_FILTER;
 
-        VariantEvaluation passedFilterVariantEvaluation = makePassedFilterVariantEvaluation(filterType);
-        variantEvaluations.add(passedFilterVariantEvaluation);
-
-        VariantEvaluation failedFilterVariantEvaluation = makeFailedFilterVariantEvaluation(filterType);
-        variantEvaluations.add(failedFilterVariantEvaluation);
+        variantEvaluations.add(makePassedVariant(filterType));
+        variantEvaluations.add(makeFailedVariant(filterType));
 
         FilterReport report = instance.makeFilterReport(new BedFilter(null), sampleData);
 
@@ -124,11 +121,8 @@ public class FilterReportFactoryTest {
         Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);    
         FilterType filterType = filter.getFilterType();
 
-        Gene passedFilterGene = makePassedFilterGene(filterType);
-        genes.add(passedFilterGene);
-
-        Gene failedFilterGene = makeFailedFilterGene(filterType);
-        genes.add(failedFilterGene);
+        genes.add(makePassedGene(filterType));
+        genes.add(makeFailedGene(filterType));
 
         FilterReport report = instance.makeFilterReport(filter, sampleData);
 
@@ -153,7 +147,7 @@ public class FilterReportFactoryTest {
         Filter filter = new FrequencyFilter(0.1f);
         FilterType filterType = filter.getFilterType();
 
-        VariantEvaluation variantEvalWithNullFrequencyData = makeFailedFilterVariantEvaluation(filterType);
+        VariantEvaluation variantEvalWithNullFrequencyData = makeFailedVariant(filterType);
         variantEvalWithNullFrequencyData.setFrequencyData(null);
         variantEvaluations.add(variantEvalWithNullFrequencyData);
         
@@ -167,11 +161,11 @@ public class FilterReportFactoryTest {
         Filter filter = new FrequencyFilter(0.0f);
         FilterType filterType = filter.getFilterType();
 
-        VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
+        VariantEvaluation completelyNovelVariantEval = makePassedVariant(filterType);
         completelyNovelVariantEval.setFrequencyData(new FrequencyData());
         variantEvaluations.add(completelyNovelVariantEval);
         
-        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedFilterVariantEvaluation(filterType);
+        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
         mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
         
@@ -188,11 +182,11 @@ public class FilterReportFactoryTest {
         Filter filter = new KnownVariantFilter();
         FilterType filterType = filter.getFilterType();
 
-        VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
+        VariantEvaluation completelyNovelVariantEval = makePassedVariant(filterType);
         completelyNovelVariantEval.setFrequencyData(new FrequencyData());
         variantEvaluations.add(completelyNovelVariantEval);
         
-        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedFilterVariantEvaluation(filterType);
+        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
         mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
         
