@@ -15,6 +15,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import java.util.ArrayList;
@@ -423,6 +424,33 @@ public class VariantEvaluationTest {
         int altAlleleId = 2;
         instance = testVariantBuilder().altAlleleId(altAlleleId).build();
         assertThat(instance.getAltAlleleId(), equalTo(altAlleleId));
+    }
+
+    @Test
+    public void testGetVariantEffect_defaultValue() {
+        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
+    }
+
+    @Test
+    public void testIsPredictedPathogenic_falseByDefault() {
+        assertThat(instance.isPredictedPathogenic(), is(false));
+    }
+    @Test
+    public void testIsPredictedPathogenic_missenseVariant() {
+        instance = testVariantBuilder().variantEffect(VariantEffect.MISSENSE_VARIANT).build();
+        assertThat(instance.isPredictedPathogenic(), is(true));
+    }
+
+    @Test
+    public void testStopGainVariantIsPredictedPathogenicIsTrue() {
+        instance = testVariantBuilder().variantEffect(VariantEffect.STOP_GAINED).build();
+        assertThat(instance.isPredictedPathogenic(), is(true));
+    }
+
+    @Test
+    public void testDownstreamVariantIsPredictedPathogenicIsFalse() {
+        instance = testVariantBuilder().variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT).build();
+        assertThat(instance.isPredictedPathogenic(), is(false));
     }
 
     @Test

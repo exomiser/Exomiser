@@ -40,8 +40,6 @@ public class PathogenicityFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
-    public static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
-
     private final boolean keepNonPathogenic;
 
     /**
@@ -80,15 +78,16 @@ public class PathogenicityFilter implements VariantFilter {
         PathogenicityData pathData = variantEvaluation.getPathogenicityData();
         VariantEffect variantEffect = variantEvaluation.getVariantEffect();
 
-        float filterScore = calculateFilterScore(variantEffect, pathData);
+        //TODO - move the score into GeneScorer or a new VariantScorer. The filter should just be filtering. variantEvaluation.getPathogenicityScore()
+        float variantPathogenicityScore = calculateVariantPathogenicityScore(variantEffect, pathData);
 
         if (keepNonPathogenic) {
-            return returnPassResult(filterScore);
+            return returnPassResult(variantPathogenicityScore);
         }
-        if (variantIsPredictedPathogenic(variantEffect)) {
-            return returnPassResult(filterScore);
+        if (variantEvaluation.isPredictedPathogenic()) {
+            return returnPassResult(variantPathogenicityScore);
         }
-        return returnFailResult(filterScore);
+        return returnFailResult(variantPathogenicityScore);
     }
 
     /**
@@ -98,7 +97,8 @@ public class PathogenicityFilter implements VariantFilter {
      * @param pathogenicityData
      * @return
      */
-    protected float calculateFilterScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
+    //TODO: move into VariantEvaluation - rename to getPathogenicityScore also create getFrequencyScore method
+    protected float calculateVariantPathogenicityScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
         if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             return returnMissenseScore(pathogenicityData);
         } else {
@@ -107,6 +107,7 @@ public class PathogenicityFilter implements VariantFilter {
         }
     }
 
+    //TODO: move into PathogenicityData - make the method signature analogous to the new FrequencyData method
     private float returnMissenseScore(PathogenicityData pathogenicityData) {
         if (pathogenicityData.hasPredictedScore()) {
             return returnMostPathogenicPredictedScore(pathogenicityData);
@@ -121,21 +122,6 @@ public class PathogenicityFilter implements VariantFilter {
             return 1 - mostPathogenicPredictedScore.getScore();
         }
         return mostPathogenicPredictedScore.getScore();
-    }
-
-    /**
-     * @param variantEffect
-     * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
-     */
-    protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect) {
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            //we're making the assumption that a miissense variant is always 
-            //potentially pathogenic as the prediction scores are predictions, 
-            //we'll leave it up to the user to decide
-            return true;
-        } else {
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
-        }
     }
 
     private FilterResult returnPassResult(float filterScore) {

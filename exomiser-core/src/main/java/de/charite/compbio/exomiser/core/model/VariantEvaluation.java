@@ -6,6 +6,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
@@ -38,6 +39,9 @@ import org.slf4j.LoggerFactory;
 public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Variant {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantEvaluation.class);
+
+    //threshold over which a variant effect score is considered pathogenic
+    private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
 
     // HTSJDK {@link VariantContext} instance of this allele
     private final VariantContext variantContext;
@@ -159,7 +163,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     /**
      * @return the most prevalent {@link VariantEffect} such as {@link VariantEffect#MISSENSE_VARIANT},
-     *         {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code>
+     * {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code>
      * if there is no annotated effect.
      */
     @Override
@@ -201,7 +205,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     /**
      * This function returns a list of all of the
-     * {@link jannovar.annotation.Annotation Annotation} objects that have been
+     * {@link de.charite.compbio.jannovar.annotation.Annotation Annotation} objects that have been
      * associated with the current variant. This function can be called if
      * client code wants to display one line for each affected transcript, e.g.,
      * <ul>
@@ -209,7 +213,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * <li>LTF(uc003cpq.3:exon2:c.69_70insAAG:p.R23delinsRR)
      * <li>LTF(uc010hjh.3:exon2:c.69_70insAAG:p.R23delinsRR)
      * </ul>
-     * <P>
+     * <p>
      * If client code wants instead to display just a single string that
      * summarizes all of the annotations, it should call the function
      * {@link #getRepresentativeAnnotation}.
@@ -253,6 +257,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 //        }
 //        return lst;
 //    }
+
     /**
      * @return a String such as chr6:g.29911092G>T
      */
@@ -330,7 +335,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * This method returns the variant score (prediction of the pathogenicity
      * and relevance of the Variant) by using data from the {@code FilterResult}
      * objects associated with this Variant.
-     * <P>
+     * <p>
      * Note that we use results of filtering to remove Variants that are
      * predicted to be simply non-pathogenic. However, amongst variants
      * predicted to be potentially pathogenic, there are different strengths of
@@ -385,7 +390,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     *
      * @return the Set of {@code FilterType} which the {@code VariantEvaluation}
      * failed to pass.
      */
@@ -398,7 +402,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * no filters have been applied, this method will return true. Once a
      * {@link VariantEvaluation} has been filtered this will return true until
      * the {@link VariantEvaluation} has failed a filter.
-     *
+     * <p>
      * Note: This may change so that passed/failed/unfiltered can only ever be
      * true for one status.
      *
@@ -452,7 +456,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * Sort based on the variant score. Variant scores are ranked on a scale of
      * 1 to 0. The comparator will rank the variants with a higher numerical
      * value variant score before those with a lower value variant score.
-     *
+     * <p>
      * Note: this class has a natural ordering that is inconsistent with equals.
      */
     @Override
@@ -510,7 +514,22 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * Builder class for producing a valid VariantEvaluation. 
+     * @return true or false depending on whether the variant effect is considered pathogenic.
+     * Missense variants will always return true.
+     */
+    public boolean isPredictedPathogenic() {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            //we're making the assumption that a missense variant is always
+            //potentially pathogenic as the prediction scores are predictions,
+            //we'll leave it up to the user to decide
+            return true;
+        } else {
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
+        }
+    }
+
+    /**
+     * Builder class for producing a valid VariantEvaluation.
      */
     public static class VariantBuilder {
 
@@ -615,7 +634,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             vcBuilder.genotypes(gtBuilder.make());
 //            vcBuilder.attribute("RD", readDepth);
             vcBuilder.log10PError(-0.1 * qual);
-            
+
             return vcBuilder.make();
         }
 
