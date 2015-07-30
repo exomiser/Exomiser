@@ -72,7 +72,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-core</artifactId>
-            <version>0.14-SNAPSHOT</version>
+            <version>0.14</version>
         </dependency>
         <!--YamlBeans is a java <-> yml library-->
         <dependency>
