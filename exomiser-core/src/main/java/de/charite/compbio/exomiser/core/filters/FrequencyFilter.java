@@ -3,16 +3,14 @@ package de.charite.compbio.exomiser.core.filters;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * VariantFilter variants according to their frequency. The Frequency is
- * retrieved from our database and comes from dbSNP (see
- * {@link exomizer.io.dbSNP2FrequencyParser dbSNP2FrequencyParser} and
- * {@link exomizer.io.ESP2FrequencyParser ESP2FrequencyParser}), and the
- * frequency data are expressed as percentages.
+ * VariantFilter variants according to their frequency.
  *
  * @author Peter N Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -31,16 +29,12 @@ public class FrequencyFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.FREQUENCY_FILTER;
 
-    private static final float FAIL_FREQUENCY_FILTER_SCORE = 0f;
-    private static final float PASS_FREQUENCY_FILTER_SCORE = 1f;
-
     /**
      * Creates a runFilter with a maximum frequency threshold for variants.
      *
      * @param maxFreq sets the maximum frequency threshold (percent value) of
-     * the minor allele required to pass the filer. For example a value of 1
-     * will set the threshold of the minor allele frequency to under 1%.
-     *
+     *                the minor allele required to pass the filer. For example a value of 1
+     *                will set the threshold of the minor allele frequency to under 1%.
      */
     public FrequencyFilter(float maxFreq) {
         if (maxFreq < 0f || maxFreq > 100f) {
@@ -75,39 +69,15 @@ public class FrequencyFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         FrequencyData frequencyData = variantEvaluation.getFrequencyData();
-        //frequency data is derived from the database and depending on whether the full-analysis option has been specified the data may not have been set
-        //by the time it gets here. It should have been, so this will issue a warning.
-        float filterScore = calculateFilterScore(frequencyData);
+        //frequency data is derived from the database - consequently make sure the data has been fetched otherwise the
+        //score will be the same for all variants.
+        //TODO - move the score into GeneScorer or a new VariantScorer. The filter should just be filtering.
+        float variantFrequencyScore = frequencyData.getScore();
 
         if (passesFilter(frequencyData)) {
-            return new PassFilterResult(filterType, filterScore);
+            return new PassFilterResult(filterType, variantFrequencyScore);
         } else {
-            return new FailFilterResult(filterType, filterScore);
-        }
-    }
-
-    /**
-     * This method returns a numerical value that is closer to one, the rarer
-     * the variant is. If a variant is not entered in any of the four data
-     * sources, it returns one (highest score). Otherwise, it identifies the
-     * maximum MAF in any of the databases, and returns a score that depends on
-     * the MAF. Note that the frequency is expressed as a percentage.
-     *
-     * @param frequencyData
-     *
-     * @return return a float representation of the runFilter result [0..1]. If
-     * the result is boolean, return 0.0 for false and 1.0 for true
-     */
-    protected float calculateFilterScore(FrequencyData frequencyData) {
-
-        float max = frequencyData.getMaxFreq();
-
-        if (max <= 0) {
-            return PASS_FREQUENCY_FILTER_SCORE;
-        } else if (max > 2) {
-            return FAIL_FREQUENCY_FILTER_SCORE;
-        } else {
-            return 1f - (0.13533f * (float) Math.exp(max));
+            return new FailFilterResult(filterType, variantFrequencyScore);
         }
     }
 
