@@ -72,7 +72,7 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         final int[] streamed = {0};
         final int[] passed = {0};
 
-        try (Stream<VariantEvaluation> variantEvaluationStream = variantFactory.streamVariantEvaluations(vcfPath);) {
+        try (Stream<VariantEvaluation> variantEvaluationStream = variantFactory.streamVariantEvaluations(vcfPath)) {
             //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
             return variantEvaluationStream.filter(variantEvaluation -> {
                 //loop through the filters and only run if the variantEvaluation has passed all prior filters
@@ -88,7 +88,7 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                     logger.info("Analysed {} variants - {} passed filters", streamed[0], passed[0]);
                 }
                 return variantEvaluation.passedFilters();
-            })
+            }).onClose(() -> logger.info("Filtered {} variants - {} passed", streamed[0], passed[0]))
                     .collect(toList());
         }
     }
