@@ -161,12 +161,12 @@ public class FrequencyDataTest {
     }
 
     @Test
-    public void testGetVariantScore_reallyRareVariant() {
+    public void testGetScore_reallyRareVariant() {
         assertThat(noFreqData.getScore(), equalTo(1f));
     }
 
     @Test
-    public void testGetVariantScore_commonVariant() {
+    public void testGetScore_commonVariant() {
         float maxFreq = 100.0f;
         Frequency maxFrequency = new Frequency(maxFreq, FrequencySource.THOUSAND_GENOMES);
         instance = new FrequencyData(RSID, maxFrequency);
@@ -174,7 +174,7 @@ public class FrequencyDataTest {
     }
 
     @Test
-    public void testGetVariantScore_rareVariant() {
+    public void testGetScore_rareVariant() {
         float maxFreq = 0.1f;
         Frequency maxFrequency = new Frequency(maxFreq);
         instance = new FrequencyData(null, maxFrequency);
