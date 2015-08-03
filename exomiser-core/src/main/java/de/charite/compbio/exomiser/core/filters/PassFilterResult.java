@@ -11,8 +11,8 @@ package de.charite.compbio.exomiser.core.filters;
  */
 public class PassFilterResult extends AbstractFilterResult {
 
-    public PassFilterResult(FilterType filterType, float score) {
-        super(filterType, score, FilterResultStatus.PASS);
+    public PassFilterResult(FilterType filterType) {
+        super(filterType, FilterResultStatus.PASS);
     }
     
 }

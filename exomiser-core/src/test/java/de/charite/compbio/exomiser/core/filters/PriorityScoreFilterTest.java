@@ -36,14 +36,12 @@ public class PriorityScoreFilterTest {
 
     private void assertPasses(FilterResult result) {
         assertThat(result.passedFilter(), is(true));
-        assertThat(result.getScore(), equalTo(1f));
         assertThat(result.getResultStatus(), equalTo(FilterResultStatus.PASS));
         assertThat(result.getFilterType(), equalTo(instance.getFilterType()));
     }
     
     private void assertFails(FilterResult result) {
         assertThat(result.passedFilter(), is(false));
-        assertThat(result.getScore(), equalTo(0f));
         assertThat(result.getResultStatus(), equalTo(FilterResultStatus.FAIL));
         assertThat(result.getFilterType(), equalTo(instance.getFilterType()));
     }

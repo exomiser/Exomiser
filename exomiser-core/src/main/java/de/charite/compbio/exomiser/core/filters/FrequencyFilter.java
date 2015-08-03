@@ -29,6 +29,9 @@ public class FrequencyFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.FREQUENCY_FILTER;
 
+    private final FilterResult passesFilter = new PassFilterResult(filterType);
+    private final FilterResult failsFilter = new FailFilterResult(filterType);
+
     /**
      * Creates a runFilter with a maximum frequency threshold for variants.
      *
@@ -71,14 +74,12 @@ public class FrequencyFilter implements VariantFilter {
         FrequencyData frequencyData = variantEvaluation.getFrequencyData();
         //frequency data is derived from the database - consequently make sure the data has been fetched otherwise the
         //score will be the same for all variants.
-        //TODO - move the score into GeneScorer or a new VariantScorer. The filter should just be filtering.
         float variantFrequencyScore = frequencyData.getScore();
 
         if (passesFilter(frequencyData)) {
-            return new PassFilterResult(filterType, variantFrequencyScore);
-        } else {
-            return new FailFilterResult(filterType, variantFrequencyScore);
+            return passesFilter;
         }
+        return failsFilter;
     }
 
     /**

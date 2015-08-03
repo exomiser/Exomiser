@@ -8,9 +8,8 @@ public class BedFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.BED_FILTER;
 
-    //add a token failed score - this is essentially a boolean pass/fail so we're using 0 here.
-    FilterResult passesScore = new PassFilterResult(filterType, 1f);
-    FilterResult failedScore = new FailFilterResult(filterType, 0f);
+    private final FilterResult passesFilter = new PassFilterResult(filterType);
+    private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     /**
      * A set of off-target variant types such as Intergenic that we will
@@ -44,13 +43,13 @@ public class BedFilter implements VariantFilter {
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
 
         if (variantEvaluation.isOffExome()) {
-            return failedScore;
+            return failsFilter;
         }
         String geneSymbol = variantEvaluation.getGeneSymbol();
         if (!targetGeneSymbols.contains(geneSymbol)) {
-            return failedScore;
+            return failsFilter;
         }
-        return passesScore;
+        return passesFilter;
     }
 
     protected FilterReport makeReport(Set<String> nontargetGenes, int passed, int failed) {

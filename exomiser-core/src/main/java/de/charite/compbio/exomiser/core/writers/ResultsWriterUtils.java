@@ -142,7 +142,7 @@ public class ResultsWriterUtils {
                 passedGenes.add(gene);
             }
         }
-        logger.info("{} of {} genes have passed all filtering", passedGenes.size(), genes.size());
+        logger.info("{} of {} genes passed filters", passedGenes.size(), genes.size());
         return passedGenes;
     }
 

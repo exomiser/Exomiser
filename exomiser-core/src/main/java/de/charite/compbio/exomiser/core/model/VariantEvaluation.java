@@ -68,17 +68,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final int entrezGeneId;
     private final String chromosomalVariant;
 
-    /**
-     * A map of the results of filtering. The key to the map is an integer
-     * constant as defined in {@link exomizer.common.FilterType FilterType}.
-     */
+    //results from filters
     private final Map<FilterType, FilterResult> passedFilterResultsMap;
     private final Set<FilterType> failedFilterTypes;
 
+    //score-related stuff
     private float variantScore = 1f;
-    private List<String> mutationRefList = null;
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
+
+    //bit of an orphan variable - look into refactoring this
+    private List<String> mutationRefList = null;
 
     private VariantEvaluation(VariantBuilder builder) {
         chr = builder.chr;
@@ -332,22 +332,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * This method returns the variant score (prediction of the pathogenicity
-     * and relevance of the Variant) by using data from the {@code FilterResult}
-     * objects associated with this Variant.
-     * <p>
-     * Note that we use results of filtering to remove Variants that are
-     * predicted to be simply non-pathogenic. However, amongst variants
-     * predicted to be potentially pathogenic, there are different strengths of
-     * prediction, which is what this score tries to reflect.
-     *
-     * @return a score between 0 and 1
-     */
-    public float getVariantScore() {
-        return variantScore;
-    }
-
-    /**
      * @return the map of FilterResult objects that represent the result of
      * filtering
      */
@@ -365,18 +349,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
-        reCalculateVariantScore(filterResult);
-
         if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
             return addPassedFilterResult(filterResult);
         }
         return addFailedFilterResult(filterResult);
-    }
-
-    private void reCalculateVariantScore(FilterResult filterScore) {
-        //remember to re-calculate the overall filtering score each time a new
-        //filterScore is added
-        variantScore *= filterScore.getScore();
     }
 
     private boolean addPassedFilterResult(FilterResult filterResult) {
@@ -436,6 +412,56 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return passedFilterResultsMap.get(filterType);
     }
 
+
+    /**
+     * This method returns the variant score (prediction of the pathogenicity
+     * and relevance of the Variant) by using data from the {@code FilterResult}
+     * objects associated with this Variant.
+     * <p>
+     * Note that we use results of filtering to remove Variants that are
+     * predicted to be simply non-pathogenic. However, amongst variants
+     * predicted to be potentially pathogenic, there are different strengths of
+     * prediction, which is what this score tries to reflect.
+     *
+     * @return a score between 0 and 1
+     */
+    public float getVariantScore() {
+        //return variantScore;
+        return getFrequencyScore() * getPathogenicityScore();
+    }
+
+    public float getFrequencyScore() {
+        return frequencyData.getScore();
+    }
+
+    /**
+     * Some variants such as splice site variants, are assumed to be pathogenic. At the moment no particular
+     * software is used to evaluate this, we merely take the variant class from the Jannovar code and assign a score.
+     * <p>
+     * For missense mutations, we use the predictions of MutationTaster,
+     * polyphen, and SIFT taken from the data from the dbNSFP project.
+     * <p>
+     * The code therefore removes mutations judged not to be pathogenic (intronic,
+     * etc.), and assigns each other mutation an overall pathogenicity score defined
+     * on the basis of "medical genetic intuition".
+     */
+    public float getPathogenicityScore() {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            return calculateMissenseScore(pathogenicityData);
+        } else {
+            //this will return 0 for SEQUENCE_VARIANT effects (i.e. unknown)
+            //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
+        }
+    }
+
+    private float calculateMissenseScore(PathogenicityData pathogenicityData) {
+        if (pathogenicityData.hasPredictedScore()) {
+            return pathogenicityData.getScore();
+        }
+        return VariantTypePathogenicityScores.DEFAULT_MISSENSE_SCORE;
+    }
+
     public FrequencyData getFrequencyData() {
         return frequencyData;
     }
@@ -453,6 +479,21 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
+     * @return true or false depending on whether the variant effect is considered pathogenic. Pathogenoic variants are
+     * considered to be those with a pathogenicity score greater than 0.5. Missense variants will always return true.
+     */
+    public boolean isPredictedPathogenic() {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            //we're making the assumption that a missense variant is always potentially pathogenic.
+            //Given the prediction scores are predictions, they could fall below the default threshold so
+            //we'll leave it up to the user to decide
+            return true;
+        } else {
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
+        }
+    }
+
+    /**
      * Sort based on the variant score. Variant scores are ranked on a scale of
      * 1 to 0. The comparator will rank the variants with a higher numerical
      * value variant score before those with a lower value variant score.
@@ -461,6 +502,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public int compareTo(VariantEvaluation other) {
+        //TODO: is this used like this? Shouldn't this be sorted naturally according to equals? Check for occurrences of Collections.sort/TreeMap
+        //alternatively we now need to first compare FilterStatus.PASSED > UNFILTERED > FAILED
         float me = getVariantScore();
         float them = other.getVariantScore();
         if (me > them) {
@@ -478,7 +521,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         hash = 71 * hash + this.pos;
         hash = 71 * hash + Objects.hashCode(this.ref);
         hash = 71 * hash + Objects.hashCode(this.alt);
-        hash = 71 * hash + Float.floatToIntBits(this.variantScore);
         return hash;
     }
 
@@ -503,29 +545,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         if (!Objects.equals(this.alt, other.alt)) {
             return false;
         }
-        if (Float.floatToIntBits(this.variantScore) != Float.floatToIntBits(other.variantScore)) {
-            return false;
-        }
         return true;
     }
 
     public String toString() {
-        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + variantScore + " filterStatus=" + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet();
-    }
-
-    /**
-     * @return true or false depending on whether the variant effect is considered pathogenic.
-     * Missense variants will always return true.
-     */
-    public boolean isPredictedPathogenic() {
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            //we're making the assumption that a missense variant is always
-            //potentially pathogenic as the prediction scores are predictions,
-            //we'll leave it up to the user to decide
-            return true;
-        } else {
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
-        }
+        //TODO: expose variantEffect, frequency and pathogenicity scores?
+        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + getVariantScore() + " filterStatus=" + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet();
     }
 
     /**
