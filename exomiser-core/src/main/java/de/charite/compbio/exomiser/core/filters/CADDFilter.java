@@ -40,21 +40,23 @@ public class CADDFilter implements VariantFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(CADDFilter.class);
     private static final FilterType filterType = FilterType.CADD_FILTER;
+    private final FilterResult passesFilter = new PassFilterResult(filterType);
+    private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     public static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
     
-    private final boolean removePathFilterCutOff;
+    private final boolean keepNonPathogenic;
 
     /**
      * Produces a Pathogenicity filter using a user-defined pathogenicity
-     * threshold. The removePathFilterCutOff parameter will apply the
-     * pathogenicity scoring, but no further filtering will be applied so all
-     * variants will pass irrespective of their score.
+     * threshold. The keepNonPathogenic parameter will apply the
+ pathogenicity scoring, but no further filtering will be applied so all
+ variants will pass irrespective of their score.
      *
      * @param removePathFilterCutOff
      */
-    public CADDFilter(boolean removePathFilterCutOff) {
-        this.removePathFilterCutOff = removePathFilterCutOff;
+    public CADDFilter(boolean keepNonPathogenic) {
+        this.keepNonPathogenic = keepNonPathogenic;
     }
 
     /**
@@ -76,31 +78,13 @@ public class CADDFilter implements VariantFilter {
         PathogenicityData pathData = variantEvaluation.getPathogenicityData();
         VariantEffect variantEffect = variantEvaluation.getVariantEffect();
 
-        float filterScore = calculateFilterScore(variantEffect, pathData);
-
-        if (removePathFilterCutOff) {
-            return returnPassResult(filterScore);
+        if (keepNonPathogenic) {
+            return passesFilter;
         }
         if (variantIsPredictedPathogenic(variantEffect,pathData)) {
-            return returnPassResult(filterScore);
+            return passesFilter;
         }
-        return returnFailResult(filterScore);
-    }
-
-    /**
-     * Creates the PathogenicityScore data
-     *
-     * @param variantEffect
-     * @param pathogenicityData
-     * @return
-     */
-    protected float calculateFilterScore(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
-        if (pathogenicityData.hasPredictedScore(PathogenicitySource.CADD)) {
-            return pathogenicityData.getCaddScore().getScore();
-        } else {
-            //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
-        }
+        return failsFilter;
     }
 
     /**
@@ -117,23 +101,11 @@ public class CADDFilter implements VariantFilter {
         }
     }
 
-    private FilterResult returnPassResult(float filterScore) {
-        // We passed the filter (Variant is predicted pathogenic).
-        FilterResult passResult = new PassFilterResult(filterType, filterScore);
-        return passResult;
-    }
-
-    private FilterResult returnFailResult(float filterScore) {
-        // Variant is not predicted pathogenic, return failed.
-        FilterResult failResult = new FailFilterResult(filterType, filterScore);
-        return failResult;
-    }
-
     @Override
     public int hashCode() {
         int hash = 5;
         hash = 97 * hash + Objects.hashCode(CADDFilter.filterType);
-        hash = 97 * hash + (this.removePathFilterCutOff ? 1 : 0);
+        hash = 97 * hash + (this.keepNonPathogenic ? 1 : 0);
         return hash;
     }
 
@@ -146,12 +118,12 @@ public class CADDFilter implements VariantFilter {
             return false;
         }
         final CADDFilter other = (CADDFilter) obj;
-        return this.removePathFilterCutOff == other.removePathFilterCutOff;
+        return this.keepNonPathogenic == other.keepNonPathogenic;
     }
 
     @Override
     public String toString() {
-        return "CADDFilter{" + "removePathFilterCutOff=" + removePathFilterCutOff + '}';
+        return "CADDFilter{" + "removePathFilterCutOff=" + keepNonPathogenic + '}';
     }
 
 }

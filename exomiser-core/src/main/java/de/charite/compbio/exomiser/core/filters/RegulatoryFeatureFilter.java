@@ -28,8 +28,8 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     private static final FilterType filterType = FilterType.REGULATORY_FEATURE_FILTER;
 
     //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passedFilterResult = new PassFilterResult(filterType, 1f);
-    private final FilterResult failedFilterResult = new FailFilterResult(filterType, 0f);
+    private final FilterResult passedFilterResult = new PassFilterResult(filterType);
+    private final FilterResult failedFilterResult = new FailFilterResult(filterType);
 
     /**
      * The constructor initializes the set of off-target
