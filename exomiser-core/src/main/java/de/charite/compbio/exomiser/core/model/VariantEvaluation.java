@@ -51,7 +51,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     //VariantCoordinates variables - these are a minimal requirement for describing a variant
     private final int chr;
-    private final String chromsomeName;
+    private final String chromosomeName;
     private final int pos;
     private final String ref;
     private final String alt;
@@ -73,7 +73,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final Set<FilterType> failedFilterTypes;
 
     //score-related stuff
-    private float variantScore = 1f;
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
 
@@ -82,7 +81,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     private VariantEvaluation(VariantBuilder builder) {
         chr = builder.chr;
-        chromsomeName = builder.chromosomeName;
+        chromosomeName = builder.chromosomeName;
         pos = builder.pos;
         ref = builder.ref;
         alt = builder.alt;
@@ -120,7 +119,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public String getChromosomeName() {
-        return chromsomeName;
+        return chromosomeName;
     }
 
     /**
@@ -414,22 +413,18 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
 
     /**
-     * This method returns the variant score (prediction of the pathogenicity
-     * and relevance of the Variant) by using data from the {@code FilterResult}
-     * objects associated with this Variant.
-     * <p>
-     * Note that we use results of filtering to remove Variants that are
-     * predicted to be simply non-pathogenic. However, amongst variants
-     * predicted to be potentially pathogenic, there are different strengths of
-     * prediction, which is what this score tries to reflect.
+     * Returns the variant score (prediction of the pathogenicity
+     * and relevance of the Variant) by combining the frequency and pathogenicity scores for this variant.
      *
      * @return a score between 0 and 1
      */
     public float getVariantScore() {
-        //return variantScore;
         return getFrequencyScore() * getPathogenicityScore();
     }
 
+    /**
+     * @return a score between 0 and 1
+     */
     public float getFrequencyScore() {
         return frequencyData.getScore();
     }
@@ -437,13 +432,18 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     /**
      * Some variants such as splice site variants, are assumed to be pathogenic. At the moment no particular
      * software is used to evaluate this, we merely take the variant class from the Jannovar code and assign a score.
-     * <p>
-     * For missense mutations, we use the predictions of MutationTaster,
-     * polyphen, and SIFT taken from the data from the dbNSFP project.
-     * <p>
-     * The code therefore removes mutations judged not to be pathogenic (intronic,
-     * etc.), and assigns each other mutation an overall pathogenicity score defined
-     * on the basis of "medical genetic intuition".
+     *
+     * Note that we use results of filtering to remove Variants that are predicted to be simply non-pathogenic. However,
+     * amongst variants predicted to be potentially pathogenic, there are different strengths of prediction, which is
+     * what this score tries to reflect.
+     *
+     * For missense mutations, we use the predictions of MutationTaster, polyphen, and SIFT taken from the data from
+     * the dbNSFP project.
+     *
+     * The score returned here is therefore an overall pathogenicity score defined on the basis of
+     * "medical genetic intuition".
+
+     * @return a score between 0 and 1
      */
     public float getPathogenicityScore() {
         if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
@@ -494,24 +494,24 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * Sort based on the variant score. Variant scores are ranked on a scale of
-     * 1 to 0. The comparator will rank the variants with a higher numerical
-     * value variant score before those with a lower value variant score.
-     * <p>
-     * Note: this class has a natural ordering that is inconsistent with equals.
+     * Sorts variants according to their natural ordering of genome position. Variants are sorted according to
+     * chromosome number, chromosome position, reference sequence then alternative sequence.
+     *
+     * @param other
+     * @return comparator score consistent with equals.
      */
     @Override
     public int compareTo(VariantEvaluation other) {
-        //TODO: is this used like this? Shouldn't this be sorted naturally according to equals? Check for occurrences of Collections.sort/TreeMap
-        //alternatively we now need to first compare FilterStatus.PASSED > UNFILTERED > FAILED
-        float me = getVariantScore();
-        float them = other.getVariantScore();
-        if (me > them) {
-            return -1;
-        } else if (them > me) {
-            return 1;
+        if (this.chr != other.chr) {
+            return Integer.compare(this.chr, other.chr);
         }
-        return 0;
+        if (this.pos != other.pos) {
+            return Integer.compare(this.pos, other.pos);
+        }
+        if (!this.ref.equals(other.ref)) {
+            return this.ref.compareTo(other.ref);
+        }
+        return this.alt.compareTo(other.alt);
     }
 
     @Override

@@ -29,7 +29,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 
-import org.junit.Ignore;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -505,24 +504,37 @@ public class VariantEvaluationTest {
         assertThat(instance.isPredictedPathogenic(), is(false));
     }
 
-    @Ignore
     @Test
     public void testCompareTo() {
-        //variants are sorted according to score. The score is calculated from the filter results where 1 is best and 0 is worst.
-        VariantEvaluation first = new VariantEvaluation.VariantBuilder(CHROMOSOME, 3, REF, ALT).build();
-        first.addFilterResult(PASS_FREQUENCY_RESULT);
-        VariantEvaluation last = new VariantEvaluation.VariantBuilder(CHROMOSOME, 2, "C", "T").build();
-        last.addFilterResult(FAIL_FREQUENCY_RESULT);
+        //variants are sorted according to chromosome, position  ref and alt.
+        VariantEvaluation zero = new VariantEvaluation.VariantBuilder(1, 1, "A", "C").build();
+        VariantEvaluation one = new VariantEvaluation.VariantBuilder(1, 2, "A", "G").build();
+        VariantEvaluation two = new VariantEvaluation.VariantBuilder(1, 2, "AC", "G").build();
+        VariantEvaluation three = new VariantEvaluation.VariantBuilder(2, 1, "C", "T").build();
+        VariantEvaluation four = new VariantEvaluation.VariantBuilder(2, 1, "C", "TT").build();
 
         List<VariantEvaluation> variants = new ArrayList<>();
-        variants.add(last);
-        variants.add(first);
+        variants.add(zero);
+        variants.add(one);
+        variants.add(two);
+        variants.add(three);
+        variants.add(four);
+        Collections.shuffle(variants);
+
+        System.out.println("Shuffled:");
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+
         Collections.sort(variants);
 
         List<VariantEvaluation> expected = new ArrayList<>();
-        expected.add(first);
-        expected.add(last);
+        expected.add(zero);
+        expected.add(one);
+        expected.add(two);
+        expected.add(three);
+        expected.add(four);
 
+        System.out.println("Sorted:");
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(expected));
     }
 
