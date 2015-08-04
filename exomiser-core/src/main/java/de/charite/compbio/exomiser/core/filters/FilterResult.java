@@ -6,7 +6,7 @@ package de.charite.compbio.exomiser.core.filters;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface FilterResult extends Score {
+public interface FilterResult {
 
     public FilterType getFilterType();
 

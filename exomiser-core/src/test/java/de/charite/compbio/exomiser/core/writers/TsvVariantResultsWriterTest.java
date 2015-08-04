@@ -13,6 +13,8 @@ import static org.junit.Assert.assertTrue;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,10 +52,10 @@ public class TsvVariantResultsWriterTest {
     private static final String FAIL_VARIANT_DETAILS = "chr7\t155604801\tC\tCTT\t1.0\tTarget\t0/1\t0\tFS_SUBSTITUTION\tSHH:uc003wmk.1:exon1:c.16_17insAA:p.Arg6Lysfs*6\tSHH";
     private static final String NO_PATH_SCORES = "\t.\t.\t.\t.";
     private static final String NO_FREQUENCY_DATA = "\t.\t0.0\t.\t.\t.\t.\t.\t.\t.\t.\t.\t.";
-    private static final String FAIL_VARIANT_EXOMISER_SCORES = "\t0.0\t0.0\t0.0\t0.0\n";
     private static final String PASS_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0\n";
-    
-    private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES;
+    private static final String FAIL_VARIANT_EXOMISER_SCORES = "\t0.95\t0.0\t0.0\t0.0\n";
+
+    private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES;
     private static final String FAIL_VARIANT_LINE = FAIL_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + FAIL_VARIANT_EXOMISER_SCORES;
 
     private OutputSettingsBuilder settingsBuilder;
@@ -85,12 +87,13 @@ public class TsvVariantResultsWriterTest {
 
     private void makePassVariant(TestVariantFactory varFactory) {
         passVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        passVariant.addFilterResult(new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER, 1f));
+        passVariant.addFilterResult(new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER));
+        passVariant.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f)));
     }
     
     private void makeFailVariant(TestVariantFactory varFactory) {
         failVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
-        failVariant.addFilterResult(new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER, 0f));
+        failVariant.addFilterResult(new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER));
     }
 
     @Test

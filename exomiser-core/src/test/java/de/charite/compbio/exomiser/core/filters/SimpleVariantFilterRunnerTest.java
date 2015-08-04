@@ -79,8 +79,8 @@ public class SimpleVariantFilterRunnerTest {
     private void setUpFrequencyMocks() {
         Mockito.when(frequencyFilter.getFilterType()).thenReturn(FREQUENCY_FILTER);
 
-        FilterResult passFrequencyResult = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1f);
-        FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
+        FilterResult passFrequencyResult = new PassFilterResult(FilterType.FREQUENCY_FILTER);
+        FilterResult failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER);
 
         Mockito.when(frequencyFilter.runFilter(passesAllFilters)).thenReturn(passFrequencyResult);
         Mockito.when(frequencyFilter.runFilter(failsAllFilters)).thenReturn(failFrequencyResult);
@@ -91,8 +91,8 @@ public class SimpleVariantFilterRunnerTest {
     private void setUpQualityMocks() {
         Mockito.when(qualityFilter.getFilterType()).thenReturn(QUALITY_FILTER);
 
-        FilterResult passQualityResult = new PassFilterResult(FilterType.QUALITY_FILTER, 1f);
-        FilterResult failQualityResult = new FailFilterResult(FilterType.QUALITY_FILTER, 0f);
+        FilterResult passQualityResult = new PassFilterResult(FilterType.QUALITY_FILTER);
+        FilterResult failQualityResult = new FailFilterResult(FilterType.QUALITY_FILTER);
 
         Mockito.when(qualityFilter.runFilter(passesAllFilters)).thenReturn(passQualityResult);
         Mockito.when(qualityFilter.runFilter(failsAllFilters)).thenReturn(failQualityResult);
@@ -103,8 +103,8 @@ public class SimpleVariantFilterRunnerTest {
     private void setUpTargetMocks() {
         Mockito.when(targetFilter.getFilterType()).thenReturn(VARIANT_EFFECT_FILTER);
 
-        FilterResult passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER, 1f);
-        FilterResult failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER, 0f);
+        FilterResult passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER);
+        FilterResult failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER);
 
         Mockito.when(targetFilter.runFilter(passesAllFilters)).thenReturn(passTargetResult);
         Mockito.when(targetFilter.runFilter(failsAllFilters)).thenReturn(failTargetResult);

@@ -46,12 +46,12 @@ public class GeneTest {
     private VariantEvaluation variantEvaluation1;
     private VariantEvaluation variantEvaluation2;
 
-    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1f);
-    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
-    //there's nothing really magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
-    //their type is mostly used for reporting which filter was passed or failed and getting the score. 
-    private static final FilterResult PASS_GENE_FILTER_RESULT = new PassFilterResult(FilterType.INHERITANCE_FILTER, 1f);
-    private static final FilterResult FAIL_GENE_FILTER_RESULT = new FailFilterResult(FilterType.INHERITANCE_FILTER, 0f);
+    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER);
+    //there's nothing magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
+    //their type is used for reporting which filter was passed or failed.
+    private static final FilterResult PASS_GENE_FILTER_RESULT = new PassFilterResult(FilterType.INHERITANCE_FILTER);
+    private static final FilterResult FAIL_GENE_FILTER_RESULT = new FailFilterResult(FilterType.INHERITANCE_FILTER);
 
     @Before
     public void setUp() {
@@ -73,6 +73,7 @@ public class GeneTest {
         assertThat(instance.getGeneSymbol(), equalTo(GENE1_SYMBOL));
         assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
         assertThat(instance.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
+        assertThat(instance.getNumberOfVariants(), equalTo(1));
 
         assertThat(instance.passedFilters(), is(true));
         assertThat(instance.getPriorityResults().isEmpty(), is(true));

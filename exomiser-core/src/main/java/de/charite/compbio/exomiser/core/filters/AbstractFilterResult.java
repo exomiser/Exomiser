@@ -15,18 +15,11 @@ import java.util.Objects;
 abstract class AbstractFilterResult implements FilterResult {
     
     private final FilterType filterType;
-    private final float score;
     private final FilterResultStatus filterResultStatus;
 
-    AbstractFilterResult(FilterType filterType, float score, FilterResultStatus filterResultStatus) {
+    AbstractFilterResult(FilterType filterType, FilterResultStatus filterResultStatus) {
         this.filterType = filterType;
-        this.score = score;
         this.filterResultStatus = filterResultStatus;
-    }
-
-    @Override
-    public float getScore() {
-        return score;
     }
 
     @Override
@@ -48,7 +41,6 @@ abstract class AbstractFilterResult implements FilterResult {
     public int hashCode() {
         int hash = 7;
         hash = 59 * hash + Objects.hashCode(this.filterType);
-        hash = 59 * hash + Float.floatToIntBits(this.score);
         hash = 59 * hash + Objects.hashCode(this.filterResultStatus);
         return hash;
     }
@@ -65,15 +57,12 @@ abstract class AbstractFilterResult implements FilterResult {
         if (this.filterType != other.filterType) {
             return false;
         }
-        if (Float.floatToIntBits(this.score) != Float.floatToIntBits(other.score)) {
-            return false;
-        }
         return this.filterResultStatus == other.filterResultStatus;
     }
         
     @Override
     public String toString() {
-        return String.format(Locale.UK, "Filter=%s score=%.3f status=%s",filterType, score, filterResultStatus);
+        return String.format(Locale.UK, "Filter=%s status=%s",filterType, filterResultStatus);
     }
     
 }

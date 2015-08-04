@@ -9,24 +9,28 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.Objects;
 
 /**
- * Filter for removing variants which have been characterised in a database. This includes having an RSID assigned or having any frequency data.
- * 
+ * Filter for removing variants which have been characterised in a database.
+ * This includes having an RSID assigned or having any frequency data.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class KnownVariantFilter implements VariantFilter {
 
     private static final FilterType KNOWN_VARIANT_FILTER_TYPE = FilterType.KNOWN_VARIANT_FILTER;
-    
+
+    private final FilterResult passesFilter = new PassFilterResult(KNOWN_VARIANT_FILTER_TYPE);
+    private final FilterResult failsFilter = new FailFilterResult(KNOWN_VARIANT_FILTER_TYPE);
+
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         if (notRepresentedInDatabase(variantEvaluation)) {
-            return new PassFilterResult(KNOWN_VARIANT_FILTER_TYPE, 1f);
+            return passesFilter;
         }
-        return new FailFilterResult(KNOWN_VARIANT_FILTER_TYPE, 0f);
+        return failsFilter;
     }
 
     private boolean notRepresentedInDatabase(VariantEvaluation variantEvaluation) {
-        return ! variantEvaluation.getFrequencyData().isRepresentedInDatabase();
+        return !variantEvaluation.getFrequencyData().isRepresentedInDatabase();
     }
 
     @Override
@@ -50,10 +54,7 @@ public class KnownVariantFilter implements VariantFilter {
             return false;
         }
         final KnownVariantFilter other = (KnownVariantFilter) obj;
-        if (this.KNOWN_VARIANT_FILTER_TYPE != other.KNOWN_VARIANT_FILTER_TYPE) {
-            return false;
-        }
-        return true;
+        return this.KNOWN_VARIANT_FILTER_TYPE == other.KNOWN_VARIANT_FILTER_TYPE;
     }
 
     @Override

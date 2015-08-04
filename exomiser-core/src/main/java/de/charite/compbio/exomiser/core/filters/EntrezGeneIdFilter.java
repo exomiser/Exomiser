@@ -22,9 +22,8 @@ public class EntrezGeneIdFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.ENTREZ_GENE_ID_FILTER;
 
-    //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passFilterResult = new PassFilterResult(filterType, 1f);
-    private final FilterResult failFilterResult = new FailFilterResult(filterType, 0f);
+    private final FilterResult passesFilter = new PassFilterResult(filterType);
+    private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     private final Set<Integer> genesToKeep;
 
@@ -44,9 +43,9 @@ public class EntrezGeneIdFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         if (genesToKeep.contains(variantEvaluation.getEntrezGeneId())) {
-            return passFilterResult;
+            return passesFilter;
         }
-        return failFilterResult;
+        return failsFilter;
     }
 
     @Override

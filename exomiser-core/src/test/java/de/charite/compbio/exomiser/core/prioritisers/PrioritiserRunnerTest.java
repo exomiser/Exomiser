@@ -37,7 +37,7 @@ public class PrioritiserRunnerTest {
         genes = new ArrayList<>();
         genePassedFilters = new Gene("PASSED_FILTERS", 12345);
         geneFailedFilters = new Gene("FAILED_FILTERS", 23456);
-        geneFailedFilters.addFilterResult(new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER, 0f));
+        geneFailedFilters.addFilterResult(new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER));
         genes.add(genePassedFilters);
         genes.add(geneFailedFilters);
     }

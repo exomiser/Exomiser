@@ -27,7 +27,7 @@ public class PassAllVariantEffectsFilter extends VariantEffectFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        return new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER, 1f);
+        return new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER);
     }
     
 }

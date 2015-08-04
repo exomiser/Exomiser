@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
 import static de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +28,7 @@ public class PathogenicityData {
 
     public PathogenicityData(PathogenicityScore... pathScore) {
         this(new HashSet<>(Arrays.asList(pathScore)));
-    } 
+    }
 
     public PathogenicityData(Set<PathogenicityScore> pathScores) {
         pathogenicityScores = new EnumMap(PathogenicitySource.class);
@@ -65,30 +66,49 @@ public class PathogenicityData {
     public boolean hasPredictedScore(PathogenicitySource pathogenicitySource) {
         return pathogenicityScores.containsKey(pathogenicitySource);
     }
-    
+
     /**
      * Returns the PathogenicityScore from the requested source, or null if not present.
-     * 
+     *
      * @param pathogenicitySource
-     * @return 
+     * @return
      */
     public PathogenicityScore getPredictedScore(PathogenicitySource pathogenicitySource) {
         return pathogenicityScores.get(pathogenicitySource);
     }
 
     /**
-     * Returns the most pathogenic score or null if there are no predicted scores
-     * @return 
+     * @return The most pathogenic score or null if there are no predicted scores
      */
     public PathogenicityScore getMostPathogenicScore() {
         if (pathogenicityScores.isEmpty()) {
             return null;
+            //TODO: return a new NonPathogenicPathogenicityScore?
+//            return new AbstractPathogenicityScore(VariantTypePathogenicityScores.NON_PATHOGENIC_SCORE, VARIANT_TYPE);
         }
         List<PathogenicityScore> knownPathScores = this.getPredictedPathogenicityScores();
         Collections.sort(knownPathScores);
         PathogenicityScore mostPathogenic = knownPathScores.get(0);
-        return mostPathogenic;  
+        return mostPathogenic;
     }
+
+
+    /**
+     * @return the predicted pathogenicity score for this data set. The score is ranked from 0 (non-pathogenic) to 1 (highly pathogenic)
+     */
+    public float getScore() {
+        if (pathogenicityScores.isEmpty()) {
+            return VariantTypePathogenicityScores.NON_PATHOGENIC_SCORE;
+        }
+
+        PathogenicityScore mostPathogenicPredictedScore = getMostPathogenicScore();
+        //Thanks to SIFT being about tolerance rather than pathogenicity, the score is inverted
+        if (mostPathogenicPredictedScore.getClass() == SiftScore.class) {
+            return 1 - mostPathogenicPredictedScore.getScore();
+        }
+        return mostPathogenicPredictedScore.getScore();
+    }
+
 
     @Override
     public int hashCode() {
@@ -114,7 +134,7 @@ public class PathogenicityData {
 
     @Override
     public String toString() {
-        return "PathogenicityData" +  pathogenicityScores.values();
+        return "PathogenicityData" + pathogenicityScores.values();
     }
 
 }

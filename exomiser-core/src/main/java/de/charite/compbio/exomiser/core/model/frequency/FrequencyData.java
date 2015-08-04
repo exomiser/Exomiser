@@ -19,8 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Frequency data for the variant from the Thousand Genomes and the Exome Server
- * Project.
+ * Frequency data for the variant from the Thousand Genomes, the Exome Server
+ * Project and Broad ExAC datasets.
+ *
+ * Note that the frequency data are expressed as percentages.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -164,5 +166,27 @@ public class FrequencyData {
     public String toString() {
         return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + knownFrequencies.values() + '}';
     }
-    
+
+    private static final float VERY_RARE_SCORE = 1f;
+    private static final float NOT_RARE_SCORE = 0f;
+
+    /**
+     * @return returns a numerical value that is closer to one, the rarer
+     * the variant is. If a variant is not entered in any of the data
+     * sources, it returns one (highest score). Otherwise, it identifies the
+     * maximum MAF in any of the databases, and returns a score that depends on
+     * the MAF. Note that the frequency is expressed as a percentage.
+     */
+    public float getScore() {
+
+        float max = getMaxFreq();
+
+        if (max <= 0) {
+            return VERY_RARE_SCORE;
+        } else if (max > 2) {
+            return NOT_RARE_SCORE;
+        } else {
+            return 1f - (0.13533f * (float) Math.exp(max));
+        }
+    }
 }

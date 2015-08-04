@@ -19,10 +19,11 @@ public class PriorityScoreFilter implements GeneFilter {
     private static final FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
 
     private final float minPriorityScore;
+
     private final PriorityType priorityType;
-    
-    private final FilterResult passResult = new PassFilterResult(filterType, 1.0f);
-    private final FilterResult failResult = new FailFilterResult(filterType, 0.0f);
+
+    private final FilterResult passesFilter = new PassFilterResult(filterType);
+    private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     public PriorityScoreFilter(PriorityType priorityType, float minPriorityScore) {
         this.minPriorityScore = minPriorityScore;
@@ -54,12 +55,12 @@ public class PriorityScoreFilter implements GeneFilter {
     public FilterResult runFilter(Gene gene) {
         PriorityResult priorityResult = gene.getPriorityResult(priorityType);
         if (priorityResult == null) {
-            return failResult;
+            return failsFilter;
         }
         if (priorityResult.getScore() >= minPriorityScore) {
-            return passResult;
+            return passesFilter;
         }
-        return failResult;
+        return failsFilter;
     }
 
     @Override

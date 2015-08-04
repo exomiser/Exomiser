@@ -11,8 +11,8 @@ package de.charite.compbio.exomiser.core.filters;
  */
 public class FailFilterResult extends AbstractFilterResult {
 
-    public FailFilterResult(FilterType filterType, float score) {
-        super(filterType, score, FilterResultStatus.FAIL);
+    public FailFilterResult(FilterType filterType) {
+        super(filterType, FilterResultStatus.FAIL);
     }
     
 }

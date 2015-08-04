@@ -124,7 +124,7 @@ public class CommandLineOptionsConfig {
         //the original options:
 //        options.addOption(new Option("h", "HELP_OPTION", false, "Shows this HELP_OPTION"));
 //        options.addOption(new Option("H", "HELP_OPTION", false, "Shows this HELP_OPTION"));
-//        options.addOption(new Option("v", "VCF_OPTION", true, "Path to VCF_OPTION file with mutations to be analyzed."));
+//        options.addOption(new Option("variant", "VCF_OPTION", true, "Path to VCF_OPTION file with mutations to be analyzed."));
 //        options.addOption(new Option("o", "outfile", true, "name of out file (default: \"exomizer.html\")"));
 //        options.addOption(new Option("l", "log", true, "Configuration file for logger"));
 //        // / Filtering options

@@ -21,9 +21,9 @@ public class SiftScoreTest {
     
     //Higher scores are more pathogenic so this is the reverse of what's normal
     //a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
-    private static final int MORE_PATHOGENIC = AbstractPathogenicityScore.MORE_PATHOGENIC;
-    private static final int EQUALS = AbstractPathogenicityScore.EQUALS;
-    private static final int LESS_PATHOGENIC = AbstractPathogenicityScore.LESS_PATHOGENIC;
+    private static final int MORE_PATHOGENIC = BasePathogenicityScore.MORE_PATHOGENIC;
+    private static final int EQUALS = BasePathogenicityScore.EQUALS;
+    private static final int LESS_PATHOGENIC = BasePathogenicityScore.LESS_PATHOGENIC;
     
     private static final float SIFT_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_NON_PATHOGENIC_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;

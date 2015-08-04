@@ -10,7 +10,7 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class MutationTasterScore extends AbstractPathogenicityScore {
+public class MutationTasterScore extends BasePathogenicityScore {
     
     public static final float MTASTER_THRESHOLD = 0.94f;
 

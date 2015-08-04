@@ -11,8 +11,8 @@ package de.charite.compbio.exomiser.core.filters;
  */
 public class NotRunFilterResult extends AbstractFilterResult {
 
-    public NotRunFilterResult(FilterType filterType, float score) {
-        super(filterType, score, FilterResultStatus.NOT_RUN);
+    public NotRunFilterResult(FilterType filterType) {
+        super(filterType, FilterResultStatus.NOT_RUN);
     }
     
 }

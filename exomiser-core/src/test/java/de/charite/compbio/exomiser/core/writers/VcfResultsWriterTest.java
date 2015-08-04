@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import htsjdk.variant.vcf.VCFFileReader;
 
 import org.junit.Assert;
@@ -35,10 +37,10 @@ import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettings
 import de.charite.compbio.jannovar.pedigree.Genotype;
 
 /**
- * Tests for the {@link VCFResultsWriter} class.
+ * Tests for the {@link VcfResultsWriter} class.
  * 
- * The {@link VCFResultsWriter} class needs a {@link VCFFileReader} for building its header. Thus, we base our output
- * {@link VCFResultsWriter} on the minimal.vcf file from the test resources.
+ * The {@link VcfResultsWriter} class needs a {@link VCFFileReader} for building its header. Thus, we base our output
+ * {@link VcfResultsWriter} on the minimal.vcf file from the test resources.
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
@@ -67,6 +69,7 @@ public class VcfResultsWriterTest {
             + "##INFO=<ID=EXOMISER_WARNING,Number=1,Type=String,Description=\"Exomiser gene\">\n"
             + "##INFO=<ID=HGVS,Number=1,Type=String,Description=\"HGVS Nomenclature\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
+    private static final String CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT = "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
 
     private VcfResultsWriter instance;
 
@@ -119,11 +122,12 @@ public class VcfResultsWriterTest {
         
         TestVariantFactory varFactory = new TestVariantFactory();
 
-        passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER, 1f);
-        failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER, 0f);
-        failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f);
+        passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER);
+        failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER);
+        failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER);
 
         missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f)));
         indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
         gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneId());
@@ -164,13 +168,13 @@ public class VcfResultsWriterTest {
 
     /* test writing out annotated variants in two genes */
     @Test
-    public void testWriteAnnotatedVariants() {
+    public void testWriteAnnotatedVariantsNoFiltersApplied() {
         sampleData.setGenes(Arrays.asList(gene1, gene2));
 
         String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\t.\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr7\t155604801\t.\tC\tCTT\t1\t.\tEXOMISER_GENE=SHH;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
+                + "chr7\t155604801\t.\tC\tCTT\t1\t.\tEXOMISER_GENE=SHH;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.95;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
     }
 
@@ -182,19 +186,7 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
-                + "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
-        Assert.assertEquals(EXPECTED, vcf);
-    }
-
-    /* test writing out a variant failing the frequency filter filters */
-    @Test
-    public void testWriteFailFrequencyVariant() {
-        missenseVariantEvaluation.addFilterResult(failFrequencyResult);
-        sampleData.setGenes(Arrays.asList(gene1));
-
-        String vcf = instance.writeString(analysis, settings);
-        final String EXPECTED = EXPECTED_HEADER
-                + "chr10\t123353298\t.\tG\tC\t2.20\tFrequency\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n";
+                + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
         Assert.assertEquals(EXPECTED, vcf);
     }
 
@@ -206,7 +198,7 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysis, settings);
         final String EXPECTED = EXPECTED_HEADER
-                + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n";
+                + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
     }
 
@@ -223,7 +215,7 @@ public class VcfResultsWriterTest {
         
         String vcf = instance.writeString(analysis, outputPassVariantsOnlySettings);
         final String EXPECTED = EXPECTED_HEADER
-                + "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
+                + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
         Assert.assertEquals(EXPECTED, vcf);
     }
     
@@ -240,8 +232,8 @@ public class VcfResultsWriterTest {
         String vcf = instance.writeString(analysis, settings);
         System.out.println(vcf);
         final String EXPECTED = EXPECTED_HEADER
-                + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr1\t120612041\t.\tT\tTCCTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
+                + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n"
+                + "chr1\t120612041\t.\tT\tTCCTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
     }
 }
