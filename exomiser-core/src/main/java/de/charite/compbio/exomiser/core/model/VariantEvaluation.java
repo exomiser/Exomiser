@@ -446,15 +446,17 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * @return a score between 0 and 1
      */
     public float getPathogenicityScore() {
-        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
-            return calculateMissenseScore(pathogenicityData);
-        } else {
-            //this will return 0 for SEQUENCE_VARIANT effects (i.e. unknown)
-            //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
-            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
+        if (pathogenicityData.hasPredictedScore()) {
+            return pathogenicityData.getScore();
         }
+        //this will return 0 for SEQUENCE_VARIANT effects (i.e. unknown)
+        //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
+        return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
     }
 
+    /*
+     * Retained in case we have some non-missesnse variants in the database. Shouldn't be needed though.
+     */
     private float calculateMissenseScore(PathogenicityData pathogenicityData) {
         if (pathogenicityData.hasPredictedScore()) {
             return pathogenicityData.getScore();
