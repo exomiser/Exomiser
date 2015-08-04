@@ -13,8 +13,8 @@ import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.*;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import java.util.ArrayList;
@@ -57,10 +57,29 @@ public class VariantEvaluationTest {
     private static final String GENE2_GENE_SYMBOL = "GENE2";
     private static final int GENE2_ENTREZ_GENE_ID = 7654321;
 
-    private static final FilterResult FAIL_FREQUENCY_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER, 0.1f);
-    private static final FilterResult PASS_FREQUENCY_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER, 1.0f);
+    private static final FilterResult FAIL_FREQUENCY_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult PASS_FREQUENCY_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER);
 
-    private static final FilterResult PASS_QUALITY_RESULT = new PassFilterResult(FilterType.QUALITY_FILTER, 0.45f);
+    private static final FilterResult PASS_QUALITY_RESULT = new PassFilterResult(FilterType.QUALITY_FILTER);
+
+
+    private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
+    private static final float SIFT_FAIL_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
+
+    private static final SiftScore SIFT_PASS = new SiftScore(SIFT_PASS_SCORE);
+    private static final SiftScore SIFT_FAIL = new SiftScore(SIFT_FAIL_SCORE);
+
+    private static final float POLYPHEN_PASS_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f;
+    private static final float POLYPHEN_FAIL_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD - 0.1f;
+
+    private static final PolyPhenScore POLYPHEN_PASS = new PolyPhenScore(POLYPHEN_PASS_SCORE);
+    private static final PolyPhenScore POLYPHEN_FAIL = new PolyPhenScore(POLYPHEN_FAIL_SCORE);
+
+    private static final float MTASTER_PASS_SCORE = MutationTasterScore.MTASTER_THRESHOLD + 0.01f;
+    private static final float MTASTER_FAIL_SCORE = MutationTasterScore.MTASTER_THRESHOLD - 0.01f;
+
+    private static final MutationTasterScore MTASTER_PASS = new MutationTasterScore(MTASTER_PASS_SCORE);
+    private static final MutationTasterScore MTASTER_FAIL = new MutationTasterScore(MTASTER_FAIL_SCORE);
 
     @Before
     public void setUp() {
@@ -76,13 +95,18 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testgetChromosome() {
+    public void testGetChromosome() {
         assertThat(instance.getChromosome(), equalTo(CHROMOSOME));
     }
 
     @Test
-    public void testgetChromosomeName() {
+    public void testGetChromosomeName() {
         assertThat(instance.getChromosomeName(), equalTo(CHROMOSOME_NAME));
+    }
+
+    @Test
+    public void testGetChromosomePosition() {
+        assertThat(instance.getPosition(), equalTo(POSITION));
     }
 
     @Test
@@ -144,6 +168,18 @@ public class VariantEvaluationTest {
         instance = testVariantBuilder().frequencyData(frequencyData).build();
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
+
+    @Test
+    public void testCanSetFrequencyDataAfterConstruction() {
+        FrequencyData frequencyData = new FrequencyData(new RsId(12345), new Frequency(0.1f, FrequencySource.LOCAL));
+        instance.setFrequencyData(frequencyData);
+        assertThat(instance.getFrequencyData(), equalTo(frequencyData));
+    }
+
+    @Test
+    public void testGetFrequencyScoreNoFrequencyDataSet() {
+        assertThat(instance.getFrequencyScore(), equalTo(1f));
+    }
     
     @Test
     public void testThatTheConstructorCreatesAnEmptyPathogenicityDataObject() {
@@ -164,49 +200,63 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testThatAddingAFilterResultUpdatesVariantScore() {
-
-        assertThat(instance.getVariantScore(), equalTo(1.0f));
-
-        // adding a FilterResult also updates the score of the VariantEvaluation
-        instance.addFilterResult(PASS_QUALITY_RESULT);
-
-        assertThat(instance.getFilterResults().size(), equalTo(1));
-        assertThat(instance.getVariantScore(), equalTo(PASS_QUALITY_RESULT.getScore()));
+    public void testCanSetPathogenicityDataAfterConstruction() {
+        PathogenicityData pathData = new PathogenicityData(new PolyPhenScore(1.0f));
+        instance.setPathogenicityData(pathData);
+        assertThat(instance.getPathogenicityData(), equalTo(pathData));
     }
 
     @Test
-    public void testThatAddingTwoPassFilterResultsUpdatesVariantScore() {
-
-        assertThat(instance.getVariantScore(), equalTo(1.0f));
-
-        float expectedScore = instance.getVariantScore();
-
-        expectedScore *= PASS_QUALITY_RESULT.getScore();
-        expectedScore *= PASS_FREQUENCY_RESULT.getScore();
-        // adding a FilterResult also updates the score of the VariantEvaluation
-        instance.addFilterResult(PASS_QUALITY_RESULT);
-        instance.addFilterResult(PASS_FREQUENCY_RESULT);
-
-        assertThat(instance.getFilterResults().size(), equalTo(2));
-        assertThat(instance.getVariantScore(), equalTo(expectedScore));
+    public void testGetPathogenicityScoreWhenNoPathogenicityDataSet() {
+        assertThat(instance.getPathogenicityScore(), equalTo(0f));
     }
 
     @Test
-    public void testThatAddingPassAndFailFilterResultsUpdatesVariantScore() {
+    public void testCalculateScoreNonMissenseVariantNoPredictions() {
+        VariantEffect type = VariantEffect.DOWNSTREAM_GENE_VARIANT;
+        instance = testVariantBuilder().variantEffect(type).build();
 
-        assertThat(instance.getVariantScore(), equalTo(1.0f));
+        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
+        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+    }
 
-        float expectedScore = instance.getVariantScore();
+    @Test
+    public void testCalculateScoreMissenseVariantNoPredictions() {
+        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
+        instance = testVariantBuilder().variantEffect(type).build();
 
-        expectedScore *= PASS_QUALITY_RESULT.getScore();
-        expectedScore *= FAIL_FREQUENCY_RESULT.getScore();
-        // adding a FilterResult also updates the score of the VariantEvaluation
-        instance.addFilterResult(PASS_QUALITY_RESULT);
-        instance.addFilterResult(FAIL_FREQUENCY_RESULT);
+        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
+        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+    }
 
-        // assertThat(instance.getFilterResults().size(), equalTo(2));
-        assertThat(instance.getVariantScore(), equalTo(expectedScore));
+    @Test
+    public void testCalculateScoreMissenseSiftPass() {
+        PathogenicityData pathData = new PathogenicityData(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS);
+        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
+        instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
+
+        float expected = 1 - SIFT_PASS.getScore();
+        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+    }
+
+    @Test
+    public void testCalculateScoreMissensePolyPhenAndSiftPass() {
+        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS);
+        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
+        instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
+
+        float expected = 1 - SIFT_PASS.getScore();
+        assertThat(instance.getPathogenicityScore(), equalTo(expected));
+    }
+
+    @Test
+    public void testCalculateScoreMissensePolyPhenSiftAndMutTasterPass() {
+        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS);
+        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
+        instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
+
+        float expected = MTASTER_PASS.getScore();
+        assertThat(instance.getPathogenicityScore(), equalTo(expected));
     }
 
     @Test
@@ -228,33 +278,29 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testFailsFiltersWhenFailedFilterResultAdded() {
+    public void testGetVariantScoreWithEmptyFreqAndPathData() {
+        instance = testVariantBuilder()
+                .frequencyData(new FrequencyData())
+                .pathogenicityData(new PathogenicityData())
+                .build();
+        assertThat(instance.getVariantScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testVariantScoreIsIndependentOfFilterStatus() {
+        instance = testVariantBuilder()
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .frequencyData(new FrequencyData())
+                //PolyPhen of 1 is predicted as highly pathogenic
+                .pathogenicityData(new PathogenicityData(new PolyPhenScore(1f)))
+                .build();
+        assertThat(instance.getVariantScore(), equalTo(1f));
+        assertThat(instance.passedFilters(), is(true));
+
         instance.addFilterResult(FAIL_FREQUENCY_RESULT);
 
+        assertThat(instance.getVariantScore(), equalTo(1f));
         assertThat(instance.passedFilters(), is(false));
-    }
-
-    @Test
-    public void testVariantScoreIsUpdatedWhenFailedFilterResultAdded() {
-
-        instance.addFilterResult(FAIL_FREQUENCY_RESULT);
-
-        assertThat(instance.getVariantScore(), equalTo(FAIL_FREQUENCY_RESULT.getScore()));
-    }
-
-    @Test
-    public void testVariantScoreIsUpdatedWhenPassedAndFailedFilterResultAdded() {
-        float qualScore = PASS_QUALITY_RESULT.getScore();
-        // adding a FilterResult also updates the score of the VariantEvaluation
-        instance.addFilterResult(PASS_QUALITY_RESULT);
-        assertThat(instance.getVariantScore(), equalTo(qualScore));
-
-        float freqScore = 0.1f;
-        FilterResult frequencyScore = new FailFilterResult(FilterType.FREQUENCY_FILTER, freqScore);
-        // adding a failed FilterResult also updates the score of the VariantEvaluation
-        instance.addFilterResult(frequencyScore);
-
-        assertThat(instance.getVariantScore(), equalTo(qualScore * freqScore));
     }
 
     @Test
@@ -262,6 +308,12 @@ public class VariantEvaluationTest {
         assertThat(instance.getFailedFilterTypes().isEmpty(), is(true));
         assertThat(instance.getFilterResults().isEmpty(), is(true));
         assertThat(instance.passedFilters(), is(true));
+    }
+
+    @Test
+    public void testFailsFiltersWhenFailedFilterResultAdded() {
+        instance.addFilterResult(FAIL_FREQUENCY_RESULT);
+        assertThat(instance.passedFilters(), is(false));
     }
 
     @Test
@@ -426,28 +478,69 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    public void testGetVariantEffect_defaultValue() {
+        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
+    }
+
+    @Test
+    public void testIsPredictedPathogenic_falseByDefault() {
+        assertThat(instance.isPredictedPathogenic(), is(false));
+    }
+    @Test
+    public void testIsPredictedPathogenic_missenseVariant() {
+        instance = testVariantBuilder().variantEffect(VariantEffect.MISSENSE_VARIANT).build();
+        assertThat(instance.isPredictedPathogenic(), is(true));
+    }
+
+    @Test
+    public void testStopGainVariantIsPredictedPathogenicIsTrue() {
+        instance = testVariantBuilder().variantEffect(VariantEffect.STOP_GAINED).build();
+        assertThat(instance.isPredictedPathogenic(), is(true));
+    }
+
+    @Test
+    public void testDownstreamVariantIsPredictedPathogenicIsFalse() {
+        instance = testVariantBuilder().variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT).build();
+        assertThat(instance.isPredictedPathogenic(), is(false));
+    }
+
+    @Test
     public void testCompareTo() {
-        //variants are sorted according to score. The score is calculated from the filter results where 1 is best and 0 is worst.
-        VariantEvaluation first = new VariantEvaluation.VariantBuilder(CHROMOSOME, 3, REF, ALT).build();
-        first.addFilterResult(PASS_FREQUENCY_RESULT);
-        VariantEvaluation last = new VariantEvaluation.VariantBuilder(CHROMOSOME, 2, "C", "T").build();
-        last.addFilterResult(FAIL_FREQUENCY_RESULT);
+        //variants are sorted according to chromosome, position  ref and alt.
+        VariantEvaluation zero = new VariantEvaluation.VariantBuilder(1, 1, "A", "C").build();
+        VariantEvaluation one = new VariantEvaluation.VariantBuilder(1, 2, "A", "G").build();
+        VariantEvaluation two = new VariantEvaluation.VariantBuilder(1, 2, "AC", "G").build();
+        VariantEvaluation three = new VariantEvaluation.VariantBuilder(2, 1, "C", "T").build();
+        VariantEvaluation four = new VariantEvaluation.VariantBuilder(2, 1, "C", "TT").build();
 
         List<VariantEvaluation> variants = new ArrayList<>();
-        variants.add(last);
-        variants.add(first);
+        variants.add(zero);
+        variants.add(one);
+        variants.add(two);
+        variants.add(three);
+        variants.add(four);
+        Collections.shuffle(variants);
+
+        System.out.println("Shuffled:");
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+
         Collections.sort(variants);
 
         List<VariantEvaluation> expected = new ArrayList<>();
-        expected.add(first);
-        expected.add(last);
+        expected.add(zero);
+        expected.add(one);
+        expected.add(two);
+        expected.add(three);
+        expected.add(four);
 
+        System.out.println("Sorted:");
+        variants.forEach(variant -> System.out.printf("chr: %2d pos: %2d ref: %-2s alt: %-2s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
         assertThat(variants, equalTo(expected));
     }
 
     @Test
     public void testToString() {
-        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=1.0 filterStatus=UNFILTERED failedFilters=[] passedFilters=[]";
+        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=0.0 filterStatus=UNFILTERED failedFilters=[] passedFilters=[]";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }

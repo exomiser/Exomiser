@@ -6,6 +6,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.Allele;
@@ -39,6 +40,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     private static final Logger logger = LoggerFactory.getLogger(VariantEvaluation.class);
 
+    //threshold over which a variant effect score is considered pathogenic
+    private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
+
     // HTSJDK {@link VariantContext} instance of this allele
     private final VariantContext variantContext;
 
@@ -47,7 +51,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     //VariantCoordinates variables - these are a minimal requirement for describing a variant
     private final int chr;
-    private final String chromsomeName;
+    private final String chromosomeName;
     private final int pos;
     private final String ref;
     private final String alt;
@@ -64,21 +68,20 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final int entrezGeneId;
     private final String chromosomalVariant;
 
-    /**
-     * A map of the results of filtering. The key to the map is an integer
-     * constant as defined in {@link exomizer.common.FilterType FilterType}.
-     */
+    //results from filters
     private final Map<FilterType, FilterResult> passedFilterResultsMap;
     private final Set<FilterType> failedFilterTypes;
 
-    private float variantScore = 1f;
-    private List<String> mutationRefList = null;
+    //score-related stuff
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
 
+    //bit of an orphan variable - look into refactoring this
+    private List<String> mutationRefList = null;
+
     private VariantEvaluation(VariantBuilder builder) {
         chr = builder.chr;
-        chromsomeName = builder.chromosomeName;
+        chromosomeName = builder.chromosomeName;
         pos = builder.pos;
         ref = builder.ref;
         alt = builder.alt;
@@ -116,7 +119,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public String getChromosomeName() {
-        return chromsomeName;
+        return chromosomeName;
     }
 
     /**
@@ -159,7 +162,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     /**
      * @return the most prevalent {@link VariantEffect} such as {@link VariantEffect#MISSENSE_VARIANT},
-     *         {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code>
+     * {@link VariantEffect#FRAMESHIFT_ELONGATION}, etc., or <code>null</code>
      * if there is no annotated effect.
      */
     @Override
@@ -206,7 +209,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     /**
      * This function returns a list of all of the
-     * {@link jannovar.annotation.Annotation Annotation} objects that have been
+     * {@link de.charite.compbio.jannovar.annotation.Annotation Annotation} objects that have been
      * associated with the current variant. This function can be called if
      * client code wants to display one line for each affected transcript, e.g.,
      * <ul>
@@ -214,7 +217,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * <li>LTF(uc003cpq.3:exon2:c.69_70insAAG:p.R23delinsRR)
      * <li>LTF(uc010hjh.3:exon2:c.69_70insAAG:p.R23delinsRR)
      * </ul>
-     * <P>
+     * <p>
      * If client code wants instead to display just a single string that
      * summarizes all of the annotations, it should call the function
      * {@link #getRepresentativeAnnotation}.
@@ -258,6 +261,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 //        }
 //        return lst;
 //    }
+
     /**
      * @return a String such as chr6:g.29911092G>T
      */
@@ -332,22 +336,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * This method returns the variant score (prediction of the pathogenicity
-     * and relevance of the Variant) by using data from the {@code FilterResult}
-     * objects associated with this Variant.
-     * <P>
-     * Note that we use results of filtering to remove Variants that are
-     * predicted to be simply non-pathogenic. However, amongst variants
-     * predicted to be potentially pathogenic, there are different strengths of
-     * prediction, which is what this score tries to reflect.
-     *
-     * @return a score between 0 and 1
-     */
-    public float getVariantScore() {
-        return variantScore;
-    }
-
-    /**
      * @return the map of FilterResult objects that represent the result of
      * filtering
      */
@@ -365,18 +353,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
-        reCalculateVariantScore(filterResult);
-
         if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
             return addPassedFilterResult(filterResult);
         }
         return addFailedFilterResult(filterResult);
-    }
-
-    private void reCalculateVariantScore(FilterResult filterScore) {
-        //remember to re-calculate the overall filtering score each time a new
-        //filterScore is added
-        variantScore *= filterScore.getScore();
     }
 
     private boolean addPassedFilterResult(FilterResult filterResult) {
@@ -390,7 +370,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     *
      * @return the Set of {@code FilterType} which the {@code VariantEvaluation}
      * failed to pass.
      */
@@ -403,7 +382,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * no filters have been applied, this method will return true. Once a
      * {@link VariantEvaluation} has been filtered this will return true until
      * the {@link VariantEvaluation} has failed a filter.
-     *
+     * <p>
      * Note: This may change so that passed/failed/unfiltered can only ever be
      * true for one status.
      *
@@ -437,6 +416,57 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return passedFilterResultsMap.get(filterType);
     }
 
+
+    /**
+     * Returns the variant score (prediction of the pathogenicity
+     * and relevance of the Variant) by combining the frequency and pathogenicity scores for this variant.
+     *
+     * @return a score between 0 and 1
+     */
+    public float getVariantScore() {
+        return getFrequencyScore() * getPathogenicityScore();
+    }
+
+    /**
+     * @return a score between 0 and 1
+     */
+    public float getFrequencyScore() {
+        return frequencyData.getScore();
+    }
+
+    /**
+     * Some variants such as splice site variants, are assumed to be pathogenic. At the moment no particular
+     * software is used to evaluate this, we merely take the variant class from the Jannovar code and assign a score.
+     *
+     * Note that we use results of filtering to remove Variants that are predicted to be simply non-pathogenic. However,
+     * amongst variants predicted to be potentially pathogenic, there are different strengths of prediction, which is
+     * what this score tries to reflect.
+     *
+     * For missense mutations, we use the predictions of MutationTaster, polyphen, and SIFT taken from the data from
+     * the dbNSFP project.
+     *
+     * The score returned here is therefore an overall pathogenicity score defined on the basis of
+     * "medical genetic intuition".
+
+     * @return a score between 0 and 1
+     */
+    public float getPathogenicityScore() {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            return calculateMissenseScore(pathogenicityData);
+        } else {
+            //this will return 0 for SEQUENCE_VARIANT effects (i.e. unknown)
+            //return the default score - in time we might want to use the predicted score if there are any and handle things like the missense variants.
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect);
+        }
+    }
+
+    private float calculateMissenseScore(PathogenicityData pathogenicityData) {
+        if (pathogenicityData.hasPredictedScore()) {
+            return pathogenicityData.getScore();
+        }
+        return VariantTypePathogenicityScores.DEFAULT_MISSENSE_SCORE;
+    }
+
     public FrequencyData getFrequencyData() {
         return frequencyData;
     }
@@ -454,22 +484,39 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * Sort based on the variant score. Variant scores are ranked on a scale of
-     * 1 to 0. The comparator will rank the variants with a higher numerical
-     * value variant score before those with a lower value variant score.
+     * @return true or false depending on whether the variant effect is considered pathogenic. Pathogenoic variants are
+     * considered to be those with a pathogenicity score greater than 0.5. Missense variants will always return true.
+     */
+    public boolean isPredictedPathogenic() {
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
+            //we're making the assumption that a missense variant is always potentially pathogenic.
+            //Given the prediction scores are predictions, they could fall below the default threshold so
+            //we'll leave it up to the user to decide
+            return true;
+        } else {
+            return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
+        }
+    }
+
+    /**
+     * Sorts variants according to their natural ordering of genome position. Variants are sorted according to
+     * chromosome number, chromosome position, reference sequence then alternative sequence.
      *
-     * Note: this class has a natural ordering that is inconsistent with equals.
+     * @param other
+     * @return comparator score consistent with equals.
      */
     @Override
     public int compareTo(VariantEvaluation other) {
-        float me = getVariantScore();
-        float them = other.getVariantScore();
-        if (me > them) {
-            return -1;
-        } else if (them > me) {
-            return 1;
+        if (this.chr != other.chr) {
+            return Integer.compare(this.chr, other.chr);
         }
-        return 0;
+        if (this.pos != other.pos) {
+            return Integer.compare(this.pos, other.pos);
+        }
+        if (!this.ref.equals(other.ref)) {
+            return this.ref.compareTo(other.ref);
+        }
+        return this.alt.compareTo(other.alt);
     }
 
     @Override
@@ -479,7 +526,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         hash = 71 * hash + this.pos;
         hash = 71 * hash + Objects.hashCode(this.ref);
         hash = 71 * hash + Objects.hashCode(this.alt);
-        hash = 71 * hash + Float.floatToIntBits(this.variantScore);
         return hash;
     }
 
@@ -504,18 +550,16 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         if (!Objects.equals(this.alt, other.alt)) {
             return false;
         }
-        if (Float.floatToIntBits(this.variantScore) != Float.floatToIntBits(other.variantScore)) {
-            return false;
-        }
         return true;
     }
 
     public String toString() {
-        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + variantScore + " filterStatus=" + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet();
+        //TODO: expose variantEffect, frequency and pathogenicity scores?
+        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + getVariantScore() + " filterStatus=" + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet();
     }
 
     /**
-     * Builder class for producing a valid VariantEvaluation. 
+     * Builder class for producing a valid VariantEvaluation.
      */
     public static class VariantBuilder {
 
@@ -620,7 +664,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             vcBuilder.genotypes(gtBuilder.make());
 //            vcBuilder.attribute("RD", readDepth);
             vcBuilder.log10PError(-0.1 * qual);
-            
+
             return vcBuilder.make();
         }
 

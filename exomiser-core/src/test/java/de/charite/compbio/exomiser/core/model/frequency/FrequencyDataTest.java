@@ -148,15 +148,36 @@ public class FrequencyDataTest {
 
     @Test
     public void testGetMaxFreqWhenNoData() {
-        float maxFreq = 0.0F;
+        float maxFreq = 0.0f;
         assertThat(noFreqData.getMaxFreq(), equalTo(maxFreq));
     }
     
     @Test
     public void testGetMaxFreqWithData() {
-        float maxFreq = 89.5F;
+        float maxFreq = 89.5f;
         Frequency maxFrequency = new Frequency(maxFreq);
         instance = new FrequencyData(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
+    }
+
+    @Test
+    public void testGetScore_reallyRareVariant() {
+        assertThat(noFreqData.getScore(), equalTo(1f));
+    }
+
+    @Test
+    public void testGetScore_commonVariant() {
+        float maxFreq = 100.0f;
+        Frequency maxFrequency = new Frequency(maxFreq, FrequencySource.THOUSAND_GENOMES);
+        instance = new FrequencyData(RSID, maxFrequency);
+        assertThat(instance.getScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testGetScore_rareVariant() {
+        float maxFreq = 0.1f;
+        Frequency maxFrequency = new Frequency(maxFreq);
+        instance = new FrequencyData(null, maxFrequency);
+        assertThat(instance.getScore(), equalTo(0.8504372f));
     }
 }

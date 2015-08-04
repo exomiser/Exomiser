@@ -22,8 +22,8 @@ public class KnownVariantFilterTest {
 
     private final VariantFilter instance = new KnownVariantFilter();
     
-    private final FilterResult PASS_RESULT = new PassFilterResult(FilterType.KNOWN_VARIANT_FILTER, 1f);
-    private final FilterResult FAIL_RESULT = new FailFilterResult(FilterType.KNOWN_VARIANT_FILTER, 0f);
+    private final FilterResult PASS_RESULT = new PassFilterResult(FilterType.KNOWN_VARIANT_FILTER);
+    private final FilterResult FAIL_RESULT = new FailFilterResult(FilterType.KNOWN_VARIANT_FILTER);
     
     private VariantEvaluation buildVariantWithFrequencyData(FrequencyData frequencyData) {
         return new VariantBuilder(1, 1, "A", "T").frequencyData(frequencyData).build();

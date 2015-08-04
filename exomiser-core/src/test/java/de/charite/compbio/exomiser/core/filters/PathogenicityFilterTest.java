@@ -97,10 +97,7 @@ public class PathogenicityFilterTest {
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
 
-        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(downstreamFailsFilter.getVariantEffect());
-
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
-        assertThat(filterResult.getScore(), equalTo(expectedScore));
     }
 
     @Test
@@ -109,11 +106,7 @@ public class PathogenicityFilterTest {
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
 
-        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(downstreamFailsFilter.getVariantEffect());
-
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
-        assertThat(filterResult.getScore(), equalTo(expectedScore));
-
     }
 
     @Test
@@ -137,64 +130,6 @@ public class PathogenicityFilterTest {
     @Test
     public void testGetFilterType() {
         assertThat(instance.getFilterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
-    }
-
-    @Test
-    public void testDefaultMissenseVariantIsPredictedPathogenicIsTrue() {
-        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
-        assertThat(instance.variantIsPredictedPathogenic(type), is(true));
-    }
-
-    @Test
-    public void testStopGainVariantIsPredictedPathogenicIsTrue() {
-        VariantEffect type = VariantEffect.STOP_GAINED;
-        assertThat(instance.variantIsPredictedPathogenic(type), is(true));
-    }
-
-    @Test
-    public void testDownstreamVariantIsPredictedPathogenicIsFalse() {
-        VariantEffect type = VariantEffect.DOWNSTREAM_GENE_VARIANT;
-        assertThat(instance.variantIsPredictedPathogenic(type), is(false));
-    }
-
-    @Test
-    public void testCalculateScoreDownstream() {
-        PathogenicityData pathData = new PathogenicityData(MTASTER_PASS);
-        VariantEffect type = VariantEffect.DOWNSTREAM_GENE_VARIANT;
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
-    public void testCalculateScoreMissenseDefault() {
-        PathogenicityData pathData = new PathogenicityData();
-        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
-    public void testCalculateScoreMissenseSiftPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS);
-        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
-        float expected = 1 - SIFT_PASS.getScore();
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
-    public void testCalculateScoreMissensePolyPhenAndSiftPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS);
-        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
-        float expected = 1 - SIFT_PASS.getScore();
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-    
-    @Test
-    public void testCalculateScoreMissensePolyPhenSiftAndMutTasterPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS);
-        VariantEffect type = VariantEffect.MISSENSE_VARIANT;
-        float expected = MTASTER_PASS.getScore();
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
     }
 
     @Test

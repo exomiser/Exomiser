@@ -100,7 +100,7 @@ public class Gene implements Comparable<Gene>, Filterable {
      * this gene.
      */
     public int getNumberOfVariants() {
-        return this.variantEvaluations.size();
+        return variantEvaluations.size();
     }
 
     /**

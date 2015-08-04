@@ -95,10 +95,8 @@ public class VcfResultsWriter implements ResultsWriter {
     private void writeOnlyPassSampleData(SampleData sampleData, VariantContextWriter writer) {
         writeUnannotatedVariants(sampleData, writer);
         for (Gene gene : sampleData.getGenes()) {
-            for (VariantEvaluation variant : gene.getVariantEvaluations()) {
-                if (variant.passedFilters()) {
-                    writeRecord(variant, writer, gene);
-                }
+            for (VariantEvaluation variant : gene.getPassedVariantEvaluations()) {
+                writeRecord(variant, writer, gene);
             }
         }
     }

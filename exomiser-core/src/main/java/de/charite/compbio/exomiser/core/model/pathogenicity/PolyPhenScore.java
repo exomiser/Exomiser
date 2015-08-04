@@ -13,7 +13,7 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PolyPhenScore extends AbstractPathogenicityScore {
+public class PolyPhenScore extends BasePathogenicityScore {
     
     /**
      * Possibly damaging is > 0.446 with Polyphen2 (this is an intermediate

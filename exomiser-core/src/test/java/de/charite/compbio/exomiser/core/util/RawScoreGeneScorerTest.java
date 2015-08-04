@@ -38,21 +38,19 @@ public class RawScoreGeneScorerTest {
         instance = new RawScoreGeneScorer();
         
         failedFrequency = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedFrequency.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f));
+        failedFrequency.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER));
 
         failedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedPathogenicity.addFilterResult(new FailFilterResult(FilterType.PATHOGENICITY_FILTER, 0f));
+        failedPathogenicity.addFilterResult(new FailFilterResult(FilterType.PATHOGENICITY_FILTER));
 
         failedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedFrequencyPassedPathogenicity.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER, 0f));
-        failedFrequencyPassedPathogenicity.addFilterResult(new FailFilterResult(FilterType.PATHOGENICITY_FILTER, 1f));
-        // these are set up so that failedFrequencyPassedPathogenicity has a higher
-        // pathogenicity score (1.0)than passedFrequencyPassedPathogenicity (0.75) to ensure that the scoring only
-        // includes variants
-        // which have actually passed all the filters
+        failedFrequencyPassedPathogenicity.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER));
+        failedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.PATHOGENICITY_FILTER));
+        
+        // Scoring should only includes variants which have actually passed all the filters
         passedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.FREQUENCY_FILTER, 0.75f));
-        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.PATHOGENICITY_FILTER, 0.75f));
+        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.FREQUENCY_FILTER));
+        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.PATHOGENICITY_FILTER));
     }
 
     @Test

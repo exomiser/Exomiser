@@ -9,12 +9,12 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class AbstractPathogenicityScore implements PathogenicityScore {
+public class BasePathogenicityScore implements PathogenicityScore {
 
     protected final float score;
     protected final PathogenicitySource source;
 
-    public AbstractPathogenicityScore(float score, PathogenicitySource source) {
+    public BasePathogenicityScore(float score, PathogenicitySource source) {
         this.score = score;
         this.source = source;
     }
@@ -44,7 +44,7 @@ public class AbstractPathogenicityScore implements PathogenicityScore {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final AbstractPathogenicityScore other = (AbstractPathogenicityScore) obj;
+        final BasePathogenicityScore other = (BasePathogenicityScore) obj;
         if (Float.floatToIntBits(this.score) != Float.floatToIntBits(other.score)) {
             return false;
         }
