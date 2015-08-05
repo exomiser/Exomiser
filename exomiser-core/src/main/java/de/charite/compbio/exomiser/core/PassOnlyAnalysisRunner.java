@@ -77,10 +77,10 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
             return variantEvaluationStream.filter(variantEvaluation -> {
                 //loop through the filters and only run if the variantEvaluation has passed all prior filters
                 variantFilters.stream().filter(filter -> variantEvaluation.passedFilters()).forEach(filter -> {
-                    streamed[0]++;
                     variantFilterRunner.run(filter, variantEvaluation);
                 });
                 //yep, logging logic
+                streamed[0]++;
                 if (variantEvaluation.passedFilters()) {
                     passed[0]++;
                 }

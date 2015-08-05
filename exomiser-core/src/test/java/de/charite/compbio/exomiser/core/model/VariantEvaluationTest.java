@@ -207,12 +207,12 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testGetPathogenicityScoreWhenNoPathogenicityDataSet() {
+    public void testGetPathogenicityScore_NoPathogenicityDataSet() {
         assertThat(instance.getPathogenicityScore(), equalTo(0f));
     }
 
     @Test
-    public void testCalculateScoreNonMissenseVariantNoPredictions() {
+    public void testGetPathogenicityScore_NonMissenseVariantNoPredictions() {
         VariantEffect type = VariantEffect.DOWNSTREAM_GENE_VARIANT;
         instance = testVariantBuilder().variantEffect(type).build();
 
@@ -221,7 +221,16 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testCalculateScoreMissenseVariantNoPredictions() {
+    public void testGetPathogenicityScore_NonMissenseVariantWithPredictions() {
+        VariantEffect type = VariantEffect.REGULATORY_REGION_VARIANT;
+        PathogenicityData pathData = new PathogenicityData(new CaddScore(1f));
+        instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
+
+        assertThat(instance.getPathogenicityScore(), equalTo(pathData.getScore()));
+    }
+
+    @Test
+    public void testGetPathogenicityScore_MissenseVariantNoPredictions() {
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().variantEffect(type).build();
 
@@ -230,7 +239,7 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testCalculateScoreMissenseSiftPass() {
+    public void testGetPathogenicityScore_MissenseSiftPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS);
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
@@ -240,7 +249,7 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testCalculateScoreMissensePolyPhenAndSiftPass() {
+    public void testGetPathogenicityScore_MissensePolyPhenAndSiftPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS);
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
@@ -250,7 +259,7 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testCalculateScoreMissensePolyPhenSiftAndMutTasterPass() {
+    public void testGetPathogenicityScore_MissensePolyPhenSiftAndMutTasterPass() {
         PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS);
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
