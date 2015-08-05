@@ -6,9 +6,10 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.prioritisers.BasePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import java.util.Objects;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -63,7 +64,7 @@ public class PriorityScoreFilterTest {
 
     @Test
     public void testRunFilter_FailsGeneWithWrongPriorityType_ScoreSameAsThreshold() {
-        PriorityResult priorityResult = new GenericPriorityResult(PriorityType.OMIM_PRIORITY, minPriorityScore);
+        PriorityResult priorityResult = new BasePriorityResult(PriorityType.OMIM_PRIORITY, minPriorityScore);
         gene.addPriorityResult(priorityResult);
         
         FilterResult result = instance.runFilter(gene);
@@ -73,7 +74,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_PassesGeneWithCorrectPriorityType_ScoreSameAsThreshold() {
-        PriorityResult priorityResult = new GenericPriorityResult(priorityType, minPriorityScore);
+        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore);
         gene.addPriorityResult(priorityResult);
         
         FilterResult result = instance.runFilter(gene);
@@ -83,7 +84,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_PassesGeneWithCorrectPriorityType_ScoreOverThreshold() {
-        PriorityResult priorityResult = new GenericPriorityResult(priorityType, minPriorityScore + 0.2f);
+        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore + 0.2f);
         gene.addPriorityResult(priorityResult);
 
         FilterResult result = instance.runFilter(gene);
@@ -93,7 +94,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_FailsGeneWithCorrectPriorityType_ScoreUnderThreshold() {
-        PriorityResult priorityResult = new GenericPriorityResult(priorityType, minPriorityScore - 0.2f);
+        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore - 0.2f);
         gene.addPriorityResult(priorityResult);
         
         FilterResult result = instance.runFilter(gene);
@@ -153,63 +154,5 @@ public class PriorityScoreFilterTest {
         assertThat(instance.toString(), equalTo("PriorityScoreFilter{priorityType=PHIVE_PRIORITY, minPriorityScore=0.8}"));
     }
 
-    private class GenericPriorityResult implements PriorityResult {
-
-        private final PriorityType priorityType;
-        private final float priorityScore;
-
-        GenericPriorityResult(PriorityType PriorityType, float priorityScore) {
-            this.priorityType = PriorityType;
-            this.priorityScore = priorityScore;
-        } 
-                       
-        @Override
-        public PriorityType getPriorityType() {
-            return priorityType;
-        }
-
-        @Override
-        public String getHTMLCode() {
-            return "Not implemented here";
-        }
-
-        @Override
-        public float getScore() {
-            return priorityScore;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 47 * hash + Objects.hashCode(this.priorityType);
-            hash = 47 * hash + Float.floatToIntBits(this.priorityScore);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final GenericPriorityResult other = (GenericPriorityResult) obj;
-            if (this.priorityType != other.priorityType) {
-                return false;
-            }
-            if (Float.floatToIntBits(this.priorityScore) != Float.floatToIntBits(other.priorityScore)) {
-                return false;
-            }
-            return true;
-        }
-        
-        @Override
-        public String toString() {
-            return "MockPriorityResult{" + "priorityType=" + priorityType + ", priorityScore=" + priorityScore + '}';
-        }
-        
-    }
-    
 }
 
