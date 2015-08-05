@@ -207,7 +207,8 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testGetPathogenicityScore_NoPathogenicityDataSet() {
+    public void testGetPathogenicityScore_UnknownVariantEffectNoPathogenicityPredictions() {
+        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
         assertThat(instance.getPathogenicityScore(), equalTo(0f));
     }
 
