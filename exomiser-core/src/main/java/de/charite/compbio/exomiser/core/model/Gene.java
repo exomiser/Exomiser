@@ -31,7 +31,7 @@ import java.util.Set;
  * results in an
  * {@link de.charite.compbio.exomiser.core.prioritisers.PriorityResult PriorityResult}
  * object.
- * <P>
+ * <p>
  * There are additionally some prioritization procedures that only can be
  * performed on genes (and not on the individual variants). For instance, there
  * are certain genes such as the Mucins or the Olfactory receptor genes that are
@@ -73,7 +73,7 @@ public class Gene implements Comparable<Gene>, Filterable {
      * A score representing the combined filter and priority scores.
      */
     private float combinedScore = 0f;
-    
+
     private final Map<PriorityType, PriorityResult> priorityResultsMap;
     private Set<ModeOfInheritance> inheritanceModes;
     private final String geneSymbol;
@@ -275,7 +275,7 @@ public class Gene implements Comparable<Gene>, Filterable {
     /**
      * Returns the priority score of this gene based on the relevance of the
      * gene as determined by a prioritiser.
-     * <P>
+     * <p>
      * Note that this method assumes we have calculate the scores, which is
      * depending on the function {@link #calculateGeneAndVariantScores} having
      * been called.
@@ -288,6 +288,7 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     /**
      * Sets the priority score for the gene.
+     *
      * @param score
      */
     public void setPriorityScore(float score) {
@@ -297,7 +298,7 @@ public class Gene implements Comparable<Gene>, Filterable {
     /**
      * Calculate the filter score of this gene based on the relevance of the
      * gene (filterScore)
-     * <P>
+     * <p>
      * Note that this method assumes we have calculate the scores, which is
      * depending on the function {@link #calculateGeneAndVariantScores} having
      * been called.
@@ -338,10 +339,14 @@ public class Gene implements Comparable<Gene>, Filterable {
      */
     @Override
     public boolean passedFilters() {
-        if (failedFilterTypes.isEmpty() && variantEvaluations.isEmpty()) {
+        if (isUnfiltered()) {
             return true;
         }
         return failedFilterTypes.isEmpty() && atLeastOneVariantPassedFilters();
+    }
+
+    private boolean isUnfiltered() {
+        return failedFilterTypes.isEmpty() && variantEvaluations.isEmpty();
     }
 
     private boolean atLeastOneVariantPassedFilters() {
@@ -368,6 +373,13 @@ public class Gene implements Comparable<Gene>, Filterable {
             }
         }
         return false;
+    }
+
+    private FilterStatus getFilterStatus() {
+         if (passedFilters()) {
+            return FilterStatus.PASSED;
+        }
+        return FilterStatus.FAILED;
     }
 
     @Override
@@ -440,7 +452,7 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public String toString() {
-        return String.format("%s %d consistentWith: %s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f failedFilters: %s variants: %d", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, failedFilterTypes, variantEvaluations.size());
+        return String.format("%s entrezId=%d consistentWith=%s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterResultsMap.keySet());
     }
 
 }

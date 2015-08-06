@@ -6,11 +6,8 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.factories.*;
-import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
-import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,14 +20,16 @@ import java.nio.file.Paths;
 public class SimpleAnalysisRunnerTest {
     
     private SimpleAnalysisRunner instance;
-        
+    private final JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
+    private final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(testJannovarData.getRefDict(), testJannovarData.getChromosomes());
+    private final VariantFactory variantFactory = new VariantFactory(new VariantAnnotator(variantContextAnnotator));
+
+    private final SampleDataFactory sampleDataFactory = new SampleDataFactory(variantFactory, testJannovarData);
+    private final VariantDataService stubDataService = new VariantDataServiceStub();
+
     @Before
     public void setUp() {
-        JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
-        VariantFactory variantFactory = new VariantFactory(new VariantAnnotationsFactory(testJannovarData));
-
-        VariantDataService variantDataService = new VariantDataServiceStub();
-        instance = new SimpleAnalysisRunner(variantFactory, variantDataService);
+        instance = new SimpleAnalysisRunner(sampleDataFactory, stubDataService);
     }
 
     @Test

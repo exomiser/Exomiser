@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import htsjdk.variant.variantcontext.VariantContext;
 
 import java.nio.file.Path;
@@ -28,11 +29,18 @@ public class VariantFactoryTest {
 
     private VariantFactory instance;
 
-    private final JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
+    private final JannovarData jannovarData;
+    private final VariantContextAnnotator variantContextAnnotator;
+    private final VariantAnnotator variantAnnotator;
+
+    public VariantFactoryTest() {
+        jannovarData = new TestJannovarDataFactory().getJannovarData();
+        variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        variantAnnotator = new VariantAnnotator(variantContextAnnotator);
+    }
 
     @Before
     public void setUp() {
-        VariantAnnotationsFactory variantAnnotator = new VariantAnnotationsFactory(jannovarData);
         instance = new VariantFactory(variantAnnotator);
     }
 

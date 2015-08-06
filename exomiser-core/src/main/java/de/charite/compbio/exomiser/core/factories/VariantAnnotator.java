@@ -22,25 +22,24 @@ import de.charite.compbio.jannovar.reference.PositionType;
 import java.util.Collections;
 
 /**
- * Given a {@link VariantAnnotationsFactory}, build a {@link Variant} for each
+ * Given a {@link VariantAnnotator}, build a {@link Variant} for each
  * alternative allele.
  *
  * Uses the {@link VariantContextAnnotator} class of the Jannovar-HTSJDK bridge.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantAnnotationsFactory {
+public class VariantAnnotator {
 
-    private static final Logger logger = LoggerFactory.getLogger(VariantAnnotationsFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantAnnotator.class);
 
     /**
      * tool for obtaining annotations for the {@link VariantContext} objects
      */
     private final VariantContextAnnotator annotator;
-//    private final ReferenceDictionary referenceDictionary;
 
-    public VariantAnnotationsFactory(JannovarData jannovarData) {
-        this.annotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+    public VariantAnnotator(VariantContextAnnotator variantContextAnnotator) {
+        this.annotator = variantContextAnnotator;
     }
 
     /**
@@ -62,7 +61,7 @@ public class VariantAnnotationsFactory {
         }
         return variantAnnotations;
     }
-    
+
     private VariantAnnotations buildVariantAnnotations(int chr, int pos, String ref, String alt) throws AnnotationException {
         return annotator.getAnnotator().buildAnnotations(chr, pos, ref, alt, PositionType.ONE_BASED);
     }

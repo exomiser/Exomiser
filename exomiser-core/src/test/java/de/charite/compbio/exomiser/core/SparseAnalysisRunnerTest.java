@@ -6,6 +6,7 @@ import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,16 +18,15 @@ import java.nio.file.Paths;
 public class SparseAnalysisRunnerTest {
 
     private SparseAnalysisRunner instance;
+    private final JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
+    private final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(testJannovarData.getRefDict(), testJannovarData.getChromosomes());
+    private final VariantFactory variantFactory = new VariantFactory(new VariantAnnotator(variantContextAnnotator));
 
+    private final SampleDataFactory sampleDataFactory = new SampleDataFactory(variantFactory, testJannovarData);
+    private final VariantDataService stubDataService = new VariantDataServiceStub();
     @Before
     public void setUp() {
-
-        JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
-        VariantFactory variantFactory = new VariantFactory(new VariantAnnotationsFactory(testJannovarData));
-
-        VariantDataService stubDataService = new VariantDataServiceStub();
-        VariantFilterRunner variantFilterRunner = new SparseVariantFilterRunner(stubDataService);
-        instance = new SparseAnalysisRunner(variantFactory, stubDataService);
+        instance = new SparseAnalysisRunner(sampleDataFactory, stubDataService);
     }
 
     @Test

@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core;
 
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
@@ -19,8 +20,8 @@ public class SimpleAnalysisRunner extends AbstractAnalysisRunner {
 
     protected static final Logger logger = LoggerFactory.getLogger(SimpleAnalysisRunner.class);
 
-    public SimpleAnalysisRunner(VariantFactory variantFactory, VariantDataService variantDataService) {
-        super(variantFactory, new SimpleVariantFilterRunner(variantDataService), new SimpleGeneFilterRunner());
+    public SimpleAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
+        super(sampleDataFactory, new SimpleVariantFilterRunner(variantDataService), new SimpleGeneFilterRunner());
     }
 
 }

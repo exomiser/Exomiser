@@ -93,4 +93,13 @@ public class SampleDataFactoryTest {
         instance.createSampleData(vcfPath, null);
     }
 
+    @Test
+    public void testGetVariantFactory() {
+        assertThat(instance.getVariantFactory(), notNullValue());
+    }
+
+    @Test
+    public void testCreateKnownGenes() {
+        assertThat(instance.createKnownGenes().size(), equalTo(4));
+    }
 }

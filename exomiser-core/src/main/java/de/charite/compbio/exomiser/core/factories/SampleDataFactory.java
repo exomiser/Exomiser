@@ -8,17 +8,24 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Handles creating the {@code de.charite.compbio.exomiser.common.SampleData}
@@ -35,6 +42,8 @@ public class SampleDataFactory {
 
     @Autowired
     private VariantFactory variantFactory;
+    @Autowired
+    private JannovarData jannovarData;
 
     private final PedigreeFactory pedigreeFactory;
     private final GeneFactory geneFactory;
@@ -44,10 +53,19 @@ public class SampleDataFactory {
         geneFactory = new GeneFactory();
     }
 
-    public SampleDataFactory(VariantFactory variantFactory) {
+    public SampleDataFactory(VariantFactory variantFactory, JannovarData jannovarData) {
         this.variantFactory = variantFactory;
+        this.jannovarData = jannovarData;
         pedigreeFactory = new PedigreeFactory();
         geneFactory = new GeneFactory();
+    }
+
+    public VariantFactory getVariantFactory() {
+        return variantFactory;
+    }
+
+    public JannovarData getJannovarData() {
+        return jannovarData;
     }
 
     /**
@@ -114,6 +132,10 @@ public class SampleDataFactory {
 
     public List<Gene> createGenes(List<VariantEvaluation> variantEvaluations) {
         return geneFactory.createGenes(variantEvaluations);
+    }
+
+    public List<Gene> createKnownGenes() {
+        return geneFactory.createKnownGenes(jannovarData);
     }
 
 }

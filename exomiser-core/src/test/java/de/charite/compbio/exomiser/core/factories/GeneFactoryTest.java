@@ -9,10 +9,16 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -193,5 +199,19 @@ public class GeneFactoryTest {
         assertThat(result.size(), equalTo(2));
         assertThat(result.contains(gene2), is(true));
         assertThat(result.contains(gene3), is(true));
+    }
+
+    @Test
+    public void testCreateKnownGenes() {
+        JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
+        Set<String> knownGeneSymbols = jannovarData.getTmByGeneSymbol().keySet();
+
+        List<Gene> knownGenes = instance.createKnownGenes(jannovarData);
+        assertThat(knownGenes.size(), equalTo(4));
+        knownGenes.forEach(gene -> {
+            assertThat(gene.getEntrezGeneID(), not(equalTo(0)));
+            assertThat(gene.getGeneSymbol(), not(equalTo("")));
+            assertThat(knownGeneSymbols.contains(gene.getGeneSymbol()), is(true));
+        });
     }
 }
