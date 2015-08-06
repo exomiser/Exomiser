@@ -5,6 +5,7 @@ import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.MockPrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -13,6 +14,8 @@ import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.junit.Ignore;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +31,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PassOnlyAnalysisRunnerTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
 
     private PassOnlyAnalysisRunner instance;
 
@@ -55,8 +60,10 @@ public class PassOnlyAnalysisRunnerTest {
 
     private void printResults(SampleData sampleData) {
         for (Gene gene : sampleData.getGenes()) {
-            System.out.printf("%s%n", gene);
-            gene.getVariantEvaluations().forEach(System.out::println);
+            logger.info("{}", gene);
+            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+                logger.info("{}", variantEvaluation);
+            }
         }
     }
 
@@ -80,9 +87,12 @@ public class PassOnlyAnalysisRunnerTest {
         SampleData sampleData = analysis.getSampleData();
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
+        Gene passedGene = sampleData.getGenes().get(0);
+        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.getVariantEvaluations().size(), equalTo(1));
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void testRunAnalysis_PrioritiserAndPriorityScoreFilterOnly() {
         Integer expectedGeneId = 9939;
