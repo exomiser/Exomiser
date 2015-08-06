@@ -376,7 +376,7 @@ public class HiPhivePriority implements Prioritiser {
                     if (speciesPhenotypeMatches.containsKey(matchIds)) {
                         PhenotypeMatch match = speciesPhenotypeMatches.get(matchIds);
                         double matchScore = match.getScore();
-                        // identify best match                                                                                                                                                                 
+                        // identify best match
                         bestMatchScore = Math.max(matchScore, bestMatchScore);
                         if (matchScore > 0) {
                             addGeneModelPhenotypeMatch(geneModelPhenotypeMatches, model, match);
@@ -396,7 +396,7 @@ public class HiPhivePriority implements Prioritiser {
                     if (speciesPhenotypeMatches.containsKey(matchIds)) {
                         PhenotypeMatch match = speciesPhenotypeMatches.get(matchIds);
                         double matchScore = match.getScore();
-                        // identify best match                                                                                                                                                                 
+                        // identify best match
                         bestMatchScore = Math.max(matchScore, bestMatchScore);
                         if (matchScore > 0) {
                             addGeneModelPhenotypeMatch(geneModelPhenotypeMatches, model, match);
@@ -408,8 +408,13 @@ public class HiPhivePriority implements Prioritiser {
                     maxModelMatchScore = Math.max(bestMatchScore, maxModelMatchScore);
                 }
             }
-
-            int rowColumnCount = hpIdsWithPhenotypeMatch.size() + matchedPhenotypeIdsForModel.size();
+            /** 
+             * hpIdsWithPhenotypeMatch.size() = no. of HPO disease annotations for human and the no. of annotations with an entry in hp_*_mappings table for other species
+             * matchedPhenotypeIDsForModel.size() = no. of annotations for model with a match in hp_*_mappings table for at least one of the disease annotations
+             * Aug 2015 - changed calculation to take into account all HPO terms for averaging after DDD benchmarking - keeps consistent across species then
+             */
+            //int rowColumnCount = hpIdsWithPhenotypeMatch.size() + matchedPhenotypeIdsForModel.size();
+            int rowColumnCount = hpoIds.size() + matchedPhenotypeIdsForModel.size();
             // calculate combined score
             if (sumModelBestMatchScores != 0) {
                 double avgBestHitRowsColumnsScore = sumModelBestMatchScores / rowColumnCount;
