@@ -28,26 +28,26 @@ import java.util.List;
  */
 public class AnalysisFactory {
 
-    private final VariantFactory variantFactory;
+    private final SampleDataFactory sampleDataFactory;
     private final VariantDataService variantDataService;
     private final PriorityFactory priorityFactory;
 
-    public AnalysisFactory(VariantFactory variantFactory, VariantDataService variantDataService, PriorityFactory priorityFactory) {
-        this.variantFactory = variantFactory;
+    public AnalysisFactory(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, PriorityFactory priorityFactory) {
+        this.sampleDataFactory = sampleDataFactory;
         this.variantDataService = variantDataService;
         this.priorityFactory = priorityFactory;
     }
 
     public SimpleAnalysisRunner getFullAnalysisRunner() {
-        return new SimpleAnalysisRunner(variantFactory, variantDataService);
+        return new SimpleAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
     public SparseAnalysisRunner getSparseAnalysisRunner() {
-        return new SparseAnalysisRunner(variantFactory, variantDataService);
+        return new SparseAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
     public PassOnlyAnalysisRunner getPassOnlyAnalysisRunner() {
-        return new PassOnlyAnalysisRunner(variantFactory, variantDataService);
+        return new PassOnlyAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
     public AnalysisBuilder getAnalysisBuilder() {

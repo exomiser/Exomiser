@@ -18,20 +18,24 @@ import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
 import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,15 +63,15 @@ public class ExomiserConfig {
     private Environment env;
 
     @Bean
-    public Exomiser exomiser(){
+    public Exomiser exomiser() {
         return new Exomiser(priorityFactory());
     }
-    
+
     @Bean
     AnalysisFactory analysisFactory() {
-        return new AnalysisFactory(variantFactory(), variantDataService(), priorityFactory());
+        return new AnalysisFactory(sampleDataFactory(), variantDataService(), priorityFactory());
     }
-    
+
     /**
      * This is critical for the application to run as it points to the data
      * directory where all the required resources are found. Without this being
@@ -126,17 +130,12 @@ public class ExomiserConfig {
     }
 
     /**
-     * This takes a few seconds to de-serealise. Would be better to be eager in
-     * a web-app, but lazy on the command-line as then the input parameters can
-     * be checked before doing this.
-     *
-     * @return
+     * This takes a few seconds to de-serialise.
      */
     @Bean
-    @Lazy
-    public VariantAnnotationsFactory variantAnnotator() {
+    public JannovarData jannovarData() {
         try {
-            return new VariantAnnotationsFactory(new JannovarDataSerializer(ucscFilePath().toString()).load());
+            return new JannovarDataSerializer(ucscFilePath().toString()).load();
         } catch (SerializationException e) {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
@@ -145,9 +144,12 @@ public class ExomiserConfig {
     @Lazy
     @Bean
     public VariantFactory variantFactory() {
-        return new VariantFactory(variantAnnotator());
+        JannovarData jannovarData = jannovarData();
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
+        return new VariantFactory(variantAnnotator);
     }
- 
+
     @Lazy
     @Bean
     public SampleDataFactory sampleDataFactory() {
@@ -158,7 +160,6 @@ public class ExomiserConfig {
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
      *
-     * @return
      */
     @Bean
     @Lazy
@@ -189,7 +190,7 @@ public class ExomiserConfig {
         return new VariantDataServiceImpl();
     }
 
-//cacheable beans
+    //cacheable beans
     @Bean
     public FrequencyDao frequencyDao() {
         return new DefaultFrequencyDao();

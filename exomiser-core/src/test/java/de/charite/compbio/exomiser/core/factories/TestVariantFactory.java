@@ -1,5 +1,6 @@
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -38,7 +39,8 @@ public class TestVariantFactory {
     public TestVariantFactory() {
         JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
         this.refDict = testJannovarData.getRefDict();
-        this.variantFactory = new VariantFactory(new VariantAnnotationsFactory(testJannovarData));
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(testJannovarData.getRefDict(), testJannovarData.getChromosomes());
+        this.variantFactory = new VariantFactory(new VariantAnnotator(variantContextAnnotator));
     }
 
     /**

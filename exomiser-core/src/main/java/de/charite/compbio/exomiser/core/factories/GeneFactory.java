@@ -7,12 +7,15 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
+
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Creates a {@code List} of {@code Gene} from a {@code List} of
@@ -56,5 +59,25 @@ public class GeneFactory {
         logger.info("Made {} genes from {} variants", geneMap.values().size(), variantEvaluations.size());
         return new ArrayList<>(geneMap.values());
     }
-    
+
+    public List<Gene> createKnownGenes(JannovarData jannovarData ) {
+        int approxKnownGenes = 23000;
+        Set<Gene> knownGenes = new HashSet<>(approxKnownGenes);
+        for (Map.Entry<String, TranscriptModel> geneModels : jannovarData.getTmByGeneSymbol().entries()) {
+            TranscriptModel transcriptModel = geneModels.getValue();
+            String geneSymbol = geneModels.getKey();
+            if (geneSymbol == null) {
+                geneSymbol = ".";
+            }
+            if (transcriptModel != null && transcriptModel.getGeneID() != null && !transcriptModel.getGeneID().equals("null")) {
+                // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
+                // for UCSC. At this point, there is a hard dependency on using the UCSC database.
+                Gene gene = new Gene(geneSymbol, Integer.parseInt(transcriptModel.getGeneID().substring("ENTREZ".length())));
+                knownGenes.add(gene);
+            }
+        }
+        logger.info("Created {} known genes.", knownGenes.size());
+        return knownGenes.stream().collect(toList());
+    }
+
 }

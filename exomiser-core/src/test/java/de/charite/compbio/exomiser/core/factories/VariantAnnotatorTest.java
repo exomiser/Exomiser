@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
@@ -31,9 +32,11 @@ import static org.hamcrest.CoreMatchers.is;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantAnnotationsFactoryTest {
+public class VariantAnnotatorTest {
 
-    private VariantAnnotationsFactory instance;
+    private VariantAnnotator instance;
+
+    private JannovarData jannovarData;
     private TestVariantFactory varFactory;
     private TranscriptModel tmFGFR2;
     private TranscriptModel tmSHH;
@@ -43,9 +46,10 @@ public class VariantAnnotationsFactoryTest {
         varFactory = new TestVariantFactory();
         tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
         tmSHH = TestTranscriptModelFactory.buildTMForSHH();
-        JannovarData jannovarData = new JannovarData(HG19RefDictBuilder.build(), ImmutableList.<TranscriptModel>of(
+        jannovarData = new JannovarData(HG19RefDictBuilder.build(), ImmutableList.<TranscriptModel>of(
                 tmFGFR2, tmSHH));
-        instance = new VariantAnnotationsFactory(jannovarData);
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        instance = new VariantAnnotator(variantContextAnnotator);
     }
 
     @Test(expected = NullPointerException.class)

@@ -20,9 +20,10 @@ import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotationsFactory;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
@@ -35,11 +36,15 @@ import de.charite.compbio.jannovar.data.SerializationException;
 
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
 import de.charite.compbio.jannovar.data.JannovarData;
+
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
+import java.util.*;
 
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +57,8 @@ import org.springframework.core.env.Environment;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Provides configuration details from the settings.properties file located in
@@ -146,30 +153,20 @@ public class MainConfig {
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
-    
+
     @Bean
     public Exomiser exomiser() {
         return new Exomiser(priorityFactory());
-    }
-    
-    @Bean
-    AnalysisFactory analysisFactory() {
-        return new AnalysisFactory(variantFactory(), variantDataService(), priorityFactory());
     }
 
     @Bean
     public AnalysisParser analysisParser() {
         return new AnalysisParser(priorityFactory());
     }
-    
+
     /**
-     * This takes a few seconds to de-serialise. Would be better to be eager in
-     * a web-app, but lazy on the command-line as then the input parameters can
-     * be checked before doing this.
-     *
-     * @return
+     * This takes a few seconds to de-serialise.
      */
-    @Lazy
     @Bean
     public JannovarData jannovarData() {
         try {
@@ -179,19 +176,19 @@ public class MainConfig {
         }
     }
 
-    @Lazy
     @Bean
-    public VariantAnnotationsFactory variantAnnotator() {
-        return new VariantAnnotationsFactory(jannovarData());
+    public AnalysisFactory analysisFactory() {
+        return new AnalysisFactory(sampleDataFactory(), variantDataService(), priorityFactory());
     }
 
-    @Lazy
     @Bean
     public VariantFactory variantFactory() {
-        return new VariantFactory(variantAnnotator());
+        JannovarData jannovarData = jannovarData();
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
+        return new VariantFactory(variantAnnotator);
     }
 
-    @Lazy
     @Bean
     public SampleDataFactory sampleDataFactory() {
         return new SampleDataFactory();

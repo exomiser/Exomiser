@@ -1,5 +1,6 @@
 package de.charite.compbio.exomiser.core;
 
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
@@ -7,12 +8,13 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -24,14 +26,10 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
 
-    //required for handling the sampleData creation/annotation
-    private final VariantFactory variantFactory;
-
-    public PassOnlyAnalysisRunner(VariantFactory variantFactory, VariantDataService variantDataService) {
+    public PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
         //TODO: make a SparseGeneFilterRunner?
         //geneFilterRunner = new SparseGeneFilterRunner();
-        super(variantFactory, new SparseVariantFilterRunner(variantDataService), new SimpleGeneFilterRunner());
-        this.variantFactory = variantFactory;
+        super(sampleDataFactory, new SparseVariantFilterRunner(variantDataService), new SimpleGeneFilterRunner());
     }
 
     @Override
@@ -41,6 +39,9 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
         logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
         long startAnalysisTimeMillis = System.currentTimeMillis();
+
+        List<Gene> knownGenes = sampleDataFactory.createKnownGenes();
+        Map<Integer, Gene> passedGenes = new HashMap<>();
 
         //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
         //so for whole genomes this is best run as a stream to filter out the unwanted variants
@@ -68,10 +69,10 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     private List<VariantEvaluation> streamAndFilterVariantEvaluations(Path vcfPath, List<VariantFilter> variantFilters) {
-
         final int[] streamed = {0};
         final int[] passed = {0};
-
+        VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
+        //TODO: we can remove the VariantFactory requirement (make all factories package private?) and pass the SampleDatFactory in as a constructor argument
         try (Stream<VariantEvaluation> variantEvaluationStream = variantFactory.streamVariantEvaluations(vcfPath)) {
             //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
             return variantEvaluationStream.filter(variantEvaluation -> {

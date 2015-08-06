@@ -34,13 +34,13 @@ public class VariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
 
-    private final VariantAnnotationsFactory variantAnnotator;
+    private final VariantAnnotator variantAnnotator;
     /*in cases where a variant cannot be positioned on a chromosome we're going 
      * to use 0 in order to fulfil the requirement of a variant having an integer chromosome 
      */
     private final int UNKNOWN_CHROMOSOME = 0;
 
-    public VariantFactory(VariantAnnotationsFactory variantAnnotator) {
+    public VariantFactory(VariantAnnotator variantAnnotator) {
         this.variantAnnotator = variantAnnotator;
     }
 

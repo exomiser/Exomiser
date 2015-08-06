@@ -33,8 +33,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected final GeneFilterRunner geneFilterRunner;
     protected final PrioritiserRunner prioritiserRunner;
 
-    public AbstractAnalysisRunner(VariantFactory variantFactory, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
-        this.sampleDataFactory = new SampleDataFactory(variantFactory);
+    public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+        this.sampleDataFactory = sampleDataFactory;
         this.variantFilterRunner = variantFilterRunner;
         this.geneFilterRunner = geneFilterRunner;
         this.prioritiserRunner = new PrioritiserRunner();
@@ -72,11 +72,16 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     protected void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree) {
         boolean inheritanceModesCalculated = false;
+        boolean variantsLoaded = false;
         for (AnalysisStep analysisStep : analysisSteps) {
+//            if (!variantsLoaded && requiresVariants(analysisStep)) {
+//
+//            }
             if (!inheritanceModesCalculated && requiresInheritanceModes(analysisStep)) {
                 analyseGeneInheritanceModes(genes, pedigree);
                 inheritanceModesCalculated = true;
             }
+
             runStep(analysisStep, genes);
         }
     }
