@@ -32,7 +32,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PassOnlyAnalysisRunnerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunnerTest.class);
 
     private PassOnlyAnalysisRunner instance;
 
@@ -92,7 +92,6 @@ public class PassOnlyAnalysisRunnerTest {
         assertThat(passedGene.getVariantEvaluations().size(), equalTo(1));
     }
 
-//    @Ignore
     @Test
     public void testRunAnalysis_PrioritiserAndPriorityScoreFilterOnly() {
         Integer expectedGeneId = 9939;
@@ -114,7 +113,36 @@ public class PassOnlyAnalysisRunnerTest {
         assertThat(passed.passedFilters(), is(true));
         assertThat(passed.getEntrezGeneID(), equalTo(expectedGeneId));
         assertThat(passed.getPriorityScore(), equalTo(desiredPrioritiserScore));
-//        assertThat(passed.getNumberOfVariants(), equalTo(1));
+    }
+
+    @Test
+    public void testRunAnalysis_PrioritiserPriorityScoreFilterVariantFilter() {
+        Integer expectedGeneId = 9939;
+        Float desiredPrioritiserScore = 0.9f;
+        Map<Integer, Float> geneIdPrioritiserScores = new HashMap<>();
+        geneIdPrioritiserScores.put(expectedGeneId, desiredPrioritiserScore);
+
+        PriorityType prioritiserTypeToMock = PriorityType.HIPHIVE_PRIORITY;
+        Prioritiser prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneIdPrioritiserScores);
+        GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
+        VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
+
+        Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter, intervalFilter);
+        instance.runAnalysis(analysis);
+
+        SampleData sampleData = analysis.getSampleData();
+        printResults(sampleData);
+        assertThat(sampleData.getGenes().size(), equalTo(1));
+        Gene passedGene = sampleData.getGenes().get(0);
+        assertThat(passedGene.passedFilters(), is(true));
+        assertThat(passedGene.getEntrezGeneID(), equalTo(expectedGeneId));
+        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        VariantEvaluation passedVariantEvaluation =  passedGene.getVariantEvaluations().get(0);
+        assertThat(passedVariantEvaluation.getChromosome(), equalTo(1));
+        assertThat(passedVariantEvaluation.getPosition(), equalTo(145508800));
+        assertThat(passedVariantEvaluation.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
     }
 
 }

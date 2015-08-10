@@ -9,8 +9,10 @@ import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
+import htsjdk.tribble.TribbleException;
 import htsjdk.variant.variantcontext.VariantContext;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -46,6 +48,13 @@ public class VariantFactoryTest {
 
     private void printVariant(Variant variant) {
         System.out.printf("%s offExome=%s gene=%s%n", variant.getChromosomalVariant(), variant.isOffExome(), variant.getGeneSymbol());
+    }
+
+
+    @Test(expected = TribbleException.class)
+    public void testCreateVariantContexts_NonExistentFile() {
+        Path vcfPath = Paths.get("src/test/resources/wibble.vcf");
+        instance.createVariantContexts(vcfPath);
     }
 
     @Test
