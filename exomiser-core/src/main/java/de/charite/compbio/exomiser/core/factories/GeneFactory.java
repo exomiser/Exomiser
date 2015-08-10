@@ -63,19 +63,23 @@ public class GeneFactory {
     public List<Gene> createKnownGenes(JannovarData jannovarData ) {
         int approxKnownGenes = 23000;
         Set<Gene> knownGenes = new HashSet<>(approxKnownGenes);
-        for (Map.Entry<String, TranscriptModel> geneModels : jannovarData.getTmByGeneSymbol().entries()) {
-            TranscriptModel transcriptModel = geneModels.getValue();
-            String geneSymbol = geneModels.getKey();
-            if (geneSymbol == null) {
-                geneSymbol = ".";
+        for (String geneSymbol : jannovarData.getTmByGeneSymbol().keySet()) {
+            String geneId = "-1";
+            Collection<TranscriptModel> transcriptModels = jannovarData.getTmByGeneSymbol().get(geneSymbol);
+            for (TranscriptModel transcriptModel : transcriptModels) {
+                if (transcriptModel != null && transcriptModel.getGeneID() != null && !transcriptModel.getGeneID().equals("null")) {
+                    // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
+                    // for UCSC. At this point, there is a hard dependency on using the UCSC database.
+                    geneId = transcriptModel.getGeneID().substring("ENTREZ".length());
+                }
             }
-            if (transcriptModel != null && transcriptModel.getGeneID() != null && !transcriptModel.getGeneID().equals("null")) {
-                // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
-                // for UCSC. At this point, there is a hard dependency on using the UCSC database.
-                Gene gene = new Gene(geneSymbol, Integer.parseInt(transcriptModel.getGeneID().substring("ENTREZ".length())));
-                knownGenes.add(gene);
+            Gene gene = new Gene(geneSymbol, Integer.parseInt(geneId));
+            knownGenes.add(gene);
+            if (geneId.equals("-1")) {
+                logger.debug("No geneId associated with gene symbol {} geneId set to {}", gene.getGeneSymbol(), gene.getEntrezGeneID());
             }
         }
+
         logger.info("Created {} known genes.", knownGenes.size());
         return knownGenes.stream().collect(toList());
     }
