@@ -45,16 +45,16 @@ public class VariantFactory {
     }
 
     public List<VariantContext> createVariantContexts(Path vcfPath) {
-        logger.info("Loading variants from VCF...");
-        Stream<VariantContext> variantContextStream = streamVariantContexts(vcfPath);
-        List<VariantContext> records = variantContextStream.collect(toList());
-        variantContextStream.close();
-        logger.info("Created {} variant records from VCF", records.size());
-        return records;
+        logger.info("Loading variants...");
+        try (Stream<VariantContext> variantContextStream = streamVariantContexts(vcfPath)) {
+            List<VariantContext> records = variantContextStream.collect(toList());
+            logger.info("Created {} variant records from file {}", records.size(), vcfPath);
+            return records;
+        }
     }
 
     public Stream<VariantContext> streamVariantContexts(Path vcfPath) {
-        logger.info("Streaming variants from VCF...");
+        logger.info("Streaming variants from file {}", vcfPath);
         VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false); // false => do not require index
         Iterable<VariantContext> variantIterable = () -> vcfReader.iterator();
         boolean runParallel = false;
@@ -65,22 +65,29 @@ public class VariantFactory {
         Stream<VariantEvaluation> variantEvaluationStream = streamVariantEvaluations(vcfPath);
         List<VariantEvaluation> variantEvaluations = variantEvaluationStream.collect(toList());
         variantEvaluationStream.close();
-        logger.info("Created {} single allele variants from {} variant records - {} are missing annotations, most likely due to non-numeric chromosome designations", variantEvaluations.size());
         return variantEvaluations;
     }
 
     public Stream<VariantEvaluation> streamVariantEvaluations(Path vcfPath) {
         //note - VariantContexts with with unknown references will not create a Variant.
+        int[] variantRecords = {0};
+        int[] unannotatedVariants = {0};
+        int[] annotatedVariants = {0};
+
         Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath).flatMap(variantContext -> {
+            variantRecords[0]++;
             List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+            //TODO: this looks like a stateful stream - can't this bit return a stream of variantEvaluations?
             List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
             if (variantAlleleAnnotations.isEmpty()) {
                 for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                    unannotatedVariants[0]++;
                     variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
                 }
             } else {
                 //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
                 for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                    annotatedVariants[0]++;
                     VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
                     variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
                 }
@@ -88,7 +95,14 @@ public class VariantFactory {
             return variantEvaluations.stream();
         });
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
-        return variantEvaluationStream;
+        return variantEvaluationStream
+                .onClose(() -> {
+                    if (unannotatedVariants[0] > 0) {
+                        logger.info("Processed {} variant records into {} single allele variants, {} are missing annotations, most likely due to non-numeric chromosome designations", variantRecords[0], annotatedVariants[0], unannotatedVariants[0]);
+                    } else {
+                        logger.info("Processed {} variant records into {} single allele variants", variantRecords[0], annotatedVariants[0]);
+                    }
+                });
     }
 
     /**

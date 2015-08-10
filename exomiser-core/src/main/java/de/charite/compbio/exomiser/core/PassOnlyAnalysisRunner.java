@@ -16,7 +16,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toConcurrentMap;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -44,34 +46,28 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         final Pedigree pedigree = sampleData.getPedigree();
         runSteps(getNonVariantFilterSteps(analysis), knownGenes, pedigree);
 
-        Map<Integer, Gene> passedGenes = createPassedGenes(knownGenes);
+        Map<String, Gene> passedGenes = createPassedGenes(knownGenes);
         //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
         //so for whole genomes this is best run as a stream to filter out the unwanted variants
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysis);
         Path vcfPath = analysis.getVcfPath();
         final List<VariantEvaluation> variantEvaluations = streamAndFilterVariantEvaluations(vcfPath, passedGenes, variantFilters);
-        sampleData.setVariantEvaluations(variantEvaluations);
-        List<Gene> genes = getPassedGenesWithVariants(passedGenes);
-        sampleData.setGenes(genes);
+        List<Gene> genes = getGenesWithVariants(passedGenes);
+
+        logger.info("Filtered {} genes containing {} filtered variants", genes.size(), variantEvaluations.size());
+
         //run all the other steps
-        scoreGenes(sampleData.getGenes(), analysis.getScoringMode(), analysis.getModeOfInheritance());
+        //run steps requiring fully filtered genes and variants (inheritanceFilter and OmimPrioritiser)
+//        runSteps(getNonVariantFilterSteps(analysis), knownGenes, pedigree);
+
+        scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
+
+        sampleData.setGenes(genes);
+        sampleData.setVariantEvaluations(variantEvaluations);
 
         long endAnalysisTimeMillis = System.currentTimeMillis();
         double analysisTimeSecs = (double) (endAnalysisTimeMillis - startAnalysisTimeMillis) / 1000;
         logger.info("Finished analysis in {} secs", analysisTimeSecs);
-    }
-
-    private List<Gene> getPassedGenesWithVariants(Map<Integer, Gene> passedGenes) {
-        return passedGenes.values().stream().filter(Gene::passedFilters).filter(gene -> !gene.getVariantEvaluations().isEmpty()).collect(toList());
-    }
-
-    private Map<Integer, Gene> createPassedGenes(List<Gene> genes) {
-        Map<Integer, Gene> passedGenes = new ConcurrentHashMap<>();
-        genes.parallelStream().filter(Gene::passedFilters).forEach(gene -> {
-            passedGenes.put(gene.getEntrezGeneID(), gene);
-        });
-        logger.info("{} genes passed filters", passedGenes.size());
-        return passedGenes;
     }
 
     private SampleData makeSampleData(Analysis analysis) {
@@ -80,15 +76,32 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         return sampleData;
     }
 
-    private List<VariantEvaluation> streamAndFilterVariantEvaluations(Path vcfPath, Map<Integer, Gene> passedGenes, List<VariantFilter> variantFilters) {
+    private Map<String, Gene> createPassedGenes(List<Gene> genes) {
+        Map<String, Gene> passedGenes = genes
+                .parallelStream()
+                .filter(Gene::passedFilters)
+                .collect(toConcurrentMap(Gene::getGeneSymbol, gene -> (gene)));
+        logger.info("Filtered {} genes - {} passed", genes.size(), passedGenes.size());
+        return passedGenes;
+    }
+
+    private List<Gene> getPassedGenesWithVariants(Map<String, Gene> passedGenes) {
+        return passedGenes.values().stream().filter(Gene::passedFilters).filter(gene -> !gene.getVariantEvaluations().isEmpty()).collect(toList());
+    }
+
+    private List<Gene> getGenesWithVariants(Map<String, Gene> passedGenes) {
+        return passedGenes.values().stream().filter(gene -> !gene.getVariantEvaluations().isEmpty()).collect(toList());
+    }
+
+    private List<VariantEvaluation> streamAndFilterVariantEvaluations(Path vcfPath, Map<String, Gene> passedGenes, List<VariantFilter> variantFilters) {
 
         final int[] streamed = {0};
         final int[] passed = {0};
         VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
-
+        List<VariantEvaluation> streamedAndFiltered;
         try (Stream<VariantEvaluation> variantEvaluationStream = variantFactory.streamVariantEvaluations(vcfPath)) {
             //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-            return variantEvaluationStream
+            streamedAndFiltered = variantEvaluationStream
                     .filter(variantEvaluation -> {
                         //yep, logging logic
                         streamed[0]++;
@@ -97,7 +110,7 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                         }
                         //Only continue on to the filters if the variant the gene in located in is predicted as a phenotype match,
                         //this should drastically reduce the number of collected variants
-                        return passedGenes.containsKey(variantEvaluation.getEntrezGeneId());
+                        return passedGenes.containsKey(variantEvaluation.getGeneSymbol());
                     })
                     .filter(variantEvaluation -> {
                         //loop through the filters and only run if the variantEvaluation has passed all prior filters
@@ -107,14 +120,16 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                         if (variantEvaluation.passedFilters()) {
                             //yep, logging logic
                             passed[0]++;
-                            Gene gene = passedGenes.get(variantEvaluation.getEntrezGeneId());
+                            Gene gene = passedGenes.get(variantEvaluation.getGeneSymbol());
                             gene.addVariant(variantEvaluation);
                             return true;
                         }
                         return false;
-                    }).onClose(() -> logger.info("Filtered {} variants - {} passed", streamed[0], passed[0]))
+                    })
                     .collect(toList());
         }
+        logger.info("Filtered {} variants - {} passed", streamed[0], passed[0]);
+        return streamedAndFiltered;
     }
 
     private List<VariantFilter> getVariantFilterSteps(Analysis analysis) {
