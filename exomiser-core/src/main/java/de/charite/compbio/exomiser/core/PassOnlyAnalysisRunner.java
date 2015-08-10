@@ -13,12 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -28,8 +26,6 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
 
     public PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
-        //TODO: make a SparseGeneFilterRunner?
-        //geneFilterRunner = new SparseGeneFilterRunner();
         super(sampleDataFactory, new SparseVariantFilterRunner(variantDataService), new SimpleGeneFilterRunner());
     }
 
@@ -85,12 +81,11 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         return passedGenes;
     }
 
-    private List<Gene> getPassedGenesWithVariants(Map<String, Gene> passedGenes) {
-        return passedGenes.values().stream().filter(Gene::passedFilters).filter(gene -> !gene.getVariantEvaluations().isEmpty()).collect(toList());
-    }
-
     private List<Gene> getGenesWithVariants(Map<String, Gene> passedGenes) {
-        return passedGenes.values().stream().filter(gene -> !gene.getVariantEvaluations().isEmpty()).collect(toList());
+        return passedGenes.values()
+                .stream()
+                .filter(gene -> !gene.getVariantEvaluations().isEmpty())
+                .collect(toList());
     }
 
     private List<VariantEvaluation> streamAndFilterVariantEvaluations(Path vcfPath, Map<String, Gene> passedGenes, List<VariantFilter> variantFilters) {
