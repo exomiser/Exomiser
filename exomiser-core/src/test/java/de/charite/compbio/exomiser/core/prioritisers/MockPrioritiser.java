@@ -14,17 +14,17 @@ import java.util.Map;
 public class MockPrioritiser implements Prioritiser {
 
     private final PriorityType priorityType;
-    private final Map<Integer, Float> expectedScores;
+    private final Map<String, Float> expectedScores;
 
-    public MockPrioritiser(PriorityType priorityType, Map<Integer, Float> geneIdPrioritiserScores) {
+    public MockPrioritiser(PriorityType priorityType, Map<String, Float> geneSymbolPrioritiserScores) {
         this.priorityType = priorityType;
-        expectedScores = geneIdPrioritiserScores;
+        expectedScores = geneSymbolPrioritiserScores;
     }
 
     @Override
     public void prioritizeGenes(List<Gene> genes) {
         for (Gene gene : genes) {
-            Float score = expectedScores.getOrDefault(gene.getEntrezGeneID(), 0f);
+            Float score = expectedScores.getOrDefault(gene.getGeneSymbol(), 0f);
             gene.addPriorityResult(new BasePriorityResult(priorityType, score));
         }
     }
