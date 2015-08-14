@@ -22,6 +22,7 @@ public interface VariantDataService {
     public PathogenicityData getVariantPathogenicityData(Variant variant);
     //TODO: this is messy - only want one PathogenicityData call here.
     public PathogenicityData getVariantCADDData(Variant variant);
+    public PathogenicityData getVariantNCDSData(Variant variant);
     
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant);
     
@@ -32,6 +33,8 @@ public interface VariantDataService {
     public void setVariantPathogenicityData(VariantEvaluation variantEvaluation);
     
     public void setVariantCADDData(VariantEvaluation variantEvaluation);
+    
+    public void setVariantNCDSData(VariantEvaluation variantEvaluation);
     
     public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation);
         

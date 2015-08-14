@@ -77,6 +77,9 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
                 break;
             case CADD_FILTER:
                 variantDataService.setVariantCADDData(variantEvaluation);
+                break;
+            case NCDS_FILTER:
+                variantDataService.setVariantNCDSData(variantEvaluation);
                 break;    
             case REGULATORY_FEATURE_FILTER:
                 variantDataService.setVariantRegulatoryFeatureData(variantEvaluation);

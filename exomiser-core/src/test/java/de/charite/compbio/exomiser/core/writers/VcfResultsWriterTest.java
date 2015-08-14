@@ -56,6 +56,7 @@ public class VcfResultsWriterTest {
             + "##FILTER=<ID=INHERITANCE_FILTER,Description=\"Inheritance\">\n"
             + "##FILTER=<ID=INTERVAL_FILTER,Description=\"Interval\">\n"
             + "##FILTER=<ID=KNOWN_VARIANT_FILTER,Description=\"Known variant\">\n"
+            + "##FILTER=<ID=NCDS_FILTER,Description=\"NCDS\">\n"
             + "##FILTER=<ID=PATHOGENICITY_FILTER,Description=\"Pathogenicity\">\n"
             + "##FILTER=<ID=PRIORITY_SCORE_FILTER,Description=\"Gene priority score\">\n" 
             + "##FILTER=<ID=QUALITY_FILTER,Description=\"Quality\">\n"

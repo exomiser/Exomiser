@@ -9,6 +9,7 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.dao.CADDDao;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
+import de.charite.compbio.exomiser.core.dao.NCDSDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
@@ -19,6 +20,9 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  *
@@ -27,6 +31,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class VariantDataServiceImpl implements VariantDataService {
     
+    private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImpl.class);
+
     @Autowired
     private FrequencyDao frequencyDao;
     @Autowired
@@ -34,14 +40,19 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Lazy
     @Autowired
     private CADDDao caddDao;
+    @Lazy
+    @Autowired
+    private NCDSDao ncdsDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
     
     @Override
     public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation) {
+        logger.info("Calling setVariantFrequencyAndPathogenicityData");
         setVariantFrequencyData(variantEvaluation);
         setVariantPathogenicityData(variantEvaluation);
-        setVariantCADDData(variantEvaluation);// TODO - this method is called by the simpleVariantFilterRunner so what will happen if no Tabix files - needs to check FilterType
+        setVariantCADDData(variantEvaluation);// TODO - this method is called by the simpleVariantFilterRunner so what will happen if no Tabix files - needs to check FilterType ? NOW NEVER CALLED EXCEPT TEST
+        setVariantNCDSData(variantEvaluation);// TODO - this method is called by the simpleVariantFilterRunner so what will happen if no Tabix files - needs to check FilterType
         setVariantRegulatoryFeatureData(variantEvaluation);
     }
         
@@ -61,6 +72,13 @@ public class VariantDataServiceImpl implements VariantDataService {
     public void setVariantCADDData(VariantEvaluation variantEvaluation) {
         // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
         PathogenicityData pathData = getVariantCADDData(variantEvaluation);
+        variantEvaluation.setPathogenicityData(pathData);
+    }
+    
+    @Override
+    public void setVariantNCDSData(VariantEvaluation variantEvaluation) {
+        // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
+        PathogenicityData pathData = getVariantNCDSData(variantEvaluation);
         variantEvaluation.setPathogenicityData(pathData);
     }
     
@@ -87,6 +105,12 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Override
     public PathogenicityData getVariantCADDData(Variant variant) {
         PathogenicityData pathData = caddDao.getPathogenicityData(variant);
+        return pathData;
+    }
+    
+    @Override
+    public PathogenicityData getVariantNCDSData(Variant variant) {
+        PathogenicityData pathData = ncdsDao.getPathogenicityData(variant);
         return pathData;
     }
     

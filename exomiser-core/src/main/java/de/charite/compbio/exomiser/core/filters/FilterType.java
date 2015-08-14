@@ -16,6 +16,7 @@ public enum FilterType {
     ENTREZ_GENE_ID_FILTER,
     PATHOGENICITY_FILTER,
     CADD_FILTER,
+    NCDS_FILTER,
     REGULATORY_FEATURE_FILTER,
     FREQUENCY_FILTER,
     KNOWN_VARIANT_FILTER,
@@ -36,7 +37,9 @@ public enum FilterType {
             case PATHOGENICITY_FILTER:
                 return "Pathogenicity";
             case CADD_FILTER:
-                return "CADD";    
+                return "CADD";
+            case NCDS_FILTER:
+                return "NCDS";       
             case KNOWN_VARIANT_FILTER:
                 return "Known variant";
             case FREQUENCY_FILTER:

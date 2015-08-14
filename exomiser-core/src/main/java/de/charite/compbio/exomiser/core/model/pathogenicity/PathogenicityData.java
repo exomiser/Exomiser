@@ -55,6 +55,10 @@ public class PathogenicityData {
         return (CaddScore) getPredictedScore(CADD);
     }
 
+    public NcdsScore getNCDSScore() {
+        return (NcdsScore) getPredictedScore(NCDS);
+    }
+    
     public List<PathogenicityScore> getPredictedPathogenicityScores() {
         return new ArrayList(pathogenicityScores.values());
     }

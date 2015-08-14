@@ -51,6 +51,11 @@ public class VariantDataServiceStub implements VariantDataService {
     public PathogenicityData getVariantCADDData(Variant variant) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    @Override
+    public PathogenicityData getVariantNCDSData(Variant variant) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     @Override
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
@@ -59,6 +64,11 @@ public class VariantDataServiceStub implements VariantDataService {
 
     @Override
     public void setVariantCADDData(VariantEvaluation variantEvaluation) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public void setVariantNCDSData(VariantEvaluation variantEvaluation) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.filters.CADDFilter;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
@@ -13,6 +12,7 @@ import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
+import de.charite.compbio.exomiser.core.filters.NCDSFilter;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.QualityFilter;
 import de.charite.compbio.exomiser.core.filters.RegulatoryFeatureFilter;
@@ -316,7 +316,9 @@ public class AnalysisParser {
                 case "regulatoryFeatureFilter":
                     return makeRegulatoryFeatureFilter(analysisStepMap);
                 case "caddFilter":
-                    return makeCaddFilter(analysisStepMap);    
+                    return makeCaddFilter(analysisStepMap);   
+                case "ncdsFilter":
+                    return makeNcdsFilter(analysisStepMap);    
                 case "omimPrioritiser":
                     return prioritiserFactory.makeOmimPrioritiser();
                 case "hiPhivePrioritiser":
@@ -420,6 +422,14 @@ public class AnalysisParser {
                 throw new AnalysisParserException("CADD filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
             }
             return new CADDFilter(true);
+        }
+        
+        private NCDSFilter makeNcdsFilter(Map<String, Object> options) {
+            Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
+            if (keepNonPathogenic == null) {
+                throw new AnalysisParserException("NCDS filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
+            }
+            return new NCDSFilter(true);
         }
         
         private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {

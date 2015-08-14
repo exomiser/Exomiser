@@ -177,6 +177,19 @@ public class MainConfig {
         }
         return snvTabixReader;
     }
+    
+    @Lazy
+    @Bean
+    public TabixReader ncdsTabixReader() {
+        String ncdsPathValue = getValueOfProperty("ncdsPath");
+        TabixReader ncdsTabixReader = null;
+        try {
+             ncdsTabixReader = new TabixReader(ncdsPathValue);
+        } catch (IOException e) {
+            throw new RuntimeException("NCDS file not found ", e);
+        }
+        return ncdsTabixReader;
+    }
 
     @Bean
     public Exomiser exomiser() {
@@ -250,6 +263,12 @@ public class MainConfig {
     @Bean
     public CADDDao caddDao() {
         return new CADDDao(indelTabixReader(),snvTabixReader());
+    }
+    
+    @Lazy
+    @Bean
+    public NCDSDao ncdsDao() {
+        return new NCDSDao(ncdsTabixReader());
     }
 
     @Bean
