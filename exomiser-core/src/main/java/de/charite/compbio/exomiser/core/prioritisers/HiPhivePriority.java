@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thymeleaf.util.AggregateUtils;
 
 /**
  * Filter genes according phenotypic similarity and to the random walk proximity
@@ -307,7 +308,9 @@ public class HiPhivePriority implements Prioritiser {
             sumBestScore += matchScore;
         }
         if (bestMatches.size() > 0){// otherwise get a NaN value that escalates to other scores and eventually throws an exception
-            bestAvgScore = sumBestScore / bestMatches.size();
+            //bestAvgScore = sumBestScore / bestMatches.size();
+            // Aug2015 - average across all HPOs to be consistent with change in calculateBestGeneModelPhenotypeMatchForSpecies
+            bestAvgScore = sumBestScore / hpoIds.size();
         }
         //input set: 
         //HP:0010055-HP:0010055=2.805085560382805
@@ -439,7 +442,7 @@ public class HiPhivePriority implements Prioritiser {
 
         for (Entry<Integer, Set<Model>> entry : geneModelPhenotypeMatches.entrySet()) {
             Integer entrezId = entry.getKey();
-
+            
             for (Model model : entry.getValue()) {
                 double score = model.getScore();
 
