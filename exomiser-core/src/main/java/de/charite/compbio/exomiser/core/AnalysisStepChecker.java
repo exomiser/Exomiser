@@ -84,11 +84,11 @@ public class AnalysisStepChecker {
     }
     
     private boolean containsVariantFilter(List<AnalysisStep> analysisSteps) {
-        return analysisSteps.stream().anyMatch(step -> (isVariantFilter(step)));
+        return analysisSteps.stream().anyMatch(step -> (step.isVariantFilter()));
     }
     
     private boolean containsInheritanceModeDependentStep(List<AnalysisStep> analysisSteps) {
-        return analysisSteps.stream().anyMatch(step -> (isInheritanceModeDependent(step)));
+        return analysisSteps.stream().anyMatch(step -> (step.isInheritanceModeDependent()));
     }
     
     private List<AnalysisStep> moveInheritanceModeStepsIntoList(List<AnalysisStep> analysisSteps) {
@@ -97,7 +97,7 @@ public class AnalysisStepChecker {
         Iterator<AnalysisStep> stepIterator = analysisSteps.iterator();
         while (stepIterator.hasNext()) {
             AnalysisStep step = stepIterator.next();
-            if (isInheritanceModeDependent(step)) {
+            if (step.isInheritanceModeDependent()) {
                 inheritanceModeDependentSteps.add(step);
                 stepIterator.remove();
             }
@@ -184,15 +184,7 @@ public class AnalysisStepChecker {
         }
     }
 
-    private static boolean isInheritanceModeDependent(AnalysisStep analysisStep) {
-        return InheritanceFilter.class.isInstance(analysisStep) || OMIMPriority.class.isInstance(analysisStep);
-    }
-   
-    private static boolean isVariantFilter(AnalysisStep step) {
-        return VariantFilter.class.isInstance(step);
-    }
-
-    private int getLastPositionOfClass(List<AnalysisStep> analysisSteps, Class clazz) {
+   private int getLastPositionOfClass(List<AnalysisStep> analysisSteps, Class clazz) {
         int lastVariantFilterPos = 0;
         for (int i = 0; i < analysisSteps.size(); i++) {
             AnalysisStep step = analysisSteps.get(i);
@@ -212,7 +204,7 @@ public class AnalysisStepChecker {
         @Override
         public int compare(AnalysisStep o1, AnalysisStep o2) {
 
-            if (isVariantFilter(o1) && isVariantFilter(o2)) {
+            if (o1.isVariantFilter() && o2.isVariantFilter()) {
                 return EQUAL;
             }
             if (Prioritiser.class.isInstance(o1) && Prioritiser.class.isInstance(o2)) {
@@ -220,10 +212,10 @@ public class AnalysisStepChecker {
             }
 
             //InheritanceMode dependent steps must run after last VariantFilter.
-            if (isVariantFilter(o1) && isInheritanceModeDependent(o2)) {
+            if (o1.isVariantFilter() && o2.isInheritanceModeDependent()) {
                 return BEFORE;
             }
-            if (isInheritanceModeDependent(o1) && isVariantFilter(o2)) {
+            if (o1.isInheritanceModeDependent() && o2.isVariantFilter()) {
                 return AFTER;
             }
 

@@ -106,7 +106,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         boolean inheritanceModesCalculated = false;
         boolean variantsLoaded = false;
         for (AnalysisStep analysisStep : analysisSteps) {
-            if (!inheritanceModesCalculated && requiresInheritanceModes(analysisStep)) {
+            if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
                 analyseGeneInheritanceModes(genes, pedigree);
                 inheritanceModesCalculated = true;
             }
@@ -116,7 +116,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     //TODO: would this be better using the Visitor pattern?
     private void runStep(AnalysisStep analysisStep, List<Gene> genes) {
-        if (VariantFilter.class.isInstance(analysisStep)) {
+        if (analysisStep.isVariantFilter()) {
             VariantFilter filter = (VariantFilter) analysisStep;
             logger.info("Running VariantFilter: {}", filter);
             for (Gene gene : genes) {
@@ -135,18 +135,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             logger.info("Running Prioritiser: {}", prioritiser);
             prioritiserRunner.run(prioritiser, genes);
         }
-    }
-
-    private boolean requiresInheritanceModes(AnalysisStep analysisStep) {
-        if (Filter.class.isInstance(analysisStep)) {
-            Filter filter = (Filter) analysisStep;
-            return (filter.getFilterType() == FilterType.INHERITANCE_FILTER);
-        }
-        if (Prioritiser.class.isInstance(analysisStep)) {
-            Prioritiser prioritiser = (Prioritiser) analysisStep;
-            return (prioritiser.getPriorityType() == PriorityType.OMIM_PRIORITY);
-        }
-        return false;
     }
 
     private void analyseGeneInheritanceModes(Collection<Gene> genes, Pedigree pedigree) {
