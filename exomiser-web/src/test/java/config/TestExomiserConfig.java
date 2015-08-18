@@ -16,6 +16,7 @@
  */
 package config;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.exomiser.core.AnalysisFactory;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
@@ -38,6 +39,10 @@ import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,6 +125,11 @@ public class TestExomiserConfig {
         Path hpoAnnotationFilePath = phenixDataDirectory().resolve(env.getProperty("hpoAnnotationFile"));
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
+    }
+
+    @Bean
+    public JannovarData jannovarData() {
+        return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.<TranscriptModel>of());
     }
 
     @Bean

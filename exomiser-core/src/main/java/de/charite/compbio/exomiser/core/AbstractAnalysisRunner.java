@@ -56,12 +56,26 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         long startAnalysisTimeMillis = System.currentTimeMillis();
 
         runSteps(analysis.getAnalysisSteps(), genes, pedigree);
+        logger.info(logPassed(genes));
         scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
+
 
         long endAnalysisTimeMillis = System.currentTimeMillis();
         double analysisTimeSecs = (double) (endAnalysisTimeMillis - startAnalysisTimeMillis) / 1000;
         logger.info("Finished analysis in {} secs", analysisTimeSecs);
         logger.info("Total sample data and analysis time: {} secs", sampleDataTimeSecs + analysisTimeSecs);
+    }
+
+    private String logPassed(List<Gene> genes) {
+        int filteredGenes = 0;
+        int filteredVariants = 0;
+        for (Gene gene : genes) {
+            if (gene.passedFilters()) {
+                filteredGenes++;
+                filteredVariants += gene.getPassedVariantEvaluations().size();
+            }
+        }
+        return String.format("Filtered %d genes containing %d filtered variants", filteredGenes, filteredVariants);
     }
 
     private SampleData makeSampleData(Analysis analysis) {
@@ -110,8 +124,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private boolean requiresInheritanceModes(AnalysisStep analysisStep) {
-        if (GeneFilter.class.isInstance(analysisStep)) {
-            GeneFilter filter = (GeneFilter) analysisStep;
+        if (Filter.class.isInstance(analysisStep)) {
+            Filter filter = (Filter) analysisStep;
             return (filter.getFilterType() == FilterType.INHERITANCE_FILTER);
         }
         if (Prioritiser.class.isInstance(analysisStep)) {
