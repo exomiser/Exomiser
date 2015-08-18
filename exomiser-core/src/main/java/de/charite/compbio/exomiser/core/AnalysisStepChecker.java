@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * to prevent users from trying to do things which will result in erroneous
  * results, yet will allow users the freedom to change things within these
  * constraints.
- *
+ * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class AnalysisStepChecker {
@@ -52,6 +52,61 @@ public class AnalysisStepChecker {
 
     }
 
+    private List<AnalysisStep> moveInheritanceModeDependentStepsAfterLastVariantFilter(List<AnalysisStep> analysisSteps) {
+        if (!containsVariantFilter(analysisSteps)) {
+            //this is likely a pretty silly analysis, but there you go.
+            logger.info("CAUTION: Analysis contains no variant filtering steps. This will not perform well.");
+            return analysisSteps;
+        }
+        
+        if (!containsInheritanceModeDependentStep(analysisSteps)) {
+            //Carry on, these aren't the steps we're looking for.
+            return analysisSteps;
+        }
+        
+        int originalInheritanceFilterPosition = getLastPositionOfClass(analysisSteps, InheritanceFilter.class);
+        int originalOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OMIMPriority.class);
+        
+        List<AnalysisStep> inheritanceModeDependentSteps = moveInheritanceModeStepsIntoList(analysisSteps);
+        int lastVariantFilterPos = getLastPositionOfClass(analysisSteps, VariantFilter.class);
+        analysisSteps.addAll(lastVariantFilterPos + 1 , inheritanceModeDependentSteps);
+        
+        int sortedInheritanceFilterPosition = getLastPositionOfClass(analysisSteps, InheritanceFilter.class);
+        int sortedOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OMIMPriority.class);
+        
+        if (sortedInheritanceFilterPosition != originalInheritanceFilterPosition) {
+            logger.info("WARNING: Moved InheritanceFilter. This must run after all variant filter steps. AnalysisSteps have been changed.");
+        }
+        if (sortedOmimPrioritiserPosition != originalOmimPrioritiserPosition) {
+            logger.info("WARNING: Moved OMIM prioritiser. This must run after all variant and inheritance filter steps. AnalysisSteps have been changed.");
+        }
+        return analysisSteps;
+    }
+    
+    private boolean containsVariantFilter(List<AnalysisStep> analysisSteps) {
+        return analysisSteps.stream().anyMatch(step -> (isVariantFilter(step)));
+    }
+    
+    private boolean containsInheritanceModeDependentStep(List<AnalysisStep> analysisSteps) {
+        return analysisSteps.stream().anyMatch(step -> (isInheritanceModeDependent(step)));
+    }
+    
+    private List<AnalysisStep> moveInheritanceModeStepsIntoList(List<AnalysisStep> analysisSteps) {
+        List<AnalysisStep> inheritanceModeDependentSteps = new ArrayList<>();
+
+        Iterator<AnalysisStep> stepIterator = analysisSteps.iterator();
+        while (stepIterator.hasNext()) {
+            AnalysisStep step = stepIterator.next();
+            if (isInheritanceModeDependent(step)) {
+                inheritanceModeDependentSteps.add(step);
+                stepIterator.remove();
+            }
+        }
+        inheritanceModeDependentSteps.sort(new AnalysisStepComparator());
+
+        return inheritanceModeDependentSteps;
+    }
+
     private List<AnalysisStep> removePriorityScoreFiltersWithoutMatchingPrioritiser(List<AnalysisStep> analysisSteps) {
         Set<PriorityType> prioritiserTypes = getPrioritiserTypes(analysisSteps);
         removePriorityScoreFiltersNotOfType(analysisSteps, prioritiserTypes);
@@ -76,7 +131,7 @@ public class AnalysisStepChecker {
             if (PriorityScoreFilter.class.isInstance(step)) {
                 PriorityScoreFilter filter = (PriorityScoreFilter) step;
                 if (!prioritiserTypes.contains(filter.getPriorityType())) {
-                    logger.warn("WARNING: Removing {} as the corresponding Prioritiser is not present. AnalysisSteps have been changed.", filter);
+                    logger.info("WARNING: Removing {} as the corresponding Prioritiser is not present. AnalysisSteps have been changed.", filter);
                     stepIterator.remove();
                 }
             }
@@ -129,23 +184,10 @@ public class AnalysisStepChecker {
         }
     }
 
-    private List<AnalysisStep> moveInheritanceModeDependentStepsAfterLastVariantFilter(List<AnalysisStep> analysisSteps) {
-        if (!containsVariantFilter(analysisSteps)) {
-            //this is likely a pretty silly analysis, but there you go.
-            return analysisSteps;
-        }
-        
-        List<AnalysisStep> inheritanceModeDependentSteps = moveInheritanceModeStepsIntoList(analysisSteps);
-        int lastVariantFilterPos = getLastPositionOfClass(analysisSteps, VariantFilter.class);
-
-        analysisSteps.addAll(lastVariantFilterPos + 1 , inheritanceModeDependentSteps);
-        return analysisSteps;
+    private static boolean isInheritanceModeDependent(AnalysisStep analysisStep) {
+        return InheritanceFilter.class.isInstance(analysisStep) || OMIMPriority.class.isInstance(analysisStep);
     }
-
-    private boolean containsVariantFilter(List<AnalysisStep> analysisSteps) {
-        return analysisSteps.stream().anyMatch(step -> (isVariantFilter(step)));
-    }
-    
+   
     private static boolean isVariantFilter(AnalysisStep step) {
         return VariantFilter.class.isInstance(step);
     }
@@ -159,26 +201,6 @@ public class AnalysisStepChecker {
             }
         }
         return lastVariantFilterPos;
-    }
-
-    private List<AnalysisStep> moveInheritanceModeStepsIntoList(List<AnalysisStep> analysisSteps) {
-        List<AnalysisStep> inheritanceModeDependentSteps = new ArrayList<>();
-
-        Iterator<AnalysisStep> stepIterator = analysisSteps.iterator();
-        while (stepIterator.hasNext()) {
-            AnalysisStep step = stepIterator.next();
-            if (isInheritanceModeDependent(step)) {
-                inheritanceModeDependentSteps.add(step);
-                stepIterator.remove();
-            }
-        }
-        inheritanceModeDependentSteps.sort(new AnalysisStepComparator());
-
-        return inheritanceModeDependentSteps;
-    }
-
-    private static boolean isInheritanceModeDependent(AnalysisStep analysisStep) {
-        return InheritanceFilter.class.isInstance(analysisStep) || OMIMPriority.class.isInstance(analysisStep);
     }
 
     private class AnalysisStepComparator implements Comparator<AnalysisStep> {

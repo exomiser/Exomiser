@@ -2,6 +2,8 @@ package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.GeneFilter;
+import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.QualityFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
@@ -10,7 +12,12 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.prioritisers.MockPrioritiser;
+import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,7 +41,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {
-        Analysis analysis = makeAnalysis(vcfPath, new AnalysisStep[]{});
+        Analysis analysis = makeAnalysis(vcfPath);
 
         instance.runAnalysis(analysis);
         
@@ -78,7 +85,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_TwoVariantFilters_AllVariantsShouldContainOnlyOneFailedFilterResult() {
+    public void testRunAnalysis_TwoVariantFilters_VariantsShouldContainOnlyOneFailedFilterResult() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
@@ -111,5 +118,84 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER)));
     }
+    
+    @Test
+    public void testRunAnalysis_TwoVariantFiltersOnePrioritiser_VariantsShouldContainOnlyOneFailedFilterResult() {
+        VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
+        VariantFilter qualityFilter = new QualityFilter(120);
+        Map<String, Float> hiPhiveGeneScores = new HashMap<>();
+        hiPhiveGeneScores.put("GNRHR2", 0.75f);
+        hiPhiveGeneScores.put("RBM8A", 0.65f);
+        Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
+        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
+        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
+        instance.runAnalysis(analysis);
+
+        SampleData sampleData = analysis.getSampleData();
+        printResults(sampleData);
+        assertThat(sampleData.getGenes().size(), equalTo(2));
+
+        Map<String, Gene> results = makeResults(sampleData.getGenes());
+
+        Gene gnrh2 = results.get("GNRHR2");
+        assertThat(gnrh2.passedFilters(), is(false));
+        assertThat(gnrh2.getVariantEvaluations().size(), equalTo(1));
+        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
+        assertThat(gnrh2Variant1.passedFilters(), is(false));
+        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+
+        Gene rbm8a = results.get("RBM8A");
+        assertThat(rbm8a.passedFilters(), is(true));
+        assertThat(rbm8a.getVariantEvaluations().size(), equalTo(2));
+        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+
+        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+            
+        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
+        assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
+        assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
+    }
+    
+    @Test
+    public void testRunAnalysis_TwoVariantFiltersOnePrioritiserRecessiveInheritanceFilter_VariantsShouldContainOnlyOneFailedFilterResult() {
+        VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
+        VariantFilter qualityFilter = new QualityFilter(120);
+        Map<String, Float> hiPhiveGeneScores = new HashMap<>();
+        hiPhiveGeneScores.put("GNRHR2", 0.75f);
+        hiPhiveGeneScores.put("RBM8A", 0.65f);
+        Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
+        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+
+        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
+        instance.runAnalysis(analysis);
+
+        SampleData sampleData = analysis.getSampleData();
+        printResults(sampleData);
+        assertThat(sampleData.getGenes().size(), equalTo(2));
+
+        Map<String, Gene> results = makeResults(sampleData.getGenes());
+
+        Gene gnrh2 = results.get("GNRHR2");
+        assertThat(gnrh2.passedFilters(), is(false));
+        assertThat(gnrh2.getVariantEvaluations().size(), equalTo(1));
+        VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
+        assertThat(gnrh2Variant1.passedFilters(), is(false));
+        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+
+        Gene rbm8a = results.get("RBM8A");
+        assertThat(rbm8a.passedFilters(), is(true));
+        assertThat(rbm8a.getVariantEvaluations().size(), equalTo(2));
+        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+
+        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
+            
+        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
+        assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
+        assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
+        assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
+    }
 }

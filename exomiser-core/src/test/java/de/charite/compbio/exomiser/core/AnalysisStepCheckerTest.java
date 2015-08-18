@@ -253,7 +253,6 @@ public class AnalysisStepCheckerTest {
         assertThat(instance.check(analysisSteps), equalTo(expectedSteps));
     }
 
-//    @Ignore
     @Test
     public void testCheck_EverythingWrongGetsMadeRight() {
         analysisSteps.add(OMIM_PRIORITISER);
@@ -356,5 +355,22 @@ public class AnalysisStepCheckerTest {
         assertThat(instance.check(analysisSteps), equalTo(expectedSteps));
     }
 
+    @Test
+    public void testCheck_SlightlyOddYetNotIncorrectSetupIsntChanged() {
+        analysisSteps.add(KNOWN_VARIANT_FILTER);
+        analysisSteps.add(PHIVE_PRIORITISER);
+        analysisSteps.add(PHIVE_PRIORITY_SCORE_FILTER);
+        analysisSteps.add(FREQUENCY_FILTER);
+        analysisSteps.add(INHERITANCE_FILTER);
+        analysisSteps.add(OMIM_PRIORITISER);
 
+        expectedSteps.add(KNOWN_VARIANT_FILTER);
+        expectedSteps.add(PHIVE_PRIORITISER);
+        expectedSteps.add(PHIVE_PRIORITY_SCORE_FILTER);
+        expectedSteps.add(FREQUENCY_FILTER);
+        expectedSteps.add(INHERITANCE_FILTER);
+        expectedSteps.add(OMIM_PRIORITISER);
+
+        assertThat(instance.check(analysisSteps), equalTo(expectedSteps));
+    }
 }
