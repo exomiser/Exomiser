@@ -11,12 +11,15 @@ import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import static java.util.stream.Collectors.toSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * to prevent users from trying to do things which will result in erroneous
  * results, yet will allow users the freedom to change things within these
  * constraints.
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class AnalysisStepChecker {
@@ -45,7 +48,7 @@ public class AnalysisStepChecker {
         removePriorityScoreFiltersWithoutMatchingPrioritiser(analysisSteps);
         //optimisation to save any potentially expensive filtering which may be unecessary
         movePriorityScoreFiltersNextToMatchingPrioritiser(analysisSteps);
-        
+
         analysisSteps.sort(new AnalysisStepComparator());
 
         return analysisSteps;
@@ -58,22 +61,22 @@ public class AnalysisStepChecker {
             logger.info("CAUTION: Analysis contains no variant filtering steps. This will not perform well.");
             return analysisSteps;
         }
-        
+
         if (!containsInheritanceModeDependentStep(analysisSteps)) {
             //Carry on, these aren't the steps we're looking for.
             return analysisSteps;
         }
-        
+
         int originalInheritanceFilterPosition = getLastPositionOfClass(analysisSteps, InheritanceFilter.class);
         int originalOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OMIMPriority.class);
-        
+
         List<AnalysisStep> inheritanceModeDependentSteps = moveInheritanceModeStepsIntoList(analysisSteps);
         int lastVariantFilterPos = getLastPositionOfClass(analysisSteps, VariantFilter.class);
-        analysisSteps.addAll(lastVariantFilterPos + 1 , inheritanceModeDependentSteps);
-        
+        analysisSteps.addAll(lastVariantFilterPos + 1, inheritanceModeDependentSteps);
+
         int sortedInheritanceFilterPosition = getLastPositionOfClass(analysisSteps, InheritanceFilter.class);
         int sortedOmimPrioritiserPosition = getLastPositionOfClass(analysisSteps, OMIMPriority.class);
-        
+
         if (sortedInheritanceFilterPosition != originalInheritanceFilterPosition) {
             logger.info("WARNING: Moved InheritanceFilter. This must run after all variant filter steps. AnalysisSteps have been changed.");
         }
@@ -82,15 +85,15 @@ public class AnalysisStepChecker {
         }
         return analysisSteps;
     }
-    
+
     private boolean containsVariantFilter(List<AnalysisStep> analysisSteps) {
         return analysisSteps.stream().anyMatch(step -> (step.isVariantFilter()));
     }
-    
+
     private boolean containsInheritanceModeDependentStep(List<AnalysisStep> analysisSteps) {
         return analysisSteps.stream().anyMatch(step -> (step.isInheritanceModeDependent()));
     }
-    
+
     private List<AnalysisStep> moveInheritanceModeStepsIntoList(List<AnalysisStep> analysisSteps) {
         List<AnalysisStep> inheritanceModeDependentSteps = new ArrayList<>();
 
@@ -140,13 +143,13 @@ public class AnalysisStepChecker {
 
     private List<AnalysisStep> movePriorityScoreFiltersNextToMatchingPrioritiser(List<AnalysisStep> analysisSteps) {
         List<PriorityScoreFilter> priorityScoreFilters = movePriorityScoreFiltersIntoList(analysisSteps);
-        
+
         for (PriorityScoreFilter priorityScoreFilter : priorityScoreFilters) {
             addPriorityScoreFilterNextToMatchingPrioritiser(priorityScoreFilter, analysisSteps);
         }
         return analysisSteps;
     }
-    
+
     private List<PriorityScoreFilter> movePriorityScoreFiltersIntoList(List<AnalysisStep> analysisSteps) {
         List<PriorityScoreFilter> priorityScoreFilters = new ArrayList<>();
 
@@ -166,7 +169,7 @@ public class AnalysisStepChecker {
     private void addPriorityScoreFilterNextToMatchingPrioritiser(PriorityScoreFilter priorityScoreFilter, List<AnalysisStep> analysisSteps) {
         int positionOfMatchingPrioritiser = 0;
         boolean containsMatchingPrioritiser = false;
-        
+
         for (int i = 0; i < analysisSteps.size(); i++) {
             AnalysisStep step = analysisSteps.get(i);
             if (Prioritiser.class.isInstance(step)) {
@@ -178,13 +181,13 @@ public class AnalysisStepChecker {
                 }
             }
         }
-        
+
         if (containsMatchingPrioritiser) {
             analysisSteps.add(positionOfMatchingPrioritiser + 1, priorityScoreFilter);
         }
     }
 
-   private int getLastPositionOfClass(List<AnalysisStep> analysisSteps, Class clazz) {
+    private int getLastPositionOfClass(List<AnalysisStep> analysisSteps, Class clazz) {
         int lastVariantFilterPos = 0;
         for (int i = 0; i < analysisSteps.size(); i++) {
             AnalysisStep step = analysisSteps.get(i);
@@ -195,6 +198,11 @@ public class AnalysisStepChecker {
         return lastVariantFilterPos;
     }
 
+    /**
+     * Note - this comparator only works with immediate pairs of AnalysisSteps - the parent class needs to be able to
+     * correct ordering over longer ranges so purely using the Comparator isn't enough to be able to sort the
+     * AnalysisSteps.
+     */
     private class AnalysisStepComparator implements Comparator<AnalysisStep> {
 
         private static final int BEFORE = -1;
