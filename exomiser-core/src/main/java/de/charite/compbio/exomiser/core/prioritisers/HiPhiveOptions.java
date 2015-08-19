@@ -1,12 +1,14 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class HiPhiveOptions {
-
+    private static final Logger logger = LoggerFactory.getLogger(HiPhiveOptions.class);
     private final String diseaseId;
     private final String candidateGeneSymbol;
 
@@ -126,7 +128,9 @@ public class HiPhiveOptions {
     }
 
     private boolean matchesDisease(Model model) {
-        return model.getModelId() == null ? diseaseId == null : model.getModelId().equals(diseaseId);
+        // human model ID is now disease plus entrezgene to ensure uniqueness in HiPhive code
+        return model.getModelId() == null ? diseaseId  == null : model.getModelId().split("_")[0].equals(diseaseId);
+        //return model.getModelId() == null ? diseaseId  == null : model.getModelId().equals(diseaseId + "_" + model.getEntrezGeneId());
     }
 
     public class InvalidRunParameterException extends RuntimeException {
