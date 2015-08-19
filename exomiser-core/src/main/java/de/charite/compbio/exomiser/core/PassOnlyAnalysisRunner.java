@@ -7,6 +7,7 @@ import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toConcurrentMap;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -32,30 +32,33 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     @Override
     public void runAnalysis(Analysis analysis) {
 
-        final SampleData sampleData = makeSampleData(analysis);
+        final SampleData sampleData = makeSampleDataWithoutGenesOrVariants(analysis);
 
         logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
         long startAnalysisTimeMillis = System.currentTimeMillis();
 
-        List<Gene> knownGenes = sampleDataFactory.createKnownGenes();
-
         final Pedigree pedigree = sampleData.getPedigree();
-        runSteps(getNonVariantFilterSteps(analysis), knownGenes, pedigree);
+        final Path vcfPath = analysis.getVcfPath();
+        Map<String, Gene> knownGenes = makeKnownGenes();
 
-        Map<String, Gene> passedGenes = createPassedGenes(knownGenes);
+        runSteps(vcfPath, getNonVariantNonInheritanceDependentSteps(analysis), new ArrayList<>(knownGenes.values()), pedigree);
+        Map<String, Gene> passedGenes = getPassedGenes(knownGenes);
+
+
+//        some kind of multi-map with ordered duplicate keys would allow for easy grouping of steps for running the groups together.
+        
+//        need to merge variant filters into largest blocks possible, figure out where the first prioritiser + priorityScoreFilter is then decide on best way to run it all ;
         //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
         //so for whole genomes this is best run as a stream to filter out the unwanted variants
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysis);
-        Path vcfPath = analysis.getVcfPath();
         final List<VariantEvaluation> variantEvaluations = streamAndFilterVariantEvaluations(vcfPath, passedGenes, variantFilters);
-        List<Gene> genes = getGenesWithVariants(passedGenes);
+        final List<Gene> genes = getGenesWithVariants(passedGenes);
 
         logger.info("Filtered {} genes containing {} filtered variants", genes.size(), variantEvaluations.size());
 
         //run all the other steps
         //run steps requiring fully filtered genes and variants (inheritanceFilter and OmimPrioritiser)
-//        runSteps(getNonVariantFilterSteps(analysis), knownGenes, pedigree);
-
+        runSteps(vcfPath, getInheritanceDependentSteps(analysis), genes, pedigree);
         scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
 
         sampleData.setGenes(genes);
@@ -66,26 +69,10 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         logger.info("Finished analysis in {} secs", analysisTimeSecs);
     }
 
-    private SampleData makeSampleData(Analysis analysis) {
+    private SampleData makeSampleDataWithoutGenesOrVariants(Analysis analysis) {
         final SampleData sampleData = sampleDataFactory.createSampleDataWithoutVariantsOrGenes(analysis.getVcfPath(), analysis.getPedPath());
         analysis.setSampleData(sampleData);
         return sampleData;
-    }
-
-    private Map<String, Gene> createPassedGenes(List<Gene> genes) {
-        Map<String, Gene> passedGenes = genes
-                .parallelStream()
-                .filter(Gene::passedFilters)
-                .collect(toConcurrentMap(Gene::getGeneSymbol, gene -> (gene)));
-        logger.info("Filtered {} genes - {} passed", genes.size(), passedGenes.size());
-        return passedGenes;
-    }
-
-    private List<Gene> getGenesWithVariants(Map<String, Gene> passedGenes) {
-        return passedGenes.values()
-                .stream()
-                .filter(gene -> !gene.getVariantEvaluations().isEmpty())
-                .collect(toList());
     }
 
     private List<VariantEvaluation> streamAndFilterVariantEvaluations(Path vcfPath, Map<String, Gene> passedGenes, List<VariantFilter> variantFilters) {
@@ -109,9 +96,9 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                     })
                     .filter(variantEvaluation -> {
                         //loop through the filters and only run if the variantEvaluation has passed all prior filters
-                        variantFilters.stream().filter(filter -> variantEvaluation.passedFilters()).forEach(filter -> {
-                            variantFilterRunner.run(filter, variantEvaluation);
-                        });
+                        variantFilters.stream()
+                                .filter(filter -> variantEvaluation.passedFilters())
+                                .forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
                         if (variantEvaluation.passedFilters()) {
                             //yep, logging logic
                             passed[0]++;
@@ -132,17 +119,26 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         return analysis.getAnalysisSteps()
                 .stream()
                 .filter(analysisStep -> (VariantFilter.class.isInstance(analysisStep)))
-                .map(step -> {
-                    logger.info("{}", step);
-                    return (VariantFilter) step;
+                .map(analysisStep -> {
+                    logger.info("{}", analysisStep);
+                    return (VariantFilter) analysisStep;
                 })
                 .collect(toList());
     }
 
-    private List<AnalysisStep> getNonVariantFilterSteps(Analysis analysis) {
+    private List<AnalysisStep> getNonVariantNonInheritanceDependentSteps(Analysis analysis) {
         return analysis.getAnalysisSteps()
                 .stream()
                 .filter(analysisStep -> (!VariantFilter.class.isInstance(analysisStep)))
+                .filter(analysisStep -> (!InheritanceFilter.class.isInstance(analysisStep)))
+                .filter(analysisStep -> (!OMIMPriority.class.isInstance(analysisStep)))
+                .collect(toList());
+    }
+
+    private List<AnalysisStep> getInheritanceDependentSteps(Analysis analysis) {
+        return analysis.getAnalysisSteps()
+                .stream()
+                .filter(analysisStep -> (InheritanceFilter.class.isInstance(analysisStep) || OMIMPriority.class.isInstance(analysisStep)))
                 .collect(toList());
     }
 }

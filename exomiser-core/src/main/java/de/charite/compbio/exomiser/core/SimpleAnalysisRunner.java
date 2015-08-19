@@ -7,7 +7,6 @@ package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

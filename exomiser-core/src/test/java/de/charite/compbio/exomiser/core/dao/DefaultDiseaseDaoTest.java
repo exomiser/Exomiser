@@ -6,6 +6,8 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -45,4 +47,10 @@ public class DefaultDiseaseDaoTest {
         assertThat(instance.getHpoIdsForDiseaseId("OMIM:101600"), equalTo(omim101600HpoIds));
     }
     
+    @Test
+    public void testGetDiseaseIdToTerms() {
+        Map<String, String> expected = new HashMap<>();
+        expected.put("OMIM:101600", "Pfeiffer syndrome");
+        assertThat(instance.getDiseaseIdToTerms(), equalTo(expected));
+    }
 }

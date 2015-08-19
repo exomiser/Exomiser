@@ -1,10 +1,10 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserRunner;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -18,8 +18,11 @@ import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
+
+import static java.util.stream.Collectors.toConcurrentMap;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -45,25 +48,38 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         long startSampleDataTimeMillis = System.currentTimeMillis();
 
         final SampleData sampleData = makeSampleData(analysis);
+        Map<String, Gene> knownGenes = makeKnownGenes();
 
         long endSampleDataTimeMillis = System.currentTimeMillis();
         double sampleDataTimeSecs = (double) (endSampleDataTimeMillis - startSampleDataTimeMillis) / 1000;
+        //TODO this should become irrelvant as ideally we should be able to stream and filter all variants in one go 
         logger.info("Finished creating sample data in {} secs", sampleDataTimeSecs);
 
-        final List<Gene> genes = sampleData.getGenes();
-        final Pedigree pedigree = sampleData.getPedigree();
-        logger.info("Running analysis on sample: {} ({} genes, {} variants)", sampleData.getSampleNames(), genes.size(), sampleData.getVariantEvaluations().size());
+        logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
         long startAnalysisTimeMillis = System.currentTimeMillis();
 
-        runSteps(analysis.getAnalysisSteps(), genes, pedigree);
+        final Path vcfPath = analysis.getVcfPath();
+        final List<Gene> genes = sampleData.getGenes();
+        final Pedigree pedigree = sampleData.getPedigree();
+        //TODO: check AnalysisStep order, warn if wrong, re-order, then runSteps
+        //TODO: can runSteps be merged such that it copes with all analysis scenarios?
+        runSteps(vcfPath, analysis.getAnalysisSteps(), genes, pedigree);
+
         logger.info(logPassed(genes));
         scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
-
 
         long endAnalysisTimeMillis = System.currentTimeMillis();
         double analysisTimeSecs = (double) (endAnalysisTimeMillis - startAnalysisTimeMillis) / 1000;
         logger.info("Finished analysis in {} secs", analysisTimeSecs);
-        logger.info("Total sample data and analysis time: {} secs", sampleDataTimeSecs + analysisTimeSecs);
+    }
+
+    /**
+     * @return a map of genes indexed by gene symbol.
+     */
+    protected Map<String, Gene> makeKnownGenes() {
+        return sampleDataFactory.createKnownGenes()
+                .parallelStream()
+                .collect(toConcurrentMap(Gene::getGeneSymbol, gene -> gene));
     }
 
     private String logPassed(List<Gene> genes) {
@@ -84,25 +100,23 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return sampleData;
     }
 
-    protected void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree) {
+    //TODO: or run as groups of steps?
+    //List<AnalysisStep> -> AnalysisSteps Iterable
+    protected void runSteps(Path vcfPath, List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree) {
         boolean inheritanceModesCalculated = false;
         boolean variantsLoaded = false;
         for (AnalysisStep analysisStep : analysisSteps) {
-//            if (!variantsLoaded && requiresVariants(analysisStep)) {
-//
-//            }
-            if (!inheritanceModesCalculated && requiresInheritanceModes(analysisStep)) {
+            if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
                 analyseGeneInheritanceModes(genes, pedigree);
                 inheritanceModesCalculated = true;
             }
-
             runStep(analysisStep, genes);
         }
     }
 
     //TODO: would this be better using the Visitor pattern?
     private void runStep(AnalysisStep analysisStep, List<Gene> genes) {
-        if (VariantFilter.class.isInstance(analysisStep)) {
+        if (analysisStep.isVariantFilter()) {
             VariantFilter filter = (VariantFilter) analysisStep;
             logger.info("Running VariantFilter: {}", filter);
             for (Gene gene : genes) {
@@ -123,28 +137,14 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
     }
 
-    private boolean requiresInheritanceModes(AnalysisStep analysisStep) {
-        if (Filter.class.isInstance(analysisStep)) {
-            Filter filter = (Filter) analysisStep;
-            return (filter.getFilterType() == FilterType.INHERITANCE_FILTER);
-        }
-        if (Prioritiser.class.isInstance(analysisStep)) {
-            Prioritiser prioritiser = (Prioritiser) analysisStep;
-            return (prioritiser.getPriorityType() == PriorityType.OMIM_PRIORITY);
-        }
-        return false;
-    }
-
-    private void analyseGeneInheritanceModes(List<Gene> genes, Pedigree pedigree) {
+    private void analyseGeneInheritanceModes(Collection<Gene> genes, Pedigree pedigree) {
         logger.info("Calculating inheritance modes for genes which passed filters");
         //check the inheritance mode for the genes
         InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser();
-        for (Gene gene : genes) {
-            if (gene.passedFilters()) {
-                Set<ModeOfInheritance> inheritanceModes = inheritanceModeAnalyser.analyseInheritanceModes(gene, pedigree);
-                gene.setInheritanceModes(inheritanceModes);
-            }
-        }
+        genes.stream().filter(Gene::passedFilters).forEach(gene -> {
+            Set<ModeOfInheritance> inheritanceModes = inheritanceModeAnalyser.analyseInheritanceModes(gene, pedigree);
+            gene.setInheritanceModes(inheritanceModes);
+        });
     }
 
     protected void scoreGenes(List<Gene> genes, ScoringMode scoreMode, ModeOfInheritance modeOfInheritance) {
@@ -158,5 +158,28 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             return new RankBasedGeneScorer();
         }
         return new RawScoreGeneScorer();
+    }
+
+    protected Map<String, Gene> getPassedGenes(Map<String, Gene> genes) {
+        Map<String, Gene> passedGenes = genes.values()
+                .parallelStream()
+                .filter(Gene::passedFilters)
+                .collect(toConcurrentMap(Gene::getGeneSymbol, gene -> (gene)));
+        logger.info("Filtered {} genes - {} passed", genes.size(), passedGenes.size());
+        return passedGenes;
+    }
+
+    protected List<Gene> getGenesWithVariants(Map<String, Gene> passedGenes) {
+        return passedGenes.values()
+                .stream()
+                .filter(gene -> !gene.getVariantEvaluations().isEmpty())
+                .collect(toList());
+    }
+
+    protected List<VariantEvaluation> getVariantsFromGenes(List<Gene> genes) {
+        return genes
+                .stream()
+                .flatMap(gene -> (gene.getVariantEvaluations().stream()))
+                .collect(toList());
     }
 }
