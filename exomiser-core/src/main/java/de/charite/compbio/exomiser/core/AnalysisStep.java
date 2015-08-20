@@ -19,6 +19,8 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
  */
 public interface AnalysisStep {
 
+    enum AnalysisStepType {VARIANT_FILTER, GENE_ONLY_DEPENDENT, INHERITANCE_MODE_DEPENDENT};
+
     default boolean isInheritanceModeDependent() {
         return InheritanceFilter.class.isInstance(this) || OMIMPriority.class.isInstance(this);
     }
@@ -27,19 +29,22 @@ public interface AnalysisStep {
         return VariantFilter.class.isInstance(this);
     }
 
-    default boolean isGeneFilter() {
-        return GeneFilter.class.isInstance(this);
-    }
-
-    default boolean isPrioritiser() {
-        return Prioritiser.class.isInstance(this);
-    }
-
-    default boolean onlyRequiresGenes() {
-        //could also return !isInheritanceModeDependent() &! isVariantFilter() but this might not always hold true if new classes are added
-        if (OMIMPriority.class.isInstance(this)) {
+    default boolean isOnlyGeneDependent() {
+        if (isInheritanceModeDependent()) {
+            //note that both InheritanceFilter and OMIMPriority operate solely on genes, yet have a dependence on filtered variants
+            //hence their exclusion here
             return false;
         }
         return Prioritiser.class.isInstance(this) || PriorityScoreFilter.class.isInstance(this);
+    }
+
+    default AnalysisStepType getType() {
+        if (isInheritanceModeDependent()) {
+            return AnalysisStepType.INHERITANCE_MODE_DEPENDENT;
+        }
+        if (isVariantFilter()) {
+            return AnalysisStepType.VARIANT_FILTER;
+        }
+        return AnalysisStepType.GENE_ONLY_DEPENDENT;
     }
 }

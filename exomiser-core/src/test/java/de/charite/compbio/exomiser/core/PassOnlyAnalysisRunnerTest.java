@@ -13,6 +13,7 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     @Test
-    public void testRunAnalysis_VariantFilterOnly() {
+    public void testRunAnalysis_VariantFilterOnly_OneVariantPasses() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
@@ -63,7 +64,81 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         Gene passedGene = sampleData.getGenes().get(0);
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getVariantEvaluations().size(), equalTo(1));
+        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+    }
+
+    @Test
+    public void testRunAnalysis_TwoVariantFilters_AllVariantsFail() {
+        VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
+        VariantFilter qualityFilter = new QualityFilter(9999999f);
+
+        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter);
+        instance.runAnalysis(analysis);
+
+        SampleData sampleData = analysis.getSampleData();
+        printResults(sampleData);
+        assertThat(sampleData.getGenes().isEmpty(), is(true));
+        assertThat(sampleData.getVariantEvaluations().isEmpty(), is(true));
+    }
+
+    @Test
+    public void testRunAnalysis_TwoVariantFiltersOnePrioritiser() {
+        VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
+        VariantFilter qualityFilter = new QualityFilter(120);
+        Map<String, Float> hiPhiveGeneScores = new HashMap<>();
+        hiPhiveGeneScores.put("GNRHR2", 0.75f);
+        hiPhiveGeneScores.put("RBM8A", 0.65f);
+        Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
+
+        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser);
+        instance.runAnalysis(analysis);
+
+        SampleData sampleData = analysis.getSampleData();
+        printResults(sampleData);
+        assertThat(sampleData.getGenes().size(), equalTo(1));
+
+        Map<String, Gene> results = makeResults(sampleData.getGenes());
+
+        Gene rbm8a = results.get("RBM8A");
+        assertThat(rbm8a.passedFilters(), is(true));
+        assertThat(rbm8a.getNumberOfVariants(), equalTo(1));
+        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+
+        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        assertThat(rbm8Variant1.passedFilters(), is(true));
+        assertThat(rbm8Variant1.passedFilter(FilterType.INTERVAL_FILTER), is(true));
+        assertThat(rbm8Variant1.passedFilter(FilterType.QUALITY_FILTER), is(true));
+    }
+
+    @Test
+    public void testRunAnalysis_TwoVariantFiltersOnePrioritiserRecessiveInheritanceFilter() {
+        VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
+        VariantFilter qualityFilter = new QualityFilter(120);
+        Map<String, Float> hiPhiveGeneScores = new HashMap<>();
+        hiPhiveGeneScores.put("GNRHR2", 0.75f);
+        hiPhiveGeneScores.put("RBM8A", 0.65f);
+        Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
+        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+
+        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
+        instance.runAnalysis(analysis);
+
+        SampleData sampleData = analysis.getSampleData();
+        printResults(sampleData);
+        assertThat(sampleData.getGenes().size(), equalTo(1));
+
+        Map<String, Gene> results = makeResults(sampleData.getGenes());
+
+        Gene rbm8a = results.get("RBM8A");
+        assertThat(rbm8a.passedFilters(), is(true));
+        assertThat(rbm8a.getNumberOfVariants(), equalTo(1));
+        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+
+        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(0);
+        assertThat(rbm8Variant2.passedFilters(), is(true));
+        assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
+        assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
+        assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
     }
 
     @Test
@@ -119,6 +194,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
 
         VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
+        assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.getChromosome(), equalTo(1));
         assertThat(rbm8Variant2.getPosition(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
@@ -135,7 +211,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneSymbolPrioritiserScores);
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
-        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         
         Analysis analysis = makeAnalysis(vcfPath, qualityFilter, prioritiser, priorityScoreFilter, intervalFilter, inheritanceFilter);
         instance.runAnalysis(analysis);
@@ -154,6 +230,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
 
         VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
+        assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.getChromosome(), equalTo(1));
         assertThat(rbm8Variant2.getPosition(), equalTo(145508800));
         assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
