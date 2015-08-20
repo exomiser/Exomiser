@@ -14,13 +14,16 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author jj8
  */
+@Repository
 public class CADDDao {
 
     private final Logger logger = LoggerFactory.getLogger(CADDDao.class);
@@ -32,6 +35,7 @@ public class CADDDao {
         this.snvTabixReader = snvTabixReader;
     }
 
+    @Cacheable(value = "cadd", key = "#variant.chromosomalVariant")
     public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }

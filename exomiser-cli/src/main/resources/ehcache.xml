@@ -13,6 +13,15 @@
     <!--Frequency cache-->
     <cache name="frequency" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
+    <!--CADD cache-->
+    <cache name="cadd" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--MNCDS cache-->
+    <cache name="mncds" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--REG feature cache-->
+    <cache name="regulatory" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
     <!--disease HP terms -->
     <cache name="diseaseHp" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 

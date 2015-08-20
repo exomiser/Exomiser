@@ -15,13 +15,16 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author jj8
  */
+@Repository
 public class NCDSDao {
 
     private final Logger logger = LoggerFactory.getLogger(NCDSDao.class);
@@ -31,6 +34,7 @@ public class NCDSDao {
         this.ncdsTabixReader = ncdsTabixReader;
     }
 
+    @Cacheable(value = "mncds", key = "#variant.chromosomalVariant")
     public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }

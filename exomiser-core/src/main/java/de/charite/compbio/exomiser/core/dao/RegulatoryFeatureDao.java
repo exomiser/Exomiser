@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -32,8 +33,7 @@ public class RegulatoryFeatureDao {
     @Autowired
     private DataSource dataSource;
 
-    //@Cacheable(value = "pathogenicity", key = "#variant.chromosomalVariant")
-
+    @Cacheable(value = "regulatory", key = "#variant.chromosomalVariant")
     public VariantEffect getRegulatoryFeatureData(Variant variant) {
         VariantEffect variantEffect = variant.getVariantEffect();
         //logger.info("Testing " + variant.getChromosomalVariant() + " with effect " + variantEffect.toString());
