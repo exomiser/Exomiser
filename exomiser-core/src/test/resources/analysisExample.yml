@@ -21,8 +21,9 @@ analysis:
         variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
         #knownVariantFilter removes any variant contained in dbSNP, ESP, EXAC databases
         knownVariantFilter: {},
-        frequencyFilter: {maxFrequency: 1.0},
-        pathogenicityFilter: {keepNonPathogenic: false},
+        frequencyFilter: {maxFrequency: 1.0, frequencySources: []},
+        #Sources: SIFT,POLYPHEN,MUT_TASTER, CADD,NCDS
+        pathogenicityFilter: {keepNonPathogenic: false, pathogenicitySources: []},
         #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
         inheritanceFilter: {},
         #omimPrioritiser isn't mandatory.

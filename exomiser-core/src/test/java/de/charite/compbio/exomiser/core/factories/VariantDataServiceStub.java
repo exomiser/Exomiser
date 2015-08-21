@@ -33,11 +33,6 @@ public class VariantDataServiceStub implements VariantDataService {
     }
 
     @Override
-    public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation) {
-        //deliberately empty
-    }
-
-    @Override
     public void setVariantFrequencyData(VariantEvaluation variantEvaluation) {
         //deliberately empty
     }

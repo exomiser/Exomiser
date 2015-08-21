@@ -99,20 +99,6 @@ public class VariantDataServiceImplTest {
         PathogenicityData result = instance.getVariantPathogenicityData(varEval);
         assertThat(result, equalTo(PATH_DATA));
     }
-    /*
-     * Ignore until sort out how VariantDataService should behave for CADD vs
-     * PathogenictyFilter swithc
-     */
-
-    @Ignore
-    @Test
-    public void serviceAddsBothFrequencyAndPAthogenicityDataToAVariantEvaluation() {
-        instance.setVariantFrequencyAndPathogenicityData(varEval);
-        assertThat(varEval.getPathogenicityData(), equalTo(PATH_DATA));
-        assertThat(varEval.getFrequencyData(), equalTo(FREQ_DATA));
-        assertThat(varEval.getPathogenicityData(), equalTo(CADD_DATA));
-        assertThat(varEval.getVariantEffect(), equalTo(REG_DATA));
-    }
 
     @Test
     public void serviceAddsFrequencyDataToAVariantEvaluation() {

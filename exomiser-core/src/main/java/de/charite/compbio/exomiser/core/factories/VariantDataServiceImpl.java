@@ -45,17 +45,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     private NCDSDao ncdsDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
-    
-    @Override
-    public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation) {
-        logger.info("Calling setVariantFrequencyAndPathogenicityData");
-        setVariantFrequencyData(variantEvaluation);
-        setVariantPathogenicityData(variantEvaluation);
-        setVariantCADDData(variantEvaluation);// TODO - this method is called by the simpleVariantFilterRunner so what will happen if no Tabix files - needs to check FilterType ? NOW NEVER CALLED EXCEPT TEST
-        setVariantNCDSData(variantEvaluation);// TODO - this method is called by the simpleVariantFilterRunner so what will happen if no Tabix files - needs to check FilterType
-        setVariantRegulatoryFeatureData(variantEvaluation);
-    }
-        
+            
     @Override
     public void setVariantFrequencyData(VariantEvaluation variantEvaluation) {
         FrequencyData freqData = getVariantFrequencyData(variantEvaluation);

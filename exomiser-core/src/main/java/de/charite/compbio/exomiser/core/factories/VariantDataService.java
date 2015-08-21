@@ -26,8 +26,6 @@ public interface VariantDataService {
     
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant);
     
-    public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation);
-
     public void setVariantFrequencyData(VariantEvaluation variantEvaluation);
 
     public void setVariantPathogenicityData(VariantEvaluation variantEvaluation);

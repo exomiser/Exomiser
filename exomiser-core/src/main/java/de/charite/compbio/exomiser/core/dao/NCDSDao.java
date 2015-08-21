@@ -9,6 +9,7 @@ import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.NcdsScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.tribble.readers.TabixReader;
 
 import java.io.IOException;
@@ -36,6 +37,10 @@ public class NCDSDao {
 
     @Cacheable(value = "mncds", key = "#variant.chromosomalVariant")
     public PathogenicityData getPathogenicityData(Variant variant) {
+        // MNCDS has not been trained on missense variants so skip
+        if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
+            return new PathogenicityData();
+        }
         return processResults(variant);
     }
 
