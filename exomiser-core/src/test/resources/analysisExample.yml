@@ -25,12 +25,13 @@ analysis:
         frequencyFilter: {
             maxFrequency: 1.0,
             frequencySources: [
+                #Thousand Genomes project http://www.1000genomes.org/
                 THOUSAND_GENOMES,
-                //ESP project http://evs.gs.washington.edu/EVS/
+                #ESP project http://evs.gs.washington.edu/EVS/
                 ESP_AFRICAN_AMERICAN,
                 ESP_EUROPEAN_AMERICAN,
                 ESP_ALL,
-                //ExAC project http://exac.broadinstitute.org/about
+                #ExAC project http://exac.broadinstitute.org/about
                 EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
                 EXAC_AMERICAN,
                 EXAC_EAST_ASIAN,
