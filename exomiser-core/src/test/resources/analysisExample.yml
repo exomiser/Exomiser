@@ -35,18 +35,9 @@ analysis:
             maxFrequency: 1.0,
             frequencySources: [
                 THOUSAND_GENOMES,
-                
                 ESP_AFRICAN_AMERICAN,
-                ESP_EUROPEAN_AMERICAN,
-                ESP_ALL,
-
                 EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
-                EXAC_AMERICAN,
-                EXAC_EAST_ASIAN,
-                EXAC_FINNISH,
-                EXAC_NON_FINNISH_EUROPEAN,
-                EXAC_SOUTH_ASIAN,
-                EXAC_OTHER]
+                EXAC_AMERICAN]
         },
         #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, NCDS
         pathogenicityFilter: {

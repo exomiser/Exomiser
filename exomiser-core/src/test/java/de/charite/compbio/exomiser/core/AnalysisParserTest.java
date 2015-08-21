@@ -163,14 +163,14 @@ public class AnalysisParserTest {
 
     @Test
     public void testParseAnalysisStep_FrequencyFilter() {
-        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("frequencyFilter: {maxFrequency: 1.0}"));
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("frequencyFilter: {maxFrequency: 1.0, frequencySources: [THOUSAND_GENOMES, ESP_AFRICAN_AMERICAN]}"));
         analysisSteps.add(new FrequencyFilter(1.0f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
     public void testParseAnalysisStep_PathogenicityFilter() {
-        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("pathogenicityFilter: {keepNonPathogenic: false}"));
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("pathogenicityFilter: {keepNonPathogenic: false, pathogenicitySources: [SIFT, POLYPHEN, CADD]}"));
         analysisSteps.add(new PathogenicityFilter(false));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }

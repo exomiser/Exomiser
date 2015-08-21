@@ -18,6 +18,8 @@ import de.charite.compbio.exomiser.core.filters.QualityFilter;
 import de.charite.compbio.exomiser.core.filters.RegulatoryFeatureFilter;
 import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriority;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriority;
@@ -30,13 +32,16 @@ import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettings
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
+
 import static java.nio.file.Files.newInputStream;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,12 +51,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class AnalysisParser {
@@ -285,8 +290,6 @@ public class AnalysisParser {
         /**
          * Returns an AnalysisStep or null if the step is unrecognised.
          *
-         * @param key
-         * @param analysisSteps
          * @param hpoIds
          * @param modeOfInheritance
          * @return
@@ -315,10 +318,6 @@ public class AnalysisParser {
                     return makePriorityScoreFilter(analysisStepMap);
                 case "regulatoryFeatureFilter":
                     return makeRegulatoryFeatureFilter(analysisStepMap);
-                case "caddFilter":
-                    return makeCaddFilter(analysisStepMap);   
-                case "ncdsFilter":
-                    return makeNcdsFilter(analysisStepMap);    
                 case "omimPrioritiser":
                     return prioritiserFactory.makeOmimPrioritiser();
                 case "hiPhivePrioritiser":
@@ -383,11 +382,36 @@ public class AnalysisParser {
         }
 
         private FrequencyFilter makeFrequencyFilter(Map<String, Object> options) {
+            Double maxFreq = getMaxFrequency(options);
+            List<FrequencySource> sources = getFrequencySources(options);
+            logger.info("Filtering against freq sources: {}", EnumSet.copyOf(sources));
+            //TODO: add sources into filter
+            return new FrequencyFilter(maxFreq.floatValue());
+        }
+
+        private Double getMaxFrequency(Map<String, Object> options) {
             Double maxFreq = (Double) options.get("maxFrequency");
             if (maxFreq == null) {
                 throw new AnalysisParserException("Frequency filter requires a floating point value for the maximum frequency e.g. {maxFrequency: 1.0}", options);
             }
-            return new FrequencyFilter(maxFreq.floatValue());
+            return maxFreq;
+        }
+
+        private List<FrequencySource> getFrequencySources(Map<String, Object> options) {
+            List<String> frequencySources = (List<String>) options.get("frequencySources");
+            if (frequencySources == null || frequencySources.isEmpty()) {
+                throw new AnalysisParserException("Frequency filter requires a list of frequency sources e.g. {frequencySources: [THOUSAND_GENOMES, ESP_ALL]}", options);
+            }
+            List<FrequencySource> sources = new ArrayList<>();
+            for (String source : frequencySources) {
+                try {
+                    FrequencySource frequencySource = FrequencySource.valueOf(source);
+                    sources.add(frequencySource);
+                } catch (IllegalArgumentException ex) {
+                    throw new AnalysisParserException(String.format("Illegal FrequencySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(FrequencySource.class)), options);
+                }
+            }
+            return sources;
         }
 
         private PathogenicityFilter makePathogenicityFilter(Map<String, Object> options) {
@@ -395,16 +419,36 @@ public class AnalysisParser {
             if (keepNonPathogenic == null) {
                 throw new AnalysisParserException("Pathogenicity filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
             }
+            List<PathogenicitySource> sources = getPathogenicitySources(options);
+            logger.info("Filtering against path sources: {}", EnumSet.copyOf(sources));
+            //TODO: add sources into filter
             return new PathogenicityFilter(keepNonPathogenic);
         }
 
-        private PriorityScoreFilter makePriorityScoreFilter(Map<String, Object> options) {          
+        private List<PathogenicitySource> getPathogenicitySources(Map<String, Object> options) {
+            List<String> pathogenicitySources = (List<String>) options.get("pathogenicitySources");
+            if (pathogenicitySources == null || pathogenicitySources.isEmpty()) {
+                throw new AnalysisParserException("Frequency filter requires a list of frequency sources e.g. {pathogenicitySources: [SIFT, POLYPHEN, CADD]}", options);
+            }
+            List<PathogenicitySource> sources = new ArrayList<>();
+            for (String source : pathogenicitySources) {
+                try {
+                    PathogenicitySource pathogenicitySource = PathogenicitySource.valueOf(source);
+                    sources.add(pathogenicitySource);
+                } catch (IllegalArgumentException ex) {
+                    throw new AnalysisParserException(String.format("Illegal PathogenicitySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(PathogenicitySource.class)), options);
+                }
+            }
+            return sources;
+        }
+
+        private PriorityScoreFilter makePriorityScoreFilter(Map<String, Object> options) {
             String priorityTypeString = (String) options.get("priorityType");
             if (priorityTypeString == null) {
                 throw new AnalysisParserException("Priority score filter requires a string value for the prioritiser type e.g. {priorityType: HIPHIVE_PRIORITY}", options);
             }
             PriorityType priorityType = PriorityType.valueOf(priorityTypeString);
-            
+
             Double minPriorityScore = (Double) options.get("minPriorityScore");
             if (minPriorityScore == null) {
                 throw new AnalysisParserException("Priority score filter requires a floating point value for the minimum prioritiser score e.g. {minPriorityScore: 0.65}", options);
@@ -415,23 +459,7 @@ public class AnalysisParser {
         private RegulatoryFeatureFilter makeRegulatoryFeatureFilter(Map<String, Double> options) {
             return new RegulatoryFeatureFilter();
         }
-        
-        private CADDFilter makeCaddFilter(Map<String, Object> options) {
-            Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
-            if (keepNonPathogenic == null) {
-                throw new AnalysisParserException("CADD filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
-            }
-            return new CADDFilter(true);
-        }
-        
-        private NCDSFilter makeNcdsFilter(Map<String, Object> options) {
-            Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
-            if (keepNonPathogenic == null) {
-                throw new AnalysisParserException("NCDS filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
-            }
-            return new NCDSFilter(true);
-        }
-        
+
         private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {
             if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
                 logger.info("Not making an inheritance filter for {} mode of inheritance", modeOfInheritance);
