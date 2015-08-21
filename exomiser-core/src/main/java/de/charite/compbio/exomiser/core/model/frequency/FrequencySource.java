@@ -28,9 +28,9 @@ public enum FrequencySource {
     EXAC_AFRICAN_INC_AFRICAN_AMERICAN("ExAC AFR"),
     EXAC_AMERICAN("ExAC AMR"),
     EXAC_EAST_ASIAN("ExAC EAS"),
+    EXAC_SOUTH_ASIAN("ExAC SAS"),
     EXAC_FINNISH("ExAC FIN"),
     EXAC_NON_FINNISH_EUROPEAN("ExAC NFE"),
-    EXAC_SOUTH_ASIAN("ExAC SAS"),
     EXAC_OTHER("ExAC OTH");
     
     private final String source;

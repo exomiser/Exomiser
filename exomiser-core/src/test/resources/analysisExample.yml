@@ -21,17 +21,25 @@ analysis:
         variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
         #knownVariantFilter removes any variant contained in dbSNP, ESP, EXAC databases
         knownVariantFilter: {},
-        #Possible frequencySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, NCDS
+        #Possible frequencySources: 
+        #Thousand Genomes project http://www.1000genomes.org/
+        #   THOUSAND_GENOMES,
+        #ESP project http://evs.gs.washington.edu/EVS/
+        #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+        #ExAC project http://exac.broadinstitute.org/about
+        #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
+        #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
+        #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
+        #   EXAC_OTHER
         frequencyFilter: {
             maxFrequency: 1.0,
             frequencySources: [
-                #Thousand Genomes project http://www.1000genomes.org/
                 THOUSAND_GENOMES,
-                #ESP project http://evs.gs.washington.edu/EVS/
+                
                 ESP_AFRICAN_AMERICAN,
                 ESP_EUROPEAN_AMERICAN,
                 ESP_ALL,
-                #ExAC project http://exac.broadinstitute.org/about
+
                 EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
                 EXAC_AMERICAN,
                 EXAC_EAST_ASIAN,
