@@ -99,8 +99,8 @@ public class FrequencyData {
                 case EXAC_AFRICAN_INC_AFRICAN_AMERICAN:
                 case EXAC_AMERICAN:
                 case EXAC_EAST_ASIAN:
-                case EXAC_FINISH:
-                case EXAC_NON_FINISH_EUROPEAN:
+                case EXAC_FINNISH:
+                case EXAC_NON_FINNISH_EUROPEAN:
                 case EXAC_OTHER:
                 case EXAC_SOUTH_ASIAN:
                     return true;

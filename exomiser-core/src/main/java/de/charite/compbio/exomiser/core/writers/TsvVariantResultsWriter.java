@@ -183,7 +183,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
                 // "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
                 ESP_EUROPEAN_AMERICAN, ESP_AFRICAN_AMERICAN,
                 // "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
-                EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN, EXAC_EAST_ASIAN, EXAC_FINISH, EXAC_NON_FINISH_EUROPEAN, EXAC_SOUTH_ASIAN, EXAC_OTHER};
+                EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN, EXAC_EAST_ASIAN, EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN, EXAC_SOUTH_ASIAN, EXAC_OTHER};
         for (FrequencySource source : experimentalFrequencySources) {
             record.add(dotIfFrequencyNull(frequencyData.getFrequencyForSource(source)));
         }

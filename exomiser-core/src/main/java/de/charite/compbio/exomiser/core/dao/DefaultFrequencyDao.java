@@ -53,8 +53,8 @@ public class DefaultFrequencyDao implements FrequencyDao {
         frequencySourceColumnMappings.put(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, "exacAFRmaf");
         frequencySourceColumnMappings.put(EXAC_AMERICAN, "exacAMRmaf");
         frequencySourceColumnMappings.put(EXAC_EAST_ASIAN, "exacEASmaf");
-        frequencySourceColumnMappings.put(EXAC_FINISH, "exacFINmaf");
-        frequencySourceColumnMappings.put(EXAC_NON_FINISH_EUROPEAN, "exacNFEmaf");
+        frequencySourceColumnMappings.put(EXAC_FINNISH, "exacFINmaf");
+        frequencySourceColumnMappings.put(EXAC_NON_FINNISH_EUROPEAN, "exacNFEmaf");
         frequencySourceColumnMappings.put(EXAC_SOUTH_ASIAN, "exacSASmaf");
         frequencySourceColumnMappings.put(EXAC_OTHER, "exacOTHmaf");
         

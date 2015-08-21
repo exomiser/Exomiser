@@ -28,8 +28,8 @@ public class FrequencySourceTest {
             EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
             EXAC_AMERICAN,
             EXAC_EAST_ASIAN,
-            EXAC_FINISH,
-            EXAC_NON_FINISH_EUROPEAN,
+            EXAC_FINNISH,
+            EXAC_NON_FINNISH_EUROPEAN,
             EXAC_SOUTH_ASIAN,
             EXAC_OTHER};
 

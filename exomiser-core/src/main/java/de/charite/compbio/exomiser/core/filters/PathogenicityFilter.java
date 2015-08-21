@@ -58,8 +58,6 @@ public class PathogenicityFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
 
-        float variantPathogenicityScore = variantEvaluation.getPathogenicityScore();
-
         if (keepNonPathogenic) {
             return passesFilter;
         }
