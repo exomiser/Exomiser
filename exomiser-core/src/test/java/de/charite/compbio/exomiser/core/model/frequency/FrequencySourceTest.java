@@ -28,9 +28,9 @@ public class FrequencySourceTest {
             EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
             EXAC_AMERICAN,
             EXAC_EAST_ASIAN,
+            EXAC_SOUTH_ASIAN,
             EXAC_FINNISH,
             EXAC_NON_FINNISH_EUROPEAN,
-            EXAC_SOUTH_ASIAN,
             EXAC_OTHER};
 
         assertThat(FrequencySource.values(), equalTo(values));
