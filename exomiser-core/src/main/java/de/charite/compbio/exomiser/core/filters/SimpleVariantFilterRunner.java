@@ -62,11 +62,12 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
     }
 
     public FilterResult run(Filter filter, VariantEvaluation variantEvaluation) {
-        addMissingFrequencyAndPathogenicityData(filter, variantEvaluation);
+        addMissingVariantData(filter, variantEvaluation);
         return runFilterAndAddResult(filter, variantEvaluation);
     }
 
-    protected void addMissingFrequencyAndPathogenicityData(Filter filter, VariantEvaluation variantEvaluation) {
+    //TODO: this ought to be supplied automagically using a FrequencyDataFilter decorator
+    protected void addMissingVariantData(Filter filter, VariantEvaluation variantEvaluation) {
         switch (filter.getFilterType()) {
             case FREQUENCY_FILTER:
             case KNOWN_VARIANT_FILTER:
@@ -77,7 +78,8 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
                 //will require the PathogenicitySource in order to get the right ones specified by the user in the yaml file
                 variantDataService.setVariantPathogenicityData(variantEvaluation);
                 break;
-            //TODO: remove CADD and NCDS - this will be handled by Pathogenicityfilter 
+            //TODO: remove CADD and NCDS - this will be handled by Pathogenicityfilter
+            //Check the functionality first - they may not be identical to the Pathogenicityfilter
             case CADD_FILTER:
                 variantDataService.setVariantCADDData(variantEvaluation);
                 break;

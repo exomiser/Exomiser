@@ -8,6 +8,8 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import de.charite.compbio.exomiser.core.model.Gene;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Deprecated
 public class PrioritiserRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(PrioritiserRunner.class);
@@ -29,12 +32,7 @@ public class PrioritiserRunner {
      * @return
      */
     public List<Gene> prioritiseFilteredGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
-        List<Gene> filteredGenes = new ArrayList<>();
-        for (Gene gene : genes) {
-            if (gene.passedFilters()) {
-                filteredGenes.add(gene);
-            }
-        }
+        List<Gene> filteredGenes = genes.stream().filter(Gene::passedFilters).collect(Collectors.toList());
         logger.info("{} of {} genes passed all filters", filteredGenes.size(), genes.size());        
         return prioritiseGenes(prioritisers, filteredGenes);
     }
@@ -49,9 +47,7 @@ public class PrioritiserRunner {
      */
     public List<Gene> prioritiseGenes(List<Prioritiser> prioritisers, List<Gene> genes) {
         logger.info("Running prioritisers over {} genes", genes.size());
-        for (Prioritiser prioritiser : prioritisers) {
-            run(prioritiser, genes);
-        }
+        prioritisers.forEach(prioritiser -> run(prioritiser, genes));
         logger.info("Done prioritising genes");
         return genes;
     }
