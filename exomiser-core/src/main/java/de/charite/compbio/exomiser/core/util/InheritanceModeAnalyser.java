@@ -8,12 +8,8 @@ package de.charite.compbio.exomiser.core.util;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.jannovar.pedigree.*;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.CompatibilityCheckerException;
-import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.pedigree.GenotypeListBuilder;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.PedigreeDiseaseCompatibilityDecorator;
 import htsjdk.variant.variantcontext.Allele;
 
 import java.util.EnumSet;
@@ -52,7 +48,7 @@ public class InheritanceModeAnalyser {
     /**
      * Analyses the inheritance modes for the variants from a gene.
      * 
-     * @param variantEvaluations
+     * @param variants
      * @return 
      */
     private Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variants, Pedigree pedigree) {           
@@ -60,58 +56,71 @@ public class InheritanceModeAnalyser {
         if (variants.isEmpty()) {
             return Collections.emptySet();
         }
-        
-        Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-        
+
         Variant firstVariant = variants.get(0);
         // Build list of genotypes from the given variants.
-        String geneID = firstVariant.getGeneSymbol();
+        String geneSymbol = firstVariant.getGeneSymbol();
         // Use interval of transcript of first region, only used for the chromosome information anyway.
-        GenotypeListBuilder genotypeListBuilder = new GenotypeListBuilder(geneID, pedigree.getNames(), firstVariant.isXChromosomal());
+        GenotypeListBuilder genotypeListBuilder = new GenotypeListBuilder(geneSymbol, pedigree.getNames(), firstVariant.isXChromosomal());
+        List<Person> people = pedigree.getMembers();
         for (VariantEvaluation variant : variants) {
-            final int altAlleleID = variant.getAltAlleleId();
-            VariantContext variantContext = variant.getVariantContext();
-            final int numSamples = variantContext.getNSamples();
-            ImmutableList.Builder<Genotype> gtBuilder = new ImmutableList.Builder<>();
-            for (int i = 0; i < numSamples; ++i) {
-                final String name = pedigree.getMembers().get(i).getName();
-                final List<Allele> alleles = variantContext.getGenotype(name).getAlleles();
-                if (alleles.size() != 2) {
-                    gtBuilder.add(Genotype.NOT_OBSERVED);
-                    continue;
-                }
-                
-                final boolean isAlt0 = alleles.get(0).basesMatch(variantContext.getAlternateAllele(altAlleleID));
-                final boolean isAlt1 = alleles.get(1).basesMatch(variantContext.getAlternateAllele(altAlleleID));
-                if (!isAlt0 && !isAlt1) {
-                    gtBuilder.add(Genotype.HOMOZYGOUS_REF);
-                } else if ((isAlt0 && !isAlt1) || (!isAlt0 && isAlt1)) {
-                    gtBuilder.add(Genotype.HETEROZYGOUS);
-                } else {
-                    gtBuilder.add(Genotype.HOMOZYGOUS_ALT);
-                }
-            }
-            genotypeListBuilder.addGenotypes(gtBuilder.build());
+            ImmutableList<Genotype> variantGenotypes = getVariantGenotypes(people, variant);
+            genotypeListBuilder.addGenotypes(variantGenotypes);
         }
+        GenotypeList genotypes = genotypeListBuilder.build();
+
+        return getCompatibleInheritanceModes(pedigree, genotypes);
+    }
+
+    private ImmutableList<Genotype> getVariantGenotypes(List<Person> people, VariantEvaluation variant) {
+
+        VariantContext variantContext = variant.getVariantContext();
+        final int altAlleleID = variant.getAltAlleleId();
+        Allele alternateAllele = variantContext.getAlternateAllele(altAlleleID);
+        final int numSamples = variantContext.getNSamples();
+        ImmutableList.Builder<Genotype> variantGenotypes = new ImmutableList.Builder<>();
+        for (int i = 0; i < numSamples; ++i) {
+            final String name = people.get(i).getName();
+            final List<Allele> alleles = variantContext.getGenotype(name).getAlleles();
+            if (alleles.size() != 2) {
+                variantGenotypes.add(Genotype.NOT_OBSERVED);
+                continue;
+            }
+            final boolean isAlt0 = alleles.get(0).basesMatch(alternateAllele);
+            final boolean isAlt1 = alleles.get(1).basesMatch(alternateAllele);
+            if (!isAlt0 && !isAlt1) {
+                variantGenotypes.add(Genotype.HOMOZYGOUS_REF);
+            } else if ((isAlt0 && !isAlt1) || (!isAlt0 && isAlt1)) {
+                variantGenotypes.add(Genotype.HETEROZYGOUS);
+            } else {
+                variantGenotypes.add(Genotype.HOMOZYGOUS_ALT);
+            }
+        }
+        return variantGenotypes.build();
+    }
+
+    private Set<ModeOfInheritance> getCompatibleInheritanceModes(Pedigree pedigree, GenotypeList genotypes) {
+
+        Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
         // FIXME: there are more modes of inheritance implemented in Jannovar
-        final ImmutableList<ModeOfInheritance> toCheck = ImmutableList.of(
+        final Set<ModeOfInheritance> modesToCheck = EnumSet.of(
                 ModeOfInheritance.AUTOSOMAL_RECESSIVE,
-                ModeOfInheritance.AUTOSOMAL_DOMINANT, 
+                ModeOfInheritance.AUTOSOMAL_DOMINANT,
                 ModeOfInheritance.X_RECESSIVE);
-        
+
         PedigreeDiseaseCompatibilityDecorator checker = new PedigreeDiseaseCompatibilityDecorator(pedigree);
-        for (ModeOfInheritance mode : toCheck) {
+        for (ModeOfInheritance mode : modesToCheck) {
             try {
-                if (checker.isCompatibleWith(genotypeListBuilder.build(), mode)) {
-                    inheritanceModes.add(mode);
+                if (checker.isCompatibleWith(genotypes, mode)) {
+                    compatibleInheritanceModes.add(mode);
                 }
             } catch (CompatibilityCheckerException e) {
                 throw new RuntimeException("Problem in the mode of inheritance checks!", e);
             }
         }
 
-        return inheritanceModes;
+        return compatibleInheritanceModes;
     }
 
 }
