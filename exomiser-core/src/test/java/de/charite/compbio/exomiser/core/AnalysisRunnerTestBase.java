@@ -36,8 +36,8 @@ public abstract class AnalysisRunnerTestBase {
  
     final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
     
-    final Path twoAffectedPedPATH = Paths.get("src/test/resources/inheritance/twoAffected.ped");
-    final Path childAffectedPedPATH = Paths.get("src/test/resources/inheritance/childAffected.ped");
+    final Path twoAffectedPedPath = Paths.get("src/test/resources/inheritance/twoAffected.ped");
+    final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
     final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
 
     final JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
