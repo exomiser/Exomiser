@@ -370,7 +370,8 @@ public class AnalysisParser {
         private VariantFilter makeKnownVariantFilter(Map<String, Object> options) {
             //nothing special to do here, this is a boolean filter.
             //TODO: wrap this and provide the frequencySources
-            return new FrequencyDataProvider(variantDataService, new KnownVariantFilter());
+//            return new FrequencyDataProvider(variantDataService, new KnownVariantFilter());
+            return new KnownVariantFilter();
         }
 
         private VariantFilter makeFrequencyFilter(Map<String, Object> options) {
