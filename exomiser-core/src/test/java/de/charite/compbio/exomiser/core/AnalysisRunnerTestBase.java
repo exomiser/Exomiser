@@ -35,6 +35,10 @@ public abstract class AnalysisRunnerTestBase {
     private static final Logger logger = LoggerFactory.getLogger(AnalysisRunnerTestBase.class);
  
     final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
+    
+    final Path twoAffectedPedPath = Paths.get("src/test/resources/inheritance/twoAffected.ped");
+    final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
+    final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
 
     final JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
     final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(testJannovarData.getRefDict(), testJannovarData.getChromosomes());

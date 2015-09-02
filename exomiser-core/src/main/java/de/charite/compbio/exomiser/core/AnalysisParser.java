@@ -5,18 +5,8 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.filters.CADDFilter;
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.IntervalFilter;
-import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
-import de.charite.compbio.exomiser.core.filters.NCDSFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.RegulatoryFeatureFilter;
-import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -64,6 +54,7 @@ public class AnalysisParser {
     private static final Logger logger = LoggerFactory.getLogger(AnalysisParser.class);
 
     private final PriorityFactory prioritiserFactory;
+    private final VariantDataService variantDataService = null;
 
     public AnalysisParser(PriorityFactory prioritiserFactory) {
         this.prioritiserFactory = prioritiserFactory;
@@ -376,16 +367,19 @@ public class AnalysisParser {
             return new QualityFilter(quality);
         }
 
-        private KnownVariantFilter makeKnownVariantFilter(Map<String, Object> options) {
+        private VariantFilter makeKnownVariantFilter(Map<String, Object> options) {
             //nothing special to do here, this is a boolean filter.
+            //TODO: wrap this and provide the frequencySources
+//            return new FrequencyDataProvider(variantDataService, new KnownVariantFilter());
             return new KnownVariantFilter();
         }
 
-        private FrequencyFilter makeFrequencyFilter(Map<String, Object> options) {
+        private VariantFilter makeFrequencyFilter(Map<String, Object> options) {
             Double maxFreq = getMaxFrequency(options);
-            List<FrequencySource> sources = getFrequencySources(options);
-            logger.info("Filtering against freq sources: {}", EnumSet.copyOf(sources));
+//            List<FrequencySource> sources = getFrequencySources(options);
+//            logger.info("Filtering against freq sources: {}", EnumSet.copyOf(sources));
             //TODO: add sources into filter
+//            return new FrequencyDataProvider(variantDataService, new FrequencyFilter(maxFreq.floatValue()));
             return new FrequencyFilter(maxFreq.floatValue());
         }
 
@@ -419,8 +413,8 @@ public class AnalysisParser {
             if (keepNonPathogenic == null) {
                 throw new AnalysisParserException("Pathogenicity filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
             }
-            List<PathogenicitySource> sources = getPathogenicitySources(options);
-            logger.info("Filtering against path sources: {}", EnumSet.copyOf(sources));
+//            List<PathogenicitySource> sources = getPathogenicitySources(options);
+//            logger.info("Filtering against path sources: {}", EnumSet.copyOf(sources));
             //TODO: add sources into filter
             return new PathogenicityFilter(keepNonPathogenic);
         }
