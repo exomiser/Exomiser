@@ -652,17 +652,19 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual) {
             Allele refAllele = Allele.create(ref, true);
             Allele altAllele = Allele.create(alt);
+            List<Allele> alleles = Arrays.asList(refAllele, altAllele);
+            
             VariantContextBuilder vcBuilder = new VariantContextBuilder();
 
             // build Genotype
             GenotypeBuilder gtBuilder = new GenotypeBuilder("sample").noAttributes();
             //default to HETEROZYGOUS
-            gtBuilder.alleles(Arrays.asList(refAllele, altAllele));
+            gtBuilder.alleles(alleles);
 //            gtBuilder.attribute("RD", readDepth);
 
             // build VariantContext
             vcBuilder.loc("chr" + chr, pos, (pos - 1) + ref.length());
-            vcBuilder.alleles(Arrays.asList(refAllele, altAllele));
+            vcBuilder.alleles(alleles);
             vcBuilder.genotypes(gtBuilder.make());
 //            vcBuilder.attribute("RD", readDepth);
             vcBuilder.log10PError(-0.1 * qual);
