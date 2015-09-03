@@ -91,9 +91,9 @@ public class VariantEvaluationTest {
     }
 
     private static VariantEvaluation.VariantBuilder testVariantBuilder() {
-        return new VariantEvaluation.VariantBuilder(CHROMOSOME, POSITION, ALT, REF);
+        return new VariantEvaluation.VariantBuilder(CHROMOSOME, POSITION, REF, ALT);
     }
-
+    
     @Test
     public void testGetChromosome() {
         assertThat(instance.getChromosome(), equalTo(CHROMOSOME));
