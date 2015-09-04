@@ -1,61 +1,41 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-import java.util.EnumSet;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * VariantFilter variants according to their predicted pathogenicity. There are
- * two components to this, which may better be separated in later versions of
- * this software, but I think there are more advantages to keeping them all in
- * one class.
- * <P>
- * There are variants such as splice site variants, which we can assume are in
- * general pathogenic. We at the moment do not need to use any particular
- * software to evaluate this, we merely take the variant class from the Jannovar
- * code.
- * <P>
- * For missense mutations, we will use the predictions of MutationTaster,
- * polyphen, and SIFT taken from the data from the dbNSFP project.
- * <P>
- * The code therefore removes mutations judged not to be pathogenic (intronic,
- * etc.), and assigns each other mutation an overall pathogenicity score defined
- * on the basis of "medical genetic intuition".
- *
- * @author Peter N Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
- * @version 0.09 (29 December, 2012).
  */
-public class CADDFilter implements VariantFilter {
+public class CaddFilter implements VariantFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(CADDFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(CaddFilter.class);
+
     private static final FilterType filterType = FilterType.CADD_FILTER;
+
     private final FilterResult passesFilter = new PassFilterResult(filterType);
     private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     public static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
-    
+
     private final boolean keepNonPathogenic;
 
     /**
      * Produces a Pathogenicity filter using a user-defined pathogenicity
-     * threshold. The keepNonPathogenic parameter will apply the
- pathogenicity scoring, but no further filtering will be applied so all
- variants will pass irrespective of their score.
+     * threshold. The keepNonPathogenic parameter will apply the pathogenicity
+     * scoring, but no further filtering will be applied so all variants will
+     * pass irrespective of their score.
      *
-     * @param removePathFilterCutOff
+     * @param keepNonPathogenic
      */
-    public CADDFilter(boolean keepNonPathogenic) {
+    public CaddFilter(boolean keepNonPathogenic) {
         this.keepNonPathogenic = keepNonPathogenic;
     }
 
@@ -81,7 +61,7 @@ public class CADDFilter implements VariantFilter {
         if (keepNonPathogenic) {
             return passesFilter;
         }
-        if (variantIsPredictedPathogenic(variantEffect,pathData)) {
+        if (variantIsPredictedPathogenic(variantEffect, pathData)) {
             return passesFilter;
         }
         return failsFilter;
@@ -89,14 +69,14 @@ public class CADDFilter implements VariantFilter {
 
     /**
      * @param variantEffect
-     * @param pathData
-     * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
+     * @param pathogenicityData
+     * @return true if the variant being analysed passes the runFilter (e.g.,
+     * has high quality )
      */
     protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
         if (pathogenicityData.hasPredictedScore(PathogenicitySource.CADD)) {
             return true;
-        }
-        else {
+        } else {
             return VariantTypePathogenicityScores.getPathogenicityScoreOf(variantEffect) >= DEFAULT_PATHOGENICITY_THRESHOLD;
         }
     }
@@ -104,7 +84,7 @@ public class CADDFilter implements VariantFilter {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 97 * hash + Objects.hashCode(CADDFilter.filterType);
+        hash = 97 * hash + Objects.hashCode(CaddFilter.filterType);
         hash = 97 * hash + (this.keepNonPathogenic ? 1 : 0);
         return hash;
     }
@@ -117,7 +97,7 @@ public class CADDFilter implements VariantFilter {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CADDFilter other = (CADDFilter) obj;
+        final CaddFilter other = (CaddFilter) obj;
         return this.keepNonPathogenic == other.keepNonPathogenic;
     }
 

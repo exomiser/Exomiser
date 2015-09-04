@@ -1,14 +1,11 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-import java.util.EnumSet;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -36,9 +33,9 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.09 (29 December, 2012).
  */
-public class NCDSFilter implements VariantFilter {
+public class NcdsFilter implements VariantFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(NCDSFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(NcdsFilter.class);
     private static final FilterType filterType = FilterType.NCDS_FILTER;
     private final FilterResult passesFilter = new PassFilterResult(filterType);
     private final FilterResult failsFilter = new FailFilterResult(filterType);
@@ -50,12 +47,12 @@ public class NCDSFilter implements VariantFilter {
     /**
      * Produces a Pathogenicity filter using a user-defined pathogenicity
      * threshold. The keepNonPathogenic parameter will apply the
- pathogenicity scoring, but no further filtering will be applied so all
- variants will pass irrespective of their score.
+     * pathogenicity scoring, but no further filtering will be applied so all
+     * variants will pass irrespective of their score.
      *
-     * @param removePathFilterCutOff
+     * @param keepNonPathogenic
      */
-    public NCDSFilter(boolean keepNonPathogenic) {
+    public NcdsFilter(boolean keepNonPathogenic) {
         this.keepNonPathogenic = keepNonPathogenic;
     }
 
@@ -72,6 +69,7 @@ public class NCDSFilter implements VariantFilter {
      * that pass have a pathogenicity score assigned to them. The failed ones
      * are deemed to be non-pathogenic and marked as such.
      *
+     * @return 
      */
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
@@ -81,7 +79,7 @@ public class NCDSFilter implements VariantFilter {
         if (keepNonPathogenic) {
             return passesFilter;
         }
-        if (variantIsPredictedPathogenic(variantEffect,pathData)) {
+        if (variantIsPredictedPathogenic(variantEffect, pathData)) {
             return passesFilter;
         }
         return failsFilter;
@@ -92,7 +90,7 @@ public class NCDSFilter implements VariantFilter {
      * @param pathData
      * @return true if the variant being analysed passes the runFilter (e.g., has high quality )
      */
-    protected boolean variantIsPredictedPathogenic(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
+    private boolean variantIsPredictedPathogenic(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
         if (pathogenicityData.hasPredictedScore(PathogenicitySource.NCDS)) {
             return true;
         }
@@ -104,7 +102,7 @@ public class NCDSFilter implements VariantFilter {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 97 * hash + Objects.hashCode(NCDSFilter.filterType);
+        hash = 97 * hash + Objects.hashCode(NcdsFilter.filterType);
         hash = 97 * hash + (this.keepNonPathogenic ? 1 : 0);
         return hash;
     }
@@ -117,7 +115,7 @@ public class NCDSFilter implements VariantFilter {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final NCDSFilter other = (NCDSFilter) obj;
+        final NcdsFilter other = (NcdsFilter) obj;
         return this.keepNonPathogenic == other.keepNonPathogenic;
     }
 
