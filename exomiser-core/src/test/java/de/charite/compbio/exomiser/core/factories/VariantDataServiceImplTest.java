@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.dao.CADDDao;
+import de.charite.compbio.exomiser.core.dao.CaddDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
@@ -50,7 +50,7 @@ public class VariantDataServiceImplTest {
     @Mock
     private FrequencyDao mockFrequencyDao;
     @Mock
-    private CADDDao mockCADDDao;
+    private CaddDao mockCaddDao;
     @Mock
     private RegulatoryFeatureDao mockRegulatoryFeatureDao;
     
@@ -70,7 +70,7 @@ public class VariantDataServiceImplTest {
         MockitoAnnotations.initMocks(this);
         Mockito.when(mockPathogenicityDao.getPathogenicityData(varEval)).thenReturn(PATH_DATA);
         Mockito.when(mockFrequencyDao.getFrequencyData(varEval)).thenReturn(FREQ_DATA);
-        Mockito.when(mockCADDDao.getPathogenicityData(varEval)).thenReturn(CADD_DATA);
+        Mockito.when(mockCaddDao.getPathogenicityData(varEval)).thenReturn(CADD_DATA);
         Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(varEval)).thenReturn(REG_DATA);
 
     }

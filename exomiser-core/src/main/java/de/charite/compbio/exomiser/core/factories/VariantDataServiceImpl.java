@@ -6,10 +6,10 @@
 
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.dao.CADDDao;
+import de.charite.compbio.exomiser.core.dao.CaddDao;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
-import de.charite.compbio.exomiser.core.dao.NCDSDao;
+import de.charite.compbio.exomiser.core.dao.NcdsDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
@@ -39,10 +39,10 @@ public class VariantDataServiceImpl implements VariantDataService {
     private PathogenicityDao pathogenicityDao;
     @Lazy
     @Autowired
-    private CADDDao caddDao;
+    private CaddDao caddDao;
     @Lazy
     @Autowired
-    private NCDSDao ncdsDao;
+    private NcdsDao ncdsDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
             
@@ -59,16 +59,16 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
 
     @Override
-    public void setVariantCADDData(VariantEvaluation variantEvaluation) {
+    public void setVariantCaddData(VariantEvaluation variantEvaluation) {
         // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
-        PathogenicityData pathData = getVariantCADDData(variantEvaluation);
+        PathogenicityData pathData = getVariantCaddData(variantEvaluation);
         variantEvaluation.setPathogenicityData(pathData);
     }
     
     @Override
-    public void setVariantNCDSData(VariantEvaluation variantEvaluation) {
+    public void setVariantNcdsData(VariantEvaluation variantEvaluation) {
         // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
-        PathogenicityData pathData = getVariantNCDSData(variantEvaluation);
+        PathogenicityData pathData = getVariantNcdsData(variantEvaluation);
         variantEvaluation.setPathogenicityData(pathData);
     }
     
@@ -93,13 +93,13 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
     
     @Override
-    public PathogenicityData getVariantCADDData(Variant variant) {
+    public PathogenicityData getVariantCaddData(Variant variant) {
         PathogenicityData pathData = caddDao.getPathogenicityData(variant);
         return pathData;
     }
     
     @Override
-    public PathogenicityData getVariantNCDSData(Variant variant) {
+    public PathogenicityData getVariantNcdsData(Variant variant) {
         PathogenicityData pathData = ncdsDao.getPathogenicityData(variant);
         return pathData;
     }
