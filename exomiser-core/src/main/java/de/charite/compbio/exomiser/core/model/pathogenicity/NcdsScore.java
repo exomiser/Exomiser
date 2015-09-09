@@ -7,7 +7,7 @@
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
 /**
- * CADD info - see {@link http://cadd.gs.washington.edu/info}
+ * NCDS info - see {@link ...}
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -21,6 +21,5 @@ public class NcdsScore extends BasePathogenicityScore {
     public String toString() {
         return "NCDS: " + score;
     }
-    
     
 }
