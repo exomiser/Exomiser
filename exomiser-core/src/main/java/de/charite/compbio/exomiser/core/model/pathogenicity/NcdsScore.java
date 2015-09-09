@@ -19,7 +19,7 @@ public class NcdsScore extends BasePathogenicityScore {
 
     @Override
     public String toString() {
-        return "NCDS: " + score;
+        return String.format("NCDS: %.3f", score);
     }
     
 }
