@@ -8,18 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * VariantFilter variants according to whether they are on target (i.e., located
- * within an exon or splice junction) or not. This runFilter also has the side
- * effect of calculating the counts of the various variant classes. The class
- * uses the annotations made by classes from the {@code jannovar.annotation}
- * package etc.
- * <P>
- * Note that this class does not require a corresponding
- * {@link exomizer.filter.Triage Triage} object, because variants that do not
- * pass the runFilter are simply removed.
- *
- * @author Peter N Robinson
- * @version 0.16 (20 December, 2013)
+ * 
  */
 public class RegulatoryFeatureFilter implements VariantFilter {
 
