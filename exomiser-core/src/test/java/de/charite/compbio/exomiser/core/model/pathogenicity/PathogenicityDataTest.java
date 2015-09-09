@@ -107,6 +107,20 @@ public class PathogenicityDataTest {
         SiftScore result = instance.getSiftScore();
         assertThat(result, equalTo(SIFT_FAIL));
     }
+    
+    @Test
+    public void testGetNcdsScore() {
+        instance = new PathogenicityData(new NcdsScore(1f));
+        NcdsScore result = instance.getNcdsScore();
+        assertThat(result, equalTo(new NcdsScore(1f)));
+    }
+    
+    @Test
+    public void testGetSiftScore_ReturnsNullWhenNoSiftScorePresent() {
+        instance = new PathogenicityData();
+        SiftScore result = instance.getSiftScore();
+        assertThat(result, nullValue());
+    }
 
     @Test
     public void testGetCaddScore() {
