@@ -6,12 +6,13 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.model.frequency.RsId;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import java.util.LinkedHashSet;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
@@ -20,53 +21,18 @@ import java.util.LinkedHashSet;
 public class VariantDataServiceStub implements VariantDataService {
 
     @Override
-    public FrequencyData getVariantFrequencyData(Variant variant) {
-        return new FrequencyData(new RsId(123456), new LinkedHashSet<>());
+    public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
+        return new FrequencyData(null, Collections.emptySet());
     }
 
     @Override
-    public PathogenicityData getVariantPathogenicityData(Variant variant) {
-        return new PathogenicityData(new LinkedHashSet<>());
-    }
-
-    @Override
-    public void setVariantFrequencyData(VariantEvaluation variantEvaluation) {
-        variantEvaluation.setFrequencyData(getVariantFrequencyData(variantEvaluation));
-    }
-
-    @Override
-    public void setVariantPathogenicityData(VariantEvaluation variantEvaluation) {
-        //deliberately empty
-    }
-
-    @Override
-    public PathogenicityData getVariantCaddData(Variant variant) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    @Override
-    public PathogenicityData getVariantNcdsData(Variant variant) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
+        return new PathogenicityData(Collections.emptySet());
     }
 
     @Override
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return variant.getVariantEffect();
     }
 
-    @Override
-    public void setVariantCaddData(VariantEvaluation variantEvaluation) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    @Override
-    public void setVariantNcdsData(VariantEvaluation variantEvaluation) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }

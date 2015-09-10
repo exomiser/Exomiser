@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.dao.CaddDao;
@@ -14,8 +13,13 @@ import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.Frequency;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.Set;
+import static java.util.stream.Collectors.toSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -23,14 +27,13 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Service
 public class VariantDataServiceImpl implements VariantDataService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImpl.class);
 
     @Autowired
@@ -45,68 +48,40 @@ public class VariantDataServiceImpl implements VariantDataService {
     private NcdsDao ncdsDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
-            
+
     @Override
-    public void setVariantFrequencyData(VariantEvaluation variantEvaluation) {
-        FrequencyData freqData = getVariantFrequencyData(variantEvaluation);
-        variantEvaluation.setFrequencyData(freqData);
+    public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
+        FrequencyData allFrequencyData = frequencyDao.getFrequencyData(variant);
+        return frequencyDataWithSpecifiedFrequencies(allFrequencyData, frequencySources);
+    }
+
+    protected FrequencyData frequencyDataWithSpecifiedFrequencies(FrequencyData allFrequencyData, Set<FrequencySource> frequencySources) {
+        Set<Frequency> wanted = allFrequencyData.getKnownFrequencies().stream()
+                .filter(frequency -> frequencySources.contains(frequency.getSource()))
+                .collect(toSet());
+        return new FrequencyData(allFrequencyData.getRsId(), wanted);
     }
 
     @Override
-    public void setVariantPathogenicityData(VariantEvaluation variantEvaluation) {
-        PathogenicityData pathData = getVariantPathogenicityData(variantEvaluation);
-        variantEvaluation.setPathogenicityData(pathData);
+    public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
+        return pathogenicityDao.getPathogenicityData(variant);
     }
-
-    @Override
-    public void setVariantCaddData(VariantEvaluation variantEvaluation) {
-        // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
-        PathogenicityData pathData = getVariantCaddData(variantEvaluation);
-        variantEvaluation.setPathogenicityData(pathData);
-    }
-    
-    @Override
-    public void setVariantNcdsData(VariantEvaluation variantEvaluation) {
-        // TODO - if pathogenicty filter is also set then we need to merge data - new method needed
-        PathogenicityData pathData = getVariantNcdsData(variantEvaluation);
-        variantEvaluation.setPathogenicityData(pathData);
-    }
-    
-    @Override
-    public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation) {
-        if (variantEvaluation.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variantEvaluation.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
-            VariantEffect variantEffect = getVariantRegulatoryFeatureData(variantEvaluation);
-            variantEvaluation.setVariantEffect(variantEffect);
-        }
-    }
-    
-    @Override
-    public FrequencyData getVariantFrequencyData(Variant variant) {
-        FrequencyData freqData = frequencyDao.getFrequencyData(variant);
-        return freqData;
-    }
-    
-    @Override
-    public PathogenicityData getVariantPathogenicityData(Variant variant) {
-        PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variant);
-        return pathData;
-    }
-    
-    @Override
-    public PathogenicityData getVariantCaddData(Variant variant) {
-        PathogenicityData pathData = caddDao.getPathogenicityData(variant);
-        return pathData;
-    }
-    
-    @Override
-    public PathogenicityData getVariantNcdsData(Variant variant) {
-        PathogenicityData pathData = ncdsDao.getPathogenicityData(variant);
-        return pathData;
-    }
-    
     @Override
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
-        VariantEffect variantEffect = regulatoryFeatureDao.getRegulatoryFeatureData(variant);
-        return variantEffect;
+        if (variant.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variant.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
+            return regulatoryFeatureDao.getRegulatoryFeatureData(variant);
+        }
+        return variant.getVariantEffect();
     }
+
+//    @Override
+//    public PathogenicityData getVariantCaddData(Variant variant) {
+//        return caddDao.getPathogenicityData(variant);
+//    }
+//
+//    @Override
+//    public PathogenicityData getVariantNcdsData(Variant variant) {
+//        return ncdsDao.getPathogenicityData(variant);
+//    }
+
 }

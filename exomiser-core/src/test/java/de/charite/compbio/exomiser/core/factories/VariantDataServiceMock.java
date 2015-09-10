@@ -8,10 +8,13 @@ package de.charite.compbio.exomiser.core.factories;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Mock of VariantDataService to provide canned responses for variants. Enables
@@ -21,7 +24,7 @@ import java.util.Map;
  *
  * @author Jules Jacobsen<jules.jacobsen@sanger.ac.uk>
  */
-public class VariantDataServiceMock implements VariantDataService {
+public class VariantDataServiceMock extends VariantDataServiceImpl {
 
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
@@ -59,33 +62,14 @@ public class VariantDataServiceMock implements VariantDataService {
     }
 
     @Override
-    public FrequencyData getVariantFrequencyData(Variant variant) {
-        return expectedFrequencyData.getOrDefault(variant, new FrequencyData());
+    public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
+        FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, new FrequencyData());
+        return frequencyDataWithSpecifiedFrequencies(allFrequencyData, frequencySources);
     }
 
     @Override
-    public PathogenicityData getVariantPathogenicityData(Variant variant) {
+    public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         return expectedPathogenicityData.getOrDefault(variant, new PathogenicityData());
-    }
-
-    @Override
-    public void setVariantFrequencyData(VariantEvaluation variantEvaluation) {
-        variantEvaluation.setFrequencyData(getVariantFrequencyData(variantEvaluation));
-    }
-
-    @Override
-    public void setVariantPathogenicityData(VariantEvaluation variantEvaluation) {
-        variantEvaluation.setPathogenicityData(getVariantPathogenicityData(variantEvaluation));
-    }
-
-    @Override
-    public PathogenicityData getVariantCaddData(Variant variant) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public PathogenicityData getVariantNcdsData(Variant variant) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -93,18 +77,4 @@ public class VariantDataServiceMock implements VariantDataService {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public void setVariantCaddData(VariantEvaluation variantEvaluation) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setVariantNcdsData(VariantEvaluation variantEvaluation) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

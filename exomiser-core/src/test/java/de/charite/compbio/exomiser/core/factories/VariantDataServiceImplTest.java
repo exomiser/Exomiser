@@ -13,13 +13,16 @@ import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.EnumSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -53,26 +56,30 @@ public class VariantDataServiceImplTest {
     private CaddDao mockCaddDao;
     @Mock
     private RegulatoryFeatureDao mockRegulatoryFeatureDao;
-    
+
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
+
     private static final PathogenicityData PATH_DATA = new PathogenicityData(new PolyPhenScore(1), new MutationTasterScore(1), new SiftScore(0));
     private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
     private static final PathogenicityData CADD_DATA = new PathogenicityData(new CaddScore(1));
-    private static final VariantEffect REG_DATA = VariantEffect.REGULATORY_REGION_VARIANT;
+    private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
-
-    private VariantEvaluation varEval;
+    private VariantEvaluation variant;
+    private static final VariantBuilder variantBuilder = new VariantBuilder(1, 1, "A", "T");
 
     @Before
     public void setUp() {
-        varEval = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
+        variant = variantBuilder.build();
 
-        MockitoAnnotations.initMocks(this);
-        Mockito.when(mockPathogenicityDao.getPathogenicityData(varEval)).thenReturn(PATH_DATA);
-        Mockito.when(mockFrequencyDao.getFrequencyData(varEval)).thenReturn(FREQ_DATA);
-        Mockito.when(mockCaddDao.getPathogenicityData(varEval)).thenReturn(CADD_DATA);
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(varEval)).thenReturn(REG_DATA);
+        Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
+        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
+        Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
+        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION);
 
+    }
+
+    private static VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
+        return variantBuilder.variantEffect(variantEffect).build();
     }
 
     @Test
@@ -85,30 +92,54 @@ public class VariantDataServiceImplTest {
      * PathogenictyFilter swithc
      */
     @Test
-    public void serviceAddsPathogenicityDataToAVariantEvaluation() {
-        instance.setVariantPathogenicityData(varEval);
-        assertThat(varEval.getPathogenicityData(), equalTo(PATH_DATA));
-    }
-
-    /*
-     * Ignore until sort out how VariantDataService should behave for CADD vs
-     * PathogenictyFilter swithc
-     */
-    @Test
-    public void serviceReturnsPathogenicityDataForAVariantEvaluation() {
-        PathogenicityData result = instance.getVariantPathogenicityData(varEval);
+    public void serviceReturnsPathogenicityDataForVariant() {
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT));
         assertThat(result, equalTo(PATH_DATA));
     }
 
     @Test
-    public void serviceAddsFrequencyDataToAVariantEvaluation() {
-        instance.setVariantFrequencyData(varEval);
-        assertThat(varEval.getFrequencyData(), equalTo(FREQ_DATA));
+    public void serviceReturnsFrequencyDataForVariant() {
+        FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.allOf(FrequencySource.class));
+        assertThat(result, equalTo(FREQ_DATA));
     }
 
     @Test
-    public void serviceReturnsFrequencyDataForAVariantEvaluation() {
-        FrequencyData result = instance.getVariantFrequencyData(varEval);
-        assertThat(result, equalTo(FREQ_DATA));
+    public void serviceReturnsSpecifiedFrequencyDataForVariant() {
+        FrequencyData frequencyData = new FrequencyData(new RsId(234567), new Frequency(1f, FrequencySource.ESP_AFRICAN_AMERICAN), new Frequency(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
+        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
+        
+        FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN));
+        assertThat(result, equalTo(new FrequencyData(new RsId(234567), new Frequency(1f, FrequencySource.ESP_AFRICAN_AMERICAN))));
     }
+
+    @Test
+    public void serviceReturnsEmptyFrequencyDataWhenSpecifiedFrequencyDataIsUnavailable() {
+        FrequencyData frequencyData = new FrequencyData();
+        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
+                
+        FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
+        assertThat(result, equalTo(new FrequencyData()));
+    }
+
+    @Test
+    public void serviceReturnsOriginalVariantEffectForCodingVariant() {
+        variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
+        assertThat(result, equalTo(VariantEffect.MISSENSE_VARIANT));
+    }
+
+    @Test
+    public void serviceReturnsRegulatoryFeaturelVariantEffectForIntergenicVariant() {
+        variant = buildVariantOfType(VariantEffect.INTERGENIC_VARIANT);
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
+        assertThat(result, equalTo(REGULATORY_REGION));
+    }
+
+    @Test
+    public void serviceReturnsRegulatoryFeaturelVariantEffectForUpstreamGeneVariant() {
+        variant = buildVariantOfType(VariantEffect.UPSTREAM_GENE_VARIANT);
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
+        assertThat(result, equalTo(REGULATORY_REGION));
+    }
+
 }
