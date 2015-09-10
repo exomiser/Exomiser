@@ -7,8 +7,6 @@ package de.charite.compbio.exomiser.core;
 
 import static de.charite.compbio.exomiser.core.Exomiser.NON_EXONIC_VARIANT_EFFECTS;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
