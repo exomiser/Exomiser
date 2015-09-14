@@ -18,6 +18,8 @@ import de.charite.compbio.exomiser.core.filters.QualityFilter;
 import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriority;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
@@ -37,10 +39,8 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
@@ -59,6 +59,8 @@ public class AnalysisParserTest {
     private List<AnalysisStep> analysisSteps;
 
     private List<String> hpoIds;
+    private Set<FrequencySource> frequencySources;
+    private Set<PathogenicitySource> pathogenicitySources;
 
     @Before
     public void setUp() {
@@ -71,6 +73,8 @@ public class AnalysisParserTest {
 
         analysisSteps = new ArrayList<>();
         hpoIds = new ArrayList<>(Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055"));
+        frequencySources = EnumSet.of(FrequencySource.THOUSAND_GENOMES, FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN);
+        pathogenicitySources = EnumSet.of(PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER);
     }
 
     private static String addStepToAnalysis(String step) {
@@ -81,6 +85,8 @@ public class AnalysisParserTest {
                 + "    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']\n"
                 + "    analysisMode: PASS_ONLY \n"
                 + "    geneScoreMode: RAW_SCORE\n"
+                + "    frequencySources: [THOUSAND_GENOMES, ESP_AFRICAN_AMERICAN, EXAC_AFRICAN_INC_AFRICAN_AMERICAN]\n"
+                + "    pathogenicitySources: [SIFT, POLYPHEN, MUTATION_TASTER]\n"
                 + "    steps: ["
                 + "        %s\n"
                 + "]", step);
@@ -93,8 +99,11 @@ public class AnalysisParserTest {
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+        assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
+        assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
         assertThat(analysis.getAnalysisSteps().isEmpty(), is(true));
     }
 
@@ -102,7 +111,8 @@ public class AnalysisParserTest {
     public void throwsExceptionWhenNoVcfIsSet() {
         instance.parseAnalysis(
                 "analysis:\n"
-                + "    vcf: \n");
+                + "    vcf: \n"
+        );
     }
 
     @Test
@@ -161,17 +171,39 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
+    @Test(expected = AnalysisParserException.class)
+    public void testParseAnalysisStep_FrequencyFilterNoFrequencySourcesDefined() {
+        String script = "analysis:\n"
+                + "    vcf: test.vcf\n"
+                + "    frequencySources: []\n"
+                + "    steps: ["
+                + "        frequencyFilter: {maxFrequency: 1.0}\n"
+                + "]";
+                
+        instance.parseAnalysis(script);
+    }
+
     @Test
     public void testParseAnalysisStep_FrequencyFilter() {
-//        frequencySources: [THOUSAND_GENOMES, ESP_AFRICAN_AMERICAN]
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("frequencyFilter: {maxFrequency: 1.0}"));
         analysisSteps.add(new FrequencyFilter(1.0f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
+    @Test(expected = AnalysisParserException.class)
+    public void testParseAnalysisStep_PathogenicityFilterNoPathSourcesDefined() {
+        String script = "analysis:\n"
+                + "    vcf: test.vcf\n"
+                + "    pathogenicitySources: []\n"
+                + "    steps: ["
+                + "        pathogenicityFilter: {keepNonPathogenic: false}\n"
+                + "]";
+                
+        instance.parseAnalysis(script);
+    }
+
     @Test
     public void testParseAnalysisStep_PathogenicityFilter() {
-//        pathogenicitySources: [SIFT, POLYPHEN, CADD]
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("pathogenicityFilter: {keepNonPathogenic: false}"));
         analysisSteps.add(new PathogenicityFilter(false));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
@@ -191,9 +223,11 @@ public class AnalysisParserTest {
                 + "    vcf: test.vcf\n"
                 + "    ped:\n"
                 + "    modeOfInheritance: UNINITIALIZED\n"
-                + "    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']\n"
+                + "    hpoIds: []\n"
                 + "    analysisMode: PASS_ONLY \n"
                 + "    geneScoreMode: RAW_SCORE\n"
+                + "    pathogenicitySources: []\n"
+                + "    frequencySources: []\n"
                 + "    steps: ["
                 + "        inheritanceFilter: {}\n"
                 + "]");
@@ -250,15 +284,18 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParsePath() {
+    public void testParseAnalysisFileFromPath() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
 
         Analysis analysis = instance.parseAnalysis(Paths.get("src/test/resources/analysisExample.yml"));
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
+        assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getModeOfInheritance(), equalTo(modeOfInheritance));
         assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
+        assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
+        assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 123256200, 123256300)));
         analysisSteps.add(new EntrezGeneIdFilter(new LinkedHashSet<>(Arrays.asList(12345, 34567, 98765))));
         analysisSteps.add(new QualityFilter(50.0f));
@@ -305,7 +342,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseOutputSettings_NumGenesToShow() {
         OutputSettings outputSettings = instance.parseOutputSettings(
-                 "outputOptions:\n"
+                "outputOptions:\n"
                 + "    outputPassVariantsOnly: true\n"
                 + "    numGenes: 1\n"
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
@@ -323,7 +360,7 @@ public class AnalysisParserTest {
                 + "    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]\n");
         assertThat(outputSettings.getOutputPrefix(), equalTo("results/Pfeiffer-hiphive"));
     }
-    
+
     @Test
     public void testParseOutputSettings_OutputFormats() {
         OutputSettings outputSettings = instance.parseOutputSettings(

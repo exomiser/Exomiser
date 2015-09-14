@@ -9,6 +9,7 @@ import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriority;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
@@ -34,13 +35,8 @@ import static java.nio.file.Files.newInputStream;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,6 +192,8 @@ public class AnalysisParser {
             analysis.setModeOfInheritance(parseModeOfInheritance(analysisMap));
             analysis.setScoringMode(parseScoringMode(analysisMap));
             analysis.setAnalysisMode(parseAnalysisMode(analysisMap));
+            analysis.setFrequencySources(parseFrequencySources(analysisMap));
+            analysis.setPathogenicitySources(parsePathogenicitySources(analysisMap));
             analysis.addAllSteps(makeAnalysisSteps(analysisMap));
 
             logger.debug("Made analysis: {}", analysis);
@@ -207,7 +205,7 @@ public class AnalysisParser {
             for (Map<String, Map> analysisStepMap : parseAnalysisSteps(analysisMap)) {
                 logger.debug("Analysis step: {}", analysisStepMap);
                 for (Entry<String, Map> entry : analysisStepMap.entrySet()) {
-                    AnalysisStep analysisStep = makeAnalysisStep(entry, parseHpoIds(analysisMap), parseModeOfInheritance(analysisMap));
+                    AnalysisStep analysisStep = makeAnalysisStep(entry, analysisMap);
                     if (analysisStep != null) {
                         analysisSteps.add(analysisStep);
                         logger.debug("Added {}", entry.getKey());
@@ -281,11 +279,9 @@ public class AnalysisParser {
         /**
          * Returns an AnalysisStep or null if the step is unrecognised.
          *
-         * @param hpoIds
-         * @param modeOfInheritance
          * @return
          */
-        private AnalysisStep makeAnalysisStep(Entry<String, Map> entry, List<String> hpoIds, ModeOfInheritance modeOfInheritance) {
+        private AnalysisStep makeAnalysisStep(Entry<String, Map> entry, Map analysisMap) {
             String key = entry.getKey();
             Map analysisStepMap = entry.getValue();
             switch (key) {
@@ -298,13 +294,13 @@ public class AnalysisParser {
                 case "qualityFilter":
                     return makeQualityFilter(analysisStepMap);
                 case "knownVariantFilter":
-                    return makeKnownVariantFilter(analysisStepMap);
+                    return makeKnownVariantFilter(analysisStepMap, parseFrequencySources(analysisMap));
                 case "frequencyFilter":
-                    return makeFrequencyFilter(analysisStepMap);
+                    return makeFrequencyFilter(analysisStepMap, parseFrequencySources(analysisMap));
                 case "pathogenicityFilter":
-                    return makePathogenicityFilter(analysisStepMap);
+                    return makePathogenicityFilter(analysisStepMap, parsePathogenicitySources(analysisMap));
                 case "inheritanceFilter":
-                    return makeInheritanceFilter(modeOfInheritance);
+                    return makeInheritanceFilter(parseModeOfInheritance(analysisMap));
                 case "priorityScoreFilter":
                     return makePriorityScoreFilter(analysisStepMap);
                 case "regulatoryFeatureFilter":
@@ -312,11 +308,11 @@ public class AnalysisParser {
                 case "omimPrioritiser":
                     return prioritiserFactory.makeOmimPrioritiser();
                 case "hiPhivePrioritiser":
-                    return makeHiPhivePrioritiser(analysisStepMap, hpoIds);
+                    return makeHiPhivePrioritiser(analysisStepMap, parseHpoIds(analysisMap));
                 case "phivePrioritiser":
-                    return prioritiserFactory.makePhivePrioritiser(hpoIds);
+                    return prioritiserFactory.makePhivePrioritiser(parseHpoIds(analysisMap));
                 case "phenixPrioritiser":
-                    return prioritiserFactory.makePhenixPrioritiser(hpoIds);
+                    return prioritiserFactory.makePhenixPrioritiser(parseHpoIds(analysisMap));
                 case "exomeWalkerPrioritiser":
                     return makeWalkerPrioritiser(analysisStepMap);
                 default:
@@ -339,7 +335,7 @@ public class AnalysisParser {
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("GeneId filter requires a list of ENTREZ geneIds e.g. {geneIds: [12345, 34567, 98765]}", options);
             }
-            return new EntrezGeneIdFilter(new LinkedHashSet<Integer>(geneIds));
+            return new EntrezGeneIdFilter(new LinkedHashSet<>(geneIds));
         }
 
         private VariantEffectFilter makeVariantEffectFilter(Map<String, List> options) {
@@ -367,20 +363,21 @@ public class AnalysisParser {
             return new QualityFilter(quality);
         }
 
-        private VariantFilter makeKnownVariantFilter(Map<String, Object> options) {
-            //nothing special to do here, this is a boolean filter.
-            //TODO: wrap this and provide the frequencySources
-//            return new FrequencyDataProvider(variantDataService, new KnownVariantFilter());
-            return new KnownVariantFilter();
+        private VariantFilter makeKnownVariantFilter(Map<String, Object> options, Set<FrequencySource> sources) {
+            //nothing special to do here, apart from wrap the filter with a DataProvider, this is a boolean filter.
+            if (sources.isEmpty()) {
+                throw new AnalysisParserException("Known variant filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
+            }
+            return new FrequencyDataProvider(variantDataService, EnumSet.copyOf(sources), new KnownVariantFilter());
+//            return new KnownVariantFilter();
         }
 
-        private VariantFilter makeFrequencyFilter(Map<String, Object> options) {
+        private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources) {
             Double maxFreq = getMaxFrequency(options);
-//            List<FrequencySource> sources = getFrequencySources(options);
-//            logger.info("Filtering against freq sources: {}", EnumSet.copyOf(sources));
-            //TODO: add sources into filter
-//            return new FrequencyDataProvider(variantDataService, new FrequencyFilter(maxFreq.floatValue()));
-            return new FrequencyFilter(maxFreq.floatValue());
+            if (sources.isEmpty()) {
+                throw new AnalysisParserException("Frequency filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
+            }
+            return new FrequencyDataProvider(variantDataService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq.floatValue()));
         }
 
         private Double getMaxFrequency(Map<String, Object> options) {
@@ -390,11 +387,11 @@ public class AnalysisParser {
             }
             return maxFreq;
         }
-
-        private List<FrequencySource> getFrequencySources(Map<String, Object> options) {
+        
+        private Set<FrequencySource> parseFrequencySources(Map<String, Object> options) {
             List<String> frequencySources = (List<String>) options.get("frequencySources");
-            if (frequencySources == null || frequencySources.isEmpty()) {
-                throw new AnalysisParserException("Frequency filter requires a list of frequency sources e.g. {frequencySources: [THOUSAND_GENOMES, ESP_ALL]}", options);
+            if (frequencySources == null) {
+                return EnumSet.noneOf(FrequencySource.class);
             }
             List<FrequencySource> sources = new ArrayList<>();
             for (String source : frequencySources) {
@@ -405,24 +402,27 @@ public class AnalysisParser {
                     throw new AnalysisParserException(String.format("Illegal FrequencySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(FrequencySource.class)), options);
                 }
             }
-            return sources;
+            if (sources.isEmpty()) {
+                return EnumSet.noneOf(FrequencySource.class);
+            }
+            return EnumSet.copyOf(sources);
         }
 
-        private PathogenicityFilter makePathogenicityFilter(Map<String, Object> options) {
+        private VariantFilter makePathogenicityFilter(Map<String, Object> options, Set<PathogenicitySource> sources) {
             Boolean keepNonPathogenic = (Boolean) options.get("keepNonPathogenic");
             if (keepNonPathogenic == null) {
                 throw new AnalysisParserException("Pathogenicity filter requires a boolean value for keepNonPathogenic e.g. {keepNonPathogenic: false}", options);
             }
-//            List<PathogenicitySource> sources = getPathogenicitySources(options);
-//            logger.info("Filtering against path sources: {}", EnumSet.copyOf(sources));
-            //TODO: add sources into filter
-            return new PathogenicityFilter(keepNonPathogenic);
+            if (sources.isEmpty()) {
+                throw new AnalysisParserException("Pathogenicity filter requires a list of pathogenicity sources for the analysis e.g. {pathogenicitySources: [SIFT, POLYPHEN, MUTATION_TASTER]}", options);
+            }
+            return new PathogenicityDataProvider(variantDataService, EnumSet.copyOf(sources), new PathogenicityFilter(keepNonPathogenic));
         }
 
-        private List<PathogenicitySource> getPathogenicitySources(Map<String, Object> options) {
+        private Set<PathogenicitySource> parsePathogenicitySources(Map<String, Object> options) {
             List<String> pathogenicitySources = (List<String>) options.get("pathogenicitySources");
-            if (pathogenicitySources == null || pathogenicitySources.isEmpty()) {
-                throw new AnalysisParserException("Frequency filter requires a list of frequency sources e.g. {pathogenicitySources: [SIFT, POLYPHEN, CADD]}", options);
+            if (pathogenicitySources == null) {
+                return EnumSet.noneOf(PathogenicitySource.class);
             }
             List<PathogenicitySource> sources = new ArrayList<>();
             for (String source : pathogenicitySources) {
@@ -433,7 +433,10 @@ public class AnalysisParser {
                     throw new AnalysisParserException(String.format("Illegal PathogenicitySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(PathogenicitySource.class)), options);
                 }
             }
-            return sources;
+            if (sources.isEmpty()) {
+                return EnumSet.noneOf(PathogenicitySource.class);
+            }
+            return EnumSet.copyOf(sources);
         }
 
         private PriorityScoreFilter makePriorityScoreFilter(Map<String, Object> options) {
