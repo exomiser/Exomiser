@@ -7,12 +7,16 @@ package de.charite.compbio.exomiser.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +32,7 @@ public class Analysis {
     private Path vcfPath;
     private Path pedPath;
     //SampleData is not final as it requires building from the VCF/PED files. 
-    //This could happen at a seperate time to the analysis initially being built.
+    //This could happen at a separate time to the analysis initially being built.
     @JsonIgnore
     private SampleData sampleData;
     //these are more optional variables
@@ -36,6 +40,8 @@ public class Analysis {
     private ModeOfInheritance modeOfInheritance;
     private ScoringMode scoringMode;
     private AnalysisMode analysisMode;
+    private Set<FrequencySource> frequencySources;
+    private Set<PathogenicitySource> pathogenicitySources;
     private final List<AnalysisStep> analysisSteps;
 
     public Analysis() {
@@ -43,10 +49,12 @@ public class Analysis {
         //there is often no pedigree. 
         pedPath = null;
         sampleData = new SampleData();
-        hpoIds = new ArrayList<>();
+        hpoIds = Collections.emptyList();
         modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
         scoringMode = ScoringMode.RAW_SCORE;
         analysisMode = AnalysisMode.PASS_ONLY;
+        frequencySources = Collections.emptySet();
+        pathogenicitySources = Collections.emptySet();
         analysisSteps = new ArrayList<>();
     }
 
@@ -104,6 +112,22 @@ public class Analysis {
 
     public void setAnalysisMode(AnalysisMode analysisMode) {
         this.analysisMode = analysisMode;
+    }
+
+    public Set<FrequencySource> getFrequencySources() {
+        return frequencySources;
+    }
+
+    public void setFrequencySources(Set<FrequencySource> frequencySources) {
+        this.frequencySources = frequencySources;
+    }
+
+    public Set<PathogenicitySource> getPathogenicitySources() {
+        return pathogenicitySources;
+    }
+
+    public void setPathogenicitySources(Set<PathogenicitySource> pathogenicitySources) {
+        this.pathogenicitySources = pathogenicitySources;
     }
 
     public void addStep(AnalysisStep step) {
