@@ -141,6 +141,20 @@ public class PathogenicityDataTest {
         List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
         assertThat(result, equalTo(expResult));
     }
+    
+    @Test
+    public void testGetPredictedPathogenicityScores_isImmutable() {
+        instance = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        List<PathogenicityScore> expResult = new ArrayList<>();
+        expResult.add(POLYPHEN_PASS);
+        expResult.add(MTASTER_PASS);
+        expResult.add(SIFT_FAIL);
+        //try and add another score to the instance post-construction
+        instance.getPredictedPathogenicityScores().add(SIFT_PASS);
+        
+        List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
+        assertThat(result, equalTo(expResult));
+    }
 
     @Test
     public void testHasPredictedScore() {
