@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -28,15 +27,18 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
 
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
+    private final Map<Variant, VariantEffect> expectedVariantEffects;
 
     public VariantDataServiceMock() {
         this.expectedFrequencyData = new HashMap<>();
         this.expectedPathogenicityData = new HashMap<>();
+        this.expectedVariantEffects = new HashMap<>();
     }
 
-    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData) {
+    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData, Map<Variant, VariantEffect> expectedVariantEffects) {
         this.expectedFrequencyData = expectedFrequencyData;
         this.expectedPathogenicityData = expectedPathogenicityData;
+        this.expectedVariantEffects = expectedVariantEffects;
     }
 
     /**
@@ -61,20 +63,32 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
         expectedPathogenicityData.put(variant, pathogenicityData);
     }
 
+    /**
+     * Adds the expected VariantEffect for the given Variant to the
+     * VariantDataService.
+     *
+     * @param variant
+     * @param variantEffect
+     */
+    public void put(Variant variant, VariantEffect variantEffect) {
+        expectedVariantEffects.put(variant, variantEffect);
+    }
+    
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, new FrequencyData());
-        return frequencyDataWithSpecifiedFrequencies(allFrequencyData, frequencySources);
+        return frequencyDataFromSpecifiedSources(allFrequencyData, frequencySources);
     }
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-        return expectedPathogenicityData.getOrDefault(variant, new PathogenicityData());
+        PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, new PathogenicityData());
+        return pathDataFromSpecifiedDataSources(pathData, pathogenicitySources);
     }
 
     @Override
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return expectedVariantEffects.getOrDefault(variant, variant.getVariantEffect());
     }
 
 }
