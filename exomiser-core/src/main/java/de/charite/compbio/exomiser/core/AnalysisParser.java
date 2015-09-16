@@ -50,10 +50,11 @@ public class AnalysisParser {
     private static final Logger logger = LoggerFactory.getLogger(AnalysisParser.class);
 
     private final PriorityFactory prioritiserFactory;
-    private final VariantDataService variantDataService = null;
+    private final VariantDataService variantDataService;
 
-    public AnalysisParser(PriorityFactory prioritiserFactory) {
+    public AnalysisParser(PriorityFactory prioritiserFactory, VariantDataService variantDataService) {
         this.prioritiserFactory = prioritiserFactory;
+        this.variantDataService = variantDataService;
     }
 
     public Analysis parseAnalysis(Path analysisScript) {
@@ -453,8 +454,8 @@ public class AnalysisParser {
             return new PriorityScoreFilter(priorityType, minPriorityScore.floatValue());
         }
 
-        private RegulatoryFeatureFilter makeRegulatoryFeatureFilter(Map<String, Double> options) {
-            return new RegulatoryFeatureFilter();
+        private VariantFilter makeRegulatoryFeatureFilter(Map<String, Double> options) {
+            return new RegulatoryFeatureDataProvider(variantDataService, new RegulatoryFeatureFilter());
         }
 
         private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {

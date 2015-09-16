@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.AnalysisParser.AnalysisFileNotFoundException;
 import de.charite.compbio.exomiser.core.AnalysisParser.AnalysisParserException;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
@@ -65,7 +66,7 @@ public class AnalysisParserTest {
     @Before
     public void setUp() {
         priorityFactory = new NoneTypePriorityFactoryStub();
-        instance = new AnalysisParser(priorityFactory);
+        instance = new AnalysisParser(priorityFactory, new VariantDataServiceStub());
 
         sampleData = new SampleData();
         sampleData.setVcfPath(Paths.get("test.vcf"));

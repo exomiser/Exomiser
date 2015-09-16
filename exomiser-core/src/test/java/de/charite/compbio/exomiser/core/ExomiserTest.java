@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core;
 
 import static de.charite.compbio.exomiser.core.Exomiser.NON_EXONIC_VARIANT_EFFECTS;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
@@ -16,6 +17,8 @@ import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.QualityFilter;
 import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
@@ -24,6 +27,7 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,11 +54,13 @@ public class ExomiserTest {
     @Before
     public void setUp() {       
         PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
-        instance = new Exomiser(stubPriorityFactory);
+        instance = new Exomiser(stubPriorityFactory, new VariantDataServiceStub());
         
         settingsBuilder = new SettingsBuilder().vcfFilePath(Paths.get("vcf"));
         analysis = new Analysis(); 
         analysis.setVcfPath(Paths.get("vcf"));
+        analysis.setFrequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES);
+        analysis.setPathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.POLYPHEN, PathogenicitySource.SIFT));
     }
 
     private void addDefaultVariantFilters(Analysis analysis) {
@@ -62,7 +68,19 @@ public class ExomiserTest {
         analysis.addStep(new FrequencyFilter(100f));
         analysis.addStep(new PathogenicityFilter(false));
     }
-
+       
+    @Test
+    public void testDefaultFrequencyDataSources() {
+        Analysis result = instance.setUpExomiserAnalysis(settingsBuilder.build());
+        assertThat(result.getFrequencySources(), equalTo(analysis.getFrequencySources()));
+    }
+    
+    @Test
+    public void testDefaultPathogenicityDataSources() {
+        Analysis result = instance.setUpExomiserAnalysis(settingsBuilder.build());
+        assertThat(result.getPathogenicitySources(), equalTo(analysis.getPathogenicitySources()));
+    }
+    
     @Test
     public void testDefaultAnalysisIsTargetFrequencyAndPathogenicityFilters() {
         ExomiserSettings settings = settingsBuilder.build();
@@ -155,5 +173,5 @@ public class ExomiserTest {
         Analysis result = instance.setUpExomiserAnalysis(settings);
         assertThat(result, equalTo(analysis));        
     }
-    
+
 }
