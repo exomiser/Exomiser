@@ -145,13 +145,14 @@ public class Analysis {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.vcfPath);
-        hash = 89 * hash + Objects.hashCode(this.pedPath);
-        hash = 89 * hash + Objects.hashCode(this.hpoIds);
-        hash = 89 * hash + Objects.hashCode(this.modeOfInheritance);
-        hash = 89 * hash + Objects.hashCode(this.scoringMode);
-        hash = 89 * hash + Objects.hashCode(this.analysisMode);
-        hash = 89 * hash + Objects.hashCode(this.analysisSteps);
+        hash = 73 * hash + Objects.hashCode(this.vcfPath);
+        hash = 73 * hash + Objects.hashCode(this.pedPath);
+        hash = 73 * hash + Objects.hashCode(this.hpoIds);
+        hash = 73 * hash + Objects.hashCode(this.modeOfInheritance);
+        hash = 73 * hash + Objects.hashCode(this.scoringMode);
+        hash = 73 * hash + Objects.hashCode(this.analysisMode);
+        hash = 73 * hash + Objects.hashCode(this.frequencySources);
+        hash = 73 * hash + Objects.hashCode(this.pathogenicitySources);
         return hash;
     }
 
@@ -167,9 +168,6 @@ public class Analysis {
         if (!Objects.equals(this.vcfPath, other.vcfPath)) {
             return false;
         }
-        if (!Objects.equals(this.pedPath, other.pedPath)) {
-            return false;
-        }
         if (!Objects.equals(this.hpoIds, other.hpoIds)) {
             return false;
         }
@@ -182,7 +180,10 @@ public class Analysis {
         if (this.analysisMode != other.analysisMode) {
             return false;
         }
-        if (!Objects.equals(this.analysisSteps, other.analysisSteps)) {
+        if (!Objects.equals(this.frequencySources, other.frequencySources)) {
+            return false;
+        }
+        if (!Objects.equals(this.pathogenicitySources, other.pathogenicitySources)) {
             return false;
         }
         return true;
@@ -190,7 +191,7 @@ public class Analysis {
 
     @Override
     public String toString() {
-        return "Analysis{" + "vcf=" + vcfPath + ", ped=" + pedPath + ", modeOfInheritance=" + modeOfInheritance + ", scoringMode=" + scoringMode + ", analysisMode=" + analysisMode + ", analysisSteps=" + analysisSteps + '}';
+        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", scoringMode=" + scoringMode + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
 
 }
