@@ -4,41 +4,41 @@
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.dao;
-
+ 
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import htsjdk.tribble.readers.TabixReader;
-
+ 
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-
+ 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
 public class CaddDao implements PathogenicityDao {
-
+ 
     private final Logger logger = LoggerFactory.getLogger(CaddDao.class);
-
+ 
     private final TabixReader inDelTabixReader;
     private final TabixReader snvTabixReader;
-
+ 
     public CaddDao(TabixReader inDelTabixReader, TabixReader snvTabixReader) {
         this.inDelTabixReader = inDelTabixReader;
         this.snvTabixReader = snvTabixReader;
     }
-
+ 
     @Cacheable(value = "cadd", key = "#variant.chromosomalVariant")
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }
-
+ 
     PathogenicityData processResults(Variant variant) {
         String chromosome = variant.getChromosomeName();
         String ref = variant.getRef();
@@ -54,11 +54,11 @@ public class CaddDao implements PathogenicityDao {
         
         return getSnvCaddPathogenicityData(chromosome, start, ref, alt);
     }
-
+ 
     private boolean isIndel(String ref, String alt) {
         return ref.equals("-") || alt.equals("-");
     }
-
+ 
     private PathogenicityData getIndelCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
         try {
             TabixReader.Iterator results = inDelTabixReader.query(chromosome, start, start);
@@ -89,7 +89,7 @@ public class CaddDao implements PathogenicityDao {
         }
         return new PathogenicityData();
     }
-
+ 
     private PathogenicityData getSnvCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
         try {
             // query SNV file
@@ -108,18 +108,18 @@ public class CaddDao implements PathogenicityDao {
         }        
         return new PathogenicityData();
     }
-
+ 
     private PathogenicityData makeCaddPathData(String phredScaledCaddScore) {
         CaddScore caddScore = parseCaddScore(phredScaledCaddScore);
         return new PathogenicityData(caddScore);
     }
-
+ 
     private CaddScore parseCaddScore(String phredScaledCaddScore) throws NumberFormatException {
         float score = Float.parseFloat(phredScaledCaddScore);
         float cadd = rescaleLogTenBasedScore(score);
         return new CaddScore(cadd);
     }
-
+ 
     /**
      * rescales a log10-Phred based score to a value between 0 and 1
      */
