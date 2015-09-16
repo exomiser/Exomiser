@@ -21,10 +21,6 @@ public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterRunner.class);
 
-    public SparseVariantFilterRunner(VariantDataService variantDataService) {
-        super(variantDataService);
-    }
-
     /**
      * @param filters
      * @param variantEvaluations

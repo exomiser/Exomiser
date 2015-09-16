@@ -34,14 +34,6 @@ import org.slf4j.LoggerFactory;
 public class SimpleVariantFilterRunner implements VariantFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleVariantFilterRunner.class);
-
-    //TODO: this should vanish
-    private final VariantDataService variantDataService;
-
-    //TODO: There should be no need for a parameterised constructor
-    public SimpleVariantFilterRunner(VariantDataService variantDataService) {
-        this.variantDataService = variantDataService;
-    }
    
     @Override
     public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
@@ -68,37 +60,7 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
     }
 
     public FilterResult run(Filter filter, VariantEvaluation variantEvaluation) {
-        addMissingVariantData(filter, variantEvaluation);
         return runFilterAndAddResult(filter, variantEvaluation);
-    }
-
-    //TODO: Remove this - provide functionality by decorating the filter in a VariantFilterDataProvider
-    protected void addMissingVariantData(Filter filter, VariantEvaluation variantEvaluation) {
-        switch (filter.getFilterType()) {
-            //DONE: Add these to the new FrequencyDataProvider   
-            case FREQUENCY_FILTER:
-            case KNOWN_VARIANT_FILTER:
-                //will require the FrequencySource in order to get the right ones
-                variantEvaluation.setFrequencyData(variantDataService.getVariantFrequencyData(variantEvaluation, EnumSet.allOf(FrequencySource.class)));
-                break;
-            //TODO: Add these to the new PathogenicityDataProvider    
-            case PATHOGENICITY_FILTER:
-                //will require the PathogenicitySource in order to get the right ones specified by the user in the yaml file
-                variantEvaluation.setPathogenicityData(variantDataService.getVariantPathogenicityData(variantEvaluation, EnumSet.of(PathogenicitySource.SIFT, PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER)));
-                break;
-            //TODO: remove CADD and NCDS - this will be handled by Pathogenicityfilter
-            //Check the functionality first - they may not be identical to the Pathogenicityfilter
-//            case CADD_FILTER:
-//                variantDataService.setVariantCaddData(variantEvaluation);
-//                break;
-//            case NCDS_FILTER:
-//                variantDataService.setVariantNcdsData(variantEvaluation);
-//                break;
-            //TODO: Add this to the new RegulatoryFeatureDataProvider    
-            case REGULATORY_FEATURE_FILTER:
-                variantEvaluation.setVariantEffect(variantDataService.getVariantRegulatoryFeatureData(variantEvaluation));
-                break;
-        }
     }
 
     protected FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {

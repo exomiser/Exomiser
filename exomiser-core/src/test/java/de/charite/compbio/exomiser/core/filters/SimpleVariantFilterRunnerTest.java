@@ -12,6 +12,7 @@ import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class SimpleVariantFilterRunnerTest {
     private VariantDataService variantDataService;
     
     //Frequency run data
-    private final FrequencyFilter frequencyFilter = new FrequencyFilter(1f);
+    private VariantFilter frequencyFilter;
     
     //Quality run data
     private static final double PASS_QUALITY = 1000;
@@ -70,13 +71,16 @@ public class SimpleVariantFilterRunnerTest {
                                            passesQualityFrequencyFilter, 
                                            passesTargetQualityFilter);
          
-        variantDataService = new VariantDataServiceMock(mockFrequencyData(), null);
-        instance = new SimpleVariantFilterRunner(variantDataService);
+        variantDataService = new VariantDataServiceMock(mockFrequencyData(), null, null);
+        
+        frequencyFilter = new FrequencyDataProvider(variantDataService, EnumSet.of(FrequencySource.UNKNOWN), new FrequencyFilter(1f));
+        
+        instance = new SimpleVariantFilterRunner();
     }
 
     private Map<Variant, FrequencyData> mockFrequencyData() {
-        FrequencyData passFrequency = new FrequencyData(new RsId(12345), new Frequency(0.01f));
-        FrequencyData failFrequency = new FrequencyData(new RsId(54321), new Frequency(100f));
+        FrequencyData passFrequency = new FrequencyData(new RsId(12345), new Frequency(0.01f, FrequencySource.UNKNOWN));
+        FrequencyData failFrequency = new FrequencyData(new RsId(54321), new Frequency(100f, FrequencySource.UNKNOWN));
 
         Map<Variant, FrequencyData> frequecyData = new HashMap<>();
         frequecyData.put(passesAllFilters, passFrequency);
