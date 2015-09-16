@@ -7,6 +7,7 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.dao.CaddDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
+import de.charite.compbio.exomiser.core.dao.NcdsDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
@@ -17,11 +18,13 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.NcdsScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.Collections;
 import java.util.EnumSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -49,9 +52,11 @@ public class VariantDataServiceImplTest {
     @InjectMocks
     private VariantDataServiceImpl instance;
     @Mock
+    private FrequencyDao mockFrequencyDao;
+    @Mock
     private PathogenicityDao mockPathogenicityDao;
     @Mock
-    private FrequencyDao mockFrequencyDao;
+    private NcdsDao mockNcdsDao;
     @Mock
     private CaddDao mockCaddDao;
     @Mock
@@ -69,7 +74,7 @@ public class VariantDataServiceImplTest {
 
     @Before
     public void setUp() {
-        variant = variantBuilder.build();
+        variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
 
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
@@ -95,6 +100,58 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsPathogenicityDataForVariant() {
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT));
         assertThat(result, equalTo(PATH_DATA));
+    }
+    
+    @Test
+    public void serviceReturnsEmptyPathogenicityDataForVariantWhenNoSourcesAreDefined() {
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, Collections.emptySet());
+        assertThat(result, equalTo(new PathogenicityData()));
+    }
+
+    @Test
+    public void serviceReturnsSpecifiedPathogenicityDataForMissenseVariant() {
+        variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN));
+        assertThat(result, equalTo(new PathogenicityData(new PolyPhenScore(1f))));
+    }
+
+    @Test
+    public void serviceReturnsCaddDataForMissenseVariant() {
+        variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD));
+        assertThat(result, equalTo(CADD_DATA));
+    }
+
+    @Test
+    public void serviceReturnsCaddAndStandardMissenseDescriptorDataForMissenseVariant() {
+        variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.POLYPHEN));
+        
+        assertThat(result, equalTo(new PathogenicityData(new PolyPhenScore(1f), new CaddScore(1f))));
+    }
+    
+    @Test
+    public void serviceReturnsSpecifiedPathogenicityDataForKnownNonCodingVariant() {
+        variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
+        PathogenicityData expectedNcdsData = new PathogenicityData(new NcdsScore(1f));
+        Mockito.when(mockNcdsDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.NCDS));
+        assertThat(result, equalTo(expectedNcdsData));
+    }
+    
+    @Test
+    public void serviceReturnsCaddAndNonCodingScoreForKnownNonCodingVariant() {
+        variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
+        PathogenicityData expectedNcdsData = new PathogenicityData(new CaddScore(1f), new NcdsScore(1f));
+        Mockito.when(mockNcdsDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.NCDS));
+        assertThat(result, equalTo(expectedNcdsData));
+    }
+
+    @Test
+    public void serviceReturnsEmptyFrequencyDataForVariantWhenNoSourcesAreDefined() {
+        FrequencyData result = instance.getVariantFrequencyData(variant, Collections.emptySet());
+        assertThat(result, equalTo(new FrequencyData(new RsId(1234567))));
     }
 
     @Test
@@ -129,7 +186,7 @@ public class VariantDataServiceImplTest {
     }
 
     @Test
-    public void serviceReturnsRegulatoryFeaturelVariantEffectForIntergenicVariant() {
+    public void serviceReturnsRegulatoryFeatureVariantEffectForIntergenicVariant() {
         variant = buildVariantOfType(VariantEffect.INTERGENIC_VARIANT);
         VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
         assertThat(result, equalTo(REGULATORY_REGION));
