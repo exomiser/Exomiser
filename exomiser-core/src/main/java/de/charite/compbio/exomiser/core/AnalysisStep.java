@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core;
 
-import de.charite.compbio.exomiser.core.filters.GeneFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
@@ -21,14 +21,17 @@ public interface AnalysisStep {
 
     enum AnalysisStepType {VARIANT_FILTER, GENE_ONLY_DEPENDENT, INHERITANCE_MODE_DEPENDENT};
 
+    @JsonIgnore
     default boolean isInheritanceModeDependent() {
         return InheritanceFilter.class.isInstance(this) || OMIMPriority.class.isInstance(this);
     }
 
+    @JsonIgnore
     default boolean isVariantFilter() {
         return VariantFilter.class.isInstance(this);
     }
 
+    @JsonIgnore
     default boolean isOnlyGeneDependent() {
         if (isInheritanceModeDependent()) {
             //note that both InheritanceFilter and OMIMPriority operate solely on genes, yet have a dependence on filtered variants
@@ -38,6 +41,7 @@ public interface AnalysisStep {
         return Prioritiser.class.isInstance(this) || PriorityScoreFilter.class.isInstance(this);
     }
 
+    @JsonIgnore
     default AnalysisStepType getType() {
         if (isInheritanceModeDependent()) {
             return AnalysisStepType.INHERITANCE_MODE_DEPENDENT;

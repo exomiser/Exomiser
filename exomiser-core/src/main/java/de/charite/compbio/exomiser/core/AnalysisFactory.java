@@ -7,11 +7,6 @@ package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
-import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;

@@ -19,6 +19,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -101,6 +102,20 @@ public class FilterReportFactoryTest {
         List<FilterReport> reports = instance.makeFilterReports(analysis);
 
         assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
+    }
+    
+    @Test
+    public void testMakeFilterReportsDecoratedFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
+        analysis.addStep(new FrequencyDataProvider(null, Collections.emptySet(), new KnownVariantFilter()));
+        analysis.addStep(new FrequencyDataProvider(null, Collections.emptySet(), new FrequencyFilter(0.1f)));
+        analysis.addStep(new PathogenicityDataProvider(null, Collections.emptySet(), new PathogenicityFilter(true)));
+        
+        List<FilterReport> reports = instance.makeFilterReports(analysis);
+
+        assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
+        assertThat(reports.get(0).getFilterType(), equalTo(FilterType.KNOWN_VARIANT_FILTER));
+        assertThat(reports.get(1).getFilterType(), equalTo(FilterType.FREQUENCY_FILTER));
+        assertThat(reports.get(2).getFilterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
     }
 
     @Test

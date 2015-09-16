@@ -21,7 +21,7 @@ public class SparseAnalysisRunner extends AbstractAnalysisRunner {
     private static final Logger logger = LoggerFactory.getLogger(SparseAnalysisRunner.class);
 
     public SparseAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
-        super(sampleDataFactory, new SparseVariantFilterRunner(variantDataService), new SimpleGeneFilterRunner());
+        super(sampleDataFactory, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override

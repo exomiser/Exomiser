@@ -46,4 +46,18 @@ public class FrequencySourceTest {
         assertThat(LOCAL.getSource(), equalTo("Local"));
     }
 
+    @Test
+    public void testGetAllExternalFrequencySources(){
+        assertThat(ALL_EXTERNAL_FREQ_SOURCES.size(), equalTo(11));
+    }
+    
+    @Test
+    public void testGetAllEspFrequencySources(){
+        assertThat(ALL_ESP_SOURCES.size(), equalTo(3));
+    }
+    
+    @Test
+    public void testGetAllExacFrequencySources(){
+        assertThat(ALL_EXAC_SOURCES.size(), equalTo(7));
+    }
 }

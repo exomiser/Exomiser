@@ -8,18 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * VariantFilter variants according to whether they are on target (i.e., located
- * within an exon or splice junction) or not. This runFilter also has the side
- * effect of calculating the counts of the various variant classes. The class
- * uses the annotations made by classes from the {@code jannovar.annotation}
- * package etc.
- * <P>
- * Note that this class does not require a corresponding
- * {@link exomizer.filter.Triage Triage} object, because variants that do not
- * pass the runFilter are simply removed.
- *
- * @author Peter N Robinson
- * @version 0.16 (20 December, 2013)
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class RegulatoryFeatureFilter implements VariantFilter {
 
@@ -31,11 +20,6 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     private final FilterResult passedFilterResult = new PassFilterResult(filterType);
     private final FilterResult failedFilterResult = new FailFilterResult(filterType);
 
-    /**
-     * The constructor initializes the set of off-target
-     * {@link jannovar.common.VariantType VariantType} constants, e.g.,
-     * INTERGENIC, that we will runFilter out using this class.
-     */
     public RegulatoryFeatureFilter() {
     }
 
@@ -45,13 +29,13 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     }
 
     @Override
-    public FilterResult runFilter(VariantEvaluation filterable) {
-        VariantEffect effect = filterable.getVariantEffect();
-        // Note the INTERGENIC/UPSTREAM variants have already been assessed by the RegFeatureDAO and VariantEffect set to REGULATORY_FEATURE if in a known region
+    public FilterResult runFilter(VariantEvaluation variantEvaluation) {
+        VariantEffect effect = variantEvaluation.getVariantEffect();
+        // Note the INTERGENIC/UPSTREAM variants have already been assessed by the RegFeatureDAO and VariantEffect set to REGULATORY_REGION_VARIANT if in a known region
         // TODO make below nicer using a Jannovar method hopefully 
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
-            Annotation a = filterable.getAnnotations().get(0);//.getHighestImpactAnnotation();
-            String intergenicAnnotation = a.toVCFAnnoString(filterable.getAlt());        
+            Annotation annotation = variantEvaluation.getAnnotations().get(0);//.getHighestImpactAnnotation();
+            String intergenicAnnotation = annotation.toVCFAnnoString(variantEvaluation.getAlt());        
             int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14])); 
             if (dist > 0 && dist < 20000){
                 return passedFilterResult;

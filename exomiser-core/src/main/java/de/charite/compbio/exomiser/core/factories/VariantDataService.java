@@ -6,10 +6,12 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.Set;
 
 /**
  *
@@ -17,23 +19,10 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
  */
 public interface VariantDataService {
 
-    public FrequencyData getVariantFrequencyData(Variant variant);
+    public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources);
 
-    public PathogenicityData getVariantPathogenicityData(Variant variant);
-    //TODO: this is messy - only want one PathogenicityData call here.
-    public PathogenicityData getVariantCADDData(Variant variant);
-    public PathogenicityData getVariantNCDSData(Variant variant);
-    
+    public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
+
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant);
-    
-    public void setVariantFrequencyData(VariantEvaluation variantEvaluation);
-
-    public void setVariantPathogenicityData(VariantEvaluation variantEvaluation);
-    
-    public void setVariantCADDData(VariantEvaluation variantEvaluation);
-    
-    public void setVariantNCDSData(VariantEvaluation variantEvaluation);
-    
-    public void setVariantRegulatoryFeatureData(VariantEvaluation variantEvaluation);
         
 }

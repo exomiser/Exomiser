@@ -11,6 +11,8 @@ import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
@@ -19,8 +21,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -92,11 +96,35 @@ public class AnalysisTest {
     }
 
     @Test
-    public void analysisCanSpeciftAlternativeAnalysisMode() {
+    public void analysisCanSpecifyAlternativeAnalysisMode() {
         instance.setAnalysisMode(AnalysisMode.FULL);
         assertThat(instance.getAnalysisMode(), equalTo(AnalysisMode.FULL));
     }
 
+    @Test
+    public void testFrequencySourcesAreEmptyByDefault() {
+        assertThat(instance.getFrequencySources().isEmpty(), is(true));
+    }
+
+    @Test
+    public void canSpecifyFrequencySources() {
+        Set<FrequencySource> sources = EnumSet.allOf(FrequencySource.class);
+        instance.setFrequencySources(sources);
+        assertThat(instance.getFrequencySources(), equalTo(sources));
+    }
+    
+    @Test
+    public void testPathogenicitySourcesAreEmptyByDefault() {
+        assertThat(instance.getPathogenicitySources().isEmpty(), is(true));
+    }
+
+    @Test
+    public void canSpecifyPathogenicitySources() {
+        Set<PathogenicitySource> sources = EnumSet.allOf(PathogenicitySource.class);
+        instance.setPathogenicitySources(sources);
+        assertThat(instance.getPathogenicitySources(), equalTo(sources));
+    }
+    
     @Test
     public void testGetAnalysisSteps_ReturnsEmptyListWhenNoStepsHaveBeedAdded() {
         List<AnalysisStep> steps = Collections.emptyList();

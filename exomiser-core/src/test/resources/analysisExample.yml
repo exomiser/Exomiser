@@ -12,38 +12,34 @@ analysis:
     analysisMode: PASS_ONLY 
     #RAW_SCORE or RANK_BASED
     geneScoreMode: RAW_SCORE
+    #Possible frequencySources:
+    #Thousand Genomes project http://www.1000genomes.org/
+    #   THOUSAND_GENOMES,
+    #ESP project http://evs.gs.washington.edu/EVS/
+    #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
+    #ExAC project http://exac.broadinstitute.org/about
+    #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
+    #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
+    #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
+    #   EXAC_OTHER
+    frequencySources: [
+        THOUSAND_GENOMES,
+        ESP_AFRICAN_AMERICAN,
+        EXAC_AFRICAN_INC_AFRICAN_AMERICAN
+        ]
+    #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, NCDS
+    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT]
     #this is the standard exomiser order.
     #all steps are optional
-    steps: [ 
-        intervalFilter: {interval: 'chr10:123256200-123256300'}, 
+    steps: [
+        intervalFilter: {interval: 'chr10:123256200-123256300'},
         geneIdFilter: {geneIds: [12345, 34567, 98765]},
         qualityFilter: {minQuality: 50.0},
         variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
         #knownVariantFilter removes any variant contained in dbSNP, ESP, EXAC databases
         knownVariantFilter: {},
-        #Possible frequencySources: 
-        #Thousand Genomes project http://www.1000genomes.org/
-        #   THOUSAND_GENOMES,
-        #ESP project http://evs.gs.washington.edu/EVS/
-        #   ESP_AFRICAN_AMERICAN, ESP_EUROPEAN_AMERICAN, ESP_ALL,
-        #ExAC project http://exac.broadinstitute.org/about
-        #   EXAC_AFRICAN_INC_AFRICAN_AMERICAN, EXAC_AMERICAN,
-        #   EXAC_SOUTH_ASIAN, EXAC_EAST_ASIAN,
-        #   EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
-        #   EXAC_OTHER
-        frequencyFilter: {
-            maxFrequency: 1.0,
-            frequencySources: [
-                THOUSAND_GENOMES,
-                ESP_AFRICAN_AMERICAN,
-                EXAC_AFRICAN_INC_AFRICAN_AMERICAN,
-                EXAC_AMERICAN]
-        },
-        #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, NCDS
-        pathogenicityFilter: {
-            keepNonPathogenic: false,
-            pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, CADD, NCDS]
-        },
+        frequencyFilter: {maxFrequency: 1.0},
+        pathogenicityFilter: {keepNonPathogenic: false},
         #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
         inheritanceFilter: {},
         #omimPrioritiser isn't mandatory.

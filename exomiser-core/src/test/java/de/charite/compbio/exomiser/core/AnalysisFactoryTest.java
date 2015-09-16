@@ -6,23 +6,17 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.AnalysisFactory.AnalysisBuilder;
-import de.charite.compbio.exomiser.core.factories.SampleDataFactoryStub;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
-import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.hamcrest.BaseMatcher;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
