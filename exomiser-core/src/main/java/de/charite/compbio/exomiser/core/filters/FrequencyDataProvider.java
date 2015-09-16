@@ -14,15 +14,13 @@ import java.util.Set;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FrequencyDataProvider implements VariantFilterDataProvider {
+public class FrequencyDataProvider extends AbstractFilterDataProvider {
 
-    private final VariantDataService variantDataService;
-    private final VariantFilter variantFilter;
     private final Set<FrequencySource> frequencySources;
 
-    public FrequencyDataProvider(VariantDataService variantDataService, Set<FrequencySource> frequencySources, VariantFilter frequencyFilter) {
-        this.variantDataService = variantDataService;
-        this.variantFilter = frequencyFilter;
+    public FrequencyDataProvider(VariantDataService variantDataService, Set<FrequencySource> frequencySources, VariantFilter variantFilter) {
+        super(variantDataService, variantFilter);
+        
         if (frequencySources.isEmpty()) {
             this.frequencySources = EnumSet.noneOf(FrequencySource.class);
         } else {
@@ -31,17 +29,7 @@ public class FrequencyDataProvider implements VariantFilterDataProvider {
     }
 
     @Override
-    public FilterType getFilterType() {
-        return variantFilter.getFilterType();
-    }
-
-    @Override
-    public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        addMissingFrequencyData(variantEvaluation);
-        return variantFilter.runFilter(variantEvaluation);
-    }
-
-    private void addMissingFrequencyData(VariantEvaluation variantEvaluation) {
+    public void provideVariantData(VariantEvaluation variantEvaluation) {
         //check there are no frequencies first - this may be genuine, or possibly the variant hasn't yet had the data added
         //this will cut down on trips to the database if multiple filters require frequency data.
         if (variantEvaluation.getFrequencyData().getKnownFrequencies().isEmpty()) {
@@ -49,20 +37,5 @@ public class FrequencyDataProvider implements VariantFilterDataProvider {
             variantEvaluation.setFrequencyData(frequencyData);
         }
     }
-
-    //TODO: is this a good idea to make this class 'invisible' like this?
-    @Override
-    public boolean equals(Object o) {
-        return variantFilter.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return variantFilter.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return variantFilter.toString();
-    }
+    
 }

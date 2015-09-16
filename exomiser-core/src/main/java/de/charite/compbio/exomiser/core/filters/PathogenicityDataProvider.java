@@ -9,40 +9,33 @@ import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PathogenicityDataProvider implements VariantFilterDataProvider {
+public class PathogenicityDataProvider extends AbstractFilterDataProvider {
 
-    private final VariantDataService variantDataService;
-    private final VariantFilter variantFilter;
     private final Set<PathogenicitySource> pathogenicitySources;
     
-    public PathogenicityDataProvider(VariantDataService variantDataService, Set<PathogenicitySource> pathogenicitySources, VariantFilter pathogenicityFilter) {
-        this.variantDataService = variantDataService;
-        this.pathogenicitySources = pathogenicitySources;
-        this.variantFilter = pathogenicityFilter;
-    }
-    
-    @Override
-    public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        addMissingPathogenicityData(variantEvaluation);
-        return variantFilter.runFilter(variantEvaluation);
+    public PathogenicityDataProvider(VariantDataService variantDataService, Set<PathogenicitySource> pathogenicitySources, VariantFilter variantFilter) {
+        super(variantDataService, variantFilter);
+
+        if (pathogenicitySources.isEmpty()) {
+            this.pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
+        } else {
+            this.pathogenicitySources = EnumSet.copyOf(pathogenicitySources);
+        }
     }
 
-    private void addMissingPathogenicityData(VariantEvaluation variantEvaluation) {
+    @Override
+    public void provideVariantData(VariantEvaluation variantEvaluation) {
         if (variantEvaluation.getPathogenicityData().getPredictedPathogenicityScores().isEmpty()) {
             PathogenicityData pathData = variantDataService.getVariantPathogenicityData(variantEvaluation, pathogenicitySources);
             variantEvaluation.setPathogenicityData(pathData);
         }
     }
 
-    @Override
-    public FilterType getFilterType() {
-        return variantFilter.getFilterType();
-    }
-    
 }

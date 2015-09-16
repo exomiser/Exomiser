@@ -117,4 +117,11 @@ public class FrequencyDataProviderTest {
 
         assertThat(variant.getFrequencyData(), equalTo(new FrequencyData(new RsId(123456), espAll, exacAfr)));
     }
+    
+    @Test
+    public void testGetDecoratedFilter() {
+        VariantFilter decoratedFilter = new KnownVariantFilter();
+        instance = new FrequencyDataProvider(variantDataService, EnumSet.noneOf(FrequencySource.class), decoratedFilter);
+        assertThat(instance.getDecoratedFilter(), equalTo(decoratedFilter));
+    }
 }
