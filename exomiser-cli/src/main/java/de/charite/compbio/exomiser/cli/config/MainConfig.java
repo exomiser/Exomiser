@@ -151,49 +151,43 @@ public class MainConfig {
     @Bean
     public TabixReader indelTabixReader() {
         String indelCaddPathValue = getValueOfProperty("indelCaddPath");
-        TabixReader inDelTabixReader = null;
         try {
-             inDelTabixReader = new TabixReader(indelCaddPathValue);
+             return new TabixReader(indelCaddPathValue);
         } catch (IOException e) {
             throw new RuntimeException("inDel CADD file not found ", e);
         }
-        return inDelTabixReader;
     }
     
     @Lazy
     @Bean
     public TabixReader snvTabixReader() {
         String snvCaddPathValue = getValueOfProperty("snvCaddPath");
-        TabixReader snvTabixReader = null;
         try {
-             snvTabixReader = new TabixReader(snvCaddPathValue);
+             return new TabixReader(snvCaddPathValue);
         } catch (IOException e) {
             throw new RuntimeException("SNV CADD file not found ", e);
         }
-        return snvTabixReader;
     }
     
     @Lazy
     @Bean
     public TabixReader ncdsTabixReader() {
         String ncdsPathValue = getValueOfProperty("ncdsPath");
-        TabixReader ncdsTabixReader = null;
         try {
-             ncdsTabixReader = new TabixReader(ncdsPathValue);
+             return new TabixReader(ncdsPathValue);
         } catch (IOException e) {
             throw new RuntimeException("NCDS file not found ", e);
         }
-        return ncdsTabixReader;
     }
 
     @Bean
     public Exomiser exomiser() {
-        return new Exomiser(priorityFactory());
+        return new Exomiser(priorityFactory(), variantDataService());
     }
 
     @Bean
     public AnalysisParser analysisParser() {
-        return new AnalysisParser(priorityFactory());
+        return new AnalysisParser(priorityFactory(), variantDataService());
     }
 
     /**
