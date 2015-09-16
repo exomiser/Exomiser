@@ -1,8 +1,5 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.filters.Score;
-import java.util.List;
-
 /**
  * Prioritization of Genes results in a relevance score for each tested
  * {@link exomizer.exome.Gene Gene} object. The methods may also annotate the
@@ -12,7 +9,13 @@ import java.util.List;
  *
  * @author Peter N Robinson
  */
-public interface PriorityResult extends Score {
+public interface PriorityResult {
+    
+    /**
+     * @return return a float representation of the filter result [0..1]. If the
+     * result is boolean, return 0.0 for false and 1.0 for true
+     */
+    public float getScore();
     
     public PriorityType getPriorityType();
 
