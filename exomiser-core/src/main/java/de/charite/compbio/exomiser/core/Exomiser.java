@@ -6,22 +6,28 @@
 package de.charite.compbio.exomiser.core;
 
 import de.charite.compbio.exomiser.core.AnalysisMode;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.Filter;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
+import de.charite.compbio.exomiser.core.filters.FrequencyDataProvider;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
 import de.charite.compbio.exomiser.core.filters.GeneFilter;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.IntervalFilter;
 import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
+import de.charite.compbio.exomiser.core.filters.PathogenicityDataProvider;
 import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
 import de.charite.compbio.exomiser.core.filters.QualityFilter;
 import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.ArrayList;
@@ -45,17 +51,23 @@ public class Exomiser {
     public static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = EnumSet.of(
             VariantEffect.UPSTREAM_GENE_VARIANT,
             VariantEffect.INTERGENIC_VARIANT,
+            VariantEffect.DOWNSTREAM_GENE_VARIANT,
             VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT,
             VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT,
             VariantEffect.SYNONYMOUS_VARIANT,
-            VariantEffect.DOWNSTREAM_GENE_VARIANT,
-            VariantEffect.SPLICE_REGION_VARIANT
+            VariantEffect.SPLICE_REGION_VARIANT,
+            VariantEffect.REGULATORY_REGION_VARIANT
     );
 
-    private final PriorityFactory prioritiserFactory;
+    private static final EnumSet<PathogenicitySource> MISSENSE_VARIANT_PATH_SOURCES = EnumSet.of(
+            PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT);
 
-    public Exomiser(PriorityFactory prioritiserFactory) {
+    private final PriorityFactory prioritiserFactory;
+    private final VariantDataService variantDataService;
+
+    public Exomiser(PriorityFactory prioritiserFactory, VariantDataService variantDataService) {
         this.prioritiserFactory = prioritiserFactory;
+        this.variantDataService = variantDataService;
     }
 
     /**
@@ -74,16 +86,18 @@ public class Exomiser {
         analysis.setPedPath(exomiserSettings.getPedPath());
         analysis.setModeOfInheritance(exomiserSettings.getModeOfInheritance());
         analysis.setHpoIds(exomiserSettings.getHpoIds());
+        analysis.setFrequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES);
+        analysis.setPathogenicitySources(MISSENSE_VARIANT_PATH_SOURCES);
         analysis.setScoringMode(prioritiserType.getScoringMode());
         if (exomiserSettings.runFullAnalysis()) {
             analysis.setAnalysisMode(AnalysisMode.FULL);
         }
 
         List<AnalysisStep> analysisSteps = makeAnalysisSteps(exomiserSettings, exomiserSettings);
-        for (AnalysisStep step : analysisSteps) {
+        analysisSteps.forEach(step -> {
             logger.info("ADDING ANALYSIS STEP {}", step);
             analysis.addStep(step);
-        }
+        });
 
         return analysis;
     }
@@ -132,14 +146,14 @@ public class Exomiser {
         }
         //KNOWN VARIANTS
         if (settings.removeKnownVariants()) {
-            variantFilters.add(new KnownVariantFilter());
+            variantFilters.add(new FrequencyDataProvider(variantDataService, FrequencySource.ALL_EXTERNAL_FREQ_SOURCES, new KnownVariantFilter()));
         }
         //FREQUENCY
-        variantFilters.add(new FrequencyFilter(settings.getMaximumFrequency()));
+        variantFilters.add(new FrequencyDataProvider(variantDataService, FrequencySource.ALL_EXTERNAL_FREQ_SOURCES, new FrequencyFilter(settings.getMaximumFrequency())));
         //PATHOGENICITY
         // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always
         // pass the pathogenicity filter and still get scored for pathogenicity
-        variantFilters.add(new PathogenicityFilter(settings.removePathFilterCutOff()));
+        variantFilters.add(new PathogenicityDataProvider(variantDataService, MISSENSE_VARIANT_PATH_SOURCES, new PathogenicityFilter(settings.removePathFilterCutOff())));
         return variantFilters;
     }
 

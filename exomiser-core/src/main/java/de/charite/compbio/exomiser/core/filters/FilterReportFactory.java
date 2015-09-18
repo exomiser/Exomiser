@@ -75,27 +75,36 @@ public class FilterReportFactory {
      */
     protected FilterReport makeFilterReport(Filter filter, SampleData sampleData) {
         FilterType filterType = filter.getFilterType();
+        Filter baseFilter = unWrapVariantFilterDataProvider(filter);
         switch (filterType) {
             case VARIANT_EFFECT_FILTER:
-                return makeTargetFilterReport((VariantEffectFilter) filter, sampleData.getVariantEvaluations());
+                return makeTargetFilterReport((VariantEffectFilter) baseFilter, sampleData.getVariantEvaluations());
             case KNOWN_VARIANT_FILTER:
-                return makeKnownVariantFilterReport((KnownVariantFilter) filter, sampleData.getVariantEvaluations());
+                return makeKnownVariantFilterReport((KnownVariantFilter) baseFilter, sampleData.getVariantEvaluations());
             case FREQUENCY_FILTER:
-                return makeFrequencyFilterReport((FrequencyFilter) filter, sampleData.getVariantEvaluations());
+                return makeFrequencyFilterReport((FrequencyFilter) baseFilter, sampleData.getVariantEvaluations());
             case QUALITY_FILTER:
-                return makeQualityFilterReport((QualityFilter) filter, sampleData.getVariantEvaluations());
+                return makeQualityFilterReport((QualityFilter) baseFilter, sampleData.getVariantEvaluations());
             case PATHOGENICITY_FILTER:
-                return makePathogenicityFilterReport((PathogenicityFilter) filter, sampleData.getVariantEvaluations());
+                return makePathogenicityFilterReport((PathogenicityFilter) baseFilter, sampleData.getVariantEvaluations());
             case INTERVAL_FILTER:
-                return makeIntervalFilterReport((IntervalFilter) filter, sampleData.getVariantEvaluations());
+                return makeIntervalFilterReport((IntervalFilter) baseFilter, sampleData.getVariantEvaluations());
             case INHERITANCE_FILTER:
-                return makeInheritanceFilterReport((InheritanceFilter) filter, sampleData.getGenes());
+                return makeInheritanceFilterReport((InheritanceFilter) baseFilter, sampleData.getGenes());
             case PRIORITY_SCORE_FILTER:
-                return makePriorityScoreFilterReport((PriorityScoreFilter) filter, sampleData.getGenes());
+                return makePriorityScoreFilterReport((PriorityScoreFilter) baseFilter, sampleData.getGenes());
             default:
                 return makeDefaultVariantFilterReport(filterType, sampleData.getVariantEvaluations());
         }
     }
+    
+    private Filter unWrapVariantFilterDataProvider(Filter filter) {
+        if (VariantFilterDataProvider.class.isInstance(filter) ) {
+            VariantFilterDataProvider decorator = (VariantFilterDataProvider) filter;
+            return decorator.getDecoratedFilter();
+        }
+        return filter;
+    } 
 
     private FilterReport makeTargetFilterReport(VariantEffectFilter filter, List<VariantEvaluation> variantEvaluations) {
         FilterReport report = makeDefaultVariantFilterReport(FilterType.VARIANT_EFFECT_FILTER, variantEvaluations);

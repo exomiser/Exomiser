@@ -39,24 +39,17 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.*;
 
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * Provides configuration details from the settings.properties file located in
@@ -65,6 +58,8 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
+//TODO: add this and check it works - then remove all the unecessary gubbins below
+//@ComponentScan("de.charite.compbio.exomiser")
 @Import({DataSourceConfig.class, CommandLineOptionsConfig.class, CacheConfig.class})
 @PropertySource({"buildversion.properties", "file:${jarFilePath}/application.properties"})
 public class MainConfig {
@@ -156,49 +151,43 @@ public class MainConfig {
     @Bean
     public TabixReader indelTabixReader() {
         String indelCaddPathValue = getValueOfProperty("indelCaddPath");
-        TabixReader inDelTabixReader = null;
         try {
-             inDelTabixReader = new TabixReader(indelCaddPathValue);
+             return new TabixReader(indelCaddPathValue);
         } catch (IOException e) {
             throw new RuntimeException("inDel CADD file not found ", e);
         }
-        return inDelTabixReader;
     }
     
     @Lazy
     @Bean
     public TabixReader snvTabixReader() {
         String snvCaddPathValue = getValueOfProperty("snvCaddPath");
-        TabixReader snvTabixReader = null;
         try {
-             snvTabixReader = new TabixReader(snvCaddPathValue);
+             return new TabixReader(snvCaddPathValue);
         } catch (IOException e) {
             throw new RuntimeException("SNV CADD file not found ", e);
         }
-        return snvTabixReader;
     }
     
     @Lazy
     @Bean
     public TabixReader ncdsTabixReader() {
         String ncdsPathValue = getValueOfProperty("ncdsPath");
-        TabixReader ncdsTabixReader = null;
         try {
-             ncdsTabixReader = new TabixReader(ncdsPathValue);
+             return new TabixReader(ncdsPathValue);
         } catch (IOException e) {
             throw new RuntimeException("NCDS file not found ", e);
         }
-        return ncdsTabixReader;
     }
 
     @Bean
     public Exomiser exomiser() {
-        return new Exomiser(priorityFactory());
+        return new Exomiser(priorityFactory(), variantDataService());
     }
 
     @Bean
     public AnalysisParser analysisParser() {
-        return new AnalysisParser(priorityFactory());
+        return new AnalysisParser(priorityFactory(), variantDataService());
     }
 
     /**
@@ -261,14 +250,14 @@ public class MainConfig {
     
     @Lazy
     @Bean
-    public CADDDao caddDao() {
-        return new CADDDao(indelTabixReader(),snvTabixReader());
+    public CaddDao caddDao() {
+        return new CaddDao(indelTabixReader(), snvTabixReader());
     }
     
     @Lazy
     @Bean
-    public NCDSDao ncdsDao() {
-        return new NCDSDao(ncdsTabixReader());
+    public NcdsDao ncdsDao() {
+        return new NcdsDao(ncdsTabixReader());
     }
 
     @Bean

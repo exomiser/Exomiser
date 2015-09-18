@@ -6,7 +6,6 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.NcdsScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
@@ -15,29 +14,28 @@ import htsjdk.tribble.readers.TabixReader;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Repository
-public class NCDSDao {
+@Component
+public class NcdsDao implements PathogenicityDao {
 
-    private final Logger logger = LoggerFactory.getLogger(NCDSDao.class);
-    private TabixReader ncdsTabixReader;
+    private final Logger logger = LoggerFactory.getLogger(NcdsDao.class);
 
-    public NCDSDao(TabixReader ncdsTabixReader) {
+    private final TabixReader ncdsTabixReader;
+
+    public NcdsDao(TabixReader ncdsTabixReader) {
         this.ncdsTabixReader = ncdsTabixReader;
     }
 
     @Cacheable(value = "mncds", key = "#variant.chromosomalVariant")
+    @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
-        // MNCDS has not been trained on missense variants so skip
+        // MNCDS has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
             return new PathogenicityData();
         }
@@ -46,13 +44,7 @@ public class NCDSDao {
 
     PathogenicityData processResults(Variant variant) {
         try {
-            String chromosome = Integer.toString(variant.getChromosome());
-            if (chromosome.equals("23")) {
-                chromosome = "X";
-            }
-            if (chromosome.equals("24")) {
-                chromosome = "Y";
-            }
+            String chromosome = variant.getChromosomeName();
             String ref = variant.getRef();
             String alt = variant.getAlt();
             int start = variant.getPosition();
@@ -68,7 +60,7 @@ public class NCDSDao {
             NcdsScore ncdsScore = null;
             String line;
             //logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
-            TabixReader.Iterator results = ncdsTabixReader.query(chromosome + ":" + start + "-" + end);
+            TabixReader.Iterator results = ncdsTabixReader.query(chromosome, start, end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
                 //logger.info(elements[2]);

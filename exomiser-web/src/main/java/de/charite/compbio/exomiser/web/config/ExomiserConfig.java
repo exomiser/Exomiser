@@ -64,7 +64,7 @@ public class ExomiserConfig {
 
     @Bean
     public Exomiser exomiser() {
-        return new Exomiser(priorityFactory());
+        return new Exomiser(priorityFactory(), variantDataService());
     }
 
     @Bean

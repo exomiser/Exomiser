@@ -107,6 +107,20 @@ public class PathogenicityDataTest {
         SiftScore result = instance.getSiftScore();
         assertThat(result, equalTo(SIFT_FAIL));
     }
+    
+    @Test
+    public void testGetNcdsScore() {
+        instance = new PathogenicityData(new NcdsScore(1f));
+        NcdsScore result = instance.getNcdsScore();
+        assertThat(result, equalTo(new NcdsScore(1f)));
+    }
+    
+    @Test
+    public void testGetSiftScore_ReturnsNullWhenNoSiftScorePresent() {
+        instance = new PathogenicityData();
+        SiftScore result = instance.getSiftScore();
+        assertThat(result, nullValue());
+    }
 
     @Test
     public void testGetCaddScore() {
@@ -123,6 +137,20 @@ public class PathogenicityDataTest {
         expResult.add(POLYPHEN_PASS);
         expResult.add(MTASTER_PASS);
         expResult.add(SIFT_FAIL);
+        
+        List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
+        assertThat(result, equalTo(expResult));
+    }
+    
+    @Test
+    public void testGetPredictedPathogenicityScores_isImmutable() {
+        instance = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        List<PathogenicityScore> expResult = new ArrayList<>();
+        expResult.add(POLYPHEN_PASS);
+        expResult.add(MTASTER_PASS);
+        expResult.add(SIFT_FAIL);
+        //try and add another score to the instance post-construction
+        instance.getPredictedPathogenicityScores().add(SIFT_PASS);
         
         List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
         assertThat(result, equalTo(expResult));

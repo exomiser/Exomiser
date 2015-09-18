@@ -70,7 +70,6 @@ public class FrequencyData {
             return true;
         }
         return !knownFrequencies.isEmpty();
-
     }
 
     public boolean hasDbSnpData() {

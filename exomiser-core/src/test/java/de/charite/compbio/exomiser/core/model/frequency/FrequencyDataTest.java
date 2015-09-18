@@ -133,6 +133,15 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testGetKnownFrequencies_noFrequencyData() {
+        instance = new FrequencyData();
+        
+        List<Frequency> result = instance.getKnownFrequencies();
+        
+        assertThat(result, equalTo(new ArrayList<>()));
+    }
+    
+    @Test
     public void testGetKnownFrequencies() {
         instance = new FrequencyData(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS, ESP_EA_PASS);
         List<Frequency> expResult = new ArrayList<>();
@@ -144,6 +153,20 @@ public class FrequencyDataTest {
         List<Frequency> result = instance.getKnownFrequencies();
         
         assertThat(result, equalTo(expResult));
+    }
+    
+    @Test
+    public void testGetKnownFrequencies_isImmutable() {
+        instance = new FrequencyData(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS);
+        List<Frequency> expResult = new ArrayList<>();
+        expResult.add(DBSNP_PASS);
+        expResult.add(ESP_AA_PASS);
+        expResult.add(ESP_ALL_PASS);
+        
+        //try and add another score to the instance post-construction
+        instance.getKnownFrequencies().add(ESP_EA_PASS);
+                
+        assertThat(instance.getKnownFrequencies(), equalTo(expResult));
     }
 
     @Test

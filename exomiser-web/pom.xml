@@ -10,7 +10,7 @@
     <parent>
         <artifactId>Exomiser</artifactId>
         <groupId>de.charite.compbio</groupId>
-        <version>7.0.0-RC</version>
+        <version>7.0.0-RC1</version>
     </parent>
 
     <properties>

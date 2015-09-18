@@ -8,6 +8,10 @@ package de.charite.compbio.exomiser.core.filters;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,12 +34,6 @@ import org.slf4j.LoggerFactory;
 public class SimpleVariantFilterRunner implements VariantFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleVariantFilterRunner.class);
-
-    private final VariantDataService variantDataService;
-
-    public SimpleVariantFilterRunner(VariantDataService variantDataService) {
-        this.variantDataService = variantDataService;
-    }
    
     @Override
     public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
@@ -62,34 +60,7 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
     }
 
     public FilterResult run(Filter filter, VariantEvaluation variantEvaluation) {
-        addMissingVariantData(filter, variantEvaluation);
         return runFilterAndAddResult(filter, variantEvaluation);
-    }
-
-    //TODO: this ought to be supplied automagically using a FrequencyDataFilter decorator
-    protected void addMissingVariantData(Filter filter, VariantEvaluation variantEvaluation) {
-        switch (filter.getFilterType()) {
-            case FREQUENCY_FILTER:
-            case KNOWN_VARIANT_FILTER:
-                //will require the FrequencySource in order to get the right ones
-                variantDataService.setVariantFrequencyData(variantEvaluation);
-                break;
-            case PATHOGENICITY_FILTER:
-                //will require the PathogenicitySource in order to get the right ones specified by the user in the yaml file
-                variantDataService.setVariantPathogenicityData(variantEvaluation);
-                break;
-            //TODO: remove CADD and NCDS - this will be handled by Pathogenicityfilter
-            //Check the functionality first - they may not be identical to the Pathogenicityfilter
-            case CADD_FILTER:
-                variantDataService.setVariantCADDData(variantEvaluation);
-                break;
-            case NCDS_FILTER:
-                variantDataService.setVariantNCDSData(variantEvaluation);
-                break;    
-            case REGULATORY_FEATURE_FILTER:
-                variantDataService.setVariantRegulatoryFeatureData(variantEvaluation);
-                break;
-        }
     }
 
     protected FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {
