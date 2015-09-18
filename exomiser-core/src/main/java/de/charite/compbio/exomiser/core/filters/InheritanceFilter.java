@@ -37,7 +37,7 @@ public class InheritanceFilter implements GeneFilter {
             //if ModeOfInheritance.UNINITIALIZED pass the runFilter - ideally it shouldn't be applied in the first place.
             return new NotRunFilterResult(filterType);
         }
-        if (gene.isConsistentWith(modeOfInheritance)) {
+        if (gene.isCompatibleWith(modeOfInheritance)) {
             return passesFilter;
         }
         return failsFilter;

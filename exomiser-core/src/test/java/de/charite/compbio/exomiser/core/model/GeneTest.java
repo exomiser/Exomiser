@@ -299,11 +299,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWithDominant(), is(true));
-        assertThat(instance.isConsistentWithRecessive(), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWithDominant(), is(true));
+        assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(true));
     }
 
@@ -313,11 +313,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWithDominant(), is(true));
-        assertThat(instance.isConsistentWithRecessive(), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWithDominant(), is(true));
+        assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(false));
     }
 
@@ -327,11 +327,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWithDominant(), is(false));
-        assertThat(instance.isConsistentWithRecessive(), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWithDominant(), is(false));
+        assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(false));
     }
 
@@ -341,11 +341,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWithDominant(), is(false));
-        assertThat(instance.isConsistentWithRecessive(), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWithDominant(), is(false));
+        assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(true));
     }
 

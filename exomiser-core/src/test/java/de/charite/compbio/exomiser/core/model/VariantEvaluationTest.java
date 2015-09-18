@@ -16,11 +16,13 @@ import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.*;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -515,6 +517,25 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    public void testSetAndGetCompatibleInheritanceModes() {
+        Set<ModeOfInheritance> compatibleModes = new HashSet<>();
+        compatibleModes.add(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        compatibleModes.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        
+        instance.setInheritanceModes(compatibleModes);
+        assertThat(instance.getInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
+    }
+    
+    @Test
+    public void testIsCompatibleWith() {    
+        instance.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+    }
+    
+    @Test
     public void testCompareTo() {
         //variants are sorted according to chromosome, position  ref and alt.
         VariantEvaluation zero = new VariantEvaluation.VariantBuilder(1, 1, "A", "C").build();
@@ -550,7 +571,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 score=0.0 filterStatus=UNFILTERED failedFilters=[] passedFilters=[]";
+        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
