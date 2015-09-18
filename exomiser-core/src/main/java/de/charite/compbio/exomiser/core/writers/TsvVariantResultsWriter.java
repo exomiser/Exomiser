@@ -260,8 +260,8 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
 
         final Joiner joiner = Joiner.on(":").skipNulls();
-        return joiner.join(anno.getGeneSymbol(), anno.getTranscript().getAccession(), exonIntron, anno.getNucleotideHGVSDescription(),
-                anno.getAminoAcidHGVSDescription());
+        return joiner.join(anno.getGeneSymbol(), anno.getTranscript().getAccession(), exonIntron, anno.getCDSNTChangeStr(),
+                anno.getProteinChangeStr());
     }
 
 }
