@@ -244,7 +244,7 @@ public class MainConfig {
     }
 
     @Bean
-    public DefaultPathogenicityDao pathogenicityDao() {
+    public PathogenicityDao pathogenicityDao() {
         return new DefaultPathogenicityDao();
     }
     

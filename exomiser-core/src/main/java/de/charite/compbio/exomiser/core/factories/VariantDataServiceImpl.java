@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
+import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -42,11 +44,9 @@ public class VariantDataServiceImpl implements VariantDataService {
     private FrequencyDao frequencyDao;
     @Autowired
     private PathogenicityDao pathogenicityDao;
-    @Lazy
-    @Autowired
+    @Resource(name = "caddDao")
     private CaddDao caddDao;
-    @Lazy
-    @Autowired
+    @Resource(name = "ncdsDao")
     private NcdsDao ncdsDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;

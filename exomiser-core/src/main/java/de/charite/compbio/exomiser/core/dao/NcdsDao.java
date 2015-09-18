@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
-public class NcdsDao implements PathogenicityDao {
+public class NcdsDao {
 
     private final Logger logger = LoggerFactory.getLogger(NcdsDao.class);
 
@@ -33,7 +33,6 @@ public class NcdsDao implements PathogenicityDao {
     }
 
     @Cacheable(value = "mncds", key = "#variant.chromosomalVariant")
-    @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         // MNCDS has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
-public class CaddDao implements PathogenicityDao {
+public class CaddDao {
  
     private final Logger logger = LoggerFactory.getLogger(CaddDao.class);
  
@@ -34,7 +34,6 @@ public class CaddDao implements PathogenicityDao {
     }
  
     @Cacheable(value = "cadd", key = "#variant.chromosomalVariant")
-    @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }
