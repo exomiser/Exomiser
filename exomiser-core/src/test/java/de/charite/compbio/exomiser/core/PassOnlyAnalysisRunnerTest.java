@@ -128,6 +128,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.runAnalysis(analysis);
 
         SampleData sampleData = analysis.getSampleData();
@@ -221,6 +222,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         
         Analysis analysis = makeAnalysis(vcfPath, qualityFilter, prioritiser, priorityScoreFilter, intervalFilter, inheritanceFilter);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.runAnalysis(analysis);
 
         SampleData sampleData = analysis.getSampleData();
@@ -247,12 +249,12 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     }
 
     //TODO: these Inheritance tests will fail until the InheritanceModeAnalyser, InheritanceFilter and AnalysisRunner have been re-jigged to flag incompatible variants.
-    @Ignore
     @Test
     public void testRunAnalysis_autosomalDominantTrioDeNovoInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     	Analysis analysis = makeAnalysis(inheritanceFilterVCFPath, qualityFilter, inheritanceFilter);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     	analysis.setPedPath(childAffectedPedPath);
     	instance.runAnalysis(analysis);
     	
@@ -271,13 +273,13 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         
     }
 
-    @Ignore
     @Test
     public void testRunAnalysis_autosomalDominantTrioSharedInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     	Analysis analysis = makeAnalysis(inheritanceFilterVCFPath, qualityFilter, inheritanceFilter);
     	analysis.setPedPath(twoAffectedPedPath);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     	instance.runAnalysis(analysis);
     	
     	SampleData sampleData = analysis.getSampleData();
@@ -291,17 +293,17 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(123256213));
+        assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(123256214));
     	
     }
 
-    @Ignore
     @Test
     public void testRunAnalysis_autosomalRecessiveTrioInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     	Analysis analysis = makeAnalysis(inheritanceFilterVCFPath, qualityFilter, inheritanceFilter);
     	analysis.setPedPath(childAffectedPedPath);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     	instance.runAnalysis(analysis);
     	
     	SampleData sampleData = analysis.getSampleData();
@@ -316,8 +318,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(2));
-        assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(123256213));
-        assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(145508800));
+        assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(123256214));
+        assertThat(passedGene.getVariantEvaluations().get(1).getPosition(), equalTo(145508800));
         //Homozygouse
         passedGene = results.get("FGFR2");
         assertThat(passedGene.passedFilters(), is(true));
@@ -325,8 +327,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(passedGene.getEntrezGeneID(), equalTo(2263));
         assertThat(passedGene.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(145514444));
-    	
+        assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(123239370));
     }
 
 }
