@@ -15,16 +15,22 @@ import de.charite.compbio.exomiser.core.util.RankBasedGeneScorer;
 import de.charite.compbio.exomiser.core.util.RawScoreGeneScorer;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
+import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -72,7 +78,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, new ArrayList<>(allGenes.values()), pedigree);
+                runSteps(analysisGroup, new ArrayList<>(allGenes.values()), pedigree, analysis.getModeOfInheritance());
             }
         }
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
@@ -84,7 +90,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         final List<Gene> genes = getFinalGeneList(allGenes);
         sampleData.setGenes(genes);
-        sampleData.setVariantEvaluations(variantEvaluations);
+        final List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
+        sampleData.setVariantEvaluations(variants);
 
         scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variantEvaluations.size());
@@ -130,6 +137,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .collect(toList());
     }
 
+    protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
+        return variants;
+    }
+        
     /**
      * @return a map of genes indexed by gene symbol.
      */
@@ -226,11 +237,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return sampleData;
     }
 
-    private void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree) {
+    private void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisSteps) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
-                analyseGeneInheritanceModes(genes, pedigree);
+                analyseGeneInheritanceMode(genes, pedigree, modeOfInheritance);
                 inheritanceModesCalculated = true;
             }
             runStep(analysisStep, genes);
@@ -260,14 +271,52 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
     }
 
-    private void analyseGeneInheritanceModes(Collection<Gene> genes, Pedigree pedigree) {
-        logger.info("Calculating inheritance modes for genes which passed filters");
+    private void analyseGeneInheritanceMode(Collection<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+        //TODO could this be a VariantDataProvider?
+        logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
         //check the inheritance mode for the genes
-        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser();
+        InheritanceCompatibilityChecker inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.
+                Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
+
         genes.stream().filter(Gene::passedFilters).forEach(gene -> {
-            Set<ModeOfInheritance> inheritanceModes = inheritanceModeAnalyser.analyseInheritanceModes(gene, pedigree);
-            gene.setInheritanceModes(inheritanceModes);
+            checkInheritanceCompatibilityOfVariants(gene, modeOfInheritance, inheritanceCompatibilityChecker);
         });
+        
+    }
+
+    private void checkInheritanceCompatibilityOfVariants(Gene gene, ModeOfInheritance modeOfInheritance, InheritanceCompatibilityChecker inheritanceCompatibilityChecker) {
+        if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
+            return;
+        }
+        
+        Map<String, VariantEvaluation> geneVariants = gene.getVariantEvaluations().stream()
+                                //using toStringWithoutGenotypes as the genotype string gets changed 
+                .collect(toMap(variantEvaluation -> variantEvaluation.getVariantContext().toStringWithoutGenotypes(), variantEvaluation -> variantEvaluation));
+        
+        List<VariantContext> compatibleVariants = getVariantsCompatibleWithInheritanceMode(inheritanceCompatibilityChecker, gene);
+         
+        if (! compatibleVariants.isEmpty()) {
+            logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
+            gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
+            for (VariantContext compatibleVariantContext : compatibleVariants) {
+                //using toStringWithoutGenotypes as the genotype string gets changed 
+                VariantEvaluation variant = geneVariants.get(compatibleVariantContext.toStringWithoutGenotypes());
+                variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
+                logger.debug("{}: {}", variant.getInheritanceModes(), variant);
+            }
+        }
+    }
+
+    private List<VariantContext> getVariantsCompatibleWithInheritanceMode(InheritanceCompatibilityChecker inheritanceCompatibilityChecker, Gene gene) {
+        List<VariantContext> compatibleVariants = new ArrayList<>();
+        //This needs to be done using all the variants in the gene in order to be able to check for compound heterozygous variations
+        //otherwise it would be simpler to just call this on each variant in turn
+        try {
+            compatibleVariants = inheritanceCompatibilityChecker.getCompatibleWith(gene.getVariantEvaluations().stream().map(VariantEvaluation::getVariantContext).collect(toList()));
+        } catch (InheritanceCompatibilityCheckerException ex) {
+            logger.error(null, ex);
+        }
+        return compatibleVariants;
     }
 
     private void scoreGenes(List<Gene> genes, ScoringMode scoreMode, ModeOfInheritance modeOfInheritance) {

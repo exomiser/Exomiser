@@ -54,15 +54,7 @@ public class SimpleGeneFilterRunner implements GeneFilterRunner {
         if (filterResult.getResultStatus() != FilterResultStatus.NOT_RUN) {
             gene.addFilterResult(filterResult);
         }
-        //TODO: should this always be the case?
-        addFilterResultToVariants(filterResult, gene.getVariantEvaluations());
         return filterResult;
-    }
-
-    private void addFilterResultToVariants(FilterResult filterResult, List<VariantEvaluation> variantEvaluations) {
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            variantEvaluation.addFilterResult(filterResult);
-        }
     }
 
     private Set<FilterType> getFilterTypes(List<GeneFilter> filters) {
