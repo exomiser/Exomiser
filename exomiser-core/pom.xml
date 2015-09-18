@@ -17,13 +17,18 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-htsjdk</artifactId>
-            <version>0.14</version>
+            <version>0.15</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.testng</groupId>
                     <artifactId>testng</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar-inheritance-checker</artifactId>
+            <version>0.15</version>
         </dependency>
         <dependency>
             <groupId>org.jblas</groupId>

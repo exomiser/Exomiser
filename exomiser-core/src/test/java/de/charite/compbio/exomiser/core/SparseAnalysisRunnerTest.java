@@ -124,6 +124,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.runAnalysis(analysis);
 
         SampleData sampleData = analysis.getSampleData();
@@ -163,6 +164,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.runAnalysis(analysis);
 
         SampleData sampleData = analysis.getSampleData();
@@ -292,6 +294,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Analysis analysis = makeAnalysis(vcfPath, qualityFilter, prioritiser, priorityScoreFilter, intervalFilter, inheritanceFilter);
+        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.runAnalysis(analysis);
 
         //TODO: remove all this repetitive cruft into common method

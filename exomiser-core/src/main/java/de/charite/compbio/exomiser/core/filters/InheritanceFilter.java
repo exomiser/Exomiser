@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.Objects;
 
@@ -37,10 +38,21 @@ public class InheritanceFilter implements GeneFilter {
             //if ModeOfInheritance.UNINITIALIZED pass the runFilter - ideally it shouldn't be applied in the first place.
             return new NotRunFilterResult(filterType);
         }
-        if (gene.isConsistentWith(modeOfInheritance)) {
-            return passesFilter;
+        if (gene.isCompatibleWith(modeOfInheritance)) {
+            return addFilterResultToVariants(passesFilter, gene);
         }
-        return failsFilter;
+        return addFilterResultToVariants(failsFilter, gene);
+    }
+
+    private FilterResult addFilterResultToVariants(FilterResult filterResult, Gene gene) {
+        for (VariantEvaluation variant : gene.getVariantEvaluations()) {
+            if (variant.isCompatibleWith(modeOfInheritance)) {
+                variant.addFilterResult(passesFilter);
+            } else {
+                variant.addFilterResult(failsFilter);
+            }
+        }
+        return filterResult;
     }
 
     @Override

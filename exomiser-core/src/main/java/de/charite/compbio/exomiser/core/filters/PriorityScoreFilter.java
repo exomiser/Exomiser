@@ -6,8 +6,10 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -56,11 +58,18 @@ public class PriorityScoreFilter implements GeneFilter {
         PriorityResult priorityResult = gene.getPriorityResult(priorityType);
         if (priorityResult == null) {
             return failsFilter;
-        }
+        }       
         if (priorityResult.getScore() >= minPriorityScore) {
-            return passesFilter;
+            return addFilterResultToVariants(passesFilter, gene);
         }
-        return failsFilter;
+        return addFilterResultToVariants(failsFilter, gene);
+    }
+
+    private FilterResult addFilterResultToVariants(FilterResult filterResult, Gene gene) {
+        for (VariantEvaluation variant : gene.getVariantEvaluations()) {
+            variant.addFilterResult(filterResult);
+        }
+        return filterResult;
     }
 
     @Override
@@ -92,4 +101,3 @@ public class PriorityScoreFilter implements GeneFilter {
     }
 
 }
-

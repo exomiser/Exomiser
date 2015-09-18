@@ -7,6 +7,7 @@ import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,32 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                 .stream()
                 .filter(gene -> !gene.getVariantEvaluations().isEmpty())
                 .filter(Gene::passedFilters)
+                .map(gene -> {
+                    removeFailedVariants(gene);
+                    return gene;
+                })
                 .collect(toList());
     }
 
+    private void removeFailedVariants(Gene gene) {
+        Iterator<VariantEvaluation> variantIterator = gene.getVariantEvaluations().iterator();
+        while (variantIterator.hasNext()) {
+            VariantEvaluation variant = variantIterator.next();
+            if (failedFilters(variant)) {
+                variantIterator.remove();
+            }
+        }
+    }
+
+    private static boolean failedFilters(VariantEvaluation variant) {
+        return !variant.passedFilters();
+    }
+    
+    @Override
+    protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
+        return variants
+                .stream()
+                .filter(VariantEvaluation::passedFilters)
+                .collect(toList());
+    }
 }

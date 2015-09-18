@@ -48,7 +48,7 @@ import de.charite.compbio.jannovar.pedigree.Genotype;
 @RunWith(MockitoJUnitRunner.class)
 public class VcfResultsWriterTest {
 
-    final static String EXPECTED_HEADER = "##fileformat=VCFv4.1\n"
+    final static String EXPECTED_HEADER = "##fileformat=VCFv4.2\n"
             + "##FILTER=<ID=BED_FILTER,Description=\"Gene panel target region (Bed filter)\">\n"
             + "##FILTER=<ID=CADD_FILTER,Description=\"CADD\">\n"
             + "##FILTER=<ID=ENTREZ_GENE_ID_FILTER,Description=\"Genes to keep\">\n"

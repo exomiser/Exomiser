@@ -149,10 +149,10 @@ public class OMIMPriority implements Prioritiser {
         if (inheritance == 'U') {
             /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
             return 1f;
-        } else if (gene.isConsistentWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
+        } else if (gene.isCompatibleWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
             /* inheritance of disease is dominant or both (dominant/recessive) */
             return 1f;
-        } else if (gene.isConsistentWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
+        } else if (gene.isCompatibleWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
             /* inheritance of disease is recessive or both (dominant/recessive) */
             return 1f;
         } else if (gene.isXChromosomal() && inheritance == 'X') {

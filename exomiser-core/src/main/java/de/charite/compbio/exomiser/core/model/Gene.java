@@ -47,7 +47,7 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-public class Gene implements Comparable<Gene>, Filterable {
+public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     /**
      * A list of all of the variants that affect this gene.
@@ -189,36 +189,39 @@ public class Gene implements Comparable<Gene>, Filterable {
         return geneSymbol;
     }
 
+    @Override
     public Set<ModeOfInheritance> getInheritanceModes() {
         return inheritanceModes;
     }
 
+    @Override
     public void setInheritanceModes(Set<ModeOfInheritance> inheritanceModes) {
         this.inheritanceModes = inheritanceModes;
     }
 
     /**
      * @param modeOfInheritance
-     * @return true if the variants for this gene are consistent with the given
+     * @return true if the variants for this gene are compatible with the given
      * {@code ModeOfInheritance} otherwise false.
      */
-    public boolean isConsistentWith(ModeOfInheritance modeOfInheritance) {
+    @Override
+    public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
         return inheritanceModes.contains(modeOfInheritance);
     }
 
     /**
-     * @return true if the variants for this gene are consistent with autosomal
+     * @return true if the variants for this gene are compatible with autosomal
      * recessive inheritance, otherwise false.
      */
-    public boolean isConsistentWithRecessive() {
+    public boolean isCompatibleWithRecessive() {
         return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     }
 
     /**
-     * @return true if the variants for this gene are consistent with autosomal
+     * @return true if the variants for this gene are compatible with autosomal
      * dominant inheritance, otherwise false.
      */
-    public boolean isConsistentWithDominant() {
+    public boolean isCompatibleWithDominant() {
         return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     }
 
@@ -452,7 +455,7 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public String toString() {
-        return String.format("%s entrezId=%d consistentWith=%s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterResultsMap.keySet());
+        return String.format("%s entrezId=%d compatibleWith=%s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterResultsMap.keySet());
     }
 
 }

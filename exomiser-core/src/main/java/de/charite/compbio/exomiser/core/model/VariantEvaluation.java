@@ -9,6 +9,7 @@ import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
@@ -36,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Peter Robinson <peter.robinson@charite.de>
  */
-public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Variant {
+public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Inheritable, Variant {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantEvaluation.class);
 
@@ -500,6 +501,27 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
     }
 
+    Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+    
+    @Override
+    public void setInheritanceModes(Set<ModeOfInheritance> compatibleModes) {
+        if (compatibleModes.isEmpty()) {
+            inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+        } else {
+            this.inheritanceModes = EnumSet.copyOf(compatibleModes);
+        }
+    }
+    
+    @Override
+    public Set<ModeOfInheritance> getInheritanceModes() {
+        return inheritanceModes;
+    }
+
+    @Override
+    public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
+        return inheritanceModes.contains(modeOfInheritance);
+    }
+    
     /**
      * Sorts variants according to their natural ordering of genome position. Variants are sorted according to
      * chromosome number, chromosome position, reference sequence then alternative sequence.
@@ -557,7 +579,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     public String toString() {
         //TODO: expose variantEffect, frequency and pathogenicity scores?
-        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " score=" + getVariantScore() + " filterStatus=" + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet();
+        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet() + " compatibleWith=" + inheritanceModes;
     }
 
     /**
