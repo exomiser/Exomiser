@@ -170,7 +170,7 @@ and open the template in the editor.
                                             </th:block>
                                         </div>
                                         <div class="col-sm-6" >
-                                            <b>Variant Score: 0.95</b>
+                                            <!--<b>Variant Score: 0.95</b>-->
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
                                                 <dd th:each="annotation: ${variantEvaluation.annotations}" 
@@ -181,7 +181,7 @@ and open the template in the editor.
                                             </dl>
                                         </div>
                                         <div class="col-sm-3">
-                                            <b>Pathogenicity Score: 1.00</b>
+                                            <!--<b>Pathogenicity Score: 1.00</b>-->
                                             <dl class="list-unstyled" th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
                                                 <dt>Pathogenicity Data:</dt>
                                                 <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}" th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00</dd>
@@ -190,7 +190,7 @@ and open the template in the editor.
                                             </dl>
                                         </div>
                                         <div class="col-sm-3">
-                                            <b>Frequency Score: 0.95</b>
+                                            <!--<b>Frequency Score: 0.95</b>-->
                                             <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <dt>Frequency Data:</dt>
                                                 <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
