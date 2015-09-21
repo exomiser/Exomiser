@@ -59,7 +59,7 @@ public class NcdsDao {
             NcdsScore ncdsScore = null;
             String line;
             //logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
-            TabixReader.Iterator results = ncdsTabixReader.query(chromosome, start, end);
+            TabixReader.Iterator results = ncdsTabixReader.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
                 //logger.info(elements[2]);
