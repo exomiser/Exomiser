@@ -21,6 +21,9 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
@@ -288,11 +291,12 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
             return;
         }
-        
-        Map<String, VariantEvaluation> geneVariants = gene.getVariantEvaluations().stream()
-                                //using toStringWithoutGenotypes as the genotype string gets changed 
-                .collect(toMap(variantEvaluation -> variantEvaluation.getVariantContext().toStringWithoutGenotypes(), variantEvaluation -> variantEvaluation));
-        
+        Multimap<String, VariantEvaluation> geneVariants = ArrayListMultimap.create();
+        Iterator<VariantEvaluation> iterator = gene.getVariantEvaluations().stream().iterator();
+        while (iterator.hasNext()) {
+			VariantEvaluation variantEvaluation = (VariantEvaluation) iterator.next();
+			geneVariants.put(variantEvaluation.getVariantContext().toStringWithoutGenotypes(), variantEvaluation);
+		}
         List<VariantContext> compatibleVariants = getVariantsCompatibleWithInheritanceMode(inheritanceCompatibilityChecker, gene);
          
         if (! compatibleVariants.isEmpty()) {
@@ -300,9 +304,13 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
             for (VariantContext compatibleVariantContext : compatibleVariants) {
                 //using toStringWithoutGenotypes as the genotype string gets changed 
-                VariantEvaluation variant = geneVariants.get(compatibleVariantContext.toStringWithoutGenotypes());
-                variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
-                logger.debug("{}: {}", variant.getInheritanceModes(), variant);
+                Collection<VariantEvaluation> variants = geneVariants.get(compatibleVariantContext.toStringWithoutGenotypes());
+                for (VariantEvaluation variant : variants) {
+                	 variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
+                	 logger.debug("{}: {}", variant.getInheritanceModes(), variant);
+				}
+               
+                
             }
         }
     }
