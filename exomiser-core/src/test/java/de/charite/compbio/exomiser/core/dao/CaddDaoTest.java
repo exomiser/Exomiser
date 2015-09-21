@@ -52,8 +52,8 @@ public class CaddDaoTest {
         //The MockTabixIterator will return a list of lines  
 
         mockIterator = new MockTabixIterator();
-        Mockito.when(indelTabixReader.query("1", 2, 2)).thenReturn(mockIterator);
-        Mockito.when(snvTabixReader.query("1", 2, 2)).thenReturn(mockIterator);
+        Mockito.when(indelTabixReader.query("1:2-2")).thenReturn(mockIterator);
+        Mockito.when(snvTabixReader.query("1:2-2")).thenReturn(mockIterator);
         instance = new CaddDao(indelTabixReader, snvTabixReader);
     }
 
@@ -186,7 +186,7 @@ public class CaddDaoTest {
 
     @Test
     public void testGetPathogenicityData_snvXchrSingleVariantAtPosition_OneMatch() {
-        Mockito.when(snvTabixReader.query("X", 1, 1)).thenReturn(mockIterator);
+        Mockito.when(snvTabixReader.query("X:1-1")).thenReturn(mockIterator);
         mockIterator.setValues(Arrays.asList("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(23, 1, "A", "T"));
@@ -196,7 +196,7 @@ public class CaddDaoTest {
 
     @Test
     public void testGetPathogenicityData_snvYchrSingleVariantAtPosition_OneMatch() {
-        Mockito.when(snvTabixReader.query("Y", 1, 1)).thenReturn(mockIterator);
+        Mockito.when(snvTabixReader.query("Y:1-1")).thenReturn(mockIterator);
         mockIterator.setValues(Arrays.asList("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(24, 1, "A", "T"));

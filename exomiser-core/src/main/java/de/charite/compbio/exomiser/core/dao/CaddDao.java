@@ -60,7 +60,7 @@ public class CaddDao {
  
     private PathogenicityData getIndelCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
         try {
-            TabixReader.Iterator results = inDelTabixReader.query(chromosome, start, start);
+            TabixReader.Iterator results = inDelTabixReader.query(chromosome + ":" + start + "-" + start);
             String line;
             //there can be 0 - N results
             while ((line = results.next()) != null) {
@@ -92,7 +92,7 @@ public class CaddDao {
     private PathogenicityData getSnvCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
         try {
             // query SNV file
-            TabixReader.Iterator results = snvTabixReader.query(chromosome, start, start);
+            TabixReader.Iterator results = snvTabixReader.query(chromosome + ":" + start + "-" + start);
             String line;
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
