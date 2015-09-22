@@ -78,8 +78,12 @@ public class VariantDataServiceImpl implements VariantDataService {
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
             allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
-        } else if (pathogenicitySources.contains(PathogenicitySource.NCDS)) {
-        //NCDS is trained on all the non-coding bits of the genome, this outperforms CADD for non-coding variants
+        }
+        else if (pathogenicitySources.contains(PathogenicitySource.NCDS) && variant.getVariantEffect() != VariantEffect.STOP_LOST 
+                && variant.getVariantEffect() != VariantEffect.STOP_RETAINED_VARIANT && variant.getVariantEffect() != VariantEffect.STOP_GAINED && 
+                variant.getVariantEffect() != VariantEffect.SYNONYMOUS_VARIANT && variant.getVariantEffect() != VariantEffect.SPLICE_REGION_VARIANT && 
+                variant.getVariantEffect() != VariantEffect.SPLICE_ACCEPTOR_VARIANT) {                                        
+            //NCDS is trained on non-coding bits of the genome, this outperforms CADD for non-coding variants
             PathogenicityData nonCodingScore = ncdsDao.getPathogenicityData(variant);
             allPathScores.addAll(nonCodingScore.getPredictedPathogenicityScores());
         }
