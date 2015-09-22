@@ -104,8 +104,11 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
     
     private static final Set<VariantEffect> nonRegulatoryNonCodingVariantEffects = EnumSet.of(VariantEffect.STOP_LOST, VariantEffect.STOP_RETAINED_VARIANT,
-            VariantEffect.STOP_GAINED, VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.SPLICE_REGION_VARIANT, VariantEffect.SPLICE_ACCEPTOR_VARIANT);
-    
+            VariantEffect.STOP_GAINED, VariantEffect.START_LOST, VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.SPLICE_REGION_VARIANT, VariantEffect.SPLICE_ACCEPTOR_VARIANT,
+            VariantEffect.SPLICE_DONOR_VARIANT, VariantEffect.FRAMESHIFT_ELONGATION, VariantEffect.FRAMESHIFT_TRUNCATION, VariantEffect.FRAMESHIFT_VARIANT, VariantEffect.MNV,
+            VariantEffect.FEATURE_TRUNCATION, VariantEffect.DISRUPTIVE_INFRAME_DELETION, VariantEffect.DISRUPTIVE_INFRAME_INSERTION, VariantEffect.INFRAME_DELETION, VariantEffect.INFRAME_INSERTION,
+            VariantEffect.INTERNAL_FEATURE_ELONGATION, VariantEffect.COMPLEX_SUBSTITUTION);
+            
     private boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect) {
         return !nonRegulatoryNonCodingVariantEffects.contains(variantEffect);
     }
