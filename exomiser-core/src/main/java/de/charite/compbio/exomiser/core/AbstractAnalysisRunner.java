@@ -27,13 +27,11 @@ import com.google.common.collect.Multimap;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -75,7 +73,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         for (List<AnalysisStep> analysisGroup : analysisStepGroups) {
             AnalysisStep firstStep = analysisGroup.get(0);
             logger.debug("Running {} group: {}", firstStep.getType(), analysisGroup);
-            if (firstStep.isVariantFilter() &! variantsLoaded) {
+            if (firstStep.isVariantFilter() & !variantsLoaded) {
                 //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
@@ -143,7 +141,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
         return variants;
     }
-        
+
     /**
      * @return a map of genes indexed by gene symbol.
      */
@@ -182,8 +180,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return groups;
     }
 
-
-    private List<VariantEvaluation> loadVariants(Path vcfPath, Map<String, Gene> genes,  Predicate<VariantEvaluation> geneFilterPredicate, Predicate<VariantEvaluation> variantFilterPredicate) {
+    private List<VariantEvaluation> loadVariants(Path vcfPath, Map<String, Gene> genes, Predicate<VariantEvaluation> geneFilterPredicate, Predicate<VariantEvaluation> variantFilterPredicate) {
 
         final int[] streamed = {0};
         final int[] passed = {0};
@@ -232,7 +229,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 })
                 .collect(toList());
     }
-
 
     private SampleData makeSampleDataWithoutGenesOrVariants(Analysis analysis) {
         final SampleData sampleData = sampleDataFactory.createSampleDataWithoutVariantsOrGenes(analysis.getVcfPath(), analysis.getPedPath());
@@ -284,7 +280,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         genes.stream().filter(Gene::passedFilters).forEach(gene -> {
             checkInheritanceCompatibilityOfVariants(gene, modeOfInheritance, inheritanceCompatibilityChecker);
         });
-        
+
     }
 
     private void checkInheritanceCompatibilityOfVariants(Gene gene, ModeOfInheritance modeOfInheritance, InheritanceCompatibilityChecker inheritanceCompatibilityChecker) {
@@ -292,25 +288,21 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             return;
         }
         Multimap<String, VariantEvaluation> geneVariants = ArrayListMultimap.create();
-        Iterator<VariantEvaluation> iterator = gene.getVariantEvaluations().stream().iterator();
-        while (iterator.hasNext()) {
-			VariantEvaluation variantEvaluation = (VariantEvaluation) iterator.next();
-			geneVariants.put(variantEvaluation.getVariantContext().toStringWithoutGenotypes(), variantEvaluation);
-		}
+        for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+            geneVariants.put(variantEvaluation.getVariantContext().toStringWithoutGenotypes(), variantEvaluation);
+        }
         List<VariantContext> compatibleVariants = getVariantsCompatibleWithInheritanceMode(inheritanceCompatibilityChecker, gene);
-         
-        if (! compatibleVariants.isEmpty()) {
+
+        if (!compatibleVariants.isEmpty()) {
             logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
             gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
             for (VariantContext compatibleVariantContext : compatibleVariants) {
                 //using toStringWithoutGenotypes as the genotype string gets changed 
                 Collection<VariantEvaluation> variants = geneVariants.get(compatibleVariantContext.toStringWithoutGenotypes());
                 for (VariantEvaluation variant : variants) {
-                	 variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
-                	 logger.debug("{}: {}", variant.getInheritanceModes(), variant);
-				}
-               
-                
+                    variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
+                    logger.debug("{}: {}", variant.getInheritanceModes(), variant);
+                }
             }
         }
     }
@@ -320,7 +312,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         //This needs to be done using all the variants in the gene in order to be able to check for compound heterozygous variations
         //otherwise it would be simpler to just call this on each variant in turn
         try {
-            compatibleVariants = inheritanceCompatibilityChecker.getCompatibleWith(gene.getVariantEvaluations().stream().map(VariantEvaluation::getVariantContext).collect(toList()));
+            //Make sure only ONE variantContext is added if there are multiple alleles as there will be one VariantEvaluation per allele.
+            //Having multiple copies of a VariantContext might cause problems with the comp het calculations 
+            Set<VariantContext> geneVariants = gene.getVariantEvaluations().stream().map(VariantEvaluation::getVariantContext).collect(toSet());
+            compatibleVariants = inheritanceCompatibilityChecker.getCompatibleWith(new ArrayList<>(geneVariants));
         } catch (InheritanceCompatibilityCheckerException ex) {
             logger.error(null, ex);
         }
