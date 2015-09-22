@@ -46,7 +46,7 @@ public class CaddDao {
         if (isIndel(ref, alt)) {
             // deal with fact that deletion coordinates are handled differently by Jannovar
             if (alt.equals("-")) {
-                start = start - 1;
+                start -= 1;
             }
             return getIndelCaddPathogenicityData(chromosome, start, ref, alt);
         }
@@ -75,7 +75,6 @@ public class CaddDao {
                     caddRef = "-";
                 }
                 if (caddAlt.equals("")) {
-                    logger.info("Converting ALT from '' to '-'");
                     caddAlt = "-";
                 }
                 if (caddRef.equals(ref) && caddAlt.equals(alt)) {

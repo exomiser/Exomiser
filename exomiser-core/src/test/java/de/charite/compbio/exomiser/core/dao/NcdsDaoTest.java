@@ -11,6 +11,7 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.tribble.readers.TabixReader;
 import htsjdk.variant.variantcontext.VariantContext;
+import java.io.IOException;
 import java.util.Arrays;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -60,12 +61,17 @@ public class NcdsDaoTest {
     }
     
     @Test
+    public void testGetPathogenicityData_unableToReadFromSource() {
+        Mockito.when(ncdsTabixReader.query("1:1-1")).thenThrow(IOException.class);
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData()));
+    }
+    
+    @Test
     public void testGetPathogenicityData_singleNucleotideVariationNoData() {
         mockIterator.setValues(Arrays.asList());
         Mockito.when(ncdsTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
-        VariantEvaluation nonCodingVariation = variant(1, 1, "A", "T");
-        assertThat(instance.getPathogenicityData(nonCodingVariation), equalTo(new PathogenicityData()));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData()));
     }
     
     @Test
@@ -73,25 +79,22 @@ public class NcdsDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t1.0"));
         Mockito.when(ncdsTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
-        VariantEvaluation nonCodingVariation = variant(1, 1, "A", "T");
-        assertThat(instance.getPathogenicityData(nonCodingVariation), equalTo(new PathogenicityData(new NcdsScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData(new NcdsScore(1f))));
     }
     
     @Test
     public void testGetPathogenicityData_insertion() {
-        mockIterator.setValues(Arrays.asList("1\t1\t0.0","1\t2\t1.0"));
+        mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t1.0"));
         Mockito.when(ncdsTabixReader.query("1:1-2")).thenReturn(mockIterator);
 
-        VariantEvaluation nonCodingVariation = variant(1, 1, "-", "TTT");
-        assertThat(instance.getPathogenicityData(nonCodingVariation), equalTo(new PathogenicityData(new NcdsScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(new PathogenicityData(new NcdsScore(1f))));
     }
     
     @Test
     public void testGetPathogenicityData_deletion() {
-        mockIterator.setValues(Arrays.asList("1\t1\t0.0","1\t2\t0.5","1\t3\t1.0"));
+        mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0"));
         Mockito.when(ncdsTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
-        VariantEvaluation nonCodingVariation = variant(1, 1, "TTT", "-");
-        assertThat(instance.getPathogenicityData(nonCodingVariation), equalTo(new PathogenicityData(new NcdsScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(new PathogenicityData(new NcdsScore(1f))));
     }
 }

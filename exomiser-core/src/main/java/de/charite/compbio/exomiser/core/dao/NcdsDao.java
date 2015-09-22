@@ -41,45 +41,57 @@ public class NcdsDao {
         return processResults(variant);
     }
 
-    PathogenicityData processResults(Variant variant) {
+    private PathogenicityData processResults(Variant variant) {
+        String chromosome = variant.getChromosomeName();
+        int start = variant.getPosition();
+        int end = calculateEndPosition(variant);
+        return getNcdsData(chromosome, start, end);
+    }
+
+    private int calculateEndPosition(Variant variant) {
+        int end = variant.getPosition();
+        //these end positions are calculated according to recommendation by Max and Peter who produced the NCDS score
+        //don't change this unless they say. 
+        if (isDeletion(variant)) {
+            // test all deleted bases
+            end += variant.getRef().length();
+        } else if (isInsertion(variant)) {
+            // test bases either side of insertion
+            end += 1;
+        }
+        return end;
+    }
+
+    private static boolean isDeletion(Variant variant) {
+        return variant.getAlt().equals("-");
+    }
+
+    private static boolean isInsertion(Variant variant) {
+        return variant.getRef().equals("-");
+    }
+    
+    private PathogenicityData getNcdsData(String chromosome, int start, int end) throws NumberFormatException {
         try {
-            String chromosome = variant.getChromosomeName();
-            String ref = variant.getRef();
-            String alt = variant.getAlt();
-            int start = variant.getPosition();
-            int end = variant.getPosition();
-            // TODO - checking dealing correctly with fact that deletion coordinates are handled differently by Jannovar
-            if (alt.equals("-")) {// deletion
-                //start = start - 1;
-                end = end + ref.length();// test all deleted bases
-            } else if (ref.equals("-")) {// insertion
-                end = end + 1;// test bases either side of insertion
-            }
             float ncds = Float.NaN;
-            NcdsScore ncdsScore = null;
             String line;
-            //logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
+//            logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
             TabixReader.Iterator results = ncdsTabixReader.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
-                //logger.info(elements[2]);
                 if (Float.isNaN(ncds)) {
                     ncds = Float.parseFloat(elements[2]);
-                }
-                else {
+                } else {
                     ncds = Math.max(ncds, Float.parseFloat(elements[2]));
                 }
             }
             //logger.info("Final score " + ncds);
             if (!Float.isNaN(ncds)) {
-                ncdsScore = new NcdsScore(ncds);
+                return new PathogenicityData(new NcdsScore(ncds));
             }
-
-            return new PathogenicityData(ncdsScore);
-
         } catch (IOException e) {
+            logger.error("Unable to read from NCDS tabix file {}", ncdsTabixReader.getSource(), e);
         }
-
         return new PathogenicityData();
     }
+
 }

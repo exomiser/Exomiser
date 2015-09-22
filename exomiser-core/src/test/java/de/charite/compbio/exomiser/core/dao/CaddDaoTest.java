@@ -12,12 +12,14 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import htsjdk.tribble.readers.TabixReader;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -82,6 +84,12 @@ public class CaddDaoTest {
     }
 
     @Test
+    public void testGetPathogenicityData_unableToReadFromSnvSource() {
+        Mockito.when(snvTabixReader.query("1:2-2")).thenThrow(IOException.class);
+        assertThat(instance.getPathogenicityData(variant(1, 2, "A", "T")), equalTo(new PathogenicityData()));
+    }
+    
+    @Test
     public void testGetPathogenicityData_snvNoData() {
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
 
@@ -95,6 +103,12 @@ public class CaddDaoTest {
         assertThatPathDataHasNoCaddScore(result);
     }
 
+    @Test
+    public void testGetPathogenicityData_unableToReadFromInDelSource() {
+        Mockito.when(indelTabixReader.query("1:2-2")).thenThrow(IOException.class);
+        assertThat(instance.getPathogenicityData(variant(1, 2, "-", "A")), equalTo(new PathogenicityData()));
+    }
+    
     @Test
     public void testGetPathogenicityData_insertionSingleVariantAtPosition_NoMatch() {
         mockIterator.setValues(Arrays.asList(
