@@ -140,6 +140,15 @@ public class VariantDataServiceImplTest {
     }
     
     @Test
+    public void serviceReturnsSpecifiedPathogenicityDataForNonCodingNonRegulatoryVariant() {
+        variant = buildVariantOfType(VariantEffect.SPLICE_REGION_VARIANT);
+        //Test that the NCDS DAO is only called whe the variant type is of the type NCDS is trained against. 
+        Mockito.when(mockNcdsDao.getPathogenicityData(variant)).thenReturn(new PathogenicityData(new NcdsScore(1f)));
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.NCDS));
+        assertThat(result, equalTo(new PathogenicityData()));
+    }
+    
+    @Test
     public void serviceReturnsCaddAndNonCodingScoreForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
         PathogenicityData expectedNcdsData = new PathogenicityData(new CaddScore(1f), new NcdsScore(1f));

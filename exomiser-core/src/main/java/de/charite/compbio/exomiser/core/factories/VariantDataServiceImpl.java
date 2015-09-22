@@ -19,6 +19,7 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
@@ -72,18 +73,16 @@ public class VariantDataServiceImpl implements VariantDataService {
         if (pathogenicitySources.isEmpty()) {
             return NO_PATH_DATA;
         }
-        //TODO: ideally we'd have some sort of compact, high-performance document store for this sort of data rather than several different datasources query and ship.
+        //TODO: ideally we'd have some sort of compact, high-performance document store for this sort of data rather than several different datasources to query and ship.
         List<PathogenicityScore> allPathScores = new ArrayList<>();
-        //Polyphen, Mutataion Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
-        if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
+        final VariantEffect variantEffect = variant.getVariantEffect();
+        //Polyphen, Mutation Taster and SIFT are all trained on missense variants - this is what is contained in the original variant table, but we shouldn't know that.
+        if (variantEffect == VariantEffect.MISSENSE_VARIANT) {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
             allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
         }
-        else if (pathogenicitySources.contains(PathogenicitySource.NCDS) && variant.getVariantEffect() != VariantEffect.STOP_LOST 
-                && variant.getVariantEffect() != VariantEffect.STOP_RETAINED_VARIANT && variant.getVariantEffect() != VariantEffect.STOP_GAINED && 
-                variant.getVariantEffect() != VariantEffect.SYNONYMOUS_VARIANT && variant.getVariantEffect() != VariantEffect.SPLICE_REGION_VARIANT && 
-                variant.getVariantEffect() != VariantEffect.SPLICE_ACCEPTOR_VARIANT) {                                        
-            //NCDS is trained on non-coding bits of the genome, this outperforms CADD for non-coding variants
+        else if (pathogenicitySources.contains(PathogenicitySource.NCDS) && isRegulatoryNonCodingVariant(variantEffect)) {                                        
+            //NCDS is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
             PathogenicityData nonCodingScore = ncdsDao.getPathogenicityData(variant);
             allPathScores.addAll(nonCodingScore.getPredictedPathogenicityScores());
         }
@@ -102,6 +101,13 @@ public class VariantDataServiceImpl implements VariantDataService {
                 .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
                 .collect(toSet());
         return new PathogenicityData(wanted);
+    }
+    
+    private static final Set<VariantEffect> nonRegulatoryNonCodingVariantEffects = EnumSet.of(VariantEffect.STOP_LOST, VariantEffect.STOP_RETAINED_VARIANT,
+            VariantEffect.STOP_GAINED, VariantEffect.SYNONYMOUS_VARIANT, VariantEffect.SPLICE_REGION_VARIANT, VariantEffect.SPLICE_ACCEPTOR_VARIANT);
+    
+    private boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect) {
+        return !nonRegulatoryNonCodingVariantEffects.contains(variantEffect);
     }
     
     @Override
