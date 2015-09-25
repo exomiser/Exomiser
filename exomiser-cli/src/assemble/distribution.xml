@@ -31,6 +31,8 @@
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>*.settings</include>
+                <include>*.yml</include>
+                <include>test-analysis-batch.txt</include>
                 <include>test-batchFiles.txt</include>
                 <include>application.properties</include>
                 <include>ehcache.xml</include>
@@ -43,7 +45,6 @@
                 <include>Pfeiffer.vcf</include>
                 <include>Pfeiffer-quartet.vcf</include>
                 <include>Pfeiffer-quartet.ped</include>
-                <include>genomiser.yaml</include>
                 <include>ucsc_hg19.ser</include>
                 <include>rw_string_9_05.gz</include>
                 <include>rw_string_9_05_id2index.gz</include>

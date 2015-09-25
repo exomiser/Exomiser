@@ -107,6 +107,8 @@
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>*.settings</include>
+                                        <include>*.yml</include>
+                                        <include>test-analysis-batch.txt</include>
                                         <include>test-batchFiles.txt</include>
                                         <include>application.properties</include>
                                         <include>log4j2.xml</include>
@@ -118,7 +120,6 @@
                                     <include>Pfeiffer.vcf</include>
                                     <include>Pfeiffer-quartet.vcf.gz</include>
                                     <include>Pfeiffer-quartet.ped</include>
-                                    <include>genomiser.yaml</include>
                                 </resource>                                                            
                             </resources>              
                         </configuration>            
