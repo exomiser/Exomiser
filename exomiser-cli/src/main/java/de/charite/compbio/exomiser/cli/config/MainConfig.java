@@ -150,33 +150,40 @@ public class MainConfig {
     @Lazy
     @Bean
     public TabixReader indelTabixReader() {
-        String indelCaddPathValue = getValueOfProperty("indelCaddPath");
+        String caddInDelPathValue = getValueOfProperty("caddInDelPath");
+        if (caddInDelPathValue.isEmpty()) {
+            caddInDelPathValue = dataPath().resolve("InDels.tsv.gz").toString();
+        }
         try {
-             return new TabixReader(indelCaddPathValue);
+             return new TabixReader(caddInDelPathValue);
         } catch (IOException e) {
-            throw new RuntimeException("inDel CADD file not found ", e);
+            throw new RuntimeException("CADD InDels.tsv.gz file not found.", e);
         }
     }
     
     @Lazy
     @Bean
     public TabixReader snvTabixReader() {
-        String snvCaddPathValue = getValueOfProperty("snvCaddPath");
+        String caddSnvPathValue = getValueOfProperty("caddSnvPath");
+        if (caddSnvPathValue.isEmpty()) {
+            caddSnvPathValue = dataPath().resolve("whole_genome_SNVs.tsv.gz").toString();
+        }
         try {
-             return new TabixReader(snvCaddPathValue);
+             return new TabixReader(caddSnvPathValue);
         } catch (IOException e) {
-            throw new RuntimeException("SNV CADD file not found ", e);
+            throw new RuntimeException("CADD whole_genome_SNVs.tsv.gz file not found.", e);
         }
     }
     
     @Lazy
     @Bean
     public TabixReader ncdsTabixReader() {
-        String ncdsPathValue = getValueOfProperty("ncdsPath");
+        String remmPath = getValueOfProperty("remmPath");
+        String ncdsPathValue = dataPath().resolve(remmPath).toString();
         try {
              return new TabixReader(ncdsPathValue);
         } catch (IOException e) {
-            throw new RuntimeException("NCDS file not found ", e);
+            throw new RuntimeException("REMM file not found ", e);
         }
     }
 
