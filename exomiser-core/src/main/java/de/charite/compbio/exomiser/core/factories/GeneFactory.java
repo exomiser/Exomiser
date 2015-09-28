@@ -7,12 +7,15 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
+
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Creates a {@code List} of {@code Gene} from a {@code List} of
@@ -56,5 +59,29 @@ public class GeneFactory {
         logger.info("Made {} genes from {} variants", geneMap.values().size(), variantEvaluations.size());
         return new ArrayList<>(geneMap.values());
     }
-    
+
+    public List<Gene> createKnownGenes(JannovarData jannovarData ) {
+        int approxKnownGenes = 23000;
+        Set<Gene> knownGenes = new HashSet<>(approxKnownGenes);
+        for (String geneSymbol : jannovarData.getTmByGeneSymbol().keySet()) {
+            String geneId = "-1";
+            Collection<TranscriptModel> transcriptModels = jannovarData.getTmByGeneSymbol().get(geneSymbol);
+            for (TranscriptModel transcriptModel : transcriptModels) {
+                if (transcriptModel != null && transcriptModel.getGeneID() != null && !transcriptModel.getGeneID().equals("null")) {
+                    // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
+                    // for UCSC. At this point, there is a hard dependency on using the UCSC database.
+                    geneId = transcriptModel.getGeneID().substring("ENTREZ".length());
+                }
+            }
+            Gene gene = new Gene(geneSymbol, Integer.parseInt(geneId));
+            knownGenes.add(gene);
+            if (geneId.equals("-1")) {
+                logger.debug("No geneId associated with gene symbol {} geneId set to {}", gene.getGeneSymbol(), gene.getEntrezGeneID());
+            }
+        }
+
+        logger.info("Created {} known genes.", knownGenes.size());
+        return knownGenes.stream().collect(toList());
+    }
+
 }

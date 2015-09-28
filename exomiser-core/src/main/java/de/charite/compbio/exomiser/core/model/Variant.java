@@ -25,6 +25,8 @@ public interface Variant extends VariantCoordinates {
 
     public VariantEffect getVariantEffect();
     
+    public void setVariantEffect(VariantEffect ve);
+    
     public List<Annotation> getAnnotations();
 
     public String getGeneSymbol();

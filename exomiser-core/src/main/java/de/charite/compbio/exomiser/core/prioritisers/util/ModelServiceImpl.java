@@ -36,7 +36,10 @@ public class ModelServiceImpl implements ModelService {
 
     @Override
     public List<Model> getHumanDiseaseModels() {
-        String modelQuery = "SELECT 'HUMAN' as organism, gene_id as entrez_id, human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM human2mouse_orthologs hm, disease_hp M, disease d WHERE hm.entrez_id=d.gene_id AND M.disease_id=d.disease_id;";
+        // We only connect to human2mouse_orthologs to get the human_gene_symbol but if there is no orthology mapping we get 0 results and no disease hit at all - this is daft!
+        // Tried to replace with the below - should be more successful
+        String modelQuery = "SELECT distinct 'HUMAN' as organism, gene_id as entrez_id, symbol as human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM entrez2sym e, disease_hp M, disease d WHERE e.entrezid=d.gene_id and M.disease_id=d.disease_id"; 
+        //String modelQuery = "SELECT 'HUMAN' as organism, gene_id as entrez_id, human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM human2mouse_orthologs hm, disease_hp M, disease d WHERE hm.entrez_id=d.gene_id AND M.disease_id=d.disease_id;";
         return runDiseaseModelQuery(modelQuery);
     }
 

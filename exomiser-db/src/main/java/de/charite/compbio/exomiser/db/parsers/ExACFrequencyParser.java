@@ -46,6 +46,8 @@ public class ExACFrequencyParser implements ResourceParser {
      */
     Frequency previous = null;
     private List<Frequency> exACFrequencyList;
+    private byte chromosome;
+    private final ReferenceDictionary refDict;
    
     /**
      * This object is used to allow binary searches on the FrequencyList
@@ -58,9 +60,11 @@ public class ExACFrequencyParser implements ResourceParser {
         }
     };
 
-    public ExACFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList) {
+    public ExACFrequencyParser(ReferenceDictionary refDict, List<Frequency> frequencyList, byte chromosome) {
         vcf2FrequencyParser = new VCF2FrequencyParser(refDict);
         this.frequencyList = frequencyList;
+        this.chromosome = chromosome;
+        this.refDict = refDict;
         exACFrequencyList = new ArrayList<>();
     }
 
@@ -112,8 +116,19 @@ public class ExACFrequencyParser implements ResourceParser {
                     continue; // comment.
                 }
                 vcount++;
-
-                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line);
+                String[] fields = line.split("\t");
+                byte chrom = 0;
+                try {
+                    chrom = (byte) refDict.getContigNameToID().get(fields[0]).intValue();
+                } catch (NumberFormatException e) {
+                    logger.error("Unable to parse chromosome: {}. Error occured parsing line: {}", fields[0], line);
+                    logger.error("", e.getMessage());
+                    System.exit(1);
+                }
+                if (chrom > chromosome) {
+                    break;
+                }    
+                List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line,chromosome);
                 
                 for (Frequency frequency : frequencyPerLine) {
                     int idx = Collections.binarySearch(frequencyList, frequency, comparator);

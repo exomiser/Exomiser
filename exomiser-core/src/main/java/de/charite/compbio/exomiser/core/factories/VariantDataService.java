@@ -3,54 +3,26 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.dao.FrequencyDao;
-import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.Set;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Service
-public class VariantDataService {
-    
-    @Autowired
-    private FrequencyDao frequencyDao;
-    @Autowired
-    private PathogenicityDao pathogenicityDao;
-    
-    public void setVariantFrequencyAndPathogenicityData(VariantEvaluation variantEvaluation) {
-        setVariantFrequencyData(variantEvaluation);
-        setVariantPathogenicityData(variantEvaluation);
-    }
+public interface VariantDataService {
+
+    public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources);
+
+    public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
+
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant);
         
-    public void setVariantFrequencyData(VariantEvaluation variantEvaluation) {
-        FrequencyData freqData = getVariantFrequencyData(variantEvaluation);
-        variantEvaluation.setFrequencyData(freqData);
-    }
-
-    public void setVariantPathogenicityData(VariantEvaluation variantEvaluation) {
-        PathogenicityData pathData = getVariantPathogenicityData(variantEvaluation);
-        variantEvaluation.setPathogenicityData(pathData);
-    }
-
-    public FrequencyData getVariantFrequencyData(Variant variant) {
-        FrequencyData freqData = frequencyDao.getFrequencyData(variant);
-        return freqData;
-    }
-    
-    public PathogenicityData getVariantPathogenicityData(Variant variant) {
-        PathogenicityData pathData = pathogenicityDao.getPathogenicityData(variant);
-        return pathData;
-    }
-    
 }

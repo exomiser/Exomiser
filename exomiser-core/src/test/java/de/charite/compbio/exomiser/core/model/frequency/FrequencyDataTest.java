@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +45,14 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testNoArgsConstructorHasNullRsIdAndNoKnownFrequencies() {
+        instance = new FrequencyData();
+        assertThat(instance.getRsId(), nullValue());
+        assertThat(instance.getKnownFrequencies().isEmpty(), is(true));
+        assertThat(instance.isRepresentedInDatabase(), is(false));
+    }
+    
+    @Test
     public void testGetRsId() {
         assertThat(instance.getRsId(), equalTo(RSID));
     }
@@ -70,13 +79,13 @@ public class FrequencyDataTest {
 
     @Test
     public void testNotRepresentedInDatabase() {
-        assertThat(noFreqData.representedInDatabase(), is(false));
+        assertThat(noFreqData.isRepresentedInDatabase(), is(false));
     }
     
      @Test
     public void testRepresentedInDatabaseEspAllOnly() {
         instance = new FrequencyData(RSID, ESP_ALL_PASS);
-        assertThat(instance.representedInDatabase(), is(true));
+        assertThat(instance.isRepresentedInDatabase(), is(true));
     }
 
     @Test
@@ -86,7 +95,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testRepresentedInDatabaseRsIdOnly() {
-        assertThat(rsIdOnlyData.representedInDatabase(), is(true));
+        assertThat(rsIdOnlyData.isRepresentedInDatabase(), is(true));
     }
     
     @Test
@@ -124,6 +133,15 @@ public class FrequencyDataTest {
     }
 
     @Test
+    public void testGetKnownFrequencies_noFrequencyData() {
+        instance = new FrequencyData();
+        
+        List<Frequency> result = instance.getKnownFrequencies();
+        
+        assertThat(result, equalTo(new ArrayList<>()));
+    }
+    
+    @Test
     public void testGetKnownFrequencies() {
         instance = new FrequencyData(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS, ESP_EA_PASS);
         List<Frequency> expResult = new ArrayList<>();
@@ -136,18 +154,53 @@ public class FrequencyDataTest {
         
         assertThat(result, equalTo(expResult));
     }
+    
+    @Test
+    public void testGetKnownFrequencies_isImmutable() {
+        instance = new FrequencyData(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS);
+        List<Frequency> expResult = new ArrayList<>();
+        expResult.add(DBSNP_PASS);
+        expResult.add(ESP_AA_PASS);
+        expResult.add(ESP_ALL_PASS);
+        
+        //try and add another score to the instance post-construction
+        instance.getKnownFrequencies().add(ESP_EA_PASS);
+                
+        assertThat(instance.getKnownFrequencies(), equalTo(expResult));
+    }
 
     @Test
     public void testGetMaxFreqWhenNoData() {
-        float maxFreq = 0.0F;
+        float maxFreq = 0.0f;
         assertThat(noFreqData.getMaxFreq(), equalTo(maxFreq));
     }
     
     @Test
     public void testGetMaxFreqWithData() {
-        float maxFreq = 89.5F;
+        float maxFreq = 89.5f;
         Frequency maxFrequency = new Frequency(maxFreq);
         instance = new FrequencyData(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
+    }
+
+    @Test
+    public void testGetScore_reallyRareVariant() {
+        assertThat(noFreqData.getScore(), equalTo(1f));
+    }
+
+    @Test
+    public void testGetScore_commonVariant() {
+        float maxFreq = 100.0f;
+        Frequency maxFrequency = new Frequency(maxFreq, FrequencySource.THOUSAND_GENOMES);
+        instance = new FrequencyData(RSID, maxFrequency);
+        assertThat(instance.getScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testGetScore_rareVariant() {
+        float maxFreq = 0.1f;
+        Frequency maxFrequency = new Frequency(maxFreq);
+        instance = new FrequencyData(null, maxFrequency);
+        assertThat(instance.getScore(), equalTo(0.8504372f));
     }
 }

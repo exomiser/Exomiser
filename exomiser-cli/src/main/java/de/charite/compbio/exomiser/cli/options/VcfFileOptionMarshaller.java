@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import java.nio.file.Paths;
 import org.apache.commons.cli.OptionBuilder;
@@ -16,12 +15,14 @@ import org.apache.commons.cli.OptionBuilder;
  */
 public class VcfFileOptionMarshaller extends AbstractOptionMarshaller  {
             
+    public static final String VCF_OPTION = "vcf";
+
     public VcfFileOptionMarshaller() {
         option = OptionBuilder
                 .withArgName("file")
                 .hasArg()                
                 .withDescription("Path to VCF file with mutations to be analyzed. Can be either for an individual or a family.")
-                .withLongOpt(ExomiserSettings.VCF_OPTION)
+                .withLongOpt(VCF_OPTION)
                 .create("v");
     }
 

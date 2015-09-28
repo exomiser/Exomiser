@@ -24,11 +24,13 @@ public class HiPhivePriorityResult implements PriorityResult {
     private double fishScore = 0f;
 
     private final double walkerScore;
+    
+    private final boolean candidateGeneMatch;
 
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public HiPhivePriorityResult(String geneSymbol, double score, List<PhenotypeTerm> queryPhenotypeTerms, List<Model> phenotypeEvidence, List<Model> ppiEvidence, double walkerScore) {
+    public HiPhivePriorityResult(String geneSymbol, double score, List<PhenotypeTerm> queryPhenotypeTerms, List<Model> phenotypeEvidence, List<Model> ppiEvidence, double walkerScore, boolean candidateGeneMatch) {
         this.geneSymbol = geneSymbol;
         this.score = score;
         this.queryPhenotypeTerms = queryPhenotypeTerms;
@@ -37,6 +39,8 @@ public class HiPhivePriorityResult implements PriorityResult {
         this.phenotypeEvidence = phenotypeEvidence;
         this.ppiEvidence = ppiEvidence;
         this.walkerScore = walkerScore;
+        
+        this.candidateGeneMatch = candidateGeneMatch;
     }
 
     private void setPhenotypeEvidenceScores(List<Model> phenotypeEvidence) {
@@ -59,7 +63,7 @@ public class HiPhivePriorityResult implements PriorityResult {
 
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.HI_PHIVE_PRIORITY;
+        return PriorityType.HIPHIVE_PRIORITY;
     }
 
     public String getGeneSymbol() {
@@ -101,6 +105,10 @@ public class HiPhivePriorityResult implements PriorityResult {
 
     public float getWalkerScore() {
         return (float) this.walkerScore;
+    }
+
+    public boolean isCandidateGeneMatch() {
+        return candidateGeneMatch;
     }
 
     /**

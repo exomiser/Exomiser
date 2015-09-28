@@ -23,8 +23,8 @@ and open the template in the editor.
                 <li><a href="#settings" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-cog"/> Analysis Settings</b></a></li>
                 <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-filter"/> Filtering Summary</b></a></li>
                 <li><a href="#distribution" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</b></a></li>
-                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</b></a></li>
                 <li><a href="#prioritisation" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-sort"/> Prioritised Genes</b></a></li>
+                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</b></a></li>
                 <!--<li><a href="#about" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-question-sign"/> About</b></a></li>-->
             </ul>
             <div class="tab-content">
@@ -39,8 +39,8 @@ and open the template in the editor.
                             <tr>
                                 <th>Filter</th>
                                 <th>Report</th>
-                                <th>Variants passed filter</th>
-                                <th>Variants failed filter</th>
+                                <th>Passed filter</th>
+                                <th>Failed filter</th>
                             </tr>
                         </thead>
                         <tbody>

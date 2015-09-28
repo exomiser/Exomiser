@@ -22,8 +22,6 @@ public class FrequencyFilterTest {
     private VariantEvaluation failsFrequency;
     private VariantEvaluation passesNoFrequencyData;
 
-    private VariantEvaluation nullFrequencyVariant;
-
     private static final float FREQ_THRESHOLD = 0.1f;
     private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
     private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
@@ -42,14 +40,12 @@ public class FrequencyFilterTest {
     private static final FrequencyData espAaPassData = new FrequencyData(null, ESP_AA_PASS);
     private static final FrequencyData espEaPassData = new FrequencyData(null, ESP_EA_PASS);
     private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS);
-    private static final FrequencyData noFreqData = new FrequencyData(null);
+    private static final FrequencyData noFreqData = new FrequencyData();
 
     @Before
     public void setUp() throws Exception {
 
-        boolean filterOutAllKnownVariants = false;
-
-        instance = new FrequencyFilter(FREQ_THRESHOLD, filterOutAllKnownVariants);
+        instance = new FrequencyFilter(FREQ_THRESHOLD);
 
         passesEspAllFrequency = makeTestVariantEvaluation();
         passesEspAllFrequency.setFrequencyData(espAllPassData);
@@ -69,7 +65,6 @@ public class FrequencyFilterTest {
         passesNoFrequencyData = makeTestVariantEvaluation();
         passesNoFrequencyData.setFrequencyData(noFreqData);
 
-        nullFrequencyVariant = makeTestVariantEvaluation();
     }
     
     private VariantEvaluation makeTestVariantEvaluation() {
@@ -77,67 +72,36 @@ public class FrequencyFilterTest {
     }
 
     @Test
+    public void getMaxFrequencyCutoff() {
+        assertThat(instance.getMaxFreq(), equalTo(FREQ_THRESHOLD));
+    } 
+    
+    @Test
     public void testGetFilterType() {
         assertThat(instance.getFilterType(), equalTo(FilterType.FREQUENCY_FILTER));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsIllegalArgumentExceptionWhenInstanciatedWithNegativeFrequency() {
-        instance = new FrequencyFilter(-1f, true);
+        instance = new FrequencyFilter(-1f);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsIllegalArgumentExceptionWhenInstanciatedWithFrequencyGreaterThanOneHundredPercent() {
-        instance = new FrequencyFilter(101f, true);
-    }
-
-    @Test
-    public void testFilterFailsVariantEvaluationWithNullFrequency() {
-        boolean filterOutAllKnownVariants = true;
-
-        instance = new FrequencyFilter(FREQ_THRESHOLD, filterOutAllKnownVariants);
-
-        FilterResult filterResult = instance.runFilter(nullFrequencyVariant);
-
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+        instance = new FrequencyFilter(101f);
     }
 
     @Test
     public void testFilterPassesVariantEvaluationWithFrequencyUnderThreshold() {
-        boolean filterOutAllKnownVariants = false;
-
-        instance = new FrequencyFilter(FREQ_THRESHOLD, filterOutAllKnownVariants);
+        instance = new FrequencyFilter(FREQ_THRESHOLD);
         System.out.println(passesEspAllFrequency + " " + passesEspAllFrequency.getFrequencyData());
         FilterResult filterResult = instance.runFilter(passesEspAllFrequency);
 
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
-    }
-
-    @Test
-    public void testFilterFailsVariantEvaluationWithFrequencyUnderThresholdBecauseItHasBeenCharacterised() {
-        boolean failAllKnownVariants = true;
-
-        instance = new FrequencyFilter(FREQ_THRESHOLD, failAllKnownVariants);
-        System.out.println(passesEspAllFrequency + " " + passesEspAllFrequency.getFrequencyData());
-        FilterResult filterResult = instance.runFilter(passesEspAllFrequency);
-
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
     }
 
     @Test
     public void testFilterPassesVariantEvaluationWithNoFrequencyData() {
-
-        FilterResult filterResult = instance.runFilter(passesNoFrequencyData);
-
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
-    }
-
-    @Test
-    public void testFilterPassesVariantEvaluationWithNoFrequencyDataWhenToldToFailKnownVariants() {
-
-        boolean failAllKnownVariants = true;
-
-        instance = new FrequencyFilter(FREQ_THRESHOLD, failAllKnownVariants);
 
         FilterResult filterResult = instance.runFilter(passesNoFrequencyData);
 
@@ -169,7 +133,7 @@ public class FrequencyFilterTest {
 
     @Test
     public void testHashCode() {
-        FrequencyFilter otherFilter = new FrequencyFilter(FREQ_THRESHOLD, false);
+        FrequencyFilter otherFilter = new FrequencyFilter(FREQ_THRESHOLD);
         assertThat(instance.hashCode(), equalTo(otherFilter.hashCode()));
     }
 
@@ -187,13 +151,7 @@ public class FrequencyFilterTest {
 
     @Test
     public void testNotEqualOtherFrequencyFilterWithDifferentThreshold() {
-        FrequencyFilter otherFilter = new FrequencyFilter(FAIL_FREQ, false);
-        assertThat(instance.equals(otherFilter), is(false));
-    }
-
-    @Test
-    public void testNotEqualOtherFrequencyFilterWithKnownVariantSwitch() {
-        FrequencyFilter otherFilter = new FrequencyFilter(FREQ_THRESHOLD, true);
+        FrequencyFilter otherFilter = new FrequencyFilter(FAIL_FREQ);
         assertThat(instance.equals(otherFilter), is(false));
     }
 
@@ -202,15 +160,10 @@ public class FrequencyFilterTest {
         assertThat(instance.equals(instance), is(true));
     }
 
-//    @Test
-//    public void testToString() {
-//        System.out.println("toString");
-//        FrequencyFilter instance = null;
-//        String expResult = "";
-//        String result = instance.toString();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    @Test
+    public void testToString() {
+        System.out.println(instance);
+        assertThat(instance.toString().isEmpty(), is(false));
+    }
 
 }

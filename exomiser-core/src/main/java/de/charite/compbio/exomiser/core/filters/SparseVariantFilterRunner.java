@@ -7,29 +7,21 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Component
-public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation, VariantFilter> {
+public class SparseVariantFilterRunner extends SimpleVariantFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SparseVariantFilterRunner.class);
 
-    @Autowired
-    private VariantDataService variantEvaluationFactory;
-
     /**
-     *
      * @param filters
      * @param variantEvaluations
      * @return
@@ -42,17 +34,21 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
             return variantEvaluations;
         }
 
-        List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            runFiltersOverVariantEvaluationUntilFailure(filters, variantEvaluation);
-            if (variantEvaluation.passedFilters()) {
-                filteredVariantEvaluations.add(variantEvaluation);
-            }
-        }
+        List<VariantEvaluation> filteredVariantEvaluations = runFilters(filters, variantEvaluations);
 
         int numRemoved = variantEvaluations.size() - filteredVariantEvaluations.size();
         logger.info("Filtering for {} removed {} of {} variants - returning {} filtered variants.", getFilterTypes(filters), numRemoved, variantEvaluations.size(), filteredVariantEvaluations.size());
         return filteredVariantEvaluations;
+    }
+
+    @Override
+    public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> variantEvaluations) {
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            if (variantEvaluation.passedFilters()) {
+                run(filter, variantEvaluation);
+            }
+        }
+        return makeListofFilteredVariants(variantEvaluations);
     }
 
     private boolean ifThereAreNoFiltersToRun(List<VariantFilter> filters) {
@@ -63,44 +59,27 @@ public class SparseVariantFilterRunner implements FilterRunner<VariantEvaluation
         return false;
     }
 
-    private void runFiltersOverVariantEvaluationUntilFailure(List<VariantFilter> filters, VariantEvaluation variantEvaluation) {
+    private List<VariantEvaluation> runFilters(List<VariantFilter> filters, List<VariantEvaluation> variantEvaluations) {
+
         for (Filter filter : filters) {
-            fetchMissingFrequencyAndPathogenicityData(filter.getFilterType(), variantEvaluation);
-            FilterResult filterResult = runFilterAndAddResult(filter, variantEvaluation);
-            //we want to know which filter the variant failed and then don't run any more
-            //this can be an expensive operation when looking up frequency and pathogenicity info from the database
-            if (variantFailedTheFilter(filterResult)) {
-                break;
+            for (VariantEvaluation variantEvaluation : variantEvaluations) {
+                //the only difference between sparse and full filtering is this if clause here...
+                if (variantEvaluation.passedFilters()) {
+                    run(filter, variantEvaluation);
+                }
             }
         }
+        return makeListofFilteredVariants(variantEvaluations);
     }
 
-    private void fetchMissingFrequencyAndPathogenicityData(FilterType filterType, VariantEvaluation variantEvaluation) {
-        switch (filterType) {
-            case FREQUENCY_FILTER:
-                variantEvaluationFactory.setVariantFrequencyData(variantEvaluation);
-                break;
-            case PATHOGENICITY_FILTER:
-                variantEvaluationFactory.setVariantPathogenicityData(variantEvaluation);
-                break;
+    private List<VariantEvaluation> makeListofFilteredVariants(List<VariantEvaluation> variantEvaluations) {
+        List<VariantEvaluation> filteredVariantEvaluations = new ArrayList<>();
+        for (VariantEvaluation variant : variantEvaluations) {
+            if (variant.passedFilters()) {
+                filteredVariantEvaluations.add(variant);
+            }
         }
+        return filteredVariantEvaluations;
     }
 
-    private FilterResult runFilterAndAddResult(Filter filter, VariantEvaluation variantEvaluation) {
-        FilterResult filterResult = filter.runFilter(variantEvaluation);
-        variantEvaluation.addFilterResult(filterResult);
-        return filterResult;
-    }
-
-    private static boolean variantFailedTheFilter(FilterResult filterResult) {
-        return filterResult.getResultStatus() == FilterResultStatus.FAIL;
-    }
-
-    private Set<FilterType> getFilterTypes(List<VariantFilter> filters) {
-        Set<FilterType> filtersRun = new LinkedHashSet<>();
-        for (Filter filter : filters) {
-            filtersRun.add(filter.getFilterType());
-        }
-        return filtersRun;
-    }
 }

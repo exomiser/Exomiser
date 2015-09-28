@@ -18,6 +18,7 @@ public enum PathogenicitySource {
     POLYPHEN,
     MUTATION_TASTER,
     SIFT,
-    CADD;
+    CADD,
+    NCDS;
     
 }

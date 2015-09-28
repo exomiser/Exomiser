@@ -33,7 +33,7 @@ public class FrequencyTest {
     @Test
     public void testfrequencySourceInConstructor(){
         float frequency = 1.0f;
-        FrequencySource source = EXAC_NON_FINISH_EUROPEAN;
+        FrequencySource source = EXAC_NON_FINNISH_EUROPEAN;
         
         instance = new Frequency(frequency, source);
         assertThat(instance.getFrequency(), equalTo(frequency));

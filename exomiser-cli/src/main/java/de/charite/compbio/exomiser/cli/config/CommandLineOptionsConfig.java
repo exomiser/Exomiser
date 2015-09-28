@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.cli.OptionBuilder;
 
 /**
  * Spring configuration for setting-up the command-line options. If you want a
@@ -40,19 +41,21 @@ public class CommandLineOptionsConfig {
      *
      * @return the required OptionMarshallers for the system.
      */
-    public Set<OptionMarshaller> desiredOptionMarshallers() {
+    private Set<OptionMarshaller> desiredOptionMarshallers() {
         Set<OptionMarshaller> desiredOptionMarshallers = new LinkedHashSet<>();
 
         //commandline parser options
         desiredOptionMarshallers.add(new SettingsFileOptionMarshaller());
         desiredOptionMarshallers.add(new BatchFileOptionMarshaller());
 
-        //analysis options
-        desiredOptionMarshallers.add(new FullAnalysisOptionMarshaller());
-
         //sample data files 
         desiredOptionMarshallers.add(new VcfFileOptionMarshaller());
         desiredOptionMarshallers.add(new PedFileOptionMarshaller());
+
+        //analysis options
+        desiredOptionMarshallers.add(new HpoIdsOptionMarshaller());
+        desiredOptionMarshallers.add(new InheritanceModeOptionMarshaller());
+        desiredOptionMarshallers.add(new FullAnalysisOptionMarshaller());
 
         //filter options
         desiredOptionMarshallers.add(new FrequencyThresholdOptionMarshaller());
@@ -65,8 +68,6 @@ public class CommandLineOptionsConfig {
 
         //prioritiser options
         desiredOptionMarshallers.add(new PrioritiserOptionMarshaller());
-        desiredOptionMarshallers.add(new HpoIdsOptionMarshaller());
-        desiredOptionMarshallers.add(new InheritanceModeOptionMarshaller());
         desiredOptionMarshallers.add(new SeedGenesOptionMarshaller());
         desiredOptionMarshallers.add(new DiseaseIdOptionMarshaller());
         desiredOptionMarshallers.add(new CandidateGeneOptionMarshaller());
@@ -99,7 +100,19 @@ public class CommandLineOptionsConfig {
 
         options.addOption(new Option("h", "help", false, "Shows this help"));
         options.addOption(new Option("H", "help", false, "Shows this help"));
-
+        options.addOption(OptionBuilder
+                .withArgName("file")
+                .hasArg()
+                .withDescription("Path to analysis script file. This should be in yaml format.")
+                .withLongOpt("analysis")
+                .create());
+        options.addOption(OptionBuilder
+                .withArgName("file")
+                .hasArg()
+                .withDescription("Path to analysis batch file. This should be in plain text file with the path to a single analys script file in yaml format on each line.")
+                .withLongOpt("analysis-batch")
+                .create());
+        
         for (OptionMarshaller optionMarshaller : desiredOptionMarshallers()) {
             Option option = optionMarshaller.getOption();
             options.addOption(option);
@@ -111,7 +124,7 @@ public class CommandLineOptionsConfig {
         //the original options:
 //        options.addOption(new Option("h", "HELP_OPTION", false, "Shows this HELP_OPTION"));
 //        options.addOption(new Option("H", "HELP_OPTION", false, "Shows this HELP_OPTION"));
-//        options.addOption(new Option("v", "VCF_OPTION", true, "Path to VCF_OPTION file with mutations to be analyzed."));
+//        options.addOption(new Option("variant", "VCF_OPTION", true, "Path to VCF_OPTION file with mutations to be analyzed."));
 //        options.addOption(new Option("o", "outfile", true, "name of out file (default: \"exomizer.html\")"));
 //        options.addOption(new Option("l", "log", true, "Configuration file for logger"));
 //        // / Filtering options

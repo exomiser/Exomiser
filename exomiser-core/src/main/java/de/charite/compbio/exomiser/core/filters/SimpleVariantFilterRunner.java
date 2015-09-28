@@ -5,8 +5,13 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.model.Filterable;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import java.util.ArrayList;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,58 +31,50 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SimpleVariantFilterRunner implements FilterRunner<VariantEvaluation, VariantFilter> {
+public class SimpleVariantFilterRunner implements VariantFilterRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleVariantFilterRunner.class);
-
-    public static class VariantFilterRunner {
-
-        private List<VariantFilter> variantFilters = new ArrayList<>();
-        private List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-
-        public VariantFilterRunner run(VariantFilter frequencyFilter) {
-            variantFilters.add(frequencyFilter);
-            return this;
+   
+    @Override
+    public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
+        logger.info("Filtering {} variants using simple filtering...", variantEvaluations.size());
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            run(variantFilters, variantEvaluation);
         }
-
-        public VariantFilterRunner run(List<VariantFilter> variantFilters) {
-            this.variantFilters = variantFilters;
-            return this;
-        }
-
-        public VariantFilterRunner over(List<VariantEvaluation> variantEvaluations) {
-            this.variantEvaluations = variantEvaluations;
-            return this;
-        }
-
-        public List<VariantEvaluation> usingSimpleFiltering() {
-            return new SimpleVariantFilterRunner().run(variantFilters, variantEvaluations);
-        }
+        logger.info("Ran {} filters over {} variants using simple filtering.", getFilterTypes(variantFilters), variantEvaluations.size());
+        return variantEvaluations;
     }
 
     @Override
-    public List<VariantEvaluation> run(List<VariantFilter> variantFilters, List<VariantEvaluation> variantEvaluations) {
-        logger.info("Filtering {} variants using non-destructive simple filtering...", variantEvaluations.size());
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            runAllFiltersOverVariantEvaluation(variantFilters, variantEvaluation);
+    public List<VariantEvaluation> run(VariantFilter filter, List<VariantEvaluation> filterables) {
+        for (VariantEvaluation variantEvaluation : filterables) {
+            run(filter, variantEvaluation);
         }
-        logger.info("Ran {} filters over {} variants using non-destructive simple filtering.", getFilterTypes(variantFilters), variantEvaluations.size());
-        return variantEvaluations;
+        return filterables;
     }
-    
-    private void runAllFiltersOverVariantEvaluation(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
+
+    private void run(List<VariantFilter> variantFilters, VariantEvaluation variantEvaluation) {
         for (VariantFilter filter : variantFilters) {
-            FilterResult filterResult = filter.runFilter(variantEvaluation);
-            variantEvaluation.addFilterResult(filterResult);
+            run(filter, variantEvaluation);
         }
     }
 
-    private Set<FilterType> getFilterTypes(List<VariantFilter> filters) {
+    public FilterResult run(Filter filter, VariantEvaluation variantEvaluation) {
+        return runFilterAndAddResult(filter, variantEvaluation);
+    }
+
+    protected FilterResult runFilterAndAddResult(Filter filter, Filterable filterable) {
+        FilterResult filterResult = filter.runFilter(filterable);
+        filterable.addFilterResult(filterResult);
+        return filterResult;
+    }
+
+    protected Set<FilterType> getFilterTypes(List<VariantFilter> filters) {
         Set<FilterType> filtersRun = new LinkedHashSet<>();
         for (Filter filter : filters) {
             filtersRun.add(filter.getFilterType());
         }
         return filtersRun;
     }
-    
+
 }

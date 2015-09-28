@@ -8,7 +8,7 @@ package de.charite.compbio.exomiser.core.writers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
@@ -36,13 +36,13 @@ public class PhenogridWriter implements ResultsWriter {
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.PHENOGRID;
     
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+    public void writeFile(Analysis analysis, OutputSettings settings) {
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
 
-            writer.write(writeString(sampleData, settings));
+            writer.write(writeString(analysis, settings));
 
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
@@ -52,13 +52,13 @@ public class PhenogridWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings) {
-
+    public String writeString(Analysis analysis, OutputSettings settings) {
+        SampleData sampleData = analysis.getSampleData();
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleData.getGenes(), settings.getNumberOfGenesToShow());       
         List<HiPhivePriorityResult> hiPhiveResults = new ArrayList<>();
         for (Gene gene : passedGenes) {
-            if (gene.getPriorityResults().containsKey(PriorityType.HI_PHIVE_PRIORITY)) {
-               HiPhivePriorityResult hiPhiveResult = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HI_PHIVE_PRIORITY);
+            if (gene.getPriorityResults().containsKey(PriorityType.HIPHIVE_PRIORITY)) {
+               HiPhivePriorityResult hiPhiveResult = (HiPhivePriorityResult) gene.getPriorityResult(PriorityType.HIPHIVE_PRIORITY);
                hiPhiveResults.add(hiPhiveResult);
             }
         }

@@ -11,6 +11,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -40,7 +42,12 @@ public class PathogenicityDataTest {
     private static final MutationTasterScore MTASTER_PASS = new MutationTasterScore(MTASTER_PASS_SCORE);
     private static final MutationTasterScore MTASTER_FAIL = new MutationTasterScore(MTASTER_FAIL_SCORE);
 
-       
+
+    @Before
+    public void setUp() {
+        instance = new PathogenicityData();
+    }
+
     @Test
     public void testHasPredictedScore_returnsFalseWhenNullsUsedInConstructor() {
         instance = new PathogenicityData(null, null);
@@ -62,7 +69,6 @@ public class PathogenicityDataTest {
     
     @Test
     public void testGetMostPathogenicScore_ReturnsNullWhenNoScorePresent() {
-        instance = new PathogenicityData();
         PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
         assertThat(mostPathogenicScore, nullValue());
     }
@@ -71,14 +77,14 @@ public class PathogenicityDataTest {
     public void testGetMostPathogenicScore_ReturnsOnlyScoreWhenOneScorePresent() {
         instance = new PathogenicityData(POLYPHEN_FAIL);
         PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
-        assertThat(mostPathogenicScore, equalTo((PathogenicityScore) POLYPHEN_FAIL));
+        assertThat(mostPathogenicScore, equalTo(POLYPHEN_FAIL));
     }
     
     @Test
     public void testGetMostPathogenicScore_ReturnsMostPathogenicScore() {
         instance = new PathogenicityData(POLYPHEN_FAIL, SIFT_PASS);
         PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
-        assertThat(mostPathogenicScore, equalTo((PathogenicityScore) SIFT_PASS));
+        assertThat(mostPathogenicScore, equalTo(SIFT_PASS));
     }
     
     @Test
@@ -95,11 +101,25 @@ public class PathogenicityDataTest {
         assertThat(result, equalTo(MTASTER_PASS));
     }
     
-        @Test
+    @Test
     public void testGetSiftScore() {
         instance = new PathogenicityData(SIFT_FAIL);
         SiftScore result = instance.getSiftScore();
         assertThat(result, equalTo(SIFT_FAIL));
+    }
+    
+    @Test
+    public void testGetNcdsScore() {
+        instance = new PathogenicityData(new NcdsScore(1f));
+        NcdsScore result = instance.getNcdsScore();
+        assertThat(result, equalTo(new NcdsScore(1f)));
+    }
+    
+    @Test
+    public void testGetSiftScore_ReturnsNullWhenNoSiftScorePresent() {
+        instance = new PathogenicityData();
+        SiftScore result = instance.getSiftScore();
+        assertThat(result, nullValue());
     }
 
     @Test
@@ -121,6 +141,20 @@ public class PathogenicityDataTest {
         List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
         assertThat(result, equalTo(expResult));
     }
+    
+    @Test
+    public void testGetPredictedPathogenicityScores_isImmutable() {
+        instance = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_FAIL);
+        List<PathogenicityScore> expResult = new ArrayList<>();
+        expResult.add(POLYPHEN_PASS);
+        expResult.add(MTASTER_PASS);
+        expResult.add(SIFT_FAIL);
+        //try and add another score to the instance post-construction
+        instance.getPredictedPathogenicityScores().add(SIFT_PASS);
+        
+        List<PathogenicityScore> result = instance.getPredictedPathogenicityScores();
+        assertThat(result, equalTo(expResult));
+    }
 
     @Test
     public void testHasPredictedScore() {
@@ -138,7 +172,6 @@ public class PathogenicityDataTest {
     
     @Test
     public void testHasPredictedScoreForSource_isFalse() {
-        instance = new PathogenicityData();
         boolean result = instance.hasPredictedScore(PathogenicitySource.POLYPHEN);
         assertThat(result, is(false));
     }
@@ -154,39 +187,51 @@ public class PathogenicityDataTest {
     
     @Test
     public void testGetPredictedScore_scoreMissingReturnsNull() {
-        instance = new PathogenicityData();
         PathogenicityScore result = instance.getPredictedScore(PathogenicitySource.POLYPHEN);
         assertThat(result, is(nullValue()));
     }
-    
+
     @Test
     public void testHasNoPredictedScore() {
-        instance = new PathogenicityData();
         boolean result = instance.hasPredictedScore();
         assertThat(result, is(false));
     }
 
     @Test
     public void testHashCodeEquals() {
-        instance = new PathogenicityData();
         PathogenicityData otherInstance = new PathogenicityData();
         assertThat(instance.hashCode(), equalTo(otherInstance.hashCode()));
     }
     
     @Test
     public void testHashCodeNotEquals() {
-        instance = new PathogenicityData();
         PathogenicityData otherInstance = new PathogenicityData(MTASTER_FAIL);
         assertThat(instance.hashCode(), not(otherInstance.hashCode()));
     }
 
     @Test
     public void testNotEquals() {
-        instance = new PathogenicityData();
         PathogenicityData otherInstance = new PathogenicityData(MTASTER_FAIL);
         assertThat(instance.equals(otherInstance), is(false));
     }
-    
+
+    @Test
+    public void testGetScore_NoPredictedData() {
+        assertThat(instance.getScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testGetScore_NonSiftPredictedData() {
+        instance = new PathogenicityData(MTASTER_PASS, POLYPHEN_FAIL);
+        assertThat(instance.getScore(), equalTo(MTASTER_PASS_SCORE));
+    }
+
+    @Test
+    public void testGetScore_ReturnsNormalisedSiftScore() {
+        instance = new PathogenicityData(MTASTER_FAIL, SIFT_PASS);
+        assertThat(instance.getScore(), equalTo(1 - SIFT_PASS_SCORE));
+    }
+
     @Test
     public void testEquals() {
         instance = new PathogenicityData(MTASTER_FAIL);

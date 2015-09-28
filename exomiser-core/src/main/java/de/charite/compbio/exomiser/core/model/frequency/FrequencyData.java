@@ -8,6 +8,7 @@ package de.charite.compbio.exomiser.core.model.frequency;
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,8 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Frequency data for the variant from the Thousand Genomes and the Exome Server
- * Project.
+ * Frequency data for the variant from the Thousand Genomes, the Exome Server
+ * Project and Broad ExAC datasets.
+ *
+ * Note that the frequency data are expressed as percentages.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -30,6 +33,11 @@ public class FrequencyData {
     private final RsId rsId;
 
     private final Map<FrequencySource, Frequency> knownFrequencies;
+
+    public FrequencyData() {
+        this.rsId = null;
+        this.knownFrequencies = Collections.emptyMap();
+    }
 
     public FrequencyData(RsId rsId, Frequency... frequency) {
         this(rsId, new HashSet<>(Arrays.asList(frequency)));
@@ -57,12 +65,11 @@ public class FrequencyData {
      * regardless of frequency. That is, if the variant has an RS id in dbSNP or
      * any frequency data at all, return true, otherwise false.
      */
-    public boolean representedInDatabase() {
+    public boolean isRepresentedInDatabase() {
         if (rsId != null) {
             return true;
         }
         return !knownFrequencies.isEmpty();
-
     }
 
     public boolean hasDbSnpData() {
@@ -91,8 +98,8 @@ public class FrequencyData {
                 case EXAC_AFRICAN_INC_AFRICAN_AMERICAN:
                 case EXAC_AMERICAN:
                 case EXAC_EAST_ASIAN:
-                case EXAC_FINISH:
-                case EXAC_NON_FINISH_EUROPEAN:
+                case EXAC_FINNISH:
+                case EXAC_NON_FINNISH_EUROPEAN:
                 case EXAC_OTHER:
                 case EXAC_SOUTH_ASIAN:
                     return true;
@@ -158,5 +165,27 @@ public class FrequencyData {
     public String toString() {
         return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + knownFrequencies.values() + '}';
     }
-    
+
+    private static final float VERY_RARE_SCORE = 1f;
+    private static final float NOT_RARE_SCORE = 0f;
+
+    /**
+     * @return returns a numerical value that is closer to one, the rarer
+     * the variant is. If a variant is not entered in any of the data
+     * sources, it returns one (highest score). Otherwise, it identifies the
+     * maximum MAF in any of the databases, and returns a score that depends on
+     * the MAF. Note that the frequency is expressed as a percentage.
+     */
+    public float getScore() {
+
+        float max = getMaxFreq();
+
+        if (max <= 0) {
+            return VERY_RARE_SCORE;
+        } else if (max > 2) {
+            return NOT_RARE_SCORE;
+        } else {
+            return 1f - (0.13533f * (float) Math.exp(max));
+        }
+    }
 }

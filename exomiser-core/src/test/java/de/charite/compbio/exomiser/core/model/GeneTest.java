@@ -5,22 +5,18 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilterResult;
-import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import org.hamcrest.CoreMatchers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -48,12 +44,12 @@ public class GeneTest {
     private VariantEvaluation variantEvaluation1;
     private VariantEvaluation variantEvaluation2;
 
-    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new FrequencyFilterResult(1f, FilterResultStatus.PASS);
-    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FrequencyFilterResult(0f, FilterResultStatus.FAIL);
-    //there's nothing really magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
-    //their type is mostly used for reporting which filter was passed or failed and getting the score. 
-    private static final FilterResult PASS_GENE_FILTER_RESULT = new InheritanceFilterResult(1f, FilterResultStatus.PASS);
-    private static final FilterResult FAIL_GENE_FILTER_RESULT = new InheritanceFilterResult(0f, FilterResultStatus.FAIL);
+    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER);
+    //there's nothing magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
+    //their type is used for reporting which filter was passed or failed.
+    private static final FilterResult PASS_GENE_FILTER_RESULT = new PassFilterResult(FilterType.INHERITANCE_FILTER);
+    private static final FilterResult FAIL_GENE_FILTER_RESULT = new FailFilterResult(FilterType.INHERITANCE_FILTER);
 
     @Before
     public void setUp() {
@@ -75,6 +71,7 @@ public class GeneTest {
         assertThat(instance.getGeneSymbol(), equalTo(GENE1_SYMBOL));
         assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
         assertThat(instance.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
+        assertThat(instance.getNumberOfVariants(), equalTo(1));
 
         assertThat(instance.passedFilters(), is(true));
         assertThat(instance.getPriorityResults().isEmpty(), is(true));
@@ -176,7 +173,21 @@ public class GeneTest {
         instance.addVariant(variantEvaluation2);
         assertThat(instance.passedFilters(), is(true));
     }
-
+//TODO: behaviour under consideration - better in the gene or the gene filter runner? Should it apply to all gene filters?
+//    @Test
+//    public void testAddingFilterResultToGeneAppliesThatResultToAllVariantsOfTheGene() {
+//        //set-up gene
+//        variantEvaluation1.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
+//        instance.addVariant(variantEvaluation1);
+//        //simluate filtering
+//        instance.addFilterResult(PASS_GENE_FILTER_RESULT);
+//        
+//        //test the variant still fails the original filter
+//        assertThat(variantEvaluation1.passedFilter(FAIL_VARIANT_FILTER_RESULT.getFilterType()), is(false));
+//        //but that the variant also passes the gene filter - this is OK behaviour as Variants fail fast - i.e. we really only care if a variant passed ALL filters
+//        assertThat(variantEvaluation1.passedFilter(PASS_GENE_FILTER_RESULT.getFilterType()), is(true));
+//    }
+    
     @Test 
     public void testPassedFilter_TrueWhenGenePassesAndVariantsFailFilterOfThatType() {
         instance.addFilterResult(PASS_GENE_FILTER_RESULT);
@@ -248,12 +259,48 @@ public class GeneTest {
         variantEvaluation2.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation2);
 
-        List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
-        passedVariantEvaluations.add(variantEvaluation1);
+        List<VariantEvaluation> passedVariantEvaluations = Arrays.asList(variantEvaluation1);
 
         assertThat(instance.getPassedVariantEvaluations(), equalTo(passedVariantEvaluations));
     }
 
+    @Test
+    public void testAddVariant_AfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addFilterResult(new PassFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        
+        instance.addVariant(variantEvaluation1);
+        
+        assertThat(variantEvaluation1.passedFilters(), is(true));
+        assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
+    }
+    
+    @Test
+    public void testAddVariant_AfterGeneIsFilteredAppliesFailGeneFilterResultsToVariant() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addFilterResult(new FailFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        
+        instance.addVariant(variantEvaluation1);
+        
+        assertThat(variantEvaluation1.passedFilters(), is(false));
+        assertThat(variantEvaluation1.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
+        assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
+    }
+    
+    @Test
+    public void testAddVariant_AfterGeneIsFilteredDoesNotApplyInheritanceFilterResultToVariant() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        
+        instance.addFilterResult(new PassFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        instance.addFilterResult(new FailFilterResult(FilterType.INHERITANCE_FILTER));
+        
+        instance.addVariant(variantEvaluation1);
+        
+        assertThat(variantEvaluation1.passedFilters(), is(true));
+        assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
+        assertThat(variantEvaluation1.getFailedFilterTypes().contains(FilterType.INHERITANCE_FILTER), is(false));
+    }
+    
     @Test
     public void testCanAddAndRetrievePriorityScoreByPriorityType() {
         PriorityResult omimPriorityResult = new OMIMPriorityResult();
@@ -261,7 +308,6 @@ public class GeneTest {
 
         instance.addPriorityResult(omimPriorityResult);
         instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
-        // TODO: this is odd shouldn't it actually return the Object, not the value?
         assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
     }
 
@@ -287,11 +333,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWithDominant(), is(true));
-        assertThat(instance.isConsistentWithRecessive(), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWithDominant(), is(true));
+        assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(true));
     }
 
@@ -301,11 +347,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWithDominant(), is(true));
-        assertThat(instance.isConsistentWithRecessive(), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWithDominant(), is(true));
+        assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(false));
     }
 
@@ -315,11 +361,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWithDominant(), is(false));
-        assertThat(instance.isConsistentWithRecessive(), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWithDominant(), is(false));
+        assertThat(instance.isCompatibleWithRecessive(), is(true));
         assertThat(instance.isConsistentWithX(), is(false));
     }
 
@@ -329,11 +375,11 @@ public class GeneTest {
 
         instance.setInheritanceModes(inheritanceModes);
 
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
-        assertThat(instance.isConsistentWith(ModeOfInheritance.X_RECESSIVE), is(true));
-        assertThat(instance.isConsistentWithDominant(), is(false));
-        assertThat(instance.isConsistentWithRecessive(), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.X_RECESSIVE), is(true));
+        assertThat(instance.isCompatibleWithDominant(), is(false));
+        assertThat(instance.isCompatibleWithRecessive(), is(false));
         assertThat(instance.isConsistentWithX(), is(true));
     }
 

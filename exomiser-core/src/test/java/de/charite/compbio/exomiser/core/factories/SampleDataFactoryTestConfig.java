@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,9 +23,15 @@ public class SampleDataFactoryTestConfig {
     }
 
     @Bean
-    public VariantAnnotationsFactory variantAnnotator() {
-        final JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
-        return new VariantAnnotationsFactory(jannovarData);
+    public JannovarData jannovarData() {
+        return new TestJannovarDataFactory().getJannovarData();
+    }
+
+    @Bean
+    public VariantAnnotator variantAnnotator() {
+        JannovarData jannovarData = jannovarData();
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        return new VariantAnnotator(variantContextAnnotator);
     }
 
     @Bean

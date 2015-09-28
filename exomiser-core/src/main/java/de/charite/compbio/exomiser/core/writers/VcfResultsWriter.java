@@ -1,9 +1,9 @@
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.Analysis;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.jannovar.htsjdk.InfoFields;
 import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
@@ -57,32 +57,34 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(SampleData sampleData, ExomiserSettings settings) {
+    public void writeFile(Analysis analysis, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
-        String outFileName = ResultsWriterUtils.makeOutputFilename(settings.getOutputPrefix(), OUTPUT_FORMAT);
+        String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
+        SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
                 outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines())) {
-            writeData(settings, sampleData, writer);
+            writeData(sampleData, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
     }
 
     @Override
-    public String writeString(SampleData sampleData, ExomiserSettings settings) {
+    public String writeString(Analysis analysis, OutputSettings settings) {
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(), baos,
                 InfoFields.BOTH, getAdditionalHeaderLines())) {
-            writeData(settings, sampleData, writer);
+            writeData(sampleData, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
 
-    private void writeData(ExomiserSettings settings, SampleData sampleData, VariantContextWriter writer) {
+    private void writeData(SampleData sampleData, boolean writeOnlyPassVariants, VariantContextWriter writer) {
         // actually write the data and close writer again
-        if (settings.outputPassVariantsOnly()) {
+        if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
             writeOnlyPassSampleData(sampleData, writer);
         } else {
@@ -93,10 +95,8 @@ public class VcfResultsWriter implements ResultsWriter {
     private void writeOnlyPassSampleData(SampleData sampleData, VariantContextWriter writer) {
         writeUnannotatedVariants(sampleData, writer);
         for (Gene gene : sampleData.getGenes()) {
-            for (VariantEvaluation variant : gene.getVariantEvaluations()) {
-                if (variant.passedFilters()) {
-                    writeRecord(variant, writer, gene);
-                }
+            for (VariantEvaluation variant : gene.getPassedVariantEvaluations()) {
+                writeRecord(variant, writer, gene);
             }
         }
     }

@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.Analysis;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -16,9 +17,9 @@ import java.util.EnumSet;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 
 /**
  *
@@ -36,7 +37,9 @@ public class TsvGeneResultsWriterTest {
             + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE	HUMAN_PHENO_EVIDENCE	MOUSE_PHENO_EVIDENCE	FISH_PHENO_EVIDENCE	HUMAN_PPI_EVIDENCE	MOUSE_PPI_EVIDENCE	FISH_PPI_EVIDENCE\n";
     
     private static final String GENE_STRING = "FGFR2	2263	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0	\n";
+    
     private SampleData sampleData;
+    private Analysis analysis;
     
     @Before
     public void setUp() {
@@ -45,38 +48,39 @@ public class TsvGeneResultsWriterTest {
         gene = new Gene(GENE_SYMBOL, GENE_ID);        
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
+        analysis = new Analysis();
+        analysis.setSampleData(sampleData);
     }
 
     @Test
     public void testWrite() {
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputPrefix("testWrite")
+        OutputSettings settings = new OutputSettingsBuilder().outputPrefix("testWrite")
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
-        instance.writeFile(sampleData, settings);
+        instance.writeFile(analysis, settings);
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().delete());
     }
 
     @Test
     public void testWriteString() {
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(
+        OutputSettings settings = new OutputSettingsBuilder().outputFormats(
                 EnumSet.of(OutputFormat.TSV_GENE)).build();
-        String outString = instance.writeString(sampleData, settings);
+        String outString = instance.writeString(analysis, settings);
         assertThat(outString, equalTo(HEADER + GENE_STRING));
     }
 
     @Test
     public void testWriteStringStartsWithAHeaderLine() {
-        ExomiserSettings settings = new ExomiserSettings.SettingsBuilder().outputFormats(
+        OutputSettings settings = new OutputSettingsBuilder().outputFormats(
                 EnumSet.of(OutputFormat.TSV_GENE)).build();
-        String outString = instance.writeString(sampleData, settings);
+        String outString = instance.writeString(analysis, settings);
         String[] lines = outString.split("\n");
         assertThat(lines[0] + "\n", equalTo(HEADER));
     }
     
     @Test
     public void testMakeGeneLine() {
-        String candidateGene = "";
-        String result = instance.makeGeneLine(gene, candidateGene);
+        String result = instance.makeGeneLine(gene);
         assertThat(result, equalTo(GENE_STRING));
     }
 

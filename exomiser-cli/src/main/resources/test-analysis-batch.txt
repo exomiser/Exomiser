@@ -1,0 +1,2 @@
+test-analysis-exome.yml
+test-analysis-genome.yml

@@ -1,5 +1,6 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import de.charite.compbio.exomiser.core.AnalysisStep;
 import java.util.List;
 
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -21,47 +22,27 @@ import de.charite.compbio.exomiser.core.model.Gene;
  * @version 0.13 (13 May, 2013).
  * @see de.charite.compbio.exomiser.filter.Filter
  */
-public interface Prioritiser {
+public interface Prioritiser extends AnalysisStep {
 
     /**
      * Apply a prioritization algorithm to a list of
      * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects. This will have the side effect
      * of setting the Class variable {@link de.charite.compbio.exomiser.exome.Gene#priorityScore}
      * correspondingly. This, together with the filter scores of the {@link jannovar.exome.Variant Variant}
-     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects can then be used to sort the
-     * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects.
+     * {@link de.charite.compbio.exomiser.core.model.Gene Gene} objects can then be used to sort the
+     * {@link de.charite.compbio.exomiser.core.model.Gene Gene} objects.
      * <p>
      * Note that this may result in the removal of
      * {@link de.charite.compbio.exomiser.exome.Gene Gene} objects if they do not conform to the
      * Prioritizer.
      *
-     * @param geneList
+     * @param genes
      */
-    public void prioritizeGenes(List<Gene> geneList);
+    public void prioritizeGenes(List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.
      */
     public PriorityType getPriorityType();
-
-    /**
-     * @return name of the prioritization method used by the implementing class,
-     * e.g., "OMIM"
-     */
-    public String getPriorityName();
-
-
-    /**
-     * Should this prioritizer be displayed in the HTML page?
-     * @return 
-     */
-    public boolean displayInHTML();
-
-    /**
-     * @return HTML code for display in box "Summary of Exome Filtering"
-     */
-    public String getHTMLCode();
-
-    public List<String> getMessages();
 
 }

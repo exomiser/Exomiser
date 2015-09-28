@@ -142,12 +142,12 @@ public class PhenoGridAdaptorTest {
         allModels.add(mouseModel);
         allModels.add(fishModel);
 
-        allModelsHiPhiveResult = new HiPhivePriorityResult(phenoGridId, allModelScore, queryPhenotypeTerms, allModels, new ArrayList<Model>(), allModelWalkerScore);
+        allModelsHiPhiveResult = new HiPhivePriorityResult(phenoGridId, allModelScore, queryPhenotypeTerms, allModels, new ArrayList<Model>(), allModelWalkerScore, false);
     
         List<Model> models = new ArrayList<>();
         models.add(diseaseModel);
 
-        onlyDiseaseModelHiPhiveResult = new HiPhivePriorityResult(phenoGridId, onlyDiseaseModelScore, queryPhenotypeTerms, models, new ArrayList<Model>(), onlyDiseaseModelWalkerScore);
+        onlyDiseaseModelHiPhiveResult = new HiPhivePriorityResult(phenoGridId, onlyDiseaseModelScore, queryPhenotypeTerms, models, new ArrayList<Model>(), onlyDiseaseModelWalkerScore, false);
     
     }
 

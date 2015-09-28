@@ -4,6 +4,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +32,6 @@ public class ExomeWalkerPriority implements Prioritiser {
     private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 
     private final PriorityType priorityType = PriorityType.EXOMEWALKER_PRIORITY;
-
-    /**
-     * A list of error-messages
-     */
-    private List<String> error_record = new ArrayList<>();
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
@@ -121,14 +117,6 @@ public class ExomeWalkerPriority implements Prioritiser {
     }
 
     /**
-     * @see exomizer.priority.Priority#getPriorityName()
-     */
-    @Override
-    public String getPriorityName() {
-        return "GeneWanderer";
-    }
-
-    /**
      * Flag to output results of filtering against Genewanderer.
      */
     @Override
@@ -174,17 +162,6 @@ public class ExomeWalkerPriority implements Prioritiser {
         }
         /* p_{\infty} */
 //        this.combinedProximityVector = combinedProximityVector;
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    public List<String> getMessages() {
-        for (String s : error_record) {
-            messages.add("Error: " + s);
-        }
-        return messages;
     }
 
     /**
@@ -234,42 +211,25 @@ public class ExomeWalkerPriority implements Prioritiser {
 //            newscore = factorMaxPossible * (scr - (float) min);
 //            gene.resetPriorityScore(EXOMEWALKER_PRIORITY, newscore);
 //        }
-        String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
-                PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
-        this.messages.add(s);
-        StringBuilder sb = new StringBuilder();
-        sb.append("Seed genes:");
-        for (Integer seed : seedGenes) {
-            sb.append(seed + "&nbsp;");
-        }
-        this.messages.add(sb.toString());
+        
+        //TODO: move this into a report if required 
+//        String s = String.format("Protein-Protein Interaction Data was available for %d of %d genes (%.1f%%)",
+//                PPIdataAvailable, totalGenes, 100f * ((float) PPIdataAvailable / (float) totalGenes));
+//        this.messages.add(s);
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("Seed genes:");
+//        for (Integer seed : seedGenes) {
+//            sb.append(seed + "&nbsp;");
+//        }
+//        this.messages.add(sb.toString());
     }
 
     /**
-     * This causes a summary of RW prioritization to appear in the HTML output
-     * of the exomizer
+     * @return list of messages representing process, result, and if any, errors
+     * of score filtering.
      */
-    public boolean displayInHTML() {
-        return true;
-    }
-
-    /**
-     * @return HTML code for displaying the HTML output of the Exomizer.
-     */
-    public String getHTMLCode() {
-        if (messages == null) {
-            return "Error initializing Random Walk matrix";
-        } else if (messages.size() == 1) {
-            return String.format("<ul><li>%s</li></ul>", messages.get(0));
-        } else {
-            StringBuffer sb = new StringBuffer();
-            sb.append("<ul>\n");
-            for (String m : messages) {
-                sb.append(String.format("<li>%s</li>\n", m));
-            }
-            sb.append("</ul>\n");
-            return sb.toString();
-        }
+    public List<String> getMessages() {
+        return messages;
     }
 
     /**
@@ -282,5 +242,36 @@ public class ExomeWalkerPriority implements Prioritiser {
         double val = combinedProximityVector.get(idx, 0);
         return val;
     }
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.priorityType);
+        hash = 37 * hash + Objects.hashCode(this.seedGenes);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ExomeWalkerPriority other = (ExomeWalkerPriority) obj;
+        if (this.priorityType != other.priorityType) {
+            return false;
+        }
+        if (!Objects.equals(this.seedGenes, other.seedGenes)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ExomeWalkerPriority{" + "seedGenes=" + seedGenes + '}';
+    }
+  
 }

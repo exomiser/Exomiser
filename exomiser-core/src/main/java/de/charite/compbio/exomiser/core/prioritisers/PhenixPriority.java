@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import ontologizer.go.OBOParser;
 import ontologizer.go.OBOParserException;
@@ -55,12 +56,8 @@ public class PhenixPriority implements Prioritiser {
     /**
      * A list of error-messages
      */
-    private List<String> error_record = null;
-    /**
-     * A list of messages that can be used to create a display in a HTML page or
-     * elsewhere.
-     */
-    private List<String> messages = null;
+    private List<String> errorMessages = null;
+
 
     /**
      * The semantic similarity measure used to calculate phenotypic similarity
@@ -75,8 +72,6 @@ public class PhenixPriority implements Prioritiser {
     private float DEFAULT_SCORE = 0f;
 
     private Map<String, List<Term>> geneId2annotations;
-
-    private Map<Term, Set<String>> annotationTerm2geneIds;
 
     private Map<Term, Double> term2ic;
 
@@ -125,7 +120,7 @@ public class PhenixPriority implements Prioritiser {
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      * Hudson page</a>
      */
-    public PhenixPriority(String scoreDistributionFolder, Set<String> hpoQueryTermIds, boolean symmetric) {
+    public PhenixPriority(String scoreDistributionFolder, List<String> hpoQueryTermIds, boolean symmetric) {
 
         if (hpoQueryTermIds.isEmpty()) {
             throw new PhenixException("Please supply some HPO terms. PhenIX is unable to prioritise genes without these.");
@@ -159,12 +154,17 @@ public class PhenixPriority implements Prioritiser {
 
         ResnikSimilarity resnik = new ResnikSimilarity(hpo, (HashMap<Term, Double>) term2ic);
         similarityMeasure = new InformationContentObjectSimilarity(resnik, symmetric, false);
-
-        /* some logging stuff */
-        this.error_record = new ArrayList<>();
-        this.messages = new ArrayList<>();
     }
 
+    /**
+     * STUB CONSTRUCTOR - ONLY USED FOR TESTING PURPOSES TO AVOID NULL POINTERS FROM ORIGINAL CONSTRUCTOR. DO NOT USE FOR PRODUCTION CODE!!!!
+     * @param hpoIds
+     * @param symmetric 
+     */
+    protected PhenixPriority (List<String> hpoIds, boolean symmetric) {
+        this.symmetric = symmetric;
+    }
+    
     private void parseData(String hpoOboFile, String hpoAnnotationFile) {
         //The phenomizerData directory must contain the files "hp.obo", "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt" 
         //as well as the score distribution files "*.out", all of which can be downloaded from the HPO hudson server.
@@ -191,7 +191,6 @@ public class PhenixPriority implements Prioritiser {
      * @param hpoAnnotationFile path to the file
      */
     private void parseAnnotations(String hpoAnnotationFile) throws IOException {
-        geneId2annotations = new HashMap<>();
 
         BufferedReader in = new BufferedReader(new FileReader(hpoAnnotationFile));
         String line = null;
@@ -202,30 +201,33 @@ public class PhenixPriority implements Prioritiser {
 
             String[] split = line.split("\t");
             String entrez = split[0];
-            Term t = null;
+            Term term = null;
             try {
                 /* split[4] is the HPO term field of an annotation line. */
-                t = hpo.getTermIncludingAlternatives(split[3]);
+                term = hpo.getTermIncludingAlternatives(split[3]);
             } catch (IllegalArgumentException e) {
                 logger.error("Unable to get term for line \n{}\n", line);
                 logger.error("The offending field was '{}'", split[3]);
                 for (int k = 0; k < split.length; ++k) {
                     logger.error("{} '{}'", k, split[k]);
                 }
-                t = null;
+                term = null;
             }
-            if (t == null) {
+            if (term == null) {
                 continue;
             }
 
-            List<Term> annot;
+            List<Term> annotations;
+            
+            geneId2annotations = new HashMap<>();
+
             if (geneId2annotations.containsKey(entrez)) {
-                annot = geneId2annotations.get(entrez);
+                annotations = geneId2annotations.get(entrez);
             } else {
-                annot = new ArrayList<>();
+                annotations = new ArrayList<>();
             }
-            annot.add(t);
-            geneId2annotations.put(entrez, annot);
+            annotations.add(term);
+            geneId2annotations.put(entrez, annotations);
         }
         in.close();
 
@@ -240,22 +242,22 @@ public class PhenixPriority implements Prioritiser {
         }
 
         // prepare IC computation
-        annotationTerm2geneIds = new HashMap<>();
+        final Map<Term, Set<String>> annotationTerm2geneIds = new HashMap<>();
         for (String oId : geneId2annotations.keySet()) {
             List<Term> annotations = geneId2annotations.get(oId);
             for (Term annot : annotations) {
                 List<Term> termAndAncestors = hpoSlim.getAncestors(annot);
-                for (Term t : termAndAncestors) {
+                for (Term term : termAndAncestors) {
                     Set<String> objectsAnnotatedByTerm; 
                     // here we store which objects have been annotated with this term
-                    if (annotationTerm2geneIds.containsKey(t)) {
-                        objectsAnnotatedByTerm = annotationTerm2geneIds.get(t);
+                    if (annotationTerm2geneIds.containsKey(term)) {
+                        objectsAnnotatedByTerm = annotationTerm2geneIds.get(term);
                     } else {
                         objectsAnnotatedByTerm = new HashSet<>();
                     }
                     // add the current object
                     objectsAnnotatedByTerm.add(oId); 
-                    annotationTerm2geneIds.put(t, objectsAnnotatedByTerm);
+                    annotationTerm2geneIds.put(term, objectsAnnotatedByTerm);
                 }
             }
         }
@@ -285,14 +287,6 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * @see exomizer.priority.IPriority#getPriorityName()
-     */
-    @Override
-    public String getPriorityName() {
-        return "HPO Phenomizer prioritizer";
-    }
-
-    /**
      * Flag to output results of filtering against Uberpheno data.
      */
     @Override
@@ -301,38 +295,24 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * @return list of messages representing process, result, and if any, errors
-     * of score filtering.
-     */
-    public List<String> getMessages() {
-        if (this.error_record.size() > 0) {
-            for (String s : error_record) {
-                this.messages.add("Error: " + s);
-            }
-        }
-        return this.messages;
-    }
-
-    /**
      * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      *
-     * @param gene_list List of candidate genes.
+     * @param genes List of candidate genes.
      * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
-    public void prioritizeGenes(List<Gene> gene_list) {
-        analysedGenes = gene_list.size();
+    public void prioritizeGenes(List<Gene> genes) {
+        analysedGenes = genes.size();
 
-        for (Gene gene : gene_list) {
+        for (Gene gene : genes) {
             PhenixPriorityResult phenomizerRelScore = scoreVariantHPO(gene);
             gene.addPriorityResult(phenomizerRelScore);
             //System.out.println("Phenomizer Gene="+gene.getGeneSymbol()+" score=" +phenomizerRelScore.getScore());
         }
-        String s = String.format("Data investigated in HPO for %d genes. No data for %d genes", analysedGenes, this.offTargetGenes);
+//        String s = String.format("Data investigated in HPO for %d genes. No data for %d genes", analysedGenes, this.offTargetGenes);
         //System.out.println(s);
-        normalizePhenomizerScores(gene_list);
-        this.messages.add(s);
+        normalizePhenomizerScores(genes);
     }
 
     /**
@@ -344,12 +324,12 @@ public class PhenixPriority implements Prioritiser {
      * similarity scores, but we should also try the P value version (TODO).
      * Note that this is not the same as rank normalization!
      */
-    private void normalizePhenomizerScores(List<Gene> gene_list) {
+    private void normalizePhenomizerScores(List<Gene> genes) {
         if (maxSemSim < 1) {
             return;
         }
         PhenixPriorityResult.setNormalizationFactor(1d / maxSemSim);
-        /*for (Gene g : gene_list) {
+        /*for (Gene g : genes) {
          float score = g.getRelevagetScorepe.PHENIX_PRIORITY);
          score /= this.maxSemSim;
          g.setScore(FilterType.PHENIX_PRIORITY, score);
@@ -357,12 +337,12 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * @param g A {@link exomizer.exome.Gene Gene} whose score is to be
+     * @param gene A {@link exomizer.exome.Gene Gene} whose score is to be
      * determined.
      */
-    private PhenixPriorityResult scoreVariantHPO(Gene g) {
+    private PhenixPriorityResult scoreVariantHPO(Gene gene) {
 
-        int entrezGeneId = g.getEntrezGeneID();
+        int entrezGeneId = gene.getEntrezGeneID();
         String entrezGeneIdString = entrezGeneId + "";
 
         if (!geneId2annotations.containsKey(entrezGeneIdString)) {
@@ -378,7 +358,7 @@ public class PhenixPriority implements Prioritiser {
             maxSemSim = similarityScore;
         }
         if (Double.isNaN(similarityScore)) {
-            error_record.add("score was NAN for gene:" + g + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
+            errorMessages.add("Error: score was NAN for gene:" + gene + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
         }
 
         ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(entrezGeneIdString, numberQueryTerms, symmetric,
@@ -434,35 +414,6 @@ public class PhenixPriority implements Prioritiser {
         // return new PhenixPriorityResult(avg);
     }
 
-    /**
-     * Flag to show results of this analysis in the HTML page.
-     *
-     * @return
-     */
-    @Override
-    public boolean displayInHTML() {
-        return true;
-    }
-
-    /**
-     * @return an ul list with summary of phenomizer prioritization.
-     */
-    @Override
-    public String getHTMLCode() {
-        String s = String.format("Phenomizer: %d genes were evaluated; no phenotype data available for %d of them",
-                this.analysedGenes, this.offTargetGenes);
-        String t = null;
-        if (symmetric) {
-            t = String.format("Symmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
-        } else {
-            t = String.format("Asymmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
-        }
-        String u = String.format("Maximum semantic similarity score: %.2f, maximum negative log. of p-value: %.2f",
-                this.maxSemSim, this.maxNegLogP);
-        return String.format("<ul><li>%s</li><li>%s</li><li>%s</li></ul>\n", s, t, u);
-
-    }
-
     private Map<Term, Double> caclulateTermIC(Ontology ontology, Map<Term, Set<String>> term2objectIdsAnnotated) {
 
         Term root = ontology.getRootTerm();
@@ -493,6 +444,56 @@ public class PhenixPriority implements Prioritiser {
         private PhenixException(String message) {
             super(message);
         }
+    }
+
+//TODO move this to the messages
+//    /**
+//     * @return an ul list with summary of phenomizer prioritization.
+//     */
+//    @Override
+//    public String getHTMLCode() {
+//        String s = String.format("Phenomizer: %d genes were evaluated; no phenotype data available for %d of them",
+//                this.analysedGenes, this.offTargetGenes);
+//        String t = null;
+//        if (symmetric) {
+//            t = String.format("Symmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
+//        } else {
+//            t = String.format("Asymmetric Phenomizer query with %d terms was performed", this.numberQueryTerms);
+//        }
+//        String u = String.format("Maximum semantic similarity score: %.2f, maximum negative log. of p-value: %.2f",
+//                this.maxSemSim, this.maxNegLogP);
+//        return String.format("<ul><li>%s</li><li>%s</li><li>%s</li></ul>\n", s, t, u);
+//
+//    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 13 * hash + Objects.hashCode(this.hpoQueryTerms);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PhenixPriority other = (PhenixPriority) obj;
+        if (!Objects.equals(this.hpoQueryTerms, other.hpoQueryTerms)) {
+            return false;
+        }
+        if (this.symmetric != other.symmetric) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "PhenixPriority{" + "hpoQueryTerms=" + hpoQueryTerms + '}';
     }
 
 }
