@@ -248,7 +248,6 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
     }
 
-    //TODO: these Inheritance tests will fail until the InheritanceModeAnalyser, InheritanceFilter and AnalysisRunner have been re-jigged to flag incompatible variants.
     @Test
     public void testRunAnalysis_autosomalDominantTrioDeNovoInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
@@ -218,8 +219,9 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(gnrh2.passedFilters(), is(false));
         assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
         VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
-        assertThat(gnrh2Variant1.passedFilters(), is(true));
-        assertThat(gnrh2Variant1.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
+        assertThat(gnrh2Variant1.passedFilters(), is(false));
+        assertThat(gnrh2Variant1.getFilterStatus(), equalTo(FilterStatus.FAILED));
+        assertThat(gnrh2Variant1.getFailedFilterTypes(), hasItem(FilterType.PRIORITY_SCORE_FILTER));
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
@@ -230,11 +232,13 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(true));
-        assertThat(rbm8Variant1.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
+        assertThat(rbm8Variant1.getFilterStatus(), equalTo(FilterStatus.PASSED));
+        assertThat(rbm8Variant1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
 
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
-        assertThat(rbm8Variant2.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
+        assertThat(rbm8Variant2.getFilterStatus(), equalTo(FilterStatus.PASSED));
+        assertThat(rbm8Variant2.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
     }
 
     @Test
@@ -261,7 +265,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(gnrh2.getNumberOfVariants(), equalTo(1));
         VariantEvaluation gnrh2Variant1 = gnrh2.getVariantEvaluations().get(0);
         assertThat(gnrh2Variant1.passedFilters(), is(false));
-        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+        assertThat(gnrh2Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.PRIORITY_SCORE_FILTER)));
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));

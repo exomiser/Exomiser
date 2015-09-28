@@ -6,11 +6,15 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.BasePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import org.hamcrest.CoreMatchers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
@@ -100,6 +104,20 @@ public class PriorityScoreFilterTest {
         FilterResult result = instance.runFilter(gene);
         
         assertFails(result);
+    }
+    
+    @Test
+    public void testRunFilter_VariantInFailedGeneAlsoFailsTheFilter() {
+        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore - 0.2f);
+        gene.addPriorityResult(priorityResult);
+        VariantEvaluation variant = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
+        gene.addVariant(variant);
+        
+        FilterResult result = instance.runFilter(gene);
+        
+        assertFails(result);
+        assertThat(variant.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
+        assertThat(variant.getFailedFilterTypes(), hasItem(FilterType.PRIORITY_SCORE_FILTER));
     }
 
     @Test
