@@ -108,6 +108,8 @@
                                     <includes>
                                         <include>*.settings</include>
                                         <include>*.yml</include>
+                                        <include>*.tsv.gz</include>
+                                        <include>*.tsv.gz.tbi</include>
                                         <include>test-analysis-batch.txt</include>
                                         <include>test-batchFiles.txt</include>
                                         <include>application.properties</include>
