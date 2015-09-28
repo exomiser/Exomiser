@@ -8,7 +8,6 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -18,7 +17,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import static java.util.stream.Collectors.toList;
-import java.util.stream.Stream;
 
 /**
  * This class represents a Gene in which {@link jannovar.exome.Variant Variant}
@@ -158,12 +156,13 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     private void addGeneFilterResultsToVariant(VariantEvaluation var) {
-        filterResults.values().stream().filter(isNotInheritanceFilterResult())
-                .forEach(result -> {var.addFilterResult(result);});
+        filterResults.values().stream()
+                .filter(isNotInheritanceFilterResult())
+                .forEach(result -> var.addFilterResult(result));
     }
     
     private Predicate<FilterResult> isNotInheritanceFilterResult() {
-        return filterResult -> {return filterResult.getFilterType() != FilterType.INHERITANCE_FILTER;};
+        return filterResult -> filterResult.getFilterType() != FilterType.INHERITANCE_FILTER;
     }
     
     /**
