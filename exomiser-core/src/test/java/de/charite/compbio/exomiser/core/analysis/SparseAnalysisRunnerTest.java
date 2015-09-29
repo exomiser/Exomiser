@@ -31,7 +31,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         
     @Before
     public void setUp() {
-        instance = new SparseAnalysisRunner(sampleDataFactory, stubDataService);
+        instance = new SparseAnalysisRunner(sampleDataFactory);
     }
 
     @Test

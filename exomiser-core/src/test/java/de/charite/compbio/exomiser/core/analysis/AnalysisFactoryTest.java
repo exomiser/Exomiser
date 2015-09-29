@@ -41,7 +41,7 @@ public class AnalysisFactoryTest {
         VariantDataService stubVariantDataService = new VariantDataServiceStub();
         priorityFactory = new NoneTypePriorityFactoryStub();
         
-        instance = new AnalysisFactory(null, stubVariantDataService, priorityFactory);
+        instance = new AnalysisFactory(null, priorityFactory, stubVariantDataService);
         
         hpoIds = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055");
         steps = new ArrayList<>();

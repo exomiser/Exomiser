@@ -37,7 +37,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
     @Before
     public void setUp() {
-        instance = new SimpleAnalysisRunner(sampleDataFactory, stubDataService);
+        instance = new SimpleAnalysisRunner(sampleDataFactory);
     }
 
     @Test

@@ -188,6 +188,11 @@ public class MainConfig {
     }
 
     @Bean
+    public VariantDataService variantDataService() {
+        return new VariantDataServiceImpl();
+    }
+    
+    @Bean
     public SettingsParser settingsParser() {
         return new SettingsParser(priorityFactory(), variantDataService());
     }
@@ -195,6 +200,11 @@ public class MainConfig {
     @Bean
     public AnalysisParser analysisParser() {
         return new AnalysisParser(priorityFactory(), variantDataService());
+    }
+
+    @Bean
+    public AnalysisFactory analysisFactory() {
+        return new AnalysisFactory(sampleDataFactory(), priorityFactory(), variantDataService());
     }
 
     /**
@@ -207,11 +217,6 @@ public class MainConfig {
         } catch (SerializationException e) {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
-    }
-
-    @Bean
-    public AnalysisFactory analysisFactory() {
-        return new AnalysisFactory(sampleDataFactory(), variantDataService(), priorityFactory());
     }
 
     @Bean
@@ -310,11 +315,6 @@ public class MainConfig {
     @Bean
     ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
         return new ZebraFishPhenotypeOntologyDao();
-    }
-
-    @Bean
-    public VariantDataService variantDataService() {
-        return new VariantDataServiceImpl();
     }
 
     @Bean

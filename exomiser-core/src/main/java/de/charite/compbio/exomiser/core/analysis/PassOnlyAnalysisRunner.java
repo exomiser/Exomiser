@@ -24,7 +24,7 @@ public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
 
-    public PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
+    public PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory) {
         super(sampleDataFactory, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 

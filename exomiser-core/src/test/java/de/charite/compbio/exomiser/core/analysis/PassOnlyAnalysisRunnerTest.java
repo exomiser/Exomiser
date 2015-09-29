@@ -38,7 +38,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     
     @Before
     public void setUp() {
-        instance = new PassOnlyAnalysisRunner(sampleDataFactory, stubDataService);
+        instance = new PassOnlyAnalysisRunner(sampleDataFactory);
     }
 
     @Test

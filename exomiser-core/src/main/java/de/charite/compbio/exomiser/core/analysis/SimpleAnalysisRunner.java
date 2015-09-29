@@ -19,7 +19,7 @@ public class SimpleAnalysisRunner extends AbstractAnalysisRunner {
 
     protected static final Logger logger = LoggerFactory.getLogger(SimpleAnalysisRunner.class);
 
-    public SimpleAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
+    public SimpleAnalysisRunner(SampleDataFactory sampleDataFactory) {
         super(sampleDataFactory, new SimpleVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 

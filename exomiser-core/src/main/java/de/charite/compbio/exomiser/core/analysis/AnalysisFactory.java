@@ -27,22 +27,22 @@ public class AnalysisFactory {
     private final VariantDataService variantDataService;
     private final PriorityFactory priorityFactory;
 
-    public AnalysisFactory(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, PriorityFactory priorityFactory) {
+    public AnalysisFactory(SampleDataFactory sampleDataFactory, PriorityFactory priorityFactory, VariantDataService variantDataService) {
         this.sampleDataFactory = sampleDataFactory;
         this.variantDataService = variantDataService;
         this.priorityFactory = priorityFactory;
     }
 
     public SimpleAnalysisRunner getFullAnalysisRunner() {
-        return new SimpleAnalysisRunner(sampleDataFactory, variantDataService);
+        return new SimpleAnalysisRunner(sampleDataFactory);
     }
 
     public SparseAnalysisRunner getSparseAnalysisRunner() {
-        return new SparseAnalysisRunner(sampleDataFactory, variantDataService);
+        return new SparseAnalysisRunner(sampleDataFactory);
     }
 
     public PassOnlyAnalysisRunner getPassOnlyAnalysisRunner() {
-        return new PassOnlyAnalysisRunner(sampleDataFactory, variantDataService);
+        return new PassOnlyAnalysisRunner(sampleDataFactory);
     }
 
     public AnalysisBuilder getAnalysisBuilder() {
