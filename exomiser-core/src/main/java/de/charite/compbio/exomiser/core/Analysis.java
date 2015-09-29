@@ -13,7 +13,7 @@ import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -29,35 +29,22 @@ public class Analysis {
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
 
     //Store the path of the file used to create this data.
-    private Path vcfPath;
-    private Path pedPath;
+    private Path vcfPath = null;
+    //there is often no pedigree. 
+    private Path pedPath = null;
     //SampleData is not final as it requires building from the VCF/PED files. 
     //This could happen at a separate time to the analysis initially being built.
     @JsonIgnore
-    private SampleData sampleData;
+    private SampleData sampleData = new SampleData();
     //these are more optional variables
-    private List<String> hpoIds;
-    private ModeOfInheritance modeOfInheritance;
-    private ScoringMode scoringMode;
-    private AnalysisMode analysisMode;
-    private Set<FrequencySource> frequencySources;
-    private Set<PathogenicitySource> pathogenicitySources;
-    private final List<AnalysisStep> analysisSteps;
-
-    public Analysis() {
-        vcfPath = null;
-        //there is often no pedigree. 
-        pedPath = null;
-        sampleData = new SampleData();
-        hpoIds = Collections.emptyList();
-        modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
-        scoringMode = ScoringMode.RAW_SCORE;
-        analysisMode = AnalysisMode.PASS_ONLY;
-        frequencySources = Collections.emptySet();
-        pathogenicitySources = Collections.emptySet();
-        analysisSteps = new ArrayList<>();
-    }
-
+    private List<String> hpoIds = new ArrayList<>();
+    private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
+    private ScoringMode scoringMode = ScoringMode.RAW_SCORE;
+    private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
+    private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
+    private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
+    private final List<AnalysisStep> analysisSteps = new ArrayList<>();
+   
     public Path getVcfPath() {
         return vcfPath;
     }

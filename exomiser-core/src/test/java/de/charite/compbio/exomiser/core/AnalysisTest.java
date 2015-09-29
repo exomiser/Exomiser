@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
@@ -135,30 +136,30 @@ public class AnalysisTest {
     public void testCanAddVariantFilterAsAnAnalysisStep() {
         VariantFilter variantFilter = new PassAllVariantEffectsFilter();
         instance.addStep(variantFilter);
-        assertThat(instance.getAnalysisSteps().contains(variantFilter), is(true));
+        assertThat(instance.getAnalysisSteps(), hasItem(variantFilter));
     }
 
     @Test
     public void testCanAddGeneFilterAsAnAnalysisStep() {
         GeneFilter geneFilter = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
         instance.addStep(geneFilter);
-        assertThat(instance.getAnalysisSteps().contains(geneFilter), is(true));
+        assertThat(instance.getAnalysisSteps(), hasItem(geneFilter));
     }
 
     @Test
     public void testCanAddPrioritiserAsAnAnalysisStep() {
         Prioritiser prioritiser = new NoneTypePrioritiser();
         instance.addStep(prioritiser);
-        assertThat(instance.getAnalysisSteps().contains(prioritiser), is(true));
+        assertThat(instance.getAnalysisSteps(), hasItem(prioritiser));
     }
 
     @Test
     public void testGetAnalysisSteps_ReturnsListOfStepsAdded() {
         List<AnalysisStep> steps = new ArrayList<>();
-        VariantFilter geneIdFilter = new EntrezGeneIdFilter(new HashSet<Integer>());
+        VariantFilter geneIdFilter = new EntrezGeneIdFilter(new HashSet<>());
         Prioritiser noneType = new NoneTypePrioritiser();
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
-        VariantFilter targetFilter = (VariantFilter) new PassAllVariantEffectsFilter();
+        VariantFilter targetFilter = new PassAllVariantEffectsFilter();
 
         steps.add(geneIdFilter);
         steps.add(noneType);
