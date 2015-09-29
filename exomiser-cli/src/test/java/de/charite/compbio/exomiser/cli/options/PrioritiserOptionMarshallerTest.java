@@ -6,8 +6,8 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.cli.CommandLineParseError;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.Settings;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -30,10 +30,10 @@ public class PrioritiserOptionMarshallerTest {
         settingsBuilder = new SettingsBuilder();
     }
 
-    private ExomiserSettings applyValueAndBuildSettings(String arg) {
+    private Settings applyValueAndBuildSettings(String arg) {
         String[] args = {arg};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         return settings;
     }
     
@@ -51,49 +51,49 @@ public class PrioritiserOptionMarshallerTest {
     
     @Test
     public void testApplyValuesToSettingsBuilder_isCaseInsensitive() {
-        ExomiserSettings settings = applyValueAndBuildSettings("HiPhive");
+        Settings settings = applyValueAndBuildSettings("HiPhive");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
 
     @Test
     public void testApplyValuesToSettingsBuilder_hiphive() {
-        ExomiserSettings settings = applyValueAndBuildSettings("hiphive");
+        Settings settings = applyValueAndBuildSettings("hiphive");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
           
     @Test
     public void testApplyValuesToSettingsBuilder_phenix() {
-        ExomiserSettings settings = applyValueAndBuildSettings("phenix");
+        Settings settings = applyValueAndBuildSettings("phenix");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.PHENIX_PRIORITY));
     }
     
     @Test
     public void testApplyValuesToSettingsBuilder_phive() {
-        ExomiserSettings settings = applyValueAndBuildSettings("phive");
+        Settings settings = applyValueAndBuildSettings("phive");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.PHIVE_PRIORITY));
     }
     
     @Test
     public void testApplyValuesToSettingsBuilder_exomewalker() {
-        ExomiserSettings settings = applyValueAndBuildSettings("exomewalker");
+        Settings settings = applyValueAndBuildSettings("exomewalker");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.EXOMEWALKER_PRIORITY));
     }
     
     @Test
     public void testApplyValuesToSettingsBuilder_omim() {
-        ExomiserSettings settings = applyValueAndBuildSettings("omim");
+        Settings settings = applyValueAndBuildSettings("omim");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
     
     @Test
     public void testApplyValuesToSettingsBuilder_uberPheno() {
-        ExomiserSettings settings = applyValueAndBuildSettings("uber-pheno");
+        Settings settings = applyValueAndBuildSettings("uber-pheno");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.UBERPHENO_PRIORITY));
     }
     
     @Test
     public void testApplyValuesToSettingsBuilder_none() {
-        ExomiserSettings settings = applyValueAndBuildSettings("none");
+        Settings settings = applyValueAndBuildSettings("none");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NONE));
     }
     

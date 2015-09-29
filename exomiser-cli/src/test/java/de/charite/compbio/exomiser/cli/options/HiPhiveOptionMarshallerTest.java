@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Settings;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,9 +42,9 @@ public class HiPhiveOptionMarshallerTest {
     public void testApplyValuesToSettingsBuilder() {
         String[] values = {"human","mouse","ppi"};
         
-        ExomiserSettings.SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        Settings.SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
         instance.applyValuesToSettingsBuilder(values, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.getExomiser2Params(), equalTo("human,mouse,ppi"));    
     }
@@ -53,9 +53,9 @@ public class HiPhiveOptionMarshallerTest {
     public void testApplyValuesToSettingsBuilderWithNoInput() {
         String[] values = {};
         
-        ExomiserSettings.SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        Settings.SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
         instance.applyValuesToSettingsBuilder(values, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.getExomiser2Params(), equalTo(""));    
     }

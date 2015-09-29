@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.apache.commons.cli.Option;
 import org.slf4j.Logger;

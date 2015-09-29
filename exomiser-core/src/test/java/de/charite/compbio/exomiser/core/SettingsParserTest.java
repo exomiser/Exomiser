@@ -5,8 +5,8 @@
 */
 package de.charite.compbio.exomiser.core;
 
-import static de.charite.compbio.exomiser.core.Exomiser.NON_EXONIC_VARIANT_EFFECTS;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import static de.charite.compbio.exomiser.core.SettingsParser.NON_EXONIC_VARIANT_EFFECTS;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
@@ -37,13 +37,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
-* Tests for Exomiser class.
 *
 * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
 */
-public class ExomiserTest {
+public class SettingsParserTest {
 
-    private Exomiser instance;
+    private SettingsParser instance;
             
     private SettingsBuilder settingsBuilder;
     private Analysis analysis;
@@ -54,7 +53,7 @@ public class ExomiserTest {
     @Before
     public void setUp() {       
         PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
-        instance = new Exomiser(stubPriorityFactory, new VariantDataServiceStub());
+        instance = new SettingsParser(stubPriorityFactory, new VariantDataServiceStub());
         
         settingsBuilder = new SettingsBuilder().vcfFilePath(Paths.get("vcf"));
         analysis = new Analysis(); 
@@ -83,7 +82,7 @@ public class ExomiserTest {
     
     @Test
     public void testDefaultAnalysisIsTargetFrequencyAndPathogenicityFilters() {
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         addDefaultVariantFilters(analysis);
         
@@ -94,7 +93,7 @@ public class ExomiserTest {
     @Test
     public void testSpecifyingInheritanceModeAddsAnInheritanceFilter() {
         
-        ExomiserSettings settings = settingsBuilder
+        Settings settings = settingsBuilder
                 .modeOfInheritance(autosomal_dominant).build();
         
         addDefaultVariantFilters(analysis);
@@ -112,7 +111,7 @@ public class ExomiserTest {
         Set<Integer> geneIdsToKeep = new HashSet<>();
         geneIdsToKeep.add(1);
         
-        ExomiserSettings settings = settingsBuilder
+        Settings settings = settingsBuilder
                 .modeOfInheritance(autosomal_dominant)
                 .genesToKeepList(geneIdsToKeep)
                 .removePathFilterCutOff(true)
@@ -139,7 +138,7 @@ public class ExomiserTest {
     @Test
     public void testSpecifyingOmimPrioritiserOnlyAddsOmimPrioritiser() {
 
-        ExomiserSettings settings = settingsBuilder
+        Settings settings = settingsBuilder
                 .usePrioritiser(PriorityType.OMIM_PRIORITY)
                 .build();
         
@@ -159,7 +158,7 @@ public class ExomiserTest {
         hpoIds.add("HP:000002");
         hpoIds.add("HP:000003");
         
-        ExomiserSettings settings = settingsBuilder
+        Settings settings = settingsBuilder
                 .usePrioritiser(PriorityType.PHIVE_PRIORITY)
                 .hpoIdList(hpoIds)
                 .build();

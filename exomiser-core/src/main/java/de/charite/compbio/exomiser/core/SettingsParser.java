@@ -44,9 +44,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Exomiser {
+public class SettingsParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
+    private static final Logger logger = LoggerFactory.getLogger(SettingsParser.class);
 
     public static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = EnumSet.of(
             VariantEffect.UPSTREAM_GENE_VARIANT,
@@ -65,7 +65,7 @@ public class Exomiser {
     private final PriorityFactory prioritiserFactory;
     private final VariantDataService variantDataService;
 
-    public Exomiser(PriorityFactory prioritiserFactory, VariantDataService variantDataService) {
+    public SettingsParser(PriorityFactory prioritiserFactory, VariantDataService variantDataService) {
         this.prioritiserFactory = prioritiserFactory;
         this.variantDataService = variantDataService;
     }
@@ -77,7 +77,7 @@ public class Exomiser {
      * @param exomiserSettings
      * @return
      */
-    public Analysis setUpExomiserAnalysis(ExomiserSettings exomiserSettings) {
+    public Analysis setUpExomiserAnalysis(Settings exomiserSettings) {
         logger.info("SETTING-UP ANALYSIS");
         PriorityType prioritiserType = exomiserSettings.getPrioritiserType();
 

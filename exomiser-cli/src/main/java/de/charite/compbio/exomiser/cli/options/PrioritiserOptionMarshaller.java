@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.cli.CommandLineParseError;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

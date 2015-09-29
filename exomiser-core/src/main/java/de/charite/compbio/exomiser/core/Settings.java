@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = SettingsBuilder.class)
-public class ExomiserSettings implements FilterSettings, PrioritiserSettings, OutputSettings {
+public class Settings implements FilterSettings, PrioritiserSettings, OutputSettings {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExomiserSettings.class);
+    private static final Logger logger = LoggerFactory.getLogger(Settings.class);
 
     //The options (static strings) and variables below are grouped together for 
     //better readability. They are bound using the Json annotations 
@@ -286,13 +286,13 @@ public class ExomiserSettings implements FilterSettings, PrioritiserSettings, Ou
             return this;
         }
 
-        public ExomiserSettings build() {
-            return new ExomiserSettings(this);
+        public Settings build() {
+            return new Settings(this);
         }
 
     }
 
-    private ExomiserSettings(SettingsBuilder builder) {
+    private Settings(SettingsBuilder builder) {
 
         //build metadata
         buildVersion = builder.buildVersion;
@@ -524,7 +524,7 @@ public class ExomiserSettings implements FilterSettings, PrioritiserSettings, Ou
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final ExomiserSettings other = (ExomiserSettings) obj;
+        final Settings other = (Settings) obj;
         if (!Objects.equals(this.buildVersion, other.buildVersion)) {
             return false;
         }

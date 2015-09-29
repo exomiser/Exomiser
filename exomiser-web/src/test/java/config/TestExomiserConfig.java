@@ -24,7 +24,7 @@ import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.SettingsParser;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
@@ -68,8 +68,8 @@ public class TestExomiserConfig {
     private Environment env;
     
     @Bean
-    public Exomiser mockExomiser() {
-        return Mockito.mock(Exomiser.class);
+    public SettingsParser mockExomiser() {
+        return Mockito.mock(SettingsParser.class);
     }
     
     @Bean

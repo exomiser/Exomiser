@@ -12,9 +12,9 @@ import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.AnalysisParser;
 import de.charite.compbio.exomiser.core.AnalysisRunner;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.Exomiser;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.SettingsParser;
+import de.charite.compbio.exomiser.core.Settings;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
@@ -55,7 +55,7 @@ public class Main {
 
     private Options options;
 
-    private Exomiser exomiser;
+    private SettingsParser exomiser;
     private ResultsWriterFactory resultsWriterFactory;
     private AnalysisParser analysisParser;
     private AnalysisFactory analysisFactory;
@@ -84,7 +84,7 @@ public class Main {
 
         options = applicationContext.getBean(Options.class);
 
-        exomiser = applicationContext.getBean(Exomiser.class);
+        exomiser = applicationContext.getBean(SettingsParser.class);
         resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         analysisParser = applicationContext.getBean(AnalysisParser.class);
         analysisFactory = applicationContext.getBean(AnalysisFactory.class);
@@ -186,7 +186,7 @@ public class Main {
     }
 
     private void runAnalysisFromSettings(SettingsBuilder settingsBuilder) {
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         if (settings.isValid()) {
             Analysis analysis = exomiser.setUpExomiserAnalysis(settings);
             runAnalysis(analysis);

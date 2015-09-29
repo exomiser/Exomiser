@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Settings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
@@ -23,13 +23,13 @@ public class FrequencyKnownVariantOptionMarshallerTest {
     
     private FrequencyKnownVariantOptionMarshaller instance;
     private Option option;
-    private ExomiserSettings.SettingsBuilder settingsBuilder;
+    private Settings.SettingsBuilder settingsBuilder;
     
     @Before
     public void setUp() {
         instance = new FrequencyKnownVariantOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
         settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
     }
@@ -46,14 +46,14 @@ public class FrequencyKnownVariantOptionMarshallerTest {
     
     @Test
     public void testSettingsRemoveDbSnpIsFalseByDefault() {
-        ExomiserSettings settings = settingsBuilder.build();        
+        Settings settings = settingsBuilder.build();        
         assertThat(settings.removeKnownVariants(), is(false));
     }
 
     @Test
     public void testSettingsBuilderAppliesTrueWhenSetWithNullValue() {
         instance.applyValuesToSettingsBuilder(null, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.removeKnownVariants(), is(true));
     }
@@ -62,7 +62,7 @@ public class FrequencyKnownVariantOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgFalse() {
         String[] args = {"false"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.removeKnownVariants(), is(false));
     }
@@ -71,7 +71,7 @@ public class FrequencyKnownVariantOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgTrue() {
         String[] args = {"true"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.removeKnownVariants(), is(true));
     }

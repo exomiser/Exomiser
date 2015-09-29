@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Settings;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,13 +22,13 @@ public class OutputPassOnlyVariantsOptionMarshallerTest {
     
     private OutputPassOnlyVariantsOptionMarshaller instance;
     private Option option;
-    private ExomiserSettings.SettingsBuilder settingsBuilder;
+    private Settings.SettingsBuilder settingsBuilder;
     
     @Before
     public void setUp() {
         instance = new OutputPassOnlyVariantsOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
     }
 
@@ -44,14 +44,14 @@ public class OutputPassOnlyVariantsOptionMarshallerTest {
     
     @Test
     public void testSettingsOutputPassVariantsOnlyIsFalseByDefault() {
-        ExomiserSettings settings = settingsBuilder.build();        
+        Settings settings = settingsBuilder.build();        
         assertThat(settings.outputPassVariantsOnly(), is(false));
     }
 
     @Test
     public void testSettingsBuilderAppliesTrueWhenSetWithNullValue() {
         instance.applyValuesToSettingsBuilder(null, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.outputPassVariantsOnly(), is(true));
     }
@@ -60,7 +60,7 @@ public class OutputPassOnlyVariantsOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgFalse() {
         String[] args = {"false"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.outputPassVariantsOnly(), is(false));
     }
@@ -69,7 +69,7 @@ public class OutputPassOnlyVariantsOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgTrue() {
         String[] args = {"true"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.outputPassVariantsOnly(), is(true));
     }

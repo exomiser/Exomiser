@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
@@ -31,11 +31,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests for {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
+ * Tests for {@link de.charite.compbio.exomiser.core.Settings}.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ExomiserSettingsTest {
+public class SettingsTest {
 
     SettingsBuilder instance;
 
@@ -92,7 +92,7 @@ public class ExomiserSettingsTest {
     private static final Set<OutputFormat> OUTPUT_FORMAT_DEFAULT = EnumSet.of(OutputFormat.HTML);
     private static final Set<OutputFormat> OUTPUT_FORMAT = EnumSet.of(OutputFormat.TSV_GENE);
     
-    public ExomiserSettingsTest() {
+    public SettingsTest() {
     }
 
     @Before
@@ -103,8 +103,8 @@ public class ExomiserSettingsTest {
 
     @Test
     public void testThatTheBuilderProducesDefaultExomiserSettingsObject() {
-        ExomiserSettings settings = new SettingsBuilder().build();
-        assertThat(settings, instanceOf(ExomiserSettings.class));
+        Settings settings = new SettingsBuilder().build();
+        assertThat(settings, instanceOf(Settings.class));
         System.out.println(settings);
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH_NOT_SET));
         assertThat(settings.getPedPath(), equalTo(PED_PATH_NOT_SET));
@@ -129,27 +129,27 @@ public class ExomiserSettingsTest {
 
     @Test
     public void testBuildVersionDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getBuildVersion(), equalTo(BUILD_VERSION_DEFAULT));
     }
     
     @Test
     public void testThatBuildVersionCanBeSet() {
         instance.buildVersion(BUILD_VERSION);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getBuildVersion(), equalTo(BUILD_VERSION));
     }
     
     @Test
     public void testBuildTimestampDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getBuildTimestamp(), equalTo(BUILD_TIMESTAMP_DEFAULT));
     }
     
     @Test
     public void testThatBuildTimestampCanBeSet() {
         instance.buildTimestamp(BUILD_TIMESTAMP);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getBuildTimestamp(), equalTo(BUILD_TIMESTAMP));
     }
     
@@ -160,7 +160,7 @@ public class ExomiserSettingsTest {
     public void testThatGetVcfPathReturnsAPath() {
 
         instance.vcfFilePath(VCF_PATH);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
 
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH));
     }
@@ -170,13 +170,13 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatTheDefaultVcfPathIsNull() {
-        ExomiserSettings settings = new SettingsBuilder().build();
+        Settings settings = new SettingsBuilder().build();
         assertThat(settings.getVcfPath(), nullValue());
     }
 
     @Test
     public void testThatTheDefaultSettingsIsNotValid() {
-        ExomiserSettings settings = new SettingsBuilder().build();
+        Settings settings = new SettingsBuilder().build();
         assertThat(settings.isValid(), is(false));
     }
 
@@ -184,7 +184,7 @@ public class ExomiserSettingsTest {
     public void testThatJustSettingAFcvFileIsValid() {
         SettingsBuilder settingsBuilder = new SettingsBuilder();
         settingsBuilder.vcfFilePath(VCF_PATH);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.isValid(), is(true));
     }
 
@@ -193,7 +193,7 @@ public class ExomiserSettingsTest {
         SettingsBuilder settingsBuilder = new SettingsBuilder();
         settingsBuilder.vcfFilePath(VCF_PATH);
         settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.isValid(), is(true));
     }
 
@@ -204,7 +204,7 @@ public class ExomiserSettingsTest {
     public void testThatGetPedPathReturnsAPath() {
 
         instance.pedFilePath(PED_PATH);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
 
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
     }
@@ -214,7 +214,7 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesPriorityTypeNoneAsDefault() {
-        ExomiserSettings settings = new SettingsBuilder().build();
+        Settings settings = new SettingsBuilder().build();
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NONE));
     }
 
@@ -224,7 +224,7 @@ public class ExomiserSettingsTest {
     @Test
     public void testThatBuilderProducesTheSpecifiedPriorityType() {
         instance.usePrioritiser(PriorityType.OMIM_PRIORITY);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
 
@@ -233,7 +233,7 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesMaximumFrequencyDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
     }
 
@@ -243,7 +243,7 @@ public class ExomiserSettingsTest {
     @Test
     public void testThatBuilderProducesMaximumFrequencySpecified() {
         instance.maximumFrequency(MAXIMUM_FREQUENCY);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
     }
 
@@ -252,14 +252,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultMinimumQuality() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesMinimumQualitySpecified() {
         instance.minimumQuality(MIMIMUM_QUALITY);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY));
     }
 
@@ -268,14 +268,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesGeneticIntervalDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesGeneticIntervalSpecified() {
         instance.geneticInterval(GENETIC_INTERVAL);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL));
     }
 
@@ -284,27 +284,27 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesIncludePathogenicDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesIncludePathogenicWhenSet() {
         instance.removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
     }
 
     @Test
     public void testThatBuilderProducesRemoveKnownVariantsDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesRemoveKnownVariantsWhenSet() {
         instance.removeKnownVariants(REMOVE_KNOWN_VARIANTS);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS));
     }
 
@@ -313,14 +313,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesRemoveOffTargetVariantsWhenSet() {
         instance.keepOffTargetVariants(KEEP_OFF_TARGET_VARIANTS);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS));
     }
 
@@ -329,14 +329,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesCandidateGeneDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesCandidateGeneWhenSet() {
         instance.candidateGene(CANDIDATE_GENE_NAME);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME));
     }
 
@@ -345,14 +345,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesGetModeOfInheritanceDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesGetModeOfInheritanceWhenSet() {
         instance.modeOfInheritance(MODE_OF_INHERITANCE);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getModeOfInheritance(), equalTo(MODE_OF_INHERITANCE));
     }
 
@@ -361,14 +361,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultEmptyDiseaseId() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesDiseaseIdWhenSet() {
         instance.diseaseId(DISEASE_STRING);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getDiseaseId(), equalTo(DISEASE_STRING));
     }
     
@@ -377,14 +377,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultEmptyHpoIds() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesHpoIdsWhenSet() {
         instance.hpoIdList(HPO_LIST);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getHpoIds(), equalTo(HPO_LIST));
     }
 
@@ -393,27 +393,27 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultEmptySeedGeneList() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesSeedGeneListWhenSet() {
         instance.seedGeneList(SEED_GENE_LIST);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getSeedGeneList(), equalTo(SEED_GENE_LIST));
     }
 
     @Test
     public void testThatBuilderProducesDefaultOutputPassVariantsOption() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.outputPassVariantsOnly(), equalTo(OUTPUT_PASS_VARIANTS_ONLY_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesOutputPassVariantsOptionWhenSet() {
         instance.outputPassVariantsOnly(OUTPUT_PASS_VARIANTS_ONLY);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.outputPassVariantsOnly(), equalTo(OUTPUT_PASS_VARIANTS_ONLY));
     }
 
@@ -422,14 +422,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultNumberOfGenesToShow() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesSetNumberOfGenesToShow() {
         instance.numberOfGenesToShow(NUMBER_OF_GENES_TO_SHOW);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getNumberOfGenesToShow(), equalTo(NUMBER_OF_GENES_TO_SHOW));
     }
 
@@ -438,14 +438,14 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultOutFileName() {
-        ExomiserSettings settings = new SettingsBuilder().build();
+        Settings settings = new SettingsBuilder().build();
         assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesSetOutFileName() {
         instance.outputPrefix(OUTPUT_PREFIX_NAME);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_NAME));
     }
 
@@ -454,27 +454,27 @@ public class ExomiserSettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultOutputFormat() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesSetOutputFormat() {
         instance.outputFormats(OUTPUT_FORMAT);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTPUT_FORMAT));
     }
     
     @Test
     public void testThatBuilderProducesRunFullAnalysisDefault() {
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS_DEFAULT));
     }
     
     @Test
     public void testThatBuilderProducesRunFullAnalysisWhenDefined() {
         instance.runFullAnalysis(RUN_FULL_ANALYSIS);
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
         assertThat(settings.runFullAnalysis(), equalTo(RUN_FULL_ANALYSIS));
     }
 
@@ -501,7 +501,7 @@ public class ExomiserSettingsTest {
                 .outputFormats(OUTPUT_FORMAT)
                 .runFullAnalysis(RUN_FULL_ANALYSIS);
 
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
 
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH));
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
@@ -537,7 +537,7 @@ public class ExomiserSettingsTest {
                 .outputPrefix(OUTPUT_PREFIX_NAME)
                 .outputFormats(OUTPUT_FORMAT);
 
-        ExomiserSettings settings = instance.build();
+        Settings settings = instance.build();
 
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH));
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
@@ -567,7 +567,7 @@ public class ExomiserSettingsTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        ExomiserSettings defaultSettings = instance.build();
+        Settings defaultSettings = instance.build();
         try {
             String jsonString = mapper.writeValueAsString(defaultSettings);
             System.out.println(jsonString);
@@ -582,7 +582,7 @@ public class ExomiserSettingsTest {
         mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
         String jsonString = "{\"prioritiser\":\"phive\",\"maxFrequency\":0.1,\"minQuality\":0.0,\"keepNonPathogenic\":false,\"removeKnownVariants\":false,\"keep-off-target\":false,\"candidate-gene\":\"FGFR2\",\"inheritance-mode\":\"AUTOSOMAL_DOMINANT\",\"disease-id\":\"\",\"hpo-ids\":[\"HP:0987654\",\"HP:1234567\"],\"seed-genes\":[123,4567],\"num-genes\":0,\"out-prefix\":\"wibble\",\"out-format\":[\"HTML\"],\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
         try {
-            ExomiserSettings defaultSettings = mapper.readValue(jsonString, ExomiserSettings.class);
+            Settings defaultSettings = mapper.readValue(jsonString, Settings.class);
             System.out.println(defaultSettings);
         } catch (IOException ex) {
             System.out.println(ex);

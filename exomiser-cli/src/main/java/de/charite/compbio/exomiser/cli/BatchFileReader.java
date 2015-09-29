@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.Settings;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;

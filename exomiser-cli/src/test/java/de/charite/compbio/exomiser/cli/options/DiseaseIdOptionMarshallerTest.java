@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.Settings;
+import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import org.hamcrest.CoreMatchers;
@@ -31,7 +31,7 @@ public class DiseaseIdOptionMarshallerTest {
     public void setUp() {
         instance = new DiseaseIdOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
     }
 
@@ -47,7 +47,7 @@ public class DiseaseIdOptionMarshallerTest {
     
     @Test
     public void testSettingsgetDiseaseIdIsEmptyByDefault() {
-        ExomiserSettings settings = settingsBuilder.build();        
+        Settings settings = settingsBuilder.build();        
         assertThat(settings.getDiseaseId().isEmpty(), is(true));
     }
     
@@ -55,7 +55,7 @@ public class DiseaseIdOptionMarshallerTest {
     public void testSettingsBuilderAppliesEmptySetValue() {
         String[] args = {""};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.getDiseaseId().isEmpty(), is(true));
     }
     
@@ -63,7 +63,7 @@ public class DiseaseIdOptionMarshallerTest {
     public void testSettingsBuilderAppliesValue() {
         String[] args = {"OMIM:101600"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.getDiseaseId(), equalTo("OMIM:101600"));
     }     
     

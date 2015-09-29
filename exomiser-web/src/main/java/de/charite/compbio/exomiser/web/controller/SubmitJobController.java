@@ -26,7 +26,7 @@ import de.charite.compbio.exomiser.core.AnalysisFactory;
 import de.charite.compbio.exomiser.core.AnalysisRunner;
 import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
-import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.SettingsParser;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
 import de.charite.compbio.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -76,7 +76,7 @@ public class SubmitJobController {
     private final ReferenceDictionary referenceDictionary = new ReferenceDictionaryBuilder().build();
 
     @Autowired
-    private Exomiser exomiser;
+    private SettingsParser exomiser;
 
     @Autowired
     private AnalysisFactory analysisFactory;
