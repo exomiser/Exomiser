@@ -3,10 +3,10 @@
 * To change this template file, choose Tools | Templates
 * and open the template in the editor.
 */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
-import static de.charite.compbio.exomiser.core.SettingsParser.NON_EXONIC_VARIANT_EFFECTS;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import static de.charite.compbio.exomiser.core.analysis.SettingsParser.NON_EXONIC_VARIANT_EFFECTS;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
@@ -70,13 +70,13 @@ public class SettingsParserTest {
        
     @Test
     public void testDefaultFrequencyDataSources() {
-        Analysis result = instance.setUpExomiserAnalysis(settingsBuilder.build());
+        Analysis result = instance.parse(settingsBuilder.build());
         assertThat(result.getFrequencySources(), equalTo(analysis.getFrequencySources()));
     }
     
     @Test
     public void testDefaultPathogenicityDataSources() {
-        Analysis result = instance.setUpExomiserAnalysis(settingsBuilder.build());
+        Analysis result = instance.parse(settingsBuilder.build());
         assertThat(result.getPathogenicitySources(), equalTo(analysis.getPathogenicitySources()));
     }
     
@@ -86,7 +86,7 @@ public class SettingsParserTest {
         
         addDefaultVariantFilters(analysis);
         
-        Analysis result = instance.setUpExomiserAnalysis(settings);
+        Analysis result = instance.parse(settings);
         assertThat(result, equalTo(analysis));
     }
 
@@ -100,7 +100,7 @@ public class SettingsParserTest {
         analysis.setModeOfInheritance(autosomal_dominant);
         analysis.addStep(new InheritanceFilter(autosomal_dominant));
         
-        Analysis result = instance.setUpExomiserAnalysis(settings);
+        Analysis result = instance.parse(settings);
         assertThat(result, equalTo(analysis));
         
     }
@@ -131,7 +131,7 @@ public class SettingsParserTest {
         analysis.addStep(new InheritanceFilter(autosomal_dominant));
         analysis.setModeOfInheritance(autosomal_dominant);
         
-        Analysis result = instance.setUpExomiserAnalysis(settings);
+        Analysis result = instance.parse(settings);
         assertThat(result, equalTo(analysis));
     }
     
@@ -145,7 +145,7 @@ public class SettingsParserTest {
         addDefaultVariantFilters(analysis);
         analysis.addStep(new OMIMPriority());
         
-        Analysis result = instance.setUpExomiserAnalysis(settings);
+        Analysis result = instance.parse(settings);
         assertThat(result, equalTo(analysis));
         
     }
@@ -169,7 +169,7 @@ public class SettingsParserTest {
         analysis.addStep(new NoneTypePrioritiser());
         System.out.println(analysis);
         
-        Analysis result = instance.setUpExomiserAnalysis(settings);
+        Analysis result = instance.parse(settings);
         assertThat(result, equalTo(analysis));        
     }
 

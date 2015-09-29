@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.apache.commons.cli.Option;
 
 /**

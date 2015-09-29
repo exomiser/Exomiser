@@ -6,15 +6,15 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
-import de.charite.compbio.exomiser.core.Analysis;
-import de.charite.compbio.exomiser.core.AnalysisFactory;
-import de.charite.compbio.exomiser.core.AnalysisMode;
-import de.charite.compbio.exomiser.core.AnalysisParser;
-import de.charite.compbio.exomiser.core.AnalysisRunner;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
+import de.charite.compbio.exomiser.core.analysis.AnalysisParser;
+import de.charite.compbio.exomiser.core.analysis.AnalysisRunner;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.SettingsParser;
-import de.charite.compbio.exomiser.core.Settings;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
@@ -55,7 +55,7 @@ public class Main {
 
     private Options options;
 
-    private SettingsParser exomiser;
+    private SettingsParser settingsParser;
     private ResultsWriterFactory resultsWriterFactory;
     private AnalysisParser analysisParser;
     private AnalysisFactory analysisFactory;
@@ -84,7 +84,7 @@ public class Main {
 
         options = applicationContext.getBean(Options.class);
 
-        exomiser = applicationContext.getBean(SettingsParser.class);
+        settingsParser = applicationContext.getBean(SettingsParser.class);
         resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         analysisParser = applicationContext.getBean(AnalysisParser.class);
         analysisFactory = applicationContext.getBean(AnalysisFactory.class);
@@ -188,7 +188,7 @@ public class Main {
     private void runAnalysisFromSettings(SettingsBuilder settingsBuilder) {
         Settings settings = settingsBuilder.build();
         if (settings.isValid()) {
-            Analysis analysis = exomiser.setUpExomiserAnalysis(settings);
+            Analysis analysis = settingsParser.parse(settings);
             runAnalysis(analysis);
             writeResults(analysis, settings);
         }

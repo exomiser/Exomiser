@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests for {@link de.charite.compbio.exomiser.core.Settings}.
+ * Tests for {@link de.charite.compbio.exomiser.core.analysis.Settings}.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */

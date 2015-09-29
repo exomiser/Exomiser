@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;

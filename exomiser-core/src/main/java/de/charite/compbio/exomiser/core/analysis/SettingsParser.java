@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
-import de.charite.compbio.exomiser.core.AnalysisMode;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.Filter;
@@ -27,7 +26,6 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.ArrayList;
@@ -74,26 +72,26 @@ public class SettingsParser {
      * Sets up an Analysis using the published Exomiser algorithm where variants
      * are filtered first, then genes and finally the prioritisers are run.
      *
-     * @param exomiserSettings
+     * @param settings
      * @return
      */
-    public Analysis setUpExomiserAnalysis(Settings exomiserSettings) {
+    public Analysis parse(Settings settings) {
         logger.info("SETTING-UP ANALYSIS");
-        PriorityType prioritiserType = exomiserSettings.getPrioritiserType();
+        PriorityType prioritiserType = settings.getPrioritiserType();
 
         Analysis analysis = new Analysis();
-        analysis.setVcfPath(exomiserSettings.getVcfPath());
-        analysis.setPedPath(exomiserSettings.getPedPath());
-        analysis.setModeOfInheritance(exomiserSettings.getModeOfInheritance());
-        analysis.setHpoIds(exomiserSettings.getHpoIds());
+        analysis.setVcfPath(settings.getVcfPath());
+        analysis.setPedPath(settings.getPedPath());
+        analysis.setModeOfInheritance(settings.getModeOfInheritance());
+        analysis.setHpoIds(settings.getHpoIds());
         analysis.setFrequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES);
         analysis.setPathogenicitySources(MISSENSE_VARIANT_PATH_SOURCES);
         analysis.setScoringMode(prioritiserType.getScoringMode());
-        if (exomiserSettings.runFullAnalysis()) {
+        if (settings.runFullAnalysis()) {
             analysis.setAnalysisMode(AnalysisMode.FULL);
         }
 
-        List<AnalysisStep> analysisSteps = makeAnalysisSteps(exomiserSettings, exomiserSettings);
+        List<AnalysisStep> analysisSteps = makeAnalysisSteps(settings, settings);
         analysisSteps.forEach(step -> {
             logger.info("ADDING ANALYSIS STEP {}", step);
             analysis.addStep(step);

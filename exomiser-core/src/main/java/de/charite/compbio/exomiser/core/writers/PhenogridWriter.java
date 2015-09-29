@@ -8,7 +8,7 @@ package de.charite.compbio.exomiser.core.writers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;

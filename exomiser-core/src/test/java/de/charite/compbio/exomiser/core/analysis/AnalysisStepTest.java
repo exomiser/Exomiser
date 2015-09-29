@@ -1,4 +1,4 @@
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
 import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;

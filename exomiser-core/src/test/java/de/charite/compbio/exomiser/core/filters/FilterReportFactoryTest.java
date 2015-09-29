@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;

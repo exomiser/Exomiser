@@ -1,7 +1,7 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import com.google.common.base.Joiner;
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
 
 import java.io.IOException;
 import java.nio.file.Path;

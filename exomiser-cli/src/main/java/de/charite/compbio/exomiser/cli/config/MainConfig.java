@@ -6,9 +6,9 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
-import de.charite.compbio.exomiser.core.AnalysisFactory;
-import de.charite.compbio.exomiser.core.AnalysisParser;
-import de.charite.compbio.exomiser.core.SettingsParser;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.AnalysisParser;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
 import de.charite.compbio.exomiser.core.dao.*;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
@@ -188,7 +188,7 @@ public class MainConfig {
     }
 
     @Bean
-    public SettingsParser exomiser() {
+    public SettingsParser settingsParser() {
         return new SettingsParser(priorityFactory(), variantDataService());
     }
 

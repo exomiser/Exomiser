@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.Settings;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import org.hamcrest.CoreMatchers;

@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
-import de.charite.compbio.exomiser.core.AnalysisFactory.AnalysisBuilder;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory.AnalysisBuilder;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;

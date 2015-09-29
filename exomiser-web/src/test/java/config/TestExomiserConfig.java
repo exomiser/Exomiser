@@ -17,14 +17,14 @@
 package config;
 
 import com.google.common.collect.ImmutableList;
-import de.charite.compbio.exomiser.core.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.SettingsParser;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
 import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
@@ -68,7 +68,7 @@ public class TestExomiserConfig {
     private Environment env;
     
     @Bean
-    public SettingsParser mockExomiser() {
+    public SettingsParser mockSettingsParser() {
         return Mockito.mock(SettingsParser.class);
     }
     

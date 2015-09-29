@@ -6,8 +6,8 @@
 package de.charite.compbio.exomiser.cli.options;
 
 import de.charite.compbio.exomiser.cli.CommandLineParseError;
-import de.charite.compbio.exomiser.core.Settings;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

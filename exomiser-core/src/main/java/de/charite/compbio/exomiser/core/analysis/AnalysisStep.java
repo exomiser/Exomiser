@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.exomiser.core.filters.InheritanceFilter;

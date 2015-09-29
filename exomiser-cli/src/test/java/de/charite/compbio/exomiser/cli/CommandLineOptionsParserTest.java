@@ -6,8 +6,8 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
-import de.charite.compbio.exomiser.core.Settings;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;

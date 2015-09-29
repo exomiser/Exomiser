@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -87,28 +88,41 @@ public class StreamsTest {
     }
 
     @Test
-    public void streamFileCountVariants() throws IOException {
-        VariantLineFilter variantLineFilter = new VariantLineFilter();
-
+    public void streamFileCountVariantsUsingPredicate() throws IOException {
         //TODO: can we dynamically add filters from a list of given filters?
         //TODO: try this using FilterResult::FilterType::PASS or something like this
         long numberOfVariants = Files.lines(Paths.get("src/test/resources/smallTest.vcf"), Charset.defaultCharset())
-                .filter(line -> {
-                    return variantLineFilter.isVariantLine(line);
-                })
+                .filter(isVariantLine())
                 .count();
         assertThat(numberOfVariants, equalTo(3L));
     }
 
-    private class VariantLineFilter {
-
-        public boolean isVariantLine(String line) {
+    private Predicate<String> isVariantLine() {
+        return line -> {
             if (line.startsWith("#")) {
                 return false;
             }
             System.out.println(line);
             return true;
+        };
+    }
 
+    @Test
+    public void streamFileCountVariantsUsingStaticClass() throws IOException {
+        long numberOfVariants = Files.lines(Paths.get("src/test/resources/smallTest.vcf"), Charset.defaultCharset())
+                .filter(line -> VariantLineFilter.isVariantLine(line))
+                .count();
+        assertThat(numberOfVariants, equalTo(3L));
+    }    
+    
+    private static class VariantLineFilter {
+
+        public static boolean isVariantLine(String line) {
+            if (line.startsWith("#")) {
+                return false;
+            }
+            System.out.println(line);
+            return true;
         }
     }
 

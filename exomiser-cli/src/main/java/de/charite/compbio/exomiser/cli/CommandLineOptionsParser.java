@@ -7,7 +7,7 @@ package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
 import static de.charite.compbio.exomiser.cli.options.SettingsFileOptionMarshaller.SETTINGS_FILE_OPTION;
-import de.charite.compbio.exomiser.core.Settings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;

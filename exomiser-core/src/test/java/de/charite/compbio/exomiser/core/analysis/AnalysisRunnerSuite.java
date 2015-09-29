@@ -1,4 +1,4 @@
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

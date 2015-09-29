@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

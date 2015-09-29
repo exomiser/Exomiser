@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filters.FilterReport;

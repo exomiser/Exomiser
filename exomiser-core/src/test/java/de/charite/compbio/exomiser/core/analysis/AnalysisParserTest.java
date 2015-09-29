@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core;
+package de.charite.compbio.exomiser.core.analysis;
 
-import de.charite.compbio.exomiser.core.AnalysisParser.AnalysisFileNotFoundException;
-import de.charite.compbio.exomiser.core.AnalysisParser.AnalysisParserException;
+import de.charite.compbio.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
+import de.charite.compbio.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.FrequencyFilter;

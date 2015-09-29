@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import java.nio.file.Paths;
 import java.util.EnumSet;
