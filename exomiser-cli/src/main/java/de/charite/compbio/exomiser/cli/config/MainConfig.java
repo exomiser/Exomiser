@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
 import de.charite.compbio.exomiser.core.analysis.AnalysisParser;
 import de.charite.compbio.exomiser.core.analysis.SettingsParser;
@@ -207,6 +208,11 @@ public class MainConfig {
         return new AnalysisFactory(sampleDataFactory(), priorityFactory(), variantDataService());
     }
 
+    @Bean
+    public Exomiser exomiser() {
+        return new Exomiser(analysisFactory());
+    }
+    
     /**
      * This takes a few seconds to de-serialise.
      */

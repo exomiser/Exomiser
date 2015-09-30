@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
 import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
@@ -58,7 +59,7 @@ public class Main {
     private SettingsParser settingsParser;
     private ResultsWriterFactory resultsWriterFactory;
     private AnalysisParser analysisParser;
-    private AnalysisFactory analysisFactory;
+    private Exomiser exomiser;
     private String buildVersion;
 
     public static void main(String[] args) {
@@ -87,7 +88,7 @@ public class Main {
         settingsParser = applicationContext.getBean(SettingsParser.class);
         resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         analysisParser = applicationContext.getBean(AnalysisParser.class);
-        analysisFactory = applicationContext.getBean(AnalysisFactory.class);
+        exomiser = applicationContext.getBean(Exomiser.class);
 
         buildVersion = (String) applicationContext.getBean("buildVersion");
     }
@@ -181,7 +182,7 @@ public class Main {
     private void runAnalysisFromScript(Path analysisScript) {
         Analysis analysis = analysisParser.parseAnalysis(analysisScript);
         OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
-        runAnalysis(analysis);
+        exomiser.run(analysis);
         writeResults(analysis, outputSettings);
     }
 
@@ -189,29 +190,8 @@ public class Main {
         Settings settings = settingsBuilder.build();
         if (settings.isValid()) {
             Analysis analysis = settingsParser.parse(settings);
-            runAnalysis(analysis);
+            exomiser.run(analysis);
             writeResults(analysis, settings);
-        }
-    }
-
-    private void runAnalysis(Analysis analysis) {
-        AnalysisRunner runner = makeAnalysisRunner(analysis);
-        runner.runAnalysis(analysis);
-    }
-
-    private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
-        AnalysisMode analysisMode = analysis.getAnalysisMode();
-        logger.info("Running analysis in {} mode", analysisMode);
-        switch (analysisMode) {
-            case FULL:
-                return analysisFactory.getFullAnalysisRunner();
-            case SPARSE:
-                return analysisFactory.getSparseAnalysisRunner();
-            case PASS_ONLY:
-                return analysisFactory.getPassOnlyAnalysisRunner();
-            default:
-                //this guy takes up the least RAM
-                return analysisFactory.getPassOnlyAnalysisRunner();
         }
     }
 
