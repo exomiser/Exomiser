@@ -49,8 +49,7 @@ public abstract class AnalysisRunnerTestBase {
     
     
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
-        Analysis analysis = new Analysis();
-        analysis.setVcfPath(vcfPath);
+        Analysis analysis = new Analysis(vcfPath);
         if (analysisSteps.length != 0) {
             analysis.addAllSteps(Arrays.asList(analysisSteps));
         }

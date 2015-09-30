@@ -49,6 +49,13 @@ public class AnalysisTest {
     }
 
     @Test
+    public void canSetVcfPathInConstructor() {
+        Path vcfPath = Paths.get("vcf");
+        instance = new Analysis(vcfPath);
+        assertThat(instance.getVcfPath(), equalTo(vcfPath));
+    }
+    
+    @Test
     public void testCanSetAndGetVcfFilePath() {
         Path vcfPath = Paths.get("vcf");
         instance.setVcfPath(vcfPath);

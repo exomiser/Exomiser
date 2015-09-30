@@ -44,6 +44,13 @@ public class Analysis {
     private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
     private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
     private final List<AnalysisStep> analysisSteps = new ArrayList<>();
+
+    public Analysis() {
+    }
+
+    public Analysis(Path vcfPath) {
+        this.vcfPath = vcfPath;
+    }
    
     public Path getVcfPath() {
         return vcfPath;

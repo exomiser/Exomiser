@@ -24,8 +24,8 @@ import java.util.List;
 public class AnalysisFactory {
 
     private final SampleDataFactory sampleDataFactory;
-    private final VariantDataService variantDataService;
     private final PriorityFactory priorityFactory;
+    private final VariantDataService variantDataService;
 
     public AnalysisFactory(SampleDataFactory sampleDataFactory, PriorityFactory priorityFactory, VariantDataService variantDataService) {
         this.sampleDataFactory = sampleDataFactory;
