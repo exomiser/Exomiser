@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -48,8 +49,7 @@ public class TsvGeneResultsWriterTest {
         gene = new Gene(GENE_SYMBOL, GENE_ID);        
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
-        analysis = new Analysis();
-        analysis.setSampleData(sampleData);
+        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
     }
 
     @Test

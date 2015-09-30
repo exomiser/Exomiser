@@ -1,6 +1,8 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
+import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -115,11 +117,9 @@ public class VcfResultsWriterTest {
 
     private void setUpModel() {
         sampleData = new SampleData();
-        sampleData.setGenes(new ArrayList<Gene>());
         sampleData.setVcfHeader(reader.getFileHeader());
         
-        analysis = new Analysis();
-        analysis.setSampleData(sampleData);
+        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
         
         TestVariantFactory varFactory = new TestVariantFactory();
 

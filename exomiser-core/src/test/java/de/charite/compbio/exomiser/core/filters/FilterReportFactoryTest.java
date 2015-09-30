@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
@@ -55,8 +56,7 @@ public class FilterReportFactoryTest {
         sampleData.setVariantEvaluations(variantEvaluations);
         sampleData.setGenes(genes);
         
-        analysis = new Analysis();
-        analysis.setSampleData(sampleData);
+        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
     }
 
     private VariantEvaluation makeFailedVariant(FilterType filterType) {

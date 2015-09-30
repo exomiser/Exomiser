@@ -51,7 +51,7 @@ public class Analysis {
     public Analysis(Path vcfPath) {
         this.vcfPath = vcfPath;
     }
-   
+
     public Path getVcfPath() {
         return vcfPath;
     }
@@ -72,7 +72,14 @@ public class Analysis {
         return sampleData;
     }
 
-    public void setSampleData(SampleData sampleData) {
+    /**
+     * The creation and setting of sample data should not be under the control
+     * of an external user. In production this should only be set by the
+     * AnalysisRunner as otherwise the entire process will become inconsistent.
+     *
+     * @param sampleData
+     */
+    protected void setSampleData(SampleData sampleData) {
         this.sampleData = sampleData;
     }
 
@@ -131,7 +138,7 @@ public class Analysis {
     public void addAllSteps(List<AnalysisStep> analysisSteps) {
         this.analysisSteps.addAll(analysisSteps);
     }
-    
+
     public List<AnalysisStep> getAnalysisSteps() {
         return analysisSteps;
     }
