@@ -57,7 +57,7 @@ public class SettingsParser {
             VariantEffect.REGULATORY_REGION_VARIANT
     );
 
-    private static final EnumSet<PathogenicitySource> MISSENSE_VARIANT_PATH_SOURCES = EnumSet.of(
+    private static final Set<PathogenicitySource> MISSENSE_VARIANT_PATH_SOURCES = EnumSet.of(
             PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT);
 
     private final PriorityFactory prioritiserFactory;
