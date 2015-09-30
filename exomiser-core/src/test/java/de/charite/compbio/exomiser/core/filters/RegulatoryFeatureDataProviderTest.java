@@ -6,16 +6,14 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceMock;
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import java.util.HashMap;
-import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -51,6 +49,7 @@ public class RegulatoryFeatureDataProviderTest {
         assertThat(instance.getFilterType(), equalTo(decoratedFilter.getFilterType()));
     }
     
+    @Ignore
     @Test
     public void testRunFilter_NonRegulatoryNonCodingVariant() {
         variantDataService.put(regulatoryNonCodingVariant, VariantEffect.REGULATORY_REGION_VARIANT);

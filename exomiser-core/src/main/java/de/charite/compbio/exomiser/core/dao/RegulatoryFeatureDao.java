@@ -5,13 +5,19 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -34,7 +40,7 @@ public class RegulatoryFeatureDao {
     private DataSource dataSource;
 
     @Cacheable(value = "regulatory", key = "#variant.chromosomalVariant")
-    public VariantEffect getRegulatoryFeatureData(Variant variant) {
+    public VariantEffect getRegulatoryFeatureData(Variant variant, Map<String, Gene> allGenes) {
         VariantEffect variantEffect = variant.getVariantEffect();
         //logger.info("Testing " + variant.getChromosomalVariant() + " with effect " + variantEffect.toString());
         try (
@@ -42,7 +48,31 @@ public class RegulatoryFeatureDao {
                 PreparedStatement preparedStatement = createPreparedStatement(connection, variant);
                 ResultSet rs = preparedStatement.executeQuery()) {
             if (rs.next()) {
-                //logger.info("Found reg variant");
+                /* TODO
+                1. Need to pass correct PriorityType through as well
+                2. Proper checks for null genes etc
+                3. Should this TAD check be only run for intergenic/up/downstream variants in reg features table? 
+                */
+                logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variant.getGeneSymbol() + ", to best pheno gene in TAD");
+                PreparedStatement tadPreparedStatement = createTadPreparedStatement(connection,variant);
+                ResultSet rs2 = tadPreparedStatement.executeQuery();
+                float score = 0;
+                while (rs2.next()){
+                    int entrezId = rs2.getInt(1);
+                    String geneSymbol = rs2.getString(2);
+                    Gene gene = allGenes.get(geneSymbol);
+                    float geneScore = gene.getPriorityResult(PriorityType.HIPHIVE_PRIORITY).getScore();
+                    logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
+                    if (geneScore > score){
+                        logger.info("Changing gene to " + geneSymbol);
+                        variant.setEntrezGeneId(entrezId);
+                        variant.setGeneSymbol(geneSymbol);
+                        List<Annotation> alist = Collections.emptyList();;
+                        variant.setAnnotations(alist);
+                        score = geneScore;
+                    }
+                }        
+                
                 return VariantEffect.REGULATORY_REGION_VARIANT;
                 // later may set variant object with the type of regulatory feature, associated gene and tissue involved
             }
@@ -55,6 +85,15 @@ public class RegulatoryFeatureDao {
     private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
         String enhancerQuery = "SELECT feature_type, tissue FROM regulatory_features WHERE chromosome = ? AND start <  ? AND \"end\" > ?";
         PreparedStatement ps = connection.prepareStatement(enhancerQuery);
+        ps.setInt(1, variant.getChromosome());
+        ps.setInt(2, variant.getPosition());
+        ps.setInt(3, variant.getPosition());
+        return ps;
+    }
+    
+    private PreparedStatement createTadPreparedStatement(Connection connection, Variant variant) throws SQLException {
+        String tadQuery = "select entrezid, symbol from tad where chromosome = ? and start < ? and \"end\" > ?";
+        PreparedStatement ps = connection.prepareStatement(tadQuery);
         ps.setInt(1, variant.getChromosome());
         ps.setInt(2, variant.getPosition());
         ps.setInt(3, variant.getPosition());

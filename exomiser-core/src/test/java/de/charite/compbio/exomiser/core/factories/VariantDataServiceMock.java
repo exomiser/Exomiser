@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -87,7 +88,7 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     }
 
     @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant, Map<String, Gene> allGenes) {
         return expectedVariantEffects.getOrDefault(variant, variant.getVariantEffect());
     }
 

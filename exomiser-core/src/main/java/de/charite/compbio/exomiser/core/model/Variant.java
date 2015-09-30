@@ -32,7 +32,13 @@ public interface Variant extends VariantCoordinates {
     public String getGeneSymbol();
 
     public int getEntrezGeneId();
-
+    
+    public void setEntrezGeneId(int id);
+    
+    public void setGeneSymbol(String symbol);
+    
+    public void setAnnotations(List<Annotation> alist);
+    
     /**
      * @return a String such as chr6:g.29911092G>T
      */

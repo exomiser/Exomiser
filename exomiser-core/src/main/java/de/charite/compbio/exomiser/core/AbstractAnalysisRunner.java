@@ -56,7 +56,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     public void runAnalysis(Analysis analysis) {
 
         final SampleData sampleData = makeSampleDataWithoutGenesOrVariants(analysis);
-
+        
         logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
         long startAnalysisTimeMillis = System.currentTimeMillis();
 
@@ -77,6 +77,13 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
+                // do my TAD stuff
+                
+                // assign all genes to variants
+//                        Gene gene = genes.get(variantEvaluation.getGeneSymbol());
+//                        gene.addVariant(variantEvaluation);
+                    
+                
                 variantsLoaded = true;
             } else {
                 runSteps(analysisGroup, new ArrayList<>(allGenes.values()), pedigree, analysis.getModeOfInheritance());
@@ -104,7 +111,13 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
         Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes);
-        List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
+        List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);        
+        // identify which of the variantFiltes is a RegulatoryFeatureDataProvider and set allGenes on it so the RegulatoryFeaturesDao and set the gene to the best pheno hit
+        for (VariantFilter variantFilter : variantFilters) {
+            if (RegulatoryFeatureDataProvider.class.isInstance(variantFilter)){
+                ((RegulatoryFeatureDataProvider) variantFilter).setAllGenes(allGenes);
+            }
+        }
         Predicate<VariantEvaluation> variantFilterPredicate = variantFilterPredicate(variantFilters);
 
         return loadVariants(vcfPath, allGenes, geneFilterPredicate, variantFilterPredicate);

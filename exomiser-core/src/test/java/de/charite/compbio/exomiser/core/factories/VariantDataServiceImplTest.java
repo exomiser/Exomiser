@@ -10,6 +10,7 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.NcdsDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
@@ -26,6 +27,7 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -75,11 +77,11 @@ public class VariantDataServiceImplTest {
     @Before
     public void setUp() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-
+        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION);
+        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant, allGenes)).thenReturn(REGULATORY_REGION);
 
     }
 
@@ -190,21 +192,24 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsOriginalVariantEffectForCodingVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
+        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant, allGenes);
         assertThat(result, equalTo(VariantEffect.MISSENSE_VARIANT));
     }
 
     @Test
     public void serviceReturnsRegulatoryFeatureVariantEffectForIntergenicVariant() {
         variant = buildVariantOfType(VariantEffect.INTERGENIC_VARIANT);
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
+        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant, allGenes);
         assertThat(result, equalTo(REGULATORY_REGION));
     }
 
     @Test
     public void serviceReturnsRegulatoryFeaturelVariantEffectForUpstreamGeneVariant() {
         variant = buildVariantOfType(VariantEffect.UPSTREAM_GENE_VARIANT);
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
+        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant, allGenes);
         assertThat(result, equalTo(REGULATORY_REGION));
     }
 

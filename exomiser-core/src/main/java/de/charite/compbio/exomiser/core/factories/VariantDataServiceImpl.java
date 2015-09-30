@@ -11,6 +11,7 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.NcdsDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -21,6 +22,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import javax.annotation.Resource;
@@ -114,9 +116,9 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
     
     @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant, Map<String, Gene> allGenes) {
         if (variant.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variant.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
-            return regulatoryFeatureDao.getRegulatoryFeatureData(variant);
+            return regulatoryFeatureDao.getRegulatoryFeatureData(variant, allGenes);
         }
         return variant.getVariantEffect();
     }

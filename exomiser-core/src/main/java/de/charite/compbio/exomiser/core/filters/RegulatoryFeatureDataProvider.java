@@ -6,8 +6,10 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.Map;
 
 /**
  *
@@ -15,14 +17,19 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
  */
 public class RegulatoryFeatureDataProvider extends AbstractFilterDataProvider {
     
-
+    private Map<String, Gene> allGenes;
+    
     public RegulatoryFeatureDataProvider(VariantDataService variantDataService, VariantFilter variantFilter) {
         super(variantDataService, variantFilter);
     }
     
+    public void setAllGenes(Map<String, Gene> allGenes) {
+        this.allGenes = allGenes;
+    }
+    
     @Override
     public void provideVariantData(VariantEvaluation variantEvaluation) {
-        VariantEffect variantEffect = variantDataService.getVariantRegulatoryFeatureData(variantEvaluation);
+        VariantEffect variantEffect = variantDataService.getVariantRegulatoryFeatureData(variantEvaluation, allGenes);
         variantEvaluation.setVariantEffect(variantEffect);
     }
 
