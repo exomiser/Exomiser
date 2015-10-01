@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
-import de.charite.compbio.exomiser.core.Analysis;
-import de.charite.compbio.exomiser.core.AnalysisFactory;
-import de.charite.compbio.exomiser.core.AnalysisRunner;
-import de.charite.compbio.exomiser.core.AnalysisMode;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.AnalysisRunner;
+import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
-import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
 import de.charite.compbio.exomiser.core.filters.FilterSettings;
 import de.charite.compbio.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -76,7 +76,7 @@ public class SubmitJobController {
     private final ReferenceDictionary referenceDictionary = new ReferenceDictionaryBuilder().build();
 
     @Autowired
-    private Exomiser exomiser;
+    private SettingsParser settingsParser;
 
     @Autowired
     private AnalysisFactory analysisFactory;
@@ -133,7 +133,7 @@ public class SubmitJobController {
 
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
         Analysis analysis = buildAnalysis(Paths.get(vcfFile.getOriginalFilename()), Paths.get(pedFile.getOriginalFilename()), diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
-        AnalysisRunner analysisRunner = analysisFactory.getPassOnlyAnalysisRunner();
+        AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunnerForMode(AnalysisMode.PASS_ONLY);
         analysisRunner.runAnalysis(analysis);
 
         buildResultsModel(model, analysis);
@@ -194,7 +194,7 @@ public class SubmitJobController {
                 .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
                 .build();
 
-        analysis.addAllSteps(exomiser.makeAnalysisSteps(filterSettings, prioritiserSettings));
+        analysis.addAllSteps(settingsParser.makeAnalysisSteps(filterSettings, prioritiserSettings));
 
         return analysis;
     }

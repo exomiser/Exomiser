@@ -5,7 +5,8 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -129,9 +130,7 @@ public class HtmlResultsWriterTest {
         sampleData.setGenes(genes);
         sampleData.setVariantEvaluations(variantEvaluations);
 
-        Analysis analysis = new Analysis();
-        analysis.setSampleData(sampleData);
-        return analysis;
+        return new TestAnalysisBuilder().sampleData(sampleData).build();
     }
 
     @Test

@@ -1,177 +1,70 @@
 /*
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package de.charite.compbio.exomiser.core;
 
-import static de.charite.compbio.exomiser.core.Exomiser.NON_EXONIC_VARIANT_EFFECTS;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.TestJannovarDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.IntervalFilter;
-import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
-import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
-import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
-import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
-import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
-* Tests for Exomiser class.
-*
-* @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
-*/
+ *
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ */
 public class ExomiserTest {
-
+ 
     private Exomiser instance;
-            
-    private SettingsBuilder settingsBuilder;
-    private Analysis analysis;
+        
+    private final JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
+    private final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(testJannovarData.getRefDict(), testJannovarData.getChromosomes());
+    private final VariantFactory variantFactory = new VariantFactory(new VariantAnnotator(variantContextAnnotator));
+
+    private final SampleDataFactory sampleDataFactory = new SampleDataFactory(variantFactory, testJannovarData);
+    private final VariantDataService stubDataService = new VariantDataServiceStub();
     
-    private final ModeOfInheritance autosomal_dominant = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-    private final GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
+    private final AnalysisFactory analysisFactory = new AnalysisFactory(sampleDataFactory, new PriorityFactoryImpl(), stubDataService);
     
     @Before
-    public void setUp() {       
-        PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
-        instance = new Exomiser(stubPriorityFactory, new VariantDataServiceStub());
-        
-        settingsBuilder = new SettingsBuilder().vcfFilePath(Paths.get("vcf"));
-        analysis = new Analysis(); 
-        analysis.setVcfPath(Paths.get("vcf"));
-        analysis.setFrequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES);
-        analysis.setPathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.POLYPHEN, PathogenicitySource.SIFT));
+    public void setUp() {
+        instance = new Exomiser(analysisFactory);
     }
-
-    private void addDefaultVariantFilters(Analysis analysis) {
-        analysis.addStep(new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS));
-        analysis.addStep(new FrequencyFilter(100f));
-        analysis.addStep(new PathogenicityFilter(false));
-    }
-       
-    @Test
-    public void testDefaultFrequencyDataSources() {
-        Analysis result = instance.setUpExomiserAnalysis(settingsBuilder.build());
-        assertThat(result.getFrequencySources(), equalTo(analysis.getFrequencySources()));
+    
+    private Analysis makeAnalysisWithMode(AnalysisMode analysisMode) {
+        Analysis analysis = new Analysis(Paths.get("src/test/resources/smallTest.vcf"));
+        analysis.setAnalysisMode(analysisMode);
+        return analysis;  
     }
     
     @Test
-    public void testDefaultPathogenicityDataSources() {
-        Analysis result = instance.setUpExomiserAnalysis(settingsBuilder.build());
-        assertThat(result.getPathogenicitySources(), equalTo(analysis.getPathogenicitySources()));
+    public void canRunAnalysis_Full() {
+        Analysis analysis = makeAnalysisWithMode(AnalysisMode.FULL);
+        instance.run(analysis);  
     }
     
     @Test
-    public void testDefaultAnalysisIsTargetFrequencyAndPathogenicityFilters() {
-        ExomiserSettings settings = settingsBuilder.build();
-        
-        addDefaultVariantFilters(analysis);
-        
-        Analysis result = instance.setUpExomiserAnalysis(settings);
-        assertThat(result, equalTo(analysis));
-    }
-
-    @Test
-    public void testSpecifyingInheritanceModeAddsAnInheritanceFilter() {
-        
-        ExomiserSettings settings = settingsBuilder
-                .modeOfInheritance(autosomal_dominant).build();
-        
-        addDefaultVariantFilters(analysis);
-        analysis.setModeOfInheritance(autosomal_dominant);
-        analysis.addStep(new InheritanceFilter(autosomal_dominant));
-        
-        Analysis result = instance.setUpExomiserAnalysis(settings);
-        assertThat(result, equalTo(analysis));
-        
+    public void canRunAnalysis_Sparse() {
+        Analysis analysis = makeAnalysisWithMode(AnalysisMode.SPARSE);
+        instance.run(analysis);  
     }
     
     @Test
-    public void testCanMakeAllTypesOfFilter() {
-        //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
-        Set<Integer> geneIdsToKeep = new HashSet<>();
-        geneIdsToKeep.add(1);
-        
-        ExomiserSettings settings = settingsBuilder
-                .modeOfInheritance(autosomal_dominant)
-                .genesToKeepList(geneIdsToKeep)
-                .removePathFilterCutOff(true)
-                .removeKnownVariants(true)
-                .maximumFrequency(0.25f)
-                .minimumQuality(2f)
-                .geneticInterval(interval)
-                .build();
-
-        analysis.addStep(new EntrezGeneIdFilter(geneIdsToKeep));
-        analysis.addStep(new IntervalFilter(interval));
-        analysis.addStep(new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS));
-        analysis.addStep(new QualityFilter(2f));
-        analysis.addStep(new KnownVariantFilter());
-        analysis.addStep(new FrequencyFilter(0.25f));
-        analysis.addStep(new PathogenicityFilter(true));
-        analysis.addStep(new InheritanceFilter(autosomal_dominant));
-        analysis.setModeOfInheritance(autosomal_dominant);
-        
-        Analysis result = instance.setUpExomiserAnalysis(settings);
-        assertThat(result, equalTo(analysis));
+    public void canRunAnalysis_PassOnly() {
+        Analysis analysis = makeAnalysisWithMode(AnalysisMode.PASS_ONLY);
+        instance.run(analysis);  
     }
     
-    @Test
-    public void testSpecifyingOmimPrioritiserOnlyAddsOmimPrioritiser() {
-
-        ExomiserSettings settings = settingsBuilder
-                .usePrioritiser(PriorityType.OMIM_PRIORITY)
-                .build();
-        
-        addDefaultVariantFilters(analysis);
-        analysis.addStep(new OMIMPriority());
-        
-        Analysis result = instance.setUpExomiserAnalysis(settings);
-        assertThat(result, equalTo(analysis));
-        
-    }
-    
-    @Test
-    public void testSpecifyingPrioritiserAddsAnOmimAndTheSpecifiedPrioritiser() {
-
-        List<String> hpoIds = new ArrayList<>();
-        hpoIds.add("HP:000001");
-        hpoIds.add("HP:000002");
-        hpoIds.add("HP:000003");
-        
-        ExomiserSettings settings = settingsBuilder
-                .usePrioritiser(PriorityType.PHIVE_PRIORITY)
-                .hpoIdList(hpoIds)
-                .build();
-        
-        analysis.setHpoIds(hpoIds);
-        addDefaultVariantFilters(analysis);
-        analysis.addStep(new OMIMPriority());
-        analysis.addStep(new NoneTypePrioritiser());
-        System.out.println(analysis);
-        
-        Analysis result = instance.setUpExomiserAnalysis(settings);
-        assertThat(result, equalTo(analysis));        
-    }
-
-}
+ }

@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.web.config;
 
-import de.charite.compbio.exomiser.core.AnalysisFactory;
-import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
 import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
@@ -63,13 +63,13 @@ public class ExomiserConfig {
     private Environment env;
 
     @Bean
-    public Exomiser exomiser() {
-        return new Exomiser(priorityFactory(), variantDataService());
+    public SettingsParser settingsParser() {
+        return new SettingsParser(priorityFactory(), variantDataService());
     }
 
     @Bean
     AnalysisFactory analysisFactory() {
-        return new AnalysisFactory(sampleDataFactory(), variantDataService(), priorityFactory());
+        return new AnalysisFactory(sampleDataFactory(), priorityFactory(), variantDataService());
     }
 
     /**

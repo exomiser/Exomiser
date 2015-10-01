@@ -8,12 +8,17 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
+import static java.util.stream.Collectors.toList;
+import java.util.stream.Stream;
 
 /**
  * This class represents a Gene in which {@link jannovar.exome.Variant Variant}
@@ -55,7 +60,8 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     private final List<VariantEvaluation> variantEvaluations;
 
     private final Set<FilterType> failedFilterTypes;
-    private final Map<FilterType, FilterResult> passedFilterResultsMap;
+    private final Set<FilterType> passedFilterTypes;
+    private final Map<FilterType, FilterResult> filterResults;
 
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
@@ -90,8 +96,9 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         this.entrezGeneId = geneId;
         variantEvaluations = new ArrayList();
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-        failedFilterTypes = EnumSet.noneOf(FilterType.class);
-        passedFilterResultsMap = new LinkedHashMap<>();
+        failedFilterTypes = new LinkedHashSet<>();
+        passedFilterTypes = new LinkedHashSet<>();
+        filterResults = new LinkedHashMap<>();
         priorityResultsMap = new LinkedHashMap();
     }
 
@@ -146,9 +153,19 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @param var A Variant affecting the current gene.
      */
     public final void addVariant(VariantEvaluation var) {
+        addGeneFilterResultsToVariant(var);
         variantEvaluations.add(var);
     }
 
+    private void addGeneFilterResultsToVariant(VariantEvaluation var) {
+        filterResults.values().stream().filter(isNotInheritanceFilterResult())
+                .forEach(result -> {var.addFilterResult(result);});
+    }
+    
+    private Predicate<FilterResult> isNotInheritanceFilterResult() {
+        return filterResult -> {return filterResult.getFilterType() != FilterType.INHERITANCE_FILTER;};
+    }
+    
     /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
@@ -157,15 +174,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     public List<VariantEvaluation> getPassedVariantEvaluations() {
-        List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
-
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            if (variantEvaluation.passedFilters()) {
-                passedVariantEvaluations.add(variantEvaluation);
-            }
-        }
-
-        return passedVariantEvaluations;
+        return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).collect(toList());
     }
 
     /**
@@ -363,7 +372,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-        if (!failedFilterTypes.contains(filterType) && passedFilterResultsMap.containsKey(filterType)) {
+        if (!failedFilterTypes.contains(filterType) && passedFilterTypes.contains(filterType)) {
             return true;
         }
         return atLeastOneVariantPassedFilter(filterType);
@@ -387,6 +396,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
+        filterResults.put(filterResult.getFilterType(), filterResult);
         if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
             return addPassedFilterResult(filterResult);
         }
@@ -394,7 +404,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     private boolean addPassedFilterResult(FilterResult filterResult) {
-        passedFilterResultsMap.put(filterResult.getFilterType(), filterResult);
+        passedFilterTypes.add(filterResult.getFilterType());
         return true;
     }
 
@@ -437,16 +447,16 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @Override
     public int compareTo(Gene other) {
-        float me = combinedScore;
-        float you = other.combinedScore;
-        if (me < you) {
+        float thisScore = this.combinedScore;
+        float otherScore = other.combinedScore;
+        if (thisScore < otherScore) {
             return 1;
         }
-        if (me > you) {
+        if (thisScore > otherScore) {
             return -1;
         }
         //if the scores are equal then return an alphabeticised list
-        if (me == you) {
+        if (thisScore == otherScore) {
             return geneSymbol.compareTo(other.geneSymbol);
         }
         return 0;
@@ -455,7 +465,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public String toString() {
-        return String.format("%s entrezId=%d compatibleWith=%s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterResultsMap.keySet());
+        return String.format("%s entrezId=%d compatibleWith=%s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterTypes);
     }
 
 }

@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -33,7 +33,7 @@ public class OutFilePrefixOptionMarshallerTest {
     public void setUp() {
         instance = new OutFilePrefixOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("user/analysis/vcf/test.vcf"));
     }
 
@@ -46,7 +46,7 @@ public class OutFilePrefixOptionMarshallerTest {
     @Test
     public void testApplyValuesToSettingsBuilder() {
         instance.applyValuesToSettingsBuilder(new String[]{OUTFILE_PREFIX}, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.getOutputPrefix(), equalTo(OUTFILE_PREFIX));
     }
     

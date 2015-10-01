@@ -6,15 +6,16 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
-import de.charite.compbio.exomiser.core.Analysis;
-import de.charite.compbio.exomiser.core.AnalysisFactory;
-import de.charite.compbio.exomiser.core.AnalysisMode;
-import de.charite.compbio.exomiser.core.AnalysisParser;
-import de.charite.compbio.exomiser.core.AnalysisRunner;
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.Exomiser;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
+import de.charite.compbio.exomiser.core.analysis.AnalysisParser;
+import de.charite.compbio.exomiser.core.analysis.AnalysisRunner;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
@@ -55,10 +56,10 @@ public class Main {
 
     private Options options;
 
-    private Exomiser exomiser;
+    private SettingsParser settingsParser;
     private ResultsWriterFactory resultsWriterFactory;
     private AnalysisParser analysisParser;
-    private AnalysisFactory analysisFactory;
+    private Exomiser exomiser;
     private String buildVersion;
 
     public static void main(String[] args) {
@@ -84,10 +85,10 @@ public class Main {
 
         options = applicationContext.getBean(Options.class);
 
-        exomiser = applicationContext.getBean(Exomiser.class);
+        settingsParser = applicationContext.getBean(SettingsParser.class);
         resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
         analysisParser = applicationContext.getBean(AnalysisParser.class);
-        analysisFactory = applicationContext.getBean(AnalysisFactory.class);
+        exomiser = applicationContext.getBean(Exomiser.class);
 
         buildVersion = (String) applicationContext.getBean("buildVersion");
     }
@@ -181,37 +182,16 @@ public class Main {
     private void runAnalysisFromScript(Path analysisScript) {
         Analysis analysis = analysisParser.parseAnalysis(analysisScript);
         OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
-        runAnalysis(analysis);
+        exomiser.run(analysis);
         writeResults(analysis, outputSettings);
     }
 
     private void runAnalysisFromSettings(SettingsBuilder settingsBuilder) {
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         if (settings.isValid()) {
-            Analysis analysis = exomiser.setUpExomiserAnalysis(settings);
-            runAnalysis(analysis);
+            Analysis analysis = settingsParser.parse(settings);
+            exomiser.run(analysis);
             writeResults(analysis, settings);
-        }
-    }
-
-    private void runAnalysis(Analysis analysis) {
-        AnalysisRunner runner = makeAnalysisRunner(analysis);
-        runner.runAnalysis(analysis);
-    }
-
-    private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
-        AnalysisMode analysisMode = analysis.getAnalysisMode();
-        logger.info("Running analysis in {} mode", analysisMode);
-        switch (analysisMode) {
-            case FULL:
-                return analysisFactory.getFullAnalysisRunner();
-            case SPARSE:
-                return analysisFactory.getSparseAnalysisRunner();
-            case PASS_ONLY:
-                return analysisFactory.getPassOnlyAnalysisRunner();
-            default:
-                //this guy takes up the least RAM
-                return analysisFactory.getPassOnlyAnalysisRunner();
         }
     }
 

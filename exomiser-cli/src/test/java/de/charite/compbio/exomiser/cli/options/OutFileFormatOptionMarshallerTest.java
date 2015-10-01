@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.analysis.Settings;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import java.nio.file.Paths;
 import java.util.EnumSet;
@@ -25,7 +25,7 @@ public class OutFileFormatOptionMarshallerTest {
 
     private OutFileFormatOptionMarshaller instance;
     private Option option;
-    private ExomiserSettings.SettingsBuilder settingsBuilder;
+    private Settings.SettingsBuilder settingsBuilder;
 
     private static final Set<OutputFormat> OUTFILE_FORMATS = EnumSet.allOf(OutputFormat.class);
     private static final String LONG_OPTION = "out-format";
@@ -35,7 +35,7 @@ public class OutFileFormatOptionMarshallerTest {
     public void setUp() {
         instance = new OutFileFormatOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("user/analysis/vcf/test.vcf"));
     }
 
@@ -48,7 +48,7 @@ public class OutFileFormatOptionMarshallerTest {
     public void testApplyValuesToSettingsBuilder() {
         String[] inputValues = {"HTML", "VCF", "TSV-GENE", "TSV-VARIANT", "PHENOGRID"};
         instance.applyValuesToSettingsBuilder(inputValues, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTFILE_FORMATS));
     }
 
@@ -56,7 +56,7 @@ public class OutFileFormatOptionMarshallerTest {
     public void testApplyValuesToSettingsBuilderWithAlternateNames() {
         String[] inputValues = {"HTML", "VCF", "TAB-GENE", "TAB-VARIANT", "PHENOGRID"};
         instance.applyValuesToSettingsBuilder(inputValues, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTFILE_FORMATS));
     }
 
@@ -64,7 +64,7 @@ public class OutFileFormatOptionMarshallerTest {
     public void testApplyValuesToSettingsBuilderWithEnumSrings() {
         String[] inputValues = {"HTML", "VCF", "TSV_GENE", "TSV_VARIANT", "PHENOGRID"};
         instance.applyValuesToSettingsBuilder(inputValues, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.getOutputFormats(), equalTo(OUTFILE_FORMATS));
     }
 

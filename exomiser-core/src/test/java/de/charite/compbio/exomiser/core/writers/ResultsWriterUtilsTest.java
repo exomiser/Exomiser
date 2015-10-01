@@ -5,10 +5,9 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
-import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -124,11 +123,8 @@ public class ResultsWriterUtilsTest {
     
     @Test
     public void canMakeFilterReportsFromAnalysis_returnsEmptyListWhenNoFiltersAdded(){
-        SampleData sampleData = new SampleData();
-        sampleData.setVariantEvaluations(new ArrayList<VariantEvaluation>());
         Analysis analysis = new Analysis();
-        analysis.setSampleData(sampleData);
-        
+       
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis);
         
         assertThat(results.isEmpty(), is(true));
@@ -136,10 +132,7 @@ public class ResultsWriterUtilsTest {
     
     @Test
     public void canMakeFilterReportsFromAnalysis(){
-        SampleData sampleData = new SampleData();
-        sampleData.setVariantEvaluations(new ArrayList<VariantEvaluation>());
         Analysis analysis = new Analysis();
-        analysis.setSampleData(sampleData);
         analysis.addStep(new PassAllVariantEffectsFilter());
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis);
         

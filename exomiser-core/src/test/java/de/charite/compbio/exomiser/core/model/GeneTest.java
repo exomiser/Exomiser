@@ -15,10 +15,8 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import org.hamcrest.CoreMatchers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -261,12 +259,48 @@ public class GeneTest {
         variantEvaluation2.addFilterResult(FAIL_VARIANT_FILTER_RESULT);
         instance.addVariant(variantEvaluation2);
 
-        List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
-        passedVariantEvaluations.add(variantEvaluation1);
+        List<VariantEvaluation> passedVariantEvaluations = Arrays.asList(variantEvaluation1);
 
         assertThat(instance.getPassedVariantEvaluations(), equalTo(passedVariantEvaluations));
     }
 
+    @Test
+    public void testAddVariant_AfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addFilterResult(new PassFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        
+        instance.addVariant(variantEvaluation1);
+        
+        assertThat(variantEvaluation1.passedFilters(), is(true));
+        assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
+    }
+    
+    @Test
+    public void testAddVariant_AfterGeneIsFilteredAppliesFailGeneFilterResultsToVariant() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        instance.addFilterResult(new FailFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        
+        instance.addVariant(variantEvaluation1);
+        
+        assertThat(variantEvaluation1.passedFilters(), is(false));
+        assertThat(variantEvaluation1.passedFilter(PASS_VARIANT_FILTER_RESULT.getFilterType()), is(true));
+        assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
+    }
+    
+    @Test
+    public void testAddVariant_AfterGeneIsFilteredDoesNotApplyInheritanceFilterResultToVariant() {
+        variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
+        
+        instance.addFilterResult(new PassFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        instance.addFilterResult(new FailFilterResult(FilterType.INHERITANCE_FILTER));
+        
+        instance.addVariant(variantEvaluation1);
+        
+        assertThat(variantEvaluation1.passedFilters(), is(true));
+        assertThat(variantEvaluation1.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(true));
+        assertThat(variantEvaluation1.getFailedFilterTypes().contains(FilterType.INHERITANCE_FILTER), is(false));
+    }
+    
     @Test
     public void testCanAddAndRetrievePriorityScoreByPriorityType() {
         PriorityResult omimPriorityResult = new OMIMPriorityResult();
