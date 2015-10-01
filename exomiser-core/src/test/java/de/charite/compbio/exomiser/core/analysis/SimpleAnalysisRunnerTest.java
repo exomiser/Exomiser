@@ -199,8 +199,8 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER)));
-        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
+        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.QUALITY_FILTER, FilterType.INHERITANCE_FILTER)));
+//        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
             
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));
@@ -338,8 +338,8 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER, FilterType.INTERVAL_FILTER)));
-        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
+        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER, FilterType.INTERVAL_FILTER, FilterType.INHERITANCE_FILTER)));
+//        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
 
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));

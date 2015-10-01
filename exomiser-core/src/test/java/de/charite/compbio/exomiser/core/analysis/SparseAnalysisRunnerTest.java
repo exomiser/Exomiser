@@ -147,13 +147,14 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
+        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.INHERITANCE_FILTER)));
             
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
+        assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
     }
-    
+
     @Test
     public void testRunAnalysis_TwoVariantFiltersOnePrioritiserRecessiveInheritanceFilter_VariantsShouldContainOnlyOneFailedFilterResult() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
@@ -187,9 +188,8 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER)));
-        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
-            
+        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.INTERVAL_FILTER, FilterType.INHERITANCE_FILTER)));
+
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
@@ -325,8 +325,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(false));
-        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER)));
-        assertThat(rbm8Variant1.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
+        assertThat(rbm8Variant1.getFailedFilterTypes(), equalTo(EnumSet.of(FilterType.QUALITY_FILTER, FilterType.INHERITANCE_FILTER)));
 
         VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(1);
         assertThat(rbm8Variant2.passedFilters(), is(true));

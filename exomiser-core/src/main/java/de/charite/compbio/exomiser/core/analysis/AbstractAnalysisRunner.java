@@ -243,7 +243,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisSteps) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
-                analyseGeneInheritanceMode(genes, pedigree, modeOfInheritance);
+                analyseGeneCompatibilityWithInheritanceMode(genes, pedigree, modeOfInheritance);
                 inheritanceModesCalculated = true;
             }
             runStep(analysisStep, genes);
@@ -273,56 +273,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
     }
 
-    private void analyseGeneInheritanceMode(Collection<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
-        //TODO could this be a VariantDataProvider?
+    private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(pedigree, modeOfInheritance);
         logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
-        //check the inheritance mode for the genes
-        InheritanceCompatibilityChecker inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.
-                Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
-
-        genes.stream().filter(Gene::passedFilters).forEach(gene -> {
-            checkInheritanceCompatibilityOfVariants(gene, modeOfInheritance, inheritanceCompatibilityChecker);
-        });
-
-    }
-
-    private void checkInheritanceCompatibilityOfVariants(Gene gene, ModeOfInheritance modeOfInheritance, InheritanceCompatibilityChecker inheritanceCompatibilityChecker) {
-        if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
-            return;
-        }
-        Multimap<String, VariantEvaluation> geneVariants = ArrayListMultimap.create();
-        for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-            geneVariants.put(variantEvaluation.getVariantContext().toStringWithoutGenotypes(), variantEvaluation);
-        }
-        List<VariantContext> compatibleVariants = getVariantsCompatibleWithInheritanceMode(inheritanceCompatibilityChecker, gene);
-
-        if (!compatibleVariants.isEmpty()) {
-            logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
-            gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
-            for (VariantContext compatibleVariantContext : compatibleVariants) {
-                //using toStringWithoutGenotypes as the genotype string gets changed 
-                Collection<VariantEvaluation> variants = geneVariants.get(compatibleVariantContext.toStringWithoutGenotypes());
-                for (VariantEvaluation variant : variants) {
-                    variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
-                    logger.debug("{}: {}", variant.getInheritanceModes(), variant);
-                }
-            }
-        }
-    }
-
-    private List<VariantContext> getVariantsCompatibleWithInheritanceMode(InheritanceCompatibilityChecker inheritanceCompatibilityChecker, Gene gene) {
-        List<VariantContext> compatibleVariants = new ArrayList<>();
-        //This needs to be done using all the variants in the gene in order to be able to check for compound heterozygous variations
-        //otherwise it would be simpler to just call this on each variant in turn
-        try {
-            //Make sure only ONE variantContext is added if there are multiple alleles as there will be one VariantEvaluation per allele.
-            //Having multiple copies of a VariantContext might cause problems with the comp het calculations 
-            Set<VariantContext> geneVariants = gene.getVariantEvaluations().stream().map(VariantEvaluation::getVariantContext).collect(toSet());
-            compatibleVariants = inheritanceCompatibilityChecker.getCompatibleWith(new ArrayList<>(geneVariants));
-        } catch (InheritanceCompatibilityCheckerException ex) {
-            logger.error(null, ex);
-        }
-        return compatibleVariants;
+        inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
 
     private void scoreGenes(List<Gene> genes, ScoringMode scoreMode, ModeOfInheritance modeOfInheritance) {

@@ -21,15 +21,15 @@ import static java.util.stream.Collectors.toList;
 import java.util.stream.Stream;
 
 /**
- * This class represents a Gene in which {@link jannovar.exome.Variant Variant}
+ * This class represents a Gene in which {@link Variant}
  * objects have been identified by exome sequencing. Note that this class stores
  * information about observed variants and quality scores etc. In contrast, the
- * class {@link jannovar.reference.TranscriptModel TranscriptModel} stores
+ * class {@link de.charite.compbio.jannovar.reference.TranscriptModel} stores
  * information from UCSC about all genes, irrespective of whether we see a
  * variant in the gene by exome sequencing. Therefore, the program uses
- * information from {@link jannovar.reference.TranscriptModel TranscriptModel}
+ * information from {@link de.charite.compbio.jannovar.reference.TranscriptModel TranscriptModel}
  * object to annotate variants found by exome sequencing, and stores the results
- * of that annotation in {@link jannovar.exome.Variant Variant} objects. Objects
+ * of that annotation in {@link Variant Variant} objects. Objects
  * of this class have a list of Variant objects, one for each variant observed
  * in the exome. Additionally, the Gene objects get prioritized for their
  * biomedical relevance to the disease in question, and each such prioritization
@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  * disease genes. Additionally, filtering for autosomal recessive or dominant
  * patterns in the data is done with this class. This kind of prioritization is
  * done by classes that implement
- * {@link de.charite.compbio.exomiser.core.prioritisers.Priority Priority}.
+ * {@link de.charite.compbio.exomiser.core.prioritisers.Prioritiser Prioritiser}.
  * Recently, the ability to downweight genes with too many variants (now
  * hardcoded to 5) was added).
  *
@@ -72,7 +72,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     /**
      * A score representing the combined pathogenicity predictions for the
-     * {@link jannovar.exome.Variant Variant} objects associated with this gene.
+     * {@link Variant} objects associated with this gene.
      */
     private float filterScore = 0f;
     /**
@@ -103,8 +103,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     /**
-     * @return the number of {@link jannovar.exome.Variant Variant} objects for
-     * this gene.
+     * @return the number of {@link Variant} associated with this gene.
      */
     public int getNumberOfVariants() {
         return variantEvaluations.size();
@@ -189,7 +188,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * Note that currently, the gene symbols are associated with the Variants.
      * Probably it would be more natural to associate that with a field of this
      * Gene object. For now, leave it as be, and return "-" if this gene has no
-     * {@link jannovar.exome.Variant Variant} objects.
+     * {@link Variant} objects.
      *
      * @return the symbol associated with this gene (extracted from one of the
      * Variant objects)
@@ -287,10 +286,6 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     /**
      * Returns the priority score of this gene based on the relevance of the
      * gene as determined by a prioritiser.
-     * <p>
-     * Note that this method assumes we have calculate the scores, which is
-     * depending on the function {@link #calculateGeneAndVariantScores} having
-     * been called.
      *
      * @return a score that will be used to rank the gene.
      */
@@ -308,13 +303,6 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     /**
-     * Calculate the filter score of this gene based on the relevance of the
-     * gene (filterScore)
-     * <p>
-     * Note that this method assumes we have calculate the scores, which is
-     * depending on the function {@link #calculateGeneAndVariantScores} having
-     * been called.
-     *
      * @return a filter score that will be used to rank the gene.
      */
     public float getFilterScore() {
