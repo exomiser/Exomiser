@@ -10,6 +10,7 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.NcdsDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
+import de.charite.compbio.exomiser.core.dao.TadDao;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
@@ -25,21 +26,23 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import static de.charite.compbio.jannovar.annotation.VariantEffect.REGULATORY_REGION_VARIANT;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,14 +66,15 @@ public class VariantDataServiceImplTest {
     private CaddDao mockCaddDao;
     @Mock
     private RegulatoryFeatureDao mockRegulatoryFeatureDao;
+    @Mock
+    private TadDao mockTadDao;
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
     private static final PathogenicityData PATH_DATA = new PathogenicityData(new PolyPhenScore(1), new MutationTasterScore(1), new SiftScore(0));
     private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
     private static final PathogenicityData CADD_DATA = new PathogenicityData(new CaddScore(1));
-    private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
-
+    
     private VariantEvaluation variant;
     private static final VariantBuilder variantBuilder = new VariantBuilder(1, 1, "A", "T");
 
@@ -81,8 +85,7 @@ public class VariantDataServiceImplTest {
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION);
-
+        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION_VARIANT);
     }
 
     private static VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
@@ -200,14 +203,31 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsRegulatoryFeatureVariantEffectForIntergenicVariant() {
         variant = buildVariantOfType(VariantEffect.INTERGENIC_VARIANT);
         VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
-        assertThat(result, equalTo(REGULATORY_REGION));
+        assertThat(result, equalTo(REGULATORY_REGION_VARIANT));
     }
 
     @Test
     public void serviceReturnsRegulatoryFeaturelVariantEffectForUpstreamGeneVariant() {
         variant = buildVariantOfType(VariantEffect.UPSTREAM_GENE_VARIANT);
         VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
-        assertThat(result, equalTo(REGULATORY_REGION));
+        assertThat(result, equalTo(REGULATORY_REGION_VARIANT));
+    }
+    
+    @Test
+    public void serviceReturnsEmptyListForVariantNotInTad(){
+        Mockito.when(mockTadDao.getGenesInTad(variant)).thenReturn(Collections.emptyList());
+
+        List<String> genesFromTad = instance.getGenesInTad(variant);
+        assertThat(genesFromTad.isEmpty(), is(true));
+    }
+    
+    @Test
+    public void serviceReturnsEmptyListForVariantInTad(){
+        List<String> geneSymbols = Arrays.asList("GENE1","GENE2");
+        Mockito.when(mockTadDao.getGenesInTad(variant)).thenReturn(geneSymbols);
+
+        List<String> genesFromTad = instance.getGenesInTad(variant);
+        assertThat(genesFromTad, equalTo(geneSymbols));
     }
 
 }

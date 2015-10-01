@@ -12,7 +12,9 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,17 +31,21 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
     private final Map<Variant, VariantEffect> expectedVariantEffects;
-
+    private final Map<Variant, List<String>> expectedGeneSymbolsInTad;
+    
     public VariantDataServiceMock() {
         this.expectedFrequencyData = new HashMap<>();
         this.expectedPathogenicityData = new HashMap<>();
         this.expectedVariantEffects = new HashMap<>();
+        this.expectedGeneSymbolsInTad = new HashMap<>();
     }
 
-    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData, Map<Variant, VariantEffect> expectedVariantEffects) {
+    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData, Map<Variant, 
+            VariantEffect> expectedVariantEffects, Map<Variant, List<String>> expectedGeneSymbolsInTad) {
         this.expectedFrequencyData = expectedFrequencyData;
         this.expectedPathogenicityData = expectedPathogenicityData;
         this.expectedVariantEffects = expectedVariantEffects;
+        this.expectedGeneSymbolsInTad = expectedGeneSymbolsInTad;
     }
 
     /**
@@ -90,6 +96,11 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     @Override
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
         return expectedVariantEffects.getOrDefault(variant, variant.getVariantEffect());
+    }
+    
+    @Override
+    public List<String> getGenesInTad(Variant variant) {
+        return expectedGeneSymbolsInTad.getOrDefault(variant, new ArrayList<>());
     }
 
 }
