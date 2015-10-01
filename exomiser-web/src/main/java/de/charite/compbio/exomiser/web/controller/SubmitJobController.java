@@ -133,7 +133,7 @@ public class SubmitJobController {
 
         //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
         Analysis analysis = buildAnalysis(Paths.get(vcfFile.getOriginalFilename()), Paths.get(pedFile.getOriginalFilename()), diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
-        AnalysisRunner analysisRunner = analysisFactory.getPassOnlyAnalysisRunner();
+        AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunnerForMode(AnalysisMode.PASS_ONLY);
         analysisRunner.runAnalysis(analysis);
 
         buildResultsModel(model, analysis);
