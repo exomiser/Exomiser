@@ -25,6 +25,6 @@ public interface VariantDataService {
 
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
 
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant, Map<String, Gene> allGenes);
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant);
         
 }

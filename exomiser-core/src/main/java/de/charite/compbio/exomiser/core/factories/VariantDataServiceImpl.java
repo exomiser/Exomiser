@@ -116,9 +116,9 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
     
     @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant, Map<String, Gene> allGenes) {
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
         if (variant.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variant.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
-            return regulatoryFeatureDao.getRegulatoryFeatureData(variant, allGenes);
+            return regulatoryFeatureDao.getRegulatoryFeatureData(variant);
         }
         return variant.getVariantEffect();
     }

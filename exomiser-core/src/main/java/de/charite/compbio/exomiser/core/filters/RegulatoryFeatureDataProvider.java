@@ -16,20 +16,14 @@ import java.util.Map;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class RegulatoryFeatureDataProvider extends AbstractFilterDataProvider {
-    
-    private Map<String, Gene> allGenes;
-    
+        
     public RegulatoryFeatureDataProvider(VariantDataService variantDataService, VariantFilter variantFilter) {
         super(variantDataService, variantFilter);
     }
     
-    public void setAllGenes(Map<String, Gene> allGenes) {
-        this.allGenes = allGenes;
-    }
-    
     @Override
     public void provideVariantData(VariantEvaluation variantEvaluation) {
-        VariantEffect variantEffect = variantDataService.getVariantRegulatoryFeatureData(variantEvaluation, allGenes);
+        VariantEffect variantEffect = variantDataService.getVariantRegulatoryFeatureData(variantEvaluation);
         variantEvaluation.setVariantEffect(variantEffect);
     }
 
