@@ -15,40 +15,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- *
+ * This is the main entry point for analysing data using the Exomiser. An {@link analysis.Analysis} 
+ * should be build using either a {@link analysis.Settings} and the 
+ * {@link analysis.SettingsParser} or with an {@link analysis.AnalysisParser}
+ * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
 public class Exomiser {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
-    
+
     private final AnalysisFactory analysisFactory;
 
     @Autowired
     public Exomiser(AnalysisFactory analysisFactory) {
         this.analysisFactory = analysisFactory;
     }
-    
+
     public void run(Analysis analysis) {
-        AnalysisRunner runner = makeAnalysisRunner(analysis);
+        AnalysisMode analysisMode = analysis.getAnalysisMode();
+        logger.info("Running analysis with mode: {}", analysisMode);
+        AnalysisRunner runner = analysisFactory.getAnalysisRunnerForMode(analysisMode);
         runner.runAnalysis(analysis);
     }
 
-    private AnalysisRunner makeAnalysisRunner(Analysis analysis) {
-        AnalysisMode analysisMode = analysis.getAnalysisMode();
-        logger.info("Running analysis with mode: {}", analysisMode);
-        switch (analysisMode) {
-            case FULL:
-                return analysisFactory.getFullAnalysisRunner();
-            case SPARSE:
-                return analysisFactory.getSparseAnalysisRunner();
-            case PASS_ONLY:
-                return analysisFactory.getPassOnlyAnalysisRunner();
-            default:
-                //this guy takes up the least RAM
-                return analysisFactory.getPassOnlyAnalysisRunner();
-        }
-    }
-    
 }

@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.analysis;
 
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
 import de.charite.compbio.exomiser.core.filters.Filter;
@@ -36,9 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Main class for analysing variant data. This will orchestrate the set-up of
- * Filters and Priotitisers according to the supplied settings and then apply
- * them to the data.
+ * Will set-up an {@link Exomiser} exome {@link Analysis} according to the original 
+ * Exomiser protocol. If you wish to analyse a whole genome you will want to set 
+ * up an {@link Analysis} either programmatically with an {@link AnalysisFactory}
+ * or via a YAML input file through the {@link AnalysisParser}
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */

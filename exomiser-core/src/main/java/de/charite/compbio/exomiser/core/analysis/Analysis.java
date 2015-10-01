@@ -21,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * This class is analogous to the {@link Settings} class, although the key difference is that here the {@see #addStep}
+ * 
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class Analysis {

@@ -8,11 +8,11 @@ package de.charite.compbio.exomiser.core.analysis;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +21,9 @@ import java.util.List;
  * pretty much all that's needed to run an analysis with.
  * 
  * @see Exomiser
- *
+ * @see AnalysisMode
+ * 
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class AnalysisFactory {
@@ -36,97 +38,107 @@ public class AnalysisFactory {
         this.priorityFactory = priorityFactory;
     }
 
-    public SimpleAnalysisRunner getFullAnalysisRunner() {
-        return new SimpleAnalysisRunner(sampleDataFactory, variantDataService);
+    public AnalysisRunner getAnalysisRunnerForMode(AnalysisMode analysisMode) {
+        switch (analysisMode) {
+            case FULL:
+                return new SimpleAnalysisRunner(sampleDataFactory, variantDataService);
+            case SPARSE:
+                return new SparseAnalysisRunner(sampleDataFactory, variantDataService);
+            case PASS_ONLY:
+                return passOnlyAnalysisRunner();
+            default:
+                //this guy takes up the least RAM
+                return passOnlyAnalysisRunner();
+        }
     }
-
-    public SparseAnalysisRunner getSparseAnalysisRunner() {
-        return new SparseAnalysisRunner(sampleDataFactory, variantDataService);
-    }
-
-    public PassOnlyAnalysisRunner getPassOnlyAnalysisRunner() {
+    
+    private AnalysisRunner passOnlyAnalysisRunner() {
         return new PassOnlyAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
-    //TODO: this neeeds to me make public, but only once the AnalysisBuilder can also build Filter
-    AnalysisBuilder getAnalysisBuilder() {
-        return new AnalysisBuilder(priorityFactory);
+    public AnalysisBuilder getAnalysisBuilder(Path vcfPath, List<String> hpoIds) {
+        return new AnalysisBuilder(priorityFactory, vcfPath, hpoIds);
     }
 
-    static class AnalysisBuilder {
+    public static class AnalysisBuilder {
 
         private final PriorityFactory priorityFactory;
+        private final Analysis analysis;
 
         private List<String> hpoIds = new ArrayList<>();
-        private SampleData sampleData;
-        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
-        private ScoringMode scoringMode = ScoringMode.RAW_SCORE;
-        private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
-        private List<AnalysisStep> analysisSteps = new ArrayList<>();
+        private final List<AnalysisStep> analysisSteps = new ArrayList<>();
 
-        private AnalysisBuilder(PriorityFactory priorityFactory) {
+        private AnalysisBuilder(PriorityFactory priorityFactory, Path vcfPath, List<String> hpoIds) {
             this.priorityFactory = priorityFactory;
+            this.hpoIds = hpoIds;
+            analysis = new Analysis(vcfPath);
+            analysis.setHpoIds(hpoIds);
         }
 
         public Analysis build() {
-            Analysis analysis = new Analysis();
-//            analysis.setHpoIds(hpoIds);
+            analysis.setFrequencySources(null);
+            analysis.setPathogenicitySources(null);
             analysis.addAllSteps(analysisSteps);
             return analysis;
         }
 
+        public AnalysisBuilder pedPath(Path pedPath) {
+            analysis.setPedPath(pedPath);
+            return this;
+        }
+
         public AnalysisBuilder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
-            this.modeOfInheritance = modeOfInheritance;
+            analysis.setModeOfInheritance(modeOfInheritance);
             return this;
         }
 
         public AnalysisBuilder scoringMode(ScoringMode scoreMode) {
-            this.scoringMode = scoreMode;
+            analysis.setScoringMode(scoreMode);
             return this;
         }
 
         public AnalysisBuilder analysisMode(AnalysisMode analysisMode) {
-            this.analysisMode = analysisMode;
+            analysis.setAnalysisMode(analysisMode);
             return this;
         }
 
         public AnalysisBuilder hpoIds(List<String> hpoIds) {
-            this.hpoIds = hpoIds;
+            analysis.setHpoIds(hpoIds);
             return this;
         }
         
         public AnalysisBuilder addOmimPrioritiser() {
-            analysisSteps.add(priorityFactory.makeOmimPrioritiser());
+            analysis.addStep(priorityFactory.makeOmimPrioritiser());
             return this;
         }
 
         public AnalysisBuilder addPhivePrioritiser() {
-            analysisSteps.add(priorityFactory.makePhivePrioritiser(hpoIds));
+            analysis.addStep(priorityFactory.makePhivePrioritiser(hpoIds));
             return this;
         }
 
         public AnalysisBuilder addHiPhivePrioritiser() {
-            analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
+            analysis.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
             return this;
         }
 
         public AnalysisBuilder addHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
-            analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
+            analysis.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
             return this;
         }
 
         public AnalysisBuilder addPhenixPrioritiser() {
-            analysisSteps.add(priorityFactory.makePhenixPrioritiser(hpoIds));
+            analysis.addStep(priorityFactory.makePhenixPrioritiser(hpoIds));
             return this;
         }
 
         public AnalysisBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes) {
-            analysisSteps.add(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
+            analysis.addStep(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
             return this;
         }
 
         public AnalysisBuilder addAnalysisStep(AnalysisStep analysisStep) {
-            analysisSteps.add(analysisStep);
+            analysis.addStep(analysisStep);
             return this;
         }
     }

@@ -11,11 +11,16 @@ import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
+import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
@@ -46,8 +51,8 @@ public class AnalysisFactoryTest {
         hpoIds = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055");
         steps = new ArrayList<>();
         
-        analysisBuilder = instance.getAnalysisBuilder();
-        analysisBuilder.hpoIds(hpoIds);
+        Path vcfPath = Paths.get("test.vcf");
+        analysisBuilder = instance.getAnalysisBuilder(vcfPath, hpoIds);
     }
         
     private List<AnalysisStep> analysisSteps() {
@@ -56,29 +61,30 @@ public class AnalysisFactoryTest {
     
     @Test
     public void testCanMakeFullAnalysisRunner() {
-        SimpleAnalysisRunner analysisRunner = instance.getFullAnalysisRunner();
-        assertThat(analysisRunner, notNullValue());
+        AnalysisRunner analysisRunner = instance.getAnalysisRunnerForMode(AnalysisMode.FULL);
+        assertThat(SimpleAnalysisRunner.class.isInstance(analysisRunner), is(true));
     }
 
     @Test
     public void testCanMakeSparseAnalysisRunner() {
-        SparseAnalysisRunner analysisRunner = instance.getSparseAnalysisRunner();
-        assertThat(analysisRunner, notNullValue());
+        AnalysisRunner analysisRunner = instance.getAnalysisRunnerForMode(AnalysisMode.SPARSE);
+        assertThat(SparseAnalysisRunner.class.isInstance(analysisRunner), is(true));
     }
 
     @Test
     public void testCanMakePassOnlyAnalysisRunner() {
-        PassOnlyAnalysisRunner analysisRunner = instance.getPassOnlyAnalysisRunner();
-        assertThat(analysisRunner, notNullValue());
+        AnalysisRunner analysisRunner = instance.getAnalysisRunnerForMode(AnalysisMode.PASS_ONLY);
+        assertThat(PassOnlyAnalysisRunner.class.isInstance(analysisRunner), is(true));
     }
     
+//TODO other tests :(
     @Test
     public void testCanSpecifyOmimPrioritiser() {
-        steps.add(priorityFactory.makeOmimPrioritiser());
+        Prioritiser prioritiser = priorityFactory.makeOmimPrioritiser();
         
         analysisBuilder.addOmimPrioritiser();
         
-        assertThat(analysisSteps(), equalTo(steps));
+        assertThat(analysisSteps(), hasItem(prioritiser));
     }
 
     @Test
