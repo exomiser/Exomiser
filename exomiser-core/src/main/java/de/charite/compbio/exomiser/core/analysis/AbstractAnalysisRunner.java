@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.exomiser.core.analysis.util.TadGeneReassigner;
+import de.charite.compbio.exomiser.core.analysis.util.GeneReassigner;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.Annotation;
@@ -49,6 +49,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
     private final PrioritiserRunner prioritiserRunner;
+    private PriorityType mainPriorityType;
     
 
     public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
@@ -85,8 +86,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
                 
-                TadGeneReassigner tadGeneReassigner = new TadGeneReassigner((variantDataService));
-                tadGeneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
+                if (mainPriorityType != null){
+                    GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
+                    geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
+                    geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluations, allGenes);
+                }
                 
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
@@ -286,7 +290,9 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         if (Prioritiser.class
                 .isInstance(analysisStep)) {
             Prioritiser prioritiser = (Prioritiser) analysisStep;
-
+            if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY){
+                mainPriorityType = prioritiser.getPriorityType();
+            }
             logger.info(
                     "Running Prioritiser: {}", prioritiser);
             prioritiserRunner.run(prioritiser, genes);
