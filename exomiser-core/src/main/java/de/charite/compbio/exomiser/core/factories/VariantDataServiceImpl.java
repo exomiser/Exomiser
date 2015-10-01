@@ -11,7 +11,8 @@ import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.NcdsDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
-import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.dao.TadDao;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -22,17 +23,14 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -45,6 +43,8 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Autowired
     private FrequencyDao frequencyDao;
+    @Autowired
+    private TadDao tadDao;
     @Autowired
     private PathogenicityDao pathogenicityDao;
     @Resource(name = "caddDao")
@@ -123,4 +123,9 @@ public class VariantDataServiceImpl implements VariantDataService {
         return variant.getVariantEffect();
     }
 
+    @Override
+    public List<String> getGenesInTad(Variant variant) {
+        return tadDao.getGenesInTad(variant);
+    }
+    
 }
