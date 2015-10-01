@@ -41,29 +41,15 @@ public class TadDao {
     @Autowired
     private DataSource dataSource;
 
-    @Cacheable(value = "tad", key = "#variant.chromosomalVariant")
-    public List<String> reassignGeneToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation) {
-        List<String> genesInTad = new ArrayList<>();;
+    public List<String> getGenesInTad(Variant variant) {
+        List<String> genesInTad = new ArrayList<>();
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = createPreparedStatement(connection, variantEvaluation);
+                PreparedStatement preparedStatement = createPreparedStatement(connection, variant);
                 ResultSet rs = preparedStatement.executeQuery()) {
-            //float score = 0;
                     while (rs.next()) {
-                        //int entrezId = rs.getInt(1);
                         String geneSymbol = rs.getString(1);
                         genesInTad.add(geneSymbol);
-//                        Gene gene = allGenes.get(geneSymbol);
-//                        float geneScore = gene.getPriorityResult(PriorityType.HIPHIVE_PRIORITY).getScore();
-//                        logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
-//                        if (geneScore > score) {
-//                            logger.info("Changing gene to " + geneSymbol);
-//                            variantEvaluation.setEntrezGeneId(entrezId);
-//                            variantEvaluation.setGeneSymbol(geneSymbol);
-//                            List<Annotation> alist = Collections.emptyList();;
-//                            variantEvaluation.setAnnotations(alist);
-//                            score = geneScore;
-//                        }
                     }
         } catch (SQLException e) {
             logger.error("Error executing regulatory feature query: ", e);
