@@ -33,7 +33,7 @@ public class VariantDataServiceStub implements VariantDataService {
     }
 
     @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant, Map<String,Gene> genes) {
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
         return variant.getVariantEffect();
     }
 

@@ -88,7 +88,7 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     }
 
     @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant, Map<String, Gene> allGenes) {
+    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
         return expectedVariantEffects.getOrDefault(variant, variant.getVariantEffect());
     }
 

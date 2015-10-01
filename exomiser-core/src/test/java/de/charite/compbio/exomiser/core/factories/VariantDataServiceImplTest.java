@@ -81,7 +81,7 @@ public class VariantDataServiceImplTest {
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant, allGenes)).thenReturn(REGULATORY_REGION);
+        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION);
 
     }
 
@@ -192,24 +192,21 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsOriginalVariantEffectForCodingVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant, allGenes);
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
         assertThat(result, equalTo(VariantEffect.MISSENSE_VARIANT));
     }
 
     @Test
     public void serviceReturnsRegulatoryFeatureVariantEffectForIntergenicVariant() {
         variant = buildVariantOfType(VariantEffect.INTERGENIC_VARIANT);
-        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant, allGenes);
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
         assertThat(result, equalTo(REGULATORY_REGION));
     }
 
     @Test
     public void serviceReturnsRegulatoryFeaturelVariantEffectForUpstreamGeneVariant() {
         variant = buildVariantOfType(VariantEffect.UPSTREAM_GENE_VARIANT);
-        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant, allGenes);
+        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
         assertThat(result, equalTo(REGULATORY_REGION));
     }
 
