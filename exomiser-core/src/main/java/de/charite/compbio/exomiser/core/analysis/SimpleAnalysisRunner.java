@@ -6,6 +6,7 @@
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.*;
 
 /**
@@ -14,8 +15,8 @@ import de.charite.compbio.exomiser.core.filters.*;
  */
 class SimpleAnalysisRunner extends AbstractAnalysisRunner {
 
-    SimpleAnalysisRunner(SampleDataFactory sampleDataFactory) {
-        super(sampleDataFactory, new SimpleVariantFilterRunner(), new SimpleGeneFilterRunner());
+    SimpleAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
+        super(sampleDataFactory, variantDataService, new SimpleVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
 }

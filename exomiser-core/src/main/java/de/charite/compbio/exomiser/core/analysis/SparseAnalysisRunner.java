@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
@@ -15,8 +16,8 @@ import java.util.function.Predicate;
  */
 class SparseAnalysisRunner extends AbstractAnalysisRunner {
 
-    SparseAnalysisRunner(SampleDataFactory sampleDataFactory) {
-        super(sampleDataFactory, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
+    SparseAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
+        super(sampleDataFactory, variantDataService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
@@ -19,8 +20,8 @@ import static java.util.stream.Collectors.toList;
  */
 class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
-    PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory) {
-        super(sampleDataFactory, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
+    PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
+        super(sampleDataFactory, variantDataService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override

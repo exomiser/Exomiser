@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -41,12 +42,14 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
     private final SampleDataFactory sampleDataFactory;
+    private final VariantDataService variantDataService;
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
     private final PrioritiserRunner prioritiserRunner;
 
-    public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+    public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.sampleDataFactory = sampleDataFactory;
+        this.variantDataService = variantDataService;
         this.variantFilterRunner = variantFilterRunner;
         this.geneFilterRunner = geneFilterRunner;
         this.prioritiserRunner = new PrioritiserRunner();

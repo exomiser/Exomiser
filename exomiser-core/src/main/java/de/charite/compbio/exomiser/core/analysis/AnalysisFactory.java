@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.analysis;
 
+import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -16,8 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * High-level factory for creating an Analysis and AnalysisRunner. This is
- * pretty much all that's needed to run an analysis.
+ * High-level factory for creating an {@link Analysis} and {@link AnalysisRunner}. This is
+ * pretty much all that's needed to run an analysis with.
+ * 
+ * @see Exomiser
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -34,22 +37,23 @@ public class AnalysisFactory {
     }
 
     public SimpleAnalysisRunner getFullAnalysisRunner() {
-        return new SimpleAnalysisRunner(sampleDataFactory);
+        return new SimpleAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
     public SparseAnalysisRunner getSparseAnalysisRunner() {
-        return new SparseAnalysisRunner(sampleDataFactory);
+        return new SparseAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
     public PassOnlyAnalysisRunner getPassOnlyAnalysisRunner() {
-        return new PassOnlyAnalysisRunner(sampleDataFactory);
+        return new PassOnlyAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
-    public AnalysisBuilder getAnalysisBuilder() {
+    //TODO: this neeeds to me make public, but only once the AnalysisBuilder can also build Filter
+    AnalysisBuilder getAnalysisBuilder() {
         return new AnalysisBuilder(priorityFactory);
     }
 
-    public static class AnalysisBuilder {
+    static class AnalysisBuilder {
 
         private final PriorityFactory priorityFactory;
 
@@ -88,11 +92,6 @@ public class AnalysisFactory {
 
         public AnalysisBuilder hpoIds(List<String> hpoIds) {
             this.hpoIds = hpoIds;
-            return this;
-        }
-        
-        public AnalysisBuilder addStep(AnalysisStep step) {
-            this.analysisSteps.add(step);
             return this;
         }
         
