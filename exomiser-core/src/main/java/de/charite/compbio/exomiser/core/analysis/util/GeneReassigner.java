@@ -38,7 +38,7 @@ public class GeneReassigner {
     public void reassignGeneToMostPhenotypicallySimilarGeneInTad(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {//Should this TAD check be only run for intergenic/up/downstream variants in reg features table? 
-                logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variantEvaluation.getGeneSymbol() + ", to best pheno gene in TAD");
+                //logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variantEvaluation.getGeneSymbol() + ", to best pheno gene in TAD");
                 float score = 0;
                 List<String> genesInTad = variantDataService.getGenesInTad(variantEvaluation);
                 for (String geneSymbol : genesInTad) {
@@ -46,9 +46,9 @@ public class GeneReassigner {
                     if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
                         int entrezId = gene.getEntrezGeneID();
                         float geneScore = gene.getPriorityResult(priorityType).getScore();
-                        logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
+                        //logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
                         if (geneScore > score) {
-                            logger.info("Changing gene to " + geneSymbol);
+                            //logger.info("Changing gene to " + geneSymbol);
                             variantEvaluation.setEntrezGeneId(entrezId);
                             variantEvaluation.setGeneSymbol(geneSymbol);
                             List<Annotation> alist = Collections.emptyList();;
@@ -68,6 +68,7 @@ public class GeneReassigner {
             Set<String> geneSymbols = new HashSet<>();
             for (Annotation a : annotations) {
                 String geneSymbol = a.getGeneSymbol();
+                //logger.info("Annotation to " + a.getGeneSymbol() + " has variantEffect " + a.getMostPathogenicVarType().toString());
                 // hack to deal with fusion protein Jannovar nonsense
                 String[] separateGeneSymbols = geneSymbol.split("-");
                 for (String separateGeneSymbol : separateGeneSymbols) {
@@ -79,10 +80,11 @@ public class GeneReassigner {
                 if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
                     int entrezId = gene.getEntrezGeneID();
                     float geneScore = gene.getPriorityResult(priorityType).getScore();
-                    logger.info("Gene " + geneSymbol + " in possible annotations for variant " + variantEvaluation.getChromosomalVariant() + "has score " + geneScore);
+                    //logger.info("Gene " + geneSymbol + " in possible annotations for variant " + variantEvaluation.getChromosomalVariant() + "has score " + geneScore);
                     if (geneScore > score) {
-                        logger.info("!!!!! Want to change gene from " + variantEvaluation.getGeneSymbol() + " to " + geneSymbol + " as has the better phenotype score");
+                        //logger.info("!!!!! Want to change gene from " + variantEvaluation.getGeneSymbol() + " to " + geneSymbol + " as has the better phenotype score");
                         // Doing the below will fix some of the Jannovar assignment issues seen in our benchmarking but currently breaks the tests as it reassigns one of the test variants! Not sure what to do
+                        // Also we may be reassigning from a good MISSENSE variant in one gene to something dodgy in another - needs some more thought
                         //variantEvaluation.setEntrezGeneId(entrezId);
                         //variantEvaluation.setGeneSymbol(geneSymbol);
                         score = geneScore;

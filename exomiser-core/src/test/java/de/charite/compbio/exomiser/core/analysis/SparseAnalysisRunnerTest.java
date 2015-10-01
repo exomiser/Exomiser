@@ -256,7 +256,8 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         SampleData sampleData = analysis.getSampleData();
         printResults(sampleData);
-        // fails with my new code reassigns 1:g.145510000G>A from GNRHR2 to RBM8A as both are annotated and RBM8A scores better
+        // fails with my new code as it reassigns 1:g.145510000G>A from GNRHR2 to RBM8A as both are annotated and RBM8A scores better due to above code
+        // note that the GNRH2 is actually a missense variant and RBM8A is a 3UTR variant so prob not that sensible!
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
         Map<String, Gene> results = makeResults(sampleData.getGenes());
