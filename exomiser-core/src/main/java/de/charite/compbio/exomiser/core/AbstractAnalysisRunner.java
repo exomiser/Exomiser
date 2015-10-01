@@ -10,7 +10,6 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PrioritiserRunner;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.exomiser.core.util.GeneScorer;
-import de.charite.compbio.exomiser.core.util.InheritanceModeAnalyser;
 import de.charite.compbio.exomiser.core.util.RankBasedGeneScorer;
 import de.charite.compbio.exomiser.core.util.RawScoreGeneScorer;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
@@ -23,6 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import de.charite.compbio.exomiser.core.dao.TadDao;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -32,6 +35,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toConcurrentMap;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -44,7 +48,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
     private final PrioritiserRunner prioritiserRunner;
-
+    
+    @Autowired
+    private TadDao tadDao;
+    
     public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.sampleDataFactory = sampleDataFactory;
         this.variantFilterRunner = variantFilterRunner;
@@ -56,7 +63,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     public void runAnalysis(Analysis analysis) {
 
         final SampleData sampleData = makeSampleDataWithoutGenesOrVariants(analysis);
-        
+
         logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
         long startAnalysisTimeMillis = System.currentTimeMillis();
 
@@ -78,12 +85,12 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
                 // do my TAD stuff
-                
+                reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
                 // assign all genes to variants
-//                        Gene gene = genes.get(variantEvaluation.getGeneSymbol());
-//                        gene.addVariant(variantEvaluation);
-                    
-                
+                for (VariantEvaluation variantEvaluation : variantEvaluations) {
+                    Gene gene = allGenes.get(variantEvaluation.getGeneSymbol());
+                    gene.addVariant(variantEvaluation);
+                }
                 variantsLoaded = true;
             } else {
                 runSteps(analysisGroup, new ArrayList<>(allGenes.values()), pedigree, analysis.getModeOfInheritance());
@@ -93,6 +100,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         //the results might be a bit meaningless.
         if (!variantsLoaded) {
             variantEvaluations = loadVariants(vcfPath, allGenes, variantEvaluation -> true, variantEvaluation -> true);
+            // assign all genes to variants
+            for (VariantEvaluation variantEvaluation : variantEvaluations) {
+                Gene gene = allGenes.get(variantEvaluation.getGeneSymbol());
+                gene.addVariant(variantEvaluation);
+            }
             //TODO: add the gene FilterResults to each variant in the gene too? Required for the VCF file only?
         }
 
@@ -109,15 +121,38 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Finished analysis in {} secs", analysisTimeSecs);
     }
 
-    private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
-        Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes);
-        List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);        
-        // identify which of the variantFiltes is a RegulatoryFeatureDataProvider and set allGenes on it so the RegulatoryFeaturesDao and set the gene to the best pheno hit
-        for (VariantFilter variantFilter : variantFilters) {
-            if (RegulatoryFeatureDataProvider.class.isInstance(variantFilter)){
-                ((RegulatoryFeatureDataProvider) variantFilter).setAllGenes(allGenes);
+    private void reassignGeneToMostPhenotypicallySimilarGeneInTad(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
+                /* TODO
+                 1. Need to pass correct PriorityType through as well
+                 2. Proper checks for null genes etc
+                 3. Should this TAD check be only run for intergenic/up/downstream variants in reg features table? 
+                 */
+                logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variantEvaluation.getGeneSymbol() + ", to best pheno gene in TAD");
+                    float score = 0;
+                    List<String> genesInTad = tadDao.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
+                    for (String geneSymbol: genesInTad) { 
+                        Gene gene = allGenes.get(geneSymbol);
+                        int entrezId = gene.getEntrezGeneID();
+                        float geneScore = gene.getPriorityResult(PriorityType.HIPHIVE_PRIORITY).getScore();
+                        logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
+                        if (geneScore > score) {
+                            logger.info("Changing gene to " + geneSymbol);
+                            variantEvaluation.setEntrezGeneId(entrezId);
+                            variantEvaluation.setGeneSymbol(geneSymbol);
+                            List<Annotation> alist = Collections.emptyList();;
+                            variantEvaluation.setAnnotations(alist);
+                            score = geneScore;
+                        }
+                    }
             }
         }
+    }
+
+    private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
+        Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes);
+        List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
         Predicate<VariantEvaluation> variantFilterPredicate = variantFilterPredicate(variantFilters);
 
         return loadVariants(vcfPath, allGenes, geneFilterPredicate, variantFilterPredicate);
@@ -220,11 +255,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                         }
                         return variantEvaluation;
                     })
-                    .map(variantEvaluation -> {
-                        Gene gene = genes.get(variantEvaluation.getGeneSymbol());
-                        gene.addVariant(variantEvaluation);
-                        return variantEvaluation;
-                    })
+                    //                    .map(variantEvaluation -> {
+                    //                        Gene gene = genes.get(variantEvaluation.getGeneSymbol());
+                    //                        gene.addVariant(variantEvaluation);
+                    //                        return variantEvaluation;
+                    //                    })
                     .collect(toList());
         }
         logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
@@ -269,16 +304,25 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 variantFilterRunner.run(filter, gene.getVariantEvaluations());
             }
             return;
+
         }
-        if (GeneFilter.class.isInstance(analysisStep)) {
+        if (GeneFilter.class
+                .isInstance(analysisStep)) {
             GeneFilter filter = (GeneFilter) analysisStep;
-            logger.info("Running GeneFilter: {}", filter);
+
+            logger.info(
+                    "Running GeneFilter: {}", filter);
             geneFilterRunner.run(filter, genes);
+
             return;
         }
-        if (Prioritiser.class.isInstance(analysisStep)) {
+
+        if (Prioritiser.class
+                .isInstance(analysisStep)) {
             Prioritiser prioritiser = (Prioritiser) analysisStep;
-            logger.info("Running Prioritiser: {}", prioritiser);
+
+            logger.info(
+                    "Running Prioritiser: {}", prioritiser);
             prioritiserRunner.run(prioritiser, genes);
         }
     }
@@ -287,8 +331,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         //TODO could this be a VariantDataProvider?
         logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
         //check the inheritance mode for the genes
-        InheritanceCompatibilityChecker inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.
-                Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
+        InheritanceCompatibilityChecker inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
 
         genes.stream().filter(Gene::passedFilters).forEach(gene -> {
             checkInheritanceCompatibilityOfVariants(gene, modeOfInheritance, inheritanceCompatibilityChecker);

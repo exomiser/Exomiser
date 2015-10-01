@@ -273,6 +273,11 @@ public class MainConfig {
     }
 
     @Bean
+    public TadDao tadDao() {
+        return new TadDao();
+    }
+    
+    @Bean
     public PriorityFactoryImpl priorityFactory() {
         return new PriorityFactoryImpl();
     }
