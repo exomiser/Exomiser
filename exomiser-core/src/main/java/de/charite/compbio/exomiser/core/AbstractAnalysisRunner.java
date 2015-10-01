@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import de.charite.compbio.exomiser.core.dao.TadDao;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
@@ -48,15 +49,15 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
     private final PrioritiserRunner prioritiserRunner;
+    private final VariantDataService variantDataService; 
     
-    @Autowired
-    private TadDao tadDao;
     
-    public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+    public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory,  VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.sampleDataFactory = sampleDataFactory;
         this.variantFilterRunner = variantFilterRunner;
         this.geneFilterRunner = geneFilterRunner;
         this.prioritiserRunner = new PrioritiserRunner();
+        this.variantDataService = variantDataService;
     }
 
     @Override
@@ -85,6 +86,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
                 // do my TAD stuff
+                // TODO
+                // create new class X, possibly in analysis.utils to do below
+                // X blah = new X(variantDataService);
+                // X.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
+                
                 reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
                 // assign all genes to variants
                 for (VariantEvaluation variantEvaluation : variantEvaluations) {
@@ -131,7 +137,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                  */
                 logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variantEvaluation.getGeneSymbol() + ", to best pheno gene in TAD");
                     float score = 0;
-                    List<String> genesInTad = tadDao.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
+                    List<String> genesInTad = variantDataService.getGenesInTad(variantEvaluation);
                     for (String geneSymbol: genesInTad) { 
                         Gene gene = allGenes.get(geneSymbol);
                         int entrezId = gene.getEntrezGeneID();
