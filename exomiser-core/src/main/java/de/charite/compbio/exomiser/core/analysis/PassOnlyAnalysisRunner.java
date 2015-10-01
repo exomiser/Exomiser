@@ -7,8 +7,6 @@ import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import java.util.Iterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -19,9 +17,9 @@ import static java.util.stream.Collectors.toList;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
+class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
-    public PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory) {
+    PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory) {
         super(sampleDataFactory, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 

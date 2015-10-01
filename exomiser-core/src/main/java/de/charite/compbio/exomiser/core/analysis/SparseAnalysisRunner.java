@@ -5,8 +5,6 @@ import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -15,9 +13,9 @@ import java.util.function.Predicate;
  * Analysis runner
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SparseAnalysisRunner extends AbstractAnalysisRunner {
+class SparseAnalysisRunner extends AbstractAnalysisRunner {
 
-    public SparseAnalysisRunner(SampleDataFactory sampleDataFactory) {
+    SparseAnalysisRunner(SampleDataFactory sampleDataFactory) {
         super(sampleDataFactory, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
