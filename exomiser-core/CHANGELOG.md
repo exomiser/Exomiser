@@ -11,6 +11,7 @@ Now requires Java 8 or higher to run.
     - An Analysis can be specified either programmatically, or via YAML and read by the AnalysisParser
     - An Analysis can run in FULL, SPARSE or a new PASS_ONLY mode. The latter is much more memory efficient as it will
     only keep those variants/genes which passed all the required filters.
+    - and a LOT more under the hood changes and clean-ups.
 
 ## 6.0.0 2015-01-12
 - API changes:
