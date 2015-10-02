@@ -1,6 +1,6 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.AnalysisStep;
+import de.charite.compbio.exomiser.core.analysis.AnalysisStep;
 import java.util.List;
 
 import de.charite.compbio.exomiser.core.model.Gene;

@@ -5,7 +5,8 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -81,8 +82,7 @@ public class TsvVariantResultsWriterTest {
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
         
-        analysis = new Analysis();
-        analysis.setSampleData(sampleData);
+        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
     }
 
     private void makePassVariant(TestVariantFactory varFactory) {

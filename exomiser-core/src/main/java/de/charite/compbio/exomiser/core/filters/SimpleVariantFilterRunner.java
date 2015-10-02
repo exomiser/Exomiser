@@ -59,6 +59,7 @@ public class SimpleVariantFilterRunner implements VariantFilterRunner {
         }
     }
 
+    @Override
     public FilterResult run(Filter filter, VariantEvaluation variantEvaluation) {
         return runFilterAndAddResult(filter, variantEvaluation);
     }

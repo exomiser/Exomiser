@@ -6,7 +6,7 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.Analysis;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
 
 /**
  * 

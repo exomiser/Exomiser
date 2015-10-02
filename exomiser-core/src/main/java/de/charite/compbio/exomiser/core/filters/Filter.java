@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.AnalysisStep;
+import de.charite.compbio.exomiser.core.analysis.AnalysisStep;
 import de.charite.compbio.exomiser.core.model.Filterable;
 
 /**
