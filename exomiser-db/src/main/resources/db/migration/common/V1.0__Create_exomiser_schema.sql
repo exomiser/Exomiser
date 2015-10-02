@@ -41,6 +41,15 @@ CREATE TABLE regulatory_features (
     tissue character varying(200)
 );
 
+DROP TABLE IF EXISTS tad;
+
+create table tad (
+    chromosome smallint NOT NULL, 
+    start integer not null, 
+    "end" integer not null, 
+    entrezID INTEGER not null, 
+    symbol varchar(24)
+);
 
 --
 -- TOC entry 173 (class 1259 OID 16445)
@@ -400,6 +409,8 @@ CREATE INDEX e2 ON regulatory_features (chromosome, start, "end");
 CREATE INDEX e5 ON regulatory_features (chromosome);
 CREATE INDEX e6 ON regulatory_features (start);
 CREATE INDEX e7 ON regulatory_features ("end");
+
+create index tad1 on tad (chromosome,start,"end");
 
 
 
