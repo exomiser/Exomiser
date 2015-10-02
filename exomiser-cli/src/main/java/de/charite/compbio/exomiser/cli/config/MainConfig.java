@@ -178,11 +178,11 @@ public class MainConfig {
     
     @Lazy
     @Bean
-    public TabixReader ncdsTabixReader() {
+    public TabixReader remmTabixReader() {
         String remmPath = getValueOfProperty("remmPath");
-        String ncdsPathValue = dataPath().resolve(remmPath).toString();
+        String remmPathValue = dataPath().resolve(remmPath).toString();
         try {
-             return new TabixReader(ncdsPathValue);
+             return new TabixReader(remmPathValue);
         } catch (IOException e) {
             throw new RuntimeException("REMM file not found ", e);
         }
@@ -274,8 +274,8 @@ public class MainConfig {
     
     @Lazy
     @Bean
-    public NcdsDao ncdsDao() {
-        return new NcdsDao(ncdsTabixReader());
+    public RemmDao remmDao() {
+        return new RemmDao(remmTabixReader());
     }
 
     @Bean

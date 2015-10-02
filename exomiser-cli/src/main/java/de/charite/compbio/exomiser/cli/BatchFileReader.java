@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.cli;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -13,8 +12,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Reads in Exomiser batch files and returns a list of Paths to the
@@ -23,23 +27,21 @@ import org.slf4j.LoggerFactory;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class BatchFileReader {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(BatchFileReader.class);
-    
+
     public List<Path> readPathsFromBatchFile(Path batchFile) {
         logger.info("Processing batch file {}", batchFile);
-        List<Path> filePaths = new ArrayList<>();
-        try (BufferedReader reader = Files.newBufferedReader(batchFile, Charset.defaultCharset())) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Path settingsFile = Paths.get(line.trim());
-                filePaths.add(settingsFile);
-            }
+        try (Stream<String> lines = Files.lines(batchFile, Charset.defaultCharset())) {
+            return lines.filter(lineNotEmpty()).map(line -> Paths.get(line.trim())).collect(toList());
         } catch (IOException ex) {
             logger.error("Unable to read batch file {}", batchFile, ex);
         }
-        logger.info("Returning {} settings from batch file.", filePaths.size());
-        return filePaths;
+        return new ArrayList<>();
+    }
+
+    private Predicate<String> lineNotEmpty() {
+        return line -> !line.isEmpty();
     }
 
 }
