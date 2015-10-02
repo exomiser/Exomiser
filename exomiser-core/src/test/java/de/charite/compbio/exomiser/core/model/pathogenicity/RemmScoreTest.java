@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Before;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -14,18 +14,18 @@ import static org.junit.Assert.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class NcdsScoreTest {
+public class RemmScoreTest {
     
-    NcdsScore instance = new NcdsScore(1f);
+    RemmScore instance = new RemmScore(1f);
     
     @Test
     public void testGetSource() {
-        assertThat(instance.getSource(), equalTo(PathogenicitySource.NCDS));
+        assertThat(instance.getSource(), equalTo(PathogenicitySource.REMM));
     }
     
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("NCDS: 1.000"));
+        assertThat(instance.toString(), equalTo("REMM: 1.000"));
     }
     
 }

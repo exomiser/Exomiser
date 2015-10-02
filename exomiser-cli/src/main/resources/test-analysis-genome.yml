@@ -30,11 +30,11 @@ analysis:
         EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
         EXAC_OTHER
         ]
-    #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, NCDS
-    #NCDS is trained on non-coding regulatory regions 
+    #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, REMM
+    #REMM is trained on non-coding regulatory regions
     #*WARNING* if you enable CADD, ensure that you have downloaded and installed the CADD tabix files
     #and updated their location in the application.properties. Exomiser will not run without this.   
-    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, NCDS]
+    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, REMM]
     #this is the recommended order for a genome-sized analysis.
     #all steps are optional
     steps: [ 

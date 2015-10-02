@@ -110,9 +110,9 @@ public class PathogenicityDataTest {
     
     @Test
     public void testGetNcdsScore() {
-        instance = new PathogenicityData(new NcdsScore(1f));
-        NcdsScore result = instance.getNcdsScore();
-        assertThat(result, equalTo(new NcdsScore(1f)));
+        instance = new PathogenicityData(new RemmScore(1f));
+        RemmScore result = instance.getNcdsScore();
+        assertThat(result, equalTo(new RemmScore(1f)));
     }
     
     @Test
