@@ -11,6 +11,7 @@ import de.charite.compbio.exomiser.core.filters.*;
 
 /**
  *
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 class SimpleAnalysisRunner extends AbstractAnalysisRunner {

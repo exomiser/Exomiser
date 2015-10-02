@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import static java.util.stream.Collectors.toList;
 
 /**
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {

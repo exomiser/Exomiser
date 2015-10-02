@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * Analysis runner
+ * Analysis runner - will run filters up until a filter fails a variant.
+
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 class SparseAnalysisRunner extends AbstractAnalysisRunner {
