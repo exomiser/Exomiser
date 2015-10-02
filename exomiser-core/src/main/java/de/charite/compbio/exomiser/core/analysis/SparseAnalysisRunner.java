@@ -21,7 +21,7 @@ class SparseAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> variantFilterPredicate(List<VariantFilter> variantFilters) {
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
         return variantEvaluation -> {
             //loop through the filters and only run if the variantEvaluation has passed all prior filters
             variantFilters.stream()

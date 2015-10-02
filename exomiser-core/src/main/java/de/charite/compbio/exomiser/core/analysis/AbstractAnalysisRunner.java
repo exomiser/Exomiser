@@ -1,6 +1,7 @@
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -15,15 +16,8 @@ import de.charite.compbio.exomiser.core.analysis.util.RankBasedGeneScorer;
 import de.charite.compbio.exomiser.core.analysis.util.RawScoreGeneScorer;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
-import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
-import htsjdk.variant.variantcontext.VariantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -32,7 +26,6 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toConcurrentMap;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -74,6 +67,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         List<List<AnalysisStep>> analysisStepGroups = groupAnalysisStepsByFunction(analysisSteps);
         boolean variantsLoaded = false;
         for (List<AnalysisStep> analysisGroup : analysisStepGroups) {
+            //this is admittedly pretty confusing code and I'm sorry. It's easiest to follow if you turn on debugging.
+            //The analysis steps are run in groups of VARIANT_FILTER, GENE_ONLY_DEPENDENT or INHERITANCE_MODE_DEPENDENT
             AnalysisStep firstStep = analysisGroup.get(0);
             logger.debug("Running {} group: {}", firstStep.getType(), analysisGroup);
             if (firstStep.isVariantFilter() & !variantsLoaded) {
@@ -106,27 +101,64 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
-        Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes);
+        Predicate<VariantEvaluation> isInKnownGene = isInKnownGene(allGenes);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
-        Predicate<VariantEvaluation> variantFilterPredicate = variantFilterPredicate(variantFilters);
+        Predicate<VariantEvaluation> runVariantFilters = runVariantFilters(variantFilters);
 
-        return loadVariants(vcfPath, allGenes, geneFilterPredicate, variantFilterPredicate);
+        return loadVariants(vcfPath, allGenes, isInKnownGene, runVariantFilters);
     }
 
     /**
      *
      */
-    protected Predicate<VariantEvaluation> variantFilterPredicate(List<VariantFilter> variantFilters) {
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
         return variantEvaluation -> {
             //loop through the filters and run them over the variantEvaluation according to the variantFilterRunner behaviour
-            variantFilters.stream()
-                    .forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
+            variantFilters.forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
             return true;
         };
     }
 
-    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes) {
+    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
         return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
+    }
+
+    private List<VariantEvaluation> loadVariants(Path vcfPath, Map<String, Gene> genes, Predicate<VariantEvaluation> isInKnownGene, Predicate<VariantEvaluation> runVariantFilters) {
+
+        final int[] streamed = {0};
+        final int[] passed = {0};
+
+        VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
+        List<VariantEvaluation> variantEvaluations;
+        try (Stream<VariantEvaluation> variantEvaluationStream = variantFactory.streamVariantEvaluations(vcfPath)) {
+            //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
+            variantEvaluations = variantEvaluationStream
+                    .map(variantEvaluation -> {
+                        //yep, logging logic
+                        streamed[0]++;
+                        if (streamed[0] % 100000 == 0) {
+                            logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
+                        }
+                        return variantEvaluation;
+                    })
+                    .filter(isInKnownGene)
+                    .filter(runVariantFilters)
+                    .map(variantEvaluation -> {
+                        if (variantEvaluation.passedFilters()) {
+                            //more logging logic
+                            passed[0]++;
+                        }
+                        return variantEvaluation;
+                    })
+                    .map(variantEvaluation -> {
+                        Gene gene = genes.get(variantEvaluation.getGeneSymbol());
+                        gene.addVariant(variantEvaluation);
+                        return variantEvaluation;
+                    })
+                    .collect(toList());
+        }
+        logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
+        return variantEvaluations;
     }
 
     /**
@@ -181,44 +213,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         groups.add(currentGroup);
 
         return groups;
-    }
-
-    private List<VariantEvaluation> loadVariants(Path vcfPath, Map<String, Gene> genes, Predicate<VariantEvaluation> geneFilterPredicate, Predicate<VariantEvaluation> variantFilterPredicate) {
-
-        final int[] streamed = {0};
-        final int[] passed = {0};
-
-        VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
-        List<VariantEvaluation> variantEvaluations;
-        try (Stream<VariantEvaluation> variantEvaluationStream = variantFactory.streamVariantEvaluations(vcfPath)) {
-            //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-            variantEvaluations = variantEvaluationStream
-                    .map(variantEvaluation -> {
-                        //yep, logging logic
-                        streamed[0]++;
-                        if (streamed[0] % 100000 == 0) {
-                            logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
-                        }
-                        return variantEvaluation;
-                    })
-                    .filter(geneFilterPredicate)
-                    .filter(variantFilterPredicate)
-                    .map(variantEvaluation -> {
-                        if (variantEvaluation.passedFilters()) {
-                            //more logging logic
-                            passed[0]++;
-                        }
-                        return variantEvaluation;
-                    })
-                    .map(variantEvaluation -> {
-                        Gene gene = genes.get(variantEvaluation.getGeneSymbol());
-                        gene.addVariant(variantEvaluation);
-                        return variantEvaluation;
-                    })
-                    .collect(toList());
-        }
-        logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
-        return variantEvaluations;
     }
 
     private List<VariantFilter> getVariantFilterSteps(List<AnalysisStep> analysisSteps) {
