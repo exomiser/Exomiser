@@ -141,6 +141,7 @@ public class Main {
         } else if (commandLine.hasOption("analysis-batch")) {
             Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
             List<Path> analysisScripts = new BatchFileReader().readPathsFromBatchFile(analysisBatchFile);
+            logger.info("Running {} analyses from analysis batch file.", analysisScripts.size());
             //this *can* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
             //like this:
             //analysisScripts.parallelStream().forEach(this::runAnalysisFromScript);
@@ -151,6 +152,7 @@ public class Main {
         else if (commandLine.hasOption("batch-file")) {
             Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
             List<Path> settingsFiles = new BatchFileReader().readPathsFromBatchFile(batchFilePath);
+            logger.info("Running {} analyses from settings batch file.", settingsFiles.size());
             for (Path settingsFile : settingsFiles) {
                 SettingsBuilder settingsBuilder = commandLineOptionsParser.parseSettingsFile(settingsFile);
                 runAnalysisFromSettings(settingsBuilder);

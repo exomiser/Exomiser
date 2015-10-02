@@ -33,14 +33,18 @@ public class BatchFileReader {
     public List<Path> readPathsFromBatchFile(Path batchFile) {
         logger.info("Processing batch file {}", batchFile);
         try (Stream<String> lines = Files.lines(batchFile, Charset.defaultCharset())) {
-            return lines.filter(lineNotEmpty()).map(line -> Paths.get(line.trim())).collect(toList());
+            return lines.filter(commentLines()).filter(emptyLines()).map(line -> Paths.get(line.trim())).collect(toList());
         } catch (IOException ex) {
             logger.error("Unable to read batch file {}", batchFile, ex);
         }
         return new ArrayList<>();
     }
 
-    private Predicate<String> lineNotEmpty() {
+    private Predicate<String> commentLines() {
+        return line -> !line.startsWith("#");
+    }
+
+    private Predicate<String> emptyLines() {
         return line -> !line.isEmpty();
     }
 
