@@ -1,10 +1,19 @@
 # The Exomiser - A Tool to Annotate and Prioritize Exome Variants: Command Line Executable
 
+## Software and Hardware requirements
+ - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
+ - For genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.
+ - Any 64-bit operating system
+ - Java 8 or above
+ - An internet connection is not required to run the Exomiser, although network access will be required if accessing a
+  networked database (optional).
+ - By default the Exomiser is completely self-contained and is able to run on standard consumer laptops.
+
 ## Installation
 
 1. Download and unzip exomiser-cli-${project.version}-distribution.gz
 2. Download exomiser-${project.version}.h2.db.gz from the h2_db_dumps folder 
-3. Unzip in the exomiser-cli-6.0.0/data directory 
+3. Unzip in the exomiser-cli-${project.version}/data directory
 4. mv exomiser-${project.version}.h2.db exomiser.h2.db
 5. Run the example commands below from the exomiser-cli-${project.version} directory
 
@@ -60,6 +69,16 @@ Output options can be combined, for example:
     --output-format TSV-GENE,VCF (TSV-GENE and VCF)
     --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
 
+Analysis file:
+
+Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
+and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
+
+These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
+a 4.4 million variant analysis requires approximately 10GB RAM.
+
 Settings file:
     
 Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
@@ -84,26 +103,3 @@ Want help?
 
     java -jar exomiser-cli-${project.version}.jar --help
 
-   
-## Project Build
-
-This maven project is used to build the main exomiser jar for distribution. The 
-assembly plugin will produce a zip and tar.gz with an internal structure defined 
-in src/assemble/distribution.xml. This automates most of the following steps, 
-although the maven resources plugin will copy all resources and data files to 
-target/resources and the assembly plugin will copy from here to the directories 
-defined in the outputDirectory fields for each fileSet of distribution.xml:
-
-    cd target
-    mkdir data
-1. copy in the data made from the db build or run this now if you haven't already
-    cp ../../exomiser-db/data/exomiser.h2.db data/.
-    cp ../../exomiser-db/data/extracted/ucsc_hg19.ser data/.
-2. copy in the rw_string_9_05* data to data/
-    ... from somewhere
-3. copy in the extra phenix data to data/
-    ... from somewhere
-4. make the archive.
-    tar -cvzf exomiser.tgz exomiser-cli-${project.version}.jar jdbc.properties log4j2.xml lib data 
-    # copy to the ftp site
-    scp exomiser.tgz gen1:/nfs/disk69/ftp/pub/resources/software/exomiser/downloads/exomiser/ 
