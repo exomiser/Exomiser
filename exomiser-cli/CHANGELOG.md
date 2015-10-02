@@ -1,5 +1,20 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 7.0.0 2015-10-01
+Now requires Java 8 or higher to run.
+- The Exomiser is now somewhat inaccurately named as it can now analyse whole-genome samples.
+- Exomiser is now much more customisable with the new analysis YAML configuration files. See test-analysis-exome.yml and
+ test-analysis-genome.yml for examples
+- Added new --analysis and --analysis-batch commands to be used with the new analysis format.
+- New PASS_ONLY analysis mode. Exomiser will only keep variants which passed filters. This allows for dramatically
+reduced memory requirements which is especially handy for genome-sized analyses.
+- Exomiser now ships with a new pathogenicity score for predicting the deleteriousness of non-coding regulatory mutations,
+ the REMM score.
+- It is now possible to specify which pathogenicity score or scores you wish to be run out of, polyphen, SIFT, Mutation Taster,
+ CADD and REMM
+- We now include the variant frequencies from the ExAC dataset and allow for a subset of all frequency sources to be
+specified in an analysis. For example, this allows only frequencies from a particular population to be taken into account.
+
 ## 6.0.0 2015-01-12
 - Added 'none' type prioritiser for when you really don't want to run any prioritiser.
 - Exomiser will now show the help options when no parameters are supplied.
