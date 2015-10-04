@@ -45,9 +45,7 @@ analysis:
         #which are least likely to contribute to the phenotype defined in hpoIds, this will
         #dramatically reduce the time and memory required to analyse a genome.
         priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501},
-        variantEffectFilter: {remove: [
-            SYNONYMOUS_VARIANT
-            ]},
+        #variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
         #knownVariantFilter: {}, #removes variants represented in the database
         frequencyFilter: {maxFrequency: 1.0},
         pathogenicityFilter: {keepNonPathogenic: true},
@@ -56,7 +54,8 @@ analysis:
         inheritanceFilter: {},
         #omimPrioritiser isn't mandatory.
         omimPrioritiser: {}
-        #priorityScoreFilter: {minPriorityScore: 0.4},
+	# 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive 
+        priorityScoreFilter: {minPriorityScore: 0.501},
         #Other prioritisers: Only combine omimPrioritiser with one of these.
         #Don't include any if you only want to filter the variants.
         #hiPhivePrioritiser: {},
