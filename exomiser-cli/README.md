@@ -1,7 +1,8 @@
 # The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
 ## *New!* Now performs genome-wide prioritisation including non-coding, regulatory variants.
-See the section on running analysis yml files for more information and the test-analysis-genome.yml file
+See [Analysis file](#analysis_file) section on running analysis yml files for more information and the
+test-analysis-genome.yml file located in the base install directory.
 
 ## Software and Hardware requirements
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
@@ -72,7 +73,7 @@ Output options can be combined, for example:
     --output-format TSV-GENE,VCF (TSV-GENE and VCF)
     --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
 
-### Analysis file:
+### <a name="analysis_file"></a>Analysis file:
 
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
 and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
@@ -80,7 +81,11 @@ and pathogenicity data sources and the ability to tweak the order that analysis 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
 
 These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
-a 4.4 million variant analysis requires approximately 10GB RAM.
+a 4.4 million variant analysis requires approximately 12GB RAM.
+
+Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch test-analysis-batch.txt
 
 ### Settings file:
     
@@ -93,14 +98,10 @@ Alternatively you can mix up a settings file and override settings by specifying
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --settings-file test.settings --prioritiser=phenix
 
-
-### Batch mode analysis:
     
-Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
+Settings can also be run in batch mode. Simply put the path to each settings file in the batch file - one file path per line.
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --batch-file batch.txt
-
-    -T leave in off-target variants
 
 ### Want help?
 
