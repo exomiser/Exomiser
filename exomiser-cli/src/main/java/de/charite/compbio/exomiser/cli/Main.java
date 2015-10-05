@@ -146,7 +146,7 @@ public class Main {
             //like this:
             //analysisScripts.parallelStream().forEach(this::runAnalysisFromScript);
             //HOWEVER there may be threading issues so this needs investigation.
-            analysisScripts.forEach(this::runAnalysisFromScript);
+            analysisScripts.forEach(analysis ->{logger.info("Running analysis: {}", analysis); runAnalysisFromScript(analysis);});
         }
         //check the args for a batch file first as this option is otherwise ignored 
         else if (commandLine.hasOption("batch-file")) {
@@ -154,6 +154,7 @@ public class Main {
             List<Path> settingsFiles = new BatchFileReader().readPathsFromBatchFile(batchFilePath);
             logger.info("Running {} analyses from settings batch file.", settingsFiles.size());
             for (Path settingsFile : settingsFiles) {
+                logger.info("Running settings: {}", settingsFile);
                 SettingsBuilder settingsBuilder = commandLineOptionsParser.parseSettingsFile(settingsFile);
                 runAnalysisFromSettings(settingsBuilder);
             }
