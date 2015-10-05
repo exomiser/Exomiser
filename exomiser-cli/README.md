@@ -1,7 +1,7 @@
 # The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
-# New! Now performs genome-wide prioritisation including non-coding, regulatory variants. See the section on running  
-analysis yml files for more information and the test-analysis-genome.yml file 
+# *New!* Now performs genome-wide prioritisation including non-coding, regulatory variants.
+See the section on running analysis yml files for more information and the test-analysis-genome.yml file
 
 ## Software and Hardware requirements
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
@@ -14,11 +14,11 @@ analysis yml files for more information and the test-analysis-genome.yml file
 
 ## Installation
 
-1. Download and unzip exomiser-cli-7.0.0-distribution.gz
-2. Download exomiser-7.0.0.h2.db.gz from the h2_db_dumps folder 
-3. Unzip in the exomiser-cli-7.0.0/data directory
-4. mv exomiser-7.0.0.h2.db exomiser.h2.db
-5. Run the example commands below from the exomiser-cli-7.0.0 directory
+1. Download and unzip exomiser-cli-${project.version}-distribution.gz
+2. Download exomiser-${project.version}.h2.db.gz from the h2_db_dumps folder
+3. Unzip in the exomiser-cli-${project.version}/data directory
+4. mv exomiser-${project.version}.h2.db exomiser.h2.db
+5. Run the example commands below from the exomiser-cli-${project.version} directory
 
 ## Alternative set-up
 
@@ -42,21 +42,21 @@ with
 
 (a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk 
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --prioritiser=hiphive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf 
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --prioritiser=hiphive -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304 -v data/Pfeiffer.vcf
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304 -v data/Pfeiffer.vcf
 
 (b) Exomiser PHIVE algorithm - phenotype comparisons to mice with disruption of the gene
 
-    java -Xmx2g -jar exomiser-cli-7.0.0.jar --prioritiser=phive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
+    java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=phive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
 (c) Exomiser Phenix algorithm - phenotype comparisons to known human disease genes
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --prioritiser=phenix -v data/Pfeiffer.vcf -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=phenix -v data/Pfeiffer.vcf -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
 
-(d) Exomiser ExomeWalker algorith - prioritisation by proximity in interactome to the seed genes
+(d) Exomiser ExomeWalker algorithm - prioritisation by proximity in interactome to the seed genes
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
 
 
 # Other useful params:
@@ -77,39 +77,32 @@ Analysis file:
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
 and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --analysis test-analysis-exome.yml
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
 
 These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
 a 4.4 million variant analysis requires approximately 10GB RAM.
-
-    java -Xms10g -Xmx10g -jar exomiser-cli-7.0.0.jar --analysis test-analysis-genome.yml
-
-You can run these files in batch mode. Simply put the path to each yml file in the batch file - one file path per line.
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --analysis-batch batch.txt
-
 
 Settings file:
     
 Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --settings-file test.settings
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --settings-file test.settings
 
     
 Alternatively you can mix up a settings file and override settings by specifying them on the command line:
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --settings-file test.settings --prioritiser=phenix
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --settings-file test.settings --prioritiser=phenix
 
 
 Batch mode analysis:
     
 Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-7.0.0.jar --batch-file batch.txt
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --batch-file batch.txt
 
     -T leave in off-target variants
 
 Want help? 
 
-    java -jar exomiser-cli-7.0.0.jar --help
+    java -jar exomiser-cli-${project.version}.jar --help
 
