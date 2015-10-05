@@ -1,6 +1,6 @@
 # The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
-# *New!* Now performs genome-wide prioritisation including non-coding, regulatory variants.
+## *New!* Now performs genome-wide prioritisation including non-coding, regulatory variants.
 See the section on running analysis yml files for more information and the test-analysis-genome.yml file
 
 ## Software and Hardware requirements
@@ -30,17 +30,17 @@ with
 
     h2Path=/full/path/to/alternative/h2/database/exomiser.h2.db
 
-(optional) If you want to run from a Postgres database rather than the default H2 embedded database
+If you want to run from a Postgres database rather than the default H2 embedded database *Optional*
   
-    (a) download exomiser_dump.pg.gz
-    (b) gunzip exomiser_dump.pg.gz
-    (c) load into your postgres server: pg_restore -h yourhost -d yourdatabase -U youruser < exomiser_dump.pg
-    You can do (b) and (c) at once by using: gunzip -c exomiser_dump.pg.gz | pg_restore -h yourhost -d yourdatabase -U youruser
-    (d) edit application.properties with the details of how to connect this new database
+1. download exomiser_dump.pg.gz
+2. gunzip exomiser_dump.pg.gz
+3. load into your postgres server: pg_restore -h yourhost -d yourdatabase -U youruser < exomiser_dump.pg
+    You can do 2 and 3 at once by using: gunzip -c exomiser_dump.pg.gz | pg_restore -h yourhost -d yourdatabase -U youruser
+4. edit application.properties with the details of how to connect this new database
 
 ## Usage
 
-(a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk 
+(a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
@@ -59,9 +59,9 @@ with
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
 
 
-# Other useful params:
+## Other useful params:
 
-Multiple output formats:
+### Multiple output formats:
 
     --output-format HTML (default)
     --output-format TSV-GENE (TSV summary of genes)
@@ -72,7 +72,7 @@ Output options can be combined, for example:
     --output-format TSV-GENE,VCF (TSV-GENE and VCF)
     --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
 
-Analysis file:
+### Analysis file:
 
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
 and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
@@ -82,7 +82,7 @@ and pathogenicity data sources and the ability to tweak the order that analysis 
 These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
 a 4.4 million variant analysis requires approximately 10GB RAM.
 
-Settings file:
+### Settings file:
     
 Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
 
@@ -94,7 +94,7 @@ Alternatively you can mix up a settings file and override settings by specifying
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --settings-file test.settings --prioritiser=phenix
 
 
-Batch mode analysis:
+### Batch mode analysis:
     
 Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
 
@@ -102,7 +102,7 @@ Batch mode will run through a list of settings files. Simple put the path to eac
 
     -T leave in off-target variants
 
-Want help? 
+### Want help?
 
     java -jar exomiser-cli-${project.version}.jar --help
 
