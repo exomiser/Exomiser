@@ -45,11 +45,12 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
     private final SampleDataFactory sampleDataFactory;
-    private final VariantDataService variantDataService;
+    protected final VariantDataService variantDataService;
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
     private final PrioritiserRunner prioritiserRunner;
-    private PriorityType mainPriorityType;
+    private GeneReassigner geneReassigner;
+    protected PriorityType mainPriorityType;
     
 
     public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
@@ -82,12 +83,13 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             AnalysisStep firstStep = analysisGroup.get(0);
             logger.debug("Running {} group: {}", firstStep.getType(), analysisGroup);
             if (firstStep.isVariantFilter() & !variantsLoaded) {
+                geneReassigner = new GeneReassigner(this.variantDataService, this.mainPriorityType);
                 //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
                 
                 if (mainPriorityType != null){
-                    GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
+                    //GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
                     geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
                     geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluations, allGenes);
                 }
@@ -126,7 +128,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
-        Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes);
+        Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes,geneReassigner);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
         Predicate<VariantEvaluation> variantFilterPredicate = variantFilterPredicate(variantFilters);
 
@@ -145,7 +147,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         };
     }
 
-    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes) {
+    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes, GeneReassigner geneReassigner) {
         return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
     }
 

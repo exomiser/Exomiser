@@ -41,6 +41,7 @@ public class TadDao {
     @Autowired
     private DataSource dataSource;
 
+    @Cacheable(value = "tad", key = "#variant.chromosomalVariant")
     public List<String> getGenesInTad(Variant variant) {
         List<String> genesInTad = new ArrayList<>();
         try (

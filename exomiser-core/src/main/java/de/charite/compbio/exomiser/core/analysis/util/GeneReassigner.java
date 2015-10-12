@@ -61,6 +61,34 @@ public class GeneReassigner {
         }
     }
 
+    public void reassignGeneToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
+        //for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            if (variantEvaluation.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || 
+                    variantEvaluation.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {//Should this TAD check be only run for intergenic/up/downstream variants in reg features table? 
+                //logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variantEvaluation.getGeneSymbol() + ", to best pheno gene in TAD");
+                float score = 0;
+                List<String> genesInTad = variantDataService.getGenesInTad(variantEvaluation);
+                for (String geneSymbol : genesInTad) {
+                    Gene gene = allGenes.get(geneSymbol);
+                    if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
+                        int entrezId = gene.getEntrezGeneID();
+                        float geneScore = gene.getPriorityResult(priorityType).getScore();
+                        //logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
+                        if (geneScore > score) {
+                            //logger.info("Changing gene to " + geneSymbol);
+                            variantEvaluation.setEntrezGeneId(entrezId);
+                            variantEvaluation.setGeneSymbol(geneSymbol);
+                            List<Annotation> alist = Collections.emptyList();;
+                            variantEvaluation.setAnnotations(alist);
+                            score = geneScore;
+                        }
+                    }
+                }
+                //logger.info("Finished gene reassigment");
+            }
+        //}
+    }
+    
     public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             List<Annotation> annotations = variantEvaluation.getAnnotations();
