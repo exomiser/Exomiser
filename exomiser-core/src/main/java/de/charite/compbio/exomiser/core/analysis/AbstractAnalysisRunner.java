@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
@@ -25,8 +44,6 @@ import com.google.common.collect.Multimap;
 import de.charite.compbio.exomiser.core.analysis.util.GeneReassigner;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -83,15 +100,14 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             AnalysisStep firstStep = analysisGroup.get(0);
             logger.debug("Running {} group: {}", firstStep.getType(), analysisGroup);
             if (firstStep.isVariantFilter() & !variantsLoaded) {
-                geneReassigner = new GeneReassigner(this.variantDataService, this.mainPriorityType);
                 //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
-                
+
+                geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
                 if (mainPriorityType != null){
-                    //GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
-                    geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
-                    geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluations, allGenes);
+//                    GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
+                    geneReassigner.reassignVariantsToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
                 }
                 
                 assignVariantsToGenes(variantEvaluations, allGenes);
@@ -278,25 +294,19 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             return;
 
         }
-        if (GeneFilter.class
-                .isInstance(analysisStep)) {
+        if (GeneFilter.class.isInstance(analysisStep)) {
             GeneFilter filter = (GeneFilter) analysisStep;
-
-            logger.info(
-                    "Running GeneFilter: {}", filter);
+            logger.info("Running GeneFilter: {}", filter);
             geneFilterRunner.run(filter, genes);
-
             return;
         }
 
-        if (Prioritiser.class
-                .isInstance(analysisStep)) {
+        if (Prioritiser.class.isInstance(analysisStep)) {
             Prioritiser prioritiser = (Prioritiser) analysisStep;
-            if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY){
+            if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
                 mainPriorityType = prioritiser.getPriorityType();
             }
-            logger.info(
-                    "Running Prioritiser: {}", prioritiser);
+            logger.info("Running Prioritiser: {}", prioritiser);
             prioritiserRunner.run(prioritiser, genes);
         }
     }

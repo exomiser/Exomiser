@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -11,16 +30,17 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author ds5
  */
 public class GeneReassigner {
@@ -35,60 +55,53 @@ public class GeneReassigner {
         this.priorityType = priorityType;
     }
 
-    public void reassignGeneToMostPhenotypicallySimilarGeneInTad(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
+    //this always runs, but only after variant filtering - note the REGULATORY_REGION_VARIANT, this is assigned by the
+    public void reassignVariantsToMostPhenotypicallySimilarGeneInTad(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {//Should this TAD check be only run for intergenic/up/downstream variants in reg features table? 
-                //logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variantEvaluation.getGeneSymbol() + ", to best pheno gene in TAD");
-                float score = 0;
-                List<String> genesInTad = variantDataService.getGenesInTad(variantEvaluation);
-                for (String geneSymbol : genesInTad) {
-                    Gene gene = allGenes.get(geneSymbol);
-                    if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
-                        int entrezId = gene.getEntrezGeneID();
-                        float geneScore = gene.getPriorityResult(priorityType).getScore();
-                        //logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
-                        if (geneScore > score) {
-                            //logger.info("Changing gene to " + geneSymbol);
-                            variantEvaluation.setEntrezGeneId(entrezId);
-                            variantEvaluation.setGeneSymbol(geneSymbol);
-                            List<Annotation> alist = Collections.emptyList();;
-                            variantEvaluation.setAnnotations(alist);
-                            score = geneScore;
-                        }
-                    }
-                }
+            if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
+                assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation, allGenes);
             }
         }
     }
 
-    public void reassignGeneToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
-        //for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            if (variantEvaluation.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || 
-                    variantEvaluation.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {//Should this TAD check be only run for intergenic/up/downstream variants in reg features table? 
-                //logger.info("Found reg variant - time to see if gene needs reassigning from current closest gene, " + variantEvaluation.getGeneSymbol() + ", to best pheno gene in TAD");
-                float score = 0;
-                List<String> genesInTad = variantDataService.getGenesInTad(variantEvaluation);
-                for (String geneSymbol : genesInTad) {
-                    Gene gene = allGenes.get(geneSymbol);
-                    if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
-                        int entrezId = gene.getEntrezGeneID();
-                        float geneScore = gene.getPriorityResult(priorityType).getScore();
-                        //logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
-                        if (geneScore > score) {
-                            //logger.info("Changing gene to " + geneSymbol);
-                            variantEvaluation.setEntrezGeneId(entrezId);
-                            variantEvaluation.setGeneSymbol(geneSymbol);
-                            List<Annotation> alist = Collections.emptyList();;
-                            variantEvaluation.setAnnotations(alist);
-                            score = geneScore;
-                        }
-                    }
-                }
-                //logger.info("Finished gene reassigment");
-            }
-        //}
+    //check - -this is only run in the geneFilterPredicate of the PassOnlyAnalysisRunner
+    public void reassignVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
+        if (variantEvaluation.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variantEvaluation.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
+            assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation, allGenes);
+        }
     }
-    
+
+    private void assignVariantToGeneWithHighestPhenotypeScore(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
+        Gene geneWithHighestPhenotypeScore = null;
+        float bestScore = 0;
+        List<String> genesInTad = variantDataService.getGenesInTad(variantEvaluation);
+        for (String geneSymbol : genesInTad) {
+            Gene gene = allGenes.get(geneSymbol);
+            if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
+                float geneScore = gene.getPriorityResult(priorityType).getScore();
+                //logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
+                if (geneScore > bestScore) {
+                    bestScore = geneScore;
+                    geneWithHighestPhenotypeScore = gene;
+                }
+            }
+        }
+        assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore);
+    }
+
+    private void assignVariantToGene(VariantEvaluation variantEvaluation, Gene gene) {
+        if (gene == null) {
+            return;
+        }
+        //logger.info("Changing gene to " + geneSymbol);
+        variantEvaluation.setEntrezGeneId(gene.getEntrezGeneID());
+        variantEvaluation.setGeneSymbol(gene.getGeneSymbol());
+        //given the physical ranges of topologically associated domains, the annotations are likely to be meaningless once reassigned
+        //TODO: check if the reassigned gene is actually in the annotation list and include this.
+        variantEvaluation.setAnnotations(Collections.emptyList());
+    }
+
+    //Ignore this - this is an attempt to fix Jannovar/Annotation issues.
     public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             List<Annotation> annotations = variantEvaluation.getAnnotations();

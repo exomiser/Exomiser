@@ -1,15 +1,33 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.analysis.util.GeneReassigner;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.Iterator;
 
 import java.util.List;
@@ -46,13 +64,14 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     @Override
     protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes, GeneReassigner geneReassigner) {
         return variantEvaluation -> {
+            //TODO:
             //Only load the variant if the gene has passed the other filters
             //this should drastically reduce the number of collected variants
             //logger.info("Testing " + variantEvaluation.getGeneSymbol() + " with variant effect " + variantEvaluation.getVariantEffect());
            
             // ? call TAD reassigner here
             //GeneReassigner geneReassigner = new GeneReassigner(this.variantDataService, this.mainPriorityType);
-            //geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+            //geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
             
             if(genes.containsKey(variantEvaluation.getGeneSymbol())) {
                 //logger.info("Testing if gene had already passed " + variantEvaluation.getGeneSymbol());
@@ -64,7 +83,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                 else{
                     // give TAD code a chance to reassign intergenic variant to a diff gene before failing it
                     //GeneReassigner geneReassigner = new GeneReassigner(this.variantDataService, this.mainPriorityType);
-                    geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+                    geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
                     gene = genes.get(variantEvaluation.getGeneSymbol());
                     return gene.passedFilters();
                 }
