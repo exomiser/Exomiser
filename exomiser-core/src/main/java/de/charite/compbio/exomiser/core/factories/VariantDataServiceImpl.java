@@ -125,6 +125,9 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Override
     public List<String> getGenesInTad(Variant variant) {
+        /* TODO
+          Reimplement this to return genes in TAD from a cached set built up from whole database query  
+        */    
         return tadDao.getGenesInTad(variant);
     }
     
