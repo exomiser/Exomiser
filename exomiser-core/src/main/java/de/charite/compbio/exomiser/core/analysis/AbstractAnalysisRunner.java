@@ -66,7 +66,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
     private final PrioritiserRunner prioritiserRunner;
-    private GeneReassigner geneReassigner;
     protected PriorityType mainPriorityType;
     
 
@@ -104,9 +103,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
 
-                geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
                 if (mainPriorityType != null){
-//                    GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
+                    GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
                     geneReassigner.reassignVariantsToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
                 }
                 
@@ -144,6 +142,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
+        GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
+
         Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes,geneReassigner);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
         Predicate<VariantEvaluation> variantFilterPredicate = variantFilterPredicate(variantFilters);
