@@ -24,27 +24,18 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
-import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-
-import javax.sql.DataSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -56,32 +47,6 @@ public class TadDao {
 
     @Autowired
     private DataSource dataSource;
-
-    @Cacheable(value = "tad", key = "#variant.chromosomalVariant")
-    public List<String> getGenesInTad(Variant variant) {
-        List<String> genesInTad = new ArrayList<>();
-        try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = createPreparedStatement(connection, variant);
-                ResultSet rs = preparedStatement.executeQuery()) {
-            while (rs.next()) {
-                String geneSymbol = rs.getString(1);
-                genesInTad.add(geneSymbol);
-            }
-        } catch (SQLException e) {
-            logger.error("Error executing topologically associated domain query: ", e);
-        }
-        return genesInTad;
-    }
-
-    private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
-        String tadQuery = "select symbol from tad where chromosome = ? and start < ? and \"end\" > ?";
-        PreparedStatement ps = connection.prepareStatement(tadQuery);
-        ps.setInt(1, variant.getChromosome());
-        ps.setInt(2, variant.getPosition());
-        ps.setInt(3, variant.getPosition());
-        return ps;
-    }
 
     public List<TopologicalDomain> getAllTads() {
         try (Connection connection = dataSource.getConnection();

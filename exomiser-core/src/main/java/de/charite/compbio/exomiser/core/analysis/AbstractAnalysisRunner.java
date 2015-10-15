@@ -19,6 +19,7 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
+import de.charite.compbio.exomiser.core.analysis.util.*;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
@@ -26,11 +27,7 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
-import de.charite.compbio.exomiser.core.prioritisers.PrioritiserRunner;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
-import de.charite.compbio.exomiser.core.analysis.util.GeneScorer;
-import de.charite.compbio.exomiser.core.analysis.util.RankBasedGeneScorer;
-import de.charite.compbio.exomiser.core.analysis.util.RawScoreGeneScorer;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
@@ -41,12 +38,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.exomiser.core.analysis.util.GeneReassigner;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -65,16 +62,15 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected final VariantDataService variantDataService;
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
-    private final PrioritiserRunner prioritiserRunner;
+
     protected PriorityType mainPriorityType;
-    
+    protected TadIndex tadIndex;
 
     public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.sampleDataFactory = sampleDataFactory;
         this.variantDataService = variantDataService;
         this.variantFilterRunner = variantFilterRunner;
         this.geneFilterRunner = geneFilterRunner;
-        this.prioritiserRunner = new PrioritiserRunner();
     }
 
     @Override
@@ -88,9 +84,14 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         final Pedigree pedigree = sampleData.getPedigree();
         final Path vcfPath = analysis.getVcfPath();
         final List<AnalysisStep> analysisSteps = analysis.getAnalysisSteps();
+        //should this be optional for people really wanting to screw about with the steps at the risk of catastrophic failure?
+        //it's really an optimiser step of a compiler, so perhaps it should be in the AnalysisParser?
         new AnalysisStepChecker().check(analysisSteps);
 
+        //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
+        setUpTopologicalDomainData(analysisSteps);
+
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
 //        some kind of multi-map with ordered duplicate keys would allow for easy grouping of steps for running the groups together.
         List<List<AnalysisStep>> analysisStepGroups = groupAnalysisStepsByFunction(analysisSteps);
@@ -102,12 +103,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup);
-
-                if (mainPriorityType != null){
-                    GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
-                    geneReassigner.reassignVariantsToMostPhenotypicallySimilarGeneInTad(variantEvaluations, allGenes);
-                }
-                
+                //this is done here as there are GeneFilter steps which may require Variants in the genes, or the InheritanceModeDependent steps which definitely need them...
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
@@ -117,7 +113,9 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
         //the results might be a bit meaningless.
         if (!variantsLoaded) {
-            variantEvaluations = loadVariants(vcfPath, allGenes, variantEvaluation -> true, variantEvaluation -> true);
+            try(Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
+                variantEvaluations = variantStream.collect(toList());
+            }
             assignVariantsToGenes(variantEvaluations, allGenes);
         }
 
@@ -134,6 +132,101 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Finished analysis in {} secs", analysisTimeSecs);
     }
 
+    private void setUpTopologicalDomainData(List<AnalysisStep> analysisSteps) {
+        tadIndex = new TadIndex(variantDataService.getTopologicallyAssociatedDomains());
+        mainPriorityType = findMainPrioritiserType(analysisSteps);
+    }
+
+    private PriorityType findMainPrioritiserType(List<AnalysisStep> analysisSteps) {
+        for (AnalysisStep analysisStep : analysisSteps) {
+            if (Prioritiser.class.isInstance(analysisStep)) {
+                Prioritiser prioritiser = (Prioritiser) analysisStep;
+                if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
+                    return prioritiser.getPriorityType();
+                }
+            }
+        }
+        return PriorityType.NONE;
+    }
+
+    private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
+        GeneReassigner geneReassigner = new GeneReassigner(tadIndex, mainPriorityType);
+        Function<VariantEvaluation, VariantEvaluation> nonCodingVariantsToBestPhenotypicGeneInTad = variantGeneReassigner(allGenes, geneReassigner);
+        Predicate<VariantEvaluation> variantsWithKnownGene = geneFilterPredicate(allGenes);
+        List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
+        Predicate<VariantEvaluation> variantsWithVariantFilters = variantFilterPredicate(variantFilters);
+
+        List<VariantEvaluation> filteredVariants;
+        final int[] streamed = {0};
+        final int[] passed = {0};
+        try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
+            filteredVariants = variantStream
+                    .map(variantEvaluation -> {
+                        //yep, logging logic
+                        streamed[0]++;
+                        if (streamed[0] % 100000 == 0) {
+                            logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
+                        }
+                        return variantEvaluation;
+                    })
+                    .map(nonCodingVariantsToBestPhenotypicGeneInTad)
+                    .filter(variantsWithKnownGene)
+                    .filter(variantsWithVariantFilters)
+                    .map(variantEvaluation -> {
+                        if (variantEvaluation.passedFilters()) {
+                            //more logging logic
+                            passed[0]++;
+                        }
+                        return variantEvaluation;
+                    })
+                    .collect(toList());
+        }
+        logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
+        return filteredVariants;
+    }
+
+    protected Function<VariantEvaluation, VariantEvaluation> variantGeneReassigner(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+        return variantEvaluation -> {
+            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+            return variantEvaluation;
+        };
+    }
+
+    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes) {
+        return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
+    }
+
+    protected Predicate<VariantEvaluation> variantFilterPredicate(List<VariantFilter> variantFilters) {
+        return variantEvaluation -> {
+            //loop through the filters and run them over the variantEvaluation according to the variantFilterRunner behaviour
+            variantFilters.stream().forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
+            return true;
+        };
+    }
+
+    private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
+        VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
+        //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
+        return variantFactory.streamVariantEvaluations(vcfPath);
+    }
+
+    private SampleData makeSampleDataWithoutGenesOrVariants(Analysis analysis) {
+        final SampleData sampleData = sampleDataFactory.createSampleDataWithoutVariantsOrGenes(analysis.getVcfPath(), analysis.getPedPath());
+        analysis.setSampleData(sampleData);
+        return sampleData;
+    }
+
+    private List<VariantFilter> getVariantFilterSteps(List<AnalysisStep> analysisSteps) {
+        logger.info("Filtering variants with:");
+        return analysisSteps.stream()
+                .filter(AnalysisStep::isVariantFilter)
+                .map(analysisStep -> {
+                    logger.info("{}", analysisStep);
+                    return (VariantFilter) analysisStep;
+                })
+                .collect(toList());
+    }
+
     private void assignVariantsToGenes(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             Gene gene = allGenes.get(variantEvaluation.getGeneSymbol());
@@ -141,34 +234,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
     }
 
-    private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup) {
-        GeneReassigner geneReassigner = new GeneReassigner(variantDataService, mainPriorityType);
-
-        Predicate<VariantEvaluation> geneFilterPredicate = geneFilterPredicate(allGenes,geneReassigner);
-        List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
-        Predicate<VariantEvaluation> variantFilterPredicate = variantFilterPredicate(variantFilters);
-
-        return loadVariants(vcfPath, allGenes, geneFilterPredicate, variantFilterPredicate);
-    }
-
     /**
-     *
-     */
-    protected Predicate<VariantEvaluation> variantFilterPredicate(List<VariantFilter> variantFilters) {
-        return variantEvaluation -> {
-            //loop through the filters and run them over the variantEvaluation according to the variantFilterRunner behaviour
-            variantFilters.stream()
-                    .forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
-            return true;
-        };
-    }
-
-    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes, GeneReassigner geneReassigner) {
-        return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
-    }
-
-    /**
-     *
      * @param passedGenes
      * @return
      */
@@ -221,57 +287,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return groups;
     }
 
-    private List<VariantEvaluation> loadVariants(Path vcfPath, Map<String, Gene> genes, Predicate<VariantEvaluation> geneFilterPredicate, Predicate<VariantEvaluation> variantFilterPredicate) {
 
-        final int[] streamed = {0};
-        final int[] passed = {0};
-
-        VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
-        List<VariantEvaluation> variantEvaluations;
-        try (Stream<VariantEvaluation> variantEvaluationStream = variantFactory.streamVariantEvaluations(vcfPath)) {
-            //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-            variantEvaluations = variantEvaluationStream
-                    .map(variantEvaluation -> {
-                        //yep, logging logic
-                        streamed[0]++;
-                        if (streamed[0] % 100000 == 0) {
-                            logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
-                        }
-                        return variantEvaluation;
-                    })
-                    .filter(geneFilterPredicate)
-                    .filter(variantFilterPredicate)
-                    .map(variantEvaluation -> {
-                        if (variantEvaluation.passedFilters()) {
-                            //more logging logic
-                            passed[0]++;
-                        }
-                        return variantEvaluation;
-                    })
-                    .collect(toList());
-        }
-        logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
-        return variantEvaluations;
-    }
-
-    private List<VariantFilter> getVariantFilterSteps(List<AnalysisStep> analysisSteps) {
-        logger.info("Filtering variants with:");
-        return analysisSteps
-                .stream()
-                .filter(analysisStep -> (analysisStep.isVariantFilter()))
-                .map(analysisStep -> {
-                    logger.info("{}", analysisStep);
-                    return (VariantFilter) analysisStep;
-                })
-                .collect(toList());
-    }
-
-    private SampleData makeSampleDataWithoutGenesOrVariants(Analysis analysis) {
-        final SampleData sampleData = sampleDataFactory.createSampleDataWithoutVariantsOrGenes(analysis.getVcfPath(), analysis.getPedPath());
-        analysis.setSampleData(sampleData);
-        return sampleData;
-    }
-
+    //might this be a nascent class waiting to get out here?
     private void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisSteps) {
@@ -283,7 +300,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
     }
 
-    //TODO: would this be better using the Visitor pattern?
     private void runStep(AnalysisStep analysisStep, List<Gene> genes) {
         if (analysisStep.isVariantFilter()) {
             VariantFilter filter = (VariantFilter) analysisStep;
@@ -303,11 +319,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         if (Prioritiser.class.isInstance(analysisStep)) {
             Prioritiser prioritiser = (Prioritiser) analysisStep;
-            if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
-                mainPriorityType = prioritiser.getPriorityType();
-            }
             logger.info("Running Prioritiser: {}", prioritiser);
-            prioritiserRunner.run(prioritiser, genes);
+            prioritiser.prioritizeGenes(genes);
         }
     }
 

@@ -24,35 +24,40 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
+
 /**
- * @author ds5
+ * Reassigns regulatory non-coding variants to the gene with the best phenotype score in a topological domain
+ * (doi:10.1038/nature11082). 'Recent research shows that high-order chromosome structures make an important contribution
+ * to enhancer functionality by triggering their physical interactions with target genes.' (doi:10.1038/nature12753).
+ *
+ * @author Damian Smedley <damian.smedley@sanger.ac.uk>
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class GeneReassigner {
 
-    private final VariantDataService variantDataService;
     private final PriorityType priorityType;
+    private final TadIndex tadIndex;
 
     private static final Logger logger = LoggerFactory.getLogger(GeneReassigner.class);
 
-    public GeneReassigner(VariantDataService variantDataService, PriorityType priorityType) {
-        this.variantDataService = variantDataService;
+    /**
+     * @param tadIndex
+     * @param priorityType
+     */
+    public GeneReassigner(TadIndex tadIndex, PriorityType priorityType) {
         this.priorityType = priorityType;
+        this.tadIndex = tadIndex;
+        logger.info("Made new GeneReassigner for {}", priorityType);
     }
 
     //this always runs, but only after variant filtering - note the REGULATORY_REGION_VARIANT, this is assigned by the
@@ -63,23 +68,30 @@ public class GeneReassigner {
             }
         }
     }
+    //TODO: consider scenario for PrioritiserType.NONE (or null)
 
-    //check - -this is only run in the geneFilterPredicate of the PassOnlyAnalysisRunner
+    //TODO: merge these methods - they are too similar
+    private final Set<VariantEffect> nonCodingRegulatoryVariants = EnumSet.of(VariantEffect.REGULATORY_REGION_VARIANT, VariantEffect.INTERGENIC_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT);
+
     public void reassignVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
-        if (variantEvaluation.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variantEvaluation.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
+        if (isNonCodingRegulatoryVariant(variantEvaluation)) {
             assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation, allGenes);
         }
+    }
+
+    private boolean isNonCodingRegulatoryVariant(VariantEvaluation variantEvaluation) {
+        return nonCodingRegulatoryVariants.contains(variantEvaluation.getVariantEffect());
     }
 
     private void assignVariantToGeneWithHighestPhenotypeScore(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
         Gene geneWithHighestPhenotypeScore = null;
         float bestScore = 0;
-        List<String> genesInTad = variantDataService.getGenesInTad(variantEvaluation);
+        List<String> genesInTad = getGenesInTadForVariant(variantEvaluation);
         for (String geneSymbol : genesInTad) {
             Gene gene = allGenes.get(geneSymbol);
             if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
                 float geneScore = gene.getPriorityResult(priorityType).getScore();
-                //logger.info("Gene " + geneSymbol + " in TAD " + "has score " + geneScore);
+//                logger.info("Gene {} in TAD has score {}", geneSymbol, geneScore);
                 if (geneScore > bestScore) {
                     bestScore = geneScore;
                     geneWithHighestPhenotypeScore = gene;
@@ -89,11 +101,24 @@ public class GeneReassigner {
         assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore);
     }
 
+    private List<String> getGenesInTadForVariant(VariantEvaluation variantEvaluation) {
+        List<TopologicalDomain> tadsContainingVariant = tadIndex.getTadsContainingVariant(variantEvaluation);
+        return getGenesInTads(tadsContainingVariant);
+    }
+
+    private List<String> getGenesInTads(Collection<TopologicalDomain> tads) {
+        List<String> genesInTad = new ArrayList<>();
+        for (TopologicalDomain tad : tads) {
+            genesInTad.addAll(tad.getGenes().keySet());
+        }
+        return genesInTad;
+    }
+
     private void assignVariantToGene(VariantEvaluation variantEvaluation, Gene gene) {
         if (gene == null) {
             return;
         }
-        //logger.info("Changing gene to " + geneSymbol);
+//        logger.info("Reassigning variant {} {} {} {} {} gene from {} to {}", variantEvaluation.getChromosome(), variantEvaluation.getPosition(), variantEvaluation.getRef(), variantEvaluation.getPosition(), variantEvaluation.getVariantEffect(), variantEvaluation.getGeneSymbol(), gene.getGeneSymbol());
         variantEvaluation.setEntrezGeneId(gene.getEntrezGeneID());
         variantEvaluation.setGeneSymbol(gene.getGeneSymbol());
         //given the physical ranges of topologically associated domains, the annotations are likely to be meaningless once reassigned

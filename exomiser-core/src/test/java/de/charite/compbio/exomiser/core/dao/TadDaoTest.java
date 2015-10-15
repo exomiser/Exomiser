@@ -45,12 +45,6 @@ public class TadDaoTest {
     private TadDao instance;
 
     @Test
-    public void testGetGenesInTadForVariant() {
-        List<String> geneIds = instance.getGenesInTad(new VariantEvaluation.VariantBuilder(1, 870137, "A", "T").build());
-        assertThat(geneIds, equalTo(Arrays.asList("ISG15", "TNFRSF4")));
-    }
-
-    @Test
     public void testGetAllTads() {
         //some real TADS (cut short)
         Map<String, Integer> genes1 = new LinkedHashMap<>();

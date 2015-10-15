@@ -22,7 +22,7 @@ package de.charite.compbio.exomiser.core.model;
 import java.util.Map;
 
 /**
- * Represents a topological domain of a piece of chromatin - thes
+ * Represents a topological domain of a piece of chromatin
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */

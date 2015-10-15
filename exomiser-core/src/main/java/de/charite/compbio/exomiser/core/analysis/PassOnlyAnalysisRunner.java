@@ -62,32 +62,13 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes) {
         return variantEvaluation -> {
-            //TODO:
             //Only load the variant if the gene has passed the other filters
             //this should drastically reduce the number of collected variants
-            //logger.info("Testing " + variantEvaluation.getGeneSymbol() + " with variant effect " + variantEvaluation.getVariantEffect());
-           
-            // ? call TAD reassigner here
-            //GeneReassigner geneReassigner = new GeneReassigner(this.variantDataService, this.mainPriorityType);
-            //geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
-            
             if(genes.containsKey(variantEvaluation.getGeneSymbol())) {
-                //logger.info("Testing if gene had already passed " + variantEvaluation.getGeneSymbol());
                 Gene gene = genes.get(variantEvaluation.getGeneSymbol());
-                //logger.info("Gene passed: " + gene.passedFilters());
-                if (gene.passedFilters()){
-                    return true;
-                }
-                else{
-                    // give TAD code a chance to reassign intergenic variant to a diff gene before failing it
-                    //GeneReassigner geneReassigner = new GeneReassigner(this.variantDataService, this.mainPriorityType);
-                    geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
-                    gene = genes.get(variantEvaluation.getGeneSymbol());
-                    return gene.passedFilters();
-                }
-                //return gene.passedFilters();
+                return gene.passedFilters();
             }
             return false;
         };

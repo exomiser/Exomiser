@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,6 +25,7 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.dao.CaddDao;
+import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.NcdsDao;
@@ -124,17 +144,8 @@ public class VariantDataServiceImpl implements VariantDataService {
     }
 
     @Override
-    public List<String> getGenesInTad(Variant variant) {
-        /* TODO
-          Reimplement this to return genes in TAD from a cached set built up from whole database query
-            1. Tad class consisting of chromosome, start, end and list of genes
-            2. TadDao now generates a list of Tad objects
-            3. This method changes to (or maybe some of this logic directly in the TadDao
-                List<Tad> tadList = tadDao.getTadList();
-                Tad tad = tadList.getMatchingTad(variant);
-                return tad.getGeneSymbols();
-        */    
-        return tadDao.getGenesInTad(variant);
+    public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
+        return tadDao.getAllTads();
     }
-    
+
 }
