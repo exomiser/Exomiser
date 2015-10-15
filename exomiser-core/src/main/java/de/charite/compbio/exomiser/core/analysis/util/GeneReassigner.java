@@ -45,10 +45,13 @@ import java.util.*;
  */
 public class GeneReassigner {
 
+    private static final Logger logger = LoggerFactory.getLogger(GeneReassigner.class);
+
+    private final Set<VariantEffect> nonCodingRegulatoryVariants = EnumSet.of(VariantEffect.REGULATORY_REGION_VARIANT, VariantEffect.INTERGENIC_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT);
+
     private final PriorityType priorityType;
     private final TadIndex tadIndex;
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneReassigner.class);
 
     /**
      * @param tadIndex
@@ -71,7 +74,6 @@ public class GeneReassigner {
     //TODO: consider scenario for PrioritiserType.NONE (or null)
 
     //TODO: merge these methods - they are too similar
-    private final Set<VariantEffect> nonCodingRegulatoryVariants = EnumSet.of(VariantEffect.REGULATORY_REGION_VARIANT, VariantEffect.INTERGENIC_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT);
 
     public void reassignVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
         if (isNonCodingRegulatoryVariant(variantEvaluation)) {
