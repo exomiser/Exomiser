@@ -50,18 +50,6 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
-        return variantEvaluation -> {
-            //loop through the filters and only run if the variantEvaluation has passed all prior filters
-            variantFilters.stream()
-                    .filter(filter -> variantEvaluation.passedFilters())
-                    .forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
-
-            return variantEvaluation.passedFilters();
-        };
-    }
-
-    @Override
     protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
         return variantEvaluation -> {
             //Only load the variant if the gene has passed the other filters
@@ -75,8 +63,20 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected List<Gene> getFinalGeneList(Map<String, Gene> passedGenes) {
-        return passedGenes.values()
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
+        return variantEvaluation -> {
+            //loop through the filters and only run if the variantEvaluation has passed all prior filters
+            variantFilters.stream()
+                    .filter(filter -> variantEvaluation.passedFilters())
+                    .forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
+
+            return variantEvaluation.passedFilters();
+        };
+    }
+
+    @Override
+    protected List<Gene> getFinalGeneList(Map<String, Gene> allGenes) {
+        return allGenes.values()
                 .stream()
                 .filter(gene -> !gene.getVariantEvaluations().isEmpty())
                 .filter(Gene::passedFilters)

@@ -24,9 +24,11 @@ import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
 import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.filters.VariantFilter;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -42,12 +44,18 @@ class SparseAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
+    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
+        return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
+    }
+
+    @Override
     protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
         return variantEvaluation -> {
             //loop through the filters and only run if the variantEvaluation has passed all prior filters
             variantFilters.stream()
                     .filter(filter -> variantEvaluation.passedFilters())
                     .forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
+            //for sparse filtering we still want all the variants back, even if they failed the filtering stage - they will be reported as failed.
             return true;
         };
     }

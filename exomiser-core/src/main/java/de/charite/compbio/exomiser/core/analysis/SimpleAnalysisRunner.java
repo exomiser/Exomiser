@@ -22,6 +22,12 @@ package de.charite.compbio.exomiser.core.analysis;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.*;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  *
@@ -34,4 +40,17 @@ class SimpleAnalysisRunner extends AbstractAnalysisRunner {
         super(sampleDataFactory, variantDataService, new SimpleVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
+    @Override
+    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
+        return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
+    }
+
+    @Override
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
+        return variantEvaluation -> {
+            //loop through the filters and run them over the variantEvaluation according to the variantFilterRunner behaviour
+            variantFilters.stream().forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
+            return true;
+        };
+    }
 }

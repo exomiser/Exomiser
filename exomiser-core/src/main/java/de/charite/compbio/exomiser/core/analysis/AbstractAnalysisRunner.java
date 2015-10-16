@@ -125,34 +125,18 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
         GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis);
-        Function<VariantEvaluation, VariantEvaluation> nonCodingVariantsToBestPhenotypicGeneInTad = variantGeneReassigner(allGenes, geneReassigner);
-        Predicate<VariantEvaluation> variantsInKnownGene = isInKnownGene(allGenes);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
-        Predicate<VariantEvaluation> withVariantFiltersFromGroup = runVariantFilters(variantFilters);
 
         List<VariantEvaluation> filteredVariants;
         final int[] streamed = {0};
         final int[] passed = {0};
         try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
             filteredVariants = variantStream
-                    .map(variantEvaluation -> {
-                        //yep, logging logic
-                        streamed[0]++;
-                        if (streamed[0] % 100000 == 0) {
-                            logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
-                        }
-                        return variantEvaluation;
-                    })
-                    .map(nonCodingVariantsToBestPhenotypicGeneInTad)
-                    .filter(variantsInKnownGene)
-                    .filter(withVariantFiltersFromGroup)
-                    .map(variantEvaluation -> {
-                        if (variantEvaluation.passedFilters()) {
-                            //more logging logic
-                            passed[0]++;
-                        }
-                        return variantEvaluation;
-                    })
+                    .map(logLoadedAndPassedVariants(streamed, passed))
+                    .map(reassignNonCodingVariantToBestGene(allGenes, geneReassigner))
+                    .filter(isInKnownGene(allGenes))
+                    .filter(runVariantFilters(variantFilters))
+                    .map(logPassedVariants(passed))
                     .collect(toList());
         }
         logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
@@ -163,17 +147,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         TadIndex tadIndex = new TadIndex(variantDataService.getTopologicallyAssociatedDomains());
         PriorityType mainPriorityType = analysis.getMainPrioritiserType();
         return new GeneReassigner(tadIndex, mainPriorityType);
-    }
-
-    protected Function<VariantEvaluation, VariantEvaluation> variantGeneReassigner(Map<String, Gene> genes, GeneReassigner geneReassigner) {
-        return variantEvaluation -> {
-            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
-            return variantEvaluation;
-        };
-    }
-
-    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
-        return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
     }
 
     private List<VariantFilter> getVariantFilterSteps(List<AnalysisStep> analysisSteps) {
@@ -187,11 +160,51 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .collect(toList());
     }
 
-    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
+    //yep, logging logic
+    private Function<VariantEvaluation, VariantEvaluation> logLoadedAndPassedVariants(int[] streamed, int[] passed) {
         return variantEvaluation -> {
-            //loop through the filters and run them over the variantEvaluation according to the variantFilterRunner behaviour
-            variantFilters.stream().forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
-            return true;
+            streamed[0]++;
+            if (streamed[0] % 100000 == 0) {
+                logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
+            }
+            return variantEvaluation;
+        };
+    }
+
+    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGene(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+        return variantEvaluation -> {
+            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+            return variantEvaluation;
+        };
+    }
+
+    /**
+     * Defines the filtering behaviour of the runner when performing the initial load and filter of variants. Allows the
+     * concrete runner to define whether a variant should pass or fail depending on the gene or status of the gene it is
+     * assigned to.
+     *
+     * @param genes
+     * @return
+     */
+    abstract Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes);
+
+    /**
+     * Defines the filtering behaviour of the runner when performing the initial load and filter of variants. Allows the
+     * concrete runner to define whether a variant should pass or fail when running the variant through the variant
+     * filters defined in the variant filter group, or the initial group if there are more than one.
+     *
+     * @param variantFilters
+     * @return
+     */
+    abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters);
+
+    //more logging logic
+    private Function<VariantEvaluation, VariantEvaluation> logPassedVariants(int[] passed) {
+        return variantEvaluation -> {
+            if (variantEvaluation.passedFilters()) {
+                passed[0]++;
+            }
+            return variantEvaluation;
         };
     }
 
@@ -215,11 +228,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     /**
-     * @param passedGenes
+     * @param allGenes
      * @return
      */
-    protected List<Gene> getFinalGeneList(Map<String, Gene> passedGenes) {
-        return passedGenes.values()
+    protected List<Gene> getFinalGeneList(Map<String, Gene> allGenes) {
+        return allGenes.values()
                 .stream()
                 .filter(gene -> !gene.getVariantEvaluations().isEmpty())
                 .collect(toList());
