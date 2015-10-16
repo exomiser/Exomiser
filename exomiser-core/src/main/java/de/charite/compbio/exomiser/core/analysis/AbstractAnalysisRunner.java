@@ -80,9 +80,9 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
+        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
 //        some kind of multi-map with ordered duplicate keys would allow for easy grouping of steps for running the groups together.
         List<List<AnalysisStep>> analysisStepGroups = analysis.getAnalysisStepsGroupedByFunction();
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
         boolean variantsLoaded = false;
         for (List<AnalysisStep> analysisGroup : analysisStepGroups) {
             //this is admittedly pretty confusing code and I'm sorry. It's easiest to follow if you turn on debugging.
@@ -126,9 +126,9 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
         GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis);
         Function<VariantEvaluation, VariantEvaluation> nonCodingVariantsToBestPhenotypicGeneInTad = variantGeneReassigner(allGenes, geneReassigner);
-        Predicate<VariantEvaluation> variantsWithKnownGene = geneFilterPredicate(allGenes);
+        Predicate<VariantEvaluation> variantsInKnownGene = isInKnownGene(allGenes);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
-        Predicate<VariantEvaluation> variantsWithVariantFiltersFromGroup = variantFilterPredicate(variantFilters);
+        Predicate<VariantEvaluation> withVariantFiltersFromGroup = runVariantFilters(variantFilters);
 
         List<VariantEvaluation> filteredVariants;
         final int[] streamed = {0};
@@ -144,8 +144,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                         return variantEvaluation;
                     })
                     .map(nonCodingVariantsToBestPhenotypicGeneInTad)
-                    .filter(variantsWithKnownGene)
-                    .filter(variantsWithVariantFiltersFromGroup)
+                    .filter(variantsInKnownGene)
+                    .filter(withVariantFiltersFromGroup)
                     .map(variantEvaluation -> {
                         if (variantEvaluation.passedFilters()) {
                             //more logging logic
@@ -172,7 +172,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         };
     }
 
-    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes) {
+    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
         return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
     }
 
@@ -187,7 +187,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .collect(toList());
     }
 
-    protected Predicate<VariantEvaluation> variantFilterPredicate(List<VariantFilter> variantFilters) {
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
         return variantEvaluation -> {
             //loop through the filters and run them over the variantEvaluation according to the variantFilterRunner behaviour
             variantFilters.stream().forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));

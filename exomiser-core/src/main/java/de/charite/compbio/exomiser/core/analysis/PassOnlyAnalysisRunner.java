@@ -19,7 +19,6 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
-import de.charite.compbio.exomiser.core.analysis.util.GeneReassigner;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
