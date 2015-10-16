@@ -30,11 +30,11 @@ analysis:
         EXAC_FINNISH, EXAC_NON_FINNISH_EUROPEAN,
         EXAC_OTHER
         ]
-    #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, NCDS
-    #NCDS is trained on non-coding regulatory regions 
+    #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, REMM
+    #REMM is trained on non-coding regulatory regions
     #*WARNING* if you enable CADD, ensure that you have downloaded and installed the CADD tabix files
-    #and updated their location in the application.properties. Exomiser will not run without this.   
-    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, NCDS]
+    #and updated their location in the application.properties. Exomiser will not run without this.
+    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, REMM]
     #this is the recommended order for a genome-sized analysis.
     #all steps are optional
     steps: [ 
@@ -44,10 +44,9 @@ analysis:
         #running the prioritiser followed by a priorityScoreFilter will remove genes
         #which are least likely to contribute to the phenotype defined in hpoIds, this will
         #dramatically reduce the time and memory required to analyse a genome.
+        # 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive
         priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501},
-        variantEffectFilter: {remove: [
-            SYNONYMOUS_VARIANT
-            ]},
+        #variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
         #knownVariantFilter: {}, #removes variants represented in the database
         frequencyFilter: {maxFrequency: 1.0},
         pathogenicityFilter: {keepNonPathogenic: true},
@@ -56,7 +55,6 @@ analysis:
         inheritanceFilter: {},
         #omimPrioritiser isn't mandatory.
         omimPrioritiser: {}
-        #priorityScoreFilter: {minPriorityScore: 0.4},
         #Other prioritisers: Only combine omimPrioritiser with one of these.
         #Don't include any if you only want to filter the variants.
         #hiPhivePrioritiser: {},

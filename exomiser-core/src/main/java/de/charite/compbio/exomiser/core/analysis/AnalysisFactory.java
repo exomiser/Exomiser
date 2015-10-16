@@ -8,6 +8,8 @@ package de.charite.compbio.exomiser.core.analysis;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
@@ -15,6 +17,7 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * High-level factory for creating an {@link Analysis} and {@link AnalysisRunner}. This is
@@ -56,8 +59,8 @@ public class AnalysisFactory {
         return new PassOnlyAnalysisRunner(sampleDataFactory, variantDataService);
     }
 
-    public AnalysisBuilder getAnalysisBuilder(Path vcfPath, List<String> hpoIds) {
-        return new AnalysisBuilder(priorityFactory, vcfPath, hpoIds);
+    public AnalysisBuilder getAnalysisBuilder(Path vcfPath) {
+        return new AnalysisBuilder(priorityFactory, vcfPath);
     }
 
     public static class AnalysisBuilder {
@@ -65,25 +68,25 @@ public class AnalysisFactory {
         private final PriorityFactory priorityFactory;
         private final Analysis analysis;
 
-        private List<String> hpoIds = new ArrayList<>();
         private final List<AnalysisStep> analysisSteps = new ArrayList<>();
 
-        private AnalysisBuilder(PriorityFactory priorityFactory, Path vcfPath, List<String> hpoIds) {
+        private AnalysisBuilder(PriorityFactory priorityFactory, Path vcfPath) {
             this.priorityFactory = priorityFactory;
-            this.hpoIds = hpoIds;
             analysis = new Analysis(vcfPath);
-            analysis.setHpoIds(hpoIds);
         }
 
         public Analysis build() {
-            analysis.setFrequencySources(null);
-            analysis.setPathogenicitySources(null);
             analysis.addAllSteps(analysisSteps);
             return analysis;
         }
 
         public AnalysisBuilder pedPath(Path pedPath) {
             analysis.setPedPath(pedPath);
+            return this;
+        }
+
+        public AnalysisBuilder hpoIds(List<String> hpoIds) {
+            analysis.setHpoIds(hpoIds);
             return this;
         }
 
@@ -102,32 +105,37 @@ public class AnalysisFactory {
             return this;
         }
 
-        public AnalysisBuilder hpoIds(List<String> hpoIds) {
-            analysis.setHpoIds(hpoIds);
+        public AnalysisBuilder frequencySources(Set<FrequencySource> frequencySources) {
+            analysis.setFrequencySources(frequencySources);
             return this;
         }
-        
+
+        public AnalysisBuilder pathogenicitySources(Set<PathogenicitySource> pathogenicitySources) {
+            analysis.setPathogenicitySources(pathogenicitySources);
+            return this;
+        }
+
         public AnalysisBuilder addOmimPrioritiser() {
             analysis.addStep(priorityFactory.makeOmimPrioritiser());
             return this;
         }
 
-        public AnalysisBuilder addPhivePrioritiser() {
+        public AnalysisBuilder addPhivePrioritiser(List<String> hpoIds) {
             analysis.addStep(priorityFactory.makePhivePrioritiser(hpoIds));
             return this;
         }
 
-        public AnalysisBuilder addHiPhivePrioritiser() {
+        public AnalysisBuilder addHiPhivePrioritiser(List<String> hpoIds) {
             analysis.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
             return this;
         }
 
-        public AnalysisBuilder addHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
+        public AnalysisBuilder addHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
             analysis.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
             return this;
         }
 
-        public AnalysisBuilder addPhenixPrioritiser() {
+        public AnalysisBuilder addPhenixPrioritiser(List<String> hpoIds) {
             analysis.addStep(priorityFactory.makePhenixPrioritiser(hpoIds));
             return this;
         }

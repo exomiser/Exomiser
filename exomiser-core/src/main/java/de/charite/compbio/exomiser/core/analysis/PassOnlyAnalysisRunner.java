@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
@@ -50,7 +51,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> variantFilterPredicate(List<VariantFilter> variantFilters) {
+    protected Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters) {
         return variantEvaluation -> {
             //loop through the filters and only run if the variantEvaluation has passed all prior filters
             variantFilters.stream()
@@ -62,7 +63,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> geneFilterPredicate(Map<String, Gene> genes) {
+    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
         return variantEvaluation -> {
             //Only load the variant if the gene has passed the other filters
             //this should drastically reduce the number of collected variants

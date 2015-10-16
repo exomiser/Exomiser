@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Class for storing the options data required for running the Exomiser.
  *
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = SettingsBuilder.class)

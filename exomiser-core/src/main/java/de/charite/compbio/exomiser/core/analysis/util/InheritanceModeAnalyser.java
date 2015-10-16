@@ -5,12 +5,11 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import de.charite.compbio.exomiser.core.model.Variant;
+import com.google.common.collect.ArrayListMultimap;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.pedigree.*;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.pedigree.compatibilitychecker.CompatibilityCheckerException;
 import htsjdk.variant.variantcontext.*;
 
 import java.util.EnumSet;
@@ -20,9 +19,14 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
+import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  * This class allows us to do segregation analysis for the variants supplied to
@@ -34,77 +38,94 @@ import java.util.Collections;
 public class InheritanceModeAnalyser {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
-    
-    // FIXME: there are more modes of inheritance implemented in Jannovar - ModeOfInheritance.values() should suffice.
-    private static final Set<ModeOfInheritance> MODES_TO_CHECK = EnumSet.of(
-            ModeOfInheritance.AUTOSOMAL_RECESSIVE,
-            ModeOfInheritance.AUTOSOMAL_DOMINANT,
-            ModeOfInheritance.X_RECESSIVE); 
 
-    /**
-     * Analyses the inheritance modes for a gene according to the variants which have *PASSED* filtering.
-     *
-     * @param gene
-     * @param pedigree
-     * @return a Set of inheritance modes with which the gene is compatible with.
-     */
-    public Set<ModeOfInheritance> analyseInheritanceModes(Gene gene, Pedigree pedigree) {
-        return analyseInheritanceModes(gene.getPassedVariantEvaluations(), pedigree);
+    private final ModeOfInheritance modeOfInheritance;
+    private final InheritanceCompatibilityChecker inheritanceCompatibilityChecker;
+
+    public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+        this.modeOfInheritance = modeOfInheritance;
+        inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
     }
 
     /**
-     * Analyses the inheritance modes for the variants from a gene.
-     *
-     * @param variants
-     * @return
+     * Analyses the compatibility of a list of {@link Gene} with the {@link ModeOfInheritance} used in the constructor
+     * of this class according to the observed pattern of inheritance in the {@link Pedigree}. This will only be applied
+     * to genes and the variants in the gene which have *PASSED* filtering.
      */
-    private Set<ModeOfInheritance> analyseInheritanceModes(List<VariantEvaluation> variants, Pedigree pedigree) {
-
-        if (variants.isEmpty()) {
-            return Collections.emptySet();
-        }
-
-        Variant firstVariant = variants.get(0);
-        // Build list of genotypes from the given variants.
-        String geneSymbol = firstVariant.getGeneSymbol();
-        // Use interval of transcript of first region, only used for the chromosome information anyway.
-        GenotypeListBuilder genotypeListBuilder = new GenotypeListBuilder(geneSymbol, pedigree.getNames(), firstVariant.isXChromosomal());
-        List<Person> people = pedigree.getMembers();
-        for (VariantEvaluation variant : variants) {
-            ImmutableList<Genotype> variantGenotypes = getVariantGenotypes(people, variant);
-            genotypeListBuilder.addGenotypes(variantGenotypes);
-        }
-        GenotypeList genotypes = genotypeListBuilder.build();
-
-        return getCompatibleInheritanceModes(pedigree, genotypes);
+    public void analyseInheritanceModes(Collection<Gene> genes) {
+        genes.stream().filter(Gene::passedFilters).forEach(this::analyseInheritanceModes);
     }
 
-    private ImmutableList<Genotype> getVariantGenotypes(List<Person> people, VariantEvaluation variant) {
-
-        VariantContext variantContext = variant.getVariantContext();
-        final int altAlleleID = variant.getAltAlleleId();
-        final Allele alternateAllele = variantContext.getAlternateAllele(altAlleleID);
-        final int numSamples = variantContext.getNSamples();
-        ImmutableList.Builder<Genotype> variantGenotypes = new ImmutableList.Builder<>();
-        
-        for (int i = 0; i < numSamples; ++i) {
-            final String name = people.get(i).getName();
-            final List<Allele> alleles = variantContext.getGenotype(name).getAlleles();
-            Genotype genotype = getIndividualGenotype(alternateAllele, alleles);
-            variantGenotypes.add(genotype);
+    /**
+     * Analyses the compatibility of a {@link Gene} with the {@link ModeOfInheritance} used in the constructor
+     * of this class according to the observed pattern of inheritance in the {@link Pedigree}. This will only be applied
+     * to the variants in the gene which have *PASSED* filtering.
+     */
+    public boolean analyseInheritanceModes(Gene gene) {
+        if (gene.passedFilters()) {
+            checkInheritanceCompatibilityOfPassedVariants(gene);
         }
-        return variantGenotypes.build();
+        return gene.isCompatibleWith(modeOfInheritance);
+    }
 
-        //not sure why this C-style loop is required - could there be more people in the Pedigree than the sample?
-        //If the order of people in the pedigree is different to the sample then this is FUBARed
-        //in fact, do we even need the people? wouldn't this work:
-//        List<Genotype> variantGenotypes = variantContext.getGenotypesOrderedByName().stream()
-//                .map(genotype -> {
-//                    final List<Allele> alleles = genotype.getAlleles();
-//                    return getIndividualGenotype(alternateAllele, alleles);
-//                })
-//                .collect(toList());
-//        return new ImmutableList.Builder<Genotype>().addAll(variantGenotypes).build();
+    private void checkInheritanceCompatibilityOfPassedVariants(Gene gene) {
+        if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
+            return;
+        }
+        //it is *CRITICAL* that only the PASSED variantEvaluations are taken into account here.
+        List<VariantEvaluation> passedVariantEvaluations = gene.getPassedVariantEvaluations();
+
+        Multimap<String, VariantEvaluation> geneVariants = mapVariantEvaluationsToVariantContextString(passedVariantEvaluations);
+        List<VariantContext> compatibleVariants = getCompatibleVariantContexts(passedVariantEvaluations);
+
+        if (!compatibleVariants.isEmpty()) {
+            logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
+            gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
+            setVariantEvaluationInheritanceModes(geneVariants, compatibleVariants);
+        }
+    }
+
+    private Multimap<String, VariantEvaluation> mapVariantEvaluationsToVariantContextString(List<VariantEvaluation> passedVariantEvaluations) {
+        Multimap<String, VariantEvaluation> geneVariants = ArrayListMultimap.create();
+        for (VariantEvaluation variantEvaluation : passedVariantEvaluations) {
+            geneVariants.put(toKeyValue(variantEvaluation.getVariantContext()), variantEvaluation);
+        }
+        return geneVariants;
+    }
+
+    /**
+     * A {@link VariantContext} cannot be used directly as a key in a Map or put into a Set as it does not override equals or hashCode.
+     * Also simply using toString isn't an option as the compatible variants returned from the {@link #inheritanceCompatibilityChecker}
+     * are different instances and have had their genotype strings changed. This method solves these problems.
+     */
+    private String toKeyValue(VariantContext variantContext) {
+        return variantContext.toStringWithoutGenotypes();
+    }
+
+    private List<VariantContext> getCompatibleVariantContexts(List<VariantEvaluation> passedVariantEvaluations) {
+        List<VariantContext> compatibleVariants = new ArrayList<>();
+        //This needs to be done using all the variants in the gene in order to be able to check for compound heterozygous variations
+        //otherwise it would be simpler to just call this on each variant in turn
+        try {
+            //Make sure only ONE variantContext is added if there are multiple alleles as there will be one VariantEvaluation per allele.
+            //Having multiple copies of a VariantContext might cause problems with the comp het calculations 
+            Set<VariantContext> geneVariants = passedVariantEvaluations.stream().map(VariantEvaluation::getVariantContext).collect(toSet());
+            compatibleVariants = inheritanceCompatibilityChecker.getCompatibleWith(new ArrayList<>(geneVariants));
+        } catch (InheritanceCompatibilityCheckerException ex) {
+            logger.error(null, ex);
+        }
+        return compatibleVariants;
+    }
+
+    private void setVariantEvaluationInheritanceModes(Multimap<String, VariantEvaluation> geneVariants, List<VariantContext> compatibleVariants) {
+        for (VariantContext variantContext : compatibleVariants) {
+            //using toStringWithoutGenotypes as the genotype string gets changed and VariantContext does not override equals or hashcode so this cannot be used as a key
+            Collection<VariantEvaluation> variants = geneVariants.get(toKeyValue(variantContext));
+            for (VariantEvaluation variant : variants) {
+                variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
+                logger.debug("{}: {}", variant.getInheritanceModes(), variant);
+            }
+        }
     }
 
     private Genotype getIndividualGenotype(Allele alternateAllele, List<Allele> alleles) {
@@ -123,27 +144,9 @@ public class InheritanceModeAnalyser {
             return Genotype.HOMOZYGOUS_ALT;
         } else if (!isAlt0 && !isAlt1) {
             return Genotype.HOMOZYGOUS_REF;
-        }  else {
+        } else {
             return Genotype.HETEROZYGOUS;
         }
-    }
-
-    private Set<ModeOfInheritance> getCompatibleInheritanceModes(Pedigree pedigree, GenotypeList genotypes) {
-
-        Set<ModeOfInheritance> compatibleInheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-
-        PedigreeDiseaseCompatibilityDecorator checker = new PedigreeDiseaseCompatibilityDecorator(pedigree);
-        for (ModeOfInheritance mode : MODES_TO_CHECK) {
-            try {
-                if (checker.isCompatibleWith(genotypes, mode)) {
-                    compatibleInheritanceModes.add(mode);
-                }
-            } catch (CompatibilityCheckerException e) {
-                throw new RuntimeException("Problem in the mode of inheritance checks!", e);
-            }
-        }
-
-        return compatibleInheritanceModes;
     }
 
 }

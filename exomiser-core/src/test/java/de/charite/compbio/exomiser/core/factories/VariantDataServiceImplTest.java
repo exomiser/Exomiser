@@ -17,19 +17,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.dao.CaddDao;
-import de.charite.compbio.exomiser.core.dao.FrequencyDao;
-import de.charite.compbio.exomiser.core.dao.NcdsDao;
-import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
-import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
-import de.charite.compbio.exomiser.core.dao.TadDao;
+import de.charite.compbio.exomiser.core.dao.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
@@ -40,7 +30,7 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.NcdsScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.RemmScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
@@ -53,16 +43,17 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +72,7 @@ public class VariantDataServiceImplTest {
     @Mock
     private PathogenicityDao mockPathogenicityDao;
     @Mock
-    private NcdsDao mockNcdsDao;
+    private RemmDao mockRemmDao;
     @Mock
     private CaddDao mockCaddDao;
     @Mock
@@ -94,7 +85,8 @@ public class VariantDataServiceImplTest {
     private static final PathogenicityData PATH_DATA = new PathogenicityData(new PolyPhenScore(1), new MutationTasterScore(1), new SiftScore(0));
     private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
     private static final PathogenicityData CADD_DATA = new PathogenicityData(new CaddScore(1));
-    
+    private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
+
     private VariantEvaluation variant;
     private static final VariantBuilder variantBuilder = new VariantBuilder(1, 1, "A", "T");
 
@@ -158,27 +150,27 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = new PathogenicityData(new NcdsScore(1f));
-        Mockito.when(mockNcdsDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
-        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.NCDS));
+        PathogenicityData expectedNcdsData = new PathogenicityData(new RemmScore(1f));
+        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
     }
     
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForNonCodingNonRegulatoryVariant() {
         variant = buildVariantOfType(VariantEffect.SPLICE_REGION_VARIANT);
-        //Test that the NCDS DAO is only called whe the variant type is of the type NCDS is trained against. 
-        Mockito.when(mockNcdsDao.getPathogenicityData(variant)).thenReturn(new PathogenicityData(new NcdsScore(1f)));
-        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.NCDS));
+        //Test that the REMM DAO is only called whe the variant type is of the type REMM is trained against.
+        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(new PathogenicityData(new RemmScore(1f)));
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
         assertThat(result, equalTo(new PathogenicityData()));
     }
     
     @Test
     public void serviceReturnsCaddAndNonCodingScoreForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = new PathogenicityData(new CaddScore(1f), new NcdsScore(1f));
-        Mockito.when(mockNcdsDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
-        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.NCDS));
+        PathogenicityData expectedNcdsData = new PathogenicityData(new CaddScore(1f), new RemmScore(1f));
+        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
+        PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
     }
 
@@ -223,16 +215,16 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsRegulatoryFeatureVariantEffectForIntergenicVariant() {
         variant = buildVariantOfType(VariantEffect.INTERGENIC_VARIANT);
         VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
-        assertThat(result, equalTo(REGULATORY_REGION_VARIANT));
+        assertThat(result, equalTo(REGULATORY_REGION));
     }
 
     @Test
     public void serviceReturnsRegulatoryFeaturelVariantEffectForUpstreamGeneVariant() {
         variant = buildVariantOfType(VariantEffect.UPSTREAM_GENE_VARIANT);
         VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
-        assertThat(result, equalTo(REGULATORY_REGION_VARIANT));
+        assertThat(result, equalTo(REGULATORY_REGION));
     }
-    
+
     @Test
     public void serviceReturnsTopologicalDomains(){
         List<TopologicalDomain> tads = Arrays.asList(new TopologicalDomain(1, 1, 2, Collections.<String, Integer>emptyMap()));

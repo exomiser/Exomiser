@@ -5,11 +5,14 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import de.charite.compbio.exomiser.core.analysis.util.InheritanceModeAnalyser;
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
-import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,20 +23,42 @@ import static org.junit.Assert.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class InheritanceModeAnalyserTest {
-    
-    private InheritanceModeAnalyser instance;
-    
+
     @Before
     public void setUp() {
-        instance = new InheritanceModeAnalyser();
+
     }
 
     @Test
     public void testAnalyseInheritanceModesSingleSampleNoVariants() {
         Gene gene = new Gene("ABC", 123);
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
-        Set<ModeOfInheritance> compatibleModes = instance.analyseInheritanceModes(gene, pedigree);
-        assertThat(compatibleModes.isEmpty(), is(true));
+
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.UNINITIALIZED);
+        instance.analyseInheritanceModes(gene);
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
     }
-    
+
+    @Test
+    public void testAnalyseInheritanceModesSingleSampleNoPassedVariants() {
+        Gene gene = new Gene("ABC", 123);
+        gene.addVariant(filteredVariant(1, 1 , "A", "T", new FailFilterResult(FilterType.FREQUENCY_FILTER)));
+
+        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
+
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.UNINITIALIZED);
+        instance.analyseInheritanceModes(gene);
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
+    }
+
+    private VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult) {
+        VariantEvaluation variant  = new VariantEvaluation.VariantBuilder(chr, pos, ref, alt).build();
+        variant.addFilterResult(filterResult);
+        return variant;
+    }
+
 }

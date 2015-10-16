@@ -7,19 +7,19 @@
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
 /**
- * NCDS info - see {@link ...}
+ * REMM info - see {@link ...}
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class NcdsScore extends BasePathogenicityScore {
+public class RemmScore extends BasePathogenicityScore {
         
-    public NcdsScore(float score) {
-        super(score, PathogenicitySource.NCDS);
+    public RemmScore(float score) {
+        super(score, PathogenicitySource.REMM);
     }
 
     @Override
     public String toString() {
-        return String.format("NCDS: %.3f", score);
+        return String.format("REMM: %.3f", score);
     }
     
 }

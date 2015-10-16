@@ -14,7 +14,8 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 
 /**
  * Interface to enable Filters and Prioritisers to be grouped together and provide some default utility methods.
- * 
+ *
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface AnalysisStep {

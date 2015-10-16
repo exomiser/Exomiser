@@ -264,6 +264,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Map<String, Gene> results = makeResults(sampleData.getGenes());
         Gene passedGene = results.get("GNRHR2");
         assertThat(passedGene.passedFilters(), is(true));
+        assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         assertThat(passedGene.getEntrezGeneID(), equalTo(114814));
         assertThat(passedGene.getGeneSymbol(), equalTo("GNRHR2"));
@@ -288,6 +289,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Map<String, Gene> results = makeResults(sampleData.getGenes());
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
+        assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
@@ -313,15 +315,18 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         //CompoundHeterozygous
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
+        assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(2));
         assertThat(passedGene.getVariantEvaluations().get(0).getPosition(), equalTo(123256214));
         assertThat(passedGene.getVariantEvaluations().get(1).getPosition(), equalTo(145508800));
-        //Homozygouse
+
+        //Homozygous
         passedGene = results.get("FGFR2");
         assertThat(passedGene.passedFilters(), is(true));
+        assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(passedGene.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         assertThat(passedGene.getEntrezGeneID(), equalTo(2263));
         assertThat(passedGene.getGeneSymbol(), equalTo("FGFR2"));

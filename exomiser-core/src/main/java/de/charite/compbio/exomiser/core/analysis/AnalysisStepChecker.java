@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * results, yet will allow users the freedom to change things within these
  * constraints.
  *
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class AnalysisStepChecker {

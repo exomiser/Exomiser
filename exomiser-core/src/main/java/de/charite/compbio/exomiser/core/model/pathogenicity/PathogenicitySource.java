@@ -19,6 +19,6 @@ public enum PathogenicitySource {
     MUTATION_TASTER,
     SIFT,
     CADD,
-    NCDS;
+    REMM;
     
 }

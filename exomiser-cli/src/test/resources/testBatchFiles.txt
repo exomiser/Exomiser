@@ -1,0 +1,6 @@
+#This is a comment line - there should be 3 valid file paths in this file and an erroneous empty line.
+file0
+file1
+#The line below is deliberately empty
+
+file2

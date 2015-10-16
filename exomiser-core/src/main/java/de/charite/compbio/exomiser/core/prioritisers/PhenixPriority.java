@@ -191,6 +191,7 @@ public class PhenixPriority implements Prioritiser {
      * @param hpoAnnotationFile path to the file
      */
     private void parseAnnotations(String hpoAnnotationFile) throws IOException {
+        geneId2annotations = new HashMap<>();
 
         BufferedReader in = new BufferedReader(new FileReader(hpoAnnotationFile));
         String line = null;
@@ -218,8 +219,6 @@ public class PhenixPriority implements Prioritiser {
             }
 
             List<Term> annotations;
-            
-            geneId2annotations = new HashMap<>();
 
             if (geneId2annotations.containsKey(entrez)) {
                 annotations = geneId2annotations.get(entrez);

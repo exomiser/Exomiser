@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
  * up an {@link Analysis} either programmatically with an {@link AnalysisFactory}
  * or via a YAML input file through the {@link AnalysisParser}
  *
+ * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SettingsParser {

@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.pathogenicity.NcdsScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.RemmScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.tribble.readers.TabixReader;
@@ -22,17 +22,17 @@ import org.springframework.stereotype.Component;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
-public class NcdsDao {
+public class RemmDao {
 
-    private final Logger logger = LoggerFactory.getLogger(NcdsDao.class);
+    private final Logger logger = LoggerFactory.getLogger(RemmDao.class);
 
-    private final TabixReader ncdsTabixReader;
+    private final TabixReader remmTabixReader;
 
-    public NcdsDao(TabixReader ncdsTabixReader) {
-        this.ncdsTabixReader = ncdsTabixReader;
+    public RemmDao(TabixReader remmTabixReader) {
+        this.remmTabixReader = remmTabixReader;
     }
 
-    @Cacheable(value = "mncds", key = "#variant.chromosomalVariant")
+    @Cacheable(value = "remm", key = "#variant.chromosomalVariant")
     public PathogenicityData getPathogenicityData(Variant variant) {
         // MNCDS has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
@@ -45,12 +45,12 @@ public class NcdsDao {
         String chromosome = variant.getChromosomeName();
         int start = variant.getPosition();
         int end = calculateEndPosition(variant);
-        return getNcdsData(chromosome, start, end);
+        return getRemmData(chromosome, start, end);
     }
 
     private int calculateEndPosition(Variant variant) {
         int end = variant.getPosition();
-        //these end positions are calculated according to recommendation by Max and Peter who produced the NCDS score
+        //these end positions are calculated according to recommendation by Max and Peter who produced the REMM score
         //don't change this unless they say. 
         if (isDeletion(variant)) {
             // test all deleted bases
@@ -70,12 +70,12 @@ public class NcdsDao {
         return variant.getRef().equals("-");
     }
     
-    private PathogenicityData getNcdsData(String chromosome, int start, int end) throws NumberFormatException {
+    private PathogenicityData getRemmData(String chromosome, int start, int end) throws NumberFormatException {
         try {
             float ncds = Float.NaN;
             String line;
 //            logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
-            TabixReader.Iterator results = ncdsTabixReader.query(chromosome + ":" + start + "-" + end);
+            TabixReader.Iterator results = remmTabixReader.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
                 if (Float.isNaN(ncds)) {
@@ -86,10 +86,10 @@ public class NcdsDao {
             }
             //logger.info("Final score " + ncds);
             if (!Float.isNaN(ncds)) {
-                return new PathogenicityData(new NcdsScore(ncds));
+                return new PathogenicityData(new RemmScore(ncds));
             }
         } catch (IOException e) {
-            logger.error("Unable to read from NCDS tabix file {}", ncdsTabixReader.getSource(), e);
+            logger.error("Unable to read from REMM tabix file {}", remmTabixReader.getSource(), e);
         }
         return new PathogenicityData();
     }

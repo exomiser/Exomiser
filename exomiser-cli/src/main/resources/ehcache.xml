@@ -16,8 +16,8 @@
     <!--CADD cache-->
     <cache name="cadd" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
-    <!--MNCDS cache-->
-    <cache name="mncds" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+    <!--REMM cache-->
+    <cache name="remm" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
     <!--REG feature cache-->
     <cache name="regulatory" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>

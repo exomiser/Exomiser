@@ -17,22 +17,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.dao.CaddDao;
-import de.charite.compbio.exomiser.core.model.TopologicalDomain;
+import de.charite.compbio.exomiser.core.dao.*;
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.dao.FrequencyDao;
-import de.charite.compbio.exomiser.core.dao.NcdsDao;
-import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
-import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
-import de.charite.compbio.exomiser.core.dao.TadDao;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -64,16 +54,16 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Autowired
     private FrequencyDao frequencyDao;
     @Autowired
-    private TadDao tadDao;
-    @Autowired
     private PathogenicityDao pathogenicityDao;
     @Resource(name = "caddDao")
     private CaddDao caddDao;
-    @Resource(name = "ncdsDao")
-    private NcdsDao ncdsDao;
+    @Resource(name = "remmDao")
+    private RemmDao remmDao;
     @Autowired
     private RegulatoryFeatureDao regulatoryFeatureDao;
-    
+    @Autowired
+    private TadDao tadDao;
+
     private static final PathogenicityData NO_PATH_DATA = new PathogenicityData();
 
     @Override
@@ -103,13 +93,13 @@ public class VariantDataServiceImpl implements VariantDataService {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
             allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
         }
-        else if (pathogenicitySources.contains(PathogenicitySource.NCDS) && isRegulatoryNonCodingVariant(variantEffect)) {                                        
-            //NCDS is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
-            PathogenicityData nonCodingScore = ncdsDao.getPathogenicityData(variant);
+        else if (pathogenicitySources.contains(PathogenicitySource.REMM) && isRegulatoryNonCodingVariant(variantEffect)) {
+            //REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
+            PathogenicityData nonCodingScore = remmDao.getPathogenicityData(variant);
             allPathScores.addAll(nonCodingScore.getPredictedPathogenicityScores());
         }
         
-        //CADD does all of it although is not as good as NCDS for the non-coding regions.
+        //CADD does all of it although is not as good as REMM for the non-coding regions.
         if (pathogenicitySources.contains(PathogenicitySource.CADD)) {
             PathogenicityData caddScore = caddDao.getPathogenicityData(variant);
             allPathScores.addAll(caddScore.getPredictedPathogenicityScores());

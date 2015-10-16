@@ -55,8 +55,8 @@ public class PathogenicityData {
         return (CaddScore) getPredictedScore(CADD);
     }
 
-    public NcdsScore getNcdsScore() {
-        return (NcdsScore) getPredictedScore(NCDS);
+    public RemmScore getNcdsScore() {
+        return (RemmScore) getPredictedScore(REMM);
     }
     
     public List<PathogenicityScore> getPredictedPathogenicityScores() {

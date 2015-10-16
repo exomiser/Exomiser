@@ -6,7 +6,7 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.model.pathogenicity.NcdsScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.RemmScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.tribble.readers.TabixReader;
@@ -27,19 +27,19 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NcdsDaoTest {
+public class RemmDaoTest {
     
-    private NcdsDao instance;
+    private RemmDao instance;
     
     @Mock
-    private TabixReader ncdsTabixReader;
+    private TabixReader remmTabixReader;
     
     private MockTabixIterator mockIterator;
     
     @Before
     public void setUp() {
         mockIterator = new MockTabixIterator();
-        instance = new NcdsDao(ncdsTabixReader);
+        instance = new RemmDao(remmTabixReader);
     }
 
     private static VariantEvaluation variant(int chr, int pos, String ref, String alt) {
@@ -62,14 +62,14 @@ public class NcdsDaoTest {
     
     @Test
     public void testGetPathogenicityData_unableToReadFromSource() {
-        Mockito.when(ncdsTabixReader.query("1:1-1")).thenThrow(IOException.class);
+        Mockito.when(remmTabixReader.query("1:1-1")).thenThrow(IOException.class);
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData()));
     }
     
     @Test
     public void testGetPathogenicityData_singleNucleotideVariationNoData() {
         mockIterator.setValues(Arrays.asList());
-        Mockito.when(ncdsTabixReader.query("1:1-1")).thenReturn(mockIterator);
+        Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData()));
     }
@@ -77,24 +77,24 @@ public class NcdsDaoTest {
     @Test
     public void testGetPathogenicityData_singleNucleotideVariation() {
         mockIterator.setValues(Arrays.asList("1\t1\t1.0"));
-        Mockito.when(ncdsTabixReader.query("1:1-1")).thenReturn(mockIterator);
+        Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData(new NcdsScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData(new RemmScore(1f))));
     }
     
     @Test
     public void testGetPathogenicityData_insertion() {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t1.0"));
-        Mockito.when(ncdsTabixReader.query("1:1-2")).thenReturn(mockIterator);
+        Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(new PathogenicityData(new NcdsScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(new PathogenicityData(new RemmScore(1f))));
     }
     
     @Test
     public void testGetPathogenicityData_deletion() {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0"));
-        Mockito.when(ncdsTabixReader.query("1:1-4")).thenReturn(mockIterator);
+        Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(new PathogenicityData(new NcdsScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(new PathogenicityData(new RemmScore(1f))));
     }
 }
