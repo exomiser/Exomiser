@@ -34,6 +34,10 @@ public class RegulatoryFeatureFilter implements VariantFilter {
         // Note the INTERGENIC/UPSTREAM variants have already been assessed by the RegFeatureDAO and VariantEffect set to REGULATORY_REGION_VARIANT if in a known region
         // TODO make below nicer using a Jannovar method hopefully 
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
+            // GeneReassigner can assign a new empty list
+            if (variantEvaluation.getAnnotations().isEmpty()){
+                return failedFilterResult;
+            }
             Annotation annotation = variantEvaluation.getAnnotations().get(0);//.getHighestImpactAnnotation();
             String intergenicAnnotation = annotation.toVCFAnnoString(variantEvaluation.getAlt());        
             int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14])); 

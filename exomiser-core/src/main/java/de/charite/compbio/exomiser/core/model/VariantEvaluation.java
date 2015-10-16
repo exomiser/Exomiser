@@ -64,9 +64,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     //Jannovar annotations
     private final boolean isOffExome;
     private VariantEffect variantEffect;
-    private final List<Annotation> annotations;
-    private final String geneSymbol;
-    private final int entrezGeneId;
+    private List<Annotation> annotations;
+    private String geneSymbol;
+    private int entrezGeneId;
     private final String chromosomalVariant;
 
     //results from filters
@@ -185,8 +185,18 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     @Override
+    public void setGeneSymbol(String symbol) {
+        geneSymbol = symbol;
+    }
+    
+    @Override
     public int getEntrezGeneId() {
         return entrezGeneId;
+    }
+    
+    @Override
+    public void setEntrezGeneId(int id) {
+        entrezGeneId = id;
     }
 
     @Override
@@ -226,6 +236,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     @Override
     public List<Annotation> getAnnotations() {
         return annotations;
+    }
+    
+    @Override 
+    public void setAnnotations(List<Annotation> alist) {
+        annotations = alist;
     }
 
     public boolean hasAnnotations() {

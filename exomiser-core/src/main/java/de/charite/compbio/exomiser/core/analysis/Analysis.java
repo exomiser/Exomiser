@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
+import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Path;
@@ -72,6 +93,48 @@ public class Analysis {
 
     public SampleData getSampleData() {
         return sampleData;
+    }
+
+    public PriorityType getMainPrioritiserType() {
+        for (AnalysisStep analysisStep : analysisSteps) {
+            if (Prioritiser.class.isInstance(analysisStep)) {
+                Prioritiser prioritiser = (Prioritiser) analysisStep;
+                //OMIM, if combined with other prioritisers isn't the main one.
+                if (prioritiser.getPriorityType() != PriorityType.OMIM_PRIORITY) {
+                    return prioritiser.getPriorityType();
+                }
+            }
+        }
+        return PriorityType.NONE;
+    }
+
+    public List<List<AnalysisStep>> getAnalysisStepsGroupedByFunction() {
+        List<List<AnalysisStep>> groups = new ArrayList<>();
+        if (analysisSteps.isEmpty()) {
+            logger.debug("No AnalysisSteps to group.");
+            return groups;
+        }
+
+        AnalysisStep currentGroupStep = analysisSteps.get(0);
+        List<AnalysisStep> currentGroup = new ArrayList<>();
+        currentGroup.add(currentGroupStep);
+        logger.debug("First group is for {} steps", currentGroupStep.getType());
+        for (int i = 1; i < analysisSteps.size(); i++) {
+            AnalysisStep step = analysisSteps.get(i);
+
+            if (currentGroupStep.getType() != step.getType()) {
+                logger.debug("Making new group for {} steps", step.getType());
+                groups.add(currentGroup);
+                currentGroup = new ArrayList<>();
+                currentGroupStep = step;
+            }
+
+            currentGroup.add(step);
+        }
+        //make sure the last group is added too
+        groups.add(currentGroup);
+
+        return groups;
     }
 
     /**

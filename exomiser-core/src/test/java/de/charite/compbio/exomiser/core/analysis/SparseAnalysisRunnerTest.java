@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.filters.*;
@@ -256,6 +275,8 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         SampleData sampleData = analysis.getSampleData();
         printResults(sampleData);
+        // fails with my new code as it reassigns 1:g.145510000G>A from GNRHR2 to RBM8A as both are annotated and RBM8A scores better due to above code
+        // note that the GNRH2 is actually a missense variant and RBM8A is a 3UTR variant so prob not that sensible!
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
         Map<String, Gene> results = makeResults(sampleData.getGenes());

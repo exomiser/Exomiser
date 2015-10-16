@@ -1,12 +1,27 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.dao.*;
-import de.charite.compbio.exomiser.core.dao.RemmDao;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
@@ -21,18 +36,24 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import static de.charite.compbio.jannovar.annotation.VariantEffect.REGULATORY_REGION_VARIANT;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +77,8 @@ public class VariantDataServiceImplTest {
     private CaddDao mockCaddDao;
     @Mock
     private RegulatoryFeatureDao mockRegulatoryFeatureDao;
+    @Mock
+    private TadDao mockTadDao;
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
@@ -70,12 +93,11 @@ public class VariantDataServiceImplTest {
     @Before
     public void setUp() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-
+        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION);
-
+        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION_VARIANT);
     }
 
     private static VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
@@ -201,6 +223,15 @@ public class VariantDataServiceImplTest {
         variant = buildVariantOfType(VariantEffect.UPSTREAM_GENE_VARIANT);
         VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
         assertThat(result, equalTo(REGULATORY_REGION));
+    }
+
+    @Test
+    public void serviceReturnsTopologicalDomains(){
+        List<TopologicalDomain> tads = Arrays.asList(new TopologicalDomain(1, 1, 2, Collections.<String, Integer>emptyMap()));
+        Mockito.when(mockTadDao.getAllTads()).thenReturn(tads);
+
+        List<TopologicalDomain> topologicalDomains = instance.getTopologicallyAssociatedDomains();
+        assertThat(topologicalDomains, equalTo(tads));
     }
 
 }

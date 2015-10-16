@@ -49,6 +49,7 @@ analysis:
         #variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
         #knownVariantFilter: {}, #removes variants represented in the database
         frequencyFilter: {maxFrequency: 1.0},
+        regulatoryFeatureFilter: {},
         pathogenicityFilter: {keepNonPathogenic: true},
         #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
         #they will analyse genes according to the specified modeOfInheritance above- UNDEFINED will not be analysed.

@@ -5,13 +5,19 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -42,7 +48,6 @@ public class RegulatoryFeatureDao {
                 PreparedStatement preparedStatement = createPreparedStatement(connection, variant);
                 ResultSet rs = preparedStatement.executeQuery()) {
             if (rs.next()) {
-                //logger.info("Found reg variant");
                 return VariantEffect.REGULATORY_REGION_VARIANT;
                 // later may set variant object with the type of regulatory feature, associated gene and tissue involved
             }

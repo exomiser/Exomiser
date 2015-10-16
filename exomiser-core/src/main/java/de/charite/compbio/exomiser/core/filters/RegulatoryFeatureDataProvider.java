@@ -6,16 +6,17 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.Map;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class RegulatoryFeatureDataProvider extends AbstractFilterDataProvider {
-    
-
+        
     public RegulatoryFeatureDataProvider(VariantDataService variantDataService, VariantFilter variantFilter) {
         super(variantDataService, variantFilter);
     }
