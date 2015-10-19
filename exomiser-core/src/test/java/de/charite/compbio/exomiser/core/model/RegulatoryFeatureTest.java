@@ -61,11 +61,6 @@ public class RegulatoryFeatureTest {
 
     @Test
     public void testGetFeatureType() {
-        assertThat(instance.getFeatureType(), equalTo(FeatureType.ENHANCER));
-    }
-
-    @Test
-    public void testGetVariantEffect() {
         assertThat(instance.getFeatureType(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
     }
 
