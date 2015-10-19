@@ -24,10 +24,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.TopologicalDomain;
-import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -47,7 +44,7 @@ public interface VariantDataService {
 
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
 
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant);
+    public List<RegulatoryFeature> getRegulatoryFeatures();
     
     public List<TopologicalDomain> getTopologicallyAssociatedDomains();
         

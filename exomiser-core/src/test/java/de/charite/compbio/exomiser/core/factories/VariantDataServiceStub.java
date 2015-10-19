@@ -24,6 +24,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -53,8 +54,8 @@ public class VariantDataServiceStub implements VariantDataService {
     }
 
     @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
-        return variant.getVariantEffect();
+    public List<RegulatoryFeature> getRegulatoryFeatures() {
+        return Collections.emptyList();
     }
 
     @Override

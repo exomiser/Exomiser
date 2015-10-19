@@ -26,6 +26,7 @@ import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -145,7 +146,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis) {
-        TadIndex tadIndex = new TadIndex(variantDataService.getTopologicallyAssociatedDomains());
+        ChromosomalRegionIndex<TopologicalDomain> tadIndex = new ChromosomalRegionIndex<>(variantDataService.getTopologicallyAssociatedDomains());
         PriorityType mainPriorityType = analysis.getMainPrioritiserType();
         return new GeneReassigner(tadIndex, mainPriorityType);
     }

@@ -34,23 +34,22 @@ import static org.junit.Assert.*;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TadIndexTest {
+public class ChromosomalRegionIndexTest {
 
-    private TadIndex instance;
+    private ChromosomalRegionIndex<TopologicalDomain> instance;
 
     private final VariantCoordinates variant = new SimpleVariantCoordinates(1, 50, "A", "T");
 
     private void createInstance(TopologicalDomain... tad) {
-        instance = new TadIndex(Arrays.asList(tad));
+        instance = new ChromosomalRegionIndex<>(Arrays.asList(tad));
     }
-
 
     @Test
     public void testGetTadsContainingVariant_SingleTad() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 100, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getTadsContainingVariant(variant), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad)));
     }
 
     @Test
@@ -58,7 +57,7 @@ public class TadIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getTadsContainingVariant(variant), equalTo(Collections.<TopologicalDomain>emptyList()));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Collections.<TopologicalDomain>emptyList()));
     }
 
     @Test
@@ -66,7 +65,7 @@ public class TadIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getTadsContainingVariant(new SimpleVariantCoordinates(100, 50, "A", "T")), equalTo(Collections.<TopologicalDomain>emptyList()));
+        assertThat(instance.getRegionsContainingVariant(new SimpleVariantCoordinates(100, 50, "A", "T")), equalTo(Collections.<TopologicalDomain>emptyList()));
     }
 
     @Test
@@ -75,7 +74,7 @@ public class TadIndexTest {
         TopologicalDomain tad1 = new TopologicalDomain(2, 200, 300, new HashMap<>());
         createInstance(tad, tad1);
 
-        assertThat(instance.getTadsContainingVariant(variant), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad)));
     }
 
     @Test
@@ -84,7 +83,7 @@ public class TadIndexTest {
         TopologicalDomain tad1 = new TopologicalDomain(1, 25, 75, new HashMap<>());
         createInstance(tad, tad1);
 
-        assertThat(instance.getTadsContainingVariant(variant), equalTo(Arrays.asList(tad, tad1)));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad, tad1)));
     }
 
     @Test
@@ -93,7 +92,7 @@ public class TadIndexTest {
         TopologicalDomain tad1 = new TopologicalDomain(1, 75, 200, new HashMap<>());
         createInstance(tad, tad1);
 
-        assertThat(instance.getTadsContainingVariant(variant), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad)));
     }
 
 }

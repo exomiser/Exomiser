@@ -21,6 +21,7 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.dao.*;
+import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
@@ -125,12 +126,17 @@ public class VariantDataServiceImpl implements VariantDataService {
         return !nonRegulatoryNonCodingVariantEffects.contains(variantEffect);
     }
     
-    @Override
+//    @Override
     public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
         if (variant.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variant.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
             return regulatoryFeatureDao.getRegulatoryFeatureData(variant);
         }
         return variant.getVariantEffect();
+    }
+
+    @Override
+    public List<RegulatoryFeature> getRegulatoryFeatures() {
+        return regulatoryFeatureDao.getRegulatoryFeatures();
     }
 
     @Override

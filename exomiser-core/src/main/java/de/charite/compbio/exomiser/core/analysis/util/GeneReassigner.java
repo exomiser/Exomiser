@@ -47,17 +47,18 @@ public class GeneReassigner {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneReassigner.class);
 
+    //TODO: Check - shouldn't need this now - all regulatory region variants are assigned by default so intergenic and upstream are now certainly not regulatory region variants.
     private final Set<VariantEffect> nonCodingRegulatoryVariants = EnumSet.of(VariantEffect.REGULATORY_REGION_VARIANT, VariantEffect.INTERGENIC_VARIANT, VariantEffect.UPSTREAM_GENE_VARIANT);
 
     private final PriorityType priorityType;
-    private final TadIndex tadIndex;
+    private final ChromosomalRegionIndex<TopologicalDomain> tadIndex;
 
 
     /**
      * @param tadIndex
      * @param priorityType
      */
-    public GeneReassigner(TadIndex tadIndex, PriorityType priorityType) {
+    public GeneReassigner(ChromosomalRegionIndex<TopologicalDomain> tadIndex, PriorityType priorityType) {
         this.priorityType = priorityType;
         this.tadIndex = tadIndex;
         logger.info("Made new GeneReassigner for {}", priorityType);
@@ -87,6 +88,7 @@ public class GeneReassigner {
 
     private void assignVariantToGeneWithHighestPhenotypeScore(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
         Gene geneWithHighestPhenotypeScore = null;
+        //assign this to the variant's current gene as we don't necessarily want ALL the regulatory region variants to clump into one gene.
         float bestScore = 0;
         List<String> genesInTad = getGenesInTadForVariant(variantEvaluation);
         for (String geneSymbol : genesInTad) {
@@ -104,7 +106,7 @@ public class GeneReassigner {
     }
 
     private List<String> getGenesInTadForVariant(VariantEvaluation variantEvaluation) {
-        List<TopologicalDomain> tadsContainingVariant = tadIndex.getTadsContainingVariant(variantEvaluation);
+        List<TopologicalDomain> tadsContainingVariant = tadIndex.getRegionsContainingVariant(variantEvaluation);
         return getGenesInTads(tadsContainingVariant);
     }
 

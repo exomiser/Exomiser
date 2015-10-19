@@ -39,6 +39,7 @@ import org.junit.Test;
  *
  * @author jj8
  */
+@Ignore
 public class RegulatoryFeatureDataProviderTest {
     
     private RegulatoryFeatureDataProvider instance;
