@@ -26,14 +26,14 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
  */
 public class RegulatoryFeature implements ChromosomalRegion {
 
-    enum FeatureType{ENHANCER, PROMOTER};
+    public enum FeatureType {ENHANCER, TF_BINDING_SITE, PROMOTER, PROMOTER_FLANKING_REGION, CTCF_BINDING_SITE, OPEN_CHROMATIN, FANTOM_PERMISSIVE, UNKNOWN};
 
     private final int chromosome;
     private final int start;
     private final int end;
-    private final VariantEffect featureType;
+    private final FeatureType featureType;
 
-    public RegulatoryFeature(int chromosome, int start, int end, VariantEffect featureType) {
+    public RegulatoryFeature(int chromosome, int start, int end, FeatureType featureType) {
         this.chromosome = chromosome;
         this.start = start;
         this.end = end;
@@ -52,10 +52,13 @@ public class RegulatoryFeature implements ChromosomalRegion {
         return end;
     }
 
-    public VariantEffect getFeatureType() {
+    public FeatureType getFeatureType() {
         return featureType;
     }
 
+    public VariantEffect getVariantEffect() {
+        return VariantEffect.REGULATORY_REGION_VARIANT;
+    }
 
     @Override
     public boolean equals(Object o) {

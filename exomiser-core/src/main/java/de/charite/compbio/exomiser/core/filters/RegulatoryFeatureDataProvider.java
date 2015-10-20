@@ -58,7 +58,7 @@ public class RegulatoryFeatureDataProvider extends AbstractFilterDataProvider {
             return;
         }
         logger.debug("chr {} {} found in regions {}", variantEvaluation.getChromosome(), variantEvaluation.getPosition(), overlappingFeatures);
-        VariantEffect variantEffect = overlappingFeatures.get(0).getFeatureType();
+        VariantEffect variantEffect = overlappingFeatures.get(0).getVariantEffect();
         variantEvaluation.setVariantEffect(variantEffect);
     }
 

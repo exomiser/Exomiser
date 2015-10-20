@@ -41,7 +41,7 @@ public class RegulatoryFeatureTest {
         int start = 10;
         int end = 100;
         FeatureType featureType = FeatureType.ENHANCER;
-        instance = new RegulatoryFeature(chr, start, end, VariantEffect.REGULATORY_REGION_VARIANT);
+        instance = new RegulatoryFeature(chr, start, end, featureType);
     }
 
     @Test
@@ -61,7 +61,12 @@ public class RegulatoryFeatureTest {
 
     @Test
     public void testGetFeatureType() {
-        assertThat(instance.getFeatureType(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+        assertThat(instance.getFeatureType(), equalTo(FeatureType.ENHANCER));
+    }
+
+    @Test
+    public void testGetVariantEffect() {
+        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
     }
 
     @Test

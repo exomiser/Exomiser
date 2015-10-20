@@ -24,11 +24,9 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
+import de.charite.compbio.exomiser.core.model.RegulatoryFeature.FeatureType;
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.sql.Connection;
@@ -38,7 +36,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -108,8 +105,8 @@ public class RegulatoryFeatureDao {
             int start = rs.getInt("start");
             int end = rs.getInt("end");
             String featureType = rs.getString("feature_type");
-            VariantEffect variantEffect = convertFeatureTypeToVariantEffect(featureType);
-            RegulatoryFeature regulatoryFeature = new RegulatoryFeature(chr, start, end, variantEffect);
+            FeatureType type = convertToFeatureType(featureType);
+            RegulatoryFeature regulatoryFeature = new RegulatoryFeature(chr, start, end, type);
             regulatoryFeatures.add(regulatoryFeature);
         }
         return regulatoryFeatures;
@@ -117,19 +114,24 @@ public class RegulatoryFeatureDao {
 
     //TODO: Jannovar VariantEffect doesn't capture these well
     //TODO: should these also be combined with the TADs? CTCF binding sites can act as insulators, enhancers can have long-range effects within a TAD, promoters are shorter range (to my knowledge), open chromatin has what effect on expression?
-    private VariantEffect convertFeatureTypeToVariantEffect(String featureType) {
+    private FeatureType convertToFeatureType(String featureType) {
         switch(featureType) {
             case "Enhancer":
-                return VariantEffect.REGULATORY_REGION_VARIANT;
+                return FeatureType.ENHANCER;
             case "TF binding site":
-                return VariantEffect.TF_BINDING_SITE_VARIANT;
+                return FeatureType.TF_BINDING_SITE;
             case "Promoter":
+                return FeatureType.PROMOTER;
             case "Promoter Flanking Region":
+                return FeatureType.PROMOTER_FLANKING_REGION;
             case "CTCF Binding Site":
+                return FeatureType.CTCF_BINDING_SITE;
             case "Open chromatin":
+                return FeatureType.OPEN_CHROMATIN;
             case "FANTOM permissive":
+                return FeatureType.FANTOM_PERMISSIVE;
             default:
-                return VariantEffect.REGULATORY_REGION_VARIANT;
+                return FeatureType.UNKNOWN;
         }
     }
 }

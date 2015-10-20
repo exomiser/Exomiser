@@ -20,8 +20,9 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
-import static de.charite.compbio.jannovar.annotation.VariantEffect.*;
-import org.junit.Before;
+
+import static de.charite.compbio.exomiser.core.model.RegulatoryFeature.FeatureType.*;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,21 +53,21 @@ public class RegulatoryFeatureDaoTest {
         List<RegulatoryFeature> regulatoryFeatures = new ArrayList<>();
 
 //        (11,	96762600,	96763399,	'Enhancer'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96762600, 96763399, REGULATORY_REGION_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96762600, 96763399, ENHANCER));
 //        (11,	96777007,	96777375,	'Open chromatin'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96777007, 96777375, REGULATORY_REGION_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96777007, 96777375, OPEN_CHROMATIN));
 //        (11,	96781023,	96781500,	'TF binding site'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96781023, 96781500, TF_BINDING_SITE_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96781023, 96781500, TF_BINDING_SITE));
 //        (11,	96781600,	96781799,	'Promoter'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96781600, 96781799, REGULATORY_REGION_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96781600, 96781799, PROMOTER));
 //        (11,	96794200,	96794599,	'CTCF Binding Site'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96794200, 96794599, REGULATORY_REGION_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96794200, 96794599, CTCF_BINDING_SITE));
 //        (11,	96798354,	96798827,	'FANTOM permissive'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96798354, 96798827, REGULATORY_REGION_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96798354, 96798827, FANTOM_PERMISSIVE));
 //        (11,	96817000,	96818399,	'Promoter Flanking Region'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96817000, 96818399, REGULATORY_REGION_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96817000, 96818399, PROMOTER_FLANKING_REGION));
 //        (11,	96820460,	96821548,	'unrecognised type');
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96820460, 96821548, REGULATORY_REGION_VARIANT));
+        regulatoryFeatures.add(new RegulatoryFeature(11, 96820460, 96821548, UNKNOWN));
 
         List<RegulatoryFeature> results = instance.getRegulatoryFeatures();
 
