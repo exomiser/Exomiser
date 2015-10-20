@@ -76,22 +76,34 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
     }
 
     public List<T> getRegionsContainingVariant(VariantCoordinates variantCoordinates) {
-        IntervalArray<T> intervalTree = index.get(variantCoordinates.getChromosome());
-        if (intervalTree == null) {
-            return Collections.emptyList();
-        }
-        IntervalArray.QueryResult queryResult = intervalTree.findOverlappingWithPoint(variantCoordinates.getPosition());
-        return queryResult.getEntries();
+        int chromosome = variantCoordinates.getChromosome();
+        int position = variantCoordinates.getPosition();
+        return getRegionsOverlappingPosition(chromosome, position);
+    }
+
+    /**
+     * Use one-based co-ordinates for this method.
+     * @param chromosome
+     * @param position
+     * @return
+     */
+    public List<T> getRegionsOverlappingPosition(int chromosome, int position) {
+        IntervalArray<T> intervalTree = index.get(chromosome);
+            if (intervalTree == null) {
+                return Collections.emptyList();
+            }
+            IntervalArray.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
+            return queryResult.getEntries();
     }
 
     private class ChromosomalRegionEndExtractor implements IntervalEndExtractor<T> {
 
-        public int getBegin(T topologicalDomain) {
-            return topologicalDomain.getStart();
+        public int getBegin(T region) {
+            return region.getStart() - 1;
         }
 
-        public int getEnd(T topologicalDomain) {
-            return topologicalDomain.getEnd();
+        public int getEnd(T region) {
+            return region.getEnd();
         }
     }
 

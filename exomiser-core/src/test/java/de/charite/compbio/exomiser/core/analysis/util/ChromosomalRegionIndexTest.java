@@ -69,6 +69,46 @@ public class ChromosomalRegionIndexTest {
     }
 
     @Test
+    public void testGetTadsContainingPosition_PositionOneBeforeStartOfRegion() {
+        TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
+        createInstance(tad);
+
+        assertThat(instance.getRegionsOverlappingPosition(1, 9), equalTo(Collections.<TopologicalDomain>emptyList()));
+    }
+
+    @Test
+    public void testGetTadsContainingPosition_PositionAtStartOfRegion() {
+        TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
+        createInstance(tad);
+
+        assertThat(instance.getRegionsOverlappingPosition(1, 10), equalTo(Arrays.asList(tad)));
+    }
+
+    @Test
+    public void testGetTadsContainingPosition_PositionMiddleOfRegion() {
+        TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
+        createInstance(tad);
+
+        assertThat(instance.getRegionsOverlappingPosition(1, 11), equalTo(Arrays.asList(tad)));
+    }
+
+    @Test
+    public void testGetTadsContainingPosition_PositionAtEndOfRegion() {
+        TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
+        createInstance(tad);
+
+        assertThat(instance.getRegionsOverlappingPosition(1, 12), equalTo(Arrays.asList(tad)));
+    }
+
+    @Test
+    public void testGetTadsContainingPosition_PositionOneAfterEndOfRegion() {
+        TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
+        createInstance(tad);
+
+        assertThat(instance.getRegionsOverlappingPosition(1, 13), equalTo(Collections.<TopologicalDomain>emptyList()));
+    }
+
+    @Test
     public void testGetTadsContainingVariant_TwoNonOverlappingTads() {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 100, new HashMap<>());
         TopologicalDomain tad1 = new TopologicalDomain(2, 200, 300, new HashMap<>());
