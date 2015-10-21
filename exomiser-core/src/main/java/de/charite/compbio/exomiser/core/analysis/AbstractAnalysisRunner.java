@@ -115,7 +115,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
-        logTopNumScoringGenes(5, genes, analysis);
+//        logTopNumScoringGenes(5, genes, analysis);
 
         long endAnalysisTimeMillis = System.currentTimeMillis();
         double analysisTimeSecs = (double) (endAnalysisTimeMillis - startAnalysisTimeMillis) / 1000;
@@ -221,6 +221,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private Function<VariantEvaluation, VariantEvaluation> setRegulatoryRegionVariantEffect(ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
         return variantEvaluation -> {
             VariantEffect variantEffect = variantEvaluation.getVariantEffect();
+            //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
             if (variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT) {
                 List<RegulatoryFeature> overlappingFeatures = regulatoryRegionIndex.getRegionsContainingVariant(variantEvaluation);
                 if (!overlappingFeatures.isEmpty()) {
