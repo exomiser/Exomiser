@@ -1,5 +1,10 @@
 # The Exomiser - Core Library Changelog
 
+## 7.1.0 2015-10-21
+- Added new ChromosomalRegion interface implemented by TopologicalDomain and RegulatoryRegion classes.
+- Added new ChromosomalRegionIndex class for providing extremely fast lookups of variants in ChromosomalRegions.
+- Removed RegulatoryFilterDataProvider - this functionality is now in the AbstractAnalysisRunner.
+
 ## 7.0.0 2015-10-01
 Now requires Java 8 or higher to run.
 - API changes:
