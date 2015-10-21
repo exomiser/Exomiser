@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -35,9 +54,9 @@ public class VariantFactory {
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
 
     private final VariantAnnotator variantAnnotator;
-    /*in cases where a variant cannot be positioned on a chromosome we're going 
-     * to use 0 in order to fulfil the requirement of a variant having an integer chromosome 
-     */
+
+    //in cases where a variant cannot be positioned on a chromosome we're going to use 0 in order to fulfil the
+    //requirement of a variant having an integer chromosome
     private final int UNKNOWN_CHROMOSOME = 0;
 
     public VariantFactory(VariantAnnotator variantAnnotator) {
@@ -148,7 +167,7 @@ public class VariantFactory {
         String ref = buildRef(variantAnnotations);
         String alt = buildAlt(variantAnnotations);
 
-        VariantEffect variantEffect = variantAnnotations.getHighestImpactEffect();
+        VariantEffect variantEffect = getVariantEffect(variantAnnotations, chr, pos);
         GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
@@ -169,6 +188,10 @@ public class VariantFactory {
                 .variantEffect(variantEffect)
                 .annotations(variantAnnotations.getAnnotations())
                 .build();
+    }
+
+    private VariantEffect getVariantEffect(VariantAnnotations variantAnnotations, int chr, int pos) {
+        return variantAnnotations.getHighestImpactEffect();
     }
 
     /**

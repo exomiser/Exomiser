@@ -19,25 +19,25 @@
 
 package de.charite.compbio.exomiser.core.model;
 
-import java.util.Map;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 /**
- * Represents a topological domain of a piece of chromatin
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TopologicalDomain implements ChromosomalRegion {
+public class RegulatoryFeature implements ChromosomalRegion {
+
+    public enum FeatureType {ENHANCER, TF_BINDING_SITE, PROMOTER, PROMOTER_FLANKING_REGION, CTCF_BINDING_SITE, OPEN_CHROMATIN, FANTOM_PERMISSIVE, UNKNOWN};
 
     private final int chromosome;
     private final int start;
     private final int end;
-    private final Map<String, Integer> genes;
+    private final FeatureType featureType;
 
-    public TopologicalDomain(int chromosome, int start, int end, Map<String, Integer> genes) {
+    public RegulatoryFeature(int chromosome, int start, int end, FeatureType featureType) {
         this.chromosome = chromosome;
         this.start = start;
         this.end = end;
-        this.genes = genes;
+        this.featureType = featureType;
     }
 
     public int getChromosome() {
@@ -52,16 +52,12 @@ public class TopologicalDomain implements ChromosomalRegion {
         return end;
     }
 
-    public Map<String, Integer> getGenes() {
-        return genes;
+    public FeatureType getFeatureType() {
+        return featureType;
     }
 
-    public boolean containsPosition(VariantCoordinates variantCoordinates) {
-        if (variantCoordinates.getChromosome() == chromosome) {
-            int variantPosition = variantCoordinates.getPosition();
-            return start <= variantPosition && end >= variantPosition;
-        }
-        return false;
+    public VariantEffect getVariantEffect() {
+        return VariantEffect.REGULATORY_REGION_VARIANT;
     }
 
     @Override
@@ -69,12 +65,12 @@ public class TopologicalDomain implements ChromosomalRegion {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologicalDomain that = (TopologicalDomain) o;
+        RegulatoryFeature that = (RegulatoryFeature) o;
 
         if (chromosome != that.chromosome) return false;
         if (start != that.start) return false;
         if (end != that.end) return false;
-        return genes.equals(that.genes);
+        return featureType == that.featureType;
 
     }
 
@@ -83,18 +79,17 @@ public class TopologicalDomain implements ChromosomalRegion {
         int result = chromosome;
         result = 31 * result + start;
         result = 31 * result + end;
-        result = 31 * result + genes.hashCode();
+        result = 31 * result + featureType.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
-        return "TopologicalDomain{" +
+        return "RegulatoryFeature{" +
                 "chromosome=" + chromosome +
                 ", start=" + start +
                 ", end=" + end +
-                ", genes=" + genes +
+                ", featureType=" + featureType +
                 '}';
     }
-
 }

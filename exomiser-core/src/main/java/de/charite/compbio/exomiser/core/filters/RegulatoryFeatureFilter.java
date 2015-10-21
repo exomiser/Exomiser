@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -20,9 +39,6 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     private final FilterResult passedFilterResult = new PassFilterResult(filterType);
     private final FilterResult failedFilterResult = new FailFilterResult(filterType);
 
-    public RegulatoryFeatureFilter() {
-    }
-
     @Override
     public FilterType getFilterType() {
         return filterType;
@@ -38,15 +54,19 @@ public class RegulatoryFeatureFilter implements VariantFilter {
             if (variantEvaluation.getAnnotations().isEmpty()){
                 return failedFilterResult;
             }
-            Annotation annotation = variantEvaluation.getAnnotations().get(0);//.getHighestImpactAnnotation();
-            String intergenicAnnotation = annotation.toVCFAnnoString(variantEvaluation.getAlt());        
-            int dist = Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14])); 
+            int dist = getDistFromNearestGene(variantEvaluation);
             if (dist > 0 && dist < 20000){
                 return passedFilterResult;
             }
             return failedFilterResult;
         }
         return passedFilterResult;
+    }
+
+    private int getDistFromNearestGene(VariantEvaluation variantEvaluation) {
+        Annotation annotation = variantEvaluation.getAnnotations().get(0);//.getHighestImpactAnnotation();
+        String intergenicAnnotation = annotation.toVCFAnnoString(variantEvaluation.getAlt());
+        return Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14]));
     }
 
     @Override
