@@ -47,8 +47,9 @@ analysis:
         # 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive
         priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501},
         #variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
-        #knownVariantFilter: {}, #removes variants represented in the database
+        #regulatoryFeatureFilter removes all non-regulatory non-coding variants over 20Kb from a known gene.
         regulatoryFeatureFilter: {},
+        #knownVariantFilter: {}, #removes variants represented in the database
         frequencyFilter: {maxFrequency: 1.0},
         pathogenicityFilter: {keepNonPathogenic: true},
         #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
