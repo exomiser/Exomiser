@@ -23,6 +23,7 @@ import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
 
 import static de.charite.compbio.exomiser.core.model.RegulatoryFeature.FeatureType.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
