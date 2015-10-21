@@ -57,33 +57,6 @@ public class RegulatoryFeatureDao {
     @Autowired
     private DataSource dataSource;
 
-    @Cacheable(value = "regulatory", key = "#variant.chromosomalVariant")
-    public VariantEffect getRegulatoryFeatureData(Variant variant) {
-        VariantEffect variantEffect = variant.getVariantEffect();
-        //logger.info("Testing " + variant.getChromosomalVariant() + " with effect " + variantEffect.toString());
-        try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = createPreparedStatement(connection, variant);
-                ResultSet rs = preparedStatement.executeQuery()) {
-            if (rs.next()) {
-                return VariantEffect.REGULATORY_REGION_VARIANT;
-                // later may set variant object with the type of regulatory feature, associated gene and tissue involved
-            }
-        } catch (SQLException e) {
-            logger.error("Error executing regulatory feature query: ", e);
-        }
-        return variantEffect;
-    }
-
-    private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
-        String enhancerQuery = "SELECT feature_type, tissue FROM regulatory_features WHERE chromosome = ? AND start <  ? AND \"end\" > ?";
-        PreparedStatement ps = connection.prepareStatement(enhancerQuery);
-        ps.setInt(1, variant.getChromosome());
-        ps.setInt(2, variant.getPosition());
-        ps.setInt(3, variant.getPosition());
-        return ps;
-    }
-
     public List<RegulatoryFeature> getRegulatoryFeatures() {
         try (
                 Connection connection = dataSource.getConnection();

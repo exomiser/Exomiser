@@ -24,13 +24,11 @@ import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.TopologicalDomain;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.slf4j.Logger;
@@ -212,8 +210,26 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
         VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
+        List<RegulatoryFeature> regulatoryFeatures = variantDataService.getRegulatoryFeatures();
+        final ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
+        logger.info("Loaded {} regulatory regions", regulatoryFeatures.size());
         //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-        return variantFactory.streamVariantEvaluations(vcfPath);
+        return variantFactory.streamVariantEvaluations(vcfPath).map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
+    }
+
+    //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
+    private Function<VariantEvaluation, VariantEvaluation> setRegulatoryRegionVariantEffect(ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
+        return variantEvaluation -> {
+            VariantEffect variantEffect = variantEvaluation.getVariantEffect();
+            if (variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT) {
+                List<RegulatoryFeature> overlappingFeatures = regulatoryRegionIndex.getRegionsContainingVariant(variantEvaluation);
+                if (!overlappingFeatures.isEmpty()) {
+                    //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up form the list
+                    variantEvaluation.setVariantEffect(VariantEffect.REGULATORY_REGION_VARIANT);
+                }
+            }
+            return variantEvaluation;
+        };
     }
 
     private SampleData makeSampleDataWithoutGenesOrVariants(Analysis analysis) {

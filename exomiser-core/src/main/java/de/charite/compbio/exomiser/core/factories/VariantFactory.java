@@ -167,7 +167,7 @@ public class VariantFactory {
         String ref = buildRef(variantAnnotations);
         String alt = buildAlt(variantAnnotations);
 
-        VariantEffect variantEffect = variantAnnotations.getHighestImpactEffect();
+        VariantEffect variantEffect = getVariantEffect(variantAnnotations, chr, pos);
         GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
@@ -188,6 +188,10 @@ public class VariantFactory {
                 .variantEffect(variantEffect)
                 .annotations(variantAnnotations.getAnnotations())
                 .build();
+    }
+
+    private VariantEffect getVariantEffect(VariantAnnotations variantAnnotations, int chr, int pos) {
+        return variantAnnotations.getHighestImpactEffect();
     }
 
     /**

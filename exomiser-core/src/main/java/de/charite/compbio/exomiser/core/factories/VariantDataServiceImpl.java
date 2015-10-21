@@ -125,14 +125,6 @@ public class VariantDataServiceImpl implements VariantDataService {
     private boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect) {
         return !nonRegulatoryNonCodingVariantEffects.contains(variantEffect);
     }
-    
-//    @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
-        if (variant.getVariantEffect() == VariantEffect.INTERGENIC_VARIANT || variant.getVariantEffect() == VariantEffect.UPSTREAM_GENE_VARIANT) {
-            return regulatoryFeatureDao.getRegulatoryFeatureData(variant);
-        }
-        return variant.getVariantEffect();
-    }
 
     @Override
     public List<RegulatoryFeature> getRegulatoryFeatures() {
