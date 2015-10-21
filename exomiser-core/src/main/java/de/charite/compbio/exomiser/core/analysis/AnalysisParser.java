@@ -384,7 +384,6 @@ public class AnalysisParser {
                 throw new AnalysisParserException("Known variant filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
             }
             return new FrequencyDataProvider(variantDataService, EnumSet.copyOf(sources), new KnownVariantFilter());
-//            return new KnownVariantFilter();
         }
 
         private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources) {
@@ -469,7 +468,7 @@ public class AnalysisParser {
         }
 
         private VariantFilter makeRegulatoryFeatureFilter(Map<String, Double> options) {
-            return new RegulatoryFeatureDataProvider(variantDataService, new RegulatoryFeatureFilter());
+            return new RegulatoryFeatureFilter();
         }
 
         private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {

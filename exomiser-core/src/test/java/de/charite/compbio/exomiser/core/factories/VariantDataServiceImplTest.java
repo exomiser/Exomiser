@@ -21,6 +21,7 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.dao.*;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
@@ -97,7 +98,6 @@ public class VariantDataServiceImplTest {
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatureData(variant)).thenReturn(REGULATORY_REGION_VARIANT);
     }
 
     private static VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
@@ -205,24 +205,12 @@ public class VariantDataServiceImplTest {
     }
 
     @Test
-    public void serviceReturnsOriginalVariantEffectForCodingVariant() {
-        variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
-        assertThat(result, equalTo(VariantEffect.MISSENSE_VARIANT));
-    }
+    public void serviceReturnsRegulatoryFeatures() {
+        List<RegulatoryFeature> regulatoryFeatures = Arrays.asList(new RegulatoryFeature(1, 10, 100, RegulatoryFeature.FeatureType.ENHANCER));
+        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatures()).thenReturn(regulatoryFeatures);
 
-    @Test
-    public void serviceReturnsRegulatoryFeatureVariantEffectForIntergenicVariant() {
-        variant = buildVariantOfType(VariantEffect.INTERGENIC_VARIANT);
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
-        assertThat(result, equalTo(REGULATORY_REGION));
-    }
-
-    @Test
-    public void serviceReturnsRegulatoryFeaturelVariantEffectForUpstreamGeneVariant() {
-        variant = buildVariantOfType(VariantEffect.UPSTREAM_GENE_VARIANT);
-        VariantEffect result = instance.getVariantRegulatoryFeatureData(variant);
-        assertThat(result, equalTo(REGULATORY_REGION));
+        List<RegulatoryFeature> result = instance.getRegulatoryFeatures();
+        assertThat(result, equalTo(regulatoryFeatures));
     }
 
     @Test

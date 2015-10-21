@@ -1,5 +1,13 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 7.1.0 2015-10-21
+- Variants in FANTOM5 enhancer and ENSEMBLE regulatory regions are now all marked REGULATORY_REGION_VARIANT even without
+ the regulatoryFeatureFilter being run.
+- Massive performance increase when running regulatoryFeatureFilter.
+- Running Exomiser in exome analysis mode now requires REGULATORY_FEATURE to be included in the variantEffectFilter.
+See test-analysis-exome.yml
+- Added missing regulatoryFeatureFilter step from the analysis steps in test-analysis-genome.yml
+
 ## 7.0.0 2015-10-01
 Now requires Java 8 or higher to run.
 - The Exomiser is now somewhat inaccurately named as it can now analyse whole-genome samples.

@@ -79,4 +79,9 @@ public class DaoTestConfig {
     public TadDao tadDao() {
         return new TadDao();
     }
+
+    @Bean
+    public RegulatoryFeatureDao regulatoryFeatureDao() {
+        return new RegulatoryFeatureDao();
+    }
 }

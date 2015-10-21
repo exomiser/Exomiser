@@ -24,14 +24,14 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,22 +50,21 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
 
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
-    private final Map<Variant, VariantEffect> expectedVariantEffects;
-    private final List<TopologicalDomain> expectedTads;
+    private final List<RegulatoryFeature> expectedRegulatoryRegions;
+    private final List<TopologicalDomain> expectedTopologicalDomains;
     
     public VariantDataServiceMock() {
         this.expectedFrequencyData = new HashMap<>();
         this.expectedPathogenicityData = new HashMap<>();
-        this.expectedVariantEffects = new HashMap<>();
-        this.expectedTads = new ArrayList<>();
+        this.expectedRegulatoryRegions = new ArrayList<>();
+        this.expectedTopologicalDomains = new ArrayList<>();
     }
 
-    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData, Map<Variant, 
-            VariantEffect> expectedVariantEffects, List<TopologicalDomain> expectedTads) {
+    public VariantDataServiceMock(Map<Variant, FrequencyData> expectedFrequencyData, Map<Variant, PathogenicityData> expectedPathogenicityData, List<RegulatoryFeature> expectedRegulatoryRegions, List<TopologicalDomain> expectedTopologicalDomains) {
         this.expectedFrequencyData = expectedFrequencyData;
         this.expectedPathogenicityData = expectedPathogenicityData;
-        this.expectedVariantEffects = expectedVariantEffects;
-        this.expectedTads = expectedTads;
+        this.expectedRegulatoryRegions = expectedRegulatoryRegions;
+        this.expectedTopologicalDomains = expectedTopologicalDomains;
     }
 
     /**
@@ -91,16 +90,23 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     }
 
     /**
-     * Adds the expected VariantEffect for the given Variant to the
-     * VariantDataService.
+     * Adds the expected RegulatoryFeature to the VariantDataService.
      *
-     * @param variant
-     * @param variantEffect
+     * @param regulatoryFeature
      */
-    public void put(Variant variant, VariantEffect variantEffect) {
-        expectedVariantEffects.put(variant, variantEffect);
+    public void put(RegulatoryFeature regulatoryFeature) {
+        expectedRegulatoryRegions.add(regulatoryFeature);
     }
-    
+
+    /**
+     * Adds the expected TopologicalDomain to the VariantDataService.
+     *
+     * @param topologicalDomain
+     */
+    public void put(TopologicalDomain topologicalDomain) {
+        expectedTopologicalDomains.add(topologicalDomain);
+    }
+
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, new FrequencyData());
@@ -114,12 +120,12 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     }
 
     @Override
-    public VariantEffect getVariantRegulatoryFeatureData(Variant variant) {
-        return expectedVariantEffects.getOrDefault(variant, variant.getVariantEffect());
+    public List<RegulatoryFeature> getRegulatoryFeatures() {
+        return expectedRegulatoryRegions;
     }
 
     @Override
     public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
-        return expectedTads;
+        return expectedTopologicalDomains;
     }
 }
