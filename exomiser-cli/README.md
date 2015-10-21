@@ -1,10 +1,23 @@
-# The Exomiser - A Tool to Annotate and Prioritize Exome Variants: Command Line Executable
+# The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
+
+## *New!* Now performs genome-wide prioritisation including non-coding, regulatory variants.
+See [Analysis file](#analysis_file) section on running analysis yml files for more information and the
+test-analysis-genome.yml file located in the base install directory.
+
+## Software and Hardware requirements
+ - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
+ - For genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.
+ - Any 64-bit operating system
+ - Java 8 or above
+ - An internet connection is not required to run the Exomiser, although network access will be required if accessing a
+  networked database (optional).
+ - By default the Exomiser is completely self-contained and is able to run on standard consumer laptops.
 
 ## Installation
 
 1. Download and unzip exomiser-cli-${project.version}-distribution.gz
-2. Download exomiser-${project.version}.h2.db.gz from the h2_db_dumps folder 
-3. Unzip in the exomiser-cli-6.0.0/data directory 
+2. Download exomiser-${project.version}.h2.db.gz from the h2_db_dumps folder
+3. Unzip in the exomiser-cli-${project.version}/data directory
 4. mv exomiser-${project.version}.h2.db exomiser.h2.db
 5. Run the example commands below from the exomiser-cli-${project.version} directory
 
@@ -18,38 +31,38 @@ with
 
     h2Path=/full/path/to/alternative/h2/database/exomiser.h2.db
 
-(optional) If you want to run from a Postgres database rather than the default H2 embedded database
+If you want to run from a Postgres database rather than the default H2 embedded database *Optional*
   
-    (a) download exomiser_dump.pg.gz
-    (b) gunzip exomiser_dump.pg.gz
-    (c) load into your postgres server: pg_restore -h yourhost -d yourdatabase -U youruser < exomiser_dump.pg
-    You can do (b) and (c) at once by using: gunzip -c exomiser_dump.pg.gz | pg_restore -h yourhost -d yourdatabase -U youruser
-    (d) edit application.properties with the details of how to connect this new database
+1. download exomiser_dump.pg.gz
+2. gunzip exomiser_dump.pg.gz
+3. load into your postgres server: pg_restore -h yourhost -d yourdatabase -U youruser < exomiser_dump.pg
+    You can do 2 and 3 at once by using: gunzip -c exomiser_dump.pg.gz | pg_restore -h yourhost -d yourdatabase -U youruser
+4. edit application.properties with the details of how to connect this new database
 
 ## Usage
 
-(a) Exomiser v2 - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk 
+(a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk
 
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf 
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=hiphive -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304 -v data/Pfeiffer.vcf
 
-(b) Exomiser v1 - phenotype comparisons to mice with disruption of the gene
+(b) Exomiser PHIVE algorithm - phenotype comparisons to mice with disruption of the gene
 
     java -Xmx2g -jar exomiser-cli-${project.version}.jar --prioritiser=phive -I AD -F 1 -D OMIM:101600 -v data/Pfeiffer.vcf
 
-(c) Phenix - phenotype comparisons to known human disease genes
+(c) Exomiser Phenix algorithm - phenotype comparisons to known human disease genes
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser=phenix -v data/Pfeiffer.vcf -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
 
-(d) ExomeWalker - prioritisation by proximity in interactome to the seed genes
+(d) Exomiser ExomeWalker algorithm - prioritisation by proximity in interactome to the seed genes
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --prioritiser exomewalker  -v data/Pfeiffer.vcf -I AD -F 1 -S 2260
 
 
-# Other useful params:
+## Other useful params:
 
-Multiple output formats:
+### Multiple output formats:
 
     --output-format HTML (default)
     --output-format TSV-GENE (TSV summary of genes)
@@ -60,7 +73,21 @@ Output options can be combined, for example:
     --output-format TSV-GENE,VCF (TSV-GENE and VCF)
     --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
 
-Settings file:
+### <a name="analysis_file"></a>Analysis file:
+
+Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
+and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
+
+These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
+a 4.4 million variant analysis requires approximately 12GB RAM.
+
+Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch test-analysis-batch.txt
+
+### Settings file:
     
 Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
 
@@ -71,39 +98,12 @@ Alternatively you can mix up a settings file and override settings by specifying
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --settings-file test.settings --prioritiser=phenix
 
-
-Batch mode analysis:
     
-Batch mode will run through a list of settings files. Simple put the path to each settings file in the batch file - one file path per line.
+Settings can also be run in batch mode. Simply put the path to each settings file in the batch file - one file path per line.
 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --batch-file batch.txt
 
-    -T leave in off-target variants
-
-Want help? 
+### Want help?
 
     java -jar exomiser-cli-${project.version}.jar --help
 
-   
-## Project Build
-
-This maven project is used to build the main exomiser jar for distribution. The 
-assembly plugin will produce a zip and tar.gz with an internal structure defined 
-in src/assemble/distribution.xml. This automates most of the following steps, 
-although the maven resources plugin will copy all resources and data files to 
-target/resources and the assembly plugin will copy from here to the directories 
-defined in the outputDirectory fields for each fileSet of distribution.xml:
-
-    cd target
-    mkdir data
-1. copy in the data made from the db build or run this now if you haven't already
-    cp ../../exomiser-db/data/exomiser.h2.db data/.
-    cp ../../exomiser-db/data/extracted/ucsc_hg19.ser data/.
-2. copy in the rw_string_9_05* data to data/
-    ... from somewhere
-3. copy in the extra phenix data to data/
-    ... from somewhere
-4. make the archive.
-    tar -cvzf exomiser.tgz exomiser-cli-${project.version}.jar jdbc.properties log4j2.xml lib data 
-    # copy to the ftp site
-    scp exomiser.tgz gen1:/nfs/disk69/ftp/pub/resources/software/exomiser/downloads/exomiser/ 

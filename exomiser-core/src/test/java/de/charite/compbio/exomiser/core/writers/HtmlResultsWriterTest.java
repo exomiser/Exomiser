@@ -5,16 +5,18 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilterResult;
-import de.charite.compbio.exomiser.core.filters.TargetFilterResult;
-import de.charite.compbio.exomiser.core.model.frequency.Frequency;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.model.frequency.RsId;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
+import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.Frequency;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -22,28 +24,23 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.Genotype;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
-import jannovar.genotype.GenotypeCall;
-import java.io.File;
-import java.nio.file.Files;
+import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.rules.TemporaryFolder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
@@ -52,37 +49,30 @@ import org.thymeleaf.templateresolver.TemplateResolver;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class HtmlResultsWriterTest {
 
     private HtmlResultsWriter instance;
-    
-    private static TemplateEngine templateEngine;
-    
-    private String testOutFileName;
-    
-    private static final Integer QUALITY = 2;
-    private static final Integer READ_DEPTH = 6;
-    private static final Genotype HETEROZYGOUS = Genotype.HETEROZYGOUS;
-    private static final String GENE1_GENE_SYMBOL = "GENE1";
-    private static final int GENE1_ENTREZ_GENE_ID = 1234567;
 
-    private static final String GENE2_GENE_SYMBOL = "GENE2";
-    private static final int GENE2_ENTREZ_GENE_ID = 7654321;
-    
+    /**
+     * The temporary folder to write files to, automatically removed after tests
+     * finish.
+     */
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
+    private static TemplateEngine templateEngine;
+
+    private String testOutFilePrefix;
+
+    private VariantEvaluation missenseVariantEvaluation;
+    private VariantEvaluation indelVariantEvaluation;
+
     private VariantEvaluation unAnnotatedVariantEvaluation1;
     private VariantEvaluation unAnnotatedVariantEvaluation2;
-    
-    @Mock
-    private Variant missenseVariant;
-    private VariantEvaluation missenseVariantEvaluation;
-    @Mock
-    private Variant indelVariant;
-    private VariantEvaluation indelVariantEvaluation;
 
     private Gene gene1;
     private Gene gene2;
-    
+
     @BeforeClass
     public static void makeTemplateEngine() {
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -93,74 +83,45 @@ public class HtmlResultsWriterTest {
         templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
     }
-    
+
     @Before
     public void setUp() {
-        
         instance = new HtmlResultsWriter(templateEngine);
         
-        setUpVariants();
+        TestVariantFactory varFactory = new TestVariantFactory();
 
-    }
-
-    private void setUpVariants() {
-        GenotypeCall genotypeCall = new GenotypeCall(Genotype.HETEROZYGOUS, 30, 6);
-    
-        Variant unannotatedVariant1 = new Variant((byte)1, 1, "A", "T", genotypeCall, 2.2f, "Unannotated variant");
-        unAnnotatedVariantEvaluation1 = new VariantEvaluation(unannotatedVariant1);
-        
-        Variant unannotatedVariant2 = new Variant((byte)2, 2, "T", "AAA", genotypeCall, 2.2f, "Unannotated variant");
-        unAnnotatedVariantEvaluation2 = new VariantEvaluation(unannotatedVariant2);
-        
-       
-        Mockito.when(missenseVariant.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-        Mockito.when(missenseVariant.getEntrezGeneID()).thenReturn(GENE1_ENTREZ_GENE_ID);
-        Mockito.when(missenseVariant.getChromosomeAsByte()).thenReturn((byte) 1);
-        Mockito.when(missenseVariant.get_position()).thenReturn(1);
-        Mockito.when(missenseVariant.get_ref()).thenReturn("A");
-        Mockito.when(missenseVariant.get_alt()).thenReturn("T");
-        Mockito.when(missenseVariant.getGenotype()).thenReturn(genotypeCall);
-        Mockito.when(missenseVariant.getVariantPhredScore()).thenReturn(2.2f);
-        Mockito.when(missenseVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(missenseVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        missenseVariantEvaluation = new VariantEvaluation(missenseVariant);
-        missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f), new Frequency(0.01f)));
+        missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f, FrequencySource.THOUSAND_GENOMES)));
         missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f), new MutationTasterScore(1f), new SiftScore(0f), new CaddScore(1f)));
-        missenseVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
-        missenseVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
-        
-        Mockito.when(indelVariant.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL);
-        Mockito.when(indelVariant.getEntrezGeneID()).thenReturn(GENE2_ENTREZ_GENE_ID);
-        Mockito.when(indelVariant.getChromosomeAsByte()).thenReturn((byte) 2);
-        Mockito.when(indelVariant.get_position()).thenReturn(2);
-        Mockito.when(indelVariant.get_ref()).thenReturn("C");
-        Mockito.when(indelVariant.get_alt()).thenReturn("GCT");
-        Mockito.when(indelVariant.getGenotype()).thenReturn(genotypeCall);
-        Mockito.when(indelVariant.getVariantPhredScore()).thenReturn(2.2f);
-        Mockito.when(indelVariant.getVariantReadDepth()).thenReturn(READ_DEPTH);
-        Mockito.when(indelVariant.getVariantTypeConstant()).thenReturn(VariantType.FS_INSERTION);
-        indelVariantEvaluation = new VariantEvaluation(indelVariant);
-        indelVariantEvaluation.addFilterResult(new FrequencyFilterResult(1.0f, FilterResultStatus.PASS));
-        indelVariantEvaluation.addFilterResult(new TargetFilterResult(1.0f, FilterResultStatus.PASS));
-        
-        gene1 = new Gene(missenseVariantEvaluation);
-        gene2 = new Gene(indelVariantEvaluation);
-    
+        missenseVariantEvaluation.addFilterResult(new PassFilterResult(FilterType.FREQUENCY_FILTER));
+        missenseVariantEvaluation.addFilterResult(new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER));
+
+        indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+
+        gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneId());
+        gene1.addVariant(missenseVariantEvaluation);
+
+        gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
+        gene2.addVariant(indelVariantEvaluation);
+
         gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
         gene2.addPriorityResult(new PhivePriorityResult("MGI:54321", "Gene2", 0.98f));
-        
+
         OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
         gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
         gene1.addPriorityResult(gene1PriorityScore);
         gene2.addPriorityResult(new OMIMPriorityResult());
-    }
-    
-    @After
-    public void tearDown() {
-        Paths.get(testOutFileName).toFile().delete();
+
+        unAnnotatedVariantEvaluation1 = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        unAnnotatedVariantEvaluation2 = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
     }
 
-    private SampleData makeSampleData(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
+    @After
+    public void tearDown() {
+        Paths.get(testOutFilePrefix).toFile().delete();
+    }
+
+    private Analysis makeAnalysis(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
         SampleData sampleData = new SampleData();
         List<String> sampleNames = new ArrayList<>();
         sampleNames.add("Slartibartfast");
@@ -168,63 +129,58 @@ public class HtmlResultsWriterTest {
         sampleData.setNumberOfSamples(1);
         sampleData.setGenes(genes);
         sampleData.setVariantEvaluations(variantEvaluations);
-        return sampleData;
+
+        return new TestAnalysisBuilder().sampleData(sampleData).build();
     }
 
     @Test
-    public void testWriteTemplateWithEmptyData() throws Exception{
-        testOutFileName = "testWrite.html";
-        
-        SampleData sampleData = makeSampleData(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
-        ExomiserSettings settings = getSettingsBuilder()
-                .outFileName(testOutFileName).build();
+    public void testWriteTemplateWithEmptyData() throws Exception {
+        testOutFilePrefix = tmpFolder.newFile("testWrite.html").toString();
 
-        instance.writeFile(sampleData, settings);
-        Path testOutFile = Paths.get(testOutFileName);
+        Analysis analysis = makeAnalysis(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
+       
+        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+
+        instance.writeFile(analysis, settings);
+        Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
-        
+
     }
 
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
-        testOutFileName = "testWriteTemplateWithUnAnnotatedVariantData.html";
+        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData.html").toString();
         List<VariantEvaluation> variantData = new ArrayList<>();
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
-        SampleData sampleData = makeSampleData(new ArrayList<Gene>(), variantData);
-        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFileName).build();
+        Analysis analysis = makeAnalysis(new ArrayList<Gene>(), variantData);
+        
+        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(sampleData, settings);
-        
-        Path testOutFile = Paths.get(testOutFileName);
+        instance.writeFile(analysis, settings);
+
+        Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
-        
     }
-    
+
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
-        testOutFileName = "testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html";
+        testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html").toString();
         List<VariantEvaluation> variantData = new ArrayList<>();
         variantData.add(unAnnotatedVariantEvaluation1);
         variantData.add(unAnnotatedVariantEvaluation2);
-        
+
         List<Gene> genes = new ArrayList<>();
         genes.add(gene1);
         genes.add(gene2);
-        
-        SampleData sampleData = makeSampleData(genes, variantData);
-        ExomiserSettings settings = getSettingsBuilder().outFileName(testOutFileName).build();
 
-        instance.writeFile(sampleData, settings);
-        Path testOutFile = Paths.get(testOutFileName);
+        Analysis analysis = makeAnalysis(genes, variantData);
+        
+        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+
+        instance.writeFile(analysis, settings);
+        Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
-        
-    }
-
-    private static ExomiserSettings.SettingsBuilder getSettingsBuilder() {
-        return new ExomiserSettings.SettingsBuilder()
-                .vcfFilePath(Paths.get(System.getProperty("java.io.tmpdir"), "temp.vcf"))
-                .usePrioritiser(PriorityType.NONE);
     }
 
 }

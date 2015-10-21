@@ -1,29 +1,43 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.MainConfig;
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.Exomiser;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
-import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.AnalysisParser;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
+import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
-import de.charite.compbio.exomiser.core.prioritisers.Priority;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -43,65 +57,69 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    private static AnnotationConfigApplicationContext applicationContext;
+    private static final String DEFAULT_OUTPUT_DIR = "results";
 
-    private static Options options;
+    private AnnotationConfigApplicationContext applicationContext;
 
-    private static String buildVersion;
-    private static String buildTimestamp;
-        
+    private Options options;
+
+    private SettingsParser settingsParser;
+    private ResultsWriterFactory resultsWriterFactory;
+    private AnalysisParser analysisParser;
+    private Exomiser exomiser;
+    private String buildVersion;
+
     public static void main(String[] args) {
+        Main main = new Main();
+        main.run(args);
+    }
 
+    private void run(String[] args) {
         setup();
         showSplash();
-
-        List<ExomiserSettings> sampleSettings = parseArgs(args);
-
-        logger.info("Running exome analyis on {} samples:", sampleSettings.size());
-        for (ExomiserSettings settings : sampleSettings) {
-            runAnalysis(settings);
-        }
-
+        //TODO: this should return a list of Analysis- either convert the settings/cli input to an Analysis or add one directly from an analysis yaml file
+        //then move ExomiserSettings into this package from core.
+        runAnalyses(args);
+        logger.info("Exomising finished - Bye!");
     }
 
-    private static void showSplash() {
-        String splash = 
-            "\n\n" +
-            " Welcome to:               \n" +
-            "  _____ _            _____                     _               \n" +
-            " |_   _| |__   ___  | ____|_  _____  _ __ ___ (_)___  ___ _ __ \n" +
-            "   | | | '_ \\ / _ \\ |  _| \\ \\/ / _ \\| '_ ` _ \\| / __|/ _ \\ '__|\n" +
-            "   | | | | | |  __/ | |___ >  < (_) | | | | | | \\__ \\  __/ |   \n" +
-            "   |_| |_| |_|\\___| |_____/_/\\_\\___/|_| |_| |_|_|___/\\___|_|   \n" +
-            "                                                               \n" + 
-            " A Tool to Annotate and Prioritize Exome Variants     v"+ buildVersion +"\n";
-
-        logger.info("{}", splash);
-    }
-
-    private static void setup() {
+    private void setup() {
         Locale.setDefault(Locale.UK);
         logger.info("Locale set to {}", Locale.getDefault());
-        
-        applicationContext = setUpApplicationContext();
+        Path jarFilePath = getJarFilePath();
+        applicationContext = setUpApplicationContext(jarFilePath);
+        createDefaultOutputDirIfNotExists(jarFilePath);
+
         options = applicationContext.getBean(Options.class);
+
+        settingsParser = applicationContext.getBean(SettingsParser.class);
+        resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
+        analysisParser = applicationContext.getBean(AnalysisParser.class);
+        exomiser = applicationContext.getBean(Exomiser.class);
+
         buildVersion = (String) applicationContext.getBean("buildVersion");
-        buildTimestamp = (String) applicationContext.getBean("buildTimestamp");
     }
 
-     private static AnnotationConfigApplicationContext setUpApplicationContext() {
+    private Path getJarFilePath() {
         //Get Spring started - this contains the configuration of the application
         CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
-        Path jarFilePath = null;
         try {
-            jarFilePath = Paths.get(codeSource.getLocation().toURI()).getParent();
+            return Paths.get(codeSource.getLocation().toURI()).getParent();
         } catch (URISyntaxException ex) {
             logger.error("Unable to find jar file", ex);
+            throw new RuntimeException("Unable to find jar file", ex);
         }
+    }
+
+    private AnnotationConfigApplicationContext setUpApplicationContext(Path jarFilePath) {
         //this is set here so that Spring can load
         System.setProperty("jarFilePath", jarFilePath.toString());
         applicationContext = new AnnotationConfigApplicationContext(MainConfig.class);
-        Path defaultOutputDir = jarFilePath.resolve(ExomiserSettings.DEFAULT_OUTPUT_DIR);
+        return applicationContext;
+    }
+
+    private void createDefaultOutputDirIfNotExists(Path jarFilePath) {
+        Path defaultOutputDir = jarFilePath.resolve(DEFAULT_OUTPUT_DIR);
         try {
             if (!Files.exists(defaultOutputDir)) {
                 Files.createDirectory(defaultOutputDir);
@@ -109,82 +127,105 @@ public class Main {
         } catch (IOException ex) {
             logger.error("Unable to create default output directory for results {}", defaultOutputDir, ex);
         }
-        return applicationContext;
     }
 
-    private static void runAnalysis(ExomiserSettings exomiserSettings) {
-        //3) Get the VCF file path (this creates a List of Variants)
-        Path vcfFile = exomiserSettings.getVcfPath();
-        logger.info("Running analysis for {}", vcfFile);
-        //4) Get the PED file path if the VCF file has multiple samples
-        //this can be null for single sample VCF files or refer to an actual file
-        Path pedigreeFile = exomiserSettings.getPedPath();
+    private void showSplash() {
+        String splash
+                = "\n\n"
+                + " Welcome to:               \n"
+                + "  _____ _            _____                     _               \n"
+                + " |_   _| |__   ___  | ____|_  _____  _ __ ___ (_)___  ___ _ __ \n"
+                + "   | | | '_ \\ / _ \\ |  _| \\ \\/ / _ \\| '_ ` _ \\| / __|/ _ \\ '__|\n"
+                + "   | | | | | |  __/ | |___ >  < (_) | | | | | | \\__ \\  __/ |   \n"
+                + "   |_| |_| |_|\\___| |_____/_/\\_\\___/|_| |_| |_|_|___/\\___|_|   \n"
+                + "                                                               \n"
+                + " A Tool to Annotate and Prioritize Exome Variants     v" + buildVersion + "\n";
 
-        logger.info("Creating and annotating sample data");
-        SampleDataFactory sampleDataFactory = applicationContext.getBean(SampleDataFactory.class);
-        //now we have the sample data read in we can create a SampleData object to hold on to all the relvant information
-        SampleData sampleData = sampleDataFactory.createSampleData(vcfFile, pedigreeFile);
-
-        //run the analysis....
-        Exomiser exomiser = applicationContext.getBean(Exomiser.class);
-        exomiser.analyse(sampleData, exomiserSettings);
-
-        logger.info("Writing results");
-        ResultsWriterFactory resultsWriterFactory = applicationContext.getBean(ResultsWriterFactory.class);
-        
-        for (OutputFormat outFormat : exomiserSettings.getOutputFormats()) {
-            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(sampleData, exomiserSettings);
-        }
-
-        logger.info("Finished analysis");
+        System.out.println(splash);
     }
 
-    private static List<ExomiserSettings> parseArgs(String[] args) {
-
-        List<SettingsBuilder> settingsBuilders = new ArrayList<>();
+    private void runAnalyses(String[] args) {
         CommandLineOptionsParser commandLineOptionsParser = applicationContext.getBean(CommandLineOptionsParser.class);
+        
+        CommandLine commandLine = parseCommandLineOptions(args);
+        if (commandLine.hasOption("analysis")) {
+            Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
+            runAnalysisFromScript(analysisScript);
+        } else if (commandLine.hasOption("analysis-batch")) {
+            Path analysisBatchFile = Paths.get(commandLine.getOptionValue("analysis-batch"));
+            List<Path> analysisScripts = new BatchFileReader().readPathsFromBatchFile(analysisBatchFile);
+            logger.info("Running {} analyses from analysis batch file.", analysisScripts.size());
+            //this *can* be run in parallel using parallelStream() at the expense of RAM in order to hold all the variants in memory.
+            //like this:
+            //analysisScripts.parallelStream().forEach(this::runAnalysisFromScript);
+            //HOWEVER there may be threading issues so this needs investigation.
+            analysisScripts.forEach(analysis ->{logger.info("Running analysis: {}", analysis); runAnalysisFromScript(analysis);});
+        }
+        //check the args for a batch file first as this option is otherwise ignored 
+        else if (commandLine.hasOption("batch-file")) {
+            Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
+            List<Path> settingsFiles = new BatchFileReader().readPathsFromBatchFile(batchFilePath);
+            logger.info("Running {} analyses from settings batch file.", settingsFiles.size());
+            for (Path settingsFile : settingsFiles) {
+                logger.info("Running settings: {}", settingsFile);
+                SettingsBuilder settingsBuilder = commandLineOptionsParser.parseSettingsFile(settingsFile);
+                runAnalysisFromSettings(settingsBuilder);
+            }
+        } else {
+            //make a single SettingsBuilder
+            SettingsBuilder settingsBuilder = commandLineOptionsParser.parseCommandLine(commandLine);
+            runAnalysisFromSettings(settingsBuilder);
+        }    
+    }
+
+    private CommandLine parseCommandLineOptions(String[] args) {
+        Parser parser = new GnuParser();
         try {
-            Parser parser = new GnuParser();
             CommandLine commandLine = parser.parse(options, args);
-            if (commandLine.hasOption("help")) {
+            if (args.length == 0 || commandLine.hasOption("help")) {
                 printHelp();
+                System.exit(0);
             }
-            if (args.length == 0) {
-                printHelp();
-            }
-            //check the args for a batch file first as this option is otherwise ignored 
-            if (commandLine.hasOption("batch-file")) {
-                Path batchFilePath = Paths.get(commandLine.getOptionValue("batch-file"));
-                settingsBuilders.addAll(commandLineOptionsParser.parseBatchFile(batchFilePath));
-            } else {
-                //make a single SettingsBuilder
-                settingsBuilders.add(commandLineOptionsParser.parseCommandLine(commandLine));
-            }
+            return commandLine;
         } catch (ParseException ex) {
             printHelp();
-            logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);    
+            logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);
+            System.exit(0);
         }
-       
-        List<ExomiserSettings> sampleSettings = new ArrayList<>();
-
-        for (SettingsBuilder settingsBuilder : settingsBuilders) {
-            settingsBuilder.buildVersion(buildVersion);
-            settingsBuilder.buildTimestamp(buildTimestamp);
-
-            ExomiserSettings exomiserSettings = settingsBuilder.build();
-
-            if (exomiserSettings.isValid()) {
-                sampleSettings.add(exomiserSettings);
-            }
-        }
-        
-        return sampleSettings;
+        return null;
     }
 
-    private static void printHelp() {
+    private void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         String launchCommand = String.format("java -jar exomizer-cli-%s.jar [...]", buildVersion);
         formatter.printHelp(launchCommand, options);
     }
+    
+    private void runAnalysisFromScript(Path analysisScript) {
+        Analysis analysis = analysisParser.parseAnalysis(analysisScript);
+        OutputSettings outputSettings = analysisParser.parseOutputSettings(analysisScript);
+        runAnalysisAndWriteResults(analysis, outputSettings);
+    }
+
+    private void runAnalysisFromSettings(SettingsBuilder settingsBuilder) {
+        Settings settings = settingsBuilder.build();
+        if (settings.isValid()) {
+            Analysis analysis = settingsParser.parse(settings);
+            runAnalysisAndWriteResults(analysis, settings);
+        }
+    }
+
+    private void runAnalysisAndWriteResults(Analysis analysis, OutputSettings outputSettings) {
+        exomiser.run(analysis);
+        writeResults(analysis, outputSettings);
+    }
+    
+    private void writeResults(Analysis analysis, OutputSettings outputSettings) {
+        logger.info("Writing results");
+        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
+            resultsWriter.writeFile(analysis, outputSettings);
+        }
+    }
+
 }

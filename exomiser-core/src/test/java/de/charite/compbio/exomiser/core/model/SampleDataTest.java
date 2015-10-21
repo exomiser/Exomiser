@@ -5,18 +5,20 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import jannovar.exception.PedParseException;
-import jannovar.exome.Variant;
-import jannovar.pedigree.Pedigree;
-import jannovar.pedigree.Person;
+import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import htsjdk.variant.vcf.VCFHeader;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,26 +36,20 @@ public class SampleDataTest {
     private SampleData instance;
 
     @Mock
-    Variant mockAnnotatedVariant;
-    
-    @Mock
-    Variant mockUnAnnotatedVariant;
-
+    List<Annotation> mockNotEmptyListOfAnnotations;
+   
     @Before
     public void setUp() {
         instance = new SampleData();
-        
-        //This is hard-coding Jannovar's return values be aware this could change
-        Mockito.when(mockAnnotatedVariant.getAnnotation()).thenReturn("Lots of lovely annotations");
-        Mockito.when(mockUnAnnotatedVariant.getAnnotation()).thenReturn(".");
+        Mockito.when(mockNotEmptyListOfAnnotations.isEmpty()).thenReturn(Boolean.FALSE);
     }
 
     @Test
-    public void noArgsConstructorInitialisesGenesVariantEvalations(){
+    public void noArgsConstructorInitialisesGenesVariantEvalations() {
         assertThat(instance.getGenes(), notNullValue());
         assertThat(instance.getVariantEvaluations(), notNullValue());
-    } 
-    
+    }
+
     @Test
     public void testCanSetAndGetSampleNames() {
         List<String> sampleNames = new ArrayList<>();
@@ -71,13 +67,20 @@ public class SampleDataTest {
     @Test
     public void testCanSetAndGetVcfFilePath() {
         Path vcfPath = Paths.get("vcf");
-        instance.setVcfFilePath(vcfPath);
-        assertThat(instance.getVcfFilePath(), equalTo(vcfPath));
+        instance.setVcfPath(vcfPath);
+        assertThat(instance.getVcfPath(), equalTo(vcfPath));
+    }
+    
+    @Test
+    public void testCanSetAndGetPedFilePath() {
+        Path pedPath = Paths.get("ped");
+        instance.setPedPath(pedPath);
+        assertThat(instance.getPedPath(), equalTo(pedPath));
     }
 
     @Test
     public void testCanSetAndGetVcfHeader() {
-        List<String> vcfHeader = new ArrayList<>();
+        VCFHeader vcfHeader = new VCFHeader();
         instance.setVcfHeader(vcfHeader);
         assertThat(instance.getVcfHeader(), equalTo(vcfHeader));
     }
@@ -90,8 +93,8 @@ public class SampleDataTest {
     }
 
     @Test
-    public void testCanSetAndGetPedigree() throws PedParseException {
-        Pedigree pedigree = new Pedigree(new ArrayList<Person>(), "Family Robinson");
+    public void testCanSetAndGetPedigree() {
+        Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Individual");
         instance.setPedigree(pedigree);
         assertThat(instance.getPedigree(), equalTo(pedigree));
     }
@@ -105,17 +108,46 @@ public class SampleDataTest {
 
     @Test
     public void testCanReturnUnannotatedVariantEvaluations() {
-        VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation(mockAnnotatedVariant);
-        VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation(mockUnAnnotatedVariant);
+        VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation.VariantBuilder(10, 123353297, "G", "C")
+                .annotations(mockNotEmptyListOfAnnotations).build();
         
+        VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation.VariantBuilder(7, 155604800, "C", "CTT").build();
+
         List<VariantEvaluation> allVariantEvaluations = new ArrayList<>();
         allVariantEvaluations.add(annotatedVariantEvaluation);
         allVariantEvaluations.add(unAnnotatedVariantEvaluation);
         instance.setVariantEvaluations(allVariantEvaluations);
-        
+
         List<VariantEvaluation> unAnnotatedVariantEvaluations = new ArrayList<>();
         unAnnotatedVariantEvaluations.add(unAnnotatedVariantEvaluation);
-        
+
         assertThat(instance.getUnAnnotatedVariantEvaluations(), equalTo(unAnnotatedVariantEvaluations));
+    }
+    
+    @Test 
+    public void testHashCode() {
+        SampleData other = new SampleData();
+        assertThat(instance.hashCode(), equalTo(other.hashCode()));
+    }
+    
+    @Test 
+    public void testEquals() {
+        Path vcf = Paths.get("test.vcf");
+        instance.setVcfPath(vcf);
+        
+        SampleData other = new SampleData();
+        other.setVcfPath(vcf);
+        
+        assertThat(instance, equalTo(other));
+    }
+    
+    @Test 
+    public void testNotEquals() {
+        instance.setVcfPath(Paths.get("test.vcf"));
+        
+        SampleData other = new SampleData();
+        other.setPedPath(Paths.get("other.ped"));
+        
+        assertThat(instance, not(equalTo(other)));
     }
 }

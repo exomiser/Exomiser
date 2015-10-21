@@ -5,9 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.EXOMISER2_PARAMS_OPTION;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -16,21 +14,22 @@ import org.apache.commons.cli.OptionBuilder;
  */
 public class HiPhiveOptionMarshaller extends AbstractOptionMarshaller {
 
+    public static final String HIPHIVE_PARAMS_OPTION = "hiphive-params";
+
     public HiPhiveOptionMarshaller() {
         option = OptionBuilder
                 .hasArgs()
                 .withArgName("type")
                 .withType(String.class)
                 .withValueSeparator(',')
-                .withDescription(
-                        String.format("Comma separated list of optional parameters for %s: human, mouse, fish, ppi. "
-                                + "e.g. --%s=human or --%s=human,mouse,ppi", PriorityType.HI_PHIVE_PRIORITY, EXOMISER2_PARAMS_OPTION, EXOMISER2_PARAMS_OPTION))
-                .withLongOpt(EXOMISER2_PARAMS_OPTION)
+                .withDescription(String.format("Comma separated list of optional parameters for %s: human, mouse, fish, ppi. "
+                                + "e.g. --%s=human or --%s=human,mouse,ppi", "hiphive", HIPHIVE_PARAMS_OPTION, HIPHIVE_PARAMS_OPTION))
+                .withLongOpt(HIPHIVE_PARAMS_OPTION)
                 .create("E");
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.exomiser2Params(parseExomiser2Params(values));
     }
 

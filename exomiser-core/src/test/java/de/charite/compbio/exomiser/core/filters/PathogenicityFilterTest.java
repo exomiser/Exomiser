@@ -5,37 +5,26 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.filters.Filter;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
-import jannovar.common.VariantType;
-import jannovar.exome.Variant;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+
+import de.charite.compbio.exomiser.core.model.VariantEvaluation.VariantBuilder;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class PathogenicityFilterTest {
 
     private PathogenicityFilter instance;
@@ -43,18 +32,9 @@ public class PathogenicityFilterTest {
     private static final boolean PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS = false;
     private static final boolean PASS_ALL_VARIANTS = true;
 
-    @Mock
-    Variant mockNonPathogenicVariant;
-    @Mock
-    Variant mockPathogenicNonMissense;
-    @Mock
-    Variant mockMissensePassesFilterVariant;
-    @Mock
-    Variant mockMissenseFailsFilterVariant;
-
+    VariantEvaluation missensePassesFilter;
     VariantEvaluation downstreamFailsFilter;
     VariantEvaluation stopGainPassesFilter;
-    VariantEvaluation missensePassesFilter;
     VariantEvaluation predictedNonPathogenicMissense;
 
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
@@ -75,50 +55,49 @@ public class PathogenicityFilterTest {
     private static final MutationTasterScore MTASTER_PASS = new MutationTasterScore(MTASTER_PASS_SCORE);
     private static final MutationTasterScore MTASTER_FAIL = new MutationTasterScore(MTASTER_FAIL_SCORE);
 
-    public PathogenicityFilterTest() {
-
-    }
-
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        //set-up the methods to mock-out having to construct mentally heavy Variant objects just to get the variant type
-        Mockito.when(mockMissensePassesFilterVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(mockMissenseFailsFilterVariant.getVariantTypeConstant()).thenReturn(VariantType.MISSENSE);
-        Mockito.when(mockNonPathogenicVariant.getVariantTypeConstant()).thenReturn(VariantType.DOWNSTREAM);
-        Mockito.when(mockPathogenicNonMissense.getVariantTypeConstant()).thenReturn(VariantType.STOPGAIN);
 
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
-        //make the variant evaluations
-        missensePassesFilter = new VariantEvaluation(mockMissensePassesFilterVariant);
-        PathogenicityData missensePassPathData = new PathogenicityData(null, null, SIFT_PASS, null);
-        missensePassesFilter.setPathogenicityData(missensePassPathData);
+        // make the variant evaluations
+        missensePassesFilter = testVariantBuilder()
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .pathogenicityData(new PathogenicityData(SIFT_PASS))
+                .build();
 
-        predictedNonPathogenicMissense = new VariantEvaluation(mockMissenseFailsFilterVariant);
-        PathogenicityData missenseFailPathData = new PathogenicityData(POLYPHEN_FAIL, null, null, null);
-        predictedNonPathogenicMissense.setPathogenicityData(missenseFailPathData);
+        predictedNonPathogenicMissense = testVariantBuilder()
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .pathogenicityData(new PathogenicityData(POLYPHEN_FAIL))
+                .build();
 
-        downstreamFailsFilter = new VariantEvaluation(mockNonPathogenicVariant);
-        PathogenicityData downstreamPathData = new PathogenicityData(null, null, null, null);
-        downstreamFailsFilter.setPathogenicityData(downstreamPathData);
+        downstreamFailsFilter = testVariantBuilder()
+                .variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT)
+                .pathogenicityData(new PathogenicityData())
+                .build();
 
-        stopGainPassesFilter = new VariantEvaluation(mockPathogenicNonMissense);
-        PathogenicityData stopGainPathData = new PathogenicityData(null, null, null, null);
-        stopGainPassesFilter.setPathogenicityData(stopGainPathData);
-
+        stopGainPassesFilter = testVariantBuilder()
+                .variantEffect(VariantEffect.STOP_GAINED)
+                .pathogenicityData(new PathogenicityData())
+                .build();
     }
 
+    private VariantBuilder testVariantBuilder() {
+        return new VariantBuilder(1, 1, "A", "T");
+    }
+    
+    @Test
+    public void test() {
+        assertThat(instance.keepNonPathogenic(), equalTo(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS));
+    }
+    
     @Test
     public void testThatOffTargetNonPathogenicVariantsAreStillScoredAndFailFilterWhenPassAllVariantsSetFalse() {
         instance = new PathogenicityFilter(PASS_ONLY_PATHOGENIC_AND_MISSENSE_VARIANTS);
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
 
-        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(downstreamFailsFilter.getVariantType());
-
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
-        assertThat(filterResult.getScore(), equalTo(expectedScore));
     }
 
     @Test
@@ -127,11 +106,7 @@ public class PathogenicityFilterTest {
 
         FilterResult filterResult = instance.runFilter(downstreamFailsFilter);
 
-        float expectedScore = VariantTypePathogenicityScores.getPathogenicityScoreOf(downstreamFailsFilter.getVariantType());
-
         assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
-        assertThat(filterResult.getScore(), equalTo(expectedScore));
-
     }
 
     @Test
@@ -158,66 +133,8 @@ public class PathogenicityFilterTest {
     }
 
     @Test
-    public void testDefaultMissenseVariantIsPredictedPathogenicIsTrue() {
-        VariantType type = VariantType.MISSENSE;
-        assertThat(instance.variantIsPredictedPathogenic(type), is(true));
-    }
-
-    @Test
-    public void testStopGainVariantIsPredictedPathogenicIsTrue() {
-        VariantType type = VariantType.STOPGAIN;
-        assertThat(instance.variantIsPredictedPathogenic(type), is(true));
-    }
-
-    @Test
-    public void testDownstreamVariantIsPredictedPathogenicIsFalse() {
-        VariantType type = VariantType.DOWNSTREAM;
-        assertThat(instance.variantIsPredictedPathogenic(type), is(false));
-    }
-
-    @Test
-    public void testCalculateScoreDownstream() {
-        PathogenicityData pathData = new PathogenicityData(null, MTASTER_PASS, null, null);
-        VariantType type = VariantType.DOWNSTREAM;
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
-    public void testCalculateScoreMissenseDefault() {
-        PathogenicityData pathData = new PathogenicityData(null, null, null, null);
-        VariantType type = VariantType.MISSENSE;
-        float expected = VariantTypePathogenicityScores.getPathogenicityScoreOf(type);
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
-    public void testCalculateScoreMissenseSiftPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS, null);
-        VariantType type = VariantType.MISSENSE;
-        float expected = 1 - SIFT_PASS.getScore();
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
-    public void testCalculateScoreMissensePolyPhenAndSiftPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS, null);
-        VariantType type = VariantType.MISSENSE;
-        float expected = 1 - SIFT_PASS.getScore();
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
-    public void testCalculateScoreMissensePolyPhenSiftAndMutTasterPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS, null);
-        VariantType type = VariantType.MISSENSE;
-        float expected = MTASTER_PASS.getScore();
-        assertThat(instance.calculateFilterScore(type, pathData), equalTo(expected));
-    }
-
-    @Test
     public void testToString() {
-        String expResult = "Pathogenicity filter: removePathFilterCutOff=false";
+        String expResult = "PathogenicityFilter{keepNonPathogenic=false}";
         String result = instance.toString();
         assertThat(result, equalTo(expResult));
     }
@@ -239,7 +156,7 @@ public class PathogenicityFilterTest {
     @Test
     public void testNotEqualToOtherFilterType() {
         instance = new PathogenicityFilter(false);
-        Filter other = new FrequencyFilter(0.1f, true);
+        Filter other = new FrequencyFilter(0.1f);
         assertThat(instance.equals(other), is(false));
     }
 

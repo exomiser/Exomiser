@@ -1,37 +1,59 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
-import jannovar.exome.Variant;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
+import static java.util.stream.Collectors.toList;
 
 /**
- * This class represents a Gene in which {@link jannovar.exome.Variant Variant}
+ * This class represents a Gene in which {@link Variant}
  * objects have been identified by exome sequencing. Note that this class stores
  * information about observed variants and quality scores etc. In contrast, the
- * class {@link jannovar.reference.TranscriptModel TranscriptModel} stores
+ * class {@link de.charite.compbio.jannovar.reference.TranscriptModel} stores
  * information from UCSC about all genes, irrespective of whether we see a
  * variant in the gene by exome sequencing. Therefore, the program uses
- * information from {@link jannovar.reference.TranscriptModel TranscriptModel}
+ * information from {@link de.charite.compbio.jannovar.reference.TranscriptModel TranscriptModel}
  * object to annotate variants found by exome sequencing, and stores the results
- * of that annotation in {@link jannovar.exome.Variant Variant} objects. Objects
+ * of that annotation in {@link Variant Variant} objects. Objects
  * of this class have a list of Variant objects, one for each variant observed
  * in the exome. Additionally, the Gene objects get prioritized for their
  * biomedical relevance to the disease in question, and each such prioritization
  * results in an
  * {@link de.charite.compbio.exomiser.core.prioritisers.PriorityResult PriorityResult}
  * object.
- * <P>
+ * <p>
  * There are additionally some prioritization procedures that only can be
  * performed on genes (and not on the individual variants). For instance, there
  * are certain genes such as the Mucins or the Olfactory receptor genes that are
@@ -39,14 +61,15 @@ import java.util.Set;
  * disease genes. Additionally, filtering for autosomal recessive or dominant
  * patterns in the data is done with this class. This kind of prioritization is
  * done by classes that implement
- * {@link de.charite.compbio.exomiser.core.prioritisers.Priority Priority}. Recently, the
- * ability to downweight genes with too many variants (now hardcoded to 5) was
- * added).
+ * {@link de.charite.compbio.exomiser.core.prioritisers.Prioritiser Prioritiser}.
+ * Recently, the ability to downweight genes with too many variants (now
+ * hardcoded to 5) was added).
  *
  * @author Peter Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-public class Gene implements Comparable<Gene>, Filterable {
+public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     /**
      * A list of all of the variants that affect this gene.
@@ -54,6 +77,8 @@ public class Gene implements Comparable<Gene>, Filterable {
     private final List<VariantEvaluation> variantEvaluations;
 
     private final Set<FilterType> failedFilterTypes;
+    private final Set<FilterType> passedFilterTypes;
+    private final Map<FilterType, FilterResult> filterResults;
 
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
@@ -64,47 +89,41 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     /**
      * A score representing the combined pathogenicity predictions for the
-     * {@link jannovar.exome.Variant Variant} objects associated with this gene.
+     * {@link Variant} objects associated with this gene.
      */
     private float filterScore = 0f;
-
     /**
      * A score representing the combined filter and priority scores.
      */
     private float combinedScore = 0f;
 
     private final Map<PriorityType, PriorityResult> priorityResultsMap;
-
     private Set<ModeOfInheritance> inheritanceModes;
-
     private final String geneSymbol;
-
     private final int entrezGeneId;
 
     /**
-     * Construct the gene by adding the first variant that affects the gene. If
-     * the current gene has additional variants, they will be added using the
-     * function addVariant.
+     * Construct the gene by providing a gene symbol and Entrez id.
      *
-     * @param variantEvaluation A variant located in this gene.
+     * @param geneSymbol
+     * @param geneId
      */
-    public Gene(VariantEvaluation variantEvaluation) {
+    public Gene(String geneSymbol, int geneId) {
+        this.geneSymbol = geneSymbol;
+        this.entrezGeneId = geneId;
         variantEvaluations = new ArrayList();
-        addVariant(variantEvaluation);
-//        variantEvaluations.add(variantEvaluation);
-        geneSymbol = variantEvaluation.getGeneSymbol();
-        entrezGeneId = variantEvaluation.getEntrezGeneID();
         inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-        failedFilterTypes = EnumSet.noneOf(FilterType.class);
+        failedFilterTypes = new LinkedHashSet<>();
+        passedFilterTypes = new LinkedHashSet<>();
+        filterResults = new LinkedHashMap<>();
         priorityResultsMap = new LinkedHashMap();
     }
 
     /**
-     * @return the number of {@link jannovar.exome.Variant Variant} objects for
-     * this gene.
+     * @return the number of {@link Variant} associated with this gene.
      */
     public int getNumberOfVariants() {
-        return this.variantEvaluations.size();
+        return variantEvaluations.size();
     }
 
     /**
@@ -142,17 +161,6 @@ public class Gene implements Comparable<Gene>, Filterable {
 //         */
 //
 //    }
-    /**
-     * @return the nth {@link jannovar.exome.Variant Variant} object for this
-     * gene.
-     */
-    public VariantEvaluation getNthVariant(int n) {
-        if (n >= this.variantEvaluations.size()) {
-            return null;
-        } else {
-            return this.variantEvaluations.get(n);
-        }
-    }
 
     /**
      * This function adds additional variants to the current gene. The variants
@@ -161,9 +169,20 @@ public class Gene implements Comparable<Gene>, Filterable {
      * @param var A Variant affecting the current gene.
      */
     public final void addVariant(VariantEvaluation var) {
+        addGeneFilterResultsToVariant(var);
         variantEvaluations.add(var);
     }
 
+    private void addGeneFilterResultsToVariant(VariantEvaluation var) {
+        filterResults.values().stream()
+                .filter(isNotInheritanceFilterResult())
+                .forEach(result -> var.addFilterResult(result));
+    }
+    
+    private Predicate<FilterResult> isNotInheritanceFilterResult() {
+        return filterResult -> filterResult.getFilterType() != FilterType.INHERITANCE_FILTER;
+    }
+    
     /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
@@ -172,15 +191,7 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     public List<VariantEvaluation> getPassedVariantEvaluations() {
-        List<VariantEvaluation> passedVariantEvaluations = new ArrayList<>();
-
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            if (variantEvaluation.passedFilters()) {
-                passedVariantEvaluations.add(variantEvaluation);
-            }
-        }
-
-        return passedVariantEvaluations;
+        return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).collect(toList());
     }
 
     /**
@@ -195,7 +206,7 @@ public class Gene implements Comparable<Gene>, Filterable {
      * Note that currently, the gene symbols are associated with the Variants.
      * Probably it would be more natural to associate that with a field of this
      * Gene object. For now, leave it as be, and return "-" if this gene has no
-     * {@link jannovar.exome.Variant Variant} objects.
+     * {@link Variant} objects.
      *
      * @return the symbol associated with this gene (extracted from one of the
      * Variant objects)
@@ -204,36 +215,39 @@ public class Gene implements Comparable<Gene>, Filterable {
         return geneSymbol;
     }
 
+    @Override
     public Set<ModeOfInheritance> getInheritanceModes() {
         return inheritanceModes;
     }
 
+    @Override
     public void setInheritanceModes(Set<ModeOfInheritance> inheritanceModes) {
         this.inheritanceModes = inheritanceModes;
     }
 
     /**
      * @param modeOfInheritance
-     * @return true if the variants for this gene are consistent with the given
+     * @return true if the variants for this gene are compatible with the given
      * {@code ModeOfInheritance} otherwise false.
      */
-    public boolean isConsistentWith(ModeOfInheritance modeOfInheritance) {
+    @Override
+    public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
         return inheritanceModes.contains(modeOfInheritance);
     }
 
     /**
-     * @return true if the variants for this gene are consistent with autosomal
+     * @return true if the variants for this gene are compatible with autosomal
      * recessive inheritance, otherwise false.
      */
-    public boolean isConsistentWithRecessive() {
+    public boolean isCompatibleWithRecessive() {
         return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     }
 
     /**
-     * @return true if the variants for this gene are consistent with autosomal
+     * @return true if the variants for this gene are compatible with autosomal
      * dominant inheritance, otherwise false.
      */
-    public boolean isConsistentWithDominant() {
+    public boolean isCompatibleWithDominant() {
         return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     }
 
@@ -252,18 +266,16 @@ public class Gene implements Comparable<Gene>, Filterable {
         if (variantEvaluations.isEmpty()) {
             return false;
         }
-        VariantEvaluation ve = this.variantEvaluations.get(0);
-        Variant v = ve.getVariant();
-        return v.is_X_chromosomal();
+        Variant ve = variantEvaluations.get(0);
+        return ve.isXChromosomal();
     }
 
     public boolean isYChromosomal() {
         if (variantEvaluations.isEmpty()) {
             return false;
         }
-        VariantEvaluation ve = this.variantEvaluations.get(0);
-        Variant v = ve.getVariant();
-        return v.is_Y_chromosomal();
+        Variant ve = variantEvaluations.get(0);
+        return ve.isYChromosomal();
     }
 
     /**
@@ -272,7 +284,7 @@ public class Gene implements Comparable<Gene>, Filterable {
     public void addPriorityResult(PriorityResult priorityResult) {
         priorityResultsMap.put(priorityResult.getPriorityType(), priorityResult);
     }
-    
+
     /**
      * @param type {@code PriorityType} representing the priority type
      * @return The result applied by that {@code Priority}.
@@ -288,14 +300,10 @@ public class Gene implements Comparable<Gene>, Filterable {
     public Map<PriorityType, PriorityResult> getPriorityResults() {
         return priorityResultsMap;
     }
-    
+
     /**
      * Returns the priority score of this gene based on the relevance of the
      * gene as determined by a prioritiser.
-     * <P>
-     * Note that this method assumes we have calculate the scores, which is
-     * depending on the function {@link #calculateGeneAndVariantScores} having
-     * been called.
      *
      * @return a score that will be used to rank the gene.
      */
@@ -305,19 +313,14 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     /**
      * Sets the priority score for the gene.
+     *
+     * @param score
      */
     public void setPriorityScore(float score) {
         priorityScore = score;
     }
 
     /**
-     * Calculate the filter score of this gene based on the relevance of the
-     * gene (filterScore)
-     * <P>
-     * Note that this method assumes we have calculate the scores, which is
-     * depending on the function {@link #calculateGeneAndVariantScores} having
-     * been called.
-     *
      * @return a filter score that will be used to rank the gene.
      */
     public float getFilterScore() {
@@ -348,34 +351,23 @@ public class Gene implements Comparable<Gene>, Filterable {
     }
 
     /**
-     * Sort this gene based on priority and filter score. This function
-     * satisfies the Interface {@code Comparable}.
-     *
-     * @param other
-     */
-    @Override
-    public int compareTo(Gene other) {
-        float me = combinedScore;
-        float you = other.combinedScore;
-        if (me < you) {
-            return 1;
-        }
-        if (me > you) {
-            return -1;
-        }
-        //if the scores are equal then return an alphabeticised list
-        if (me == you) {
-            return geneSymbol.compareTo(other.geneSymbol);
-        }
-        return 0;
-    }
-
-    /**
-     * Returns true if at least one Variant associated with the Gene has passed
-     * all filters.
+     * Returns true if the gene has passed all filters and at least one Variant
+     * associated with the Gene has also passed all filters. Will also return
+     * true if the gene has no variants associated with it.
      */
     @Override
     public boolean passedFilters() {
+        if (isUnfiltered()) {
+            return true;
+        }
+        return failedFilterTypes.isEmpty() && atLeastOneVariantPassedFilters();
+    }
+
+    private boolean isUnfiltered() {
+        return failedFilterTypes.isEmpty() && variantEvaluations.isEmpty();
+    }
+
+    private boolean atLeastOneVariantPassedFilters() {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilters()) {
                 return true;
@@ -386,15 +378,44 @@ public class Gene implements Comparable<Gene>, Filterable {
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-        //TODO: failedFilterTypes isn't actually written to....
-        if (failedFilterTypes.contains(filterType)) {
-            return false;
+        if (!failedFilterTypes.contains(filterType) && passedFilterTypes.contains(filterType)) {
+            return true;
         }
+        return atLeastOneVariantPassedFilter(filterType);
+    }
+
+    private boolean atLeastOneVariantPassedFilter(FilterType filterType) {
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             if (variantEvaluation.passedFilter(filterType)) {
                 return true;
             }
         }
+        return false;
+    }
+
+    private FilterStatus getFilterStatus() {
+         if (passedFilters()) {
+            return FilterStatus.PASSED;
+        }
+        return FilterStatus.FAILED;
+    }
+
+    @Override
+    public boolean addFilterResult(FilterResult filterResult) {
+        filterResults.put(filterResult.getFilterType(), filterResult);
+        if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
+            return addPassedFilterResult(filterResult);
+        }
+        return addFailedFilterResult(filterResult);
+    }
+
+    private boolean addPassedFilterResult(FilterResult filterResult) {
+        passedFilterTypes.add(filterResult.getFilterType());
+        return true;
+    }
+
+    private boolean addFailedFilterResult(FilterResult filterResult) {
+        failedFilterTypes.add(filterResult.getFilterType());
         return false;
     }
 
@@ -424,9 +445,33 @@ public class Gene implements Comparable<Gene>, Filterable {
         return true;
     }
 
+    /**
+     * Sort this gene based on priority and filter score. This function
+     * satisfies the Interface {@code Comparable}.
+     *
+     * @param other
+     */
+    @Override
+    public int compareTo(Gene other) {
+        float thisScore = this.combinedScore;
+        float otherScore = other.combinedScore;
+        if (thisScore < otherScore) {
+            return 1;
+        }
+        if (thisScore > otherScore) {
+            return -1;
+        }
+        //if the scores are equal then return an alphabeticised list
+        if (thisScore == otherScore) {
+            return geneSymbol.compareTo(other.geneSymbol);
+        }
+        return 0;
+    }
+
+
     @Override
     public String toString() {
-        return String.format("%s %d consistentWith: %s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f failedFilters: %s variants: %d", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, failedFilterTypes, variantEvaluations.size());
+        return String.format("%s entrezId=%d compatibleWith=%s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterTypes);
     }
 
 }

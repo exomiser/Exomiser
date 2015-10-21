@@ -5,8 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.SEED_GENES_OPTION;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -23,6 +22,8 @@ public class SeedGenesOptionMarshaller extends AbstractOptionMarshaller {
 
     private static final Logger logger = LoggerFactory.getLogger(SeedGenesOptionMarshaller.class);
 
+    public static final String SEED_GENES_OPTION = "seed-genes";
+
     public SeedGenesOptionMarshaller() {
         option = OptionBuilder
                 .hasArgs()
@@ -34,7 +35,7 @@ public class SeedGenesOptionMarshaller extends AbstractOptionMarshaller {
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
         settingsBuilder.seedGeneList(parseEntrezSeedGeneList(values));
     }
 

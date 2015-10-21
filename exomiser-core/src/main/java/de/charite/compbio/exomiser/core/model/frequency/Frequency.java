@@ -6,6 +6,8 @@
 
 package de.charite.compbio.exomiser.core.model.frequency;
 
+import java.util.Objects;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -13,23 +15,35 @@ package de.charite.compbio.exomiser.core.model.frequency;
 public class Frequency {
 
     private final float frequency;
-
+    private final FrequencySource source;
+    
     public Frequency(float frequency) {
         this.frequency = frequency;
+        this.source = FrequencySource.UNKNOWN;
+    }
+
+    public Frequency(float frequency, FrequencySource source) {
+        this.frequency = frequency;
+        this.source = source;
     }
 
     public float getFrequency() {
         return frequency;
     }
 
+    public FrequencySource getSource() {
+        return source;
+    }
+    
     public boolean isOverThreshold(float threshold) {
         return frequency > threshold;
     }
-    
+
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + Float.floatToIntBits(this.frequency);
+        int hash = 7;
+        hash = 67 * hash + Float.floatToIntBits(this.frequency);
+        hash = 67 * hash + Objects.hashCode(this.source);
         return hash;
     }
 
@@ -42,12 +56,15 @@ public class Frequency {
             return false;
         }
         final Frequency other = (Frequency) obj;
+        if (this.source != other.source) {
+            return false;
+        }
         return Float.floatToIntBits(this.frequency) == Float.floatToIntBits(other.frequency);
     }
 
-    
     @Override
     public String toString() {
-        return Float.toString(frequency);
-    }    
+        return "Frequency{" + frequency + " source=" + source + '}';
+    }
+    
 }

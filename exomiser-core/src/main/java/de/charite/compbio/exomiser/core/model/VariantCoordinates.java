@@ -3,41 +3,41 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.charite.compbio.exomiser.core.model;
 
 /**
- * Bean for storing the chromosomal coordinates of a variant.
  * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantCoordinates {
-    
-/** Byte representation of the chromosome */
-    private byte chromosome;
-    /** Start position of the variant on the chromosome */
-    private int pos;
-    /** Sequence (one or more nucleotides) of the reference */
-    private String ref;
-    /** Sequence (one or more nucleotides) of the alt (variant)  sequence */
-    private String alt;
-    /** Integer representation of the rsID */
-    private String rsID;
+public interface VariantCoordinates {
 
-    public VariantCoordinates(byte chromosome, int pos, String rsID, String ref, String alt) {
-        this.chromosome = chromosome;
-        this.pos = pos;
-        this.ref = ref;
-        this.alt = alt;
-        this.rsID = rsID;
-    }
+    /**
+     * @return integer representation of the chromosome
+     */
+    public int getChromosome();
 
-    
-    @Override
-    public String toString() {
-        return "VariantCoordinates{" + "chr=" + chromosome + ", pos=" + pos + ", ref=" + ref + ", alt=" + alt + ", rsID=" + rsID + '}';
-    }
-    
-    
-    
+    /**
+     * @return String representation of the chromosome. Chromosomes 1-22 will return
+     * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=M.
+     */
+    public String getChromosomeName();
+
+    /**
+     * @return 1-based position of the variant on the chromosome
+     */
+    public int getPosition();
+
+    /**
+     * @return String with the reference allele in the variant, without common
+     * suffix or prefix to reference allele.
+     */
+    public String getRef();
+
+    /**
+     * @return String with the alternative allele in the variant, without common
+     * suffix or prefix to reference allele.
+     */
+    public String getAlt();
+
 }

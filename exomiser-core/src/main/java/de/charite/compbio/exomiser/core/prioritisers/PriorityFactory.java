@@ -5,111 +5,32 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
 
 /**
- * Factory class for handling creation of FilterType objects.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Component
-public class PriorityFactory {
+public interface PriorityFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(PriorityFactory.class);
+    /**
+     * Returns a Prioritiser of the given type, ready to run according to the
+     * settings provided. Will return a non-functional prioritiser in cases
+     * where the type is not recognised.
+     *
+     * @param priorityType
+     * @param settings
+     * @return
+     */
+    public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings);
 
-    @Autowired
-    private DataSource dataSource;
-    @Autowired
-    @Lazy
-    private DataMatrix randomWalkMatrix;
-    @Autowired
-    private Path phenixDataDirectory;
-    
-    public List<Priority> makePrioritisers(ExomiserSettings exomiserSettings) {
-        
-        String disease = exomiserSettings.getDiseaseId();
-        String candidateGene = exomiserSettings.getCandidateGene();
-        List<String> hpoIds = exomiserSettings.getHpoIds();
-        List<Integer> entrezSeedGenes = exomiserSettings.getSeedGeneList();
-        String exomiser2Params = exomiserSettings.getExomiser2Params();
-        
-        PriorityType priorityType = exomiserSettings.getPrioritiserType();
-        if (priorityType == PriorityType.NONE) {
-            return Collections.emptyList();
-        }
-        
-        List<Priority> genePriorityList = new ArrayList<>();
-        //TODO: OmimPrioritizer is specified implicitly - perhaps they should be different types of ExomiserSettings?
-        //probably better as a specific type of Exomiser - either a RareDiseaseExomiser or DefaultExomiser. These might be badly named as the OMIM proritiser is currently the default.
-        //always run OMIM unless the user specified what they really don't want to run any prioritisers
-        genePriorityList.add(getOmimPrioritizer());
-        
-        switch (priorityType) {
-            case PHENIX_PRIORITY:
-                genePriorityList.add(getPhenixPrioritiser(hpoIds));
-                break;
-            case HI_PHIVE_PRIORITY:
-                genePriorityList.add(getHiPhivePrioritiser(hpoIds, candidateGene, disease, exomiser2Params));
-                break;  
-            case PHIVE_PRIORITY:
-                genePriorityList.add(getPhivePrioritiser(hpoIds,disease));
-                break;
-            case EXOMEWALKER_PRIORITY:
-                genePriorityList.add(getExomeWalkerPrioritiser(entrezSeedGenes));
-                break;                      
-        }
+    public OMIMPriority makeOmimPrioritiser();
 
-        return genePriorityList;
-    }
+    public PhenixPriority makePhenixPrioritiser(List<String> hpoIds);
 
-    public OMIMPriority getOmimPrioritizer() {
-        OMIMPriority priority = new OMIMPriority();
-        priority.setDataSource(dataSource);
-        logger.info("Made new OMIM Priority: {}", priority);
-        return priority;
-    }
+    public PhivePriority makePhivePrioritiser(List<String> hpoIds);
 
-    public PhenixPriority getPhenixPrioritiser(List<String> hpoIds) {
-        Set<String> hpoIDset = new HashSet<>();
-        hpoIDset.addAll(hpoIds);
-        
-        boolean symmetric = false;
-        PhenixPriority priority = new PhenixPriority(phenixDataDirectory.toString(), hpoIDset, symmetric);
-        logger.info("Made new PhenIX Priority: {}", priority);
-        return priority;
-    }
+    public ExomeWalkerPriority makeExomeWalkerPrioritiser(List<Integer> entrezSeedGenes);
 
-    public PhivePriority getPhivePrioritiser(List<String> hpoIds,String disease) {
-        PhivePriority priority = new PhivePriority(hpoIds,disease);
-        priority.setDataSource(dataSource);
-        logger.info("Made new PHIVE Priority: {}", priority);
-        return priority;
-    }
-
-    public ExomeWalkerPriority getExomeWalkerPrioritiser(List<Integer> entrezSeedGenes) {
-        ExomeWalkerPriority priority = new ExomeWalkerPriority(randomWalkMatrix, entrezSeedGenes);
-        logger.info("Made new GeneWanderer Priority: {}", priority);
-        return priority;
-    }
-    
-    public HiPhivePriority getHiPhivePrioritiser(List<String> hpoIds, String candGene, String disease, String hiPhiveParams) {
-        HiPhivePriority priority = new HiPhivePriority(hpoIds, candGene, disease, hiPhiveParams, randomWalkMatrix);
-        priority.setDataSource(dataSource);
-        logger.info("Made new HiPHIVE Priority: {}", priority);
-        return priority;
-    }
-
+    public HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions);
 }

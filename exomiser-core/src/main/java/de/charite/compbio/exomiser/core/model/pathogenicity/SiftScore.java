@@ -25,7 +25,7 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SiftScore extends AbstractPathogenicityScore {
+public class SiftScore extends BasePathogenicityScore {
 
     /**
      * A SIFT score below this threshold is considered to be pathogenic
@@ -33,7 +33,7 @@ public class SiftScore extends AbstractPathogenicityScore {
     public static final float SIFT_THRESHOLD = 0.06f;
 
     public SiftScore(float score) {
-        super(score);
+        super(score, PathogenicitySource.SIFT);
     }
 
     @Override

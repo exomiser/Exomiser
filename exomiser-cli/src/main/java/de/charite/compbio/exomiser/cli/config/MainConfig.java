@@ -1,43 +1,70 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package de.charite.compbio.exomiser.cli.config;
 
 import de.charite.compbio.exomiser.cli.Main;
-import de.charite.compbio.exomiser.core.dao.FrequencyDao;
-import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
-import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
-import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
-import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.AnalysisParser;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
+import de.charite.compbio.exomiser.core.dao.*;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
+
 import de.charite.compbio.exomiser.core.writers.ResultsWriterFactory;
-import jannovar.reference.Chromosome;
+import de.charite.compbio.jannovar.data.JannovarData;
+import htsjdk.tribble.readers.TabixReader;
+import java.io.IOException;
+
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.Map;
+
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
+
 
 /**
  * Provides configuration details from the settings.properties file located in
@@ -46,6 +73,8 @@ import org.thymeleaf.templateresolver.TemplateResolver;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
+//TODO: add this and check it works - then remove all the unecessary gubbins below
+//@ComponentScan("de.charite.compbio.exomiser")
 @Import({DataSourceConfig.class, CommandLineOptionsConfig.class, CacheConfig.class})
 @PropertySource({"buildversion.properties", "file:${jarFilePath}/application.properties"})
 public class MainConfig {
@@ -132,30 +161,105 @@ public class MainConfig {
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
     }
-
-    /**
-     * This takes a few seconds to de-serialise. Would be better to be eager in
-     * a web-app, but lazy on the command-line as then the input parameters can
-     * be checked before doing this.
-     *
-     * @return
-     */
-    @Bean
+    
     @Lazy
-    public VariantAnnotator variantAnnotator() {
-        Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
-        return new VariantAnnotator(chromosomeMap);
+    @Bean
+    public TabixReader indelTabixReader() {
+        String caddInDelPathValue = getValueOfProperty("caddInDelPath");
+        if (caddInDelPathValue.isEmpty()) {
+            caddInDelPathValue = dataPath().resolve("InDels.tsv.gz").toString();
+        }
+        try {
+             return new TabixReader(caddInDelPathValue);
+        } catch (IOException e) {
+            throw new RuntimeException("CADD InDels.tsv.gz file not found.", e);
+        }
+    }
+    
+    @Lazy
+    @Bean
+    public TabixReader snvTabixReader() {
+        String caddSnvPathValue = getValueOfProperty("caddSnvPath");
+        if (caddSnvPathValue.isEmpty()) {
+            caddSnvPathValue = dataPath().resolve("whole_genome_SNVs.tsv.gz").toString();
+        }
+        try {
+             return new TabixReader(caddSnvPathValue);
+        } catch (IOException e) {
+            throw new RuntimeException("CADD whole_genome_SNVs.tsv.gz file not found.", e);
+        }
+    }
+    
+    @Lazy
+    @Bean
+    public TabixReader remmTabixReader() {
+        String remmPath = getValueOfProperty("remmPath");
+        String remmPathValue = dataPath().resolve(remmPath).toString();
+        try {
+             return new TabixReader(remmPathValue);
+        } catch (IOException e) {
+            throw new RuntimeException("REMM file not found ", e);
+        }
     }
 
-//    
+    @Bean
+    public VariantDataService variantDataService() {
+        return new VariantDataServiceImpl();
+    }
+    
+    @Bean
+    public SettingsParser settingsParser() {
+        return new SettingsParser(priorityFactory(), variantDataService());
+    }
+
+    @Bean
+    public AnalysisParser analysisParser() {
+        return new AnalysisParser(priorityFactory(), variantDataService());
+    }
+
+    @Bean
+    public AnalysisFactory analysisFactory() {
+        return new AnalysisFactory(sampleDataFactory(), priorityFactory(), variantDataService());
+    }
+
+    @Bean
+    public Exomiser exomiser() {
+        return new Exomiser(analysisFactory());
+    }
+    
+    /**
+     * This takes a few seconds to de-serialise.
+     */
+    @Bean
+    public JannovarData jannovarData() {
+        try {
+            return new JannovarDataSerializer(ucscFilePath().toString()).load();
+        } catch (SerializationException e) {
+            throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
+        }
+    }
+
+    @Bean
+    public VariantFactory variantFactory() {
+        JannovarData jannovarData = jannovarData();
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
+        return new VariantFactory(variantAnnotator);
+    }
+
+    @Bean
+    public SampleDataFactory sampleDataFactory() {
+        return new SampleDataFactory();
+    }
+
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
      *
      * @return
      */
-    @Bean
     @Lazy
+    @Bean
     public DataMatrix randomWalkMatrix() {
         String randomWalkFileNameValue = getValueOfProperty("randomWalkFileName");
         Path randomWalkFilePath = dataPath().resolve(randomWalkFileNameValue);
@@ -175,38 +279,69 @@ public class MainConfig {
     public PathogenicityDao pathogenicityDao() {
         return new DefaultPathogenicityDao();
     }
-
-    @Bean
-    public FilterFactory filterFactory() {
-        return new FilterFactory();
-    }
-
-    @Bean
-    public PriorityFactory priorityFactory() {
-        return new PriorityFactory();
-    }
-
-    @Bean
+    
     @Lazy
-    public SampleDataFactory sampleDataFactory() {
-        return new SampleDataFactory();
+    @Bean
+    public CaddDao caddDao() {
+        return new CaddDao(indelTabixReader(), snvTabixReader());
+    }
+    
+    @Lazy
+    @Bean
+    public RemmDao remmDao() {
+        return new RemmDao(remmTabixReader());
     }
 
     @Bean
-    public Exomiser exomiser() {
-        return new Exomiser();
+    public RegulatoryFeatureDao regulatoryFeatureDao() {
+        return new RegulatoryFeatureDao();
     }
 
     @Bean
-    public SparseVariantFilterRunner sparseVariantFilterer() {
-        return new SparseVariantFilterRunner();
+    public TadDao tadDao() {
+        return new TadDao();
+    }
+    
+    @Bean
+    public PriorityFactoryImpl priorityFactory() {
+        return new PriorityFactoryImpl();
     }
 
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return new VariantEvaluationDataService();
+    PriorityService priorityService() {
+        return new PriorityService();
     }
-       
+
+    @Bean
+    ModelService modelService() {
+        return new ModelServiceImpl();
+    }
+
+    @Bean
+    OntologyService ontologyService() {
+        return new OntologyServiceImpl();
+    }
+
+    @Bean
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
+    }
+
+    @Bean
+    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+
+    @Bean
+    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+
+    @Bean
+    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
+    }
+
     @Bean
     public TemplateEngine templateEngine() {
         TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -216,15 +351,15 @@ public class MainConfig {
         templateResolver.setCacheable(true);
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
-        
+
         return templateEngine;
     }
-    
+
     @Bean
     public ResultsWriterFactory resultsWriterFactory() {
         return new ResultsWriterFactory();
     }
-    
+
     protected String getValueOfProperty(String property) throws PropertyNotFoundException {
         String value = env.getProperty(property);
         if (value == null) {

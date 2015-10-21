@@ -6,38 +6,32 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
-import org.junit.Before;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = SampleDataFactoryTestConfig.class)
 public class SampleDataFactoryTest {
     
-    @InjectMocks
+    @Autowired
     private SampleDataFactory instance;
-    
-    @Mock
-    private VariantAnnotator variantAnnotator;
-    
-
-    @Before
-    public void setUp() {
-//        Mockito.when(variantAnnotator.annotateVariant());
-    }
 
     @Test(expected = NullPointerException.class)
     public void testNullVcfThrowsANullPointer() {
@@ -47,7 +41,7 @@ public class SampleDataFactoryTest {
     
     @Test
     public void createsSampleDataWithSingleSampleVcfAndNoPedFile() {
-        Path vcfPath = Paths.get("src/test/resources/Pfeiffer.vcf");
+        Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         SampleData sampleData = instance.createSampleData(vcfPath, null);
         
         String sampleName = "manuel"; 
@@ -55,16 +49,15 @@ public class SampleDataFactoryTest {
         sampleNames.add(sampleName);
         
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree(sampleName);
-                
+
         assertThat(sampleData, notNullValue());
-        assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
+        assertThat(sampleData.getVcfPath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
-        assertThat(sampleData.getPedigree().getSingleSampleName(), equalTo(pedigree.getSingleSampleName()));
-        assertThat(sampleData.getVcfHeader().isEmpty(), is(false));
+        assertThat(sampleData.getPedigree().getMembers().get(0), equalTo(pedigree.getMembers().get(0)));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(false));
-        assertThat(sampleData.getVariantEvaluations().size(), equalTo(37709));
-        assertThat(sampleData.getGenes().isEmpty(), is(true));
+        assertThat(sampleData.getVariantEvaluations().size(), equalTo(3));
+        assertThat(sampleData.getGenes().isEmpty(), is(false));
     }
     
     @Test
@@ -79,11 +72,10 @@ public class SampleDataFactoryTest {
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree(sampleName);
         
         assertThat(sampleData, notNullValue());
-        assertThat(sampleData.getVcfFilePath(), equalTo(vcfPath));
+        assertThat(sampleData.getVcfPath(), equalTo(vcfPath));
         assertThat(sampleData.getSampleNames(), equalTo(sampleNames));
         assertThat(sampleData.getNumberOfSamples(), equalTo(1));
-        assertThat(sampleData.getPedigree().getSingleSampleName(), equalTo(pedigree.getSingleSampleName()));
-        assertThat(sampleData.getVcfHeader().isEmpty(), is(false));
+        assertThat(sampleData.getPedigree().getMembers().get(0), equalTo(pedigree.getMembers().get(0)));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(true));
         assertThat(sampleData.getVariantEvaluations().size(), equalTo(0));
         assertThat(sampleData.getGenes().isEmpty(), is(true));
@@ -101,4 +93,13 @@ public class SampleDataFactoryTest {
         instance.createSampleData(vcfPath, null);
     }
 
+    @Test
+    public void testGetVariantFactory() {
+        assertThat(instance.getVariantFactory(), notNullValue());
+    }
+
+    @Test
+    public void testCreateKnownGenes() {
+        assertThat(instance.createKnownGenes().size(), equalTo(4));
+    }
 }

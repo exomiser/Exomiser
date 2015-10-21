@@ -5,23 +5,37 @@
  */
 package de.charite.compbio.exomiser.web.config;
 
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
 import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
 import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
-import de.charite.compbio.exomiser.core.factories.ChromosomeMapFactory;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
-import jannovar.reference.Chromosome;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
+
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +62,16 @@ public class ExomiserConfig {
     @Autowired
     private Environment env;
 
+    @Bean
+    public SettingsParser settingsParser() {
+        return new SettingsParser(priorityFactory(), variantDataService());
+    }
+
+    @Bean
+    AnalysisFactory analysisFactory() {
+        return new AnalysisFactory(sampleDataFactory(), priorityFactory(), variantDataService());
+    }
+
     /**
      * This is critical for the application to run as it points to the data
      * directory where all the required resources are found. Without this being
@@ -59,8 +83,22 @@ public class ExomiserConfig {
     public Path dataPath() {
         Path dataPath = Paths.get(env.getProperty("dataDir"));
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
-        
+
         return dataPath;
+    }
+
+    @Bean
+    public int maxVariants() {
+        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
+        logger.info("Set max variants to {}", maxVariants);
+        return maxVariants;
+    }
+
+    @Bean
+    public int maxGenes() {
+        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
+        logger.info("Set max genes to {}", maxGenes);
+        return maxGenes;
     }
 
     @Bean
@@ -92,24 +130,36 @@ public class ExomiserConfig {
     }
 
     /**
-     * This takes a few seconds to de-serealise. Would be better to be eager in
-     * a web-app, but lazy on the command-line as then the input parameters can
-     * be checked before doing this.
-     *
-     * @return
+     * This takes a few seconds to de-serialise.
      */
     @Bean
-    @Lazy
-    public VariantAnnotator variantAnnotator() {
-        Map<Byte, Chromosome> chromosomeMap = ChromosomeMapFactory.deserializeKnownGeneData(ucscFilePath());
-        return new VariantAnnotator(chromosomeMap);
+    public JannovarData jannovarData() {
+        try {
+            return new JannovarDataSerializer(ucscFilePath().toString()).load();
+        } catch (SerializationException e) {
+            throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
+        }
     }
-    
+
+    @Lazy
+    @Bean
+    public VariantFactory variantFactory() {
+        JannovarData jannovarData = jannovarData();
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
+        return new VariantFactory(variantAnnotator);
+    }
+
+    @Lazy
+    @Bean
+    public SampleDataFactory sampleDataFactory() {
+        return new SampleDataFactory();
+    }
+
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
      *
-     * @return
      */
     @Bean
     @Lazy
@@ -121,27 +171,26 @@ public class ExomiserConfig {
     }
 
     @Bean
-    public FilterFactory filterFactory() {
-        return new FilterFactory();
+    public PriorityFactoryImpl priorityFactory() {
+        return new PriorityFactoryImpl();
     }
 
     @Bean
-    public PriorityFactory priorityFactory() {
-        return new PriorityFactory();
+    PriorityService priorityService() {
+        return new PriorityService();
     }
 
     @Bean
-    @Lazy
-    public SampleDataFactory sampleDataFactory() {
-        return new SampleDataFactory();
+    ModelService modelService() {
+        return new ModelServiceImpl();
     }
 
     @Bean
-    public Exomiser exomiser() {
-        return new Exomiser();
+    public VariantDataService variantDataService() {
+        return new VariantDataServiceImpl();
     }
-    
-//cacheable beans
+
+    //cacheable beans
     @Bean
     public FrequencyDao frequencyDao() {
         return new DefaultFrequencyDao();
@@ -152,13 +201,29 @@ public class ExomiserConfig {
         return new DefaultPathogenicityDao();
     }
 
-    @Bean 
-    public SparseVariantFilterRunner sparseVariantFilterer() {
-        return new SparseVariantFilterRunner();
-    }
-    
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return new VariantEvaluationDataService();
+    OntologyService ontologyService() {
+        return new OntologyServiceImpl();
     }
+
+    @Bean
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
+    }
+
+    @Bean
+    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+
+    @Bean
+    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+
+    @Bean
+    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
+    }
+
 }

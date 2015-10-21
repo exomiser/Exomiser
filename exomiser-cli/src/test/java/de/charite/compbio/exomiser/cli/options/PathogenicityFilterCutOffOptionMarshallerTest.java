@@ -5,8 +5,8 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
@@ -30,7 +30,7 @@ public class PathogenicityFilterCutOffOptionMarshallerTest {
     public void setUp() {
         instance = new PathogenicityFilterCutOffOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
         settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
     }
@@ -47,14 +47,14 @@ public class PathogenicityFilterCutOffOptionMarshallerTest {
     
     @Test
     public void testSettingsRemovePathFilterCutOffIsFalseByDefault() {
-        ExomiserSettings settings = settingsBuilder.build();        
+        Settings settings = settingsBuilder.build();        
         assertThat(settings.removePathFilterCutOff(), is(false));
     }
     
     @Test
     public void testSettingsBuilderAppliesTrueWhenSetWithNullValue() {
         instance.applyValuesToSettingsBuilder(null, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.removePathFilterCutOff(), is(true));
     }
@@ -63,7 +63,7 @@ public class PathogenicityFilterCutOffOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgFalse() {
         String[] args = {"false"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.removePathFilterCutOff(), is(false));
     }
@@ -72,7 +72,7 @@ public class PathogenicityFilterCutOffOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgTrue() {
         String[] args = {"true"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.removePathFilterCutOff(), is(true));
     }

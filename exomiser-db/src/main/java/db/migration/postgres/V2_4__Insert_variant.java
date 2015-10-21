@@ -23,7 +23,7 @@ public class V2_4__Insert_variant implements JdbcMigration {
     public void migrate(Connection connection) throws Exception {
         CopyManager copyManager = new CopyManager((BaseConnection) connection);
         try (FileReader fileReader = new FileReader("data/variant.pg")) {
-            copyManager.copyIn("COPY variant from STDIN WITH DELIMITER '|' NULL as 'NULL';", fileReader, 1024);
+            copyManager.copyIn("COPY variant from STDIN WITH DELIMITER '|' NULL as 'null';", fileReader, 1024);
         }
     }
 }

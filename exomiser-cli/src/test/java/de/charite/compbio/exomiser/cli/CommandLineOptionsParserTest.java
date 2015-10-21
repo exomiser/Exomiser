@@ -6,16 +6,15 @@
 package de.charite.compbio.exomiser.cli;
 
 import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +58,7 @@ public class CommandLineOptionsParserTest {
      * @return
      * @throws ParseException
      */
-    private ExomiserSettings parseSettingsFromInput(String input) {
+    private Settings parseSettingsFromInput(String input) {
         String[] args = input.split(" ");
         Parser parser = new GnuParser();
         CommandLine commandLine = null;
@@ -75,25 +74,25 @@ public class CommandLineOptionsParserTest {
     public void exomiserSettingsAreInvalidWhenAVcfFileWasNotSpecified() {
         String input = "--ped def.ped -D OMIM:101600 --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.isValid(), is(false));
     }
 
     @Test
-    public void exomiserSettingsAreInvalidWhenAPrioritiserWasNotSpecified() {
+    public void exomiserSettingsAreValidWhenAPrioritiserWasNotSpecified() {
         String input = "-v 123.vcf --ped def.ped -D OMIM:101600";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.isValid(), is(false));
+        assertThat(exomiserSettings.isValid(), is(true));
     }
 
     @Test
     public void exomiserSettingsAreValidWhenOnlyAVcfFileAndAPrioritiserAreSpecified() {
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.isValid(), is(true));
     }
@@ -102,32 +101,29 @@ public class CommandLineOptionsParserTest {
     public void should_throw_caught_exception_when_settings_file_not_found() {
         String input = "--settings-file wibble.settings";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.isValid(), is(false));
     }
 
-    @Test
-    public void should_produce_invalid_settings_when_a_settings_file_is_provided() {
+    @Test(expected = CommandLineParseError.class)
+    public void throwsExceptionsWhenInvalidSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testInvalidSettings.properties";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
-
-        System.out.println(exomiserSettings);
-        assertThat(exomiserSettings.isValid(), is(false));
+        parseSettingsFromInput(input);
     }
 
     @Test
     public void shouldProduceValidSettingsWhenValidSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testValidSettings.properties";
-        SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("sampleData.vcf"));
         settingsBuilder.pedFilePath(Paths.get(""));
         settingsBuilder.usePrioritiser(PriorityType.PHIVE_PRIORITY);
         settingsBuilder.maximumFrequency(0.01f);
         settingsBuilder.minimumQuality(0f);
         settingsBuilder.removePathFilterCutOff(true);
-        settingsBuilder.removeDbSnp(true);
+        settingsBuilder.removeKnownVariants(true);
         settingsBuilder.keepOffTargetVariants(true);
         settingsBuilder.candidateGene("FGFR2");
         settingsBuilder.hpoIdList(Arrays.asList("HP:0000001","HP:0000002","HP:0000003"));
@@ -135,12 +131,12 @@ public class CommandLineOptionsParserTest {
         settingsBuilder.diseaseId("OMIM:101500");
         settingsBuilder.modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         settingsBuilder.numberOfGenesToShow(345);
-        settingsBuilder.outFileName("target/test-output/");
+        settingsBuilder.outputPrefix("/users/jules/exomes/vcf/analysis");
         settingsBuilder.outputFormats(EnumSet.of(OutputFormat.VCF));
         
-        ExomiserSettings expectedSettings = settingsBuilder.build();
+        Settings expectedSettings = settingsBuilder.build();
         
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.isValid(), is(true));
@@ -151,7 +147,7 @@ public class CommandLineOptionsParserTest {
     public void shouldProduceValidSettingsWhenIncompleteSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testIncompleteSettings.properties";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(100f));
@@ -162,7 +158,7 @@ public class CommandLineOptionsParserTest {
     public void shouldProduceWhenSettingsFileIsIndicatedAndOverwriteValuesWhenCommandLineOptionIsSpecified() {
         String input = " --max-freq=0.1 --settings-file src/test/resources/exomiserSettings.properties";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(0.1f));
     }
@@ -172,7 +168,7 @@ public class CommandLineOptionsParserTest {
         String vcfFile = "123.vcf";
         String input = String.format("-v %s --ped def.ped -D OMIM:101600 --prioritiser=phive", vcfFile);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getVcfPath(), equalTo(Paths.get(vcfFile)));
     }
@@ -182,7 +178,7 @@ public class CommandLineOptionsParserTest {
         String vcfFile = "123.vcf";
         String input = String.format("--vcf %s --ped def.ped -D OMIM:101600 --prioritiser=phive", vcfFile);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getVcfPath(), equalTo(Paths.get(vcfFile)));
     }
@@ -192,7 +188,7 @@ public class CommandLineOptionsParserTest {
         String pedFile = "ped.ped";
         String input = String.format("-v 123.vcf --ped %s -D OMIM:101600 --prioritiser=phive", pedFile);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getPedPath(), equalTo(Paths.get(pedFile)));
     }
@@ -201,7 +197,7 @@ public class CommandLineOptionsParserTest {
     public void should_produce_settings_with_a_null_ped_path_if_not_specified() {
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getPedPath(), nullValue());
     }
@@ -210,7 +206,7 @@ public class CommandLineOptionsParserTest {
     public void should_produce_settings_with_a_priority_class() {
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertEquals(PriorityType.PHIVE_PRIORITY, exomiserSettings.getPrioritiserType());
     }
@@ -219,14 +215,14 @@ public class CommandLineOptionsParserTest {
     public void should_throw_NumberFormatException_when_passed_non_float_max_freq() {
         String input = "-v 123.vcf -F not_a_float --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
     }
 
     @Test
     public void should_produce_settings_with_default_maximumFrequency_if_not_set() {
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(100.0f));
 
@@ -238,7 +234,7 @@ public class CommandLineOptionsParserTest {
         //use the actual value in the string here otherwise it will do weird localisation things.
         String input = String.format("-v 123.vcf -F 25.23 --prioritiser=phive", frequency);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(frequency));
 
@@ -250,7 +246,7 @@ public class CommandLineOptionsParserTest {
         //use the actual value in the string here otherwise it will do weird localisation things.
         String input = String.format("-v 123.vcf -Q 73.12 --prioritiser=phive", frequency);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getMinimumQuality(), equalTo(frequency));
     }
@@ -259,7 +255,7 @@ public class CommandLineOptionsParserTest {
     public void should_throw_NumberFormatException_when_passed_non_float_min_qual() {
         String input = "-v 123.vcf -Q not_a_float --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
     }
 
     @Test
@@ -268,50 +264,49 @@ public class CommandLineOptionsParserTest {
         GeneticInterval value = new GeneticInterval((byte) 2, 12345, 67890);
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getGeneticInterval(), equalTo(value));
     }
 
     @Test
     public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsTrueWhenSet() {
-        String option = ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
+        String option = "keep-non-pathogenic";
         String input = String.format("-v 123.vcf --%s --prioritiser=phive", option);
         System.out.println(input);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.removePathFilterCutOff(), equalTo(true));
     }
 
     @Test
     public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsFalseWhenNotSet() {
-        String option = ExomiserSettings.REMOVE_PATHOGENICITY_FILTER_CUTOFF;
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.removePathFilterCutOff(), is(false));
     }
 
     @Test
     public void should_produce_settings_with_remove_dbsnp_when_set() {
-        String option = "--remove-dbsnp";
+        String option = "--remove-known-variants";
         String input = String.format("-v 123.vcf %s --prioritiser=phive", option);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removeDbSnp(), is(true));
+        assertThat(exomiserSettings.removeKnownVariants(), is(true));
     }
 
     @Test
     public void should_produce_settings_with_remove_dbsnp_default_when_not_set() {
-        String option = "--remove-dbsnp";
+        String option = "--remove-known-variants";
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removeDbSnp(), is(false));
+        assertThat(exomiserSettings.removeKnownVariants(), is(false));
     }
 
     @Test
@@ -319,7 +314,7 @@ public class CommandLineOptionsParserTest {
         String option = "--keep-off-target";
         String input = String.format("-v 123.vcf %s --prioritiser=phive", option);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.keepOffTargetVariants(), is(true));
     }
@@ -329,7 +324,7 @@ public class CommandLineOptionsParserTest {
         String option = "--keep-off-target";
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.keepOffTargetVariants(), is(false));
     }
@@ -340,7 +335,7 @@ public class CommandLineOptionsParserTest {
         String value = "FGFR2";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getCandidateGene(), equalTo(value));
     }
@@ -351,7 +346,7 @@ public class CommandLineOptionsParserTest {
         String value = "HP:0000407,HP:0009830,HP:0002858";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<String> expectedList = new ArrayList();
         expectedList.add("HP:0000407");
@@ -367,7 +362,7 @@ public class CommandLineOptionsParserTest {
         String value = "HP:0000407";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<String> expectedList = new ArrayList();
         expectedList.add("HP:0000407");
@@ -381,7 +376,7 @@ public class CommandLineOptionsParserTest {
         String value = "HP:000040";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<String> expectedList = new ArrayList();
 
@@ -395,7 +390,7 @@ public class CommandLineOptionsParserTest {
         String value = "HP:0000407,OMIM:100100,HP:0002858";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<String> expectedList = new ArrayList();
         expectedList.add("HP:0000407");
@@ -410,7 +405,7 @@ public class CommandLineOptionsParserTest {
         String value = "123,456,7890";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<Integer> expectedList = new ArrayList();
         expectedList.add(123);
@@ -426,7 +421,7 @@ public class CommandLineOptionsParserTest {
         String value = "123";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<Integer> expectedList = new ArrayList();
         expectedList.add(123);
@@ -440,7 +435,7 @@ public class CommandLineOptionsParserTest {
         String value = "";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<Integer> expectedList = new ArrayList();
 
@@ -453,7 +448,7 @@ public class CommandLineOptionsParserTest {
         String value = "gene1:gene2,gene3";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         List<Integer> expectedList = new ArrayList();
 
@@ -466,7 +461,7 @@ public class CommandLineOptionsParserTest {
         String value = "OMIM:101600";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getDiseaseId(), equalTo(value));
     }
@@ -477,7 +472,7 @@ public class CommandLineOptionsParserTest {
         String value = "";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getDiseaseId(), equalTo(value));
     }
@@ -488,7 +483,7 @@ public class CommandLineOptionsParserTest {
         String value = "AD";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
     }
@@ -499,7 +494,7 @@ public class CommandLineOptionsParserTest {
         String value = "AR";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
     }
@@ -510,7 +505,7 @@ public class CommandLineOptionsParserTest {
         String value = "X";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.X_RECESSIVE));
     }
@@ -521,7 +516,7 @@ public class CommandLineOptionsParserTest {
         String value = "X";
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
     }
@@ -532,7 +527,7 @@ public class CommandLineOptionsParserTest {
         String value = "wibble";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
     }
@@ -543,31 +538,31 @@ public class CommandLineOptionsParserTest {
         String value = "42";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.getNumberOfGenesToShow(), equalTo(Integer.parseInt(value)));
     }
 
     @Test
     public void should_produce_settings_out_file_value_when_specified() {
-        String option = "--out-file";
+        String option = "--out-prefix";
         String value = "wibble";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.getOutFileName(), equalTo(value));
+        assertThat(exomiserSettings.getOutputPrefix(), equalTo(value));
     }
 
     @Test
     public void should_produce_settings_out_file_with_specified_suffix() {
-        String option = "--out-file";
-        String value = "wibble.pflurb";
+        String option = "--out-prefix";
+        String value = "/users/jules/vcf/analysis/wibble_20150328.pflurb.vcf";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.getOutFileName(), equalTo(value));
+        assertThat(exomiserSettings.getOutputPrefix(), equalTo(value));
     }
 
     @Test
@@ -576,7 +571,7 @@ public class CommandLineOptionsParserTest {
         String value = "wibble";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         Set<OutputFormat> expected = EnumSet.of(OutputFormat.HTML);
 
@@ -588,7 +583,7 @@ public class CommandLineOptionsParserTest {
 
         String input = "-v 123.vcf --prioritiser=phive";
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         Set<OutputFormat> expected = EnumSet.of(OutputFormat.HTML);
 
@@ -601,7 +596,7 @@ public class CommandLineOptionsParserTest {
         String value = "TAB-GENE";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         Set<OutputFormat> expected = EnumSet.of(OutputFormat.TSV_GENE);
 
@@ -614,7 +609,7 @@ public class CommandLineOptionsParserTest {
         String value = "VCF";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF);
 
@@ -627,7 +622,7 @@ public class CommandLineOptionsParserTest {
         String value = "TAB-GENE,VCF";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         Set<OutputFormat> expected = EnumSet.of(OutputFormat.VCF, OutputFormat.TSV_GENE);
 
@@ -636,22 +631,22 @@ public class CommandLineOptionsParserTest {
 
     @Test
     public void shouldProduceSettingsWhereRunFullAnalysisIsTrueWhenSpecifiedTrue() {
-        String option = ExomiserSettings.RUN_FULL_ANALYSIS_OPTION;
+        String option ="full-analysis";
         String value = "true";
         String input = String.format("-v 123.vcf --prioritiser=phive --%s=%s", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.runFullAnalysis(), is(true));
     }
 
     @Test
     public void shouldProduceSettingsWhereRunFullAnalysisIsFalseWhenSpecifiedFalse() {
-        String option = ExomiserSettings.RUN_FULL_ANALYSIS_OPTION;
+        String option = "full-analysis";
         String value = "false";
         String input = String.format("-v 123.vcf --prioritiser=phive --%s=%s", option, value);
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.runFullAnalysis(), is(false));
     }
@@ -660,7 +655,7 @@ public class CommandLineOptionsParserTest {
     public void shouldProduceSettingsWhereRunFullAnalysisIsFalseWhenNotSpecified() {
         String input = String.format("-v 123.vcf --prioritiser=phive");
 
-        ExomiserSettings exomiserSettings = parseSettingsFromInput(input);
+        Settings exomiserSettings = parseSettingsFromInput(input);
 
         assertThat(exomiserSettings.runFullAnalysis(), is(false));
     }

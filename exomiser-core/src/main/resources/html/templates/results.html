@@ -29,8 +29,8 @@ and open the template in the editor.
                 <li><a href="#settings" role="tab" data-toggle="tab"><b>Analysis Settings</b></a></li>
                 <li><a href="#filtering" role="tab" data-toggle="tab"><b>Filtering Summary</b></a></li>
                 <li><a href="#distribution" role="tab" data-toggle="tab"><b>Variant Type Distribution</b></a></li>
-                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b>Unanalysed Variants</b></a></li>
                 <li><a href="#prioritisation" role="tab" data-toggle="tab"><b>Prioritised Genes</b></a></li>
+                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b>Unanalysed Variants</b></a></li>
                 <li><a href="#about" role="tab" data-toggle="tab"><b>About</b></a></li>
             </ul>
             <div class="panel panel-default"  id="settings">
@@ -52,8 +52,8 @@ and open the template in the editor.
                             <tr>
                                 <th>Filter</th>
                                 <th>Report</th>
-                                <th>Variants passed filter</th>
-                                <th>Variants failed filter</th>
+                                <th>Passed filter</th>
+                                <th>Failed filter</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -96,27 +96,7 @@ and open the template in the editor.
                     </table>
                 </div>
             </div>
-            <div class="panel panel-default" id="errors" th:unless="${#lists.isEmpty(unAnalysedVarEvals)}">
-                <div class="panel-heading">
-                    <h3>Unanalysed Variants</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row" th:each="variantEvaluation: ${unAnalysedVarEvals}"> 
-                        <div class="col-sm-12">
-                            <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
-                            <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
-                            <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
-                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                                   th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
-                                </a>
-                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
-                                   th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)</a>
-                            </b>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            
             <!--/*-->
             <h2>Analyzed samples</h2>
             //if there is a multi-sample pedigree we want to see the analysis:
@@ -179,8 +159,8 @@ and open the template in the editor.
                                          th:each="variantEvaluation: ${gene.variantEvaluations}" 
                                          th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
                                         <div class="col-sm-12">
-                                            <span class="label label-danger" th:text="${variantEvaluation.variantType}">MISSENSE</span>
-                                            <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
+                                            <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
+                                            <b th:text=" |chr${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
                                             <th:block th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
                                                    th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
@@ -189,17 +169,19 @@ and open the template in the editor.
                                                    th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)</a>
                                             </th:block>
                                         </div>
-                                        <div class="col-sm-6" > 
+                                        <div class="col-sm-6" >
+                                            <!--<b>Variant Score: 0.95</b>-->
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
-                                                <dd th:each="annotation: ${variantEvaluation.annotationList}" 
-                                                    th:with="ucscData=${#strings.listSplit(annotation,':')}, ucscId=${ucscData[0]}, text=${annotation.replace(ucscId + ':', '')}">
+                                                <dd th:each="annotation: ${variantEvaluation.annotations}" 
+                                                    th:with="ucscData=${#strings.listSplit(annotation.symbolAndAnnotation,':')}, ucscId=${ucscData[0]}, text=${annotation.symbolAndAnnotation.replace(ucscId + ':', '')}">
                                                     <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" 
                                                        th:text="${ucscId}">uc001lfg.4</a> <th:block th:text="${text}">exon6:c.518A> C:p.E173A</th:block>
                                                 </dd>
                                             </dl>
                                         </div>
                                         <div class="col-sm-3">
+                                            <!--<b>Pathogenicity Score: 1.00</b>-->
                                             <dl class="list-unstyled" th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
                                                 <dt>Pathogenicity Data:</dt>
                                                 <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}" th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00</dd>
@@ -208,13 +190,11 @@ and open the template in the editor.
                                             </dl>
                                         </div>
                                         <div class="col-sm-3">
+                                            <!--<b>Frequency Score: 0.95</b>-->
                                             <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <dt>Frequency Data:</dt>
                                                 <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
-                                                <dd th:each="dbSnp: ${#objects.nullSafe(frequencyData.dbSnpMaf, default)}" th:text="'DbSNP: ' + ${dbSnp} + '%'">dbSNP: 0.02%</dd>
-                                                <dd th:each="espAll: ${#objects.nullSafe(frequencyData.espAllMaf, default)}" th:text="'ESP All: ' + ${espAll} + '%'">ESP All: 0.02%</dd>
-                                                <dd th:each="espEa: ${#objects.nullSafe(frequencyData.espEaMaf, default)}" th:text="'ESP EA: ' + ${espEa} + '%'">ESP EA: 0.02%</dd>
-                                                <dd th:each="espAa: ${#objects.nullSafe(frequencyData.espAaMaf, default)}" th:text="'ESP AA: ' + ${espAa} + '%'">ESP AA: 0.02%</dd>
+                                                <dd th:each="freq: ${frequencyData.knownFrequencies}" th:text="${freq.source.source} + ': ' + ${#numbers.formatDecimal(freq.frequency,1,4)} + '%'">1000Genomes: 0.02%</dd>
                                             </dl>
                                         </div>
                                     </div>
@@ -224,6 +204,28 @@ and open the template in the editor.
                     </table>
                 </div>
             </div>
+            
+            <div class="panel panel-default" id="errors" th:unless="${#lists.isEmpty(unAnalysedVarEvals)}">
+                <div class="panel-heading">
+                    <h3>Unanalysed Variants</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row" th:each="variantEvaluation: ${unAnalysedVarEvals}"> 
+                        <div class="col-sm-12">
+                            <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
+                            <b th:text=" |${variantEvaluation.chromosomeName} ${variantEvaluation.position} ${variantEvaluation.ref} ${variantEvaluation.alt} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
+                            <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
+                                   th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
+                                </a>
+                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
+                                   th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)</a>
+                            </b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div id="about">
                 <h3>About</h3>
                 <p>

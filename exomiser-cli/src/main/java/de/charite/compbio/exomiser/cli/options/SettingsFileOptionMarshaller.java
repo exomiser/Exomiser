@@ -5,9 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.SETTINGS_FILE_OPTION;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.apache.commons.cli.OptionBuilder;
 
 /**
@@ -15,6 +13,8 @@ import org.apache.commons.cli.OptionBuilder;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SettingsFileOptionMarshaller extends AbstractOptionMarshaller {
+    
+    public static final String SETTINGS_FILE_OPTION = "settings-file";
     
     public SettingsFileOptionMarshaller() {
         option = OptionBuilder
@@ -27,7 +27,7 @@ public class SettingsFileOptionMarshaller extends AbstractOptionMarshaller {
 
     @Override
     public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
-        //not direct ExomiserSettings value to set
+        //no direct ExomiserSettings value to set
     }
     
 }

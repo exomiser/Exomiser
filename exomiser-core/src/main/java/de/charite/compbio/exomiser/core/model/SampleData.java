@@ -6,10 +6,13 @@
 
 package de.charite.compbio.exomiser.core.model;
 
-import jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import htsjdk.variant.vcf.VCFHeader;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class to encapsulate the patient data from a VCF file and their pedigree.
@@ -21,13 +24,13 @@ public class SampleData {
     /**
      * Store the path of the file used to create this data.
      */
-    private Path vcfFilePath;
+    private Path vcfPath;
+    private Path pedPath;
     
     /**
-     * Store lines of header of VCF file, in case we want to print them out
-     * again.
+     * Header of the VCF file.
      */
-    private List<String> vcfHeader;
+    private VCFHeader vcfHeader;
 
     /**
      * Total number of samples (sequenced persons) in the input VCF file.
@@ -53,7 +56,15 @@ public class SampleData {
         this.variantEvaluations = new ArrayList<>();
         this.genes = new ArrayList<>();
     }
-        
+    
+    public SampleData(Path vcfPath, Path pedPath) {
+        this.vcfPath = vcfPath;
+        this.pedPath = pedPath;
+        this.sampleNames = new ArrayList<>();
+        this.variantEvaluations = new ArrayList<>();
+        this.genes = new ArrayList<>();
+    }
+    
     /**
      * @return List of Strings representing the sample names in the VCF file.
      */
@@ -76,19 +87,27 @@ public class SampleData {
         this.numSamples = numSamples;
     }
 
-    public Path getVcfFilePath() {
-        return vcfFilePath;
+    public Path getVcfPath() {
+        return vcfPath;
     }
 
-    public void setVcfFilePath(Path vcfFilePath) {
-        this.vcfFilePath = vcfFilePath;
+    public void setVcfPath(Path vcfPath) {
+        this.vcfPath = vcfPath;
     }
 
-    public List<String> getVcfHeader() {
+    public void setPedPath(Path pedPath) {
+        this.pedPath = pedPath;
+    }
+    
+    public Path getPedPath() {
+        return pedPath;
+    }
+    
+    public VCFHeader getVcfHeader() {
         return vcfHeader;
     }
 
-    public void setVcfHeader(List<String> vcfHeader) {
+    public void setVcfHeader(VCFHeader vcfHeader) {
         this.vcfHeader = vcfHeader;
     }
 
@@ -125,4 +144,36 @@ public class SampleData {
         }  
         return unannotatedList;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.vcfPath);
+        hash = 59 * hash + Objects.hashCode(this.pedPath);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SampleData other = (SampleData) obj;
+        if (!Objects.equals(this.vcfPath, other.vcfPath)) {
+            return false;
+        }
+        if (!Objects.equals(this.pedPath, other.pedPath)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "SampleData{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + '}';
+    }
+    
 }

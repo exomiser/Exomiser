@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.analysis.Settings;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
@@ -14,7 +14,6 @@ import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 /**
  *
@@ -24,13 +23,13 @@ public class TargetFilterOptionMarshallerTest {
     
     private TargetFilterOptionMarshaller instance;
     private Option option;
-    private ExomiserSettings.SettingsBuilder settingsBuilder;
+    private Settings.SettingsBuilder settingsBuilder;
     
     @Before
     public void setUp() {
         instance = new TargetFilterOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        settingsBuilder = new Settings.SettingsBuilder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
         settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
     }
@@ -47,14 +46,14 @@ public class TargetFilterOptionMarshallerTest {
 
     @Test
     public void testSettingsKeepOffTargetVariantsIsFalseByDefault() {
-        ExomiserSettings settings = settingsBuilder.build();        
+        Settings settings = settingsBuilder.build();        
         assertThat(settings.keepOffTargetVariants(), is(false));
     }
     
     @Test
     public void testSettingsBuilderAppliesFalseWhenSetWithNullValue() {
         instance.applyValuesToSettingsBuilder(null, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.keepOffTargetVariants(), is(true));
     }
     
@@ -62,7 +61,7 @@ public class TargetFilterOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgFalse() {
         String[] args = {"false"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.keepOffTargetVariants(), is(false));
     }
     
@@ -70,7 +69,7 @@ public class TargetFilterOptionMarshallerTest {
     public void testSettingsBuilderAppliesArgTrue() {
         String[] args = {"true"};
         instance.applyValuesToSettingsBuilder(args, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         assertThat(settings.keepOffTargetVariants(), is(true));
     }
     

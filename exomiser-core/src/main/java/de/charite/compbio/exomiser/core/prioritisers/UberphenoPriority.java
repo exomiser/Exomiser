@@ -13,11 +13,10 @@ import similarity.concepts.ResnikSimilarity;
 import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
 
-import jannovar.common.Constants;
-
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
-import java.sql.Connection;
+import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @author Sebastian Koehler
  * @version 0.05 (April 28, 2013)
  */
-public class UberphenoPriority implements Priority {
+public class UberphenoPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(UberphenoPriority.class);
 
@@ -54,13 +53,13 @@ public class UberphenoPriority implements Priority {
     /**
      * A list of error-messages
      */
-    private List<String> error_record = null;
+    private List<String> errorMessages = new ArrayList<>();
 
     /**
      * A list of messages that can be used to create a display in a HTML page or
      * elsewhere.
      */
-    private List<String> messages = null;
+    private List<String> messages = new ArrayList<>();
 
     /**
      * Keeps track of the number of variants for which data was available in
@@ -91,12 +90,12 @@ public class UberphenoPriority implements Priority {
     /**
      * The HPO-terms associated with the current disease
      */
-    private ArrayList<Term> annotationsOfDisease;
+    private List<Term> annotationsOfDisease;
 
     /**
      * Assignment of an IC to each term in the Uberpheno
      */
-    private HashMap<Term, Double> uberphenoterm2informationContent;
+    private Map<Term, Double> uberphenoterm2informationContent;
 
     /**
      * Create a new instance of the UberphenoFilter.
@@ -139,7 +138,7 @@ public class UberphenoPriority implements Priority {
             uberphenoterm2informationContent = uberphenoAnnotationContainer.calculateInformationContentUberpheno(uberpheno, uberphenoSlim);
 
             /* Similarity calculation ... TODO: parameter-based choice of similarity measure */
-            ResnikSimilarity resnik = new ResnikSimilarity(uberpheno, uberphenoterm2informationContent);
+            ResnikSimilarity resnik = new ResnikSimilarity(uberpheno, (HashMap) uberphenoterm2informationContent);
             similarityMeasure = new InformationContentObjectSimilarity(resnik, false, false);
         }
 
@@ -159,16 +158,8 @@ public class UberphenoPriority implements Priority {
         annotationsOfDisease = new ArrayList<Term>(annotationsOfCurrentDiseaseHs);
 
         /* some logging stuff */
-        this.error_record = new ArrayList<String>();
+        this.errorMessages = new ArrayList<String>();
         this.messages = new ArrayList<String>();
-    }
-
-    /* (non-Javadoc)
-     * @see exomizer.priority.FilterType#getPriorityName()
-     */
-    @Override
-    public String getPriorityName() {
-        return "Uberpheno semantic similarity filter";
     }
 
     /**
@@ -184,8 +175,8 @@ public class UberphenoPriority implements Priority {
      * of score filtering.
      */
     public List<String> getMessages() {
-        if (this.error_record.size() > 0) {
-            for (String s : error_record) {
+        if (this.errorMessages.size() > 0) {
+            for (String s : errorMessages) {
                 this.messages.add("Error: " + s);
             }
         }
@@ -209,14 +200,12 @@ public class UberphenoPriority implements Priority {
                 UberphenoPriorityResult uberphenoRelScore = scoreVariantUberpheno(gene);
                 gene.addPriorityResult(uberphenoRelScore);
             } catch (Exception e) {
-                error_record.add(e.toString());
+                errorMessages.add(e.toString());
             }
         }
 
-        String s
-                = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)",
-                        analysedGenes);
-        this.messages.add(s);
+        String s = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)", analysedGenes);
+        messages.add(s);
     }
 
     /**
@@ -228,26 +217,42 @@ public class UberphenoPriority implements Priority {
         int entrezGeneId = g.getEntrezGeneID();
         Set<Term> terms = uberphenoAnnotationContainer.getAnnotationsOfGene(entrezGeneId);
         if (terms == null || terms.size() < 1) {
-            return new UberphenoPriorityResult(Constants.UNINITIALIZED_FLOAT);
+            return new UberphenoPriorityResult(-10.0f);
         }
-        ArrayList<Term> termsAl = new ArrayList<Term>(terms);
-        double similarityScore = similarityMeasure.computeObjectSimilarity(annotationsOfDisease, termsAl);
+        List<Term> termsAl = new ArrayList<>(terms);
+        double similarityScore = similarityMeasure.computeObjectSimilarity((ArrayList) annotationsOfDisease, (ArrayList) termsAl);
         return new UberphenoPriorityResult(similarityScore);
     }
 
-    /**
-     * To do
-     *
-     * @return
-     */
     @Override
-    public boolean displayInHTML() {
-        return false;
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.uberpheno);
+        hash = 29 * hash + Objects.hashCode(this.annotationsOfDisease);
+        return hash;
     }
 
     @Override
-    public String getHTMLCode() {
-        return "";
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final UberphenoPriority other = (UberphenoPriority) obj;
+        if (!Objects.equals(this.uberpheno, other.uberpheno)) {
+            return false;
+        }
+        if (!Objects.equals(this.annotationsOfDisease, other.annotationsOfDisease)) {
+            return false;
+        }
+        return true;
     }
 
+    @Override
+    public String toString() {
+        return "UberphenoPriority{" + '}';
+    }
+    
 }

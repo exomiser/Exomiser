@@ -6,7 +6,8 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.Objects;
 
 /**
@@ -17,10 +18,9 @@ import java.util.Objects;
 public class InheritanceFilter implements GeneFilter {
 
     private static final FilterType filterType = FilterType.INHERITANCE_FILTER;
-    
-    //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passResult = new InheritanceFilterResult(1f, FilterResultStatus.PASS);
-    private final FilterResult failResult = new InheritanceFilterResult(0f, FilterResultStatus.FAIL);
+
+    private final FilterResult passesFilter = new PassFilterResult(filterType);
+    private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     private final ModeOfInheritance modeOfInheritance;
     
@@ -28,17 +28,31 @@ public class InheritanceFilter implements GeneFilter {
         this.modeOfInheritance = modeOfInheritance;
     }
 
+    public ModeOfInheritance getModeOfInheritance() {
+        return modeOfInheritance;
+    }
+    
     @Override
     public FilterResult runFilter(Gene gene) {
         if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
             //if ModeOfInheritance.UNINITIALIZED pass the runFilter - ideally it shouldn't be applied in the first place.
-            return new InheritanceFilterResult(1f, FilterResultStatus.NOT_RUN);
+            return new NotRunFilterResult(filterType);
         }
-        if (gene.isConsistentWith(modeOfInheritance)) {
-            return passResult;
-        } else {
-            return failResult;
+        if (gene.isCompatibleWith(modeOfInheritance)) {
+            return addFilterResultToVariants(passesFilter, gene);
         }
+        return addFilterResultToVariants(failsFilter, gene);
+    }
+
+    private FilterResult addFilterResultToVariants(FilterResult filterResult, Gene gene) {
+        for (VariantEvaluation variant : gene.getVariantEvaluations()) {
+            if (variant.isCompatibleWith(modeOfInheritance)) {
+                variant.addFilterResult(passesFilter);
+            } else {
+                variant.addFilterResult(failsFilter);
+            }
+        }
+        return filterResult;
     }
 
     @Override

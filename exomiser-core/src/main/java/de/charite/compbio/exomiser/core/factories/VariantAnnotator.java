@@ -5,15 +5,27 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import jannovar.annotation.AnnotationList;
-import jannovar.exception.AnnotationException;
-import jannovar.exome.Variant;
-import jannovar.reference.Chromosome;
-import java.util.Map;
+import htsjdk.variant.variantcontext.VariantContext;
+
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.charite.compbio.exomiser.core.model.Variant;
+import de.charite.compbio.jannovar.annotation.AnnotationException;
+import de.charite.compbio.jannovar.annotation.VariantAnnotations;
+import de.charite.compbio.jannovar.htsjdk.InvalidCoordinatesException;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.PositionType;
+import java.util.Collections;
+
 /**
+ * Given a {@link VariantAnnotator}, build a {@link Variant} for each
+ * alternative allele.
+ *
+ * Uses the {@link VariantContextAnnotator} class of the Jannovar-HTSJDK bridge.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -21,48 +33,37 @@ public class VariantAnnotator {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantAnnotator.class);
 
-    private final Map<Byte, Chromosome> chromosomeMap;
+    /**
+     * tool for obtaining annotations for the {@link VariantContext} objects
+     */
+    private final VariantContextAnnotator annotator;
 
-    //TODO: Jannovar 0.11
-//    final JannovarData data = new JannovarDataSerializer(this.options.dataFile).load();
-//    final VariantAnnotator annotator = new VariantAnnotator(data.refDict, data.chromosomes); 
-    
-    public VariantAnnotator(Map<Byte, Chromosome> chromosomeMap) {
-        this.chromosomeMap = chromosomeMap;
+    public VariantAnnotator(VariantContextAnnotator variantContextAnnotator) {
+        this.annotator = variantContextAnnotator;
     }
 
-    public Variant annotateVariant(Variant variant) {
-        AnnotationList annotations = getVariantAnnotations(variant);
-        if (annotations != null) {
-            variant.setAnnotation(annotations);
-        }
-        return variant;
-    }
-
-    private AnnotationList getVariantAnnotations(Variant variant) {
-        Chromosome chromosome = getChromosomeForVariant(variant);
-        if (chromosome == null) {
-            logger.error("Could not identify chromosome {}", variant.getChromosomeAsByte());
-            return null;
-        }
-    
-        return getVariantAnnotationsFromChromosome(variant, chromosome);
-    }
-
-    private Chromosome getChromosomeForVariant(Variant variant) {
-        return chromosomeMap.get(variant.getChromosomeAsByte());
-    }
-    
-    private AnnotationList getVariantAnnotationsFromChromosome(Variant variant, Chromosome chromosome) {
+    /**
+     * Returns a list of variants of known reference. If a VariantContext has no
+     * know reference on the genome an empty list will be returned.
+     *
+     * @param variantContext {@link VariantContext} to get {@link Variant} objects for
+     * @return one {@link Variant} object for each alternative allele in vc.
+     */
+    public List<VariantAnnotations> buildVariantAnnotations(VariantContext variantContext) {
+        List<VariantAnnotations> variantAnnotations = Collections.emptyList();
         try {
-            int pos = variant.get_position();
-            String ref = variant.get_ref();
-            String alt = variant.get_alt();
-            
-            return chromosome.getAnnotationList(pos, ref, alt);           
-        } catch (AnnotationException ae) {
-            logger.error("Unable to annotate variant {}", variant.getChromosomalVariant(), ae);
+            //builds one annotation list for each alternative allele
+            variantAnnotations = annotator.buildAnnotations(variantContext);
+        } catch (InvalidCoordinatesException ex) {
+            //Not all genes can be assigned to a chromosome, so these will fail here. 
+            //Should we report these? They will not be used in the analysis or appear in the output anywhere.
+            logger.trace("Cannot build annotations for VariantContext {} {} {}: {}", variantContext.getChr(), variantContext.getStart(), variantContext.getAlleles(), ex);
         }
-        return null;
-    }  
+        return variantAnnotations;
+    }
+
+    private VariantAnnotations buildVariantAnnotations(int chr, int pos, String ref, String alt) throws AnnotationException {
+        return annotator.getAnnotator().buildAnnotations(chr, pos, ref, alt, PositionType.ONE_BASED);
+    }
+
 }

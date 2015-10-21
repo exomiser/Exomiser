@@ -7,7 +7,6 @@
 
 #REQUIRED OPTIONS - these need to be filled in either here or on the command-line.
 vcf=data/Pfeiffer.vcf
-prioritiser=phive
 
 #SAMPLE DATA OPTIONS
 ped=
@@ -17,11 +16,12 @@ max-freq=1.0
 restrict-interval=
 min-qual=0
 keep-non-pathogenic=false
-remove-dbsnp=false
+remove-known-variants=false
 keep-off-target=false
 full-analysis=false
 
 #PRIORITISER OPTIONS
+prioritiser=phive
 candidate-gene=
 hpo-ids=HP:0001156, HP:0001363, HP:0011304, HP:0010055
 seed-genes=
@@ -31,12 +31,13 @@ disease-id=
 inheritance-mode=
 
 #OUTPUT OPTIONS
+output-pass-variants-only=false
 #num-genes options: 0 = all or specify a limit e.g. 500 for the first 500 results  
 num-genes=0
-#out-file options: specify the path/filename without an extension and this will be added
+#out-prefix options: specify the path/filename without an extension and this will be added
 # according to the out-format option. If unspecified this will default to the following: 
 # {exomiserDir}/results/input-vcf-name-exomiser-results.html
 # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
-out-file=results/Pfeiffer-phive
+out-prefix=results/Pfeiffer-phive
 #out-format options: HTML, TSV, VCF (default: HTML)
 out-format=TSV-GENE,TSV-VARIANT,VCF,HTML

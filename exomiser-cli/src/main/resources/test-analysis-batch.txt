@@ -1,0 +1,6 @@
+#This is an example analysis batch file to be run using the --analysis-batch command
+#
+#Each line should specify the path of a single analysis file, either relative to the directory the exomiser
+#is being run from or the full system path.
+test-analysis-exome.yml
+test-analysis-genome.yml

@@ -16,17 +16,33 @@
  */
 package config;
 
+import com.google.common.collect.ImmutableList;
+import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantEvaluationDataService;
-import de.charite.compbio.exomiser.core.filters.FilterFactory;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
+import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
+import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
+import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
+import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +68,35 @@ public class TestExomiserConfig {
     private Environment env;
     
     @Bean
+    public SettingsParser mockSettingsParser() {
+        return Mockito.mock(SettingsParser.class);
+    }
+    
+    @Bean
+    public AnalysisFactory mockAnalysisFactory() {
+        return Mockito.mock(AnalysisFactory.class);
+    }
+    
+    @Bean
     public Path dataPath() {
         Path dataPath = Paths.get(env.getProperty("dataDir"));
         logger.debug("Root data source directory set to: {}", dataPath.toAbsolutePath());
         
         return dataPath;
+    }
+    
+    @Bean
+    public int maxVariants() {
+        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
+        logger.info("Set max variants to {}", maxVariants);
+        return maxVariants;
+    }
+    
+    @Bean
+    public int maxGenes() {
+        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
+        logger.info("Set max genes to {}", maxGenes);
+        return maxGenes;
     }
 
     @Bean
@@ -88,10 +128,15 @@ public class TestExomiserConfig {
     }
 
     @Bean
-    public Exomiser mockExomiser() {
-        return Mockito.mock(Exomiser.class);
+    public JannovarData jannovarData() {
+        return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.<TranscriptModel>of());
     }
-    
+
+    @Bean
+    public VariantFactory variantFactory() {
+        return new VariantFactory(mockVariantAnnotator());
+    }
+ 
     @Bean
     public SampleDataFactory sampleDataFactory() {
         return Mockito.mock(SampleDataFactory.class);
@@ -103,13 +148,8 @@ public class TestExomiserConfig {
     }
     
     @Bean
-    public FilterFactory mockFilterFactory() {
-        return Mockito.mock(FilterFactory.class);
-    }
-    
-    @Bean
-    public PriorityFactory mockPriorityFactory() {
-        return Mockito.mock(PriorityFactory.class);
+    public PriorityFactoryImpl mockPriorityFactory() {
+        return Mockito.mock(PriorityFactoryImpl.class);
     }
     
     //cacheable beans
@@ -129,7 +169,42 @@ public class TestExomiserConfig {
     }
     
     @Bean
-    public VariantEvaluationDataService variantEvaluationDataService() {
-        return Mockito.mock(VariantEvaluationDataService.class);
+    public VariantDataService variantEvaluationDataService() {
+        return Mockito.mock(VariantDataService.class);
+    }
+    
+    @Bean
+    PriorityService priorityService() {
+        return new PriorityService();
+    }
+    
+    @Bean
+    ModelService modelService() {
+        return new ModelServiceImpl();
+    }
+    
+    @Bean
+    OntologyService ontologyService() {
+        return new OntologyServiceImpl();
+    }
+    
+    @Bean
+    DiseaseDao diseaseDao() {
+        return new DefaultDiseaseDao();
+    }
+    
+    @Bean
+    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+        return new HumanPhenotypeOntologyDao();
+    }
+    
+    @Bean
+    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+        return new MousePhenotypeOntologyDao();
+    }
+    
+    @Bean
+    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+        return new ZebraFishPhenotypeOntologyDao();
     }
 }

@@ -1,10 +1,5 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import java.util.ArrayList;
-
-import jannovar.common.Constants;
-import java.util.List;
-
 /**
  * Filter Variants on the basis of OWLSim phenotypic comparisons between the HPO
  * clinical phenotypes associated with the disease being sequenced and MP
@@ -64,30 +59,7 @@ public class PhivePriorityResult implements PriorityResult {
      */
     @Override
     public float getScore() {
-        if (phenodigmScore == Constants.UNINITIALIZED_FLOAT) {
-            return 0.1f;// mouse model exists but no hit to this disease
-        } else if (phenodigmScore == Constants.NOPARSE_FLOAT) {
-            return 0.6f;// no mouse model exists in MGI
-        } else {
-            return phenodigmScore;
-        }
-    }
-
-    /**
-     * @return A list with detailed results of filtering. The list is intended
-     * to be displayed as an HTML list if desired.
-     */
-    @Override
-    public List<String> getFilterResultList() {
-        List<String> results = new ArrayList<>();
-        if (phenodigmScore == Constants.UNINITIALIZED_FLOAT) {
-            results.add("MGI Phenodigm: no hit for these phenotypes");
-        } else if (phenodigmScore == Constants.NOPARSE_FLOAT) {
-            results.add("MGI Phenodigm: no mouse model for this gene");
-        } else {
-            results.add(String.format("MGI Phenodigm: (%.3f%%)", 100 * phenodigmScore));
-        }
-        return results;
+        return phenodigmScore;
     }
 
     /**
@@ -96,7 +68,7 @@ public class PhivePriorityResult implements PriorityResult {
      */
     @Override
     public String getHTMLCode() {
-        if (phenodigmScore == Constants.NOPARSE_FLOAT) {
+        if (phenodigmScore == PhivePriority.NO_MOUSE_MODEL_SCORE) {
             return "<dl><dt>No mouse model for this gene</dt></dl>";
         } else {
             String link = makeMgiGeneLink();

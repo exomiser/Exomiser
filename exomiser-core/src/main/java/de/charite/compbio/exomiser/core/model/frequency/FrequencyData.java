@@ -5,15 +5,24 @@
  */
 package de.charite.compbio.exomiser.core.model.frequency;
 
+import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Frequency data for the variant from the Thousand Genomes and the Exome Server
- * Project.
+ * Frequency data for the variant from the Thousand Genomes, the Exome Server
+ * Project and Broad ExAC datasets.
+ *
+ * Note that the frequency data are expressed as percentages.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -21,75 +30,34 @@ public class FrequencyData {
 
     private static final Logger logger = LoggerFactory.getLogger(FrequencyData.class);
     
-    /**
-     * Thousand Genomes allele count (all samples).
-     */
     private final RsId rsId;
 
-    /**
-     * dbSNP GMAF (often from thousand genomes project).
-     */
-    private final Frequency dbSnpMaf;
+    private final Map<FrequencySource, Frequency> knownFrequencies;
 
-    /**
-     * Exome Server Project (ESP) European American MAF.
-     */
-    private final Frequency espEaMaf;
+    public FrequencyData() {
+        this.rsId = null;
+        this.knownFrequencies = Collections.emptyMap();
+    }
 
-    /**
-     * Exome Server Project (ESP) African American MAF.
-     */
-    private final Frequency espAaMaf;
+    public FrequencyData(RsId rsId, Frequency... frequency) {
+        this(rsId, new HashSet<>(Arrays.asList(frequency)));
+    } 
 
-    /**
-     * Exome Server Project (ESP) all comers MAF.
-     */
-    private final Frequency espAllMaf;
-
-    private final List<Frequency> knownFrequencies;
-
-    //builder here like with Pathogenicity?
-    public FrequencyData(RsId rsid, Frequency dbSnp, Frequency espAll, Frequency espAA, Frequency espEA) {
-        
-        this.rsId = rsid;
-        this.dbSnpMaf = dbSnp;
-        this.espAaMaf = espAA;
-        this.espAllMaf = espAll;
-        this.espEaMaf = espEA;
-        knownFrequencies = new ArrayList<>();
-        
-        if (dbSnpMaf != null) {
-            knownFrequencies.add(dbSnpMaf);
-        }
-        if (espAaMaf != null) {
-            knownFrequencies.add(espAaMaf);
-        }
-        if (espAllMaf != null) {
-            knownFrequencies.add(espAllMaf);
-        }
-        if (espEaMaf != null) {
-            knownFrequencies.add(espEaMaf);
+    public FrequencyData(RsId rsId, Set<Frequency> frequencies) {
+        this.rsId = rsId;
+        knownFrequencies = new EnumMap(FrequencySource.class);
+        for (Frequency frequency : frequencies) {
+            knownFrequencies.put(frequency.getSource(), frequency);
         }
     }
 
+    //TODO: RSID ought to belong to the Variant, not the frequencyData 
     public RsId getRsId() {
         return rsId;
     }
 
-    public Frequency getDbSnpMaf() {
-        return dbSnpMaf;
-    }
-
-    public Frequency getEspEaMaf() {
-        return espEaMaf;
-    }
-
-    public Frequency getEspAaMaf() {
-        return espAaMaf;
-    }
-
-    public Frequency getEspAllMaf() {
-        return espAllMaf;
+    public Frequency getFrequencyForSource(FrequencySource source) {
+        return knownFrequencies.get(source);
     }
 
     /**
@@ -97,16 +65,15 @@ public class FrequencyData {
      * regardless of frequency. That is, if the variant has an RS id in dbSNP or
      * any frequency data at all, return true, otherwise false.
      */
-    public boolean representedInDatabase() {
+    public boolean isRepresentedInDatabase() {
         if (rsId != null) {
             return true;
         }
         return !knownFrequencies.isEmpty();
-
     }
 
     public boolean hasDbSnpData() {
-        return dbSnpMaf != null;
+        return knownFrequencies.containsKey(THOUSAND_GENOMES);
     }
 
     public boolean hasDbSnpRsID() {
@@ -114,7 +81,31 @@ public class FrequencyData {
     }
 
     public boolean hasEspData() {
-        return espAllMaf != null;
+        for (FrequencySource dataSource : knownFrequencies.keySet()) {
+            switch (dataSource) {
+                case ESP_AFRICAN_AMERICAN:
+                case ESP_EUROPEAN_AMERICAN:
+                case ESP_ALL:
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean hasExacData() {
+        for (FrequencySource dataSource : knownFrequencies.keySet()) {
+            switch (dataSource) {
+                case EXAC_AFRICAN_INC_AFRICAN_AMERICAN:
+                case EXAC_AMERICAN:
+                case EXAC_EAST_ASIAN:
+                case EXAC_FINNISH:
+                case EXAC_NON_FINNISH_EUROPEAN:
+                case EXAC_OTHER:
+                case EXAC_SOUTH_ASIAN:
+                    return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -124,7 +115,7 @@ public class FrequencyData {
      * @return a List of Frequency data
      */
     public List<Frequency> getKnownFrequencies() {
-        return new ArrayList(knownFrequencies);
+        return new ArrayList(knownFrequencies.values());
     }
 
     /**
@@ -137,7 +128,7 @@ public class FrequencyData {
         //TODO this is analagous to PathogenicityData.getMostPathogenicScore()
         //TODO so should really return a Frequency object...
         float maxFreq = 0f;
-        for (Frequency freq : knownFrequencies) {
+        for (Frequency freq : knownFrequencies.values()) {
             //TODO ...but frequency needs to implement comparable first
             maxFreq = Math.max(maxFreq, freq.getFrequency());
         }
@@ -146,12 +137,9 @@ public class FrequencyData {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.rsId);
-        hash = 79 * hash + Objects.hashCode(this.dbSnpMaf);
-        hash = 79 * hash + Objects.hashCode(this.espEaMaf);
-        hash = 79 * hash + Objects.hashCode(this.espAaMaf);
-        hash = 79 * hash + Objects.hashCode(this.espAllMaf);
+        int hash = 5;
+        hash = 29 * hash + Objects.hashCode(this.rsId);
+        hash = 29 * hash + Objects.hashCode(this.knownFrequencies);
         return hash;
     }
 
@@ -167,25 +155,37 @@ public class FrequencyData {
         if (!Objects.equals(this.rsId, other.rsId)) {
             return false;
         }
-        if (!Objects.equals(this.dbSnpMaf, other.dbSnpMaf)) {
-            return false;
-        }
-        if (!Objects.equals(this.espEaMaf, other.espEaMaf)) {
-            return false;
-        }
-        if (!Objects.equals(this.espAaMaf, other.espAaMaf)) {
-            return false;
-        }
-        if (!Objects.equals(this.espAllMaf, other.espAllMaf)) {
+        if (!Objects.equals(this.knownFrequencies, other.knownFrequencies)) {
             return false;
         }
         return true;
     }
 
-    
     @Override
     public String toString() {
-        return "FrequencyData{" + rsId + ", dbSnpMaf=" + dbSnpMaf + ", espEaMaf=" + espEaMaf + ", espAaMaf=" + espAaMaf + ", espAllMaf=" + espAllMaf + '}';
+        return "FrequencyData{" + "rsId=" + rsId + ", knownFrequencies=" + knownFrequencies.values() + '}';
     }
 
+    private static final float VERY_RARE_SCORE = 1f;
+    private static final float NOT_RARE_SCORE = 0f;
+
+    /**
+     * @return returns a numerical value that is closer to one, the rarer
+     * the variant is. If a variant is not entered in any of the data
+     * sources, it returns one (highest score). Otherwise, it identifies the
+     * maximum MAF in any of the databases, and returns a score that depends on
+     * the MAF. Note that the frequency is expressed as a percentage.
+     */
+    public float getScore() {
+
+        float max = getMaxFreq();
+
+        if (max <= 0) {
+            return VERY_RARE_SCORE;
+        } else if (max > 2) {
+            return NOT_RARE_SCORE;
+        } else {
+            return 1f - (0.13533f * (float) Math.exp(max));
+        }
+    }
 }

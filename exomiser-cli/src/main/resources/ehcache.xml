@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~
+  ~ Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Affero General Public License as
+  ~  published by the Free Software Foundation, either version 3 of the
+  ~  License, or (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Affero General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Affero General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <ehcache>
     <diskStore path="java.io.tmpdir"/>
 
@@ -10,8 +29,28 @@
     <cache name="pathogenicity" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU">
     </cache>
 
-
     <!--Frequency cache-->
     <cache name="frequency" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--CADD cache-->
+    <cache name="cadd" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--REMM cache-->
+    <cache name="remm" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--disease HP terms -->
+    <cache name="diseaseHp" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!-- disease id - disease term -->
+    <cache name="diseases" eternal="true" maxEntriesLocalHeap="10000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--HP terms -->
+    <cache name="hpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--MP terms -->
+    <cache name="mpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--ZP terms -->
+    <cache name="zpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
 </ehcache>

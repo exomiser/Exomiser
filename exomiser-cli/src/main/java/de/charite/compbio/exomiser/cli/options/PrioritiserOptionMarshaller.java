@@ -5,14 +5,14 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.PRIORITISER_OPTION;
+import de.charite.compbio.exomiser.cli.CommandLineParseError;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.cli.OptionBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -20,7 +20,9 @@ import org.slf4j.LoggerFactory;
  */
 public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
 
-    private static final Logger logger = LoggerFactory.getLogger(PrioritiserOptionMarshaller.class);
+    public static final String PRIORITISER_OPTION = "prioritiser"; //values for this are handled by PriorityType
+
+    private final Map<String, PriorityType> prioritiserCliValues = new LinkedHashMap<>();
 
     public PrioritiserOptionMarshaller() {
         option = OptionBuilder
@@ -31,19 +33,24 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
                 .withLongOpt(PRIORITISER_OPTION)
                 .create();
 
+        prioritiserCliValues.put("hiphive", PriorityType.HIPHIVE_PRIORITY);
+        prioritiserCliValues.put("phenix", PriorityType.PHENIX_PRIORITY);
+        prioritiserCliValues.put("phive", PriorityType.PHIVE_PRIORITY);
+        prioritiserCliValues.put("exomewalker", PriorityType.EXOMEWALKER_PRIORITY);
+        prioritiserCliValues.put("omim", PriorityType.OMIM_PRIORITY);
+        prioritiserCliValues.put("uber-pheno", PriorityType.UBERPHENO_PRIORITY);
+        //'none' is the default
+        prioritiserCliValues.put("none", PriorityType.NONE);
     }
 
     @Override
-    public void applyValuesToSettingsBuilder(String[] values, ExomiserSettings.SettingsBuilder settingsBuilder) {
-        String value = values[0];
-        settingsBuilder.usePrioritiser(PriorityType.valueOfCommandLine(value));
-        if (PriorityType.valueOfCommandLine(value) == PriorityType.NOT_SET) {
-            logger.error("Invalid prioritiser option: {} ", value);
-            logger.error("Please choose one of:");
-            for (PriorityType priorityType : PriorityType.values()) {
-                logger.error("\t{}", priorityType.getCommandLineValue());
-            }
+    public void applyValuesToSettingsBuilder(String[] values, SettingsBuilder settingsBuilder) {
+        String value = values[0].toLowerCase();
+        PriorityType priorityType = prioritiserCliValues.get(value);
+        if (priorityType == null) {
+            throw new CommandLineParseError(buildErrorMessage(value));
         }
+        settingsBuilder.usePrioritiser(priorityType);
     }
 
     /**
@@ -56,48 +63,42 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
      * @return
      */
     private String buildPrioritiserDescription(String prioritiserLongOpt) {
-        List<PriorityType> inValidPriorityTypes = new ArrayList<>();
-        inValidPriorityTypes.add(PriorityType.NOT_SET);
-        inValidPriorityTypes.add(PriorityType.OMIM_PRIORITY);
-
-        List<PriorityType> validPriorityTypes = new ArrayList<>();
-        //The last PriorityType is PriorityType.NOT_SET which has no command-line option so we ned to create a list of PriorityTypes without this one in.
-        for (PriorityType priorityType : PriorityType.values()) {
-            if (inValidPriorityTypes.contains(priorityType)) {
-                //we're not interested in this option
-            } else if (priorityType.getCommandLineValue().isEmpty()) {
-                //we're not interested in this option either
-            } else {
-                //This is the option we're looking for!
-                validPriorityTypes.add(priorityType);
-            }
-        }
-        //now we've got the valid list of types, build up the description
-        //this should look like this:
+        //Build up the description this should look like this:
         //"Name of the PRIORITISER_OPTION used to score the genes.
         // Can be one of: inheritance-mode, phenomizer or dynamic-phenodigm. 
         // e.g. --PRIORITISER_OPTION=dynamic-phenodigm"
 
         StringBuilder priorityOptionDescriptionBuilder = new StringBuilder("Name of the prioritiser used to score the genes. Can be one of: ");
 
-        int numPriorityTypes = validPriorityTypes.size();
+        List<String> commandLineValues = new ArrayList<>(prioritiserCliValues.keySet());
+        
+        int numPriorityTypes = commandLineValues.size();
         int lastType = numPriorityTypes - 1;
         int secondLastType = numPriorityTypes - 2;
+        
         for (int i = 0; i < numPriorityTypes; i++) {
-            PriorityType priorityType = validPriorityTypes.get(i);
+            String cliValue = commandLineValues.get(i);
             if (i == lastType) {
-                priorityOptionDescriptionBuilder.append(priorityType.getCommandLineValue())
+                priorityOptionDescriptionBuilder.append(cliValue)
                         .append(". e.g. --").append(prioritiserLongOpt)
                         .append("=")
-                        .append(priorityType.getCommandLineValue());
+                        .append(cliValue);
             } else if (i == secondLastType) {
-                priorityOptionDescriptionBuilder.append(priorityType.getCommandLineValue()).append(" or ");
+                priorityOptionDescriptionBuilder.append(cliValue).append(" or ");
             } else {
-                priorityOptionDescriptionBuilder.append(priorityType.getCommandLineValue()).append(", ");
+                priorityOptionDescriptionBuilder.append(cliValue).append(", ");
             }
         }
 
         return priorityOptionDescriptionBuilder.toString();
     }
-
+    
+    private String buildErrorMessage(String value) {
+        StringBuilder errorMessage = new StringBuilder();
+        errorMessage.append(String.format("Invalid %s option: '%s'. ", PRIORITISER_OPTION, value));
+        errorMessage.append("Valid options are: ");
+        errorMessage.append(prioritiserCliValues.keySet());
+        return errorMessage.toString();
+    }
+    
 }

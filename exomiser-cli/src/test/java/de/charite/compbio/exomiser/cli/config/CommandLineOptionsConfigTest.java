@@ -13,18 +13,18 @@ import de.charite.compbio.exomiser.cli.options.HpoIdsOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.InheritanceModeOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.NumGenesOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.OptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.OutFileOptionMarshaller;
-import de.charite.compbio.exomiser.cli.options.OutFormatOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.OutFilePrefixOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.OutFileFormatOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.PedFileOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.PrioritiserOptionMarshaller;
+import de.charite.compbio.exomiser.cli.options.SeedGenesOptionMarshaller;
 import de.charite.compbio.exomiser.cli.options.VcfFileOptionMarshaller;
-import static de.charite.compbio.exomiser.core.ExomiserSettings.*;
 import java.util.Map;
 import javax.annotation.Resource;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,161 +47,108 @@ public class CommandLineOptionsConfigTest {
     @Resource
     private Map<String, OptionMarshaller> optionMarshallers;
 
-    private void testOptionMarshallersForCommandLineParameter(OptionMarshaller expectedOptionMarshaller) {
-        String commandLineParameter = expectedOptionMarshaller.getCommandLineParameter();
+    private void isCorrectlyConfiguredAndHasOption(OptionMarshaller expected) {
+        String commandLineParameter = expected.getCommandLineParameter();
 
         OptionMarshaller optionMarshaller = optionMarshallers.get(commandLineParameter);
-        
         assertThat(optionMarshallers.containsKey(commandLineParameter), is(true));
-        assertThat(optionMarshaller, equalTo(expectedOptionMarshaller));
+        assertThat(expected, equalTo(optionMarshaller));
+        
+        Option option = options.getOption(commandLineParameter);
+        assertThat(option.getLongOpt(), equalTo(commandLineParameter));
     }
     
     @Test
-    public void optionsSpecifyOneVcfFile() {
-        String longOption = VCF_OPTION;
-        Option option = options.getOption(longOption);
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    }   
+    public void containsVcfFileOptionMarshaller() {
+        OptionMarshaller optionMarshaller = new VcfFileOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+    }
+
     @Test
-    public void optionMarshallersContainVcfFileOptionMarshaller() {
-        OptionMarshaller expectedOptionMarshaller = new VcfFileOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
+    public void containsPedFileOptionMarshaller() {       
+        OptionMarshaller optionMarshaller = new PedFileOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
     }
     
     @Test
-    public void optionsSpecifyPedFile() {
-        String longOption = PED_OPTION;
-        Option option = options.getOption(longOption);
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    }
-    @Test
-    public void optionMarshallersContainPedFileOptionMarshaller() {       
-        OptionMarshaller expectedOptionMarshaller = new PedFileOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
-    }
-    
-    @Test
-    public void optionsSpecifyOnePrioritiser() {
-        String longOption = PRIORITISER_OPTION;
-        Option option = options.getOption(longOption);
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    }
-    
-    @Test
-    public void prioritiserOptionsHaveADecentDescription() {
-        String description = options.getOption(PRIORITISER_OPTION).getDescription();
+    public void containsPrioritiserOptionMarshaller() {
+        OptionMarshaller optionMarshaller = new PrioritiserOptionMarshaller();
+        Option option = optionMarshaller.getOption();
+        String description = option.getDescription();
         System.out.println(description);
         assertThat(description.isEmpty(), is(false));
     }
     
     @Test
-    public void optionsContainsSettingsFile() {
-        assertThat(options.hasOption(SETTINGS_FILE_OPTION), is(true));
-    }
-    @Test
-    public void optionMarshallersContainSettingsFileOptionMarshaller() {        
-        OptionMarshaller expectedOptionMarshaller = new SettingsFileOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
+    public void containsSettingsFileOptionMarshaller() {        
+        OptionMarshaller optionMarshaller = new SettingsFileOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
     }
     
-    @Test
-    public void outputFormatOptionsCanHaveMultipleCommaSeparatedValues() {
-        String longOption = OUT_FORMAT_OPTION;
-        Option option = options.getOption(longOption);
-        assertThat(option.hasArgs(), is(true));
-        assertThat(option.getValueSeparator(), equalTo(','));
-    }
-  @Test
-    public void optionMarshallersContainOutFormatOptionMarshaller() {        
-        OptionMarshaller expectedOptionMarshaller = new OutFormatOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
-    }
-    
-  
     @Test
     public void seedGenesOptionsCanHaveMultipleCommaSeparatedValues() {
-        String longOption = SEED_GENES_OPTION;
-        Option option = options.getOption(longOption);
+        OptionMarshaller optionMarshaller = new SeedGenesOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+
+        Option option = optionMarshaller.getOption();
         assertThat(option.hasArgs(), is(true));
         assertThat(option.getValueSeparator(), equalTo(','));
     }
     
     @Test
     public void hpoIdsOptionsCanHaveMultipleCommaSeparatedValues() {
-        String longOption = HPO_IDS_OPTION;
-        Option option = options.getOption(longOption);
+        OptionMarshaller optionMarshaller = new HpoIdsOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+
+        Option option = optionMarshaller.getOption();
         assertThat(option.hasArgs(), is(true));
         assertThat(option.getValueSeparator(), equalTo(','));
     }
-    @Test
-    public void optionMarshallersContainsHpoIdsOptionMarshaller() {       
-        OptionMarshaller expectedOptionMarshaller = new HpoIdsOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
-    }
     
     @Test
-    public void inheritanceModeOptionIsPresent() {
-        String longOption = MODE_OF_INHERITANCE_OPTION;
-        Option option = options.getOption(longOption);
+    public void containsInheritanceModeOptionAndTakesArgs() {
+        OptionMarshaller optionMarshaller = new InheritanceModeOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+
+        Option option = optionMarshaller.getOption();
         assertThat(option.hasArg(), is(true));
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    }
-    @Test
-    public void optionMarshallersContainsInheritanceModeOptionMarshaller() {       
-        OptionMarshaller expectedOptionMarshaller = new InheritanceModeOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
     }
     
     @Test
-    public void hasBatchModeOption() {
-        String longOption = "batch-file";
-        Option option = options.getOption(longOption);
+    public void containsBatchFileOptionMarshaller() {       
+        OptionMarshaller optionMarshaller = new BatchFileOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+    }
+    
+    
+    @Test
+    public void containsFullAnalysisOptionMarshallerAndTakesArgs() {        
+        OptionMarshaller optionMarshaller = new FullAnalysisOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+        
+        Option option = optionMarshaller.getOption();
         assertThat(option.hasArg(), is(true));
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    }
-    @Test
-    public void optionMarshallersContainsBatchFileOptionMarshaller() {       
-        OptionMarshaller expectedOptionMarshaller = new BatchFileOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
-    }
-    
-    
-    @Test
-    public void hasFullAnalysisOption() {
-        String longOption = RUN_FULL_ANALYSIS_OPTION;
-        Option option = options.getOption(longOption);
-        assertThat(option.hasArg(), is(true));
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    }
-    @Test
-    public void optionMarshallersContainFullAnalysisOptionMarshaller() {        
-        OptionMarshaller expectedOptionMarshaller = new FullAnalysisOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
     }
         
     @Test
-    public void hasNumGenesOption() {
-        String longOption = NUM_GENES_OPTION;
-        Option option = options.getOption(longOption);
-        assertThat(option.hasArg(), is(true));
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    }
-    @Test
-    public void optionMarshallersContainsNumGenesOptionMarshaller() {
-        OptionMarshaller expectedOptionMarshaller = new NumGenesOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
+    public void containsNumGenesOptionMarshaller() {        
+        OptionMarshaller optionMarshaller = new NumGenesOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
     }
     
     @Test
-    public void hasOutFileOption() {
-        String longOption = OUT_FILE_OPTION;
-        Option option = options.getOption(longOption);
+    public void testOutFilePrefixOptionMarshaller() {
+        OptionMarshaller optionMarshaller = new OutFilePrefixOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+        
+        Option option = optionMarshaller.getOption();
         assertThat(option.hasArg(), is(true));
-        assertThat(option.getLongOpt(), equalTo(longOption));
-    } 
-    @Test
-    public void optionMarshallersContainsOutFileOptionMarshaller() {
-        OptionMarshaller expectedOptionMarshaller = new OutFileOptionMarshaller();
-        testOptionMarshallersForCommandLineParameter(expectedOptionMarshaller);
     }
+    
+    @Test
+    public void containsOutFormatOptionMarshaller() {        
+        OptionMarshaller optionMarshaller = new OutFileFormatOptionMarshaller();
+        isCorrectlyConfiguredAndHasOption(optionMarshaller);
+    }
+    
 }

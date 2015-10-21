@@ -5,9 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.model.Disease;
-import de.charite.compbio.exomiser.core.model.DiseaseIdentifier;
-import de.charite.compbio.exomiser.core.model.GeneIdentifier;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,11 +13,9 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface DiseaseDao {
+        
+    public Set<String> getHpoIdsForDiseaseId(String diseaseId);
     
-    public Set<Disease> getAllDiseases();
-    
-    public Disease getDisease(DiseaseIdentifier diseaseId);
-
-    public Set<Disease> getKnownDiseasesForGene(GeneIdentifier geneId);
+    public Map<String, String> getDiseaseIdToTerms();
 
 }

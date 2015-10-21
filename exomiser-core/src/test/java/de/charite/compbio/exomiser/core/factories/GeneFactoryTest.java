@@ -7,13 +7,18 @@ package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.exome.Variant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,6 +36,8 @@ public class GeneFactoryTest {
     private List<VariantEvaluation> variantEvaluations;
 
     private static final String GENE1_GENE_SYMBOL = "GENE1";
+    private static final int GENE1_GENE_ID = 123456;
+    
     @Mock
     private VariantEvaluation offTargetVariantEvaluation;
     @Mock
@@ -39,10 +46,12 @@ public class GeneFactoryTest {
     private VariantEvaluation secondGene1VariantEvaluation;
 
     private static final String GENE2_GENE_SYMBOL = "GENE2";
+    private static final int GENE2_GENE_ID = 654321;
     @Mock
     private VariantEvaluation gene2VariantEvaluation;
     
     private static final String GENE3_GENE_SYMBOL = "GENE3";
+    private static final int GENE3_GENE_ID = 9999999;
     @Mock
     private VariantEvaluation gene3VariantEvaluation;    
     @Mock
@@ -57,22 +66,28 @@ public class GeneFactoryTest {
         Mockito.when(offTargetVariantEvaluation.getGeneSymbol()).thenReturn(null);
 
         Mockito.when(firstGene1VariantEvaluation.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-        Mockito.when(firstGene1VariantEvaluation.getEntrezGeneID()).thenReturn(123456);
+        Mockito.when(firstGene1VariantEvaluation.getEntrezGeneId()).thenReturn(GENE1_GENE_ID);
 
         Mockito.when(secondGene1VariantEvaluation.getGeneSymbol()).thenReturn(GENE1_GENE_SYMBOL);
-        Mockito.when(secondGene1VariantEvaluation.getEntrezGeneID()).thenReturn(123456);
+        Mockito.when(secondGene1VariantEvaluation.getEntrezGeneId()).thenReturn(GENE1_GENE_ID);
 
         Mockito.when(gene2VariantEvaluation.getGeneSymbol()).thenReturn(GENE2_GENE_SYMBOL);
-        Mockito.when(gene2VariantEvaluation.getEntrezGeneID()).thenReturn(654321);
+        Mockito.when(gene2VariantEvaluation.getEntrezGeneId()).thenReturn(GENE2_GENE_ID);
         
         //the variantEvaluation should only return the first gene symbol listed by Jannovar - see VariantEvaluationTest 
         Mockito.when(variantEvaluationInTwoGeneRegions.getGeneSymbol()).thenReturn(GENE3_GENE_SYMBOL);
-        Mockito.when(variantEvaluationInTwoGeneRegions.getEntrezGeneID()).thenReturn(9999999);
+        Mockito.when(variantEvaluationInTwoGeneRegions.getEntrezGeneId()).thenReturn(GENE3_GENE_ID);
         
         Mockito.when(gene3VariantEvaluation.getGeneSymbol()).thenReturn(GENE3_GENE_SYMBOL);
-        Mockito.when(gene3VariantEvaluation.getEntrezGeneID()).thenReturn(9999999);
+        Mockito.when(gene3VariantEvaluation.getEntrezGeneId()).thenReturn(GENE3_GENE_ID);
     }
 
+    private Gene createNewGene(String geneSymbol, int geneId, VariantEvaluation variantEvaluation) {
+        Gene gene = new Gene(geneSymbol, geneId);
+        gene.addVariant(variantEvaluation);
+        return gene;
+    }
+        
     @Test
     public void testGeneFactoryWillReturnAnEmptyResultFromAnEmptyInput() {
         List<VariantEvaluation> emptyVariantEvaluations = new ArrayList<>();
@@ -98,7 +113,8 @@ public class GeneFactoryTest {
         variantEvaluations.add(firstGene1VariantEvaluation);
 
         List<Gene> genes = new ArrayList<>();
-        genes.add(new Gene(firstGene1VariantEvaluation));
+        Gene gene = createNewGene(GENE1_GENE_SYMBOL, GENE1_GENE_ID, firstGene1VariantEvaluation);
+        genes.add(gene);
 
         List<Gene> result = instance.createGenes(variantEvaluations);
         assertThat(result, equalTo(genes));
@@ -111,7 +127,7 @@ public class GeneFactoryTest {
         variantEvaluations.add(secondGene1VariantEvaluation);
 
         List<Gene> genes = new ArrayList<>();
-        genes.add(new Gene(firstGene1VariantEvaluation));
+        genes.add(createNewGene(GENE1_GENE_SYMBOL, GENE1_GENE_ID, firstGene1VariantEvaluation));
 
         List<Gene> result = instance.createGenes(variantEvaluations);
         assertThat(result, equalTo(genes));
@@ -124,10 +140,10 @@ public class GeneFactoryTest {
     @Test
     public void testTwoVariantsInDifferentGeneReturnsTwoGenes() {
 
-        Gene gene1 = new Gene(firstGene1VariantEvaluation);
+        Gene gene1 = createNewGene(GENE1_GENE_SYMBOL, GENE1_GENE_ID, firstGene1VariantEvaluation);
         variantEvaluations.add(firstGene1VariantEvaluation);
 
-        Gene gene2 = new Gene(gene2VariantEvaluation);
+        Gene gene2 = createNewGene(GENE2_GENE_SYMBOL, GENE2_GENE_ID, gene2VariantEvaluation);
         variantEvaluations.add(gene2VariantEvaluation);
 
         List<Gene> result = instance.createGenes(variantEvaluations);
@@ -142,7 +158,7 @@ public class GeneFactoryTest {
         variantEvaluations.add(variantEvaluationInTwoGeneRegions);
 
         List<Gene> genes = new ArrayList<>();
-        genes.add(new Gene(variantEvaluationInTwoGeneRegions));
+        genes.add(createNewGene(GENE3_GENE_SYMBOL, GENE3_GENE_ID, variantEvaluationInTwoGeneRegions));
 
         List<Gene> result = instance.createGenes(variantEvaluations);
         assertThat(result, equalTo(genes));
@@ -168,10 +184,10 @@ public class GeneFactoryTest {
         
         variantEvaluations.add(variantEvaluationInTwoGeneRegions);
 
-        Gene gene3 = new Gene(gene3VariantEvaluation);
+        Gene gene3 = createNewGene(GENE3_GENE_SYMBOL, GENE3_GENE_ID, gene3VariantEvaluation);
         variantEvaluations.add(gene3VariantEvaluation);
 
-        Gene gene2 = new Gene(gene2VariantEvaluation);
+        Gene gene2 = createNewGene(GENE2_GENE_SYMBOL, GENE2_GENE_ID, gene2VariantEvaluation);
         variantEvaluations.add(gene2VariantEvaluation);        
         
 
@@ -183,5 +199,19 @@ public class GeneFactoryTest {
         assertThat(result.size(), equalTo(2));
         assertThat(result.contains(gene2), is(true));
         assertThat(result.contains(gene3), is(true));
+    }
+
+    @Test
+    public void testCreateKnownGenes() {
+        JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
+        Set<String> knownGeneSymbols = jannovarData.getTmByGeneSymbol().keySet();
+
+        List<Gene> knownGenes = instance.createKnownGenes(jannovarData);
+        assertThat(knownGenes.size(), equalTo(4));
+        knownGenes.forEach(gene -> {
+            assertThat(gene.getEntrezGeneID(), not(equalTo(0)));
+            assertThat(gene.getGeneSymbol(), not(equalTo("")));
+            assertThat(knownGeneSymbols.contains(gene.getGeneSymbol()), is(true));
+        });
     }
 }

@@ -5,7 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
+import de.charite.compbio.exomiser.core.analysis.Settings;
 import java.nio.file.Paths;
 import org.apache.commons.cli.Option;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -48,9 +48,9 @@ public class VcfFileOptionMarshallerTest {
         String vcfFileName = "123.vcf";
         String[] values = {vcfFileName};
         
-        ExomiserSettings.SettingsBuilder settingsBuilder = new ExomiserSettings.SettingsBuilder();
+        Settings.SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
         instance.applyValuesToSettingsBuilder(values, settingsBuilder);
-        ExomiserSettings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder.build();
         
         assertThat(settings.getVcfPath(), equalTo(Paths.get(vcfFileName)));
     }

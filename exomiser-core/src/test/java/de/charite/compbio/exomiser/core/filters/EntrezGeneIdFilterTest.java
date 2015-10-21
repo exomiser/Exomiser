@@ -5,32 +5,22 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.Filter;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.exome.Variant;
-import java.util.ArrayList;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import org.junit.Assert.*;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class EntrezGeneIdFilterTest {
     
     private EntrezGeneIdFilter instance;
@@ -39,31 +29,28 @@ public class EntrezGeneIdFilterTest {
     private static final int WANTED_GENE_ID = 1;
     private static final int UNWANTED_GENE_ID = 0;
     
-    private static VariantEvaluation wantedPassesFilter;
-    private static VariantEvaluation unwantedFailsFilter;
-
-    @Mock
-    Variant mockWantedVariant;
-    @Mock
-    Variant mockUnwantedVariant;
+    private VariantEvaluation wantedPassesFilter;
+    private VariantEvaluation unwantedFailsFilter;
 
     @Before
     public void setUp() {
-        initMocks();
+        initVariants();
         
         genesToKeep = new HashSet<>();
         genesToKeep.add(WANTED_GENE_ID);
         instance = new EntrezGeneIdFilter(genesToKeep);
     }
 
-    private void initMocks() {
-        Mockito.when(mockWantedVariant.getEntrezGeneID()).thenReturn(WANTED_GENE_ID);
-        Mockito.when(mockUnwantedVariant.getEntrezGeneID()).thenReturn(UNWANTED_GENE_ID);
-        
-        wantedPassesFilter = new VariantEvaluation(mockWantedVariant);
-        unwantedFailsFilter = new VariantEvaluation(mockUnwantedVariant);
+    private void initVariants() {
+        wantedPassesFilter = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").geneId(WANTED_GENE_ID).build();
+        unwantedFailsFilter = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").geneId(UNWANTED_GENE_ID).build();
     }
 
+    @Test
+    public void testGetGeneIds() {
+        assertThat(instance.getGeneIds(), equalTo(genesToKeep));
+    }
+    
     @Test
     public void testGetFilterType() {
         assertThat(instance.getFilterType(), equalTo(FilterType.ENTREZ_GENE_ID_FILTER));
@@ -71,7 +58,7 @@ public class EntrezGeneIdFilterTest {
 
     @Test
     public void testRunFilterOnVariantWithWantedGeneIdPassesFilter() {
-        genesToKeep.add(wantedPassesFilter.getEntrezGeneID());
+        genesToKeep.add(wantedPassesFilter.getEntrezGeneId());
         
         FilterResult filterResult = instance.runFilter(wantedPassesFilter);
 
@@ -102,7 +89,7 @@ public class EntrezGeneIdFilterTest {
 
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("Genes to keep filter gene list = [1]"));
+        assertThat(instance.toString(), equalTo("EntrezGeneIdFilter{genesToKeep=[1]}"));
     }
     
 }

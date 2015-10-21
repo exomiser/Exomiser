@@ -10,15 +10,12 @@ package de.charite.compbio.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class MutationTasterScore extends AbstractPathogenicityScore {
-    /**
-     * TODO Check whether this threshold is correct. Note it is the dbNSFP
-     * normalized version of mutation taster?
-     */
+public class MutationTasterScore extends BasePathogenicityScore {
+    
     public static final float MTASTER_THRESHOLD = 0.94f;
 
     public MutationTasterScore(float score) {
-        super(score);
+        super(score, PathogenicitySource.MUTATION_TASTER);
     }
 
     @Override

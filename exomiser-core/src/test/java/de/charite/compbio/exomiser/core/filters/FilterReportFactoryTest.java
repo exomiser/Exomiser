@@ -5,117 +5,127 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import jannovar.common.ModeOfInheritance;
-import jannovar.exome.Variant;
-import java.nio.file.Paths;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests for FilterReportFactory.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class FilterReportFactoryTest {
 
     private FilterReportFactory instance;
 
-    private ExomiserSettings settings;
     private List<VariantEvaluation> variantEvaluations;
     private List<Gene> genes;
     private SampleData sampleData;
 
-    @Mock
-    private Variant mockVariant;
-
+    private Analysis analysis;
+    
     @Before
     public void setUp() {
         instance = new FilterReportFactory();
-        settings = new SettingsBuilder()
-                .vcfFilePath(Paths.get("testVcf.vcf"))
-                .usePrioritiser(PriorityType.OMIM_PRIORITY)
-                .build();
+
         variantEvaluations = new ArrayList<>();
         genes = new ArrayList<>();
         sampleData = new SampleData();
         sampleData.setVariantEvaluations(variantEvaluations);
         sampleData.setGenes(genes);
+        
+        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
     }
 
-    private VariantEvaluation makeFailedFilterVariantEvaluation(FilterType filterType) {
-        VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation(mockVariant);
-        failedFilterVariantEvaluation.addFilterResult(new GenericFilterResult(filterType, 0.0f, FilterResultStatus.FAIL));
+    private VariantEvaluation makeFailedVariant(FilterType filterType) {
+        VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
+        failedFilterVariantEvaluation.addFilterResult(new FailFilterResult(filterType));
         return failedFilterVariantEvaluation;
     }
 
-    private VariantEvaluation makePassedFilterVariantEvaluation(FilterType filterType) {
-        VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation(mockVariant);
-        passedFilterVariantEvaluation.addFilterResult(new GenericFilterResult(filterType, 1.0f, FilterResultStatus.PASS));
+    private VariantEvaluation makePassedVariant(FilterType filterType) {
+        VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
+        passedFilterVariantEvaluation.addFilterResult(new PassFilterResult(filterType));
         return passedFilterVariantEvaluation;
     }
     
-    private Gene makeFailedFilterGene(FilterType filterType) {
-        VariantEvaluation failedFilterVariantEvaluation = makeFailedFilterVariantEvaluation(filterType);
-        Gene failedFilterGene = new Gene(failedFilterVariantEvaluation);
+    private Gene makeFailedGene(FilterType filterType) {
+        VariantEvaluation failedFilterVariantEvaluation = makeFailedVariant(filterType);
+        Gene failedFilterGene = new Gene("GENE1", 12345);
+        failedFilterGene.addVariant(failedFilterVariantEvaluation);
         return failedFilterGene;
     }
 
-    private Gene makePassedFilterGene(FilterType filterType) {
-        VariantEvaluation passedFilterVariantEvaluation = makePassedFilterVariantEvaluation(filterType);
-        Gene passedFilterGene = new Gene(passedFilterVariantEvaluation);
+    private Gene makePassedGene(FilterType filterType) {
+        VariantEvaluation passedFilterVariantEvaluation = makePassedVariant(filterType);
+        Gene passedFilterGene = new Gene("GENE2", 67890);
+        passedFilterGene.addVariant(passedFilterVariantEvaluation);
         return passedFilterGene;
     }
 
     @Test
     public void testMakeFilterReportsNoTypesSpecifiedReturnsEmptyList() {
-        List<FilterType> filterTypes = new ArrayList<>();
         List<FilterReport> emptyFilterReportList = new ArrayList<>();
 
-        List<FilterReport> reports = instance.makeFilterReports(filterTypes, settings, sampleData);
+        List<FilterReport> reports = instance.makeFilterReports(analysis);
 
         assertThat(reports, equalTo(emptyFilterReportList));
     }
 
     @Test
     public void testMakeFilterReportsFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
-        List<FilterType> filterTypes = new ArrayList<>();
-        filterTypes.add(FilterType.FREQUENCY_FILTER);
-        filterTypes.add(FilterType.PATHOGENICITY_FILTER);
+        analysis.addStep(new FrequencyFilter(0.1f));
+        analysis.addStep(new PathogenicityFilter(true));
+        
+        List<FilterReport> reports = instance.makeFilterReports(analysis);
 
-        List<FilterReport> reports = instance.makeFilterReports(filterTypes, settings, sampleData);
+        assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
+    }
+    
+    @Test
+    public void testMakeFilterReportsDecoratedFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
+        analysis.addStep(new FrequencyDataProvider(null, Collections.emptySet(), new KnownVariantFilter()));
+        analysis.addStep(new FrequencyDataProvider(null, Collections.emptySet(), new FrequencyFilter(0.1f)));
+        analysis.addStep(new PathogenicityDataProvider(null, Collections.emptySet(), new PathogenicityFilter(true)));
+        
+        List<FilterReport> reports = instance.makeFilterReports(analysis);
 
-        assertThat(reports.size(), equalTo(filterTypes.size()));
+        assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
+        assertThat(reports.get(0).getFilterType(), equalTo(FilterType.KNOWN_VARIANT_FILTER));
+        assertThat(reports.get(1).getFilterType(), equalTo(FilterType.FREQUENCY_FILTER));
+        assertThat(reports.get(2).getFilterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
     }
 
     @Test
     public void testMakeDefaultVariantFilterReportContainsCorrectNumberOfPassedAndFailedVariants() {
         FilterType filterType = FilterType.BED_FILTER;
 
-        VariantEvaluation passedFilterVariantEvaluation = makePassedFilterVariantEvaluation(filterType);
-        variantEvaluations.add(passedFilterVariantEvaluation);
+        variantEvaluations.add(makePassedVariant(filterType));
+        variantEvaluations.add(makeFailedVariant(filterType));
 
-        VariantEvaluation failedFilterVariantEvaluation = makeFailedFilterVariantEvaluation(filterType);
-        variantEvaluations.add(failedFilterVariantEvaluation);
-
-        FilterReport report = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport report = instance.makeFilterReport(new BedFilter(null), sampleData);
 
         assertThat(report.getPassed(), equalTo(1));
         assertThat(report.getFailed(), equalTo(1));
@@ -123,15 +133,13 @@ public class FilterReportFactoryTest {
 
     @Test
     public void testMakeDefaultGeneFilterReportContainsCorrectNumberOfPassedAndFailedGenes() {
-        FilterType filterType = FilterType.INHERITANCE_FILTER;
+        Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);    
+        FilterType filterType = filter.getFilterType();
 
-        Gene passedFilterGene = makePassedFilterGene(filterType);
-        genes.add(passedFilterGene);
+        genes.add(makePassedGene(filterType));
+        genes.add(makeFailedGene(filterType));
 
-        Gene failedFilterGene = makeFailedFilterGene(filterType);
-        genes.add(failedFilterGene);
-
-        FilterReport report = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport report = instance.makeFilterReport(filter, sampleData);
 
         assertThat(report.getPassed(), equalTo(1));
         assertThat(report.getFailed(), equalTo(1));
@@ -139,118 +147,155 @@ public class FilterReportFactoryTest {
 
     @Test
     public void testMakeTargetFilterReport() {
-        FilterType filterType = FilterType.TARGET_FILTER;
+        VariantEffectFilter filter = new VariantEffectFilter(EnumSet.noneOf(VariantEffect.class));      
 
-        FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage("Removed a total of 0 off-target variants from further consideration");
-        report.addMessage("Off target variants are defined as synonymous, intergenic, intronic but not in splice sequences");
+        FilterReport report = new FilterReport(filter.getFilterType(), 0, 0);
+        report.addMessage(String.format("Removed variants with effects of type: %s", filter.getOffTargetVariantTypes()));
 
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, equalTo(report));
     }
 
     @Test
     public void testMakeFrequencyFilterReportCanCopeWithNullFrequencyData() {
-        FilterType filterType = FilterType.FREQUENCY_FILTER;
+        Filter filter = new FrequencyFilter(0.1f);
+        FilterType filterType = filter.getFilterType();
 
-        VariantEvaluation variantEvalWithNullFrequencyData = makeFailedFilterVariantEvaluation(filterType);
+        VariantEvaluation variantEvalWithNullFrequencyData = makeFailedVariant(filterType);
         variantEvalWithNullFrequencyData.setFrequencyData(null);
         variantEvaluations.add(variantEvalWithNullFrequencyData);
         
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, notNullValue());
     }
     
     @Test
-    public void testMakeFrequencyFilterReportProducesCorrectStatistics() {
-        FilterType filterType = FilterType.FREQUENCY_FILTER;
+    public void testMakeFrequencyFilterReport() {
+        Filter filter = new FrequencyFilter(0.0f);
+        FilterType filterType = filter.getFilterType();
 
-        VariantEvaluation completelyNovelVariantEval = makePassedFilterVariantEvaluation(filterType);
-        completelyNovelVariantEval.setFrequencyData(new FrequencyData(null, null, null, null, null));
+        VariantEvaluation completelyNovelVariantEval = makePassedVariant(filterType);
+        completelyNovelVariantEval.setFrequencyData(new FrequencyData());
         variantEvaluations.add(completelyNovelVariantEval);
         
-        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedFilterVariantEvaluation(filterType);
-        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(100f), new Frequency(100f), new Frequency(100f), new Frequency(100f)));
+        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
+        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
         
-        settings = new SettingsBuilder().maximumFrequency(0.0f).build();
         FilterReport report = new FilterReport(filterType, 1, 1);
         
-        report.addMessage("Allele frequency < 0.00 %");
-        report.addMessage("Frequency Data available in dbSNP (for 1000 Genomes Phase I) for 1 variants (50.0%)");
+        report.addMessage("Variants filtered for maximum allele frequency of 0.00%");   
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
+        System.out.println(result);
+        assertThat(result, equalTo(report));
+    }
+    
+    @Test
+    public void testMakeKnownVariantFilterReportProducesCorrectStatistics() {
+        Filter filter = new KnownVariantFilter();
+        FilterType filterType = filter.getFilterType();
+
+        VariantEvaluation completelyNovelVariantEval = makePassedVariant(filterType);
+        completelyNovelVariantEval.setFrequencyData(new FrequencyData());
+        variantEvaluations.add(completelyNovelVariantEval);
+        
+        VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
+        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
+        variantEvaluations.add(mostCommonVariantEvalInTheWorld);
+        
+        FilterReport report = new FilterReport(filterType, 1, 1);
+        
+        report.addMessage("Removed 1 variants with no RSID or frequency data (50.0%)");
         report.addMessage("dbSNP \"rs\" id available for 1 variants (50.0%)");
+        report.addMessage("Data available in dbSNP (for 1000 Genomes Phase I) for 1 variants (50.0%)");
         report.addMessage("Data available in Exome Server Project for 1 variants (50.0%)");
-                
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        report.addMessage("Data available from ExAC Project for 1 variants (50.0%)");        
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
+        System.out.println(result);
 
         assertThat(result, equalTo(report));
     }
 
     @Test
     public void testMakeQualityFilterReport() {
-        FilterType filterType = FilterType.QUALITY_FILTER;
+        Filter filter = new QualityFilter(100.0f);
+        FilterType filterType = filter.getFilterType();
 
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage("PHRED quality 0.0");
+        report.addMessage("Variants filtered for mimimum PHRED quality of 100.0");
 
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, equalTo(report));
     }
 
     @Test
     public void testMakePathogenicityFilterReportWhenRemovePathFilterCutOffIsTrue() {
+        Filter filter = new PathogenicityFilter(true);
         FilterType filterType = FilterType.PATHOGENICITY_FILTER;
-
-        settings = new SettingsBuilder().removePathFilterCutOff(true).build();
 
         FilterReport report = new FilterReport(filterType, 0, 0);
         report.addMessage("Retained all non-pathogenic variants of all types. Scoring was applied, but the filter passed all variants.");
 
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, equalTo(report));
     }
 
     @Test
     public void testMakePathogenicityFilterReportWhenRemovePathFilterCutOffIsNotSpecified() {
+        Filter filter = new PathogenicityFilter(false);
         FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
         FilterReport report = new FilterReport(filterType, 0, 0);
         report.addMessage("Retained all non-pathogenic missense variants");
 
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, equalTo(report));
     }
 
     @Test
     public void testMakeIntervalFilterReport() {
+        GeneticInterval interval = new GeneticInterval(1, 2, 3);
+        Filter filter = new IntervalFilter(interval);
         FilterType filterType = FilterType.INTERVAL_FILTER;
 
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage(String.format("Restricted variants to interval: %s", settings.getGeneticInterval()));
+        report.addMessage(String.format("Restricted variants to interval: %s", interval));
 
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, equalTo(report));
     }
 
     @Test
     public void testMakeInheritanceFilterReport() {
+        ModeOfInheritance expectedInheritanceMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+        Filter filter = new InheritanceFilter(expectedInheritanceMode);
         FilterType filterType = FilterType.INHERITANCE_FILTER;
 
-        ModeOfInheritance expectedInheritanceMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        settings = new SettingsBuilder().modeOfInheritance(expectedInheritanceMode).build();
-
         FilterReport report = new FilterReport(filterType, 0, 0);
-        report.addMessage(String.format("Total of 0 genes were analyzed. 0 had genes with distribution compatible with %s inheritance.", expectedInheritanceMode));
+        report.addMessage("Genes filtered for compatibility with AUTOSOMAL_DOMINANT inheritance.");
 
-        FilterReport result = instance.makeFilterReport(filterType, settings, sampleData);
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
 
         assertThat(result, equalTo(report));
     }
 
+    @Test
+    public void testMakePriorityScoreFilterReport() {
+        float minimumPriorityScore = 0.5f;
+        Filter filter = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, minimumPriorityScore);
+        FilterType filterType = FilterType.PRIORITY_SCORE_FILTER;
+
+        FilterReport report = new FilterReport(filterType, 0, 0);
+        report.addMessage("Genes filtered for minimum PHIVE_PRIORITY score of 0.5");
+        
+        FilterReport result = instance.makeFilterReport(filter, sampleData);
+
+        assertThat(result, equalTo(report));
+    }
 }

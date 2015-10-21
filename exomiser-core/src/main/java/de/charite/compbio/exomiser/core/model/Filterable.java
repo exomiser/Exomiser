@@ -6,6 +6,7 @@
 
 package de.charite.compbio.exomiser.core.model;
 
+import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 
 /**
@@ -17,5 +18,7 @@ public interface Filterable {
     public boolean passedFilters();
     
     public boolean passedFilter(FilterType filterType);
+    
+    public boolean addFilterResult(FilterResult filterResult);
     
 }

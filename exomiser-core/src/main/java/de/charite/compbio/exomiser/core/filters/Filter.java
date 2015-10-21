@@ -5,6 +5,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.analysis.AnalysisStep;
 import de.charite.compbio.exomiser.core.model.Filterable;
 
 /**
@@ -12,7 +13,7 @@ import de.charite.compbio.exomiser.core.model.Filterable;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @param <T>
  */
-public interface Filter<T extends Filterable> {
+public interface Filter<T extends Filterable> extends AnalysisStep {
 
     /**
      * @return an integer constant (as defined in exomizer.common.Constants)

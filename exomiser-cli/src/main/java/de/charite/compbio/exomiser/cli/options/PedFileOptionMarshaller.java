@@ -5,8 +5,7 @@
  */
 package de.charite.compbio.exomiser.cli.options;
 
-import de.charite.compbio.exomiser.core.ExomiserSettings;
-import de.charite.compbio.exomiser.core.ExomiserSettings.SettingsBuilder;
+import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import java.nio.file.Paths;
 import org.apache.commons.cli.OptionBuilder;
 
@@ -16,12 +15,14 @@ import org.apache.commons.cli.OptionBuilder;
  */
 public class PedFileOptionMarshaller extends AbstractOptionMarshaller {
 
+    public static final String PED_OPTION = "ped";
+
     public PedFileOptionMarshaller() {
         option = OptionBuilder
                 .withArgName("file")
                 .hasArg()
                 .withDescription("Path to pedigree (ped) file. Required if the vcf file is for a family.")
-                .withLongOpt(ExomiserSettings.PED_OPTION)
+                .withLongOpt(PED_OPTION)
                 .create("p");
     }
 

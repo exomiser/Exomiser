@@ -2,7 +2,7 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.exome.Variant;
+import de.charite.compbio.exomiser.core.model.Variant;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +25,8 @@ public class IntervalFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.INTERVAL_FILTER;
 
-    //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passFilterResult = new IntervalFilterResult(1f, FilterResultStatus.PASS);
-    private final FilterResult failedFilterResult = new IntervalFilterResult(0f, FilterResultStatus.FAIL);
+    private final FilterResult passesFilter = new PassFilterResult(filterType);
+    private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     private final GeneticInterval interval;
 
@@ -39,6 +38,10 @@ public class IntervalFilter implements VariantFilter {
     public IntervalFilter(GeneticInterval interval) {
         this.interval = interval;
 
+    }
+
+    public GeneticInterval getGeneticInterval() {
+        return interval;
     }
 
     /**
@@ -53,17 +56,18 @@ public class IntervalFilter implements VariantFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        if (variantIsNotWithinInterval(variantEvaluation.getVariant())) {
-            return failedFilterResult;
+        if (variantIsNotWithinInterval(variantEvaluation)) {
+            return failsFilter;
         }
-        return passFilterResult;
+        return passesFilter;
     }
 
     private boolean variantIsNotWithinInterval(Variant variant) {
-        if (variantNotOnSameChromosomeAsInterval(variant.get_chromosome())) {
+        if (variantNotOnSameChromosomeAsInterval(variant.getChromosome())) {
             return true;
+        } else {
+            return variantPositionOutsideOfIntervalBounds(variant.getPosition());
         }
-        return variantPositionOutsideOfIntervalBounds(variant.get_position());
     }
 
     private boolean variantNotOnSameChromosomeAsInterval(int variantChromosome) {

@@ -1,8 +1,5 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  * @author Sebastian Koehler
@@ -14,7 +11,7 @@ public class ExomeWalkerPriorityResult implements PriorityResult {
      * The Random walk similarity score.
      */
     private double score;
-    private double rawScore;
+    private final double rawScore;
     private double scaledByMaxScore = -10;
 
     /**
@@ -83,15 +80,6 @@ public class ExomeWalkerPriorityResult implements PriorityResult {
         if (this.scaledByMaxScore == -10) {
             this.scaledByMaxScore = newscore;
         }
-    }
-
-    /**
-     * @return A list with detailed results of filtering. Not yet implemented
-     * for gene wanderer.
-     */
-    @Override
-    public List<String> getFilterResultList() {
-        return new ArrayList<>();
     }
 
 }

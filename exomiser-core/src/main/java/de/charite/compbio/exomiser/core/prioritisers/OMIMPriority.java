@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -30,26 +31,11 @@ import org.slf4j.LoggerFactory;
  * @author Peter N Robinson
  * @version 0.16 (28 January,2014)
  */
-public class OMIMPriority implements Priority {
+public class OMIMPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
 
     private DataSource dataSource;
-
-    /**
-     * A list of messages that can be used to create a display in a HTML page or
-     * elsewhere.
-     */
-    private final List<String> messages;
-
-    public OMIMPriority() {
-        this.messages = new ArrayList<>();
-    }
-
-    @Override
-    public String getPriorityName() {
-        return "OMIM";
-    }
 
     /**
      * Flag for output field representing OMIM.
@@ -57,14 +43,6 @@ public class OMIMPriority implements Priority {
     @Override
     public PriorityType getPriorityType() {
         return PriorityType.OMIM_PRIORITY;
-    }
-
-    /**
-     * @return list of messages representing process, result, and if any, errors
-     * of frequency filtering.
-     */
-    public List<String> getMessages() {
-        return this.messages;
     }
 
     /**
@@ -171,10 +149,10 @@ public class OMIMPriority implements Priority {
         if (inheritance == 'U') {
             /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
             return 1f;
-        } else if (gene.isConsistentWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
+        } else if (gene.isCompatibleWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
             /* inheritance of disease is dominant or both (dominant/recessive) */
             return 1f;
-        } else if (gene.isConsistentWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
+        } else if (gene.isCompatibleWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
             /* inheritance of disease is recessive or both (dominant/recessive) */
             return 1f;
         } else if (gene.isXChromosomal() && inheritance == 'X') {
@@ -204,20 +182,26 @@ public class OMIMPriority implements Priority {
         this.dataSource = dataSource;
     }
 
-    /**
-     * Since no filtering of prioritizing is done with the OMIM data for now, it
-     * does not make sense to display this in the HTML table.
-     *
-     * @return
-     */
     @Override
-    public boolean displayInHTML() {
-        return false;
+    public int hashCode() {
+        int hash = 5;
+        return hash;
     }
 
     @Override
-    public String getHTMLCode() {
-        return "";
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final OMIMPriority other = (OMIMPriority) obj;
+        return true;
     }
-
+  
+    @Override
+    public String toString() {
+        return "OmimPrioritiser{}";
+    } 
 }

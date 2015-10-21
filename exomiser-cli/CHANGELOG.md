@@ -1,5 +1,28 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 7.1.0 2015-10-21
+- Variants in FANTOM5 enhancer and ENSEMBLE regulatory regions are now all marked REGULATORY_REGION_VARIANT even without
+ the regulatoryFeatureFilter being run.
+- Massive performance increase when running regulatoryFeatureFilter.
+- Running Exomiser in exome analysis mode now requires REGULATORY_FEATURE to be included in the variantEffectFilter.
+See test-analysis-exome.yml
+- Added missing regulatoryFeatureFilter step from the analysis steps in test-analysis-genome.yml
+
+## 7.0.0 2015-10-01
+Now requires Java 8 or higher to run.
+- The Exomiser is now somewhat inaccurately named as it can now analyse whole-genome samples.
+- Exomiser is now much more customisable with the new analysis YAML configuration files. See test-analysis-exome.yml and
+ test-analysis-genome.yml for examples
+- Added new --analysis and --analysis-batch commands to be used with the new analysis format.
+- New PASS_ONLY analysis mode. Exomiser will only keep variants which passed filters. This allows for dramatically
+reduced memory requirements which is especially handy for genome-sized analyses.
+- Exomiser now ships with a new pathogenicity score for predicting the deleteriousness of non-coding regulatory mutations,
+ the REMM score.
+- It is now possible to specify which pathogenicity score or scores you wish to be run out of, polyphen, SIFT, Mutation Taster,
+ CADD and REMM
+- We now include the variant frequencies from the ExAC dataset and allow for a subset of all frequency sources to be
+specified in an analysis. For example, this allows only frequencies from a particular population to be taken into account.
+
 ## 6.0.0 2015-01-12
 - Added 'none' type prioritiser for when you really don't want to run any prioritiser.
 - Exomiser will now show the help options when no parameters are supplied.
@@ -57,14 +80,14 @@
     - Prioritisers now release database connections when finished (affects batch-mode performance)
     - Inheritance filter now performs correctly in all cases.
 
-#### 3.0.2 2014-09-08
+## 3.0.2 2014-09-08
 - VCF output now contains original VCF INFO field with exomiser info appended onto this.
 - Bug-fix for crash when Jannovar found no annotations for a variant.
 
-#### 3.0.1 2014-09-04
+## 3.0.1 2014-09-04
 - Bug-fix for duplicate variants in Frequency table where the RSID was different.
 
-#### 3.0.0 2014-08-22
+## 3.0.0 2014-08-22
 - Completely re-worked under the hood code
 - New extensible API
 - Simplified command-line usage
@@ -73,6 +96,6 @@
 - Settings file input
 - Zero-config installation
 
-#### 2.1.0 2014-05-06
+## 2.1.0 2014-05-06
 - Embedded H2 database or PostgreSQL
 - Simplified set-up/installation

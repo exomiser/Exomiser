@@ -5,54 +5,45 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import jannovar.common.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import java.util.EnumSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class InheritanceFilterTest {
 
     private Gene compatibleWithAutosomalDominant;
     private Gene compatibleWithAutosomalRecessive;
     private Gene compatibleWithXLinked;
 
-    @Mock
-    private VariantEvaluation variantEvaluation;
-
     @Before
     public void setUp() {
 
-        Mockito.when(variantEvaluation.getGeneSymbol()).thenReturn("mockGeneId");
-        Mockito.when(variantEvaluation.getEntrezGeneID()).thenReturn(12345);
-
-        compatibleWithAutosomalDominant = new Gene(variantEvaluation);
+        compatibleWithAutosomalDominant = new Gene("mockGeneId", 12345);
         compatibleWithAutosomalDominant.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
-        compatibleWithAutosomalRecessive = new Gene(variantEvaluation);
+        compatibleWithAutosomalRecessive = new Gene("mockGeneId", 12345);
         compatibleWithAutosomalRecessive.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
 
-        compatibleWithXLinked = new Gene(variantEvaluation);
+        compatibleWithXLinked = new Gene("mockGeneId", 12345);
         compatibleWithXLinked.setInheritanceModes(EnumSet.of(ModeOfInheritance.X_RECESSIVE));
     }
 
+    @Test
+    public void testGetModeOfInheritance() {
+        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+        InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
+        assertThat(instance.getModeOfInheritance(), equalTo(desiredInheritanceMode));
+    }
+    
     @Test
     public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsUnInitialised() {
 

@@ -5,7 +5,6 @@
  */
 package de.charite.compbio.exomiser.core.model.frequency;
 
-import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -15,7 +14,7 @@ import org.junit.Test;
 
 /**
  *
- * @author jj8
+ * @author Jules  Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FrequencyIT {
 

@@ -31,9 +31,10 @@
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>*.settings</include>
+                <include>*.yml</include>           
+                <include>test-analysis-batch.txt</include>
                 <include>test-batchFiles.txt</include>
                 <include>application.properties</include>
-                <include>log4j2.xml</include>
                 <include>ehcache.xml</include>
             </includes>
         </fileSet>
@@ -49,6 +50,8 @@
                 <include>rw_string_9_05_id2index.gz</include>
                 <include>exomiser.h2.db</include>
                 <include>phenix/*</include>
+                <include>*.tsv.gz</include>
+                <include>*.tsv.gz.tbi</include>     
             </includes>
         </fileSet>
         <fileSet>
