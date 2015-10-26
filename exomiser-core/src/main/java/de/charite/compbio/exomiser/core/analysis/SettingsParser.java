@@ -106,6 +106,8 @@ public class SettingsParser {
         analysis.setScoringMode(prioritiserType.getScoringMode());
         if (settings.runFullAnalysis()) {
             analysis.setAnalysisMode(AnalysisMode.FULL);
+        } else {
+            analysis.setAnalysisMode(AnalysisMode.SPARSE);
         }
 
         List<AnalysisStep> analysisSteps = makeAnalysisSteps(settings, settings);
