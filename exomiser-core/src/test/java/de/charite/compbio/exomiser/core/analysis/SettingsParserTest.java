@@ -71,7 +71,8 @@ public class SettingsParserTest {
         instance = new SettingsParser(stubPriorityFactory, new VariantDataServiceStub());
         
         settingsBuilder = new SettingsBuilder().vcfFilePath(Paths.get("vcf"));
-        analysis = new Analysis(); 
+        analysis = new Analysis();
+        analysis.setAnalysisMode(AnalysisMode.SPARSE);
         analysis.setVcfPath(Paths.get("vcf"));
         analysis.setFrequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES);
         analysis.setPathogenicitySources(EnumSet.of(PathogenicitySource.MUTATION_TASTER, PathogenicitySource.POLYPHEN, PathogenicitySource.SIFT));
@@ -82,7 +83,25 @@ public class SettingsParserTest {
         analysis.addStep(new FrequencyFilter(100f));
         analysis.addStep(new PathogenicityFilter(false));
     }
-       
+
+    @Test
+    public void testDefaultAnalysisModeIsSparse() {
+        Analysis result = instance.parse(settingsBuilder.build());
+        assertThat(result.getAnalysisMode(), equalTo(AnalysisMode.SPARSE));
+    }
+
+    @Test
+    public void testCanSpecifyNotFullAnalysisMode() {
+        Analysis result = instance.parse(settingsBuilder.runFullAnalysis(false).build());
+        assertThat(result.getAnalysisMode(), equalTo(AnalysisMode.SPARSE));
+    }
+
+    @Test
+    public void testCanSpecifyFullAnalysisMode() {
+        Analysis result = instance.parse(settingsBuilder.runFullAnalysis(true).build());
+        assertThat(result.getAnalysisMode(), equalTo(AnalysisMode.FULL));
+    }
+
     @Test
     public void testDefaultFrequencyDataSources() {
         Analysis result = instance.parse(settingsBuilder.build());
