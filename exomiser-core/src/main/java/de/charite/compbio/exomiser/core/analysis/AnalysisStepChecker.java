@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import org.slf4j.Logger;
@@ -102,24 +103,31 @@ public class AnalysisStepChecker {
     }
 
     private boolean containsVariantFilter(List<AnalysisStep> analysisSteps) {
-        return analysisSteps.stream().anyMatch(step -> (step.isVariantFilter()));
+        return analysisSteps.stream().anyMatch(AnalysisStep::isVariantFilter);
     }
 
     private boolean containsInheritanceModeDependentStep(List<AnalysisStep> analysisSteps) {
-        return analysisSteps.stream().anyMatch(step -> (step.isInheritanceModeDependent()));
+        return analysisSteps.stream().anyMatch(AnalysisStep::isInheritanceModeDependent);
+    }
+
+    private int getLastPositionOfClass(List<AnalysisStep> analysisSteps, Class clazz) {
+        int lastVariantFilterPos = 0;
+        for (int i = 0; i < analysisSteps.size(); i++) {
+            AnalysisStep step = analysisSteps.get(i);
+            if (clazz.isInstance(step)) {
+                lastVariantFilterPos = i;
+            }
+        }
+        return lastVariantFilterPos;
     }
 
     private List<AnalysisStep> moveInheritanceModeStepsIntoList(List<AnalysisStep> analysisSteps) {
-        List<AnalysisStep> inheritanceModeDependentSteps = new ArrayList<>();
+        List<AnalysisStep> inheritanceModeDependentSteps = analysisSteps.stream()
+                .filter(AnalysisStep::isInheritanceModeDependent)
+                .collect(toList());
 
-        Iterator<AnalysisStep> stepIterator = analysisSteps.iterator();
-        while (stepIterator.hasNext()) {
-            AnalysisStep step = stepIterator.next();
-            if (step.isInheritanceModeDependent()) {
-                inheritanceModeDependentSteps.add(step);
-                stepIterator.remove();
-            }
-        }
+        analysisSteps.removeIf(AnalysisStep::isInheritanceModeDependent);
+
         inheritanceModeDependentSteps.sort(new AnalysisStepComparator());
 
         return inheritanceModeDependentSteps;
@@ -134,7 +142,7 @@ public class AnalysisStepChecker {
     private Set<PriorityType> getPrioritiserTypes(List<AnalysisStep> analysisSteps) {
         //get all prioritiser PriorityTypes
         return analysisSteps.stream()
-                .filter(step -> (Prioritiser.class.isInstance(step)))
+                .filter(Prioritiser.class::isInstance)
                 .map(step -> {
                     Prioritiser prioritiser = (Prioritiser) step;
                     return prioritiser.getPriorityType();
@@ -143,17 +151,16 @@ public class AnalysisStepChecker {
     }
 
     private void removePriorityScoreFiltersNotOfType(List<AnalysisStep> analysisSteps, Set<PriorityType> prioritiserTypes) {
-        Iterator<AnalysisStep> stepIterator = analysisSteps.iterator();
-        while (stepIterator.hasNext()) {
-            AnalysisStep step = stepIterator.next();
+        analysisSteps.removeIf(step -> {
             if (PriorityScoreFilter.class.isInstance(step)) {
                 PriorityScoreFilter filter = (PriorityScoreFilter) step;
                 if (!prioritiserTypes.contains(filter.getPriorityType())) {
                     logger.info("WARNING: Removing {} as the corresponding Prioritiser is not present. AnalysisSteps have been changed.", filter);
-                    stepIterator.remove();
+                    return true;
                 }
             }
-        }
+            return false;
+        });
     }
 
     private List<AnalysisStep> movePriorityScoreFiltersNextToMatchingPrioritiser(List<AnalysisStep> analysisSteps) {
@@ -166,17 +173,12 @@ public class AnalysisStepChecker {
     }
 
     private List<PriorityScoreFilter> movePriorityScoreFiltersIntoList(List<AnalysisStep> analysisSteps) {
-        List<PriorityScoreFilter> priorityScoreFilters = new ArrayList<>();
+        List<PriorityScoreFilter> priorityScoreFilters = analysisSteps.stream()
+                .filter(PriorityScoreFilter.class::isInstance)
+                .map(step -> (PriorityScoreFilter) step)
+                .collect(toList());
 
-        Iterator<AnalysisStep> stepIterator = analysisSteps.iterator();
-        while (stepIterator.hasNext()) {
-            AnalysisStep step = stepIterator.next();
-            if (PriorityScoreFilter.class.isInstance(step)) {
-                PriorityScoreFilter priorityScoreFilter = (PriorityScoreFilter) step;
-                priorityScoreFilters.add(priorityScoreFilter);
-                stepIterator.remove();
-            }
-        }
+        analysisSteps.removeIf(PriorityScoreFilter.class::isInstance);
 
         return priorityScoreFilters;
     }
@@ -200,17 +202,6 @@ public class AnalysisStepChecker {
         if (containsMatchingPrioritiser) {
             analysisSteps.add(positionOfMatchingPrioritiser + 1, priorityScoreFilter);
         }
-    }
-
-    private int getLastPositionOfClass(List<AnalysisStep> analysisSteps, Class clazz) {
-        int lastVariantFilterPos = 0;
-        for (int i = 0; i < analysisSteps.size(); i++) {
-            AnalysisStep step = analysisSteps.get(i);
-            if (clazz.isInstance(step)) {
-                lastVariantFilterPos = i;
-            }
-        }
-        return lastVariantFilterPos;
     }
 
     /**
