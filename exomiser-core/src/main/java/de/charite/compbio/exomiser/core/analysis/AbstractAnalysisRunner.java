@@ -123,7 +123,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
-//        GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis);
+        GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
 
         List<VariantEvaluation> filteredVariants;
@@ -133,7 +133,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             filteredVariants = variantStream
                     .map(logLoadedAndPassedVariants(streamed, passed))
                     //TODO: put back in once this is sorted properly
-//                    .map(reassignNonCodingVariantToBestGene(allGenes, geneReassigner))
+                    .map(reassignNonCodingVariantToBestGene(allGenes, geneReassigner))
                     .filter(isInKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters))
                     .map(logPassedVariants(passed))
