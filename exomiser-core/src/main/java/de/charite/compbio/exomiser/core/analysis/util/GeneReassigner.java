@@ -62,7 +62,6 @@ public class GeneReassigner {
         logger.info("Made new GeneReassigner for {}", priorityType);
     }
 
-    //TODO: consider scenario for PrioritiserType.NONE
     public void reassignVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
         if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
             logger.debug("Checking gene assignment for {} chr={} pos={}", variantEvaluation.getVariantEffect(), variantEvaluation.getChromosome(), variantEvaluation.getPosition());

@@ -133,6 +133,36 @@ public class GeneReassignerTest {
     }
 
     @Test
+    public void noneTypePrioritiser() {
+
+        gene1.addPriorityResult(new BasePriorityResult(PriorityType.NONE, 0f));
+        gene2.addPriorityResult(new BasePriorityResult(PriorityType.NONE, 0f));
+
+        TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
+        instance = makeInstance(PriorityType.NONE, tad);
+
+        VariantEvaluation variant = regulatoryVariantInTad(tad, gene1);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+
+        assertThat(variant, isAssignedTo(gene1));
+    }
+
+    @Test
+    public void variantinGeneNotAssociatedAnyTad() {
+
+        gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
+        gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));
+
+        TopologicalDomain tad = makeTad(1, 1, 20000, gene1);
+        instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
+
+        VariantEvaluation variant = variant(2, 999999, "A", "G", VariantEffect.REGULATORY_REGION_VARIANT, gene2);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+
+        assertThat(variant, isAssignedTo(gene2));
+    }
+
+    @Test
     public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotOriginallyAssociatedWithBestCandidateGene() {
         gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
         gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));
@@ -191,5 +221,7 @@ public class GeneReassignerTest {
         assertThat(variant, isAssignedTo(gene1));
     }
 
+//    gene lies within two overlapping TADs
 
+    //variant lies two overlapping TADs, but the gene is in one only
 }
