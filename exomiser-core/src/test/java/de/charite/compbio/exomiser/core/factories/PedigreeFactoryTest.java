@@ -129,14 +129,23 @@ public class PedigreeFactoryTest {
     }
 
     @Test(expected = PedigreeCreationException.class)
-    public void testCreatePedigreeWithMismatchedSampleNames() {
-        //TODO: should this fail or not? Requires full system testing :(
-        Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Eva", "Seth"));
+    public void testCreatePedigreeWithSomeMismatchedSampleNames() {
+        instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Eva", "Seth"));
+    }
+
+    @Test(expected = PedigreeCreationException.class)
+    public void testCreatePedigreeWithCompletelyMismatchedSampleNames() {
+        instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Homer", "Marge", "Bart", "Lisa", "Maggie"));
     }
 
     @Test(expected = PedigreeCreationException.class)
     public void testCreatePedigreeWithSpacesInsteadOfTabs() {
         instance.createPedigreeForSampleData(Paths.get("src/test/resources/malformedPedTestFileWithSpaces.ped"),  createSampleData("Adam", "Eva", "Seth"));
+    }
+
+    @Test(expected = PedigreeCreationException.class)
+    public void testCreatePedigreeWithMoreThanOneFamilyInFile() {
+        instance.createPedigreeForSampleData(Paths.get("src/test/resources/multiFamilyTest.ped"),  createSampleData("Adam", "Eva", "Seth"));
     }
 
 }

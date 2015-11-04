@@ -40,6 +40,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 /**
  * Handles the creation of Pedigree objects.
  *
@@ -85,7 +88,7 @@ public class PedigreeFactory {
 
     private List<String> createSampleNames(SampleData sampleData) {
         List<String> sampleDataNames = sampleData.getSampleNames();
-        return new ArrayList(sampleDataNames);
+        return new ArrayList<>(sampleDataNames);
     }
 
     private Pedigree createSingleSamplePedigree(List<String> sampleNames) {
@@ -100,23 +103,38 @@ public class PedigreeFactory {
 
     private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, List<String> sampleNames) {
         logger.info("Reading pedigree file: {}", pedigreeFilePath);
-        checkPedigreePathIsNotNull(pedigreeFilePath);
-        //this code doesn't actually help at all - Jannovar:0.15 will still throw an exception even with only the
-        // represented people as they still hold references to unrepresented people.
-        //might as well just do this and ignore the sample names:
-        final PedFileContents pedFileContents = readPedFileContents(pedigreeFilePath);
+        final PedFileContents pedFileContents = checkAndBuildPedFileContents(pedigreeFilePath);
         logger.info("Pedigree {} contains {} individuals", pedFileContents.getIndividuals().get(0).getPedigree(), pedFileContents.getIndividuals().size());
 
-        final ImmutableList<PedPerson> people = getPeopleFromPedigreeRepresentedInSample(pedFileContents, sampleNames);
-        //TODO: enabling this as in versions 7.0.0-7.1.0 causes a PedigreeCreationException. The question is, do we want it to or not?
-        final PedFileContents representedPedFileContents = new PedFileContents(ImmutableList.<String>of(), people);
-        final String pedName = representedPedFileContents.getIndividuals().get(0).getPedigree();
-        final Pedigree pedigree = buildPedigree(pedName, representedPedFileContents);
-        logger.info("Created pedigree {} with members {}", pedigree.getName(), pedigree.getNames());
+        final Pedigree pedigree = checkNamesAndBuildPedigree(sampleNames, pedFileContents);
+        logger.info("Created pedigree for family {} with members {}", pedigree.getName(), pedigree.getNames());
         return pedigree;
     }
 
-    private void checkPedigreePathIsNotNull(Path pedigreeFilePath) {
+    private PedFileContents checkAndBuildPedFileContents(Path pedigreeFilePath) {
+        final PedFileContents pedFileContents = readPedFileContents(pedigreeFilePath);
+        checkPedFileContentsContainsSingleFamily(pedFileContents);
+        return pedFileContents;
+    }
+
+    private PedFileContents readPedFileContents(Path pedigreeFilePath) {
+        checkPedigreePathIsNotNull(pedigreeFilePath);
+        try {
+            PedFileContents pedFileContents = new PedFileReader(pedigreeFilePath.toFile()).read();
+            if (pedFileContents.getIndividuals().isEmpty()) {
+                //might never happen, but anyway...
+                throw new PedigreeCreationException("PED file contains no valid individuals - Check PED file format.");
+            }
+            return pedFileContents;
+
+        } catch (PedParseException e) {
+            throw new PedigreeCreationException("Problem parsing the PED file - Check PED file format, fields should be TAB separated.", e);
+        } catch (IOException e) {
+            throw new PedigreeCreationException("Problem reading the PED file", e);
+        }
+    }
+
+    private void checkPedigreePathIsNotNull(Path pedigreeFilePath) throws PedigreeCreationException {
         if (pedigreeFilePath == null) {
             logger.error("PED file must be be provided for multi-sample VCF files.");
             //terminate the program - we really need one of these.
@@ -124,39 +142,59 @@ public class PedigreeFactory {
         }
     }
 
-    private ImmutableList<PedPerson> getPeopleFromPedigreeRepresentedInSample(PedFileContents pedFileContents, List<String> sampleNames) {
+    private void checkPedFileContentsContainsSingleFamily(PedFileContents pedFileContents) throws PedigreeCreationException {
+        List<String> familyNames = pedFileContents.getIndividuals().stream().map(PedPerson::getPedigree).distinct().collect(toList());
+        if (familyNames.size() > 1) {
+            throw new PedigreeCreationException("PED file must contain only one family, found " + familyNames.size() + ": " + familyNames + ". Please provide PED file containing only the proband family matching supplied HPO terms.");
+        }
+    }
+
+    private Pedigree checkNamesAndBuildPedigree(List<String> sampleNames, PedFileContents pedFileContents) {
+        //This step is important - we want a catastrophic failure here is the PED and VCF file sample names don't match in case the inheritance mode analysis goes wrong later.
+        //If we can be assured that this isn't a problem fro Jannovar to check this method can be removed.
+        checkPedFileContentsMatchesSampleNames(pedFileContents, sampleNames);
+
+        return buildPedigree(pedFileContents);
+    }
+
+
+    private void checkPedFileContentsMatchesSampleNames(PedFileContents pedFileContents, List<String> sampleNames) throws PedigreeCreationException {
         logger.info("Sample names from VCF: {}", sampleNames);
         logger.info("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
         logger.info("Matching VCF sample names with PED individuals...");
-        //yes, we could just do a set comparison here, but we want to throw a Jannovar exception once we've logged all the unrepresented individuals for the user.
-        // filter contents to the individuals from sampleNames
-        ImmutableList.Builder<PedPerson> samplePersonsBuilder = new ImmutableList.Builder<>();
+        //yes, we could just do a set comparison here, but we want to throw an exception once we've logged all the unrepresented individuals for the user.
+        ImmutableList.Builder<PedPerson> representedPeopleBuilder = new ImmutableList.Builder<>();
+        ImmutableList.Builder<PedPerson> unrepresentedPeopleBuilder = new ImmutableList.Builder<>();
+
         for (PedPerson person : pedFileContents.getIndividuals()) {
             if (sampleNames.contains(person.getName())) {
-                samplePersonsBuilder.add(person);
+                representedPeopleBuilder.add(person);
             } else {
-                //just log some errors here as Jannovar will fail because of these anyway. Logging them all in one go will help the user massage the PED file.
+                unrepresentedPeopleBuilder.add(person);
                 logger.error("Individual {} from family {} represented in PED but not in VCF. Please remove {}\t{} from input PED.", person.getName(), person.getPedigree(), person.getPedigree(), person.getName());
             }
         }
-        return samplePersonsBuilder.build();
-    }
+        ImmutableList<PedPerson> representedPeople = representedPeopleBuilder.build();
+        ImmutableList<PedPerson> unrepresentedPeople = unrepresentedPeopleBuilder.build();
 
-    private PedFileContents readPedFileContents(Path pedigreeFilePath) {
-        try {
-            return new PedFileReader(pedigreeFilePath.toFile()).read();
-        } catch (PedParseException e) {
-            throw new PedigreeCreationException("Problem parsing the PED file - Check pedfile format fields should be TAB separated.", e);
-        } catch (IOException e) {
-            throw new PedigreeCreationException("Problem reading the PED file", e);
+
+        if (representedPeople.isEmpty()) {
+            throw new PedigreeCreationException("VCF - PED mismatch. None of the individuals in the PED match any of the sample names in the VCF");
         }
+
+        if (unrepresentedPeople.size() > 0) {
+            throw new PedigreeCreationException("VCF - PED mismatch. There are " + unrepresentedPeople.size() + " individuals in the PED file unrepresented in the VCF");
+        }
+
     }
 
-    private Pedigree buildPedigree(String name, PedFileContents sampleContents) {
+    private Pedigree buildPedigree(PedFileContents pedFileContents) {
+        final String name = pedFileContents.getIndividuals().get(0).getPedigree();
         try {
-            return new Pedigree(name, new PedigreeExtractor(name, sampleContents).run());
+            logger.info("Building pedigree for family {}", name);
+            return new Pedigree(name, new PedigreeExtractor(name, pedFileContents).run());
         } catch (PedParseException e) {
-            throw new PedigreeCreationException("Problem parsing the PED file - Check pedigree and vcf sample names are equal.", e);
+            throw new PedigreeCreationException("Problem parsing the PED file.", e);
         }
     }
 
