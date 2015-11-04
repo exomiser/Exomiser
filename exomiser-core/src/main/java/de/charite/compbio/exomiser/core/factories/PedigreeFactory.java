@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
+import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Handles the creation of Pedigree objects.
@@ -163,26 +163,18 @@ public class PedigreeFactory {
         logger.info("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
         logger.info("Matching VCF sample names with PED individuals...");
         //yes, we could just do a set comparison here, but we want to throw an exception once we've logged all the unrepresented individuals for the user.
-        ImmutableList.Builder<PedPerson> representedPeopleBuilder = new ImmutableList.Builder<>();
-        ImmutableList.Builder<PedPerson> unrepresentedPeopleBuilder = new ImmutableList.Builder<>();
+        Map<Boolean, List<PedPerson>> people = pedFileContents.getIndividuals().stream().collect(partitioningBy(pedPerson -> sampleNames.contains(pedPerson.getName())));
 
-        for (PedPerson person : pedFileContents.getIndividuals()) {
-            if (sampleNames.contains(person.getName())) {
-                representedPeopleBuilder.add(person);
-            } else {
-                unrepresentedPeopleBuilder.add(person);
-                logger.error("Individual {} from family {} represented in PED but not in VCF. Please remove {}\t{} from input PED.", person.getName(), person.getPedigree(), person.getPedigree(), person.getName());
-            }
-        }
-        ImmutableList<PedPerson> representedPeople = representedPeopleBuilder.build();
-        ImmutableList<PedPerson> unrepresentedPeople = unrepresentedPeopleBuilder.build();
-
-
+        List<PedPerson> representedPeople = people.get(true);
         if (representedPeople.isEmpty()) {
             throw new PedigreeCreationException("VCF - PED mismatch. None of the individuals in the PED match any of the sample names in the VCF");
         }
 
+        List<PedPerson> unrepresentedPeople = people.get(false);
         if (unrepresentedPeople.size() > 0) {
+            unrepresentedPeople.forEach(
+                    person -> logger.error("Individual {} from family {} represented in PED but not in VCF. Please remove {}\t{} from input PED.", person.getName(), person.getPedigree(), person.getPedigree(), person.getName())
+            );
             throw new PedigreeCreationException("VCF - PED mismatch. There are " + unrepresentedPeople.size() + " individuals in the PED file unrepresented in the VCF");
         }
 
