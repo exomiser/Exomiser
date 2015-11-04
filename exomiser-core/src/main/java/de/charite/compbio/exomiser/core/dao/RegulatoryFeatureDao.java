@@ -60,7 +60,7 @@ public class RegulatoryFeatureDao {
     public List<RegulatoryFeature> getRegulatoryFeatures() {
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, \"START\" as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS");
+                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS");
                 ResultSet rs = preparedStatement.executeQuery()) {
 
                 return processRegulatoryFeatureResults(rs);
