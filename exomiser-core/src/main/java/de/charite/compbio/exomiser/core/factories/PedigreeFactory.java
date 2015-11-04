@@ -33,8 +33,7 @@ import de.charite.compbio.jannovar.pedigree.Sex;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +72,7 @@ public class PedigreeFactory {
     public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, SampleData sampleData) {
         List<String> sampleNames = createSampleNames(sampleData);
         int numberOfSamples = sampleData.getNumberOfSamples();
-        logger.info("Processing pedigree for {} sample(s)", numberOfSamples);
+        logger.info("Creating pedigree for VCF containing {} sample(s)", numberOfSamples);
         switch (numberOfSamples) {
             case 0:
                 throw new PedigreeCreationException("No data present in sampleData");
@@ -100,12 +99,14 @@ public class PedigreeFactory {
     }
 
     private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, List<String> sampleNames) {
-        logger.info("Processing pedigree file: {}", pedigreeFilePath);
+        logger.info("Reading pedigree file: {}", pedigreeFilePath);
         checkPedigreePathIsNotNull(pedigreeFilePath);
         //this code doesn't actually help at all - Jannovar:0.15 will still throw an exception even with only the
         // represented people as they still hold references to unrepresented people.
         //might as well just do this and ignore the sample names:
         final PedFileContents pedFileContents = readPedFileContents(pedigreeFilePath);
+        logger.info("Pedigree {} contains {} individuals", pedFileContents.getIndividuals().get(0).getPedigree(), pedFileContents.getIndividuals().size());
+
         final ImmutableList<PedPerson> people = getPeopleFromPedigreeRepresentedInSample(pedFileContents, sampleNames);
         //TODO: enabling this as in versions 7.0.0-7.1.0 causes a PedigreeCreationException. The question is, do we want it to or not?
         final PedFileContents representedPedFileContents = new PedFileContents(ImmutableList.<String>of(), people);
@@ -124,6 +125,10 @@ public class PedigreeFactory {
     }
 
     private ImmutableList<PedPerson> getPeopleFromPedigreeRepresentedInSample(PedFileContents pedFileContents, List<String> sampleNames) {
+        logger.info("Sample names from VCF: {}", sampleNames);
+        logger.info("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
+        logger.info("Matching VCF sample names with PED individuals...");
+        //yes, we could just do a set comparison here, but we want to throw a Jannovar exception once we've logged all the unrepresented individuals for the user.
         // filter contents to the individuals from sampleNames
         ImmutableList.Builder<PedPerson> samplePersonsBuilder = new ImmutableList.Builder<>();
         for (PedPerson person : pedFileContents.getIndividuals()) {
@@ -131,7 +136,7 @@ public class PedigreeFactory {
                 samplePersonsBuilder.add(person);
             } else {
                 //just log some errors here as Jannovar will fail because of these anyway. Logging them all in one go will help the user massage the PED file.
-                logger.error("Individual {} from family {} represented in PED but not in VCF", person.getName(), person.getPedigree());
+                logger.error("Individual {} from family {} represented in PED but not in VCF. Please remove {}\t{} from input PED.", person.getName(), person.getPedigree(), person.getPedigree(), person.getName());
             }
         }
         return samplePersonsBuilder.build();
