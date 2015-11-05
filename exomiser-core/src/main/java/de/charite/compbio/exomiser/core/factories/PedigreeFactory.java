@@ -73,9 +73,8 @@ public class PedigreeFactory {
      * @return
      */
     public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, SampleData sampleData) {
-        List<String> sampleNames = createSampleNames(sampleData);
+        List<String> sampleNames = sampleData.getSampleNames();
         int numberOfSamples = sampleData.getNumberOfSamples();
-        logger.info("Creating pedigree for VCF containing {} sample(s)", numberOfSamples);
         switch (numberOfSamples) {
             case 0:
                 throw new PedigreeCreationException("No data present in sampleData");
@@ -86,28 +85,23 @@ public class PedigreeFactory {
         }
     }
 
-    private List<String> createSampleNames(SampleData sampleData) {
-        List<String> sampleDataNames = sampleData.getSampleNames();
-        return new ArrayList<>(sampleDataNames);
-    }
-
     private Pedigree createSingleSamplePedigree(List<String> sampleNames) {
         String sampleName = DEFAULT_SAMPLE_NAME;
         if (!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
         }
 
+        logger.info("Creating single-sample pedigree for {}", sampleName);
         final Person person = new Person(sampleName, null, null, Sex.UNKNOWN, Disease.AFFECTED);
         return new Pedigree("family", ImmutableList.of(person));
     }
 
     private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, List<String> sampleNames) {
+        logger.info("Creating multi-sample pedigree for VCF containing {} samples", sampleNames.size());
         logger.info("Reading pedigree file: {}", pedigreeFilePath);
         final PedFileContents pedFileContents = checkAndBuildPedFileContents(pedigreeFilePath);
-        logger.info("Pedigree {} contains {} individuals", pedFileContents.getIndividuals().get(0).getPedigree(), pedFileContents.getIndividuals().size());
-
         final Pedigree pedigree = checkNamesAndBuildPedigree(sampleNames, pedFileContents);
-        logger.info("Created pedigree for family {} with members {}", pedigree.getName(), pedigree.getNames());
+        logger.info("Created pedigree for family {} comprising {} members {}", pedigree.getName(), pedigree.getMembers().size(), pedigree.getNames());
         return pedigree;
     }
 
@@ -159,9 +153,9 @@ public class PedigreeFactory {
 
 
     private void checkPedFileContentsMatchesSampleNames(PedFileContents pedFileContents, List<String> sampleNames) throws PedigreeCreationException {
-        logger.info("Sample names from VCF: {}", sampleNames);
-        logger.info("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
-        logger.info("Matching VCF sample names with PED individuals...");
+        logger.debug("Sample names from VCF: {}", sampleNames);
+        logger.debug("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
+        logger.debug("Matching VCF sample names with PED individuals...");
         //yes, we could just do a set comparison here, but we want to throw an exception once we've logged all the unrepresented individuals for the user.
         Map<Boolean, List<PedPerson>> people = pedFileContents.getIndividuals().stream().collect(partitioningBy(pedPerson -> sampleNames.contains(pedPerson.getName())));
 
@@ -183,7 +177,7 @@ public class PedigreeFactory {
     private Pedigree buildPedigree(PedFileContents pedFileContents) {
         final String name = pedFileContents.getIndividuals().get(0).getPedigree();
         try {
-            logger.info("Building pedigree for family {}", name);
+            logger.debug("Building pedigree for family {}", name);
             return new Pedigree(name, new PedigreeExtractor(name, pedFileContents).run());
         } catch (PedParseException e) {
             throw new PedigreeCreationException("Problem parsing the PED file.", e);
