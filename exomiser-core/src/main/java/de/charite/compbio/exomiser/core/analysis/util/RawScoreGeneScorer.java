@@ -154,31 +154,54 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @return
      */
     protected float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
-        List<Float> filterScores = new ArrayList<>();
+        List<Float> hetFilterScores = new ArrayList<>();
+        List<Float> homFilterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            filterScores.add(ve.getVariantScore());
-            if (variantIsHomozygous(ve)) {
-                //Add the value a second time
-                filterScores.add(ve.getVariantScore());
+            // Realised original logic allows a cmphet to be calculated between a top scoring het and second place hom which is wrong 
+            // Jannovar seems to currently be allowing hom_ref variants through so skip
+            if (variantIsHomozygousAlt(ve)){
+                homFilterScores.add(ve.getVariantScore());
+            }
+            else if (variantIsHeterozygous(ve)){
+                hetFilterScores.add(ve.getVariantScore());
             }
         }
         //maybe the variants were all crappy and nothing passed....
-        if (filterScores.isEmpty()) {
+        if (hetFilterScores.isEmpty() && homFilterScores.isEmpty()) {
             return 0f;
         }
-        sortFilterScoresInDecendingOrder(filterScores);
-        if (filterScores.size() < 2) {
-            //Less than two variants, cannot be AR
-            return filterScores.get(0);
+        sortFilterScoresInDecendingOrder(homFilterScores);
+        sortFilterScoresInDecendingOrder(hetFilterScores);
+
+        float bestCmpHetScore = 0f;
+        float bestHomScore = 0f;
+        if (hetFilterScores.size() >= 2) {
+            bestCmpHetScore = calculateAverageOfFirstTwoScores(hetFilterScores);
         }
-        return calculateAverageOfFirstTwoScores(filterScores);
+        if (!homFilterScores.isEmpty()){
+            bestHomScore = homFilterScores.get(0);
+        }
+        return Float.max(bestHomScore, bestCmpHetScore);
+    }
+    
+    private boolean variantIsHomozygousAlt(VariantEvaluation ve) {
+        return ve.getVariantContext().getGenotype(0).isHomVar();
     }
 
-    private boolean variantIsHomozygous(VariantEvaluation ve) {
-        return ve.getVariantContext().getGenotype(0).isHom();
+    private boolean variantIsHomozygousRef(VariantEvaluation ve) {
+        // below does not seem to work        
+        //return ve.getVariantContext().getGenotype(0).isHomRef();
+        if (ve.getGenotypeAsString().equals("0/0") || ve.getGenotypeAsString().equals("0|0")){
+            return true;
+        }
+        return false;
     }
-
+    
+    private boolean variantIsHeterozygous(VariantEvaluation ve) {
+        return ve.getVariantContext().getGenotype(0).isHet();
+    }
+    
     private void sortFilterScoresInDecendingOrder(List<Float> filterScores) {
         Collections.sort(filterScores, Collections.reverseOrder());
     }
@@ -201,7 +224,10 @@ public class RawScoreGeneScorer implements GeneScorer {
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            filterScores.add(ve.getVariantScore());
+            // TODO - should this check be used
+            if (!variantIsHomozygousRef(ve)){
+                filterScores.add(ve.getVariantScore());
+            }
         }
         //maybe the variants were all crappy and nothing passed....
         if (filterScores.isEmpty()) {
