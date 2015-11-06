@@ -93,26 +93,28 @@ public class VariantFactory {
         int[] unannotatedVariants = {0};
         int[] annotatedVariants = {0};
 
-        Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath).flatMap(variantContext -> {
-            variantRecords[0]++;
-            List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-            //TODO: this looks like a stateful stream - can't this bit return a stream of variantEvaluations?
-            List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
-            if (variantAlleleAnnotations.isEmpty()) {
-                for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                    unannotatedVariants[0]++;
-                    variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
-                }
-            } else {
-                //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
-                for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                    annotatedVariants[0]++;
-                    VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
-                    variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
-                }
-            }
-            return variantEvaluations.stream();
-        });
+        Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath)
+                .flatMap(variantContext -> {
+                    variantRecords[0]++;
+                    List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+                    //TODO: this looks like a stateful stream - can't this bit return a stream of variantEvaluations?
+                    List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
+                    if (variantAlleleAnnotations.isEmpty()) {
+                        for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                            unannotatedVariants[0]++;
+                            variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
+                        }
+                    } else {
+                        //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
+                        for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                            annotatedVariants[0]++;
+                            VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
+                            variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
+                        }
+                    }
+                    return variantEvaluations.stream();
+                });
+
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
         return variantEvaluationStream
                 .onClose(() -> {
@@ -146,7 +148,7 @@ public class VariantFactory {
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
-                        //quality is the only value from the VCF file directly required for analysis
+                //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
                 .chromosomeName(chromosomeName)
                 .build();
@@ -178,9 +180,9 @@ public class VariantFactory {
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
-                        //quality is the only value from the VCF file directly required for analysis
+                //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
-                        //jannovar derived data
+                //jannovar derived data
                 .chromosomeName(genomeVariant.getChrName())
                 .isOffExome(variantEffect.isOffExome())
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
