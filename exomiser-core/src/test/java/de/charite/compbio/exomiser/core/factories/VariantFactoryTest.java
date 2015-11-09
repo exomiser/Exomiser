@@ -29,12 +29,16 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import htsjdk.tribble.TribbleException;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeType;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -65,8 +69,10 @@ public class VariantFactoryTest {
         instance = new VariantFactory(variantAnnotator);
     }
 
-    private void printVariant(Variant variant) {
-        System.out.printf("%s offExome=%s gene=%s%n", variant.getChromosomalVariant(), variant.isOffExome(), variant.getGeneSymbol());
+    private void printVariant(VariantEvaluation variant) {
+        final GenotypesContext genotypes = variant.getVariantContext().getGenotypes();
+        List<GenotypeType> genotypeTypes = genotypes.stream().map(Genotype::getType).collect(toList());
+        System.out.printf("%s %s %s %s %s %s %s offExome=%s gene=%s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt(), variant.getGenotypeAsString(), genotypes, genotypeTypes, variant.isOffExome(), variant.getGeneSymbol());
     }
 
 
@@ -110,6 +116,13 @@ public class VariantFactoryTest {
     }
 
     @Test
+    public void testCreateVariantContexts_MultipleAlleles_DiferentSingleSampleGenotypes() {
+        Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
+        List<VariantContext> variants = instance.createVariantContexts(vcfPath);
+        assertThat(variants.size(), equalTo(6));
+    }
+
+    @Test
     public void testCreateVariants_SingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath);
@@ -124,6 +137,14 @@ public class VariantFactoryTest {
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath);
         variants.forEach(this::printVariant);
         assertThat(variants.size(), equalTo(2));
+    }
+
+    @Test
+    public void testCreateVariants_MultipleAlleles_SingleSampleGenotypesShouldOnlyReturnRepresentedVariationFromGenotype() {
+        Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
+        List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath);
+        variants.forEach(this::printVariant);
+        assertThat(variants.size(), equalTo(6));
     }
 
     @Test
