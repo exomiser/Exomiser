@@ -45,6 +45,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -70,9 +71,9 @@ public class VariantFactoryTest {
     }
 
     private void printVariant(VariantEvaluation variant) {
-        final GenotypesContext genotypes = variant.getVariantContext().getGenotypes();
+        GenotypesContext genotypes = variant.getVariantContext().getGenotypes();
         List<GenotypeType> genotypeTypes = genotypes.stream().map(Genotype::getType).collect(toList());
-        System.out.printf("%s %s %s %s %s %s %s offExome=%s gene=%s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt(), variant.getGenotypeAsString(), genotypes, genotypeTypes, variant.isOffExome(), variant.getGeneSymbol());
+        System.out.printf("%s %s %s %s %s %s %s offExome=%s gene=%s %s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt(), variant.getGenotypeAsString(), genotypes, genotypeTypes, variant.isOffExome(), variant.getGeneSymbol(), variant.getVariantContext());
     }
 
 
@@ -119,7 +120,7 @@ public class VariantFactoryTest {
     public void testCreateVariantContexts_MultipleAlleles_DiferentSingleSampleGenotypes() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         List<VariantContext> variants = instance.createVariantContexts(vcfPath);
-        assertThat(variants.size(), equalTo(6));
+        assertThat(variants.size(), equalTo(10));
     }
 
     @Test
@@ -144,7 +145,7 @@ public class VariantFactoryTest {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath);
         variants.forEach(this::printVariant);
-        assertThat(variants.size(), equalTo(6));
+        assertThat(variants.size(), equalTo(10));
     }
 
     @Test

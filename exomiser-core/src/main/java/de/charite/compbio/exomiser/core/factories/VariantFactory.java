@@ -30,12 +30,13 @@ import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.vcf.VCFFileReader;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -105,11 +106,15 @@ public class VariantFactory {
                             variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
                         }
                     } else {
+                        logger.debug("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
                         //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
                         for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                            annotatedVariants[0]++;
-                            VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
-                            variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
+                            if (altAlleleIsObservedInGenotypes(altAlleleId, variantContext)) {
+                                annotatedVariants[0]++;
+                                logger.debug("Alt allele {} observed in samples", variantContext.getAlternateAllele(altAlleleId));
+                                VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
+                                variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
+                            }
                         }
                     }
                     return variantEvaluations.stream();
@@ -124,6 +129,15 @@ public class VariantFactory {
                         logger.info("Processed {} variant records into {} single allele variants", variantRecords[0], annotatedVariants[0]);
                     }
                 });
+    }
+
+    private boolean altAlleleIsObservedInGenotypes(int altAlleleId, VariantContext variantContext) {
+        final Allele altAllele = variantContext.getAlternateAllele(altAlleleId);
+        return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(altAllele));
+    }
+
+    private Predicate<Genotype> alleleObservedInGenotype(Allele allele) {
+        return genotype -> genotype.getAlleles().stream().anyMatch(allele::equals);
     }
 
     /**
