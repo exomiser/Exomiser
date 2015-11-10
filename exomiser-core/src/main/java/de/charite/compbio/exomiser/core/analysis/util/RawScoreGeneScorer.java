@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -158,7 +177,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         List<Float> homFilterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            // Realised original logic allows a cmphet to be calculated between a top scoring het and second place hom which is wrong 
+            // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
             // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
             if (variantIsHomozygousAlt(ve)){
                 homFilterScores.add(ve.getVariantScore());
@@ -189,15 +208,6 @@ public class RawScoreGeneScorer implements GeneScorer {
         return ve.getVariantContext().getGenotype(0).isHomVar();
     }
 
-    private boolean variantIsHomozygousRef(VariantEvaluation ve) {
-        // below does not seem to work        
-        //return ve.getVariantContext().getGenotype(0).isHomRef();
-        if (ve.getGenotypeAsString().equals("0/0") || ve.getGenotypeAsString().equals("0|0")){
-            return true;
-        }
-        return false;
-    }
-    
     private boolean variantIsHeterozygous(VariantEvaluation ve) {
         return ve.getVariantContext().getGenotype(0).isHet();
     }
@@ -224,10 +234,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            // TODO - should this check be used
-            if (!variantIsHomozygousRef(ve)){
-                filterScores.add(ve.getVariantScore());
-            }
+            filterScores.add(ve.getVariantScore());
         }
         //maybe the variants were all crappy and nothing passed....
         if (filterScores.isEmpty()) {
