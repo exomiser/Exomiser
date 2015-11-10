@@ -44,8 +44,6 @@ import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceComp
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -60,12 +58,10 @@ public class InheritanceModeAnalyser {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
-    private final Pedigree pedigree;
     private final ModeOfInheritance modeOfInheritance;
     private final InheritanceCompatibilityChecker inheritanceCompatibilityChecker;
 
     public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
-        this.pedigree = pedigree;
         this.modeOfInheritance = modeOfInheritance;
         inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
     }
