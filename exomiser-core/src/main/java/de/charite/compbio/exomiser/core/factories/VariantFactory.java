@@ -36,6 +36,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -95,30 +96,9 @@ public class VariantFactory {
         int[] annotatedVariants = {0};
 
         Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath)
-                .flatMap(variantContext -> {
-                    variantRecords[0]++;
-                    List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-                    //TODO: this looks like a stateful stream - can't this bit return a stream of variantEvaluations?
-                    List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
-                    if (variantAlleleAnnotations.isEmpty()) {
-                        for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                            unannotatedVariants[0]++;
-                            variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
-                        }
-                    } else {
-                        logger.debug("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
-                        //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
-                        for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                            if (altAlleleIsObservedInGenotypes(altAlleleId, variantContext)) {
-                                annotatedVariants[0]++;
-                                logger.debug("Alt allele {} observed in samples", variantContext.getAlternateAllele(altAlleleId));
-                                VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
-                                variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
-                            }
-                        }
-                    }
-                    return variantEvaluations.stream();
-                });
+                .map(logVariantContextCount(variantRecords))
+                .flatMap(buildVariantEvaluations())
+                .map(logAnnotatedVariantCount(unannotatedVariants, annotatedVariants));
 
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
         return variantEvaluationStream
@@ -129,6 +109,50 @@ public class VariantFactory {
                         logger.info("Processed {} variant records into {} single allele variants", variantRecords[0], annotatedVariants[0]);
                     }
                 });
+    }
+
+    private Function<VariantContext, VariantContext> logVariantContextCount(int[] variantRecords) {
+        return variantContext -> {
+            variantRecords[0]++;
+            return variantContext;
+        };
+    }
+
+    private Function<VariantEvaluation, VariantEvaluation> logAnnotatedVariantCount(int[] unannotatedVariants, int[] annotatedVariants) {
+        return variantEvaluation -> {
+            if (variantEvaluation.hasAnnotations()) {
+                annotatedVariants[0]++;
+            } else {
+                unannotatedVariants[0]++;
+            }
+            return variantEvaluation;
+        };
+    }
+
+    /**
+     * An Exomiser VariantEvaluation is a single-allele variant whereas the VariantContext can have multiple alleles.
+     * This means that a multi allele Variant record in a VCF can result in several VariantEvaluations - one for each
+     * alternate allele.
+     */
+    private Function<VariantContext, Stream<VariantEvaluation>> buildVariantEvaluations() {
+        return variantContext -> {
+            final List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+            final List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
+            logger.debug("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
+            for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                if (altAlleleIsObservedInGenotypes(altAlleleId, variantContext)) {
+                    logger.debug("Alt allele {} observed in samples", variantContext.getAlternateAllele(altAlleleId));
+                    if (variantAlleleAnnotations.isEmpty()) {
+                        logger.debug("Unannotated variant: {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
+                        variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
+                    } else {
+                        VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
+                        variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
+                    }
+                }
+            }
+            return variantEvaluations.stream();
+        };
     }
 
     private boolean altAlleleIsObservedInGenotypes(int altAlleleId, VariantContext variantContext) {
