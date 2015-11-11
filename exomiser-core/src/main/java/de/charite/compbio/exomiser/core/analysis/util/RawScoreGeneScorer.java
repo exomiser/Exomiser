@@ -234,10 +234,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         List<Float> filterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            // TODO - should this check be used
-            if (!variantIsHomozygousRef(ve)){
-                filterScores.add(ve.getVariantScore());
-            }
+            filterScores.add(ve.getVariantScore());
         }
         //maybe the variants were all crappy and nothing passed....
         if (filterScores.isEmpty()) {
