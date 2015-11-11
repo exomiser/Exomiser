@@ -120,7 +120,7 @@ public class VariantFactoryTest {
     public void testCreateVariantContexts_MultipleAlleles_DiferentSingleSampleGenotypes() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         List<VariantContext> variants = instance.createVariantContexts(vcfPath);
-        assertThat(variants.size(), equalTo(10));
+        assertThat(variants.size(), equalTo(11));
     }
 
     @Test
@@ -145,7 +145,7 @@ public class VariantFactoryTest {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         List<VariantEvaluation> variants = instance.createVariantEvaluations(vcfPath);
         variants.forEach(this::printVariant);
-        assertThat(variants.size(), equalTo(10));
+        assertThat(variants.size(), equalTo(11));
     }
 
     @Test

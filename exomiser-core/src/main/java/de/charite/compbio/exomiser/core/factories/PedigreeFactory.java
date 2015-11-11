@@ -157,6 +157,21 @@ public class PedigreeFactory {
         logger.debug("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
         logger.debug("Matching VCF sample names with PED individuals...");
         //yes, we could just do a set comparison here, but we want to throw an exception once we've logged all the unrepresented individuals for the user.
+        boolean namesMismatch = false;
+        if(sampleNamesMisMatchPedigreeMembers(pedFileContents, sampleNames)) {
+            namesMismatch = true;
+        }
+        //need to to an all vs all comparison because there could be unrepresented elements in both PED and VCF e.g. [Eva, {Adam, Seth], Marge, Homer}
+        if (pedigreeMembersMisMatchSampleNames(pedFileContents, sampleNames)){
+            namesMismatch = true;
+        }
+
+        if(namesMismatch) {
+            throw new PedigreeCreationException("VCF - PED mismatch. There are mismatched individuals in the PED and/or VCF file. Please ensure names in both VCF and PED files are identical.");
+        }
+    }
+
+    private boolean pedigreeMembersMisMatchSampleNames(PedFileContents pedFileContents, List<String> sampleNames) {
         Map<Boolean, List<PedPerson>> people = pedFileContents.getIndividuals().stream().collect(partitioningBy(pedPerson -> sampleNames.contains(pedPerson.getName())));
 
         List<PedPerson> representedPeople = people.get(true);
@@ -164,14 +179,33 @@ public class PedigreeFactory {
             throw new PedigreeCreationException("VCF - PED mismatch. None of the individuals in the PED match any of the sample names in the VCF");
         }
 
+        boolean namesMismatch = false;
         List<PedPerson> unrepresentedPeople = people.get(false);
         if (unrepresentedPeople.size() > 0) {
+            namesMismatch = true;
             unrepresentedPeople.forEach(
-                    person -> logger.error("Individual {} from family {} represented in PED but not in VCF. Please remove {}\t{} from input PED.", person.getName(), person.getPedigree(), person.getPedigree(), person.getName())
+                    person -> logger.error("Individual {} from family {} present in PED but not in VCF. Please ensure names in VCF match those in PED.", person.getName(), person.getPedigree())
             );
-            throw new PedigreeCreationException("VCF - PED mismatch. There are " + unrepresentedPeople.size() + " individuals in the PED file unrepresented in the VCF");
+        }
+        return namesMismatch;
+    }
+
+    private boolean sampleNamesMisMatchPedigreeMembers(PedFileContents pedFileContents, List<String> sampleNames) {
+        Map<String, PedPerson> pedPeople = pedFileContents.getNameToPerson();
+        Map<Boolean, List<String>> samples = sampleNames.stream().collect(partitioningBy(name -> pedPeople.containsKey(name)));
+
+        List<String> representedSamples = samples.get(true);
+        if (representedSamples.isEmpty()) {
+            throw new PedigreeCreationException("VCF - PED mismatch. None of the sample names in the VCF match any of the individuals in the PED");
         }
 
+        boolean namesMismatch = false;
+        List<String> unrepresentedSamples = samples.get(false);
+        if (unrepresentedSamples.size() > 0) {
+            namesMismatch = true;
+            unrepresentedSamples.forEach(name -> logger.error("Individual {} present in VCF but not in PED file. Please ensure names in VCF match those in PED.", name));
+        }
+        return namesMismatch;
     }
 
     private Pedigree buildPedigree(PedFileContents pedFileContents) {
