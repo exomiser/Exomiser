@@ -30,12 +30,13 @@ import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.vcf.VCFFileReader;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -93,26 +94,32 @@ public class VariantFactory {
         int[] unannotatedVariants = {0};
         int[] annotatedVariants = {0};
 
-        Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath).flatMap(variantContext -> {
-            variantRecords[0]++;
-            List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-            //TODO: this looks like a stateful stream - can't this bit return a stream of variantEvaluations?
-            List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
-            if (variantAlleleAnnotations.isEmpty()) {
-                for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                    unannotatedVariants[0]++;
-                    variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
-                }
-            } else {
-                //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
-                for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                    annotatedVariants[0]++;
-                    VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
-                    variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
-                }
-            }
-            return variantEvaluations.stream();
-        });
+        Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath)
+                .flatMap(variantContext -> {
+                    variantRecords[0]++;
+                    List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+                    //TODO: this looks like a stateful stream - can't this bit return a stream of variantEvaluations?
+                    List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
+                    if (variantAlleleAnnotations.isEmpty()) {
+                        for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                            unannotatedVariants[0]++;
+                            variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
+                        }
+                    } else {
+                        logger.debug("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
+                        //an Exomiser Variant is a single-allele variant the VariantContext can have multiple alleles
+                        for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
+                            if (altAlleleIsObservedInGenotypes(altAlleleId, variantContext)) {
+                                annotatedVariants[0]++;
+                                logger.debug("Alt allele {} observed in samples", variantContext.getAlternateAllele(altAlleleId));
+                                VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
+                                variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
+                            }
+                        }
+                    }
+                    return variantEvaluations.stream();
+                });
+
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
         return variantEvaluationStream
                 .onClose(() -> {
@@ -122,6 +129,15 @@ public class VariantFactory {
                         logger.info("Processed {} variant records into {} single allele variants", variantRecords[0], annotatedVariants[0]);
                     }
                 });
+    }
+
+    private boolean altAlleleIsObservedInGenotypes(int altAlleleId, VariantContext variantContext) {
+        final Allele altAllele = variantContext.getAlternateAllele(altAlleleId);
+        return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(altAllele));
+    }
+
+    private Predicate<Genotype> alleleObservedInGenotype(Allele allele) {
+        return genotype -> genotype.getAlleles().stream().anyMatch(allele::equals);
     }
 
     /**
@@ -146,7 +162,7 @@ public class VariantFactory {
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
-                        //quality is the only value from the VCF file directly required for analysis
+                //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
                 .chromosomeName(chromosomeName)
                 .build();
@@ -178,9 +194,9 @@ public class VariantFactory {
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
-                        //quality is the only value from the VCF file directly required for analysis
+                //quality is the only value from the VCF file directly required for analysis
                 .quality(variantContext.getPhredScaledQual())
-                        //jannovar derived data
+                //jannovar derived data
                 .chromosomeName(genomeVariant.getChrName())
                 .isOffExome(variantEffect.isOffExome())
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
