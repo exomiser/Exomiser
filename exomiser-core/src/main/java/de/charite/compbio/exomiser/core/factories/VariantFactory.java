@@ -34,8 +34,8 @@ import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.vcf.VCFFileReader;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -136,28 +136,36 @@ public class VariantFactory {
      */
     private Function<VariantContext, Stream<VariantEvaluation>> buildVariantEvaluations() {
         return variantContext -> {
-            final List<VariantEvaluation> variantEvaluations = new ArrayList<>();
             final List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
-            logger.debug("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
-            for (int altAlleleId = 0; altAlleleId < variantContext.getAlternateAlleles().size(); ++altAlleleId) {
-                if (altAlleleIsObservedInGenotypes(altAlleleId, variantContext)) {
-                    logger.debug("Alt allele {} observed in samples", variantContext.getAlternateAllele(altAlleleId));
-                    if (variantAlleleAnnotations.isEmpty()) {
-                        logger.debug("Unannotated variant: {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
-                        variantEvaluations.add(buildUnknownVariantEvaluation(variantContext, altAlleleId));
-                    } else {
-                        VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
-                        variantEvaluations.add(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
-                    }
-                }
-            }
-            return variantEvaluations.stream();
+//            logger.info("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
+            return variantContext.getAlternateAlleles().stream()
+                    .map(buildAlleleVariantEvaluation(variantContext, variantAlleleAnnotations))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get);
         };
     }
 
-    private boolean altAlleleIsObservedInGenotypes(int altAlleleId, VariantContext variantContext) {
-        final Allele altAllele = variantContext.getAlternateAllele(altAlleleId);
-        return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(altAllele));
+    private Function<Allele, Optional<VariantEvaluation>> buildAlleleVariantEvaluation(VariantContext variantContext, List<VariantAnnotations> variantAlleleAnnotations) {
+        return allele -> {
+            //alternate Alleles are always after the reference allele, which is 0
+            int altAlleleId = variantContext.getAlleleIndex(allele) - 1;
+            //loggers are commented out as even using debug this adds considerable overhead when checking millions of variants
+//            logger.info("checking allele {} altAlleleId={}", allele, altAlleleId);
+            if (alleleIsObservedInGenotypes(allele, variantContext)) {
+//                logger.info("Alt allele {} observed in samples", variantContext.getAlternateAllele(altAlleleId));
+                if (variantAlleleAnnotations.isEmpty()) {
+                    return Optional.of(buildUnknownVariantEvaluation(variantContext, altAlleleId));
+                } else {
+                    VariantAnnotations variantAnnotations = variantAlleleAnnotations.get(altAlleleId);
+                    return Optional.of(buildAnnotatedVariantEvaluation(variantContext, altAlleleId, variantAnnotations));
+                }
+            }
+            return Optional.empty();
+        };
+    }
+
+    private boolean alleleIsObservedInGenotypes(Allele allele, VariantContext variantContext) {
+        return variantContext.getGenotypes().stream().anyMatch(alleleObservedInGenotype(allele));
     }
 
     private Predicate<Genotype> alleleObservedInGenotype(Allele allele) {
