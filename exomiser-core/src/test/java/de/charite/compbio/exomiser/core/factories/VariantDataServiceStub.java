@@ -31,6 +31,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +61,11 @@ public class VariantDataServiceStub implements VariantDataService {
     @Override
     public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
         return Collections.emptyList();
+    }
+    
+    @Override
+    public boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect) {
+        return false;
     }
 
 }

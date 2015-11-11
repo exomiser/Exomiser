@@ -22,6 +22,7 @@ package de.charite.compbio.exomiser.core.analysis;
 import de.charite.compbio.exomiser.core.analysis.util.*;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.*;
@@ -54,6 +55,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private final VariantDataService variantDataService;
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
+    private ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex;
 
     public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.sampleDataFactory = sampleDataFactory;
@@ -132,8 +134,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
             filteredVariants = variantStream
                     .map(logLoadedAndPassedVariants(streamed, passed))
-                    //TODO: put back in once this is sorted properly
-                    .map(reassignNonCodingVariantToBestGene(allGenes, geneReassigner))
+                    .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(allGenes, geneReassigner))
+                    .map(reassignNonCodingVariantToBestGeneInTad(allGenes, geneReassigner))
                     .filter(isInKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters))
                     .map(logPassedVariants(passed))
@@ -171,9 +173,30 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         };
     }
 
-    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGene(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(Map<String, Gene> genes, GeneReassigner geneReassigner) {
         return variantEvaluation -> {
-            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+            if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
+                /* only run TAD reassignment for genuine enhancers
+                in an ideal world the regulatory_region table would only contain enhancers and this would not be need 
+                but the other types were needed to catch some of the 414 variants. Check if this is still the case though with Jannovar reassigment etc
+                */
+                List<RegulatoryFeature> overlappingFeatures = regulatoryRegionIndex.getRegionsContainingVariant(variantEvaluation);
+                for (RegulatoryFeature rf: overlappingFeatures) {
+                    if (rf.getFeatureType() == RegulatoryFeature.FeatureType.ENHANCER || rf.getFeatureType() == RegulatoryFeature.FeatureType.FANTOM_PERMISSIVE){
+                        geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+                        return variantEvaluation;
+                    }
+                }
+            }
+            return variantEvaluation;
+        };
+    }
+    
+    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+        return variantEvaluation -> {
+            if (variantDataService.isRegulatoryNonCodingVariant(variantEvaluation.getVariantEffect())){
+                geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation, genes);
+            }
             return variantEvaluation;
         };
     }
@@ -211,7 +234,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
         VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
         List<RegulatoryFeature> regulatoryFeatures = variantDataService.getRegulatoryFeatures();
-        final ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
+        this.regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
         logger.info("Loaded {} regulatory regions", regulatoryFeatures.size());
         //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
         return variantFactory.streamVariantEvaluations(vcfPath).map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));

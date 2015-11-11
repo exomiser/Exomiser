@@ -121,37 +121,55 @@ public class GeneReassigner {
     }
 
     //Ignore this for the time being it should be public - this is an attempt to fix Jannovar/Annotation issues.
-    private void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            List<Annotation> annotations = variantEvaluation.getAnnotations();
-            float score = 0;
-            Set<String> geneSymbols = new HashSet<>();
-            for (Annotation a : annotations) {
-                String geneSymbol = a.getGeneSymbol();
-                //logger.info("Annotation to " + a.getGeneSymbol() + " has variantEffect " + a.getMostPathogenicVarType().toString());
-                // hack to deal with fusion protein Jannovar nonsense
+    public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
+        List<Annotation> annotations = variantEvaluation.getAnnotations();
+        Gene geneWithHighestPhenotypeScore = null;
+        VariantEffect variantEffectForTopHit = null;
+        Gene currentlyAssignedGene = allGenes.get(variantEvaluation.getGeneSymbol());
+        float bestScore = prioritiserScore(currentlyAssignedGene);
+        List<String> geneSymbols = new ArrayList<>();
+        List<VariantEffect> variantEffects = new ArrayList<>();
+        for (Annotation a : annotations) {
+            String geneSymbol = a.getGeneSymbol();
+            geneSymbols.add(geneSymbol);
+            variantEffects.add(a.getMostPathogenicVarType());
+            // hack to deal with fusion protein Jannovar nonsense - ? should the separate genes not be part of the annotation anyway - don't seem to be, should maybe not do this split
+            if (geneSymbol.contains("-")) {
                 String[] separateGeneSymbols = geneSymbol.split("-");
                 for (String separateGeneSymbol : separateGeneSymbols) {
                     geneSymbols.add(separateGeneSymbol);
-                }
-            }
-            for (String geneSymbol : geneSymbols) {
-                Gene gene = allGenes.get(geneSymbol);
-                if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
-                    int entrezId = gene.getEntrezGeneID();
-                    float geneScore = prioritiserScore(gene);
-                    //logger.info("Gene " + geneSymbol + " in possible annotations for variant " + variantEvaluation.getChromosomalVariant() + "has score " + geneScore);
-                    if (geneScore > score) {
-                        //logger.info("!!!!! Want to change gene from " + variantEvaluation.getGeneSymbol() + " to " + geneSymbol + " as has the better phenotype score");
-                        // Doing the below will fix some of the Jannovar assignment issues seen in our benchmarking but currently breaks the tests as it reassigns one of the test variants! Not sure what to do
-                        // Also we may be reassigning from a good MISSENSE variant in one gene to something dodgy in another - needs some more thought
-                        //variantEvaluation.setEntrezGeneId(entrezId);
-                        //variantEvaluation.setGeneSymbol(geneSymbol);
-                        score = geneScore;
-                    }
+                    variantEffects.add(VariantEffect.CUSTOM);// for - split entries do not know effect
                 }
             }
         }
+        int i = 0;
+        for (String geneSymbol : geneSymbols) {
+            Gene gene = allGenes.get(geneSymbol);
+            VariantEffect ve = variantEffects.get(i);
+            i++;
+            if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
+                float geneScore = prioritiserScore(gene);
+                if (geneScore > bestScore) {
+                    bestScore = geneScore;
+                    geneWithHighestPhenotypeScore = gene;
+                    variantEffectForTopHit = ve;
+                }
+            }
+        }
+        if (prioritiserScore(currentlyAssignedGene) == bestScore) {
+            //don't move the assignment if there is nowhere better to go...
+            return;
+        }
+        if (geneWithHighestPhenotypeScore == null) {
+            return;
+        }
+        /* Only reassign variant effect if it has not already been flagged by RegFeatureDao as a regulatory region variant.
+        Otherwise TAD reassignment and subsequent reg feature filter fail to work as expected
+        */
+        if (variantEvaluation.getVariantEffect() != VariantEffect.REGULATORY_REGION_VARIANT){
+            variantEvaluation.setVariantEffect(variantEffectForTopHit);
+        }
+        assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore);
     }
 
 }

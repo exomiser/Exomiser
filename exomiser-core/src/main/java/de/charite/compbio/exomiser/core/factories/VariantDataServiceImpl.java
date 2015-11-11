@@ -121,8 +121,9 @@ public class VariantDataServiceImpl implements VariantDataService {
             VariantEffect.SPLICE_DONOR_VARIANT, VariantEffect.FRAMESHIFT_ELONGATION, VariantEffect.FRAMESHIFT_TRUNCATION, VariantEffect.FRAMESHIFT_VARIANT, VariantEffect.MNV,
             VariantEffect.FEATURE_TRUNCATION, VariantEffect.DISRUPTIVE_INFRAME_DELETION, VariantEffect.DISRUPTIVE_INFRAME_INSERTION, VariantEffect.INFRAME_DELETION, VariantEffect.INFRAME_INSERTION,
             VariantEffect.INTERNAL_FEATURE_ELONGATION, VariantEffect.COMPLEX_SUBSTITUTION);
-            
-    private boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect) {
+    
+    @Override
+    public boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect) {
         return !nonRegulatoryNonCodingVariantEffects.contains(variantEffect);
     }
 
