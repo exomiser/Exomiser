@@ -129,8 +129,23 @@ public class PedigreeFactoryTest {
     }
 
     @Test(expected = PedigreeCreationException.class)
-    public void testCreatePedigreeWithSomeMismatchedSampleNames() {
+    public void testCreatePedigreeWithMorePedigreeMembersThanSampleNames() {
         instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Eva", "Seth"));
+    }
+
+    @Test(expected = PedigreeCreationException.class)
+    public void testCreatePedigreeWithMoreSampleNamesThanPedigreeMembers() {
+        instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Adam", "Eva", "Cain", "Abel", "Seth"));
+    }
+
+    @Test(expected = PedigreeCreationException.class)
+    public void testCreatePedigreeWithMoreSampleNamesThanPedigreeMembersAndMismatchedSample() {
+        instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Adam", "Marge", "Abel", "Seth"));
+    }
+
+    @Test(expected = PedigreeCreationException.class)
+    public void testCreatePedigreeWithMismatchedSampleNameAndPedigreeMember() {
+        instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Adam", "Marge", "Seth"));
     }
 
     @Test(expected = PedigreeCreationException.class)
