@@ -152,7 +152,6 @@ public class GeneReassigner {
         for (String geneSymbol : geneSymbols) {
             Gene gene = allGenes.get(geneSymbol);
             VariantEffect ve = variantEffects.get(i);
-            i++;
             if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
                 float geneScore = prioritiserScore(gene);
                 if (geneScore > bestScore) {
@@ -167,6 +166,7 @@ public class GeneReassigner {
                     }
                 }
             }
+            i++;
         }
         if (prioritiserScore(currentlyAssignedGene) == bestScore) {
             //don't move the assignment if there is nowhere better to go...
