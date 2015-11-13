@@ -60,7 +60,15 @@ public class RegulatoryFeatureDao {
     public List<RegulatoryFeature> getRegulatoryFeatures() {
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS");
+                //PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS");
+                // Changed to only use definite enhancers
+                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS "
+                        + "WHERE FEATURE_TYPE = 'Enhancer' OR FEATURE_TYPE = 'FANTOM PERMISSIVE'");
+                // Could also investigate just using all apart from promoters as all other types are potential enhancers/silencers
+//                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS "
+//                        + "WHERE FEATURE_TYPE != 'Promoter");
+                // TODO - once settled on best statement just clean up database tables
+                
                 ResultSet rs = preparedStatement.executeQuery()) {
 
                 return processRegulatoryFeatureResults(rs);

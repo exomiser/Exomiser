@@ -29,6 +29,7 @@ import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
@@ -176,17 +177,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(Map<String, Gene> genes, GeneReassigner geneReassigner) {
         return variantEvaluation -> {
             if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
-                /* only run TAD reassignment for genuine enhancers
-                in an ideal world the regulatory_region table would only contain enhancers and this would not be need 
-                but the other types were needed to catch some of the 414 variants. Check if this is still the case though with Jannovar reassigment etc
-                */
-                List<RegulatoryFeature> overlappingFeatures = regulatoryRegionIndex.getRegionsContainingVariant(variantEvaluation);
-                for (RegulatoryFeature rf: overlappingFeatures) {
-                    if (rf.getFeatureType() == RegulatoryFeature.FeatureType.ENHANCER || rf.getFeatureType() == RegulatoryFeature.FeatureType.FANTOM_PERMISSIVE){
-                        geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
-                        return variantEvaluation;
-                    }
-                }
+                geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
             }
             return variantEvaluation;
         };
@@ -250,7 +241,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 if (!overlappingFeatures.isEmpty()) {
                     //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up form the list
                     variantEvaluation.setVariantEffect(VariantEffect.REGULATORY_REGION_VARIANT);
-                }
+                } 
             }
             return variantEvaluation;
         };

@@ -49,6 +49,7 @@ public class RegulatoryFeatureDaoTest {
     @Autowired
     private RegulatoryFeatureDao instance;
 
+    @Ignore
     @Test
     public void testGetAllRegulatoryFeatures() {
         List<RegulatoryFeature> regulatoryFeatures = new ArrayList<>();
