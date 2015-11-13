@@ -24,12 +24,14 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,16 +131,20 @@ public class GeneReassigner {
         float bestScore = prioritiserScore(currentlyAssignedGene);
         List<String> geneSymbols = new ArrayList<>();
         List<VariantEffect> variantEffects = new ArrayList<>();
+        List<Annotation> newAnnotations = new ArrayList<>();
+        Annotation bestAnnotation = null;
         for (Annotation a : annotations) {
             String geneSymbol = a.getGeneSymbol();
             geneSymbols.add(geneSymbol);
             variantEffects.add(a.getMostPathogenicVarType());
+            newAnnotations.add(a);
             // hack to deal with fusion protein Jannovar nonsense - ? should the separate genes not be part of the annotation anyway - don't seem to be, should maybe not do this split
             if (geneSymbol.contains("-")) {
                 String[] separateGeneSymbols = geneSymbol.split("-");
                 for (String separateGeneSymbol : separateGeneSymbols) {
                     geneSymbols.add(separateGeneSymbol);
                     variantEffects.add(VariantEffect.CUSTOM);// for - split entries do not know effect
+                    newAnnotations.add(null);
                 }
             }
         }
@@ -153,6 +159,12 @@ public class GeneReassigner {
                     bestScore = geneScore;
                     geneWithHighestPhenotypeScore = gene;
                     variantEffectForTopHit = ve;
+                    if (newAnnotations.get(i) != null) {
+                        bestAnnotation = newAnnotations.get(i);
+                    }
+                    else{
+                        bestAnnotation = null;
+                    }
                 }
             }
         }
@@ -169,7 +181,14 @@ public class GeneReassigner {
         if (variantEvaluation.getVariantEffect() != VariantEffect.REGULATORY_REGION_VARIANT){
             variantEvaluation.setVariantEffect(variantEffectForTopHit);
         }
-        assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore);
+        // Keep original annotation if possible - used in RegFilter later on and for display
+        List<Annotation> finalAnnotations = new ArrayList<>();
+        if (bestAnnotation != null){   
+            finalAnnotations.add(bestAnnotation);
+        }
+        variantEvaluation.setAnnotations(finalAnnotations);
+        variantEvaluation.setEntrezGeneId(geneWithHighestPhenotypeScore.getEntrezGeneID());
+        variantEvaluation.setGeneSymbol(geneWithHighestPhenotypeScore.getGeneSymbol());
     }
 
 }
