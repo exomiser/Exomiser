@@ -63,7 +63,7 @@ public class RegulatoryFeatureDao {
                 //PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS");
                 // Changed to only use definite enhancers
                 PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS "
-                        + "WHERE FEATURE_TYPE = 'Enhancer' OR FEATURE_TYPE = 'FANTOM PERMISSIVE'");
+                        + "WHERE FEATURE_TYPE = 'Enhancer' OR FEATURE_TYPE = 'FANTOM permissive'");
                 // Could also investigate just using all apart from promoters as all other types are potential enhancers/silencers
 //                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS "
 //                        + "WHERE FEATURE_TYPE != 'Promoter");

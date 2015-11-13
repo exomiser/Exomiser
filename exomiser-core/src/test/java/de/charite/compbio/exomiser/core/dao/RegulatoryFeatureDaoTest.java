@@ -49,7 +49,6 @@ public class RegulatoryFeatureDaoTest {
     @Autowired
     private RegulatoryFeatureDao instance;
 
-    @Ignore
     @Test
     public void testGetAllRegulatoryFeatures() {
         List<RegulatoryFeature> regulatoryFeatures = new ArrayList<>();
@@ -73,7 +72,7 @@ public class RegulatoryFeatureDaoTest {
 
         List<RegulatoryFeature> results = instance.getRegulatoryFeatures();
 
-        assertThat(results.size(), equalTo(8));
+        assertThat(results.size(), equalTo(2));// now added restriction to DAO
 
         for (RegulatoryFeature result : results) {
             assertThat(regulatoryFeatures, hasItem(result));
