@@ -60,14 +60,18 @@ public class RegulatoryFeatureDao {
     public List<RegulatoryFeature> getRegulatoryFeatures() {
         try (
                 Connection connection = dataSource.getConnection();
+                /*
+                Changed to only use real enhancers throughout - only loses one real hits (#169; 12:114704515 G->T)
+                for the 414 positive set and will likely reduce false positives.
+                If use the second version to only exclude promoters (as all the other types are potential
+                enhancers/silencers) then retains this variant as well
+                TODO - once happy with this query then just change db contents and put back to original select all query
+                */
                 //PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS");
-                // Changed to only use definite enhancers
                 PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS "
                         + "WHERE FEATURE_TYPE = 'Enhancer' OR FEATURE_TYPE = 'FANTOM permissive'");
-                // Could also investigate just using all apart from promoters as all other types are potential enhancers/silencers
 //                PreparedStatement preparedStatement = connection.prepareStatement("select CHROMOSOME as chr, START as start, \"end\" as end, FEATURE_TYPE as feature_type from REGULATORY_REGIONS "
 //                        + "WHERE FEATURE_TYPE != 'Promoter");
-                // TODO - once settled on best statement just clean up database tables
                 
                 ResultSet rs = preparedStatement.executeQuery()) {
 

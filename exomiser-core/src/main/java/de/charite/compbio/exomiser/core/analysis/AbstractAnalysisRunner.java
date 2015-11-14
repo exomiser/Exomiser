@@ -176,9 +176,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(Map<String, Gene> genes, GeneReassigner geneReassigner) {
         return variantEvaluation -> {
-            if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
-                geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
-            }
+            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
             return variantEvaluation;
         };
     }
