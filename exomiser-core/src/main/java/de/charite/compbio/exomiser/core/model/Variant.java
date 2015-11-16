@@ -59,11 +59,23 @@ public interface Variant extends VariantCoordinates {
             VariantEffect.COMPLEX_SUBSTITUTION
     );
 
+    static final Set<VariantEffect> regulatoryNonCodingVariantEffects = EnumSet.of(
+            VariantEffect.MIRNA,
+            VariantEffect.REGULATORY_REGION_VARIANT,
+            VariantEffect.FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT,
+            VariantEffect.FIVE_PRIME_UTR_TRUNCATION,
+            VariantEffect.FIVE_PRIME_UTR_VARIANT,
+            VariantEffect.TF_BINDING_SITE_VARIANT,
+            VariantEffect.THREE_PRIME_UTR_TRUNCATION,
+            VariantEffect.THREE_PRIME_UTR_VARIANT
+    );
+
     default public boolean isRegulatoryNonCodingVariant() {
         //TODO: this is broken - MISSENSE and other coding variant effects are not in the set of nonRegulatoryNonCodingVariantEffects
         //check existing isFrameshiftVariant(), isStructural(), isSplicing(), isIntronic(), isOffExome() and isOffTranscript()
         //VariantEffect.INTERGENIC_VARIANT || VariantEffect.UPSTREAM_GENE_VARIANT || VariantEffect.REGULATORY_REGION_VARIANT
-        return !nonRegulatoryNonCodingVariantEffects.contains(getVariantEffect());
+//        return !nonRegulatoryNonCodingVariantEffects.contains(getVariantEffect());
+        return regulatoryNonCodingVariantEffects.contains(getVariantEffect());
     }
     
     public double getPhredScore();
