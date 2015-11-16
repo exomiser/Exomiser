@@ -32,7 +32,6 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
@@ -94,7 +93,7 @@ public class VariantDataServiceImpl implements VariantDataService {
             PathogenicityData missenseScores = pathogenicityDao.getPathogenicityData(variant);
             allPathScores.addAll(missenseScores.getPredictedPathogenicityScores());
         }
-        else if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isRegulatoryNonCodingVariant()) {
+        else if (pathogenicitySources.contains(PathogenicitySource.REMM) && variant.isNonCodingVariant()) {
             //REMM is trained on non-coding regulatory bits of the genome, this outperforms CADD for non-coding variants
             PathogenicityData nonCodingScore = remmDao.getPathogenicityData(variant);
             allPathScores.addAll(nonCodingScore.getPredictedPathogenicityScores());

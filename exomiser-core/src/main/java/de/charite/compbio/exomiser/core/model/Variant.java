@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public interface Variant extends VariantCoordinates {
 
-    static final Set<VariantEffect> nonRegulatoryNonCodingVariantEffects = EnumSet.of(
+    static final Set<VariantEffect> codingVariantEffects = EnumSet.of(
             VariantEffect.STOP_LOST,
             VariantEffect.STOP_RETAINED_VARIANT,
             VariantEffect.STOP_GAINED,
@@ -49,6 +49,7 @@ public interface Variant extends VariantCoordinates {
             VariantEffect.FRAMESHIFT_ELONGATION,
             VariantEffect.FRAMESHIFT_TRUNCATION,
             VariantEffect.FRAMESHIFT_VARIANT,
+            VariantEffect.MISSENSE_VARIANT,
             VariantEffect.MNV,
             VariantEffect.FEATURE_TRUNCATION,
             VariantEffect.DISRUPTIVE_INFRAME_DELETION,
@@ -70,12 +71,8 @@ public interface Variant extends VariantCoordinates {
             VariantEffect.THREE_PRIME_UTR_VARIANT
     );
 
-    default public boolean isRegulatoryNonCodingVariant() {
-        //TODO: this is broken - MISSENSE and other coding variant effects are not in the set of nonRegulatoryNonCodingVariantEffects
-        //check existing isFrameshiftVariant(), isStructural(), isSplicing(), isIntronic(), isOffExome() and isOffTranscript()
-        //VariantEffect.INTERGENIC_VARIANT || VariantEffect.UPSTREAM_GENE_VARIANT || VariantEffect.REGULATORY_REGION_VARIANT
-//        return !nonRegulatoryNonCodingVariantEffects.contains(getVariantEffect());
-        return regulatoryNonCodingVariantEffects.contains(getVariantEffect());
+    default public boolean isNonCodingVariant() {
+        return !codingVariantEffects.contains(getVariantEffect());
     }
     
     public double getPhredScore();
