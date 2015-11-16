@@ -62,10 +62,5 @@ public class VariantDataServiceStub implements VariantDataService {
     public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
         return Collections.emptyList();
     }
-    
-    @Override
-    public boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect) {
-        return false;
-    }
 
 }

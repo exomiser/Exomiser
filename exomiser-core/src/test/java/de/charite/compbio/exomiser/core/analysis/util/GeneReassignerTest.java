@@ -27,18 +27,15 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.hamcrest.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 /**
@@ -111,7 +108,7 @@ public class GeneReassignerTest {
 
     private GeneReassigner makeInstance(PriorityType hiphivePriority, TopologicalDomain... tads) {
         ChromosomalRegionIndex<TopologicalDomain> tadIndex = new ChromosomalRegionIndex<>(Arrays.asList(tads));
-        return new GeneReassigner(tadIndex, hiphivePriority);
+        return new GeneReassigner(hiphivePriority, allGenes, tadIndex);
     }
 
     /**
@@ -127,22 +124,18 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene1);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }
 
     @Test
     public void noneTypePrioritiser() {
-
-        gene1.addPriorityResult(new BasePriorityResult(PriorityType.NONE, 0f));
-        gene2.addPriorityResult(new BasePriorityResult(PriorityType.NONE, 0f));
-
         TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
         instance = makeInstance(PriorityType.NONE, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene1);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }
@@ -157,7 +150,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = variant(2, 999999, "A", "G", VariantEffect.REGULATORY_REGION_VARIANT, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene2));
     }
@@ -171,7 +164,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }
@@ -188,7 +181,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad1, tad2);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad2, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene2));
     }
@@ -202,7 +195,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = variantInTadWithEffect(tad, VariantEffect.MISSENSE_VARIANT, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene2));
     }
@@ -216,7 +209,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene1);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant, allGenes);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }

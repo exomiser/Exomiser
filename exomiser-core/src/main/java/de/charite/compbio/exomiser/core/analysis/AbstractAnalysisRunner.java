@@ -22,14 +22,12 @@ package de.charite.compbio.exomiser.core.analysis;
 import de.charite.compbio.exomiser.core.analysis.util.*;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.factories.VariantDataServiceImpl;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
@@ -126,7 +124,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
-        GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis);
+        GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis, allGenes);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
 
         List<VariantEvaluation> filteredVariants;
@@ -137,7 +135,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                     .map(logLoadedAndPassedVariants(streamed, passed))
                     .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(allGenes, geneReassigner))
                     .map(reassignNonCodingVariantToBestGeneInTad(allGenes, geneReassigner))
-                    .filter(isInKnownGene(allGenes))
+                    .filter(isAssociatedWithKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters))
                     .map(logPassedVariants(passed))
                     .collect(toList());
@@ -146,10 +144,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return filteredVariants;
     }
 
-    private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis) {
+    private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis, Map<String, Gene> allGenes) {
         ChromosomalRegionIndex<TopologicalDomain> tadIndex = new ChromosomalRegionIndex<>(variantDataService.getTopologicallyAssociatedDomains());
         PriorityType mainPriorityType = analysis.getMainPrioritiserType();
-        return new GeneReassigner(tadIndex, mainPriorityType);
+        return new GeneReassigner(mainPriorityType, allGenes, tadIndex);
     }
 
     private List<VariantFilter> getVariantFilterSteps(List<AnalysisStep> analysisSteps) {
@@ -175,16 +173,17 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+        //todo: this won't function correctly if run before a prioritiser has been run
         return variantEvaluation -> {
-            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
             return variantEvaluation;
         };
     }
     
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(Map<String, Gene> genes, GeneReassigner geneReassigner) {
         return variantEvaluation -> {
-            if (variantDataService.isRegulatoryNonCodingVariant(variantEvaluation.getVariantEffect())){
-                geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation, genes);
+            if (variantEvaluation.isRegulatoryNonCodingVariant()){
+                geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
             }
             return variantEvaluation;
         };
@@ -198,7 +197,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @param genes
      * @return
      */
-    abstract Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes);
+    abstract Predicate<VariantEvaluation> isAssociatedWithKnownGene(Map<String, Gene> genes);
 
     /**
      * Defines the filtering behaviour of the runner when performing the initial load and filter of variants. Allows the
@@ -239,7 +238,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 if (!overlappingFeatures.isEmpty()) {
                     //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up form the list
                     variantEvaluation.setVariantEffect(VariantEffect.REGULATORY_REGION_VARIANT);
-                } 
+                }
             }
             return variantEvaluation;
         };

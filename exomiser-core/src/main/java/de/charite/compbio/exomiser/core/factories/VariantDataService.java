@@ -47,7 +47,5 @@ public interface VariantDataService {
     public List<RegulatoryFeature> getRegulatoryFeatures();
     
     public List<TopologicalDomain> getTopologicallyAssociatedDomains();
-    
-    public boolean isRegulatoryNonCodingVariant(VariantEffect variantEffect);
-        
+
 }

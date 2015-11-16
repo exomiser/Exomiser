@@ -53,25 +53,27 @@ public class GeneReassigner {
 
     private final PriorityType priorityType;
     private final ChromosomalRegionIndex<TopologicalDomain> tadIndex;
+    private final Map<String, Gene> allGenes;
 
     /**
-     * @param tadIndex
      * @param priorityType
+     * @param tadIndex
      */
-    public GeneReassigner(ChromosomalRegionIndex<TopologicalDomain> tadIndex, PriorityType priorityType) {
-        this.priorityType = priorityType;
+    public GeneReassigner(PriorityType priorityType, Map<String, Gene> allGenes, ChromosomalRegionIndex<TopologicalDomain> tadIndex) {
         this.tadIndex = tadIndex;
+        this.allGenes = allGenes;
+        this.priorityType = priorityType;
         logger.info("Made new GeneReassigner for {}", priorityType);
     }
 
-    public void reassignVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
+    public void reassignVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation) {
         if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
             logger.debug("Checking gene assignment for {} chr={} pos={}", variantEvaluation.getVariantEffect(), variantEvaluation.getChromosome(), variantEvaluation.getPosition());
-            assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation, allGenes);
+            assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation);
         }
     }
 
-    private void assignVariantToGeneWithHighestPhenotypeScore(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
+    private void assignVariantToGeneWithHighestPhenotypeScore(VariantEvaluation variantEvaluation) {
         Gene geneWithHighestPhenotypeScore = null;
         Gene currentlyAssignedGene = allGenes.get(variantEvaluation.getGeneSymbol());
         //assign this to the variant's current gene as we don't necessarily want ALL the regulatory region variants to clump into one gene.
@@ -101,7 +103,8 @@ public class GeneReassigner {
     }
 
     private float prioritiserScore(Gene gene) {
-        return gene.getPriorityResult(priorityType).getScore();
+        //TODO: local variable, only one call to get? Otherwise will throw NPE if not guarded against.
+        return (gene.getPriorityResult(priorityType) == null)? 0f : gene.getPriorityResult(priorityType).getScore();
     }
 
     private List<String> getGenesInTadForVariant(VariantEvaluation variantEvaluation) {
@@ -123,7 +126,7 @@ public class GeneReassigner {
     }
 
     //Ignore this for the time being it should be public - this is an attempt to fix Jannovar/Annotation issues.
-    public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(VariantEvaluation variantEvaluation, Map<String, Gene> allGenes) {
+    public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(VariantEvaluation variantEvaluation) {
         List<Annotation> annotations = variantEvaluation.getAnnotations();
         Gene geneWithHighestPhenotypeScore = null;
         VariantEffect variantEffectForTopHit = null;
