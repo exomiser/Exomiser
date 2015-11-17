@@ -36,6 +36,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 /**
@@ -55,27 +56,18 @@ public class RegulatoryFeatureDaoTest {
 
 //        (11,	96762600,	96763399,	'Enhancer'),
         regulatoryFeatures.add(new RegulatoryFeature(11, 96762600, 96763399, ENHANCER));
-//        (11,	96777007,	96777375,	'Open chromatin'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96777007, 96777375, OPEN_CHROMATIN));
-//        (11,	96781023,	96781500,	'TF binding site'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96781023, 96781500, TF_BINDING_SITE));
-//        (11,	96781600,	96781799,	'Promoter'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96781600, 96781799, PROMOTER));
-//        (11,	96794200,	96794599,	'CTCF Binding Site'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96794200, 96794599, CTCF_BINDING_SITE));
 //        (11,	96798354,	96798827,	'FANTOM permissive'),
         regulatoryFeatures.add(new RegulatoryFeature(11, 96798354, 96798827, FANTOM_PERMISSIVE));
-//        (11,	96817000,	96818399,	'Promoter Flanking Region'),
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96817000, 96818399, PROMOTER_FLANKING_REGION));
 //        (11,	96820460,	96821548,	'unrecognised type');
-        regulatoryFeatures.add(new RegulatoryFeature(11, 96820460, 96821548, UNKNOWN));
+//        regulatoryFeatures.add(new RegulatoryFeature(11, 96820460, 96821548, UNKNOWN));
 
         List<RegulatoryFeature> results = instance.getRegulatoryFeatures();
 
-        assertThat(results.size(), equalTo(2));// now added restriction to DAO
+        assertThat(results.size(), equalTo(2));
 
         for (RegulatoryFeature result : results) {
             assertThat(regulatoryFeatures, hasItem(result));
+            assertThat(result.getFeatureType(), not(RegulatoryFeature.FeatureType.UNKNOWN));
         }
     }
 
