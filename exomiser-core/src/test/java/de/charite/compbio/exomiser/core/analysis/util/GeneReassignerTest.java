@@ -146,7 +146,7 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void variantinGeneNotAssociatedAnyTad() {
+    public void variantInGeneNotAssociatedAnyTad() {
 
         gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
         gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));

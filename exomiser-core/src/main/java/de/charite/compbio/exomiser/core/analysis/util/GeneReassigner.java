@@ -24,14 +24,12 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
