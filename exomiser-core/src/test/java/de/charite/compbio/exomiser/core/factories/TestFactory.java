@@ -19,20 +19,37 @@
 
 package de.charite.compbio.exomiser.core.factories;
 
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
+import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 
 /**
+ * Allows the easy creation of {@link JannovarData} {@link VariantFactory} and {@link SampleDataFactory} objects for testing.
+ *
+ * The default data contains one transcript each for the genes FGFR2, GNRHR2A, RBM8A (overlaps with GNRHR2A), and SHH based on the HG19/GRCh37 build.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class TestFactory {
 
-    private static final TestJannovarDataFactory TEST_JANNOVAR_DATA_FACTORY = new TestJannovarDataFactory();
-    private static final JannovarData DEFAULT_JANNOVAR_DATA = TEST_JANNOVAR_DATA_FACTORY.getJannovarData();
+    private static final ReferenceDictionary REF_DICT = HG19RefDictBuilder.build();
+
+    private static final TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
+    private static final TranscriptModel tmGNRHR2A = TestTranscriptModelFactory.buildTMForGNRHR2A();
+    private static final TranscriptModel tmRBM8A = TestTranscriptModelFactory.buildTMForRBM8A();
+    private static final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
+
+    private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
 
     private TestFactory() {
         //this class should be used in a static context.
+    }
+
+    public ReferenceDictionary getRefDict() {
+        return REF_DICT;
     }
 
     public static JannovarData buildDefaultJannovarData() {
@@ -48,7 +65,7 @@ public class TestFactory {
     }
 
     public static JannovarData buildJannovarData(TranscriptModel... transcriptModels) {
-        return TEST_JANNOVAR_DATA_FACTORY.buildJannovarData(transcriptModels);
+        return new JannovarData(REF_DICT, ImmutableList.copyOf(transcriptModels));
     }
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {

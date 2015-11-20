@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Allows the easy creation of transcript models from the UCSC knownGenes.txt.gz lines.
+ * The sequences are the output of the 5'UTR Exons, CDS Exons and 3'UTR Exons from UCSC
  *
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  * @author Jules Jacobsen <julesjacobsen@sanger.ac.uk>
@@ -65,13 +66,13 @@ class TestTranscriptModelFactory {
     /**
      * GNRHR2 overlaps with RBM8A.
      *
+     * http://genome-euro.ucsc.edu/cgi-bin/hgc?hgsid=210987005_tfjW2xHSIt6ihH2y9UG6IxbvBx4B&g=htcGeneInGenome&i=uc009wiv.3&c=chr1&l=145509751&r=145515899&o=knownGene&table=knownGene
+     *
      * @return {@link TranscriptModel} for gene GNRHR2.
      */
     public static TranscriptModel buildTMForGNRHR2A() {
         final String KG_LINE_GNRHR2 = "uc009wiv.3\tchr1\t-\t145509751\t145515899\t145509859\t145510794\t4\t145509751,145510727,145515188,145515669,\t145510278,145510938,145515409,145515899,\tQ96P88\tuc009wiv.3";
         final String TRANSCRIPT_SEQ_GNRHR2 = "atcttcgttccctgcagaaccttgacagttgaacaagtgacctcctccagaacagatggagagtctccagaagcagaggctttagtgaacgaaattcgcaataatcagctccagatcctgaaaaggagggcgaagaatcagtggccaaagctaaccgcttcatacccacacttcatcctcctcagtttctctccaggccaccatgtctgcaggcaacggcaccccttgggatgccacctggaatatcactgttcaatggctggctgtggacatcgcatgtcggacactgatgttcctgaaactaatggccacgtattctgcagctttcctgcctgtggtcattggattggaccgccaggcagcagtactcaacccgcttggatcccgttcaggtgtaaggaaacttctgggggcagcctggggacttagtttcctgcttgccttcccccagctgttcctgttccacacggtccactgagctggcccagtccctttcactcagtgtgtcaccaaaggcagcttcaaggctcaatggcaagagaccacctataacctcttcaccttctgctgcctctttctgctgccactgactgccatggccatctgctatagccgcattgtcctcagtgtgtccaggccccagacaaggaaggggagccatgcccctgctggtgaatttgccctcccccgctcctttgacaattgtccccgtgttcgtctccgggccctgagactggccctgcttatcttgctgaccttcatcctctgctggacaccttattacctactgggtatgtggtactggttctcccccaccatgctaactgaagtccctcccagcctgagccacatccttttcctcttgggcctcctcaatgctcctttggatcctctcctctatggggccttcacccttggctgccgaagagggcaccaagaacttagtatagactcttctaaagaagggtctgggagaatgctccaagaggagattcatgcctttagacagctggaagtacaaaaaactgtgacatcaagaagggcaggagaaacaaaaggcatttctataacatctatctgatcctaacagagtatgtaggaacagaatagtaagtctttagtgccataagatcttaacatctcacttctactcctgctctcctagttccccccaaaaaagaaatactga";
-        //n.b. this sequence is the output of the 5'UTR Exons, CDS Exons and 3'UTR Exons from UCSC
-        //http://genome-euro.ucsc.edu/cgi-bin/hgc?hgsid=210987005_tfjW2xHSIt6ihH2y9UG6IxbvBx4B&g=htcGeneInGenome&i=uc009wiv.3&c=chr1&l=145509751&r=145515899&o=knownGene&table=knownGene
         return buildTranscriptModelFromUcscKnownGene("GNRHR2", "ENTREZ114814", KG_LINE_GNRHR2, TRANSCRIPT_SEQ_GNRHR2);
     }
 

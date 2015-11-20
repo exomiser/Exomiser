@@ -125,7 +125,6 @@ public class GeneReassigner {
         variantEvaluation.setAnnotations(Collections.emptyList());
     }
 
-    //Ignore this for the time being it should be public - this is an attempt to fix Jannovar/Annotation issues.
     public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(VariantEvaluation variantEvaluation) {
         List<Annotation> annotations = variantEvaluation.getAnnotations();
         Gene geneWithHighestPhenotypeScore = null;
@@ -135,7 +134,6 @@ public class GeneReassigner {
         List<String> geneSymbols = new ArrayList<>();
         List<VariantEffect> variantEffects = new ArrayList<>();
         List<Annotation> newAnnotations = new ArrayList<>();
-        Annotation bestAnnotation = null;
         for (Annotation a : annotations) {
             String geneSymbol = a.getGeneSymbol();
             geneSymbols.add(geneSymbol);
@@ -151,6 +149,8 @@ public class GeneReassigner {
                 }
             }
         }
+
+        Annotation bestAnnotation = null;
         int i = 0;
         for (String geneSymbol : geneSymbols) {
             Gene gene = allGenes.get(geneSymbol);
@@ -171,6 +171,12 @@ public class GeneReassigner {
             }
             i++;
         }
+        // Keep original annotation if possible - used in RegFilter later on and for display
+        List<Annotation> finalAnnotations = new ArrayList<>();
+        if (bestAnnotation != null){
+            finalAnnotations.add(bestAnnotation);
+        }
+
         if (prioritiserScore(currentlyAssignedGene) == bestScore) {
             //don't move the assignment if there is nowhere better to go...
             return;
@@ -183,11 +189,6 @@ public class GeneReassigner {
         */
         if (variantEvaluation.getVariantEffect() != VariantEffect.REGULATORY_REGION_VARIANT){
             variantEvaluation.setVariantEffect(variantEffectForTopHit);
-        }
-        // Keep original annotation if possible - used in RegFilter later on and for display
-        List<Annotation> finalAnnotations = new ArrayList<>();
-        if (bestAnnotation != null){   
-            finalAnnotations.add(bestAnnotation);
         }
         variantEvaluation.setAnnotations(finalAnnotations);
         variantEvaluation.setEntrezGeneId(geneWithHighestPhenotypeScore.getEntrezGeneID());

@@ -53,8 +53,9 @@ public class VariantFactoryTest {
     private final VariantFactory instance;
 
     public VariantFactoryTest() {
-        JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
+        JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
         VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        //TODO: just take JannovarData in the constructor - exposing the Jannovar library here is just a pain in the arse.
         VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
         instance = new VariantFactory(variantAnnotator);
     }
@@ -92,7 +93,7 @@ public class VariantFactoryTest {
     @Test
     public void testStreamCreateVariants_SingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
-        List<VariantEvaluation> variants = instance.buildVariantEvaluations(vcfPath).collect(toList());
+        List<VariantEvaluation> variants = instance.streamVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(this::printVariant);
         assertThat(variants.size(), equalTo(3));
 
@@ -153,7 +154,7 @@ public class VariantFactoryTest {
     public void testStreamVariantEvaluations_MultipleAlleles_DiferentSingleSampleGenotypes() {
         Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
         Stream<VariantContext> variantStream = instance.streamVariantContexts(vcfPath);
-        List<VariantEvaluation> variants = instance.buildVariantEvaluations(variantStream).collect(toList());
+        List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantStream).collect(toList());
         assertThat(variants.size(), equalTo(11));
     }
 }

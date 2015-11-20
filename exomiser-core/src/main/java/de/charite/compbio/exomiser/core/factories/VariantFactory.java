@@ -83,13 +83,13 @@ public class VariantFactory {
     }
 
     public List<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
-        Stream<VariantEvaluation> variantEvaluationStream = buildVariantEvaluations(vcfPath);
+        Stream<VariantEvaluation> variantEvaluationStream = streamVariantEvaluations(vcfPath);
         List<VariantEvaluation> variantEvaluations = variantEvaluationStream.collect(toList());
         variantEvaluationStream.close();
         return variantEvaluations;
     }
 
-    public Stream<VariantEvaluation> buildVariantEvaluations(Path vcfPath) {
+    public Stream<VariantEvaluation> streamVariantEvaluations(Path vcfPath) {
         //note - VariantContexts with with unknown references will not create a Variant.
         int[] variantRecords = {0};
         int[] unannotatedVariants = {0};
@@ -97,7 +97,7 @@ public class VariantFactory {
 
         Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath)
                 .map(logVariantContextCount(variantRecords))
-                .flatMap(buildVariantEvaluations())
+                .flatMap(streamVariantEvaluations())
                 .map(logAnnotatedVariantCount(unannotatedVariants, annotatedVariants));
 
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
@@ -111,8 +111,8 @@ public class VariantFactory {
                 });
     }
 
-    public Stream<VariantEvaluation> buildVariantEvaluations(Stream<VariantContext> variantContextStream) {
-        return variantContextStream.flatMap(buildVariantEvaluations());
+    public Stream<VariantEvaluation> streamVariantEvaluations(Stream<VariantContext> variantContextStream) {
+        return variantContextStream.flatMap(streamVariantEvaluations());
     }
 
     private Function<VariantContext, VariantContext> logVariantContextCount(int[] variantRecords) {
@@ -138,7 +138,7 @@ public class VariantFactory {
      * This means that a multi allele Variant record in a VCF can result in several VariantEvaluations - one for each
      * alternate allele.
      */
-     private Function<VariantContext, Stream<VariantEvaluation>> buildVariantEvaluations() {
+     private Function<VariantContext, Stream<VariantEvaluation>> streamVariantEvaluations() {
         return variantContext -> {
             final List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
 //            logger.info("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());

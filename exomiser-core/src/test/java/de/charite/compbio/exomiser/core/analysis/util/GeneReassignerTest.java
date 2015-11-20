@@ -225,7 +225,7 @@ public class GeneReassignerTest {
         VariantContext variantContext = multiSampleBuilder.build("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
 
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.buildVariantEvaluations(Stream.of(variantContext)).collect(toList());
+        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(Stream.of(variantContext)).collect(toList());
 
         Gene GNRHR2 = new Gene("GNRHR2", 114814);
         allGenes.put(GNRHR2.getGeneSymbol(), GNRHR2);
@@ -274,7 +274,7 @@ public class GeneReassignerTest {
         List<VariantContext> variantContexts = sampleBuilder.build(gene1VarUpstream, gene1VarUtr5, gene1VarMissense1Exon1, gene1Var1SpliceRegion1, gene1Var1Intron1, gene1VarMissense1Exon2, gene1VarUtr3);
         variantContexts.forEach(variantContext -> logger.info("{}", variantContext));
 
-        List<VariantEvaluation> variantEvaluations = variantFactory.buildVariantEvaluations(variantContexts.stream()).collect(toList());
+        List<VariantEvaluation> variantEvaluations = variantFactory.streamVariantEvaluations(variantContexts.stream()).collect(toList());
 
         variantEvaluations.forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getAnnotations()));
 
