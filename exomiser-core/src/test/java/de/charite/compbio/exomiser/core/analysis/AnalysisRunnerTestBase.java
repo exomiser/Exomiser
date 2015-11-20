@@ -1,16 +1,30 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.analysis;
 
-import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.TestJannovarDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
-import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
-import de.charite.compbio.exomiser.core.factories.VariantFactory;
+import de.charite.compbio.exomiser.core.factories.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -40,11 +54,7 @@ public abstract class AnalysisRunnerTestBase {
     final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
     final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
 
-    final JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
-    final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(testJannovarData.getRefDict(), testJannovarData.getChromosomes());
-    final VariantFactory variantFactory = new VariantFactory(new VariantAnnotator(variantContextAnnotator));
-
-    final SampleDataFactory sampleDataFactory = new SampleDataFactory(variantFactory, testJannovarData);
+    final SampleDataFactory sampleDataFactory = TestFactory.buildDefaultSampleDataFactory();
     final VariantDataService stubDataService = new VariantDataServiceStub();
     
     

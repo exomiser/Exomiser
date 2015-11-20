@@ -19,23 +19,28 @@
 
 package de.charite.compbio.exomiser.core.analysis.util;
 
+import de.charite.compbio.exomiser.core.factories.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.BasePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.reference.Strand;
+import de.charite.compbio.jannovar.reference.TranscriptModel;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.hamcrest.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 /**
@@ -214,6 +219,66 @@ public class GeneReassignerTest {
         assertThat(variant, isAssignedTo(gene1));
     }
 
+    @Test
+    public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_MissenseAnnotationsAreNotReassigned() {
+        VariantContextBuilder multiSampleBuilder = new VariantContextBuilder("Adam", "Eve");
+        VariantContext variantContext = multiSampleBuilder.build("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
+
+        VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
+        List<VariantEvaluation> variants = variantFactory.buildVariantEvaluations(Stream.of(variantContext)).collect(toList());
+
+        Gene GNRHR2 = new Gene("GNRHR2", 114814);
+        allGenes.put(GNRHR2.getGeneSymbol(), GNRHR2);
+
+        TopologicalDomain unimportantForThisTestTad = makeTad(1, 1, 20000, gene1, gene2);
+        instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, unimportantForThisTestTad);
+
+        variants.forEach(variantEvaluation -> logger.info("{} {}:{} {} {} {} {}", variantEvaluation.getGeneSymbol(), variantEvaluation.getChromosome(), variantEvaluation.getPosition(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation.getAnnotations().size()));
+        variants.forEach(variantEvaluation -> {
+            assertThat(variantEvaluation.getGeneSymbol(), equalTo("GNRHR2"));
+            assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+            instance.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
+            assertThat(variantEvaluation.getGeneSymbol(), equalTo("GNRHR2"));
+        });
+
+    }
+
+    @Test
+    public void testBuildGeneTranscriptModel() {
+        String gene1Exon1Utr5 = "ATATATATTT";
+        String gene1Exon1Cds = "ATGCCCATAGCCTGACCTAT";
+        String gene1Intron1 = "ATTACGTATA";
+        String gene1Exon2Cds = "ATGCCCATAGCCTGACCTAT";
+        String gene1Exon2Utr3 = "CCCTTTTAAAAAAAAAAAAA";
+
+        String gene1transcript = gene1Exon1Utr5 + gene1Exon1Cds + gene1Intron1 + gene1Exon2Cds + gene1Exon2Utr3;
+
+        TranscriptModel gene1TranscriptModel = new GeneTranscriptModelBuilder("GENE1", "ENTREZ1111", "transcript1", 1, Strand.FWD, gene1transcript)
+                .buildTxRegion(100, 200)
+                .buildCdsRegion(125, 175)
+                .addExon(115, 135)
+                .addExon(156, 196)
+                .build();
+
+        VariantFactory variantFactory = TestFactory.buildVariantFactory(gene1TranscriptModel);
+
+        VariantContextBuilder sampleBuilder = new VariantContextBuilder("Sample");
+        String gene1VarUpstream = "1 50 . A T 0 . GENE=GENE1 GT 0/1";
+        String gene1VarUtr5 = "1 117 . A T 0 . GENE=GENE1 GT 0/1";
+        String gene1VarMissense1Exon1 = "1 129 . C A 0 . GENE=GENE1 GT 0/1";
+        String gene1Var1SpliceRegion1 = "1 149 . A C 0 . GENE=GENE1 GT 0/1";
+        String gene1Var1Intron1 = "1 151 . G C 0 . GENE=GENE1 GT 0/1";
+        String gene1VarMissense1Exon2 = "1 160 . C T 0 . GENE=GENE1 GT 0/1";
+        String gene1VarUtr3 = "1 181 . A TGTT 0 . GENE=GENE1 GT 0/1";
+
+        List<VariantContext> variantContexts = sampleBuilder.build(gene1VarUpstream, gene1VarUtr5, gene1VarMissense1Exon1, gene1Var1SpliceRegion1, gene1Var1Intron1, gene1VarMissense1Exon2, gene1VarUtr3);
+        variantContexts.forEach(variantContext -> logger.info("{}", variantContext));
+
+        List<VariantEvaluation> variantEvaluations = variantFactory.buildVariantEvaluations(variantContexts.stream()).collect(toList());
+
+        variantEvaluations.forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getAnnotations()));
+
+    }
 //    gene lies within two overlapping TADs
 
     //variant lies two overlapping TADs, but the gene is in one only

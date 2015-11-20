@@ -83,13 +83,13 @@ public class VariantFactory {
     }
 
     public List<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
-        Stream<VariantEvaluation> variantEvaluationStream = streamVariantEvaluations(vcfPath);
+        Stream<VariantEvaluation> variantEvaluationStream = buildVariantEvaluations(vcfPath);
         List<VariantEvaluation> variantEvaluations = variantEvaluationStream.collect(toList());
         variantEvaluationStream.close();
         return variantEvaluations;
     }
 
-    public Stream<VariantEvaluation> streamVariantEvaluations(Path vcfPath) {
+    public Stream<VariantEvaluation> buildVariantEvaluations(Path vcfPath) {
         //note - VariantContexts with with unknown references will not create a Variant.
         int[] variantRecords = {0};
         int[] unannotatedVariants = {0};
@@ -109,6 +109,10 @@ public class VariantFactory {
                         logger.info("Processed {} variant records into {} single allele variants", variantRecords[0], annotatedVariants[0]);
                     }
                 });
+    }
+
+    public Stream<VariantEvaluation> buildVariantEvaluations(Stream<VariantContext> variantContextStream) {
+        return variantContextStream.flatMap(buildVariantEvaluations());
     }
 
     private Function<VariantContext, VariantContext> logVariantContextCount(int[] variantRecords) {
@@ -134,7 +138,7 @@ public class VariantFactory {
      * This means that a multi allele Variant record in a VCF can result in several VariantEvaluations - one for each
      * alternate allele.
      */
-    private Function<VariantContext, Stream<VariantEvaluation>> buildVariantEvaluations() {
+     private Function<VariantContext, Stream<VariantEvaluation>> buildVariantEvaluations() {
         return variantContext -> {
             final List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
 //            logger.info("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());

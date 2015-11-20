@@ -24,7 +24,6 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
@@ -34,18 +33,16 @@ import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 
-import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import org.junit.Before;
-import org.junit.Ignore;
+
 import org.junit.Test;
 
 /**
@@ -53,20 +50,12 @@ import org.junit.Test;
  */
 public class VariantFactoryTest {
 
-    private VariantFactory instance;
-
-    private final JannovarData jannovarData;
-    private final VariantContextAnnotator variantContextAnnotator;
-    private final VariantAnnotator variantAnnotator;
+    private final VariantFactory instance;
 
     public VariantFactoryTest() {
-        jannovarData = new TestJannovarDataFactory().getJannovarData();
-        variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
-        variantAnnotator = new VariantAnnotator(variantContextAnnotator);
-    }
-
-    @Before
-    public void setUp() {
+        JannovarData jannovarData = new TestJannovarDataFactory().getJannovarData();
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
         instance = new VariantFactory(variantAnnotator);
     }
 
@@ -103,7 +92,7 @@ public class VariantFactoryTest {
     @Test
     public void testStreamCreateVariants_SingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
-        List<VariantEvaluation> variants = instance.streamVariantEvaluations(vcfPath).collect(toList());
+        List<VariantEvaluation> variants = instance.buildVariantEvaluations(vcfPath).collect(toList());
         variants.forEach(this::printVariant);
         assertThat(variants.size(), equalTo(3));
 
@@ -160,4 +149,11 @@ public class VariantFactoryTest {
         }
     }
 
+    @Test
+    public void testStreamVariantEvaluations_MultipleAlleles_DiferentSingleSampleGenotypes() {
+        Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
+        Stream<VariantContext> variantStream = instance.streamVariantContexts(vcfPath);
+        List<VariantEvaluation> variants = instance.buildVariantEvaluations(variantStream).collect(toList());
+        assertThat(variants.size(), equalTo(11));
+    }
 }

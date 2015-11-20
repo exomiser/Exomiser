@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
@@ -37,10 +56,9 @@ public class TestVariantFactory {
     private final VariantFactory variantFactory;
 
     public TestVariantFactory() {
-        JannovarData testJannovarData = new TestJannovarDataFactory().getJannovarData();
+        JannovarData testJannovarData = TestFactory.buildDefaultJannovarData();
         this.refDict = testJannovarData.getRefDict();
-        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(testJannovarData.getRefDict(), testJannovarData.getChromosomes());
-        this.variantFactory = new VariantFactory(new VariantAnnotator(variantContextAnnotator));
+        this.variantFactory = TestFactory.buildDefaultVariantFactory();
     }
 
     /**
@@ -57,34 +75,38 @@ public class TestVariantFactory {
      * @return {@link Variant} with the setting
      */
     public VariantEvaluation constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
+        VariantContext variantContext = constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
+        VariantAnnotations annotations = buildVariantAnnotations(chrom, pos, ref, alt);
+
+        return variantFactory.buildAnnotatedVariantEvaluation(variantContext, altAlleleID, annotations);
+    }
+
+    private VariantAnnotations buildVariantAnnotations(int chrom, int pos, String ref, String alt) {
         // build annotation list (for the one transcript we have below only)
-        final GenomePosition gPos = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ZERO_BASED);
-        final GenomeVariant change = new GenomeVariant(gPos, ref, alt);
+        final GenomePosition genomePosition = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ZERO_BASED);
+        final GenomeVariant genomeVariant = new GenomeVariant(genomePosition, ref, alt);
         final AnnotationBuilderDispatcher dispatcher;
         final TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
         final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
-        if (tmFGFR2.getTXRegion().contains(gPos)) {
-            dispatcher = new AnnotationBuilderDispatcher(tmFGFR2, change, new AnnotationBuilderOptions());
-        } else if (tmSHH.getTXRegion().contains(gPos)) {
-            dispatcher = new AnnotationBuilderDispatcher(tmSHH, change, new AnnotationBuilderOptions());
+        if (tmFGFR2.getTXRegion().contains(genomePosition)) {
+            dispatcher = new AnnotationBuilderDispatcher(tmFGFR2, genomeVariant, new AnnotationBuilderOptions());
+        } else if (tmSHH.getTXRegion().contains(genomePosition)) {
+            dispatcher = new AnnotationBuilderDispatcher(tmSHH, genomeVariant, new AnnotationBuilderOptions());
         } else {
-            dispatcher = new AnnotationBuilderDispatcher(null, change, new AnnotationBuilderOptions());
+            dispatcher = new AnnotationBuilderDispatcher(null, genomeVariant, new AnnotationBuilderOptions());
         }
         final VariantAnnotations annotations;
         try {
             Annotation anno = dispatcher.build();
             if (anno != null) {
-                annotations = new VariantAnnotations(change, Arrays.asList(anno));
+                annotations = new VariantAnnotations(genomeVariant, Arrays.asList(anno));
             } else {
-                annotations = new VariantAnnotations(change, Arrays.<Annotation>asList());
+                annotations = new VariantAnnotations(genomeVariant, Arrays.<Annotation>asList());
             }
         } catch (InvalidGenomeChange e) {
             throw new RuntimeException("Problem building annotation", e);
         }
-                
-        VariantContext variantContext = constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
-        
-        return variantFactory.buildAnnotatedVariantEvaluation(variantContext, altAlleleID, annotations);
+        return annotations;
     }
 
     public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {
