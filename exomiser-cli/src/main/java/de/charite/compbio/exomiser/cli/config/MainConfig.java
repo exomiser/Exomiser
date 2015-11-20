@@ -242,9 +242,7 @@ public class MainConfig {
     @Bean
     public VariantFactory variantFactory() {
         JannovarData jannovarData = jannovarData();
-        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
-        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
-        return new VariantFactory(variantAnnotator);
+        return new VariantFactory(jannovarData);
     }
 
     @Bean

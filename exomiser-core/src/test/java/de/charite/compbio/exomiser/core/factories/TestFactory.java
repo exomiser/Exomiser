@@ -43,8 +43,7 @@ public class TestFactory {
     private static final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
 
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
-    private static final VariantContextAnnotator DEFAULT_VARIANT_CONTEXT_ANNOTATOR = new VariantContextAnnotator(DEFAULT_JANNOVAR_DATA.getRefDict(), DEFAULT_JANNOVAR_DATA.getChromosomes());
-    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(new VariantAnnotator(DEFAULT_VARIANT_CONTEXT_ANNOTATOR));
+    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(DEFAULT_JANNOVAR_DATA);
     private static final SampleDataFactory DEFAULT_SAMPLE_DATA_FACTORY = new SampleDataFactory(buildDefaultVariantFactory(), DEFAULT_JANNOVAR_DATA);
 
     private TestFactory() {
@@ -72,13 +71,11 @@ public class TestFactory {
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {
         final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
-        return new VariantFactory(new VariantAnnotator(variantContextAnnotator));
+        return new VariantFactory(jannovarData);
     }
 
     public static VariantFactory buildVariantFactory(JannovarData jannovarData) {
-        final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
-        return new VariantFactory(new VariantAnnotator(variantContextAnnotator));
+        return new VariantFactory(jannovarData);
     }
 
     public static SampleDataFactory buildSampleDataFactory(TranscriptModel... transcriptModels) {

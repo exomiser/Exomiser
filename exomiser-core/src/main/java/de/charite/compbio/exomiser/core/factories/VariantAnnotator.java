@@ -66,6 +66,10 @@ public class VariantAnnotator {
         this.annotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
     }
 
+    public VariantContextAnnotator getVariantContextAnnotator() {
+        return annotator;
+    }
+
     /**
      * Returns a list of variants of known reference. If a VariantContext has no
      * know reference on the genome an empty list will be returned.

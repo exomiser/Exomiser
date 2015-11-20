@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -66,6 +67,11 @@ public class VariantFactoryTest {
         System.out.printf("%s %s %s %s %s %s %s offExome=%s gene=%s %s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt(), variant.getGenotypeAsString(), genotypes, genotypeTypes, variant.isOffExome(), variant.getGeneSymbol(), variant.getVariantContext());
     }
 
+    @Test
+    public void alternateConstructor() {
+        VariantFactory alternateFactory = new VariantFactory(TestFactory.buildDefaultJannovarData());
+        assertThat(alternateFactory, notNullValue());
+    }
 
     @Test(expected = TribbleException.class)
     public void testCreateVariantContexts_NonExistentFile() {

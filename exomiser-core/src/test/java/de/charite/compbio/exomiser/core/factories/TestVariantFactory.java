@@ -55,6 +55,9 @@ public class TestVariantFactory {
     private final ReferenceDictionary refDict = TestFactory.getDefaultRefDict();
     private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
+    private final TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
+    private final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
+
     /**
      * Construct a new {@link Variant} object with the given values.
      *
@@ -80,8 +83,6 @@ public class TestVariantFactory {
         final GenomePosition genomePosition = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ZERO_BASED);
         final GenomeVariant genomeVariant = new GenomeVariant(genomePosition, ref, alt);
         final AnnotationBuilderDispatcher dispatcher;
-        final TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
-        final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
         if (tmFGFR2.getTXRegion().contains(genomePosition)) {
             dispatcher = new AnnotationBuilderDispatcher(tmFGFR2, genomeVariant, new AnnotationBuilderOptions());
         } else if (tmSHH.getTXRegion().contains(genomePosition)) {
