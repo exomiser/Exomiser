@@ -35,37 +35,39 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
  */
 public class TestFactory {
 
-    private static final ReferenceDictionary REF_DICT = HG19RefDictBuilder.build();
+    private static final ReferenceDictionary DEFAULT_REF_DICT = HG19RefDictBuilder.build();
 
     private static final TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
     private static final TranscriptModel tmGNRHR2A = TestTranscriptModelFactory.buildTMForGNRHR2A();
     private static final TranscriptModel tmRBM8A = TestTranscriptModelFactory.buildTMForRBM8A();
     private static final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
 
-    private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
+    private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
+    private static final VariantContextAnnotator DEFAULT_VARIANT_CONTEXT_ANNOTATOR = new VariantContextAnnotator(DEFAULT_JANNOVAR_DATA.getRefDict(), DEFAULT_JANNOVAR_DATA.getChromosomes());
+    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(new VariantAnnotator(DEFAULT_VARIANT_CONTEXT_ANNOTATOR));
+    private static final SampleDataFactory DEFAULT_SAMPLE_DATA_FACTORY = new SampleDataFactory(buildDefaultVariantFactory(), DEFAULT_JANNOVAR_DATA);
 
     private TestFactory() {
         //this class should be used in a static context.
     }
 
-    public ReferenceDictionary getRefDict() {
-        return REF_DICT;
+    public static ReferenceDictionary getDefaultRefDict() {
+        return DEFAULT_REF_DICT;
     }
 
     public static JannovarData buildDefaultJannovarData() {
         return DEFAULT_JANNOVAR_DATA;
     }
     public static VariantFactory buildDefaultVariantFactory() {
-        final VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(DEFAULT_JANNOVAR_DATA.getRefDict(), DEFAULT_JANNOVAR_DATA.getChromosomes());
-        return new VariantFactory(new VariantAnnotator(variantContextAnnotator));
+        return DEFAULT_VARIANT_FACTORY;
     }
 
     public static SampleDataFactory buildDefaultSampleDataFactory() {
-        return new SampleDataFactory(buildDefaultVariantFactory(), DEFAULT_JANNOVAR_DATA);
+        return DEFAULT_SAMPLE_DATA_FACTORY;
     }
 
     public static JannovarData buildJannovarData(TranscriptModel... transcriptModels) {
-        return new JannovarData(REF_DICT, ImmutableList.copyOf(transcriptModels));
+        return new JannovarData(DEFAULT_REF_DICT, ImmutableList.copyOf(transcriptModels));
     }
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {

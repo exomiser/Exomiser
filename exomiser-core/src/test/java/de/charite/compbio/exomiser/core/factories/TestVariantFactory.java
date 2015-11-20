@@ -52,14 +52,8 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
  */
 public class TestVariantFactory {
 
-    private final ReferenceDictionary refDict;
-    private final VariantFactory variantFactory;
-
-    public TestVariantFactory() {
-        JannovarData testJannovarData = TestFactory.buildDefaultJannovarData();
-        this.refDict = testJannovarData.getRefDict();
-        this.variantFactory = TestFactory.buildDefaultVariantFactory();
-    }
+    private final ReferenceDictionary refDict = TestFactory.getDefaultRefDict();
+    private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
     /**
      * Construct a new {@link Variant} object with the given values.

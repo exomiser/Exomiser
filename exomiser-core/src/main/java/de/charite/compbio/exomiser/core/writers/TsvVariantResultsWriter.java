@@ -141,7 +141,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         List<Object> record = new ArrayList<>();
         VariantContext variantContext = ve.getVariantContext();
         // CHROM
-        record.add(variantContext.getChr());
+        record.add(variantContext.getContig());
         // POS
         record.add(variantContext.getStart());
         // REF

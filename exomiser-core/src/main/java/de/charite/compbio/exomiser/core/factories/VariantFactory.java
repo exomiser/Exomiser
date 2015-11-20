@@ -188,7 +188,7 @@ public class VariantFactory {
      */
     private VariantEvaluation buildUnknownVariantEvaluation(VariantContext variantContext, int altAlleleId) {
         // Build the GenomeChange object.
-        final String chromosomeName = variantContext.getChr();
+        final String chromosomeName = variantContext.getContig();
         final String ref = variantContext.getReference().getBaseString();
         final String alt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
         final int pos = variantContext.getStart();

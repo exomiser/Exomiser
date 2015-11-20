@@ -84,7 +84,7 @@ public class VariantFactoryTest {
     public void testStreamVariantContexts_SingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         List<VariantContext> variants = instance.streamVariantContexts(vcfPath)
-                .filter(variantContext -> (variantContext.getChr().equals("1")))
+                .filter(variantContext -> (variantContext.getContig().equals("1")))
                 .collect(toList());
 
         assertThat(variants.size(), equalTo(3));
