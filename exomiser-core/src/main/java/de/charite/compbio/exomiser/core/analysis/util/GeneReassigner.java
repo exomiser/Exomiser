@@ -128,7 +128,14 @@ public class GeneReassigner {
         Gene geneWithHighestPhenotypeScore = null;
         VariantEffect variantEffectForTopHit = null;
         Gene currentlyAssignedGene = allGenes.get(variantEvaluation.getGeneSymbol());
-        float bestScore = prioritiserScore(currentlyAssignedGene);
+        float bestScore = 0f;
+        if (currentlyAssignedGene == null){
+            // very rarely a variant just has a single annotation with no gene i.e. geneSymbol is .
+            return;
+        }
+        else {    
+            bestScore = prioritiserScore(currentlyAssignedGene);
+        }
         List<String> geneSymbols = new ArrayList<>();
         List<VariantEffect> variantEffects = new ArrayList<>();
         List<Annotation> newAnnotations = new ArrayList<>();
