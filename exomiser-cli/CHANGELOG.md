@@ -1,5 +1,10 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 7.2.0 2015-11-25
+- Performance in identification of causal regulatory variants as the top candidate of simulated whole genomes now improved to over 80%.
+- Enhancer variants are assigned to TADs
+- Variant gene assignment improvements and bug-fixes.
+
 ## 7.1.0 2015-10-21
 - Variants in FANTOM5 enhancer and ENSEMBLE regulatory regions are now all marked REGULATORY_REGION_VARIANT even without
  the regulatoryFeatureFilter being run.

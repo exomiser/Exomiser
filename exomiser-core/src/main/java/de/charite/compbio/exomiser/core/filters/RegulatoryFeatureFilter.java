@@ -22,6 +22,7 @@ package de.charite.compbio.exomiser.core.filters;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,7 @@ public class RegulatoryFeatureFilter implements VariantFilter {
                 return failedFilterResult;
             }
             int dist = getDistFromNearestGene(variantEvaluation);
-            if (dist > 0 && dist < 20000){
+            if (dist >= 0 && dist < 20000){
                 return passedFilterResult;
             }
             return failedFilterResult;

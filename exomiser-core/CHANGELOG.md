@@ -1,5 +1,12 @@
 # The Exomiser - Core Library Changelog
 
+## 7.2.0 2015-11-25
+- Enabled TAD code in AbstractAnalysisRunner
+- Added isNonCodingVariant() method to Variant interface.
+- Deprecated VariantAnnotator and VariantFactory constructor which used this.
+- Added new constructor for VariantFactory which takes a JannovarData object.
+- Substantial tidy-up of test helper code with help of new TestFactory, GeneTranscripModelBuilder and VariantContextBuilder classes.
+
 ## 7.1.0 2015-10-21
 - Added new ChromosomalRegion interface implemented by TopologicalDomain and RegulatoryRegion classes.
 - Added new ChromosomalRegionIndex class for providing extremely fast lookups of variants in ChromosomalRegions.

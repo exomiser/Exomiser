@@ -31,6 +31,7 @@ import java.util.Iterator;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
@@ -50,7 +51,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
+    protected Predicate<VariantEvaluation> isAssociatedWithKnownGene(Map<String, Gene> genes) {
         return variantEvaluation -> {
             //Only load the variant if the gene has passed the other filters
             //this should drastically reduce the number of collected variants
@@ -78,27 +79,25 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     protected List<Gene> getFinalGeneList(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
-                .filter(gene -> !gene.getVariantEvaluations().isEmpty())
+                .filter(geneHasVariants())
                 .filter(Gene::passedFilters)
-                .map(gene -> {
-                    removeFailedVariants(gene);
-                    return gene;
-                })
+                .map(removeFailedVariants())
                 .collect(toList());
     }
 
-    private void removeFailedVariants(Gene gene) {
-        Iterator<VariantEvaluation> variantIterator = gene.getVariantEvaluations().iterator();
-        while (variantIterator.hasNext()) {
-            VariantEvaluation variant = variantIterator.next();
-            if (failedFilters(variant)) {
-                variantIterator.remove();
-            }
-        }
+    private Predicate<Gene> geneHasVariants() {
+        return gene -> !gene.getVariantEvaluations().isEmpty();
     }
 
-    private static boolean failedFilters(VariantEvaluation variant) {
-        return !variant.passedFilters();
+    private Function<Gene, Gene> removeFailedVariants() {
+        return gene -> {
+            gene.getVariantEvaluations().removeIf(variantFailedFilters());
+            return gene;
+        };
+    }
+
+    private Predicate<VariantEvaluation> variantFailedFilters() {
+        return variantEvaluation -> !variantEvaluation.passedFilters();
     }
     
     @Override

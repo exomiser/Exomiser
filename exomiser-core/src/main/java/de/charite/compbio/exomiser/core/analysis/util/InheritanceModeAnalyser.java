@@ -137,14 +137,15 @@ public class InheritanceModeAnalyser {
     }
 
     private void setVariantEvaluationInheritanceModes(Multimap<String, VariantEvaluation> geneVariants, List<VariantContext> compatibleVariants) {
-        for (VariantContext variantContext : compatibleVariants) {
-            //using toStringWithoutGenotypes as the genotype string gets changed and VariantContext does not override equals or hashcode so this cannot be used as a key
-            Collection<VariantEvaluation> variants = geneVariants.get(toKeyValue(variantContext));
-            for (VariantEvaluation variant : variants) {
-                variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
-                logger.debug("{}: {}", variant.getInheritanceModes(), variant);
-            }
-        }
+        compatibleVariants.stream()
+                .forEach(variantContext -> {
+                    //using toStringWithoutGenotypes as the genotype string gets changed and VariantContext does not override equals or hashcode so this cannot be used as a key
+                    Collection<VariantEvaluation> variants = geneVariants.get(toKeyValue(variantContext));
+                    variants.forEach(variant -> {
+                        variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
+                        logger.debug("{}: {}", variant.getInheritanceModes(), variant);
+                    });
+                });
     }
 
     private Genotype getIndividualGenotype(Allele alternateAllele, List<Allele> alleles) {

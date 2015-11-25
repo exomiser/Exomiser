@@ -44,7 +44,7 @@ class SparseAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
+    protected Predicate<VariantEvaluation> isAssociatedWithKnownGene(Map<String, Gene> genes) {
         return variantEvaluation -> genes.containsKey(variantEvaluation.getGeneSymbol());
     }
 

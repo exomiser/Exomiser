@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.filters;
 
 import java.lang.*;
@@ -14,15 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * VariantFilter variants according to whether they are on target (i.e., located
- * within an exon or splice junction) or not. This runFilter also has the side
- * effect of calculating the counts of the various variant classes. The class
- * uses the annotations made by classes from the {@code jannovar.annotation}
- * package etc.
- * <P>
- * Note that this class does not require a corresponding
- * {@link exomizer.filter.Triage Triage} object, because variants that do not
- * pass the runFilter are simply removed.
+ * Filters variants according to their {@link VariantEffect}. The filter will mark variants as failed if they are contained
+ * in the set of specified {@link VariantEffect}.
  *
  * @author Peter N Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>

@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -154,31 +173,45 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @return
      */
     protected float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
-        List<Float> filterScores = new ArrayList<>();
+        List<Float> hetFilterScores = new ArrayList<>();
+        List<Float> homFilterScores = new ArrayList<>();
 
         for (VariantEvaluation ve : variantEvaluations) {
-            filterScores.add(ve.getVariantScore());
-            if (variantIsHomozygous(ve)) {
-                //Add the value a second time
-                filterScores.add(ve.getVariantScore());
+            // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
+            // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
+            if (variantIsHomozygousAlt(ve)){
+                homFilterScores.add(ve.getVariantScore());
+            }
+            else if (variantIsHeterozygous(ve)){
+                hetFilterScores.add(ve.getVariantScore());
             }
         }
         //maybe the variants were all crappy and nothing passed....
-        if (filterScores.isEmpty()) {
+        if (hetFilterScores.isEmpty() && homFilterScores.isEmpty()) {
             return 0f;
         }
-        sortFilterScoresInDecendingOrder(filterScores);
-        if (filterScores.size() < 2) {
-            //Less than two variants, cannot be AR
-            return filterScores.get(0);
+        sortFilterScoresInDecendingOrder(homFilterScores);
+        sortFilterScoresInDecendingOrder(hetFilterScores);
+
+        float bestCmpHetScore = 0f;
+        float bestHomScore = 0f;
+        if (hetFilterScores.size() >= 2) {
+            bestCmpHetScore = calculateAverageOfFirstTwoScores(hetFilterScores);
         }
-        return calculateAverageOfFirstTwoScores(filterScores);
+        if (!homFilterScores.isEmpty()){
+            bestHomScore = homFilterScores.get(0);
+        }
+        return Float.max(bestHomScore, bestCmpHetScore);
+    }
+    
+    private boolean variantIsHomozygousAlt(VariantEvaluation ve) {
+        return ve.getVariantContext().getGenotype(0).isHomVar();
     }
 
-    private boolean variantIsHomozygous(VariantEvaluation ve) {
-        return ve.getVariantContext().getGenotype(0).isHom();
+    private boolean variantIsHeterozygous(VariantEvaluation ve) {
+        return ve.getVariantContext().getGenotype(0).isHet();
     }
-
+    
     private void sortFilterScoresInDecendingOrder(List<Float> filterScores) {
         Collections.sort(filterScores, Collections.reverseOrder());
     }

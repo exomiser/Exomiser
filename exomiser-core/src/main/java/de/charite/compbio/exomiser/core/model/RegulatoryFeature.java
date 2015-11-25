@@ -79,7 +79,7 @@ public class RegulatoryFeature implements ChromosomalRegion {
         int result = chromosome;
         result = 31 * result + start;
         result = 31 * result + end;
-        result = 31 * result + featureType.hashCode();
+        result = 31 * result + (featureType != null ? featureType.hashCode() : 0);
         return result;
     }
 

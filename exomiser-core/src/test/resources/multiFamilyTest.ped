@@ -1,0 +1,10 @@
+1	Eva	0	0	2	1
+1	Adam	0	0	1	1
+1	Cain	Adam	Eva	1	1
+1	Abel	Adam	Eva	1	1
+1	Seth	Adam	Eva	1	2
+Simpson	Marge	0	0	2	1
+Simpson	Homer	0	0	1	1
+Simpson	Bart	Homer	Marge	1	2
+Simpson	Lisa	Homer	Marge	2	1
+Simpson	Maggie	Homer	Marge	2	1

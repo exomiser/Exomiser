@@ -1,6 +1,6 @@
 # The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
-## *New!* Now performs genome-wide prioritisation including non-coding, regulatory variants.
+## *New!* Can now perform genome-wide prioritisation including non-coding, regulatory variants (aka. Genomiser).
 See [Analysis file](#analysis_file) section on running analysis yml files for more information and the
 test-analysis-genome.yml file located in the base install directory.
 
@@ -9,6 +9,7 @@ test-analysis-genome.yml file located in the base install directory.
  - For genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.
  - Any 64-bit operating system
  - Java 8 or above
+ - At least 50GB free disk space (SSD preferred for best performance)
  - An internet connection is not required to run the Exomiser, although network access will be required if accessing a
   networked database (optional).
  - By default the Exomiser is completely self-contained and is able to run on standard consumer laptops.
@@ -20,6 +21,30 @@ test-analysis-genome.yml file located in the base install directory.
 3. Unzip in the exomiser-cli-${project.version}/data directory
 4. mv exomiser-${project.version}.h2.db exomiser.h2.db
 5. Run the example commands below from the exomiser-cli-${project.version} directory
+
+Windows users should consider using 7-Zip for unzipping .gz files. 
+
+The following shell script should work:
+    
+    #download, verify and extract the distribution 
+    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-distribution.zip
+    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-distribution.zip.sha256    
+    sha256sum -c exomiser-cli-${project.version}-distribution.sha256
+    unzip exomiser-cli-${project.version}-distribution.zip
+    
+    #dowload and unzip the H2 database, then move it to the installation data directory
+    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/h2_db_dumps/exomiser-${project.version}.h2.db.gz
+    gunzip exomiser-${project.version}.h2.db.gz
+    mv exomiser-${project.version}.h2.db exomiser-cli-${project.version}/data/exomiser.h2.db
+    
+    #run a test genomiser analysis
+    cd exomiser-cli-${project.version}
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+
+This script will download, verify and extract the exomiser files to a directory called 'exomiser-cli-${project.version}' in the users current directory.
+It will then change to the the exomiser directory and run the analysis contained in the file 'NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml'. 
+This file is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
+OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952) 
 
 ## Alternative set-up
 
@@ -70,6 +95,7 @@ If you want to run from a Postgres database rather than the default H2 embedded 
     --output-format VCF (VCF summary)
 
 Output options can be combined, for example:
+
     --output-format TSV-GENE,VCF (TSV-GENE and VCF)
     --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
 
@@ -81,7 +107,8 @@ and pathogenicity data sources and the ability to tweak the order that analysis 
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
 
 These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
-a 4.4 million variant analysis requires approximately 12GB RAM.
+a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be substantially reduced by 
+setting the analysisMode option to PASS_ONLY.  
 
 Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
 
@@ -107,3 +134,38 @@ Settings can also be run in batch mode. Simply put the path to each settings fil
 
     java -jar exomiser-cli-${project.version}.jar --help
 
+## Troubleshooting
+
+### java.lang.UnsupportedClassVersionError:
+  If you get the following error message:
+  
+    Exception in thread "main" java.lang.UnsupportedClassVersionError:
+    de/charite/compbio/exomiser/cli/Main : Unsupported major.minor version
+
+  You are running an older unsupported version of Java. Exomiser requires java version 8 or higher. This can be checked by running:
+    
+    java -version
+  
+  You should see something like this in response:
+    
+    java version "1.8.0_65"
+    
+  versions lower than 1.8 (e.g. 1.5, 1.6 or 1.7) will not run exomiser so you will need to install the latest java version.
+  
+### Zip file reported as too big or corrupted
+  If, when running unzip 'exomiser-cli-${project.version}-distribution.zip', you see the following:
+     
+    error:  Zip file too big (greater than 4294959102 bytes)
+    Archive:  exomiser-cli-${project.version}-distribution.zip
+    warning [exomiser-cli-${project.version}-distribution.zip]:  9940454202 extra bytes at beginning or within zipfile
+      (attempting to process anyway)
+    error [exomiser-cli-${project.version}-distribution.zip]:  start of central directory not found;
+      zipfile corrupt.
+      (please check that you have transferred or created the zipfile in the
+      appropriate BINARY mode and that you have compiled UnZip properly)
+
+  Check that your unzip version was compiled with LARGE_FILE_SUPPORT and ZIP64_SUPPORT. This is standard with UnZip 6.00 and can be checked by typing:
+     
+    unzip -version
+    
+  This shouldn't be an issue with more recent linux distributions. 

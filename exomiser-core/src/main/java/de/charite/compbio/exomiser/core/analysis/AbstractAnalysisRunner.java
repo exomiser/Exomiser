@@ -54,6 +54,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private final VariantDataService variantDataService;
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
+    private ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex;
 
     public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.sampleDataFactory = sampleDataFactory;
@@ -123,7 +124,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
-//        GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis);
+        GeneReassigner geneReassigner = createNonCodingVariantGeneReassigner(analysis, allGenes);
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
 
         List<VariantEvaluation> filteredVariants;
@@ -132,9 +133,9 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
             filteredVariants = variantStream
                     .map(logLoadedAndPassedVariants(streamed, passed))
-                    //TODO: put back in once this is sorted properly
-//                    .map(reassignNonCodingVariantToBestGene(allGenes, geneReassigner))
-                    .filter(isInKnownGene(allGenes))
+                    .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(allGenes, geneReassigner))
+                    .map(reassignNonCodingVariantToBestGeneInTad(allGenes, geneReassigner))
+                    .filter(isAssociatedWithKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters))
                     .map(logPassedVariants(passed))
                     .collect(toList());
@@ -143,10 +144,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return filteredVariants;
     }
 
-    private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis) {
+    private GeneReassigner createNonCodingVariantGeneReassigner(Analysis analysis, Map<String, Gene> allGenes) {
         ChromosomalRegionIndex<TopologicalDomain> tadIndex = new ChromosomalRegionIndex<>(variantDataService.getTopologicallyAssociatedDomains());
         PriorityType mainPriorityType = analysis.getMainPrioritiserType();
-        return new GeneReassigner(tadIndex, mainPriorityType);
+        return new GeneReassigner(mainPriorityType, allGenes, tadIndex);
     }
 
     private List<VariantFilter> getVariantFilterSteps(List<AnalysisStep> analysisSteps) {
@@ -171,9 +172,19 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         };
     }
 
-    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGene(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+        //todo: this won't function correctly if run before a prioritiser has been run
         return variantEvaluation -> {
-            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation, genes);
+            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
+            return variantEvaluation;
+        };
+    }
+    
+    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(Map<String, Gene> genes, GeneReassigner geneReassigner) {
+        return variantEvaluation -> {
+            if (variantEvaluation.isNonCodingVariant()){
+                geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
+            }
             return variantEvaluation;
         };
     }
@@ -186,7 +197,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @param genes
      * @return
      */
-    abstract Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes);
+    abstract Predicate<VariantEvaluation> isAssociatedWithKnownGene(Map<String, Gene> genes);
 
     /**
      * Defines the filtering behaviour of the runner when performing the initial load and filter of variants. Allows the
@@ -211,7 +222,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
         VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
         List<RegulatoryFeature> regulatoryFeatures = variantDataService.getRegulatoryFeatures();
-        final ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
+        this.regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
         logger.info("Loaded {} regulatory regions", regulatoryFeatures.size());
         //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
         return variantFactory.streamVariantEvaluations(vcfPath).map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
