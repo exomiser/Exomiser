@@ -36,6 +36,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -79,8 +80,10 @@ public class RegulatoryFeatureDao {
             int end = rs.getInt("end");
             String featureType = rs.getString("feature_type");
             FeatureType type = convertToFeatureType(featureType);
-            RegulatoryFeature regulatoryFeature = new RegulatoryFeature(chr, start, end, type);
-            regulatoryFeatures.add(regulatoryFeature);
+            if (type != FeatureType.UNKNOWN) {
+                RegulatoryFeature regulatoryFeature = new RegulatoryFeature(chr, start, end, type);
+                regulatoryFeatures.add(regulatoryFeature);
+            }
         }
         return regulatoryFeatures;
     }

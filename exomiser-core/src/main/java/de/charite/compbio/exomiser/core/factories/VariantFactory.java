@@ -24,16 +24,21 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.htsjdk.InvalidCoordinatesException;
+import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.vcf.VCFFileReader;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -43,6 +48,7 @@ import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static java.util.stream.Collectors.toList;
 
@@ -55,14 +61,24 @@ public class VariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
 
-    private final VariantAnnotator variantAnnotator;
+    private final VariantContextAnnotator variantAnnotator;
 
     //in cases where a variant cannot be positioned on a chromosome we're going to use 0 in order to fulfil the
     //requirement of a variant having an integer chromosome
     private final int UNKNOWN_CHROMOSOME = 0;
 
+    /**
+     * @deprecated Use alternative constructor requiring JannovarData
+     * @param variantAnnotator
+     */
+    @Deprecated
     public VariantFactory(VariantAnnotator variantAnnotator) {
-        this.variantAnnotator = variantAnnotator;
+        this.variantAnnotator = variantAnnotator.getVariantContextAnnotator();
+    }
+
+    @Autowired
+    public VariantFactory(JannovarData jannovarData) {
+        this.variantAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
     }
 
     public List<VariantContext> createVariantContexts(Path vcfPath) {
@@ -97,7 +113,7 @@ public class VariantFactory {
 
         Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath)
                 .map(logVariantContextCount(variantRecords))
-                .flatMap(buildVariantEvaluations())
+                .flatMap(streamVariantEvaluations())
                 .map(logAnnotatedVariantCount(unannotatedVariants, annotatedVariants));
 
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
@@ -109,6 +125,10 @@ public class VariantFactory {
                         logger.info("Processed {} variant records into {} single allele variants", variantRecords[0], annotatedVariants[0]);
                     }
                 });
+    }
+
+    public Stream<VariantEvaluation> streamVariantEvaluations(Stream<VariantContext> variantContextStream) {
+        return variantContextStream.flatMap(streamVariantEvaluations());
     }
 
     private Function<VariantContext, VariantContext> logVariantContextCount(int[] variantRecords) {
@@ -134,15 +154,34 @@ public class VariantFactory {
      * This means that a multi allele Variant record in a VCF can result in several VariantEvaluations - one for each
      * alternate allele.
      */
-    private Function<VariantContext, Stream<VariantEvaluation>> buildVariantEvaluations() {
+     private Function<VariantContext, Stream<VariantEvaluation>> streamVariantEvaluations() {
         return variantContext -> {
-            final List<VariantAnnotations> variantAlleleAnnotations = variantAnnotator.buildVariantAnnotations(variantContext);
+            final List<VariantAnnotations> variantAlleleAnnotations = buildVariantAnnotations(variantContext);
 //            logger.info("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
             return variantContext.getAlternateAlleles().stream()
                     .map(buildAlleleVariantEvaluation(variantContext, variantAlleleAnnotations))
                     .filter(Optional::isPresent)
                     .map(Optional::get);
         };
+    }
+
+    /**
+     * Returns a list of variants of known reference. If a VariantContext has no
+     * know reference on the genome an empty list will be returned.
+     *
+     * @param variantContext {@link VariantContext} to get {@link Variant} objects for
+     * @return one {@link Variant} object for each alternative allele in vc.
+     */
+    public List<VariantAnnotations> buildVariantAnnotations(VariantContext variantContext) {
+        try {
+            //builds one annotation list for each alternative allele
+            return variantAnnotator.buildAnnotations(variantContext);
+        } catch (InvalidCoordinatesException ex) {
+            //Not all genes can be assigned to a chromosome, so these will fail here.
+            //Should we report these? They will not be used in the analysis or appear in the output anywhere.
+            logger.trace("Cannot build annotations for VariantContext {} {} {}: {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), ex);
+        }
+        return Collections.emptyList();
     }
 
     private Function<Allele, Optional<VariantEvaluation>> buildAlleleVariantEvaluation(VariantContext variantContext, List<VariantAnnotations> variantAlleleAnnotations) {
@@ -184,7 +223,7 @@ public class VariantFactory {
      */
     private VariantEvaluation buildUnknownVariantEvaluation(VariantContext variantContext, int altAlleleId) {
         // Build the GenomeChange object.
-        final String chromosomeName = variantContext.getChr();
+        final String chromosomeName = variantContext.getContig();
         final String ref = variantContext.getReference().getBaseString();
         final String alt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
         final int pos = variantContext.getStart();

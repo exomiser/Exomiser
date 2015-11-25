@@ -51,7 +51,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected Predicate<VariantEvaluation> isInKnownGene(Map<String, Gene> genes) {
+    protected Predicate<VariantEvaluation> isAssociatedWithKnownGene(Map<String, Gene> genes) {
         return variantEvaluation -> {
             //Only load the variant if the gene has passed the other filters
             //this should drastically reduce the number of collected variants

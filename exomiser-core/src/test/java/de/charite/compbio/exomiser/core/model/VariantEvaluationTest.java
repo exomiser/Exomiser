@@ -493,7 +493,7 @@ public class VariantEvaluationTest {
     @Test
     public void getVariantContext() {
         VariantContext builtContext = instance.getVariantContext();
-        assertThat(builtContext.getChr(), equalTo("chr" + CHROMOSOME_NAME));
+        assertThat(builtContext.getContig(), equalTo("chr" + CHROMOSOME_NAME));
         assertThat(builtContext.getStart(), equalTo(POSITION));
         assertThat(builtContext.getEnd(), equalTo(POSITION));
         assertThat(builtContext.getNAlleles(), equalTo(2));

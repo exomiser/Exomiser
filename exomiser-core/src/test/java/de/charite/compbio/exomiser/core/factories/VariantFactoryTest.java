@@ -24,7 +24,6 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
@@ -34,18 +33,17 @@ import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 
-import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import org.junit.Before;
-import org.junit.Ignore;
+
 import org.junit.Test;
 
 /**
@@ -53,20 +51,13 @@ import org.junit.Test;
  */
 public class VariantFactoryTest {
 
-    private VariantFactory instance;
-
-    private final JannovarData jannovarData;
-    private final VariantContextAnnotator variantContextAnnotator;
-    private final VariantAnnotator variantAnnotator;
+    private final VariantFactory instance;
 
     public VariantFactoryTest() {
-        jannovarData = new TestJannovarDataFactory().getJannovarData();
-        variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
-        variantAnnotator = new VariantAnnotator(variantContextAnnotator);
-    }
-
-    @Before
-    public void setUp() {
+        JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
+        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
+        //TODO: just take JannovarData in the constructor - exposing the Jannovar library here is just a pain in the arse.
+        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
         instance = new VariantFactory(variantAnnotator);
     }
 
@@ -76,6 +67,11 @@ public class VariantFactoryTest {
         System.out.printf("%s %s %s %s %s %s %s offExome=%s gene=%s %s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt(), variant.getGenotypeAsString(), genotypes, genotypeTypes, variant.isOffExome(), variant.getGeneSymbol(), variant.getVariantContext());
     }
 
+    @Test
+    public void alternateConstructor() {
+        VariantFactory alternateFactory = new VariantFactory(TestFactory.buildDefaultJannovarData());
+        assertThat(alternateFactory, notNullValue());
+    }
 
     @Test(expected = TribbleException.class)
     public void testCreateVariantContexts_NonExistentFile() {
@@ -94,7 +90,7 @@ public class VariantFactoryTest {
     public void testStreamVariantContexts_SingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
         List<VariantContext> variants = instance.streamVariantContexts(vcfPath)
-                .filter(variantContext -> (variantContext.getChr().equals("1")))
+                .filter(variantContext -> (variantContext.getContig().equals("1")))
                 .collect(toList());
 
         assertThat(variants.size(), equalTo(3));
@@ -160,4 +156,11 @@ public class VariantFactoryTest {
         }
     }
 
+    @Test
+    public void testStreamVariantEvaluations_MultipleAlleles_DiferentSingleSampleGenotypes() {
+        Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
+        Stream<VariantContext> variantStream = instance.streamVariantContexts(vcfPath);
+        List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantStream).collect(toList());
+        assertThat(variants.size(), equalTo(11));
+    }
 }

@@ -32,7 +32,6 @@ import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
@@ -55,7 +54,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
 
-import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -242,9 +240,7 @@ public class MainConfig {
     @Bean
     public VariantFactory variantFactory() {
         JannovarData jannovarData = jannovarData();
-        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
-        VariantAnnotator variantAnnotator = new VariantAnnotator(variantContextAnnotator);
-        return new VariantFactory(variantAnnotator);
+        return new VariantFactory(jannovarData);
     }
 
     @Bean
