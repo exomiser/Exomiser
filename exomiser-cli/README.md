@@ -26,23 +26,24 @@ Windows users should consider using 7-Zip for unzipping .gz files.
 
 The following shell script should work:
     
-    #download, verify and extract the distribution 
+    #download the distribution (won't take long)
     wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-distribution.zip
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-distribution.zip.sha256    
-    sha256sum -c exomiser-cli-${project.version}-distribution.sha256
+    #download the data (this is ~20GB and will take a while)
+    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-data.zip
+
+    #download the checksums and verify the files (optional)
+    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}.sha256    
+    sha256sum -c exomiser-cli-${project.version}.sha256
+    
+    #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
     unzip exomiser-cli-${project.version}-distribution.zip
-    
-    #dowload and unzip the H2 database, then move it to the installation data directory
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/h2_db_dumps/exomiser-${project.version}.h2.db.gz
-    gunzip exomiser-${project.version}.h2.db.gz
-    mv exomiser-${project.version}.h2.db exomiser-cli-${project.version}/data/exomiser.h2.db
-    
+    unzip exomiser-cli-${project.version}-data.zip
+
     #run a test genomiser analysis
     cd exomiser-cli-${project.version}
     java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
 
-This script will download, verify and extract the exomiser files to a directory called 'exomiser-cli-${project.version}' in the users current directory.
-It will then change to the the exomiser directory and run the analysis contained in the file 'NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml'. 
+This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml'. 
 This file is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952) 
 
