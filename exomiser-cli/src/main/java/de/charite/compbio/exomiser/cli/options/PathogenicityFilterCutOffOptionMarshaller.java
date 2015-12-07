@@ -23,7 +23,7 @@ public class PathogenicityFilterCutOffOptionMarshaller extends AbstractOptionMar
                 .withArgName("true/false")
                 .withDescription("Keep the predicted non-pathogenic variants that are normally removed by default. "
                         + "These are defined as syonymous, intergenic, intronic, upstream, downstream or intronic ncRNA variants. "
-                        + "This setting can optionally take a true/false argument. Not including the argument is equivalent to specifying 'true'.")
+                        + "This setting can optionally take a true/false argument. Not including the argument is equivalent to specifying 'false'.")
                 .withLongOpt(KEEP_NON_PATHOGENIC_VARIANTS_OPTION) 
                 .create("P");
     }
