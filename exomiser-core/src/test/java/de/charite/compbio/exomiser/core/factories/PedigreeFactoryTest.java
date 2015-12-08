@@ -89,7 +89,6 @@ public class PedigreeFactoryTest {
     
     @Test
     public void createsSingleSamplePedigreeWhenSampleHasOnlyOneNamedMemberAndNoPedFile() {
-
         Pedigree result = instance.createPedigreeForSampleData(null, createSampleData("Adam"));
         Person person = result.getMembers().get(0);
         assertThat(person.getName(), equalTo("Adam"));
@@ -97,19 +96,16 @@ public class PedigreeFactoryTest {
     
     @Test(expected = PedigreeCreationException.class)
     public void throwsErrorWhenMultiSampleDataHasNoPedFile() {
-
         instance.createPedigreeForSampleData(null, createSampleData("Adam", "Eve", "Cain", "Abel"));
     }
     
     @Test(expected = PedigreeCreationException.class)
     public void throwsErrorForNamedMultiSampleWithInvalidPedFile() {
-
         instance.createPedigreeForSampleData(inValidPedFilePath, createSampleData("Adam", "Eva", "Seth"));
     }
     
     @Test
     public void createsPedigreeForNamedMultiSampleWithPedFile() {
-
         Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Adam", "Eva", "Seth"));
         System.out.println(pedigree);
         assertThat(pedigree.getMembers().size(), equalTo(3));
@@ -120,12 +116,20 @@ public class PedigreeFactoryTest {
 
     @Test
     public void createsPedigreeForNamedMultiSampleWithPedFileWithDisorderedNames() {
-
         Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, createSampleData("Adam", "Seth", "Eva"));
         assertThat(pedigree.getMembers().size(), equalTo(3));
         assertContainsPerson(ADAM, pedigree);
         assertContainsPerson(EVA, pedigree);
         assertContainsPerson(SETH, pedigree);
+    }
+
+    @Test
+    public void createsPedigreeForPedFileWithHeader() {
+        Pedigree pedigree = instance.createPedigreeForSampleData(Paths.get("src/test/resources/pedWithHeader.ped"), createSampleData("Adam", "Seth", "Eva"));
+        assertThat(pedigree.getMembers().size(), equalTo(3));
+        assertContainsPerson(ADAM, pedigree);
+        assertContainsPerson(SETH, pedigree);
+        assertContainsPerson(EVA, pedigree);
     }
 
     @Test(expected = PedigreeCreationException.class)
