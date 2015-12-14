@@ -9,9 +9,11 @@ package de.charite.compbio.exomiser.db.config;
 import de.charite.compbio.exomiser.db.parsers.ClinVarParser;
 import de.charite.compbio.exomiser.db.parsers.DbSnpFrequencyParser;
 import de.charite.compbio.exomiser.db.parsers.DiseaseInheritanceCache;
+import de.charite.compbio.exomiser.db.parsers.EnsemblEnhancerParser;
 import de.charite.compbio.exomiser.db.parsers.EntrezParser;
 import de.charite.compbio.exomiser.db.parsers.EspFrequencyParser;
 import de.charite.compbio.exomiser.db.parsers.ExACFrequencyParser;
+import de.charite.compbio.exomiser.db.parsers.FantomEnhancerParser;
 import de.charite.compbio.exomiser.db.parsers.HPOOntologyFileParser;
 import de.charite.compbio.exomiser.db.parsers.MetaDataParser;
 import de.charite.compbio.exomiser.db.parsers.MimToGeneParser;
@@ -62,28 +64,30 @@ public class ResourceConfig {
             logger.info("Making new set of Resources");
             resources = new LinkedHashSet();
 //            resources.add(exampleResource());
-            resources.add(hpoResource());
-            //OMIM group
-            resources.add(omimMimToGeneResource());
-            resources.add(omimMorbidMapResource());
-            resources.add(hpoPhenotypeAnnotationsResource());
-            //StringDB group
-            resources.add(stringEntrezToSymResource());
-            resources.add(stringProteinLinksResource());
-            //Exome Walker
-            resources.add(exomeWalkerPhenotypicSeriesResource());
-            resources.add(exomeWalkerOmimToGeneResource());
-            
-            resources.add(clinVarResource());
-            resources.add(metaDataResource());
-            
-            //these ones are biggies:
-            resources.add(dbNsfpResource());
-            //VariantFrequency group
-            resources.add(dbSnpResource());
-            resources.add(espResource());
-            resources.add(jannovarResource());
-            resources.add(exacResource());
+//            resources.add(hpoResource());
+//            //OMIM group
+//            resources.add(omimMimToGeneResource());
+//            resources.add(omimMorbidMapResource());
+//            resources.add(hpoPhenotypeAnnotationsResource());
+//            //StringDB group
+//            resources.add(stringEntrezToSymResource());
+//            resources.add(stringProteinLinksResource());
+//            //Exome Walker
+//            resources.add(exomeWalkerPhenotypicSeriesResource());
+//            resources.add(exomeWalkerOmimToGeneResource());
+            //Regulatory features
+            resources.add(fantomEnhancerResource());
+            resources.add(ensemblEnhancerResource());
+//            resources.add(clinVarResource());
+//            resources.add(metaDataResource());
+//            
+//            //these ones are biggies:
+//            resources.add(dbNsfpResource());
+//            //VariantFrequency group
+//            resources.add(dbSnpResource());
+//            resources.add(espResource());
+//            resources.add(jannovarResource());
+//            resources.add(exacResource());
         }
         
         return resources;
@@ -281,6 +285,36 @@ public class ResourceConfig {
 
         //
         resource.setParserClass(PhenoSeriesParser.class);
+        //
+        resource.setResourceGroupName(null);
+        resource.setResourceGroupParserClass(null);
+        
+        return resource;
+    }
+    
+    @Bean
+    public Resource fantomEnhancerResource() {
+        logger.info("Making FANTOM enhancer resource");
+        Resource resource = new Resource("FANTOM_enhancers");
+        populateResourceFromProperty("fantom", resource);
+
+        //
+        resource.setParserClass(FantomEnhancerParser.class);
+        //
+        resource.setResourceGroupName(null);
+        resource.setResourceGroupParserClass(null);
+        
+        return resource;
+    }
+    
+    @Bean
+    public Resource ensemblEnhancerResource() {
+        logger.info("Making Ensembl enhancer resource");
+        Resource resource = new Resource("Ensembl_enhancers");
+        populateResourceFromProperty("ensembl_enhancers", resource);
+
+        //
+        resource.setParserClass(EnsemblEnhancerParser.class);
         //
         resource.setResourceGroupName(null);
         resource.setResourceGroupParserClass(null);
