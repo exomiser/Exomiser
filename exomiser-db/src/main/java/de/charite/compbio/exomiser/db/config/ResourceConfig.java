@@ -64,30 +64,30 @@ public class ResourceConfig {
             logger.info("Making new set of Resources");
             resources = new LinkedHashSet();
 //            resources.add(exampleResource());
-//            resources.add(hpoResource());
-//            //OMIM group
-//            resources.add(omimMimToGeneResource());
-//            resources.add(omimMorbidMapResource());
-//            resources.add(hpoPhenotypeAnnotationsResource());
-//            //StringDB group
-//            resources.add(stringEntrezToSymResource());
-//            resources.add(stringProteinLinksResource());
-//            //Exome Walker
-//            resources.add(exomeWalkerPhenotypicSeriesResource());
-//            resources.add(exomeWalkerOmimToGeneResource());
+            resources.add(hpoResource());
+            //OMIM group
+            resources.add(omimMimToGeneResource());
+            resources.add(omimMorbidMapResource());
+            resources.add(hpoPhenotypeAnnotationsResource());
+            //StringDB group
+            resources.add(stringEntrezToSymResource());
+            resources.add(stringProteinLinksResource());
+            //Exome Walker
+            resources.add(exomeWalkerPhenotypicSeriesResource());
+            resources.add(exomeWalkerOmimToGeneResource());
             //Regulatory features
             resources.add(fantomEnhancerResource());
             resources.add(ensemblEnhancerResource());
-//            resources.add(clinVarResource());
-//            resources.add(metaDataResource());
-//            
-//            //these ones are biggies:
-//            resources.add(dbNsfpResource());
-//            //VariantFrequency group
-//            resources.add(dbSnpResource());
-//            resources.add(espResource());
-//            resources.add(jannovarResource());
-//            resources.add(exacResource());
+            resources.add(clinVarResource());
+            resources.add(metaDataResource());
+            
+            //these ones are biggies:
+            resources.add(dbNsfpResource());
+            //VariantFrequency group
+            resources.add(dbSnpResource());
+            resources.add(espResource());
+            resources.add(jannovarResource());
+            resources.add(exacResource());
         }
         
         return resources;
