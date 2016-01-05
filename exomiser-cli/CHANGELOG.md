@@ -1,5 +1,8 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 7.2.1 2016-01-05
+- Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF file.
+
 ## 7.2.0 2015-11-25
 - Performance in identification of causal regulatory variants as the top candidate of simulated whole genomes now improved to over 80%.
 - Enhancer variants are assigned to TADs
