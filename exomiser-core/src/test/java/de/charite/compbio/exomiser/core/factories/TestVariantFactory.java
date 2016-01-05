@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -30,7 +30,7 @@ import java.util.Arrays;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.InvalidGenomeChange;
+import de.charite.compbio.jannovar.annotation.InvalidGenomeVariant;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderDispatcher;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
@@ -98,7 +98,7 @@ public class TestVariantFactory {
             } else {
                 annotations = new VariantAnnotations(genomeVariant, Arrays.<Annotation>asList());
             }
-        } catch (InvalidGenomeChange e) {
+        } catch (InvalidGenomeVariant e) {
             throw new RuntimeException("Problem building annotation", e);
         }
         return annotations;
