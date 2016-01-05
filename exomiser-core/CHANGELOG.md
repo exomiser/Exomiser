@@ -1,5 +1,8 @@
 # The Exomiser - Core Library Changelog
 
+## 7.2.1 2016-01-05
+- Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF file.
+
 ## 7.2.0 2015-11-25
 - Enabled TAD code in AbstractAnalysisRunner
 - Added isNonCodingVariant() method to Variant interface.
