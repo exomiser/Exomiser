@@ -2,7 +2,7 @@
 <!--
   ~ The Exomiser - A tool to annotate and prioritize variants
   ~
-  ~ Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
   ~
   ~  This program is free software: you can redistribute it and/or modify
   ~  it under the terms of the GNU Affero General Public License as
@@ -28,7 +28,7 @@
     <parent>    
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>7.2.0</version>
+        <version>7.2.1</version>
     </parent>
         
     <dependencies>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-htsjdk</artifactId>
-            <version>0.15</version>
+            <version>0.16</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.testng</groupId>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-inheritance-checker</artifactId>
-            <version>0.15</version>
+            <version>0.16</version>
         </dependency>
         <dependency>
             <groupId>org.jblas</groupId>

@@ -1,0 +1,4 @@
+#Family_ID	Individual_ID	Paternal_ID	Maternal_ID	sex	Phenotype
+1	Eva	0	0	2	1
+1	Adam	0	0	1	1
+1	Seth	Adam	Eva	1	2

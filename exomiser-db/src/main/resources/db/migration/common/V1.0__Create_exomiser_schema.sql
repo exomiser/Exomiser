@@ -31,15 +31,15 @@ CREATE TABLE frequency (
     exacsasmaf double precision
 );
 
-DROP TABLE IF EXISTS regulatory_features;
-
-CREATE TABLE regulatory_features (
-    chromosome smallint,
-    start integer,
-    "end" integer,
-    feature_type character varying(200),
-    tissue character varying(200)
-);
+-- DROP TABLE IF EXISTS regulatory_features;
+-- 
+-- CREATE TABLE regulatory_features (
+--     chromosome smallint,
+--     start integer,
+--     "end" integer,
+--     feature_type character varying(200),
+--     tissue character varying(200)
+-- );
 
 DROP TABLE IF EXISTS REGULATORY_REGIONS;
 

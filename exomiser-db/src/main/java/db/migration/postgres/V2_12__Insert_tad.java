@@ -30,7 +30,7 @@ import org.postgresql.core.BaseConnection;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class V2_11__Insert_tad implements JdbcMigration {
+public class V2_12__Insert_tad implements JdbcMigration {
     
     @Override
     public void migrate(Connection connection) throws Exception {
