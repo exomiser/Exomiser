@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -95,6 +95,7 @@ public class Analysis {
         return sampleData;
     }
 
+    @JsonIgnore
     public PriorityType getMainPrioritiserType() {
         for (AnalysisStep analysisStep : analysisSteps) {
             if (Prioritiser.class.isInstance(analysisStep)) {
@@ -108,6 +109,7 @@ public class Analysis {
         return PriorityType.NONE;
     }
 
+    @JsonIgnore
     public List<List<AnalysisStep>> getAnalysisStepsGroupedByFunction() {
         List<List<AnalysisStep>> groups = new ArrayList<>();
         if (analysisSteps.isEmpty()) {
