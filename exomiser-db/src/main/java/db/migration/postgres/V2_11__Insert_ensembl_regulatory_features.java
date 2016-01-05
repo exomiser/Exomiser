@@ -17,13 +17,13 @@ import org.postgresql.core.BaseConnection;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class V2_10__Insert_regulatory_features implements JdbcMigration {
+public class V2_11__Insert_ensembl_regulatory_features implements JdbcMigration {
     
     @Override
     public void migrate(Connection connection) throws Exception {
         CopyManager copyManager = new CopyManager((BaseConnection) connection);
-        try (FileReader fileReader = new FileReader("data/regulatory_features.pg")) {
-            copyManager.copyIn("COPY regulatory_features from STDIN WITH DELIMITER '|';", fileReader, 1024);
+        try (FileReader fileReader = new FileReader("data/ensembl_enhancers.pg")) {
+            copyManager.copyIn("COPY regulatory_regions from STDIN WITH DELIMITER '|';", fileReader, 1024);
         }
     }
 }
