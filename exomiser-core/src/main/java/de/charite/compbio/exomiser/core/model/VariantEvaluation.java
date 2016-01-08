@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -640,14 +640,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private VariantContext variantContext;
         private int altAlleleId;
 
-        private PathogenicityData pathogenicityData = new PathogenicityData();
-        //why not set the frequency data too? Well, not having a null implies that
-        //the data has been set from the database and if there is no data then 
-        //it must be an extremely rare and therefore interesting variant. 
-        //This will then erroneously pass the frequency filter.
-        //TODO: check the ramifications of having a placeholder frequencyData
-        //private FrequencyData frequencyData = new FrequencyData(null, Collections.EMPTY_SET);
-        private FrequencyData frequencyData = new FrequencyData();
+        private PathogenicityData pathogenicityData = PathogenicityData.EMPTY_DATA;
+        private FrequencyData frequencyData = FrequencyData.EMPTY_DATA;
 
         /**
          * Creates a minimal variant
