@@ -136,8 +136,8 @@
         https://github.com/brettwooldridge/HikariCP -->
         <dependency>
             <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP-java6</artifactId>
-            <version>2.2.5</version>
+            <artifactId>HikariCP</artifactId>
+            <version>2.4.3</version>
             <scope>compile</scope>
         </dependency>
         <!--Ehcache for caching-->
