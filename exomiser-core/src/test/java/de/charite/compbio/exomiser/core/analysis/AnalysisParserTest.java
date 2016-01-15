@@ -47,6 +47,8 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Sets;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -99,7 +101,7 @@ public class AnalysisParserTest {
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
-        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(analysis.getModesOfInheritance(), equalTo(Sets.newHashSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
@@ -293,7 +295,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getModeOfInheritance(), equalTo(modeOfInheritance));
+        assertThat(analysis.getModesOfInheritance(), equalTo(Sets.newHashSet(modeOfInheritance)));
         assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));

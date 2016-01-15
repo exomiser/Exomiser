@@ -5,9 +5,11 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
+import java.util.List;
+import java.util.Set;
+
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.util.List;
 
 /**
  *
@@ -15,5 +17,5 @@ import java.util.List;
  */
 public interface GeneScorer {
  
-    public void scoreGenes(List<Gene> geneList, ModeOfInheritance modeOfInheritance);
+    public void scoreGenes(List<Gene> geneList, Set<ModeOfInheritance> modesOfInheritance);
 }

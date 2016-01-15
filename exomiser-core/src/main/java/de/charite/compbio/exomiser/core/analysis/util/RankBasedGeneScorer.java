@@ -48,10 +48,10 @@ public class RankBasedGeneScorer extends RawScoreGeneScorer {
      * @param modeOfInheritance
      */
     @Override
-    public void scoreGenes(List<Gene> genes, ModeOfInheritance modeOfInheritance) {
+    public void scoreGenes(List<Gene> genes, Set<ModeOfInheritance> modesOfInheritance) {
         //first of all score the genes according to their raw scores
         for (Gene gene : genes) {
-            scoreGene(gene, modeOfInheritance);
+            scoreGene(gene, modesOfInheritance);
         }
 
         //now reset the scores according to their rank

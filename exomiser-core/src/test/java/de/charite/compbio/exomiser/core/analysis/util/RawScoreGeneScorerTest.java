@@ -21,6 +21,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Sets;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -96,7 +98,7 @@ public class RawScoreGeneScorerTest {
 
         List<VariantEvaluation> emptyVariantEvaluations = new ArrayList<>();
 
-        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, ModeOfInheritance.UNINITIALIZED);
+        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, Sets.newHashSet(ModeOfInheritance.UNINITIALIZED));
 
         assertThat(calculatedScore, equalTo(0f));
     }
@@ -110,7 +112,7 @@ public class RawScoreGeneScorerTest {
 
         float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
 
-        float calculatedScore = instance.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED);
+        float calculatedScore = instance.calculateFilterScore(variantEvaluations, Sets.newHashSet(ModeOfInheritance.UNINITIALIZED));
 
         assertThat(calculatedScore, equalTo(bestScore));
     }
