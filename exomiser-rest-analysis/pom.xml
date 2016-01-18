@@ -81,8 +81,16 @@
 		</dependency>
 	</dependencies>
 
+
 	<build>
-		<plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+			<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
