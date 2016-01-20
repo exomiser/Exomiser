@@ -4,4 +4,4 @@
    | | | | | |  __/ | |___ >  < (_) | | | | | | \__ \  __/ |
    |_| |_| |_|\___| |_____/_/\_\___/|_| |_| |_|_|___/\___|_|
 
- === Analysis Server ===                                v${project.version}
+ === Analysis Server ===                              v${project.version}

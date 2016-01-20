@@ -17,16 +17,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.charite.compbio.exomiser.rest.analysis;
+package de.charite.compbio.exomiser.rest.analysis.model;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
-
-@SpringBootApplication
-public class ExomiserRestAnalysisApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(ExomiserRestAnalysisApplication.class, args);
-	}
+/**
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ */
+public enum AnalysisStatus {
+    AWAITING_VCF, AWAITING_PED, READY, QUEUED, PROCESSING, COMPLETED, INFO, ERROR;
 }
+

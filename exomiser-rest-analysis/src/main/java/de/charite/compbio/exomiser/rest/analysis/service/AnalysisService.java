@@ -17,30 +17,36 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.charite.compbio.exomiser.rest.analysis;
+package de.charite.compbio.exomiser.rest.analysis.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.rest.analysis.model.AnalysisResponse;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+/**
+ *
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ */
+public interface AnalysisService {
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ExomiserRestAnalysisApplication.class)
-@WebAppConfiguration
-public class ExomiserRestAnalysisApplicationTests {
+    AnalysisResponse createAnalysisJob(Analysis analysis);
 
-	@Test
-	public void contextLoads() {
-	}
+    AnalysisResponse createAnalysisJobFromYaml(String analysisYaml);
 
+    //TODO: how best to accept these files - Multipart, Path?
+//    AnalysisResponse createVcf(long id, MultipartFile file);
+//
+//    AnalysisResponse createPed(long id, MultipartFile file);
+
+    Analysis getAnalysis(long id);
+
+    AnalysisResponse startAnalysis(long id);
+
+    AnalysisResponse getAnalysisStatus(long id);
+
+    void delete(long id);
+
+    boolean exists(long id);
 }
