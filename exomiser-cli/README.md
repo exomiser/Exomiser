@@ -16,15 +16,18 @@ test-analysis-genome.yml file located in the base install directory.
 
 ## Installation
 
-1. Download and unzip exomiser-cli-${project.version}-distribution.gz
-2. Download exomiser-${project.version}.h2.db.gz from the h2_db_dumps folder
-3. Unzip in the exomiser-cli-${project.version}/data directory
-4. mv exomiser-${project.version}.h2.db exomiser.h2.db
-5. Run the example commands below from the exomiser-cli-${project.version} directory
-
-Windows users should consider using 7-Zip for unzipping .gz files. 
-
-The following shell script should work:
+Windows:
+    
+ 1. Install 7-Zip (http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues extracting the zip files. 
+ 2. Download the data and distribution files from the FTP site.
+ 3. Extract the distribution files by right-clicking exomiser-cli-${project.version}-distribution.zip and selecting 7-Zip > Extract Here
+ 4. Extract the data files by right-clicking exomiser-cli-${project.version}-data.zip and selecting 7-Zip > Extract Here
+   4.1 Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
+ 5. cd exomiser-cli-${project.version}
+ 6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+ 
+Linux: 
+The following shell script should work-
     
     #download the distribution (won't take long)
     wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-distribution.zip

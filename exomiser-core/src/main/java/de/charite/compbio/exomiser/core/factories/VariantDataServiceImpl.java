@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -64,8 +64,6 @@ public class VariantDataServiceImpl implements VariantDataService {
     @Autowired
     private TadDao tadDao;
 
-    private static final PathogenicityData NO_PATH_DATA = new PathogenicityData();
-
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = frequencyDao.getFrequencyData(variant);
@@ -76,6 +74,9 @@ public class VariantDataServiceImpl implements VariantDataService {
         Set<Frequency> wanted = allFrequencyData.getKnownFrequencies().stream()
                 .filter(frequency -> frequencySources.contains(frequency.getSource()))
                 .collect(toSet());
+        if (allFrequencyData.getRsId() == null && wanted.isEmpty()) {
+            return FrequencyData.EMPTY_DATA;
+        }
         return new FrequencyData(allFrequencyData.getRsId(), wanted);
     }
 
@@ -83,7 +84,7 @@ public class VariantDataServiceImpl implements VariantDataService {
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         //OK, this is a bit stupid, but if no sources are defined we're not going to bother checking for data
         if (pathogenicitySources.isEmpty()) {
-            return NO_PATH_DATA;
+            return PathogenicityData.EMPTY_DATA;
         }
         //TODO: ideally we'd have some sort of compact, high-performance document store for this sort of data rather than several different datasources to query and ship.
         List<PathogenicityScore> allPathScores = new ArrayList<>();
@@ -112,6 +113,9 @@ public class VariantDataServiceImpl implements VariantDataService {
         Set<PathogenicityScore> wanted = allPathScores.stream()
                 .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
                 .collect(toSet());
+        if (wanted.isEmpty()) {
+            return PathogenicityData.EMPTY_DATA;
+        }
         return new PathogenicityData(wanted);
     }
 
