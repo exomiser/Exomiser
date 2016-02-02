@@ -39,8 +39,6 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
-
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -116,13 +114,13 @@ public class AnalysisFactoryTest {
 
     @Test
     public void testAnalysisBuilderModeOfInheritance_default() {
-        assertThat(analysisBuilder.build().getModesOfInheritance(), equalTo(Sets.newHashSet(ModeOfInheritance.UNINITIALIZED)));
+        assertThat(analysisBuilder.build().getModesOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.UNINITIALIZED)));
     }
 
     @Test
     public void testAnalysisBuilderModeOfInheritance() {
         analysisBuilder.modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(analysisBuilder.build().getModesOfInheritance(), equalTo(Sets.newHashSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(analysisBuilder.build().getModesOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
     }
 
     @Test
@@ -188,7 +186,7 @@ public class AnalysisFactoryTest {
 
         Analysis analysis = analysisBuilder.build();
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getModesOfInheritance(), equalTo(Sets.newHashSet(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
+        assertThat(analysis.getModesOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));

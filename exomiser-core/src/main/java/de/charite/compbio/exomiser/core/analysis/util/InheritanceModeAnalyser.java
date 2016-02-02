@@ -24,28 +24,29 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import com.google.common.collect.ArrayListMultimap;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.pedigree.*;
-import de.charite.compbio.jannovar.pedigree.Genotype;
-import htsjdk.variant.variantcontext.*;
+import static java.util.stream.Collectors.toSet;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-
-import static java.util.stream.Collectors.toSet;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
 
 /**
  * This class allows us to do segregation analysis for the variants supplied to
@@ -86,7 +87,7 @@ public class InheritanceModeAnalyser {
         if (gene.passedFilters()) {
             checkInheritanceCompatibilityOfPassedVariants(gene);
         }
-        Set<ModeOfInheritance> matchedModes = new HashSet<>();
+        Set<ModeOfInheritance> matchedModes = EnumSet.noneOf(ModeOfInheritance.class);
         for (ModeOfInheritance modeOfInheritance : modesOfInheritance) {
         	if (gene.isCompatibleWith(modeOfInheritance))
         		matchedModes.add(modeOfInheritance);

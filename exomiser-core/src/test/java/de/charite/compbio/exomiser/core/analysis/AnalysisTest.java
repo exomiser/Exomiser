@@ -47,8 +47,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
-
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -93,14 +91,14 @@ public class AnalysisTest {
 
     @Test
     public void modeOfInheritanceDefaultsToUnspecified() {
-        assertThat(instance.getModesOfInheritance(), equalTo(Sets.newHashSet(ModeOfInheritance.UNINITIALIZED)));
+        assertThat(instance.getModesOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.UNINITIALIZED)));
     }
 
     @Test
     public void testCanMakeAnalysis_specifyModeOfInheritance() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
         instance.setModeOfInheritance(modeOfInheritance);
-        assertThat(instance.getModesOfInheritance(), equalTo(Sets.newHashSet(modeOfInheritance)));
+        assertThat(instance.getModesOfInheritance(), equalTo(EnumSet.of(modeOfInheritance)));
     }
 
     @Test

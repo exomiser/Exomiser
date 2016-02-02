@@ -13,6 +13,7 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -20,8 +21,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.collect.Sets;
 
 /**
  *
@@ -98,7 +97,7 @@ public class RawScoreGeneScorerTest {
 
         List<VariantEvaluation> emptyVariantEvaluations = new ArrayList<>();
 
-        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, Sets.newHashSet(ModeOfInheritance.UNINITIALIZED));
+        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, EnumSet.of(ModeOfInheritance.UNINITIALIZED));
 
         assertThat(calculatedScore, equalTo(0f));
     }
@@ -112,7 +111,7 @@ public class RawScoreGeneScorerTest {
 
         float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
 
-        float calculatedScore = instance.calculateFilterScore(variantEvaluations, Sets.newHashSet(ModeOfInheritance.UNINITIALIZED));
+        float calculatedScore = instance.calculateFilterScore(variantEvaluations, EnumSet.of(ModeOfInheritance.UNINITIALIZED));
 
         assertThat(calculatedScore, equalTo(bestScore));
     }

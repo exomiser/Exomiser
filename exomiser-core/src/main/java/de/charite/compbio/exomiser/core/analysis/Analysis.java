@@ -24,8 +24,17 @@
  */
 package de.charite.compbio.exomiser.core.analysis;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Sets;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -34,14 +43,6 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is analogous to the {@link Settings} class, although the key difference is that here the {@see #addStep}
@@ -63,7 +64,7 @@ public class Analysis {
     private SampleData sampleData = new SampleData();
     //these are more optional variables
     private List<String> hpoIds = new ArrayList<>();
-    private Set<ModeOfInheritance> modesOfInheritance = Sets.newHashSet(ModeOfInheritance.UNINITIALIZED);
+    private Set<ModeOfInheritance> modesOfInheritance = EnumSet.of(ModeOfInheritance.UNINITIALIZED);
     private ScoringMode scoringMode = ScoringMode.RAW_SCORE;
     private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
     private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
@@ -157,7 +158,7 @@ public class Analysis {
     }
 
     public void setModeOfInheritance(ModeOfInheritance modeOfInheritance) {
-        this.modesOfInheritance = Sets.newHashSet(modeOfInheritance);
+        this.modesOfInheritance = EnumSet.of(modeOfInheritance);
     }
     
     public void setModesOfInheritance(Set<ModeOfInheritance> modesOfInheritance) {
