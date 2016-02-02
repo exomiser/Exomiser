@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,7 +19,7 @@
 
 package db.migration.postgres;
 
-import com.googlecode.flyway.core.api.migration.jdbc.JdbcMigration;
+import org.flywaydb.core.api.migration.jdbc.JdbcMigration;
 import java.io.FileReader;
 import java.sql.Connection;
 import org.postgresql.copy.CopyManager;
