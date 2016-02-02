@@ -149,6 +149,22 @@ public class OMIMPriority implements Prioritiser {
         if (inheritance == 'U') {
             /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
             return 1f;
+      
+        } else if (inheritance == 'Y') {
+            /* Y chromosomal, rare. */
+            return 1f; 
+        } else if (inheritance == 'M') {
+            /* mitochondrial. */
+            return 1f; 
+        } else if (inheritance == 'S') {
+            /* gene only associated with somatic mutations */
+            return 0.5f; 
+        } else if (inheritance == 'P') {
+            /* gene only associated with polygenic */
+            return 0.5f; 
+        } else if (gene.getInheritanceModes().isEmpty()) {
+            /* No mode of inheritance is defined (UNDEFINED) */
+            return 1f;    
         } else if (gene.isCompatibleWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
             /* inheritance of disease is dominant or both (dominant/recessive) */
             return 1f;
@@ -157,22 +173,6 @@ public class OMIMPriority implements Prioritiser {
             return 1f;
         } else if (gene.isXChromosomal() && inheritance == 'X') {
             return 1f;
-        } else if (inheritance == 'Y') {
-            /* Y chromosomal, rare. */
-            return 1f; 
-
-        } else if (inheritance == 'M') {
-            /* mitochondrial. */
-            return 1f; 
-
-        } else if (inheritance == 'S') {
-            /* gene only associated with somatic mutations */
-            return 0.5f; 
-
-        } else if (inheritance == 'P') {
-            /* gene only associated with polygenic */
-            return 0.5f; 
-
         } else {
             return 0.5f;
         }
