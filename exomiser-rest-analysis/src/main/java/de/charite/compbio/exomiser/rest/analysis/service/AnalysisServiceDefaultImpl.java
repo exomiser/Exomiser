@@ -26,12 +26,14 @@ import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.rest.analysis.model.AnalysisResponse;
 import de.charite.compbio.exomiser.rest.analysis.model.AnalysisStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,13 +43,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Service
-public class AnalysisServiceDefault implements AnalysisService {
+public class AnalysisServiceDefaultImpl implements AnalysisService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AnalysisServiceDefault.class);
+    private static final Logger logger = LoggerFactory.getLogger(AnalysisServiceDefaultImpl.class);
 
     //TODO: make a better id - something like timestamp + random + serverId. Like the Twitter snowflake
     private static final AtomicLong analysisId = new AtomicLong(System.currentTimeMillis() * 100000);
 
+    //TODO: this should become a DAO
     private final Map<Long, Analysis> analysisMap = new ConcurrentHashMap<>();
 
     @Override
@@ -65,15 +68,33 @@ public class AnalysisServiceDefault implements AnalysisService {
     }
 
     @Override
+    public AnalysisResponse createVcf(long id, Path vcfPath) {
+        return null;
+    }
+
+    @Override
+    public AnalysisResponse createPed(long id, Path pedPath) {
+        return null;
+    }
+
+    @Override
     public Analysis getAnalysis(long id) {
-        Analysis analysis = new Analysis();
-        analysis.setFrequencySources(FrequencySource.ALL_ESP_SOURCES);
-        analysis.setPathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.CADD));
-        analysis.addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f));
-        analysis.addStep(new FrequencyFilter(1.0f));
-        analysis.addStep(new PathogenicityFilter(true));
-//        register your own MappingJackson2HttpMessageConverter by configuring your own ObjectMapper
-        return analysis;
+        return analysisMap.get(id);
+    }
+
+    @Override
+    public Path getVcf(long id) {
+        return null;
+    }
+
+    @Override
+    public Path getPed(long id) {
+        return null;
+    }
+
+    @Override
+    public Path getResults(long id, OutputFormat outputFormat) {
+        return null;
     }
 
     @Override

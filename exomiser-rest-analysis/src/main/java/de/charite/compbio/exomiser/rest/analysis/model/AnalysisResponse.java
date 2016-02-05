@@ -19,20 +19,25 @@
 
 package de.charite.compbio.exomiser.rest.analysis.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class AnalysisResponse {
 
     private final long id;
     private final AnalysisStatus analysisStatus;
     private final String message;
 
-    public AnalysisResponse(long id, AnalysisStatus analysisStatus, String message) {
+    @JsonCreator
+    public AnalysisResponse(@JsonProperty("id") long id, @JsonProperty("status") AnalysisStatus analysisStatus, @JsonProperty("message") String message) {
         this.id = id;
         this.analysisStatus = analysisStatus;
         this.message = message;
@@ -42,7 +47,7 @@ public class AnalysisResponse {
         return id;
     }
 
-    @JsonGetter(value = "id_string")
+//    @JsonGetter(value = "id_string")
     public String getIdString() {
         return Long.toString(id);
     }

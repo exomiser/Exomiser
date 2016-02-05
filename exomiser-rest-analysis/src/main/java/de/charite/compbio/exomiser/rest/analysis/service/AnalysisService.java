@@ -20,6 +20,7 @@
 package de.charite.compbio.exomiser.rest.analysis.service;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.rest.analysis.model.AnalysisResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,12 +36,9 @@ public interface AnalysisService {
 
     AnalysisResponse createAnalysisJobFromYaml(String analysisYaml);
 
-    //TODO: how best to accept these files - Multipart, Path?
-//    AnalysisResponse createVcf(long id, MultipartFile file);
-//
-//    AnalysisResponse createPed(long id, MultipartFile file);
+    AnalysisResponse createVcf(long id, Path vcfPath);
 
-    Analysis getAnalysis(long id);
+    AnalysisResponse createPed(long id, Path pedPath);
 
     AnalysisResponse startAnalysis(long id);
 
@@ -49,4 +47,13 @@ public interface AnalysisService {
     void delete(long id);
 
     boolean exists(long id);
+
+    Analysis getAnalysis(long id);
+
+    Path getVcf(long id);
+
+    Path getPed(long id);
+
+    Path getResults(long id, OutputFormat outputFormat);
+
 }

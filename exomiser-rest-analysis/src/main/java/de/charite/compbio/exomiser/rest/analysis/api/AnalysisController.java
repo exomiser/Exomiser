@@ -20,16 +20,9 @@
 package de.charite.compbio.exomiser.rest.analysis.api;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.rest.analysis.model.AnalysisResponse;
 import de.charite.compbio.exomiser.rest.analysis.model.AnalysisStatus;
 import de.charite.compbio.exomiser.rest.analysis.service.AnalysisService;
-import de.charite.compbio.exomiser.rest.analysis.service.AnalysisServiceDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.EnumSet;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -78,7 +70,14 @@ public class AnalysisController {
     @RequestMapping(value = "/{analysisId}", method = RequestMethod.GET)
     public Analysis getAnalysis(@PathVariable long analysisId) {
         logger.info("Request for analysisId: {}", analysisId);
-        return analysisService.getAnalysis(analysisId);
+        Analysis analysis = analysisService.getAnalysis(analysisId);
+
+        if (analysis == null) {
+            logger.info("AnalysisId: {} not found", analysisId);
+            throw new UnknownAnalysisException("Unknown analysis id");
+        }
+
+        return analysis;
     }
 
     @RequestMapping(value = "/{analysisId}/upload", method = RequestMethod.POST)

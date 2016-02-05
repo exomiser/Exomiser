@@ -19,20 +19,23 @@
 
 package de.charite.compbio.exomiser.rest.analysis.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
+import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.rest.analysis.ExomiserConfig;
 import de.charite.compbio.exomiser.rest.analysis.ExomiserRestAnalysisApplication;
+import de.charite.compbio.exomiser.rest.analysis.model.AnalysisResponse;
 import org.codehaus.groovy.tools.shell.IO;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -45,6 +48,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -79,10 +83,56 @@ public class AnalysisControllerTest {
 
     private MockMvc mockMvc;
 
+    private String jsonAnalysis = "";
+
+    private ObjectMapper mapper;
+
     @Before
     public void setup() throws IOException{
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+        Analysis analysis = new Analysis();
+        analysis.setFrequencySources(FrequencySource.ALL_ESP_SOURCES);
+        analysis.setPathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.CADD));
+        //TODO: get these to serialise
+//        analysis.addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f));
+//        analysis.addStep(new FrequencyFilter(1.0f));
+//        analysis.addStep(new PathogenicityFilter(true));
+
+        mapper = new ObjectMapper();
+        mapper.registerModule(new Jdk7Module());
+        mapper.registerModule(new MyModule());
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+//        mapper.addMixIn(VariantFilter.class, VariantFilterMixIn.class);
+        //TODO: need to write custom AnalysisMapper.
+//        mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.EXISTING_PROPERTY); // all non-final types
+
+        try {
+            jsonAnalysis = mapper.writeValueAsString(analysis);
+        } catch (JsonProcessingException ex) {
+        }
+        System.out.println("Created json analysis: " + jsonAnalysis);
     }
+
+    public class MyModule extends SimpleModule {
+        public MyModule() {
+            super();
+        }
+
+        @Override
+        public void setupModule(SetupContext context) {
+//            context.setMixInAnnotations(VariantFilter.class, VariantFilterMixIn.class);
+            // and other set up, if any
+        }
+    }
+
+    abstract class VariantFilterMixIn {
+        VariantFilterMixIn(){}
+
+        @JsonIgnore abstract FilterType getFilterType();
+
+    }
+
 
     @Test
     public void testGetAnalysis_noAnalysisId() throws Exception {
@@ -95,36 +145,35 @@ public class AnalysisControllerTest {
     }
 
     @Test
-    public void testGetAnalysis_knownAnalysisId() throws Exception {
-        //minimal faked response kind of a test
+    public void testGetAnalysis_unKnownAnalysisId() throws Exception {
         mockMvc.perform(get("/analysis/{analysisId}", 1).accept("application/json"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetAnalysis_knownAnalysisId() throws Exception {
+
+        long analysisId = 0;
+
+        MvcResult result = mockMvc.perform(post("/analysis")
+                .content(jsonAnalysis)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+
+        AnalysisResponse analysisResponse = mapper.readValue(responseBody, AnalysisResponse.class);
+        System.out.println("Got " +  analysisResponse);
+
+        mockMvc.perform(get("/analysis/{analysisId}", analysisResponse.getId()).accept("application/json"))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void testPostAnalysis_jsonBody() throws Exception {
-        Analysis analysis = new Analysis();
-        analysis.setFrequencySources(FrequencySource.ALL_ESP_SOURCES);
-        analysis.setPathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.CADD));
-        //TODO: get these to serialise
-//        analysis.addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f));
-//        analysis.addStep(new FrequencyFilter(1.0f));
-//        analysis.addStep(new PathogenicityFilter(true));
-
-        ObjectMapper mapper = new ObjectMapper();
-        //required for correct output of Path types
-        mapper.registerModule(new Jdk7Module());
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-//        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        String jsonSettings = "";
-        try {
-            jsonSettings = mapper.writeValueAsString(analysis);
-        } catch (JsonProcessingException ex) {
-//            logger.error("Unable to process JSON settings", ex);
-        }
-
         mockMvc.perform(post("/analysis")
-                .content(jsonSettings)
+                .content(jsonAnalysis)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(mvcResult -> {

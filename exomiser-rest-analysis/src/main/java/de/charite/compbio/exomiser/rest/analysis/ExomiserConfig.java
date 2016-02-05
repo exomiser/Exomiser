@@ -49,9 +49,9 @@ public class ExomiserConfig {
     @Bean
     Path analysisPath() {
         Path analysisPath = Paths.get(environment.getProperty("exomiser.analysisPath"));
-        logger.info("Setting up analysis path at {}", analysisPath);
         try {
             if (!Files.exists(analysisPath)) {
+                logger.info("Setting up analysis path at {}", analysisPath);
                 Files.createDirectory(analysisPath);
             }
         } catch (IOException ex) {
