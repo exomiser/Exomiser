@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -28,6 +28,9 @@ import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +46,14 @@ import java.util.Set;
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class AnalysisFactory {
 
     private final SampleDataFactory sampleDataFactory;
     private final PriorityFactory priorityFactory;
     private final VariantDataService variantDataService;
 
+    @Autowired
     public AnalysisFactory(SampleDataFactory sampleDataFactory, PriorityFactory priorityFactory, VariantDataService variantDataService) {
         this.sampleDataFactory = sampleDataFactory;
         this.variantDataService = variantDataService;
