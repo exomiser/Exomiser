@@ -41,6 +41,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -109,9 +110,9 @@ public class VariantFactory {
 
     public Stream<VariantEvaluation> streamVariantEvaluations(Path vcfPath) {
         //note - VariantContexts with with unknown references will not create a Variant.
-        int[] variantRecords = {0};
-        int[] unannotatedVariants = {0};
-        int[] annotatedVariants = {0};
+        final AtomicInteger variantRecords = new AtomicInteger(0);
+        final AtomicInteger unannotatedVariants = new AtomicInteger(0);
+        final AtomicInteger annotatedVariants = new AtomicInteger(0);
 
         Stream<VariantEvaluation> variantEvaluationStream = streamVariantContexts(vcfPath)
                 .map(logVariantContextCount(variantRecords))
@@ -121,10 +122,10 @@ public class VariantFactory {
         logger.info("Annotating variant records, trimming sequences and normalising positions...");
         return variantEvaluationStream
                 .onClose(() -> {
-                    if (unannotatedVariants[0] > 0) {
-                        logger.info("Processed {} variant records into {} single allele variants, {} are missing annotations, most likely due to non-numeric chromosome designations", variantRecords[0], annotatedVariants[0], unannotatedVariants[0]);
+                    if (unannotatedVariants.get() > 0) {
+                        logger.info("Processed {} variant records into {} single allele variants, {} are missing annotations, most likely due to non-numeric chromosome designations", variantRecords.get(), annotatedVariants.get(), unannotatedVariants.get());
                     } else {
-                        logger.info("Processed {} variant records into {} single allele variants", variantRecords[0], annotatedVariants[0]);
+                        logger.info("Processed {} variant records into {} single allele variants", variantRecords.get(), annotatedVariants.get());
                     }
                 });
     }
@@ -133,19 +134,19 @@ public class VariantFactory {
         return variantContextStream.flatMap(streamVariantEvaluations());
     }
 
-    private Function<VariantContext, VariantContext> logVariantContextCount(int[] variantRecords) {
+    private Function<VariantContext, VariantContext> logVariantContextCount(AtomicInteger variantRecords) {
         return variantContext -> {
-            variantRecords[0]++;
+            variantRecords.incrementAndGet();
             return variantContext;
         };
     }
 
-    private Function<VariantEvaluation, VariantEvaluation> logAnnotatedVariantCount(int[] unannotatedVariants, int[] annotatedVariants) {
+    private Function<VariantEvaluation, VariantEvaluation> logAnnotatedVariantCount(AtomicInteger unannotatedVariants, AtomicInteger annotatedVariants) {
         return variantEvaluation -> {
             if (variantEvaluation.hasAnnotations()) {
-                annotatedVariants[0]++;
+                annotatedVariants.incrementAndGet();
             } else {
-                unannotatedVariants[0]++;
+                unannotatedVariants.incrementAndGet();
             }
             return variantEvaluation;
         };
@@ -176,8 +177,10 @@ public class VariantFactory {
      */
     public List<VariantAnnotations> buildVariantAnnotations(VariantContext variantContext) {
         try {
-            //builds one annotation list for each alternative allele
-            return variantAnnotator.buildAnnotations(variantContext);
+            synchronized (this) {
+                //builds one annotation list for each alternative allele
+                return variantAnnotator.buildAnnotations(variantContext);
+            }
         } catch (InvalidCoordinatesException ex) {
             //Not all genes can be assigned to a chromosome, so these will fail here.
             //Should we report these? They will not be used in the analysis or appear in the output anywhere.
