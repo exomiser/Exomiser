@@ -71,8 +71,8 @@ public class VariantFactory {
     private final int UNKNOWN_CHROMOSOME = 0;
 
     /**
-     * @deprecated Use alternative constructor requiring JannovarData
      * @param variantAnnotator
+     * @deprecated Use alternative constructor requiring JannovarData
      */
     @Deprecated
     public VariantFactory(VariantAnnotator variantAnnotator) {
@@ -157,7 +157,7 @@ public class VariantFactory {
      * This means that a multi allele Variant record in a VCF can result in several VariantEvaluations - one for each
      * alternate allele.
      */
-     private Function<VariantContext, Stream<VariantEvaluation>> streamVariantEvaluations() {
+    private Function<VariantContext, Stream<VariantEvaluation>> streamVariantEvaluations() {
         return variantContext -> {
             final List<VariantAnnotations> variantAlleleAnnotations = buildVariantAnnotations(variantContext);
 //            logger.info("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
@@ -170,17 +170,16 @@ public class VariantFactory {
 
     /**
      * Returns a list of variants of known reference. If a VariantContext has no
-     * know reference on the genome an empty list will be returned.
+     * known reference on the genome an empty list will be returned.
      *
      * @param variantContext {@link VariantContext} to get {@link Variant} objects for
      * @return one {@link Variant} object for each alternative allele in vc.
      */
     public List<VariantAnnotations> buildVariantAnnotations(VariantContext variantContext) {
         try {
-            synchronized (this) {
-                //builds one annotation list for each alternative allele
-                return variantAnnotator.buildAnnotations(variantContext);
-            }
+            //builds one annotation list for each alternative allele
+            //beware - this needs synchronisation in jannovar versions 0.16 and below
+            return variantAnnotator.buildAnnotations(variantContext);
         } catch (InvalidCoordinatesException ex) {
             //Not all genes can be assigned to a chromosome, so these will fail here.
             //Should we report these? They will not be used in the analysis or appear in the output anywhere.
