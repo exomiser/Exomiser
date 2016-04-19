@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -128,8 +129,8 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
 
         List<VariantEvaluation> filteredVariants;
-        final int[] streamed = {0};
-        final int[] passed = {0};
+        AtomicInteger streamed = new AtomicInteger();
+        AtomicInteger passed = new AtomicInteger();
         try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
             filteredVariants = variantStream
                     .map(logLoadedAndPassedVariants(streamed, passed))
@@ -140,7 +141,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                     .map(logPassedVariants(passed))
                     .collect(toList());
         }
-        logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
+        logger.info("Loaded {} variants - {} passed variant filters", streamed.get(), passed.get());
         return filteredVariants;
     }
 
@@ -162,11 +163,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     //yep, logging logic
-    private Function<VariantEvaluation, VariantEvaluation> logLoadedAndPassedVariants(int[] streamed, int[] passed) {
+    private Function<VariantEvaluation, VariantEvaluation> logLoadedAndPassedVariants(AtomicInteger streamed, AtomicInteger passed) {
         return variantEvaluation -> {
-            streamed[0]++;
-            if (streamed[0] % 100000 == 0) {
-                logger.info("Loaded {} variants - {} passed variant filters", streamed[0], passed[0]);
+            streamed.incrementAndGet();
+            if (streamed.get() % 100000 == 0) {
+                logger.info("Loaded {} variants - {} passed variant filters...", streamed.get(), passed.get());
             }
             return variantEvaluation;
         };
@@ -210,10 +211,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters);
 
     //more logging logic
-    private Function<VariantEvaluation, VariantEvaluation> logPassedVariants(int[] passed) {
+    private Function<VariantEvaluation, VariantEvaluation> logPassedVariants(AtomicInteger passed) {
         return variantEvaluation -> {
             if (variantEvaluation.passedFilters()) {
-                passed[0]++;
+                passed.incrementAndGet();
             }
             return variantEvaluation;
         };
