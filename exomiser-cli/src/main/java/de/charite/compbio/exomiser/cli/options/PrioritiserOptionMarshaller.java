@@ -25,13 +25,6 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
     private final Map<String, PriorityType> prioritiserCliValues = new LinkedHashMap<>();
 
     public PrioritiserOptionMarshaller() {
-        option = OptionBuilder
-                .hasArg()
-                .withArgName("name")
-                .withValueSeparator()
-                .withDescription(buildPrioritiserDescription(PRIORITISER_OPTION))
-                .withLongOpt(PRIORITISER_OPTION)
-                .create();
 
         prioritiserCliValues.put("hiphive", PriorityType.HIPHIVE_PRIORITY);
         prioritiserCliValues.put("phenix", PriorityType.PHENIX_PRIORITY);
@@ -41,6 +34,14 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
         prioritiserCliValues.put("uber-pheno", PriorityType.UBERPHENO_PRIORITY);
         //'none' is the default
         prioritiserCliValues.put("none", PriorityType.NONE);
+        
+        option = OptionBuilder
+                .hasArg()
+                .withArgName("name")
+                .withValueSeparator()
+                .withDescription(buildPrioritiserDescription(PRIORITISER_OPTION))
+                .withLongOpt(PRIORITISER_OPTION)
+                .create();
     }
 
     @Override
