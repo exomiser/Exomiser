@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,6 +28,8 @@ import de.charite.compbio.exomiser.cli.CommandLineParseError;
 import de.charite.compbio.exomiser.core.analysis.Settings;
 import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
@@ -96,5 +117,17 @@ public class PrioritiserOptionMarshallerTest {
         Settings settings = applyValueAndBuildSettings("none");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NONE));
     }
-    
+
+    @Test
+    public void testDescriptionContainsPrioritiserNames() {
+        String description = instance.getOption().getDescription();
+        System.out.println(description);
+        assertThat(description, containsString("hiphive"));
+        assertThat(description, containsString("phenix"));
+        assertThat(description, containsString("phive"));
+        assertThat(description, containsString("exomewalker"));
+        assertThat(description, containsString("omim"));
+        assertThat(description, containsString("uber-pheno"));
+        assertThat(description, containsString("none"));
+    }
 }
