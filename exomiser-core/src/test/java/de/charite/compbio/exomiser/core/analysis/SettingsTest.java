@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -127,7 +127,7 @@ public class SettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
-        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
+        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
         assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
         assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
@@ -300,14 +300,14 @@ public class SettingsTest {
     @Test
     public void testThatBuilderProducesIncludePathogenicDefault() {
         Settings settings = instance.build();
-        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
+        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesIncludePathogenicWhenSet() {
-        instance.removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF);
+        instance.keepNonPathogenic(REMOVE_PATHOGENIC_FILTER_CUTOFF);
         Settings settings = instance.build();
-        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
+        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
     }
 
     @Test
@@ -502,7 +502,7 @@ public class SettingsTest {
                 .maximumFrequency(MAXIMUM_FREQUENCY)
                 .minimumQuality(MIMIMUM_QUALITY)
                 .geneticInterval(GENETIC_INTERVAL)
-                .removePathFilterCutOff(REMOVE_PATHOGENIC_FILTER_CUTOFF)
+                .keepNonPathogenic(REMOVE_PATHOGENIC_FILTER_CUTOFF)
                 .removeKnownVariants(REMOVE_KNOWN_VARIANTS)
                 .keepOffTargetVariants(KEEP_OFF_TARGET_VARIANTS)
                 .candidateGene(CANDIDATE_GENE_NAME)
@@ -560,7 +560,7 @@ public class SettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
-        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
+        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
         assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
         assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
