@@ -30,7 +30,7 @@
         <artifactId>Exomiser</artifactId>
         <version>7.2.1</version>
     </parent>
-        
+
     <dependencies>
         <!--Jannovar is used for providing known gene annotations on variants -->
         <dependency>
@@ -69,6 +69,10 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring4</artifactId>
         </dependency>
         <dependency>
             <!-- jsoup HTML parser library @ http://jsoup.org/ -->
