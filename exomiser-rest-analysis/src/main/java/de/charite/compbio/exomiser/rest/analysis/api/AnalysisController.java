@@ -31,7 +31,10 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -70,7 +73,7 @@ public class AnalysisController {
     @RequestMapping(value = "/{analysisId}", method = RequestMethod.GET)
     public Analysis getAnalysis(@PathVariable long analysisId) {
         logger.info("Request for analysisId: {}", analysisId);
-        Analysis analysis = analysisService.getAnalysis(analysisId);
+        final Analysis analysis = analysisService.getAnalysis(analysisId);
 
         if (analysis == null) {
             logger.info("AnalysisId: {} not found", analysisId);
@@ -118,7 +121,7 @@ public class AnalysisController {
     }
 
     private Path createAnalysisDirectory(long id) {
-        Path analysisDir = analysisPath.resolve(Long.toUnsignedString(id));
+        final Path analysisDir = analysisPath.resolve(Long.toUnsignedString(id));
         try {
             Files.createDirectories(analysisDir);
         } catch (IOException e) {
@@ -129,7 +132,7 @@ public class AnalysisController {
     }
 
     private Path getAnalysisDirectory(long id) {
-        Path analysisDir = analysisPath.resolve(Long.toUnsignedString(id));
+        final Path analysisDir = analysisPath.resolve(Long.toUnsignedString(id));
         if (!Files.exists(analysisDir)) {
             throw new UnknownAnalysisException("AnalysisId not found: " + id);
         }

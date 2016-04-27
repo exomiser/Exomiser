@@ -24,11 +24,6 @@
  */
 package de.charite.compbio.exomiser.core.config;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +35,14 @@ import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -85,25 +82,30 @@ public class CacheConfig {
         return cacheManager;
     }
 
-    public NoOpCacheManager noOpCacheManager() {
+    private NoOpCacheManager noOpCacheManager() {
         logger.info("Caching disabled.");
         return new NoOpCacheManager();
     }
 
 
-    public EhCacheCacheManager ehCacheCacheManager() {
+    private EhCacheCacheManager ehCacheCacheManager() {
         EhCacheCacheManager ehCacheCacheManager = new EhCacheCacheManager(ehCacheManager().getObject());
         return ehCacheCacheManager;
+    }
+
+    @Bean
+    public Resource ehCacheConfig() {
+        return new ClassPathResource("ehcache.xml");
     }
 
     @Lazy
     @Bean//(destroyMethod = "shutdown")
     public EhCacheManagerFactoryBean ehCacheManager() {
-        Resource ehCachConfig = new ClassPathResource("ehcache.xml");
-        logger.info("Loading ehcache.xml from {}", ehCachConfig.getDescription());
+        Resource ehCacheConfig = ehCacheConfig();
+        logger.info("Loading ehcache.xml from {}", ehCacheConfig.getDescription());
         
         EhCacheManagerFactoryBean ehCacheManagerFactoryBean = new EhCacheManagerFactoryBean();
-        ehCacheManagerFactoryBean.setConfigLocation(ehCachConfig);
+        ehCacheManagerFactoryBean.setConfigLocation(ehCacheConfig);
         return ehCacheManagerFactoryBean;
     }
     

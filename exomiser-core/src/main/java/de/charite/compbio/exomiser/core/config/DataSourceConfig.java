@@ -26,17 +26,19 @@ package de.charite.compbio.exomiser.core.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.SQLException;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+
+import javax.sql.DataSource;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * Provides the JDBC datasource from the jdbc.properties file located in the
@@ -57,6 +59,7 @@ public class DataSourceConfig {
     private Path dataPath;
     
     @Bean
+    @ConditionalOnMissingBean
     public DataSource dataSource() {
         HikariDataSource dataSource;
         if (env.getProperty("usePostgreSQL").equals("true")) {
@@ -117,8 +120,10 @@ public class DataSourceConfig {
         String url = env.getProperty("h2.url");
         
         if (env.containsProperty("h2Path") & !env.getProperty("h2Path").isEmpty()) {
+            logger.info("Using user defined H2 path: {}", env.getProperty("h2Path"));
             env.resolvePlaceholders("h2Path"); //this comes from the application.properties
-        }else {
+        } else {
+            logger.info("H2 path not set. Using default data path: {}", dataPath);
             //in this case it hasn't been manually set, so we'll use the default location
             //the placeholders are not visible in the url string hence we replace the 'file:'
             String h2Filepath = String.format("file:%s", dataPath);

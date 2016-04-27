@@ -17,46 +17,35 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.charite.compbio.exomiser.rest.analysis;
+package config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@ComponentScan("de.charite.compbio.exomiser.rest.analysis")
-@PropertySource({"classpath:application.properties", "classpath:exomiser.properties"})
-public class ExomiserConfig {
-
-    private static Logger logger = LoggerFactory.getLogger(ExomiserConfig.class);
+@EnableWebMvc
+@ComponentScan(basePackages = {"de.charite.compbio.exomiser.web.controller"})
+public class TestControllerConfig {
 
     @Autowired
-    Environment environment;
+    private Environment env;
 
     @Bean
-    Path analysisPath() {
-        Path analysisPath = Paths.get(environment.getProperty("exomiser.analysisPath"));
-        try {
-            if (!Files.exists(analysisPath)) {
-                logger.info("Setting up analysis path at {}", analysisPath);
-                Files.createDirectory(analysisPath);
-            }
-        } catch (IOException ex) {
-            logger.error("Unable to create directory for analyses {}", analysisPath, ex);
-        }
-        return analysisPath;
+    public Integer maxVariants() {
+        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
+        return maxVariants;
+    }
+
+    @Bean
+    public Integer maxGenes() {
+        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
+        return maxGenes;
     }
 }

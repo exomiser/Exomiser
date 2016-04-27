@@ -19,11 +19,12 @@
 
 package de.charite.compbio.exomiser.rest.analysis;
 
+import de.charite.compbio.exomiser.core.config.EnableExomiser;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
+@EnableExomiser
 public class ExomiserRestAnalysisApplication {
 
 	public static void main(String[] args) {

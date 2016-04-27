@@ -1,18 +1,20 @@
 /*
- * Copyright (C) 2014 Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * The Exomiser - A tool to annotate and prioritize variants
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package de.charite.compbio.exomiser.web.controller;
 
@@ -21,39 +23,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
-import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
-import de.charite.compbio.exomiser.core.analysis.AnalysisRunner;
-import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
+import de.charite.compbio.exomiser.core.analysis.*;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
-import de.charite.compbio.exomiser.core.analysis.SettingsParser;
-import de.charite.compbio.exomiser.core.filters.FilterSettings;
-import de.charite.compbio.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettings;
-import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettingsImpl.PrioritiserSettingsBuilder;
-import de.charite.compbio.exomiser.core.writers.ResultsWriterUtils;
-import de.charite.compbio.exomiser.core.writers.VariantEffectCount;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
-import de.charite.compbio.jannovar.data.ReferenceDictionaryBuilder;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
+import de.charite.compbio.exomiser.core.writers.*;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +44,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -73,19 +62,20 @@ public class SubmitJobController {
 
     private static final Logger logger = LoggerFactory.getLogger(SubmitJobController.class);
 
-    private final ReferenceDictionary referenceDictionary = new ReferenceDictionaryBuilder().build();
+    @Autowired
+    private Integer maxVariants;
+    @Autowired
+    private Integer maxGenes;
 
     @Autowired
     private SettingsParser settingsParser;
 
     @Autowired
     private AnalysisFactory analysisFactory;
-
     @Autowired
-    private int maxVariants;
-
+    private PriorityService priorityService;
     @Autowired
-    private int maxGenes;
+    private ResultsWriterFactory resultsWriterFactory;
 
     @RequestMapping(value = "submit", method = RequestMethod.GET)
     public String configureExomiserJob(Model model) {
@@ -111,16 +101,26 @@ public class SubmitJobController {
             Model model) {
 
         logger.info("Session id: {}", session.getId());
-        Path vcfPath = createPathFromMultipartFile(vcfFile);
-        Path pedPath = createPathFromMultipartFile(pedFile);
-
-        logger.info("Selected disease: {}", diseaseId);
-        logger.info("Selected phenotypes: {}", phenotypes);
-        Set<Integer> genesToKeep = makeGenesToKeep(genesToFilter);
+        Path vcfPath = createVcfPathFromMultipartFile(vcfFile);
+        Path pedPath = createPedPathFromMultipartFile(pedFile);
         //require a mimimum input of a VCF file and a set of HPO terms - these can come from the diseaseId
         if (vcfPath == null) {
+            logger.info("User did not submit a VCF - returning to submission page");
             return "submit";
         }
+
+        if (phenotypes == null && diseaseId == null) {
+            logger.info("User did not provide a disease or phenotype set - returning to submission page");
+            return "submit";
+        }
+
+        if(phenotypes == null) {
+            logger.info("No phenotypes provided - trying to use disease phenotypes");
+            phenotypes = getDiseasePhenotypes(diseaseId);
+        }
+
+        logger.info("Using disease: {}", diseaseId);
+        logger.info("Using phenotypes: {}", phenotypes);
 
         int numVariantsInSample = countVariantLinesInVcf(vcfPath);
         if (numVariantsInSample > maxVariants) {
@@ -131,16 +131,37 @@ public class SubmitJobController {
             return "resubmitWithFewerVariants";
         }
 
-        //TODO: Submit the settings to the ExomiserController to run the job rather than do it here
-        Analysis analysis = buildAnalysis(Paths.get(vcfFile.getOriginalFilename()), Paths.get(pedFile.getOriginalFilename()), diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, genesToKeep, prioritiser);
+        Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunnerForMode(AnalysisMode.PASS_ONLY);
         analysisRunner.runAnalysis(analysis);
-
+        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), session.getId());
+        try {
+            Files.createDirectory(outputDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        logger.info("Output dir: {}", outputDir);
+        String outFileName = outputDir.toString() + "/results";
+        OutputSettings outputSettings = new OutputSettingsImp.OutputSettingsBuilder()
+                .numberOfGenesToShow(20)
+                .outputPrefix(outFileName)
+                .outputFormats(EnumSet.of(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
+                .build();
+        for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
+            ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
+            resultsWriter.writeFile(analysis, outputSettings);
+        }
         buildResultsModel(model, analysis);
-
         logger.info("Returning {} results to user", vcfPath.getFileName());
         cleanUpSampleFiles(vcfPath, pedPath);
         return "results";
+    }
+
+    private List<String> getDiseasePhenotypes(String diseaseId) {
+        if (diseaseId != null && !diseaseId.isEmpty()) {
+            return priorityService.getHpoIdsForDiseaseId(diseaseId);
+        }
+        return Collections.emptyList();
     }
 
     private int countVariantLinesInVcf(Path vcfPath) {
@@ -165,36 +186,26 @@ public class SubmitJobController {
     }
 
     private Analysis buildAnalysis(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
-        Analysis analysis = new Analysis();
-        analysis.setVcfPath(vcfPath);
-        analysis.setPedPath(pedPath);
-        analysis.setHpoIds(phenotypes);
-        analysis.setModeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance));
 
-        analysis.setScoringMode(PriorityType.valueOf(prioritiser).getScoringMode());
-        analysis.setAnalysisMode(AnalysisMode.PASS_ONLY);
-
-        //Set Filtering Parameters
-        FilterSettingsBuilder filterSettingsBuilder = new FilterSettingsBuilder()
+        Settings settings = new Settings.SettingsBuilder()
+                .vcfFilePath(vcfPath)
+                .pedFilePath(pedPath)
+                .hpoIdList(phenotypes)
+                .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
                 .removeKnownVariants(removeDbSnp)
                 .keepOffTargetVariants(keepOffTarget)
                 .keepNonPathogenic(keepNonPathogenic)
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .maximumFrequency(Float.valueOf(frequency))
-                .genesToKeep(genesToKeep);
-        if (geneticInterval != null) {
-            filterSettingsBuilder.geneticInterval(GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval));
-        }
-        FilterSettings filterSettings = filterSettingsBuilder.build();
-
-        PrioritiserSettings prioritiserSettings = new PrioritiserSettingsBuilder()
+                .genesToKeep(genesToKeep)
+                .geneticInterval(geneticInterval != null ? GeneticInterval.parseString(HG19RefDictBuilder.build(), geneticInterval) : null)
                 .usePrioritiser(PriorityType.valueOf(prioritiser))
                 .diseaseId(diseaseId)
-                .hpoIdList(phenotypes == null ? new ArrayList<String>() : phenotypes)
                 .build();
 
-        analysis.addAllSteps(settingsParser.makeAnalysisSteps(filterSettings, prioritiserSettings));
+        Analysis analysis = settingsParser.parse(settings);
+        analysis.setAnalysisMode(AnalysisMode.PASS_ONLY);
 
         return analysis;
     }
@@ -239,7 +250,7 @@ public class SubmitJobController {
         model.addAttribute("geneResultsTruncated", false);
         int numCandidateGenes = numGenesPassedFilters(sampleGenes);
         if (numCandidateGenes > maxGenes) {
-            logger.info("Truncating number of genes returned - {} ");
+            logger.info("Truncating number of genes returned to {} ", maxGenes);
             model.addAttribute("geneResultsTruncated", true);
             model.addAttribute("numCandidateGenes", numCandidateGenes);
             model.addAttribute("totalGenes", sampleGenes.size());
@@ -259,15 +270,21 @@ public class SubmitJobController {
         return numCandidateGenes;
     }
 
+    //This throws 'java.nio.file.FileSystemException: The process cannot access the file because it is being used by another process.'
+    // when on Windows as it seems tha Tomcat is locking the files/not setting the correct owner permissions.
     private void cleanUpSampleFiles(Path vcfPath, Path pedPath) {
-        logger.info("Deleting input files VCF: {} and PED: {}", vcfPath, pedPath);
+        deleteSampleFile(vcfPath);
+        deleteSampleFile(pedPath);
+    }
+
+    private void deleteSampleFile(Path sampleFile) {
         try {
-            Files.deleteIfExists(vcfPath);
-            if (pedPath != null) {
-                Files.deleteIfExists(pedPath);
+            if (sampleFile != null) {
+                logger.info("Deleting sample input file {}", sampleFile);
+                Files.deleteIfExists(sampleFile);
             }
         } catch (IOException ex) {
-            logger.error("Unable to delete sample files", ex);
+            logger.error("Unable to delete sample file {}", sampleFile, ex);
         }
     }
 
@@ -289,13 +306,20 @@ public class SubmitJobController {
         return genesToKeep;
     }
 
-    private Path createPathFromMultipartFile(MultipartFile multipartFile) {
+    private Path createVcfPathFromMultipartFile(MultipartFile multipartVcfFile) {
+        return createPathFromMultipartFile(multipartVcfFile, ".vcf");
+    }
+
+    private Path createPedPathFromMultipartFile(MultipartFile multipartPedFile) {
+        return createPathFromMultipartFile(multipartPedFile, ".ped");
+    }
+
+    private Path createPathFromMultipartFile(MultipartFile multipartFile, String suffix) {
         Path tempDirPath = Paths.get(System.getProperty("java.io.tmpdir"));
         if (!multipartFile.isEmpty()) {
             logger.info("Uploading multipart file: {}", multipartFile.getOriginalFilename());
             try {
-                Path path = Files.createTempFile(tempDirPath, "temp",  multipartFile.getOriginalFilename());
-//                Path path = Paths.get(tempDirPath.toString(), multipartFile.getOriginalFilename());
+                Path path = Files.createTempFile(tempDirPath, "exomiser-", suffix);
                 multipartFile.transferTo(path.toFile());
                 return path;
             } catch (IOException e) {

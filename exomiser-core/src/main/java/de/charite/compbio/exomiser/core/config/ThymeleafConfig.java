@@ -17,26 +17,31 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package de.charite.compbio.exomiser.web.config;
+package de.charite.compbio.exomiser.core.config;
 
-import de.charite.compbio.exomiser.core.config.EnableExomiser;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
- * Provides configuration details from the exomiser.properties file located in
- * the classpath.
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@PropertySource({"classpath:application.properties","classpath:exomiser.properties"})
-@EnableExomiser
-public class ExomiserConfig {
+public class ThymeleafConfig {
+
+    @Bean
+    public TemplateEngine coreTemplateEngine() {
+        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setTemplateMode("HTML5");
+        templateResolver.setPrefix("templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setCacheable(true);
+        TemplateEngine templateEngine = new TemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+
+        return templateEngine;
+    }
 
 }

@@ -1,39 +1,33 @@
 /*
- * Copyright (C) 2014 jj8
+ * The Exomiser - A tool to annotate and prioritize variants
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package de.charite.compbio.exomiser.web.controller;
 
-import de.charite.compbio.exomiser.web.model.SelectOption;
 import de.charite.compbio.exomiser.web.dao.ExomiserDao;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import javax.annotation.PostConstruct;
+import de.charite.compbio.exomiser.web.model.SelectOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  *
@@ -44,8 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DataController {
     private static final Logger logger = LoggerFactory.getLogger(DataController.class);
     
-    @Autowired
-    private ExomiserDao exomiserDao;
+    private final ExomiserDao exomiserDao;
 
     private Map<String, String> hpoTerms;
     private Set<SelectOption> hpoSelectOptions;
@@ -55,7 +48,12 @@ public class DataController {
     
     private Map<String, String> genes;
     private Set<SelectOption> geneSelectOptions;
-    
+
+    @Autowired
+    public DataController(ExomiserDao exomiserDao) {
+        this.exomiserDao = exomiserDao;
+    }
+
     @PostConstruct
     private void setUp() {
         hpoTerms = exomiserDao.getHpoTerms();

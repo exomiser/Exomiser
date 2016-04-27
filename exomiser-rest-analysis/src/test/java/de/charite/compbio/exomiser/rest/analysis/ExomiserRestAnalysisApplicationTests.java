@@ -21,22 +21,11 @@ package de.charite.compbio.exomiser.rest.analysis;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ExomiserRestAnalysisApplication.class)
-@WebAppConfiguration
 public class ExomiserRestAnalysisApplicationTests {
 
 	@Test

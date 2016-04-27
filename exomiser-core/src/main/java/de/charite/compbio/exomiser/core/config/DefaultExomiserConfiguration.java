@@ -27,12 +27,8 @@ import htsjdk.tribble.readers.TabixReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -44,7 +40,9 @@ import java.nio.file.Paths;
 @Configuration
 @ComponentScan("de.charite.compbio.exomiser.core")
 @Import({DataSourceConfig.class, CacheConfig.class})
-@PropertySource(value = {"classpath:exomiser.version", "classpath:exomiser.properties"})
+@PropertySource("classpath:exomiser.version")
+//adding exomiser.properties here kills external cli config, but would be ideal to have
+//We're going to try this with Spring boot so these settings will be part of the application.properties
 public class DefaultExomiserConfiguration {
 
     Logger logger = LoggerFactory.getLogger(DefaultExomiserConfiguration.class);
@@ -76,6 +74,12 @@ public class DefaultExomiserConfiguration {
         return dataPath;
     }
 
+    private Path resolveRelativeToDataDir(String fileName) {
+        return dataPath().resolve(fileName);
+    }
+
+    //Variant analysis configuration
+
     @Bean
     public Path ucscFilePath() {
         String ucscFileNameValue = getValueOfProperty("ucscFileName");
@@ -84,10 +88,6 @@ public class DefaultExomiserConfiguration {
         return ucscFilePath;
     }
 
-
-    private Path resolveRelativeToDataDir(String fileName) {
-        return dataPath().resolve(fileName);
-    }
     /**
      * This takes a few seconds to de-serialise.
      */
@@ -100,6 +100,46 @@ public class DefaultExomiserConfiguration {
             throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
     }
+
+    @Lazy
+    @Bean
+    public TabixReader inDelTabixReader() {
+        return getTabixReaderOrDefaultForProperty("caddInDelPath", "InDels.tsv.gz");
+    }
+
+    @Lazy
+    @Bean
+    public TabixReader snvTabixReader() {
+        return getTabixReaderOrDefaultForProperty("caddSnvPath", "whole_genome_SNVs.tsv.gz");
+    }
+
+    @Lazy
+    @Bean
+    public TabixReader remmTabixReader() {
+        String remmPath = getValueOfProperty("remmPath");
+        String remmPathValue = resolveRelativeToDataDir(remmPath).toString();
+        try {
+            return new TabixReader(remmPathValue);
+        } catch (IOException e) {
+            throw new RuntimeException("REMM file not found ", e);
+        }
+        // TODO: remove the name in the new config file if we unbundle REMM and enable this:
+//        return getTabixReaderOrDefaultForProperty("remmPath", "remmData.tsv.gz");
+    }
+
+    private TabixReader getTabixReaderOrDefaultForProperty(String property, String defaultFileName) {
+        String tabixGzPathValue = getValueOfProperty(property);
+        if (tabixGzPathValue.isEmpty()) {
+            tabixGzPathValue = resolveRelativeToDataDir(defaultFileName).toString();
+        }
+        try {
+            return new TabixReader(tabixGzPathValue);
+        } catch (IOException e) {
+            throw new RuntimeException(property + "=" + tabixGzPathValue + " file not found. Please check exomiser properties file points to a valid tabix .gz file.", e);
+        }
+    }
+
+    //Prioritiser configuration
 
     @Bean
     public Path phenixDataDirectory() {
@@ -125,46 +165,6 @@ public class DefaultExomiserConfiguration {
         return hpoAnnotationFilePath;
     }
 
-    @Lazy
-    @Bean
-    public TabixReader inDelTabixReader() {
-        String caddInDelPathValue = getValueOfProperty("caddInDelPath");
-        if (caddInDelPathValue.isEmpty()) {
-            caddInDelPathValue = dataPath().resolve("InDels.tsv.gz").toString();
-        }
-        try {
-            return new TabixReader(caddInDelPathValue);
-        } catch (IOException e) {
-            throw new RuntimeException("CADD InDels.tsv.gz file not found.", e);
-        }
-    }
-
-    @Lazy
-    @Bean
-    public TabixReader snvTabixReader() {
-        String caddSnvPathValue = getValueOfProperty("caddSnvPath");
-        if (caddSnvPathValue.isEmpty()) {
-            caddSnvPathValue = resolveRelativeToDataDir("whole_genome_SNVs.tsv.gz").toString();
-        }
-        try {
-            return new TabixReader(caddSnvPathValue);
-        } catch (IOException e) {
-            throw new RuntimeException("CADD whole_genome_SNVs.tsv.gz file not found.", e);
-        }
-    }
-
-    @Lazy
-    @Bean
-    public TabixReader remmTabixReader() {
-        String remmPath = getValueOfProperty("remmPath");
-        String remmPathValue = resolveRelativeToDataDir(remmPath).toString();
-        try {
-            return new TabixReader(remmPathValue);
-        } catch (IOException e) {
-            throw new RuntimeException("REMM file not found ", e);
-        }
-    }
-
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so
      * it's set as lazy use on the command-line.
@@ -183,32 +183,19 @@ public class DefaultExomiserConfiguration {
         return new DataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
     }
 
-    //TODO: this conflicts with the SpringTemplateEngine in the exomiser-web package
-    @Bean
-    public TemplateEngine templateEngine() {
-        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setTemplateMode("HTML5");
-        templateResolver.setPrefix("html/templates/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setCacheable(true);
-        TemplateEngine templateEngine = new TemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver);
-
-        return templateEngine;
-    }
-
     private String getValueOfProperty(String property) throws PropertyNotFoundException {
         String value = env.getProperty(property);
         if (value == null) {
-            throw new PropertyNotFoundException(String.format("Property '%s' not present in application.properties", property));
+            throw new PropertyNotFoundException(String.format("Property '%s' not present in exomiser.properties. Check that you have an exomiser.properties file in your classpath.", property));
         }
         return value;
     }
 
-public class PropertyNotFoundException extends RuntimeException {
+    public class PropertyNotFoundException extends RuntimeException {
 
-    public PropertyNotFoundException(String message) {
-        super(message);
+        public PropertyNotFoundException(String message) {
+            super(message);
+        }
     }
-}
+
 }

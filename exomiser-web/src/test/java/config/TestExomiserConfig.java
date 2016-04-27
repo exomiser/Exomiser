@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -20,28 +20,14 @@ package config;
 
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
+import de.charite.compbio.exomiser.core.config.EnableExomiser;
 import de.charite.compbio.exomiser.core.dao.FrequencyDao;
 import de.charite.compbio.exomiser.core.dao.PathogenicityDao;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
-import de.charite.compbio.exomiser.core.factories.VariantAnnotator;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
-import de.charite.compbio.exomiser.core.analysis.SettingsParser;
-import de.charite.compbio.exomiser.core.dao.DefaultDiseaseDao;
-import de.charite.compbio.exomiser.core.dao.DiseaseDao;
-import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactoryImpl;
-import de.charite.compbio.exomiser.core.prioritisers.util.ModelService;
-import de.charite.compbio.exomiser.core.prioritisers.util.ModelServiceImpl;
-import de.charite.compbio.exomiser.core.prioritisers.util.OntologyService;
-import de.charite.compbio.exomiser.core.prioritisers.util.OntologyServiceImpl;
-import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import de.charite.compbio.exomiser.core.filters.SparseVariantFilterRunner;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
@@ -51,17 +37,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@PropertySource({"classpath:exomiser.properties"})
-@Import(value = {TestDaoConfig.class})
+@PropertySource({"classpath:exomiser.properties", "classpath:application.properties"})
+@EnableExomiser
 public class TestExomiserConfig {
     
     Logger logger = LoggerFactory.getLogger(TestExomiserConfig.class);
@@ -85,20 +73,6 @@ public class TestExomiserConfig {
         logger.debug("Root data source directory set to: {}", dataPath.toAbsolutePath());
         
         return dataPath;
-    }
-    
-    @Bean
-    public int maxVariants() {
-        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
-        logger.info("Set max variants to {}", maxVariants);
-        return maxVariants;
-    }
-    
-    @Bean
-    public int maxGenes() {
-        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
-        logger.info("Set max genes to {}", maxGenes);
-        return maxGenes;
     }
 
     @Bean
@@ -144,10 +118,10 @@ public class TestExomiserConfig {
         return Mockito.mock(SampleDataFactory.class);
     }
     
-    @Bean
-    public PriorityFactoryImpl mockPriorityFactory() {
-        return Mockito.mock(PriorityFactoryImpl.class);
-    }
+//    @Bean
+//    public PriorityFactory prioritserFactory() {
+//        return Mockito.mock(PriorityFactory.class);
+//    }
     
     //cacheable beans
     @Bean
@@ -166,42 +140,42 @@ public class TestExomiserConfig {
     }
     
     @Bean
-    public VariantDataService variantEvaluationDataService() {
+    public VariantDataService variantDataService() {
         return Mockito.mock(VariantDataService.class);
     }
     
-    @Bean
-    PriorityService priorityService() {
-        return new PriorityService();
-    }
-    
-    @Bean
-    ModelService modelService() {
-        return new ModelServiceImpl();
-    }
-    
-    @Bean
-    OntologyService ontologyService() {
-        return new OntologyServiceImpl();
-    }
-    
-    @Bean
-    DiseaseDao diseaseDao() {
-        return new DefaultDiseaseDao();
-    }
-    
-    @Bean
-    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
-        return new HumanPhenotypeOntologyDao();
-    }
-    
-    @Bean
-    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
-        return new MousePhenotypeOntologyDao();
-    }
-    
-    @Bean
-    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
-        return new ZebraFishPhenotypeOntologyDao();
-    }
+//    @Bean
+//    PriorityService priorityService() {
+//        return new PriorityService();
+//    }
+//
+//    @Bean
+//    ModelService modelService() {
+//        return new ModelServiceImpl();
+//    }
+//
+//    @Bean
+//    OntologyService ontologyService() {
+//        return new OntologyServiceImpl();
+//    }
+//
+//    @Bean
+//    DiseaseDao diseaseDao() {
+//        return new DefaultDiseaseDao();
+//    }
+//
+//    @Bean
+//    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
+//        return new HumanPhenotypeOntologyDao();
+//    }
+//
+//    @Bean
+//    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
+//        return new MousePhenotypeOntologyDao();
+//    }
+//
+//    @Bean
+//    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
+//        return new ZebraFishPhenotypeOntologyDao();
+//    }
 }

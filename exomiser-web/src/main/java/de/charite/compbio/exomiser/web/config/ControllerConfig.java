@@ -26,9 +26,11 @@ package de.charite.compbio.exomiser.web.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
@@ -47,9 +49,12 @@ import org.thymeleaf.templateresolver.TemplateResolver;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {"de.charite.compbio.exomiser.web"})
-public class WebAppConfig extends WebMvcConfigurerAdapter {
+public class ControllerConfig extends WebMvcConfigurerAdapter {
 
-    Logger logger = LoggerFactory.getLogger(WebAppConfig.class);
+    Logger logger = LoggerFactory.getLogger(ControllerConfig.class);
+
+    @Autowired
+    private Environment env;
 
     @Bean
     MultipartResolver multipartResolver() {
@@ -92,6 +97,20 @@ public class WebAppConfig extends WebMvcConfigurerAdapter {
         //setCacheable=false will enable easy development - just save the template and then refresh the browser to see the changes 
         resolver.setCacheable(false);
         return resolver;
+    }
+
+    @Bean
+    public Integer maxVariants() {
+        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
+        logger.info("Set max variants to {}", maxVariants);
+        return maxVariants;
+    }
+
+    @Bean
+    public Integer maxGenes() {
+        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
+        logger.info("Set max genes to {}", maxGenes);
+        return maxGenes;
     }
 
 }
