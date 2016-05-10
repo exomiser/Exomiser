@@ -39,13 +39,11 @@ Use the following commands:
  ```bash
   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-distribution.zip
  ```
- 
  2. Download the data (this is ~20GB and will take a while)
  
 ```bash
  wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-data.zip
  ```
- 
  3. Download the checksums and verify the files (optional)
  
  ```bash
