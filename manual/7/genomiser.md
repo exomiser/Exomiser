@@ -57,15 +57,23 @@ hpoIds:
 
 frequencySources:
 : Here you can specify which variant frequency databases you want to use. You can add multiple databases using the same array format like the hpoIDs. Possible options are [`THOUSAND_GENOMES`](http://www.1000genomes.org), [`ESP_AFRICAN_AMERICAN`, `ESP_EUROPEAN_AMERICAN`, `ESP_ALL`](http://evs.gs.washington.edu/EVS/), [`EXAC_AFRICAN_INC_AFRICAN_AMERICAN`, `EXAC_AMERICAN`, `EXAC_SOUTH_ASIAN`, `EXAC_EAST_ASIAN`,`EXAC_FINNISH`, `EXAC_NON_FINNISH_EUROPEAN`,`EXAC_OTHER`](http://exac.broadinstitute.org/about)
+
 pathogenicitySources:
 : Possible pathogenicitySources: `POLYPHEN`, `MUTATION_TASTER`, `SIFT`, `CADD`, `REMM`. `REMM` is trained on non-coding regulatory regions. **WARNING** if you enable `CADD`, ensure that you have downloaded and installed the `CADD` tabix files and updated their location in the application.properties. Exomiser will not run without this. An example is: `[POLYPHEN, MUTATION_TASTER, SIFT, REMM]`
 
-This is the recommended order for a genome-sized analysis.
-#all steps are optional
-steps: [ 
-#intervalFilter: {interval: 'chr10:123256200-123256300'}, 
-#geneIdFilter: {geneIds: [12345, 34567, 98765]},
-hiPhivePrioritiser: {},
+steps:
+: in this analysis section the different analysis steps are defined and are **important** the same ordering is used. We recomment the standard settings on genome wide analysis because of performance. But in generall all steps are option. Steps must be defined in hash format. So this section has to start and to end with a square bracket. Steps are comma separated and written like *name: {options}*.  See the [steps section](#steps-section) for more details.
+
+### Steps section
+intervalFilter: 
+: {interval: 'chr10:123256200-123256300'}
+
+geneIdFilter:
+: {geneIds: [12345, 34567, 98765]}
+
+hiPhivePrioritiser: 
+: {}
+
 #running the prioritiser followed by a priorityScoreFilter will remove genes
 #which are least likely to contribute to the phenotype defined in hpoIds, this will
 #dramatically reduce the time and memory required to analyse a genome.
