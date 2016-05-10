@@ -25,7 +25,7 @@ description: A Tool to Annotate and Prioritize Exome Variants
 navbar-links:
   Manual Version >= 7.0.0:
     - Quickstart: "manual/7/quickstart"
-		- Installation: "manual/7/installation"
+    - Installation: "manual/7/installation"
     - Exomiser: "manual/7/exomiser"
     - Genomiser: "manual/7/genomiser"
   Resources:
