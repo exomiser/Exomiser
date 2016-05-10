@@ -28,10 +28,13 @@ navbar-links:
     - Installation: "manual/7/installation"
     - Exomiser: "manual/7/exomiser"
     - Genomiser: "manual/7/genomiser"
+  FAQ: "manual/faq"
   Resources:
     - Exomiser software: "http://www.sanger.ac.uk/science/tools/exomiser"
     - Exomiser download: "ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser"
+    - HPO-Browser: "http://compbio.charite.de/hpoweb/"
     - Jannovar: "http://charite.github.io/jannovar"
+    - Computational Biology Group: "https://compbio.charite.de"
 
 include: ['_pages']
 
