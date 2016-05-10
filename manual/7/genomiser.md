@@ -9,3 +9,6 @@ Description genomiser
 # Configuration
 
 # Run Genomiser
+
+# Choose filters
+[filters](filters.md)
