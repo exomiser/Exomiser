@@ -4,6 +4,10 @@ title: Genomiser manual
 subtitle: Instructions how to intall use, and configure Genomiser
 ---
 
+* TOC
+{:toc}
+
+
 Description genomiser
 
 # Configuration
@@ -11,4 +15,5 @@ Description genomiser
 # Run Genomiser
 
 # Choose filters
-[filters](filters.md)
+
+[filters](../filters)
