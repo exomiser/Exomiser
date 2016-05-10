@@ -23,31 +23,40 @@ subtitle: Quickstart for Exomiser and Genomiser
  3. Extract the distribution files by right-clicking exomiser-cli-7.2.1-distribution.zip and selecting 7-Zip > Extract Here
  4. Extract the data files by right-clicking exomiser-cli-7.2.1-data.zip and selecting 7-Zip > Extract Here
    4.1 Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
- 5. cd exomiser-cli-7.2.1
- 6. java -Xms2g -Xmx4g -jar exomiser-cli-7.2.1.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+ 5. use your cmd to test your installation:
+ ```bash
+ cd exomiser-cli-7.2.1
+ java -Xms2g -Xmx4g -jar exomiser-cli-7.2.1.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+ ```
  
 ## Linux
 
-The following shell script should work-
-    
-    #download the distribution (won't take long)
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-distribution.zip
-    #download the data (this is ~20GB and will take a while)
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-data.zip
-
-    #download the checksums and verify the files (optional)
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1.sha256    
-    sha256sum -c exomiser-cli-7.2.1.sha256
-    
-    #unzip the distribution and data files - this will create a directory called 'exomiser-cli-7.2.1' in the current working directory
+Use the following commands:
+ 1. Download the distribution (won't take long)
+ ```bash
+  wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-distribution.zip
+ ```
+ 2. Download the data (this is ~20GB and will take a while)
+```bash
+ wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-data.zip
+ ```
+ 3. Download the checksums and verify the files (optional)
+ ```bash
+ wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1.sha256    
+ sha256sum -c exomiser-cli-7.2.1.sha256
+ ```
+ 4. unzip the distribution and data files - this will create a directory called 'exomiser-cli-7.2.1' in the current working directory
+ ```bash
     unzip exomiser-cli-7.2.1-distribution.zip
     unzip exomiser-cli-7.2.1-data.zip
-
-    #run a test genomiser analysis
+ ```
+ 5. Run a test genomiser analysis
+ ```bash
     cd exomiser-cli-7.2.1
     java -Xms2g -Xmx4g -jar exomiser-cli-7.2.1.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+ ```
 
-This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml'. 
+This commands will download, verify and extract the exomiser files and then run the analysis contained in the file 'NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml'. 
 This file is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952) 
 
