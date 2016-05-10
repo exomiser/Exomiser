@@ -24,7 +24,6 @@ subtitle: Quickstart for Exomiser and Genomiser
  4. Extract the data files by right-clicking exomiser-cli-7.2.1-data.zip and selecting 7-Zip > Extract Here
    4.1 Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
  5. use your cmd to test your installation:
- 
  ```bash
  cd exomiser-cli-7.2.1
  java -Xms2g -Xmx4g -jar exomiser-cli-7.2.1.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
