@@ -1,54 +1,46 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Exomiser by exomiser</title>
+---
+layout: page
+title: Exomiser
+subtitle: Manual page of Exomiser and Genomiser
+---
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Exomiser</h1>
-        <p>A Tool to Annotate and Prioritise Exome Variants</p>
+<div class="posts-list">
+  {% for post in paginator.posts %}
+  <article class="post-preview">
+    <a href="{{ post.url | prepend: site.baseurl }}">
+	  <h2 class="post-title">{{ post.title }}</h2>
+	
+	  {% if post.subtitle %}
+	  <h3 class="post-subtitle">
+	    {{ post.subtitle }}
+	  </h3>
+	  {% endif %}  
+    </a>
 
-        <p class="view"><a href="https://github.com/exomiser/Exomiser">View the Project on GitHub <small>exomiser/Exomiser</small></a></p>
-
-
-        <ul>
-          <li><a href="https://github.com/exomiser/Exomiser/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/exomiser/Exomiser/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/exomiser/Exomiser">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>
-<a id="welcome-to-the-exomiser" class="anchor" href="#welcome-to-the-exomiser" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to The Exomiser.</h3>
-
-<p>Exomiser is an application that prioritizes genes and variants in Next-Generation Sequencing (NGS) projects for novel disease-gene discovery or differential diagnostics of Mendelian disease. Exomiser comprises a suite of algorithms for prioritizing exome sequences using random-walk analysis of protein interaction networks, clinical relevance, and cross-species phenotype comparisons, as well as a wide range of other computational filters for variant frequency, predicted pathogenicity, and pedigree analysis.</p>
-
-<p>These pages provide a detailed explanation of how to install Exomiser and use it to prioritize exome sequences in a number of scenarios.
- Exomiser requires ~3 GB of RAM and roughly 15-90 seconds of compute time to analyze a variant (VCF) file. Exomiser is freely available for academic use from <a href="http://www.sanger.ac.uk/resources/software/exomiser/">http://www.sanger.ac.uk/resources/software/exomiser/</a>.</p>
-
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/exomiser">exomiser</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
+    <p class="post-meta">
+      Posted on {{ post.date | date: "%B %-d, %Y" }}
+    </p>
+  
+    <div class="post-entry">
+      {{ post.content | truncatewords: 50 | strip_html | xml_escape}}
+	  <a href="{{ post.url | prepend: site.baseurl }}" class="post-read-more">[Read&nbsp;More]</a>
     </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
-  </body>
-</html>
+  
+   </article>
+  {% endfor %}
+</div>
+
+{% if paginator.total_pages > 1 %}
+<ul class="pager main-pager">
+  {% if paginator.previous_page %}
+  <li class="previous">
+    <a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}">&larr; Newer Posts</a>
+  </li>
+  {% endif %}
+  {% if paginator.next_page %}
+  <li class="next">
+    <a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}">Older Posts &rarr;</a>
+  </li>
+  {% endif %}
+</ul>
+{% endif %}
