@@ -20,7 +20,7 @@ subtitle: Instructions how to intall the Exomiser software suite
 
 # Installation
 
-## Window
+## Windows
 
 1. Install [7-Zip](http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues extracting the zip files. 
 2. Download the data and distribution files from the FTP site.
