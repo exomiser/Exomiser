@@ -23,14 +23,17 @@ description: A Tool to Annotate and Prioritize Exome Variants
 
 # List of links in the navigation bar
 navbar-links:
-  Manual: 
-    - Quickstart: "quickstart"
-    - Exomiser: "exomiser"
-    - Genomiser: "genomiser"
+  Manual Version >= 7.0.0:
+    - Quickstart: "manual/7/quickstart"
+		- Installation: "manual/7/installation"
+    - Exomiser: "manual/7/exomiser"
+    - Genomiser: "manual/7/genomiser"
   Resources:
     - Exomiser software: "http://www.sanger.ac.uk/science/tools/exomiser"
     - Exomiser download: "ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser"
     - Jannovar: "http://charite.github.io/jannovar"
+
+include: ['_pages']
 
 gems: [jekyll-paginate]
 paginate: 5
