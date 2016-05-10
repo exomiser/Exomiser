@@ -35,7 +35,7 @@ subtitle: Quickstart for Exomiser and Genomiser
 Use the following commands:
 
  1. Download the distribution (won't take long)
- 
+ ⋅⋅* 
  ```bash
   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-distribution.zip
  ```
