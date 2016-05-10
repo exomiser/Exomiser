@@ -16,8 +16,8 @@ subtitle: Quickstart for Exomiser and Genomiser
 
 # Installation
 
-## Windows
-    
+## Window
+
  1. Install 7-Zip (http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues extracting the zip files. 
  2. Download the data and distribution files from the FTP site.
  3. Extract the distribution files by right-clicking exomiser-cli-7.2.1-distribution.zip and selecting 7-Zip > Extract Here
@@ -33,6 +33,7 @@ subtitle: Quickstart for Exomiser and Genomiser
 ## Linux
 
 Use the following commands:
+
  1. Download the distribution (won't take long)
  
  ```bash
