@@ -7,6 +7,8 @@
 url: "https://exomiser.github.io/Exomiser"
 baseurl: "/Exomiser"
 
+latest_7_version: 7.2.1
+
 # If you are building a GitHub project page then use these settings:
 #url: "http://username.github.io/projectname"
 #baseurl: "/projectname"
@@ -23,15 +25,20 @@ description: A Tool to Annotate and Prioritize Exome Variants
 
 # List of links in the navigation bar
 navbar-links:
+  The software: "general"
   Manual Version >= 7.0.0:
     - Quickstart: "manual/7/quickstart"
     - Installation: "manual/7/installation"
     - Exomiser: "manual/7/exomiser"
     - Genomiser: "manual/7/genomiser"
+  FAQ: "manual/faq"
+  About: "about"
   Resources:
     - Exomiser software: "http://www.sanger.ac.uk/science/tools/exomiser"
     - Exomiser download: "ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser"
+    - HPO-Browser: "http://compbio.charite.de/hpoweb/"
     - Jannovar: "http://charite.github.io/jannovar"
+    - Computational Biology Group: "https://compbio.charite.de"
 
 include: ['_pages']
 

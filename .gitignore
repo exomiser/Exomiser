@@ -2,6 +2,7 @@
 _site
 .sass-cache
 .vagrant
+.project
 
 # general
 .DS_Store

@@ -24,14 +24,14 @@ subtitle: Instructions how to intall the Exomiser software suite
 
 1. Install [7-Zip](http://www.7-zip.org) for unzipping the archive files. The built-in archiving software has issues extracting the zip files. 
 2. Download the data and distribution files from the FTP site.
-3. Extract the distribution files by right-clicking `exomiser-cli-7.2.1-distribution.zip` and selecting 7-Zip > Extract Here
-4. Extract the data files by right-clicking `exomiser-cli-7.2.1-data.zip` and selecting 7-Zip > Extract Here
+3. Extract the distribution files by right-clicking `exomiser-cli-{{ site.latest_7_version }}-distribution.zip` and selecting 7-Zip > Extract Here
+4. Extract the data files by right-clicking `exomiser-cli-{{ site.latest_7_version }}-data.zip` and selecting 7-Zip > Extract Here
    1. Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
 5. Use your cmd to test your installation:
 
    ```
-   cd exomiser-cli-7.2.1
-   java -Xms2g -Xmx4g -jar exomiser-cli-7.2.1.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+   cd exomiser-cli-{{ site.latest_7_version }}
+   java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
    ```
  
 ## Linux
@@ -41,34 +41,34 @@ Use the following commands:
 1. Download the distribution (won't take long)
 
    ```
-   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-distribution.zip
+   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-distribution.zip
    ```
 
 2. Download the data (this is ~20GB and will take a while)
 
    ```
-   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1-data.zip
+   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-data.zip
    ```
 
 3. Download the checksums and verify the files (optional)
  
    ```
-   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-7.2.1.sha256
-   sha256sum -c exomiser-cli-7.2.1.sha256
+   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}.sha256
+   sha256sum -c exomiser-cli-{{ site.latest_7_version }}.sha256
  ```
 
-4. Unzip the distribution and data files - this will create a directory called 'exomiser-cli-7.2.1' in the current working directory
+4. Unzip the distribution and data files - this will create a directory called 'exomiser-cli-{{ site.latest_7_version }}' in the current working directory
 
    ```
-   unzip exomiser-cli-7.2.1-distribution.zip
-   unzip exomiser-cli-7.2.1-data.zip
+   unzip exomiser-cli-{{ site.latest_7_version }}-distribution.zip
+   unzip exomiser-cli-{{ site.latest_7_version }}-data.zip
    ```
  
  5. Run a test genomiser analysis
 
    ```
-   cd exomiser-cli-7.2.1
-   java -Xms2g -Xmx4g -jar exomiser-cli-7.2.1.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+   cd exomiser-cli-{{ site.latest_7_version }}
+   java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
    ```
 
 This commands will download, verify and extract the exomiser files and then run the analysis contained in the file `NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml`. 
