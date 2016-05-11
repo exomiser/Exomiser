@@ -35,19 +35,19 @@ If you have several genomes/exomes to analyse this is highly recommended as it w
 
 Genomiser can only be used with a configuration file in [yml format](http://yaml.org/). An example can be found in the downloaded `exomiser-cli-{{ site.latest_7_version }}-distribution.zip` file or [here](../example/test-analysis-genome). It is structured into two sections
 
-analysis:
-  Section include input, run mode, filters, and prioritizers. See [Analysis section](#analysis-section) for more details.
+**analysis:**
+Section include input, run mode, filters, and prioritizers. See [Analysis section](#analysis-section) for more details.
 
-outputOptions:
-  Section that defines the output format, output file and number of results that should be printed out. See [output options section](#output-options-section) for more details.
+**outputOptions:**
+Section that defines the output format, output file and number of results that should be printed out. See [output options section](#output-options-section) for more details.
 
 ## Analysis section
 
-vcf:
-  The variant file in [VCF format](https://github.com/samtools/hts-specs). There can be variants of multiple samples from one family in the file.
+**vcf:**
+The variant file in [VCF format](https://github.com/samtools/hts-specs). There can be variants of multiple samples from one family in the file.
 
-ped:
-  If you have multiple samples as input you have to define the pedigree using the [ped format](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped). It is important that you correctly define affected and unaffected individuals. If you use `X_RECESSIVE` as mode of inheritance be sure that the sex is correct (unknown is also fine).
+**ped:**
+If you have multiple samples as input you have to define the pedigree using the [ped format](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped). It is important that you correctly define affected and unaffected individuals. If you use `X_RECESSIVE` as mode of inheritance be sure that the sex is correct (unknown is also fine).
 
 modeOfInheritance:
 : Can be `AUTOSOMAL_DOMINANT`, `AUTOSOMAL_RECESSIVE`, `X_RECESSIVE` or `UNDEFINED`. This is a functionality of Jannovar. See its [inheritance documentation](http://jannovar.readthedocs.io/en/master/ped_filters.html) for further information.
