@@ -25,9 +25,9 @@ java -Xms4g -Xmx8g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis 
 
 Analyses can also be run in batches using the `--analysis-batch` command. This requires a file containing the paths to each analysis with one path per line as input.
  
- ```
- java -Xms4g -Xmx8g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis-batch test-batch-analysis.txt
- ```
+```
+java -Xms4g -Xmx8g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis-batch test-batch-analysis.txt
+```
 
 If you have several genomes/exomes to analyse this is highly recommended as it will remove the start-time overhead and also allow the user to make use of caches as described in the `application.properties` file. Used correctly, this can save a lot of time at the expense of RAM as variant frequency and pathogenicity data will be cached for the most common variants cutting down on calls to the database. 
 
@@ -36,14 +36,17 @@ If you have several genomes/exomes to analyse this is highly recommended as it w
 Genomiser can only be used with a configuration file in [yml format](http://yaml.org/). An example can be found in the downloaded `exomiser-cli-{{ site.latest_7_version }}-distribution.zip` file or [here](../example/test-analysis-genome). It is structured into two sections
 
 analysis:
+
 : Section include input, run mode, filters, and prioritizers. See [Analysis section](#analysis-section) for more details.
 
 outputOptions:
+
 : Section that defines the output format, output file and number of results that should be printed out. See [output options section](#output-options-section) for more details.
 
 ## Analysis section
 
 vcf:
+
 : The variant file in [VCF format](https://github.com/samtools/hts-specs). There can be variants of multiple samples from one family in the file.
 
 ped:
