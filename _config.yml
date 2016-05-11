@@ -7,6 +7,8 @@
 url: "https://exomiser.github.io/Exomiser"
 baseurl: "/Exomiser"
 
+latest_7_version: 7.2.1
+
 # If you are building a GitHub project page then use these settings:
 #url: "http://username.github.io/projectname"
 #baseurl: "/projectname"

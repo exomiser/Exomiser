@@ -20,12 +20,12 @@ Genomiser uses a config yml file instead of command-line arguments. To run your 
 We suggest all other options are left in their current state for optimal performance. Then run
 
 ```
-java -Xms2g -Xmx4g -jar exomiser-cli-7.2.1.jar --analysis test-analysis-genome.yml
+java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis test-analysis-genome.yml
 ```
 
 # Configuration
 
-Genomiser can only be user with a yml configuration file in [yml format](http://yaml.org/). An example cam be found in the downloaded `exomiser-cli-7.2.1-distribution.zip` file or [here](../example/test-analysis-genome). It is structured into two sections
+Genomiser can only be user with a yml configuration file in [yml format](http://yaml.org/). An example cam be found in the downloaded `exomiser-cli-{{ site.latest_7_version }}-distribution.zip` file or [here](../example/test-analysis-genome). It is structured into two sections
 
 analysis:
 : Section include input, run mode, filters, and prioritizers. See [Analysis section](#analysis-section) for more details.

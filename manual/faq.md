@@ -13,7 +13,7 @@ subtitle: Frequently Asked Questions
 Use the help command of the command-line:
 
 ```
-java -jar exomiser-cli-7.2.1.jar --help
+java -jar exomiser-cli-{{ site.latest_7_version }}.jar --help
 ```
 
 #### Q: I get java.lang.UnsupportedClassVersionError
@@ -37,13 +37,13 @@ versions lower than 1.8 (e.g. 1.5, 1.6 or 1.7) will not run exomiser so you will
   
 ### Q: Zip file reported as too big or corrupted
 
-If, when running unzip `exomiser-cli-7.2.1-distribution.zip`, you see the following:
+If, when running unzip `exomiser-cli-{{ site.latest_7_version }}-distribution.zip`, you see the following:
      
     error:  Zip file too big (greater than 4294959102 bytes)
-    Archive:  exomiser-cli-7.2.1-distribution.zip
-    warning [exomiser-cli-7.2.1-distribution.zip]:  9940454202 extra bytes at beginning or within zipfile
+    Archive:  exomiser-cli-{{ site.latest_7_version }}-distribution.zip
+    warning [exomiser-cli-{{ site.latest_7_version }}-distribution.zip]:  9940454202 extra bytes at beginning or within zipfile
       (attempting to process anyway)
-    error [exomiser-cli-7.2.1-distribution.zip]:  start of central directory not found;
+    error [exomiser-cli-{{ site.latest_7_version }}-distribution.zip]:  start of central directory not found;
       zipfile corrupt.
       (please check that you have transferred or created the zipfile in the
       appropriate BINARY mode and that you have compiled UnZip properly)
