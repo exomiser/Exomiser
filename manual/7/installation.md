@@ -75,6 +75,20 @@ This commands will download, verify and extract the exomiser files and then run 
 This file is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 [OMIM #601952](http://www.omim.org/clinicalSynopsis/601952) 
 
+# Mac
+
+1. Install http://p7zip.sourceforge.net/
+
+    ```
+    brew install p7zip 
+    ```
+2. Unzip the data:
+
+    ```
+    7z l exomiser-cli-7.2.1-data.zip
+    ```
+    
+
 # Alternative set-up
 
 If you want to run Exomiser using an H2 database from a location of your choosing edit the line in `application.properties`:
