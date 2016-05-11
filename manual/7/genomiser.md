@@ -25,7 +25,7 @@ java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis 
 
 # Configuration
 
-Genomiser can only be user with a yml configuration file in [yml format](http://yaml.org/). An example cam be found in the downloaded `exomiser-cli-{{ site.latest_7_version }}-distribution.zip` file or [here](../example/test-analysis-genome). It is structured into two sections
+Genomiser can only be used with a configuration file in [yml format](http://yaml.org/). An example can be found in the downloaded `exomiser-cli-{{ site.latest_7_version }}-distribution.zip` file or [here](../example/test-analysis-genome). It is structured into two sections
 
 analysis:
 : Section include input, run mode, filters, and prioritizers. See [Analysis section](#analysis-section) for more details.
@@ -45,39 +45,34 @@ modeOfInheritance:
 : Can be `AUTOSOMAL_DOMINANT`, `AUTOSOMAL_RECESSIVE`, `X_RECESSIVE` or `UNDEFINED`. This is a functionality of Jannovar. See its [inheritance documentation](http://jannovar.readthedocs.io/en/master/ped_filters.html) for further information.
 
 analysisMode:
-: Can be `FULL`, `SPARSE` or `PASS_ONLY`. We highly recommend `PASS_ONLY` on genomes for because of memory issues. It will only keep variants that passes all filters. `FULL` will keep all variants. `SPARSE` means that **TODO**
-
-
+: Can be `FULL`, `SPARSE` or `PASS_ONLY`. We highly recommend `PASS_ONLY` on genomes for because of memory issues. It will only keep variants that passes all filters. `FULL` will keep all variants. `SPARSE` will keep all variants, but will only run a variant through the variant filters until it fails one.  
 
 geneScoreMode: 
-: Can be `RAW_SCORE` or `RANK_BASED`. **TODO**
+: Can be `RAW_SCORE` or `RANK_BASED`. This effects the scoring mode used by certain prioritisers. We recommend sticking to `RAW_SCORE`. This is likely to be removed in further versions. 
 
 hpoIds:
-: Input of the HPO identifiers/terms. You can select them using the [HPO browser](http://compbio.charite.de/hpoweb). Input must be in array format. So it have to start and end with a square bracket. Terms are comma separated and delimited by single quotes. For example `['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']`
+: Input of the HPO identifiers/terms. You can select them using the [HPO browser](http://compbio.charite.de/hpoweb). Input must be in array format. Terms are comma separated and delimited by single quotes. For example `['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']`. It is *critical* that these are as detailed as possible and describe the observed phenotypes as fully and precisely as possible. These are used by the phenotype matching algorithms and will heavily influence the outcome of an analysis.
 
 frequencySources:
-: Here you can specify which variant frequency databases you want to use. You can add multiple databases using the same array format like the hpoIDs. Possible options are [`THOUSAND_GENOMES`](http://www.1000genomes.org), [`ESP_AFRICAN_AMERICAN`, `ESP_EUROPEAN_AMERICAN`, `ESP_ALL`](http://evs.gs.washington.edu/EVS/), [`EXAC_AFRICAN_INC_AFRICAN_AMERICAN`, `EXAC_AMERICAN`, `EXAC_SOUTH_ASIAN`, `EXAC_EAST_ASIAN`,`EXAC_FINNISH`, `EXAC_NON_FINNISH_EUROPEAN`,`EXAC_OTHER`](http://exac.broadinstitute.org/about). We recommend to use all databases.
+: Here you can specify which variant frequency databases you want to use. You can add multiple databases using the same array format like the hpoIDs. Possible options are [`THOUSAND_GENOMES`](http://www.1000genomes.org), [`ESP_AFRICAN_AMERICAN`, `ESP_EUROPEAN_AMERICAN`, `ESP_ALL`](http://evs.gs.washington.edu/EVS/), [`EXAC_AFRICAN_INC_AFRICAN_AMERICAN`, `EXAC_AMERICAN`, `EXAC_SOUTH_ASIAN`, `EXAC_EAST_ASIAN`,`EXAC_FINNISH`, `EXAC_NON_FINNISH_EUROPEAN`,`EXAC_OTHER`](http://exac.broadinstitute.org/about). We recommend using all databases.
 
 pathogenicitySources:
 : Possible pathogenicitySources: `POLYPHEN`, `MUTATION_TASTER`, `SIFT`, `CADD`, `REMM`. `REMM` is trained on non-coding regulatory regions. **WARNING** if you enable `CADD`, ensure that you have downloaded and installed the `CADD` tabix files and updated their location in the application.properties. Exomiser will not run without this. An example is: `[POLYPHEN, MUTATION_TASTER, SIFT, REMM]`
 
 steps:
-: in this analysis section the different analysis steps are defined and are **important** the same ordering is used. We recommend the standard settings on genome wide analysis because of performance. But in general all steps are option. Steps must be defined in hash format. So this section has to start and to end with a square bracket. Steps are comma separated and written like *name: {options}*.  See the [steps section](#steps-section) for more details. **All steps are optional.** Uncomment them if you do not want them.
+: This section instructs exomiser which analysis steps should be run and with which criteria. **_n.b._ the order in which the steps are declared is important** - exomiser will run them in the order declared, although certain optimisations will happen automatically. We recommend using the [standard settings](../example/test-analysis-genome) for genome wide analysis as these have been optimised for both speed and memory performance. Nonetheless all steps are optional. Being an array of steps, this section must be enclosed in square brackets. Steps are comma separated and written in hash format *name: {options}*.  See the [steps section](#steps-section) for more details. **All steps are optional.** Uncomment them if you do not want them.
+
+: Analysis steps are defined in terms of variant filters, gene filters or prioritisers. The `inheritanceFilter` and `omimPrioritiser` are both somewhat anomalous as they operate on genes but also require the variants to have already been filtered. The optimiser will ensure that these are run at the correct time if they have been incorrectly placed. 
+  
+ Using these it is possible to create artificial exomes or define gene panels for example.
 
 ### Steps section
 
 intervalFilter: 
-: Define an interval of interest. Only variants of this interval will be analyzed. **TODO Are multiple intervals possible?**  Example: `intervalFilter: {interval: 'chr10:123256200-123256300'}`
+: Define an interval of interest. Only variants within this interval will be passed. Currently only single intervals are possible.  Example: `intervalFilter: {interval: 'chr10:123256200-123256300'}`
 
 geneIdFilter:
 : You can define [entrez-gene-ids](http://www.ncbi.nlm.nih.gov/gene/) for genes of interest. Only variants associated with these genes will be analyzed. Example: `geneIdFilter: {geneIds: [12345, 34567, 98765]}`
-
-hiPhivePrioritiser: 
-: **TODO describe this** Example `hiPhivePrioritiser: {}`
-
-
-priorityScoreFilter: 
-: Running the prioritizer followed by a priorityScoreFilter will remove genes which are least likely to contribute to the phenotype defined in hpoIds, this will dramatically reduce the time and memory required to analyze a genome. 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits using the hiPhive prioritizer. **TODO add different priority types** Example `priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501}`
 
 variantEffectFilter: 
 : If you are interested only in specific functional classes of variants you can define a set of classes you want to remove from the output. Variant effects are generated by [Jannovar](http://charite.github.io/jannovar/). Jannovar uses [Sequence Ontology (SO)](http://www.sequenceontology.org/) terms and are listed in their [manual](http://jannovar.readthedocs.io/en/master/var_effects.html). Example `variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]}`
@@ -87,7 +82,6 @@ regulatoryFeatureFilter:
 
 knownVariantFilter:
 : Removes variants represented in the databases set by the option **frequencySources**. E.g. if you define `frequencySources: [THOUSAND_GENOMES]` every variant with an RS number will be removed. We do not recommend this option on recessive diseases. Example `knownVariantFilter: {}`
-
 
 frequencyFilter:
 : Frequency cutoff of a variant. Frequencies are derived from the databases defined by option **frequencySources**. The value is in percent! We recommend a value below 5.0% depending on the disease. Example `frequencyFilter: {maxFrequency: 1.0}`
@@ -99,8 +93,7 @@ inheritanceFilter:
 : **inheritanceFilter** and **omimPrioritiser** should always run AFTER all other filters have completed. They will analyze genes according to the specified **modeOfInheritance** above. If set to `UNDEFINED` no filtering will be done. You can read more in the [Jannovar inheritance documentation](http://jannovar.readthedocs.io/en/master/ped_filters.html) how exactly this filter works. Example: `inheritanceFilter: {}`
 
 omimPrioritiser:
-: **inheritanceFilter** and **omimPrioritiser** should always run AFTER all other filters have completed. Other prioritizers: Only combine **omimPrioritiser** with one of the next filters. **TODO What das this filter do? Is it about recessive/dominant genes vs given inheritance? Maybe we should rename it because of OMIM license stuff.** Example `omimPrioritiser: {}`
-
+: **inheritanceFilter** and **omimPrioritiser** should always run AFTER all other filters have completed. Other prioritizers: Only combine **omimPrioritiser** with one of the next filters. **TODO What does this filter do? Is it about recessive/dominant genes vs given inheritance? Maybe we should rename it because of OMIM license stuff.** Example `omimPrioritiser: {}`
 
 hiPhivePrioritiser:
 : **TODO describe** Don't include **hiPhivePrioritiser** if you only want to filter the variants or run hiPhive in benchmarking mode. **TODO what is the benchmark mode?**. Using the default `hiPhivePrioritiser: {}` is the same as `hiPhivePrioritiser: {runParams: 'human,mouse,fish,ppi'}`. Example `hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}`
@@ -110,6 +103,10 @@ phenixPrioritiser:
 
 exomeWalkerPrioritiser:
 : **TODO describe this** Example `exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}`
+
+priorityScoreFilter: 
+: Running the prioritizer followed by a priorityScoreFilter will remove genes which are least likely to contribute to the phenotype defined in hpoIds, this will dramatically reduce the time and memory required to analyze a genome. 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits using the hiPhive prioritizer. **TODO add different priority types** Example `priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501}`
+
 
 ## Output options section
 
