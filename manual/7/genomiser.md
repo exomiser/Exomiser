@@ -93,6 +93,8 @@ Frequency cutoff of a variant **in percent**. Frequencies are derived from the d
 Will apply the pathogenicity scores defined in the **pathogenicitySources** section to variants. If the `keepNonPathogenic` field is set to `true` then all variants wil be kept. Setting this to `false` will set the filter to fail non-missense variants with pathogenicity scores lower than a score cutoff of 0.5. This filter is meant to be quite permissive. Example `pathogenicityFilter: {keepNonPathogenic: true}`
 
 #### Gene filters
+These act at the gene-level and therefore may also refer to the variants associated with the gene. As a rule this is discouraged, although is broken by the inheritanceFiler. 
+
 ##### priorityScoreFilter: 
 Running the prioritizer followed by a priorityScoreFilter will remove genes which are least likely to contribute to the phenotype defined in hpoIds, this will dramatically reduce the time and memory required to analyze a genome. 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits using the hiPhive prioritizer. **TODO add different priority types** Example `priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501}`
 
@@ -103,21 +105,24 @@ Running the prioritizer followed by a priorityScoreFilter will remove genes whic
 These work on the gene-level and will produce the semantic-similarity scores for how well a gene matches the sample's HPO profile.
 
 ##### omimPrioritiser:
-**inheritanceFilter** and **omimPrioritiser** should always run AFTER all other filters have completed. Other prioritizers: Only combine **omimPrioritiser** with one of the next filters. **TODO What does this filter do? Is it about recessive/dominant genes vs given inheritance? Maybe we should rename it because of OMIM license stuff.** Example `omimPrioritiser: {}`
+**inheritanceFilter** and **omimPrioritiser** should always run AFTER all other filters have completed. Other prioritizers: Only combine **omimPrioritiser** with one of the next filters. The OMIM prioritiser adds known disease information from OMIM to genes including the inheritance mode and then checks this inheritance mode with the compatible inheritance modes of the gene. Genes with incompatible modes will have their scores halved. Example `omimPrioritiser: {}`
 
 ##### hiPhivePrioritiser:
-**TODO describe** Don't include **hiPhivePrioritiser** if you only want to filter the variants or run hiPhive in benchmarking mode. **TODO what is the benchmark mode?**. Using the default `hiPhivePrioritiser: {}` is the same as `hiPhivePrioritiser: {runParams: 'human,mouse,fish,ppi'}`. Example `hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}`
+Scores genes using phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk. Using the default `hiPhivePrioritiser: {}` is the same as `hiPhivePrioritiser: {runParams: 'human,mouse,fish,ppi'}`. It is possible to only run comparisons agains a given organism/set of organisms `human,mouse,fish` and include/exclude protein-protein interaction proximities `ppi`. e.g. only using human and mouse data - `hiPhivePrioritiser: {runParams: 'human,mouse'}` 
 
 ##### phenixPrioritiser:
-**TODO describe this** Example `phenixPrioritiser: {}`
+Scores genes using phenotype comparisons to known human disease genes. Example `phenixPrioritiser: {}`
+
+##### phivePrioritiser:
+Scores genes using phenotype comparisons to mice with disruption of the gene. Example `phivePrioritiser: {}`
 
 ##### exomeWalkerPrioritiser:
-**TODO describe this** Example `exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}`
+Scores genes by proximity in interactome to the seed genes. Example `exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}`
 
 ## outputOptions:
 
 ### outputPassVariantsOnly:
-Can be `true` or `false`. **TODO**
+Can be `true` or `false`. Setting this to `true` will make the `TSV_VARIANT` and `VCF` output file only contain **PASS** variants.
 
 ### numGenes: 
 Maximum number of genes listed in the results. If set to `0` all are listed. In most cases a limit of `50` is good.
