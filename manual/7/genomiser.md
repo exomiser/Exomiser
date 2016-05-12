@@ -43,10 +43,10 @@ Section that defines the output format, output file and number of results that s
 
 ## Analysis section
 
-**vcf:**
+###vcf:
 The variant file in [VCF format](https://github.com/samtools/hts-specs). There can be variants of multiple samples from one family in the file.
 
-**ped:**
+###ped:
 If you have multiple samples as input you have to define the pedigree using the [ped format](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped). It is important that you correctly define affected and unaffected individuals. If you use `X_RECESSIVE` as mode of inheritance be sure that the sex is correct (unknown is also fine).
 
 modeOfInheritance:
