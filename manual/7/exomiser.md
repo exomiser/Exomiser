@@ -11,23 +11,19 @@ The Exomiser program was originally written purely for exome sequence analysis, 
 
 # Configuration
 
-# Command-line parameter
+The Exomiser can be configured to run in various ways either purely through the command-line interface or by specifying various input file formats and run parameters through the settings file or with an analysis configuration file for maximum flexibility. 
 
+## Command-line interface
 
+The exomiser is typically always accessed via the command-line to some extent - it is launched using the java command:
 
-### Multiple output formats
+```
+java -jar exomiser-cli-{{ site.latest_7_version }}.jar
+```
 
-    --output-format HTML (default)
-    --output-format TSV-GENE (TSV summary of genes)
-    --output-format TSV-VARIANT (TSV summary of variants)
-    --output-format VCF (VCF summary)
+It is a also good practice to specify the lower and upper limits of the memory required by the Java VM using the `-Xms` and `-Xmx` switches. Typically exomiser can be run using about 8-10GB RAM and in many cases only a 2-4GB RAM, but this will vary considerably depending on the sample size and and the run parameters. Retaining all variants in memory irrespective of their PASS/FAIL state is the lease efficient way to analyse a sample. For samples containing more than a few hundred thousand variants, we strongly recommend using exomiser either on a pre-filtered VCF if retaining all variants using the `--full-analysis true` argument or using the PASS_ONLY analysis mode in the [analysis file](analysis-config).   
 
-Output options can be combined, for example:
-
-    --output-format TSV-GENE,VCF (TSV-GENE and VCF)
-    --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
-
-# Settings file
+## Settings file
     
 Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a settings file using the `--settings-file` argument. See example.settings and test.settings.
 
@@ -47,7 +43,7 @@ Settings can also be run in batch mode. Simply put the path to each settings fil
 java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --batch-file batch.txt
 ```
 
-# Analysis file
+## Analysis file {#analysis-config}
 
 Instead of specifying all commands on the command-line you can specify exomiser to use the configuration contained an [analysis file](../analysis_file_config) using the `--analysis` argument. 
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
