@@ -58,7 +58,7 @@ The `NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml` file is an
 [OMIM #601952](http://www.omim.org/clinicalSynopsis/601952)
 
 
-# Prioritisers
+#Prioritisers
 The exomiser contains several different phenotype similarity algorithms  speecified using the `--prioritiser` argument. The sections below briefly describe the prioritisers and any special parmeters they may require. The algorithms are described in detail in their respective publication. 
 
 ## hiPHIVE
