@@ -4,9 +4,6 @@ title: General information
 subtitle: The Exomiser software suite
 ---
 
-* TOC
-{:toc}
-
 # Overview
 
 The Exomiser is a Java program that finds potential disease-causing variants from whole-exome or whole-genome sequencing data.
@@ -19,7 +16,3 @@ Variants are prioritised according to user-defined criteria on variant frequency
 
 The Exomiser was developed by the [Computational Biology and Bioinformatics group](http://compbio.charite.de) at the Institute for [Medical Genetics and Human Genetics](http://genetik.charite.de) of the [Charité - Universitätsmedizin Berlin](http://charite.de), the Mouse Informatics Group at the Sanger Institute and other members of the [Monarch initiative](http://monarchinitiative.org).
 
-
-# Prioritisers
-
-# Variant annotation

@@ -29,10 +29,10 @@ navbar-links:
   Manual Version >= 7.0.0:
     - Quickstart: "manual/7/quickstart"
     - Installation: "manual/7/installation"
-    - Exomiser: "manual/7/exomiser"
-      - Command-line: "manual/7/analysis_file_config"
-      - Settings file: "manual/7/analysis_file_config"
-      - Analysis file: "manual/7/analysis_file_config"
+    - Overview: "manual/7/exomiser"
+        Command-line: "manual/7/analysis_file_config"
+        Settings file: "manual/7/analysis_file_config"
+        Analysis file: "manual/7/analysis_file_config"
   FAQ: "manual/faq"
   About: "about"
   Resources:
