@@ -26,7 +26,7 @@ The original exomiser algorithm is easily run using the command-line arguments. 
 ```
 10      123256215       .       T       G       100     PASS    GENE=FGFR2;INHERITANCE=AD;MIM=101600    GT:DS:GL        1|0:2.000:-5.00,-1.10,-0.04
 ```
-The input parameters tell exomiser to read in in the VCF file (`-v data/Pfeiffer.vcf`) filter out variants using a frequency cuf-off of 1% (`-F 1`) and apply an autosomal dominant inheritance mode filter (`-I AD`). The patient phenotypes are described using the `--hpo-ids` argument and the exomiser is instructed to use the similarity matching algorithm containd in the hiPhive prioritiser `--prioritiser hiphive`. Other prioritisers can be specified as described in the [prioritisers section](#Prioritisers).
+The input parameters tell exomiser to read in in the VCF file (`-v data/Pfeiffer.vcf`) filter out variants using a frequency cuf-off of 1% (`-F 1`) and apply an autosomal dominant inheritance mode filter (`-I AD`). The patient phenotypes are described using the `--hpo-ids` argument and the exomiser is instructed to use the similarity matching algorithm containd in the hiPhive prioritiser `--prioritiser hiphive`. Other prioritisers can be specified as described in the [prioritisers section](#prioritisers).
 
 ```
 java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --prioritiser hiphive -I AD -F 1 --hpo-ids HP:0000006,HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304 -v data/Pfeiffer.vcf
@@ -58,7 +58,7 @@ The `NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml` file is an
 [OMIM #601952](http://www.omim.org/clinicalSynopsis/601952)
 
 
-# Prioritisers
+# </a name="prioritisers">Prioritisers
 
 The exomiser contains several different phenotype similarity algorithms  specified using the `--prioritiser` argument. The sections below briefly describe the prioritisers and any special parameters they may require. The algorithms are described in detail in their respective publication. 
 

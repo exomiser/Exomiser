@@ -41,11 +41,11 @@ Possible pathogenicitySources: `POLYPHEN`, `MUTATION_TASTER`, `SIFT`, `CADD`, `R
 ### steps:
 This section instructs exomiser which analysis steps should be run and with which criteria. **_n.b._ the order in which the steps are declared is important** - exomiser will run them in the order declared, although certain optimisations will happen automatically. We recommend using the [standard settings](../example/test-analysis-genome) for genome wide analysis as these have been optimised for both speed and memory performance. Nonetheless all steps are optional. Being an array of steps, this section must be enclosed in square brackets. Steps are comma separated and written in hash format *name: {options}*. **All steps are optional** - comment them out or delete them if you do not want to use them.
 
-Analysis steps are defined in terms of [variant filters](####Variant filters), [gene filters](#### Gene filters) or [prioritisers](#### Prioritisers). The `inheritanceFilter` and `omimPrioritiser` are both somewhat anomalous as they operate on genes but also require the variants to have already been filtered. The optimiser will ensure that these are run at the correct time if they have been incorrectly placed. 
+Analysis steps are defined in terms of [variant filters](#variant_filters), [gene filters](#gene_filters) or [prioritisers](#prioritisers). The `inheritanceFilter` and `omimPrioritiser` are both somewhat anomalous as they operate on genes but also require the variants to have already been filtered. The optimiser will ensure that these are run at the correct time if they have been incorrectly placed. 
   
 Using these it is possible to create artificial exomes or define gene panels for example.
 
-#### Variant filters
+#### </a name="variant_filters">Variant filters
 These operate on variants and will produce a pass or fail result for each variant run through the filter.
 
 ##### intervalFilter: 
@@ -69,7 +69,7 @@ Frequency cutoff of a variant **in percent**. Frequencies are derived from the d
 ##### pathogenicityFilter:
 Will apply the pathogenicity scores defined in the **pathogenicitySources** section to variants. If the `keepNonPathogenic` field is set to `true` then all variants wil be kept. Setting this to `false` will set the filter to fail non-missense variants with pathogenicity scores lower than a score cutoff of 0.5. This filter is meant to be quite permissive. Example `pathogenicityFilter: {keepNonPathogenic: true}`
 
-#### Gene filters
+#### </a name="gene_filters"> Gene filters
 These act at the gene-level and therefore may also refer to the variants associated with the gene. As a rule this is discouraged, although is broken by the inheritanceFiler. 
 
 ##### priorityScoreFilter: 
@@ -78,7 +78,7 @@ Running the prioritizer followed by a priorityScoreFilter will remove genes whic
 ##### inheritanceFilter:
 **inheritanceFilter** and **omimPrioritiser** should always run AFTER all other filters have completed. They will analyze genes according to the specified **modeOfInheritance** above. If set to `UNDEFINED` no filtering will be done. You can read more in the [Jannovar inheritance documentation](http://jannovar.readthedocs.io/en/master/ped_filters.html) how exactly this filter works. Example: `inheritanceFilter: {}`
 
-#### Prioritisers
+#### </a name="prioritisers"> Prioritisers
 These work on the gene-level and will produce the semantic-similarity scores for how well a gene matches the sample's HPO profile.
 
 ##### omimPrioritiser:
