@@ -26,13 +26,14 @@ description: A Tool to Annotate and Prioritize Exome Variants
 # List of links in the navigation bar
 navbar-links:
   The software: "general"
-  Manual Version >= 7.0.0:
+  Manual:
     - Quickstart: "manual/7/quickstart"
     - Installation: "manual/7/installation"
     - Overview: "manual/7/exomiser"
-        Command-line: "manual/7/analysis_file_config"
-        Settings file: "manual/7/analysis_file_config"
-        Analysis file: "manual/7/analysis_file_config"
+    #TODO:
+    #- Command-line: "manual/7/analysis_file_config"
+    #- Settings file: "manual/7/analysis_file_config"
+    - Analysis file: "manual/7/analysis_file_config"
   FAQ: "manual/faq"
   About: "about"
   Resources:
