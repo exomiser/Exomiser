@@ -16,7 +16,7 @@ latest_7_version: 7.2.1
 # Of course don't forget to change the username and projectname to YOUR username and project
 
 # Name of website
-title: Exomiser manual
+title: Exomiser
 
 # Short description of your site
 description: A Tool to Annotate and Prioritize Exome Variants
@@ -25,11 +25,11 @@ description: A Tool to Annotate and Prioritize Exome Variants
 
 # List of links in the navigation bar
 navbar-links:
-  The software: "general"
+  Overview: "general"
   Manual:
     - Quickstart: "manual/7/quickstart"
     - Installation: "manual/7/installation"
-    - Overview: "manual/7/exomiser"
+    - Exomiser: "manual/7/exomiser"
     #TODO:
     #- Command-line: "manual/7/analysis_file_config"
     #- Settings file: "manual/7/analysis_file_config"
