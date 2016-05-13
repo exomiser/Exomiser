@@ -17,7 +17,7 @@ subtitle: Quickstart for Exomiser and Genomiser
   networked database (optional).
  - By default the Exomiser is completely self-contained and is able to run on standard consumer laptops.
  
-Once the software is [setup](setup) according to the instructions the exomiser can be run in a number of ways.
+Once the software has been [installed](../installation) according to the instructions, the exomiser can be run in a number of ways.
  
 # Exomiser
 
