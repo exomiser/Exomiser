@@ -29,7 +29,7 @@ Output options can be combined, for example:
 
 # Settings file
     
-Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a settings file uysing the `--settings-file` argument. See example.settings and test.settings.
+Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a settings file using the `--settings-file` argument. See example.settings and test.settings.
 
 ```
 java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --settings-file test.settings
@@ -49,7 +49,7 @@ java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --batch-fil
 
 # Analysis file
 
-Instead of specifying all commands on the command-line you can specify exomiser to use the configuration contained an [analysis file](#analysis_file_config) using the `--analysis` argument. 
+Instead of specifying all commands on the command-line you can specify exomiser to use the configuration contained an [analysis file](analysis_file_config) using the `--analysis` argument. 
 Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
 and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
 
