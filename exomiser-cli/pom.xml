@@ -47,14 +47,10 @@
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-            <version>1.2</version>
         </dependency>
-        <!-- Test dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
         </dependency>
     </dependencies>
  
@@ -64,6 +60,10 @@
                 <directory>src/main/resources</directory>
                 <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>log4j2.xml</exclude>
+                    <exclude>distribution/*</exclude>
+                </excludes>
             </resource>
         </resources> 
         <plugins>
@@ -118,32 +118,41 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/resources</outputDirectory>
-                            <resources>          
+                            <outputDirectory>${project.build.directory}/distribution-resources</outputDirectory>
+                            <resources>
                                 <resource>
                                     <directory>src/main/resources</directory>
-                                    <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>application.properties</include>
+                                        <include>ehcache.xml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/distribution</directory>
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>*.settings</include>
                                         <include>*.yml</include>
-                                        <include>*.tsv.gz</include>
-                                        <include>*.tsv.gz.tbi</include>
                                         <include>test-analysis-batch.txt</include>
                                         <include>test-batchFiles.txt</include>
-                                        <include>application.properties</include>
-                                        <include>log4j2.xml</include>
-                                        <include>ehcache.xml</include>
-                                    </includes> 
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/distribution/data</directory>
+                                    <includes>
+                                        <include>*.tsv.gz</include>
+                                        <include>*.tsv.gz.tbi</include>
+                                    </includes>
                                 </resource>
                                 <resource>
                                     <directory>src/test/resources</directory>
                                     <include>Pfeiffer.vcf</include>
                                     <include>Pfeiffer-quartet.vcf.gz</include>
                                     <include>Pfeiffer-quartet.ped</include>
-                                </resource>                                                            
-                            </resources>              
-                        </configuration>            
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -25,13 +44,6 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
     private final Map<String, PriorityType> prioritiserCliValues = new LinkedHashMap<>();
 
     public PrioritiserOptionMarshaller() {
-        option = OptionBuilder
-                .hasArg()
-                .withArgName("name")
-                .withValueSeparator()
-                .withDescription(buildPrioritiserDescription(PRIORITISER_OPTION))
-                .withLongOpt(PRIORITISER_OPTION)
-                .create();
 
         prioritiserCliValues.put("hiphive", PriorityType.HIPHIVE_PRIORITY);
         prioritiserCliValues.put("phenix", PriorityType.PHENIX_PRIORITY);
@@ -41,6 +53,16 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
         prioritiserCliValues.put("uber-pheno", PriorityType.UBERPHENO_PRIORITY);
         //'none' is the default
         prioritiserCliValues.put("none", PriorityType.NONE);
+
+        List<String> commandLineValues = new ArrayList<>(prioritiserCliValues.keySet());
+
+        option = OptionBuilder
+                .hasArg()
+                .withArgName("name")
+                .withValueSeparator()
+                .withDescription(buildPrioritiserDescription(PRIORITISER_OPTION, commandLineValues))
+                .withLongOpt(PRIORITISER_OPTION)
+                .create();
     }
 
     @Override
@@ -62,7 +84,7 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
      * @param prioritiserLongOpt
      * @return
      */
-    private String buildPrioritiserDescription(String prioritiserLongOpt) {
+    private String buildPrioritiserDescription(String prioritiserLongOpt, List<String> commandLineValues) {
         //Build up the description this should look like this:
         //"Name of the PRIORITISER_OPTION used to score the genes.
         // Can be one of: inheritance-mode, phenomizer or dynamic-phenodigm. 
@@ -70,8 +92,6 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
 
         StringBuilder priorityOptionDescriptionBuilder = new StringBuilder("Name of the prioritiser used to score the genes. Can be one of: ");
 
-        List<String> commandLineValues = new ArrayList<>(prioritiserCliValues.keySet());
-        
         int numPriorityTypes = commandLineValues.size();
         int lastType = numPriorityTypes - 1;
         int secondLastType = numPriorityTypes - 2;
