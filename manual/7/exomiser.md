@@ -21,7 +21,7 @@ The exomiser is typically always accessed via the command-line to some extent - 
 java -jar exomiser-cli-{{ site.latest_7_version }}.jar
 ```
 
-It is a also good practice to specify the lower and upper limits of the memory required by the Java VM using the `-Xms` and `-Xmx` switches. Typically exomiser can be run using about 8-10GB RAM and in many cases only a 2-4GB RAM, but this will vary considerably depending on the sample size and and the run parameters. Retaining all variants in memory irrespective of their PASS/FAIL state is the lease efficient way to analyse a sample. For samples containing more than a few hundred thousand variants, we strongly recommend using exomiser either on a pre-filtered VCF if retaining all variants using the `--full-analysis true` argument or using the PASS_ONLY analysis mode in the [analysis file](#analysis-config).   
+It is a also good practice to specify the lower and upper limits of the memory required by the Java VM using the `-Xms` and `-Xmx` switches. Typically exomiser can be run using about 8-10GB RAM and in many cases only a 2-4GB RAM, but this will vary considerably depending on the sample size and and the run parameters. Retaining all variants in memory irrespective of their PASS/FAIL state is the least efficient way to analyse a sample. For samples containing more than a few hundred thousand variants, we strongly recommend using exomiser either on a pre-filtered VCF if retaining all variants using the `--full-analysis true` argument or using the PASS_ONLY analysis mode in the [analysis file](#analysis-config).   
 
 ## Settings file
     
