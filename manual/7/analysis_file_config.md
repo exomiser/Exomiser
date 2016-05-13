@@ -1,37 +1,14 @@
 ---
 layout: page
-title: Genomiser manual
-subtitle: Instructions how to intall use, and configure Genomiser
+title: Analysis file configuration
+subtitle: Instructions on how to configure Exomiser using yaml format analysis files
 ---
 
 * TOC
 {:toc}
 
-# Run Genomiser
 
-Genomiser uses a config yml file instead of command-line arguments. To run your own samples you have to edit the `test-analysis-genome.yml` file and define
-
-* the location of your VCF,
-* the location of your PED-file (only for multiple samples in one VCF),
-* your patient's HPO terms (use the [HPO-Browser](http://compbio.charite.de/hpoweb) to find terms)
-* the inheritance model if known,
-* the outputPrefix for your output files.
-
-We suggest all other options are left in their current state for optimal performance. Then run
-
-```
-java -Xms4g -Xmx8g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis test-analysis-genome.yml
-```
-
-Analyses can also be run in batches using the `--analysis-batch` command. This requires a file containing the paths to each analysis with one path per line as input.
- 
-```
-java -Xms4g -Xmx8g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis-batch test-batch-analysis.txt
-```
-
-If you have several genomes/exomes to analyse this is highly recommended as it will remove the start-time overhead and also allow the user to make use of caches as described in the `application.properties` file. Used correctly, this can save a lot of time at the expense of RAM as variant frequency and pathogenicity data will be cached for the most common variants cutting down on calls to the database. 
-
-# Configuration
+# Analysis file configuration
 
 Genomiser analyses are defined using a [yml format](http://yaml.org/) configuration file. An example can be found in the downloaded `exomiser-cli-{{ site.latest_7_version }}-distribution.zip` file or [here](../example/test-analysis-genome). It is structured into two sections, [analysis](#analysis) which defines the input, run mode filters and prioritisers and the [outputOptions](#outputOptions) section that defines the output format, output file and number of results that should be printed out.
 
@@ -62,11 +39,11 @@ Here you can specify which variant frequency databases you want to use. You can 
 Possible pathogenicitySources: `POLYPHEN`, `MUTATION_TASTER`, `SIFT`, `CADD`, `REMM`. `REMM` is trained on non-coding regulatory regions. **WARNING** if you enable `CADD`, ensure that you have downloaded and installed the `CADD` tabix files and updated their location in the application.properties. Exomiser will not run without this. An example is: `[POLYPHEN, MUTATION_TASTER, SIFT, REMM]`
 
 ### steps:
-This section instructs exomiser which analysis steps should be run and with which criteria. **_n.b._ the order in which the steps are declared is important** - exomiser will run them in the order declared, although certain optimisations will happen automatically. We recommend using the [standard settings](../example/test-analysis-genome) for genome wide analysis as these have been optimised for both speed and memory performance. Nonetheless all steps are optional. Being an array of steps, this section must be enclosed in square brackets. Steps are comma separated and written in hash format *name: {options}*.  See the [steps section](#steps-section) for more details. **All steps are optional.** Uncomment them if you do not want them.
+This section instructs exomiser which analysis steps should be run and with which criteria. **_n.b._ the order in which the steps are declared is important** - exomiser will run them in the order declared, although certain optimisations will happen automatically. We recommend using the [standard settings](../example/test-analysis-genome) for genome wide analysis as these have been optimised for both speed and memory performance. Nonetheless all steps are optional. Being an array of steps, this section must be enclosed in square brackets. Steps are comma separated and written in hash format *name: {options}*. **All steps are optional** - comment them out or delete them if you do not want to use them.
 
-Analysis steps are defined in terms of variant filters, gene filters or prioritisers. The `inheritanceFilter` and `omimPrioritiser` are both somewhat anomalous as they operate on genes but also require the variants to have already been filtered. The optimiser will ensure that these are run at the correct time if they have been incorrectly placed. 
+Analysis steps are defined in terms of [variant filters](####Variant filters), [gene filters](#### Gene filters) or [prioritisers](#### Prioritisers). The `inheritanceFilter` and `omimPrioritiser` are both somewhat anomalous as they operate on genes but also require the variants to have already been filtered. The optimiser will ensure that these are run at the correct time if they have been incorrectly placed. 
   
- Using these it is possible to create artificial exomes or define gene panels for example.
+Using these it is possible to create artificial exomes or define gene panels for example.
 
 #### Variant filters
 These operate on variants and will produce a pass or fail result for each variant run through the filter.
