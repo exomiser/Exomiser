@@ -45,7 +45,7 @@ Analysis steps are defined in terms of [variant filters](#variant_filters), [gen
   
 Using these it is possible to create artificial exomes or define gene panels for example.
 
-#### </a name="variant_filters">Variant filters
+#### Variant filters {#variant_filters}
 These operate on variants and will produce a pass or fail result for each variant run through the filter.
 
 ##### intervalFilter: 
@@ -69,7 +69,7 @@ Frequency cutoff of a variant **in percent**. Frequencies are derived from the d
 ##### pathogenicityFilter:
 Will apply the pathogenicity scores defined in the **pathogenicitySources** section to variants. If the `keepNonPathogenic` field is set to `true` then all variants wil be kept. Setting this to `false` will set the filter to fail non-missense variants with pathogenicity scores lower than a score cutoff of 0.5. This filter is meant to be quite permissive. Example `pathogenicityFilter: {keepNonPathogenic: true}`
 
-#### </a name="gene_filters"> Gene filters
+#### Gene filters {#gene_filters}
 These act at the gene-level and therefore may also refer to the variants associated with the gene. As a rule this is discouraged, although is broken by the inheritanceFiler. 
 
 ##### priorityScoreFilter: 
@@ -78,7 +78,7 @@ Running the prioritizer followed by a priorityScoreFilter will remove genes whic
 ##### inheritanceFilter:
 **inheritanceFilter** and **omimPrioritiser** should always run AFTER all other filters have completed. They will analyze genes according to the specified **modeOfInheritance** above. If set to `UNDEFINED` no filtering will be done. You can read more in the [Jannovar inheritance documentation](http://jannovar.readthedocs.io/en/master/ped_filters.html) how exactly this filter works. Example: `inheritanceFilter: {}`
 
-#### </a name="prioritisers"> Prioritisers
+#### Prioritisers {#prioritisers}
 These work on the gene-level and will produce the semantic-similarity scores for how well a gene matches the sample's HPO profile.
 
 ##### omimPrioritiser:
