@@ -59,7 +59,8 @@ The `NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml` file is an
 
 
 # Prioritisers
-The exomiser contains several different phenotype similarity algorithms  speecified using the `--prioritiser` argument. The sections below briefly describe the prioritisers and any special parmeters they may require. The algorithms are described in detail in their respective publication. 
+
+The exomiser contains several different phenotype similarity algorithms  specified using the `--prioritiser` argument. The sections below briefly describe the prioritisers and any special parameters they may require. The algorithms are described in detail in their respective publication. 
 
 ## hiPHIVE
 
