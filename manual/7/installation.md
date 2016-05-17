@@ -67,7 +67,7 @@ This file is an analysis for an autosomal recessive 5'UTR variant located in POM
 
 1. Install http://p7zip.sourceforge.net/
 
-    brew install p7zip 
+    brew install p7zip
 
 2. Unzip the data:
 
