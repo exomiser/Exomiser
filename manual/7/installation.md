@@ -29,10 +29,8 @@ subtitle: Instructions how to intall the Exomiser software suite
    1. Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
 5. Use your cmd to test your installation:
 
-   ```
    cd exomiser-cli-{{ site.latest_7_version }}
    java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
-   ```
  
 ## Linux
 
@@ -40,36 +38,26 @@ Use the following commands:
 
 1. Download the distribution (won't take long)
 
-   ```
    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-distribution.zip
-   ```
 
 2. Download the data (this is ~20GB and will take a while)
 
-   ```
    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-data.zip
-   ```
 
 3. Download the checksums and verify the files (optional)
  
-   ```
    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}.sha256
    sha256sum -c exomiser-cli-{{ site.latest_7_version }}.sha256
- ```
 
 4. Unzip the distribution and data files - this will create a directory called 'exomiser-cli-{{ site.latest_7_version }}' in the current working directory
 
-   ```
    unzip exomiser-cli-{{ site.latest_7_version }}-distribution.zip
    unzip exomiser-cli-{{ site.latest_7_version }}-data.zip
-   ```
  
  5. Run a test genomiser analysis
 
-   ```
    cd exomiser-cli-{{ site.latest_7_version }}
    java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
-   ```
 
 These commands will download, verify and extract the exomiser files and then run the analysis contained in the file `NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml`. 
 This file is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
@@ -79,15 +67,11 @@ This file is an analysis for an autosomal recessive 5'UTR variant located in POM
 
 1. Install http://p7zip.sourceforge.net/
 
-    ```
     brew install p7zip 
-    ```
+
 2. Unzip the data:
 
-    ```
     7z l exomiser-cli-7.2.1-data.zip
-    ```
-    
 
 # Alternative set-up
 
