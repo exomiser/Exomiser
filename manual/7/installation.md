@@ -29,8 +29,8 @@ subtitle: Instructions how to intall the Exomiser software suite
    1. Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
 5. Use your cmd to test your installation:
 
-   cd exomiser-cli-{{ site.latest_7_version }}
-   java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+				cd exomiser-cli-{{ site.latest_7_version }}
+				java -Xms2g -Xmx4g -jar exomiser-cli-{{ site.latest_7_version }}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
  
 ## Linux
 
