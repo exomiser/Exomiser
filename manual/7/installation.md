@@ -38,11 +38,11 @@ Use the following commands:
 
 1. Download the distribution (won't take long)
 
-   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-distribution.zip
+    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-distribution.zip
 
 2. Download the data (this is ~20GB and will take a while)
 
-   wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-data.zip
+    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-{{ site.latest_7_version }}-data.zip
 
 3. Download the checksums and verify the files (optional)
  
