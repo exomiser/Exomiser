@@ -23,7 +23,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
-import de.charite.compbio.exomiser.core.analysis.*;
+import de.charite.compbio.exomiser.core.Exomiser;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
+import de.charite.compbio.exomiser.core.analysis.Settings;
+import de.charite.compbio.exomiser.core.analysis.SettingsParser;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
@@ -68,10 +72,9 @@ public class SubmitJobController {
     private Integer maxGenes;
 
     @Autowired
-    private SettingsParser settingsParser;
-
+    private Exomiser exomiser;
     @Autowired
-    private AnalysisFactory analysisFactory;
+    private SettingsParser settingsParser;
     @Autowired
     private PriorityService priorityService;
     @Autowired
@@ -132,8 +135,8 @@ public class SubmitJobController {
         }
 
         Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
-        AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunnerForMode(AnalysisMode.PASS_ONLY);
-        analysisRunner.runAnalysis(analysis);
+        exomiser.run(analysis);
+
         Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), session.getId());
         try {
             Files.createDirectory(outputDir);
