@@ -143,39 +143,5 @@ public class TestExomiserConfig {
     public VariantDataService variantDataService() {
         return Mockito.mock(VariantDataService.class);
     }
-    
-//    @Bean
-//    PriorityService priorityService() {
-//        return new PriorityService();
-//    }
-//
-//    @Bean
-//    ModelService modelService() {
-//        return new ModelServiceImpl();
-//    }
-//
-//    @Bean
-//    OntologyService ontologyService() {
-//        return new OntologyServiceImpl();
-//    }
-//
-//    @Bean
-//    DiseaseDao diseaseDao() {
-//        return new DefaultDiseaseDao();
-//    }
-//
-//    @Bean
-//    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
-//        return new HumanPhenotypeOntologyDao();
-//    }
-//
-//    @Bean
-//    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
-//        return new MousePhenotypeOntologyDao();
-//    }
-//
-//    @Bean
-//    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
-//        return new ZebraFishPhenotypeOntologyDao();
-//    }
+
 }
