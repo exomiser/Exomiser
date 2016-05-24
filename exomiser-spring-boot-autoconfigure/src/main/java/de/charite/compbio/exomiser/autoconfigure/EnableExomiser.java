@@ -17,10 +17,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.charite.compbio.exomiser.core.config;
+package de.charite.compbio.exomiser.autoconfigure;
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
 
 import java.lang.annotation.*;
 
@@ -30,6 +30,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented
-@Import(DefaultExomiserConfiguration.class)
+@Import(ExomiserAutoConfiguration.class)
+@ComponentScan("de.charite.compbio.exomiser.core")
 public @interface EnableExomiser {
 }
