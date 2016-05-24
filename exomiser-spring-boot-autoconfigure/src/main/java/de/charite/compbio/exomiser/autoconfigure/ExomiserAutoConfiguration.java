@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,6 +48,7 @@ import java.nio.file.Paths;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
+//@EnableCaching
 @ConditionalOnClass({Exomiser.class, AnalysisFactory.class})
 @EnableConfigurationProperties(ExomiserProperties.class)
 public class ExomiserAutoConfiguration {
@@ -54,7 +56,7 @@ public class ExomiserAutoConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ExomiserAutoConfiguration.class);
 
     @Autowired
-    private ExomiserProperties exomiserProperties;
+    private ExomiserProperties properties;
 
     /**
      * This is critical for the application to run as it points to the data
@@ -64,20 +66,35 @@ public class ExomiserAutoConfiguration {
      * @return
      */
     @Bean
-    public Path dataPath() {
-        Path dataPath = Paths.get(exomiserProperties.getDataDir());
-        logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
+    public Path exomiserDataDirectory() {
+        Path dataPath = Paths.get(properties.getDataDirectory());
+        logger.info("Exomiser data directory set to: {}", dataPath.toAbsolutePath());
         return dataPath;
     }
 
     private Path resolveRelativeToDataDir(String fileName) {
-        return dataPath().resolve(fileName);
+        return exomiserDataDirectory().resolve(fileName);
+    }
+
+    @Bean
+    public Path exomiserWorkingDirectory() {
+        Path workingDir = Paths.get(getWorkingDir());
+        logger.info("Exomiser working directory set to: {}", workingDir.toAbsolutePath());
+        return workingDir;
+    }
+
+    private String getWorkingDir() {
+        if (properties.getWorkingDirectory() != null) {
+            return properties.getWorkingDirectory();
+        }
+        String tempDirectory = System.getProperty("java.io.tmpdir");
+        return new File(tempDirectory, "exomiser-data").getAbsolutePath();
     }
 
     //Variant analysis configuration
     @Bean
     public Path ucscFilePath() {
-        String ucscFileNameValue = exomiserProperties.getUcscFileName();
+        String ucscFileNameValue = properties.getUcscFileName();
         Path ucscFilePath = resolveRelativeToDataDir(ucscFileNameValue);
         logger.debug("UCSC data file: {}", ucscFilePath.toAbsolutePath());
         return ucscFilePath;
@@ -108,7 +125,7 @@ public class ExomiserAutoConfiguration {
     @Lazy
     @Bean
     public TabixReader inDelTabixReader() {
-        return getTabixReaderOrDefaultForProperty(exomiserProperties.getCaddInDelPath());
+        return getTabixReaderOrDefaultForProperty(properties.getCaddInDelPath());
     }
 
     /**
@@ -122,7 +139,7 @@ public class ExomiserAutoConfiguration {
     @Lazy
     @Bean
     public TabixReader snvTabixReader() {
-        return getTabixReaderOrDefaultForProperty(exomiserProperties.getCaddSnvPath());
+        return getTabixReaderOrDefaultForProperty(properties.getCaddSnvPath());
     }
 
     /**
@@ -135,7 +152,7 @@ public class ExomiserAutoConfiguration {
     @Lazy
     @Bean
     public TabixReader remmTabixReader() {
-        return getTabixReaderOrDefaultForProperty(exomiserProperties.getRemmPath());
+        return getTabixReaderOrDefaultForProperty(properties.getRemmPath());
     }
 
     private TabixReader getTabixReaderOrDefaultForProperty(String pathToTabixGzFile) {
@@ -154,7 +171,7 @@ public class ExomiserAutoConfiguration {
 
     @Bean
     public Path phenixDataDirectory() {
-        String phenixDataDirValue = exomiserProperties.getPhenixDataDir();
+        String phenixDataDirValue = properties.getPhenixDataDir();
         Path phenixDataDirectory = resolveRelativeToDataDir(phenixDataDirValue);
         logger.debug("phenixDataDirectory: {}", phenixDataDirectory.toAbsolutePath());
         return phenixDataDirectory;
@@ -163,7 +180,7 @@ public class ExomiserAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = "hpoOboFilePath")
     public Path hpoOboFilePath() {
-        String hpoFileName = exomiserProperties.getHpoFileName();
+        String hpoFileName = properties.getHpoFileName();
         Path hpoFilePath = phenixDataDirectory().resolve(hpoFileName);
         logger.debug("hpoOboFilePath: {}", hpoFilePath.toAbsolutePath());
         return hpoFilePath;
@@ -172,7 +189,7 @@ public class ExomiserAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = "hpoAnnotationFilePath")
     public Path hpoAnnotationFilePath() {
-        String hpoAnnotationFileValue = exomiserProperties.getHpoAnnotationFile();
+        String hpoAnnotationFileValue = properties.getHpoAnnotationFile();
         Path hpoAnnotationFilePath = phenixDataDirectory().resolve(hpoAnnotationFileValue);
         logger.debug("hpoAnnotationFilePath: {}", hpoAnnotationFilePath.toAbsolutePath());
         return hpoAnnotationFilePath;
@@ -188,10 +205,10 @@ public class ExomiserAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = "randomWalkMatrix")
     public DataMatrix randomWalkMatrix() {
-        String randomWalkFileNameValue = exomiserProperties.getRandomWalkFileName();
+        String randomWalkFileNameValue = properties.getRandomWalkFileName();
         Path randomWalkFilePath = resolveRelativeToDataDir(randomWalkFileNameValue);
 
-        String randomWalkIndexFileNameValue = exomiserProperties.getRandomWalkIndexFileName();
+        String randomWalkIndexFileNameValue = properties.getRandomWalkIndexFileName();
         Path randomWalkIndexFilePath = resolveRelativeToDataDir(randomWalkIndexFileNameValue);
 
         return new DataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
@@ -213,7 +230,7 @@ public class ExomiserAutoConfiguration {
     @ConditionalOnMissingBean
     public HikariConfig h2Config() {
 
-        ExomiserProperties.H2 h2 = exomiserProperties.getH2();
+        ExomiserProperties.H2 h2 = properties.getH2();
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");
@@ -229,8 +246,8 @@ public class ExomiserAutoConfiguration {
     private String determineH2Url(ExomiserProperties.H2 h2) {
         //the data path is the default place for the exomiser H2 database to be found.
         if (h2.getDirectory().isEmpty()) {
-            logger.info("H2 path not set. Using default data path: {}", dataPath());
-            return resolveH2UrlPathPlaceholder(h2.getUrl(), dataPath().toAbsolutePath().toString());
+            logger.info("H2 path not set. Using default data path: {}", exomiserDataDirectory());
+            return resolveH2UrlPathPlaceholder(h2.getUrl(), exomiserDataDirectory().toAbsolutePath().toString());
         } else {
             logger.info("Using user defined H2 path: {}", h2.getDirectory());
             return resolveH2UrlPathPlaceholder(h2.getUrl(), h2.getDirectory());
@@ -240,5 +257,36 @@ public class ExomiserAutoConfiguration {
     private String resolveH2UrlPathPlaceholder(String h2Url, String h2AbsolutePath) {
         return h2Url.replace("${h2Path}", h2AbsolutePath);
     }
+
+//    @Bean
+//    @Primary
+//    @ConditionalOnMissingBean
+//    public NoOpCacheManager noOpCacheManager() {
+//        logger.info("Caching disabled.");
+//        return new NoOpCacheManager();
+//    }
+//
+//    @Bean
+//    @ConditionalOnMissingBean
+//    public EhCacheCacheManager ehCacheCacheManager() {
+//        EhCacheCacheManager ehCacheCacheManager = new EhCacheCacheManager(ehCacheManager().getObject());
+//        return ehCacheCacheManager;
+//    }
+//
+//    @Bean
+//    public Resource ehCacheConfig() {
+//        return new ClassPathResource("ehcache.xml");
+//    }
+//
+//    @Lazy
+//    @Bean
+//    public EhCacheManagerFactoryBean ehCacheManager() {
+//        Resource ehCacheConfig = ehCacheConfig();
+//        logger.info("Loading ehcache.xml from {}", ehCacheConfig.getDescription());
+//
+//        EhCacheManagerFactoryBean ehCacheManagerFactoryBean = new EhCacheManagerFactoryBean();
+//        ehCacheManagerFactoryBean.setConfigLocation(ehCacheConfig);
+//        return ehCacheManagerFactoryBean;
+//    }
 
 }

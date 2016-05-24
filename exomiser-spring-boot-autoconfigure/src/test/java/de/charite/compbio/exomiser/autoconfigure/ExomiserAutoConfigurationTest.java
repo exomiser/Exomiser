@@ -27,9 +27,11 @@ import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.tribble.readers.TabixReader;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.EnvironmentTestUtils;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,7 +52,7 @@ public class ExomiserAutoConfigurationTest {
     private AnnotationConfigApplicationContext context;
 
     private static final Path TEST_DATA = Paths.get("src/test/resources/data");
-    private static final String TEST_DATA_ENV = "exomiser.dataDir=" + TEST_DATA;
+    private static final String TEST_DATA_ENV = "exomiser.data-directory=" + TEST_DATA;
 
     @After
     public void tearDown() {
@@ -62,8 +64,24 @@ public class ExomiserAutoConfigurationTest {
     @Test
     public void testDataPath() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        Path dataPath = (Path) this.context.getBean("dataPath");
-        assertThat(dataPath.getFileName(), equalTo(Paths.get("data")));
+        Path exomiserDataDirectory = (Path) this.context.getBean("exomiserDataDirectory");
+        assertThat(exomiserDataDirectory.getFileName(), equalTo(Paths.get("data")));
+    }
+
+    @Test
+    public void testWorkingDirectoryPathDefaultIsTempDir() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        Path workingDirectory = (Path) this.context.getBean("exomiserWorkingDirectory");
+        assertThat(workingDirectory.getFileName(), equalTo(Paths.get("exomiser-data")));
+        assertThat(workingDirectory.getParent(), equalTo(Paths.get(System.getProperty("java.io.tmpdir"))));
+    }
+
+    @Test
+    public void testCanSpecifyWorkingDirectory() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.working-directory=" + TEST_DATA + "/wibble");
+        Path workingDirectory = (Path) this.context.getBean("exomiserWorkingDirectory");
+        assertThat(workingDirectory.getFileName(), equalTo(Paths.get("wibble")));
+        assertThat(workingDirectory.getParent(), equalTo(TEST_DATA));
     }
 
     @Test
@@ -279,6 +297,23 @@ public class ExomiserAutoConfigurationTest {
         DataSource dataSource = (DataSource) context.getBean("dataSource");
         assertThat(dataSource, not(nullValue()));
         assertThat(dataSource.getConnection().isValid(1), is(true));
+    }
+
+    @Ignore
+    @Test
+    public void cacheingDisabledByDefault() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        CacheManager cache = context.getBean(CacheManager.class);
+        assertThat(cache.getCacheNames().isEmpty(), is(true));
+    }
+
+    @Ignore
+    @Test
+    public void cacheingCanBeDefined() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "spring.cache.ehcache.config=src/main/resources/ehcache.xml");
+        CacheManager cache = context.getBean(CacheManager.class);
+        System.out.println(cache);
+        assertThat(cache.getCacheNames().isEmpty(), is(false));
     }
 
     @Configuration

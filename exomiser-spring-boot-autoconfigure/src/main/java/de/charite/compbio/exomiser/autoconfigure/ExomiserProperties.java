@@ -28,10 +28,12 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @ConfigurationProperties(prefix = "exomiser")
 public class ExomiserProperties {
 
-    private String dataDir;
+    private String dataDirectory;
+
+    private String workingDirectory;
 
     @NestedConfigurationProperty
-    private H2 h2 = new H2();
+    private ExomiserProperties.H2 h2 = new H2();
 
     //genomiser variant data files
     private String caddSnvPath = "";
@@ -58,19 +60,27 @@ public class ExomiserProperties {
     private String hpoFileName = "hp.obo";
     private String hpoAnnotationFile = "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt";
 
-    public String getDataDir() {
-        return dataDir;
+    public String getDataDirectory() {
+        return dataDirectory;
     }
 
-    public void setDataDir(String dataDir) {
-        this.dataDir = dataDir;
+    public void setDataDirectory(String dataDirectory) {
+        this.dataDirectory = dataDirectory;
     }
 
-    public H2 getH2() {
+    public String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public void setWorkingDirectory(String workingDirectory) {
+        this.workingDirectory = workingDirectory;
+    }
+
+    public ExomiserProperties.H2 getH2() {
         return h2;
     }
 
-    public void setH2(H2 h2) {
+    public void setH2(ExomiserProperties.H2 h2) {
         this.h2 = h2;
     }
 
