@@ -38,8 +38,12 @@ import org.thymeleaf.TemplateEngine;
 @Component
 public class ResultsWriterFactory {
 
+    private final TemplateEngine coreTemplateEngine;
+
     @Autowired
-    private TemplateEngine coreTemplateEngine;
+    public ResultsWriterFactory(TemplateEngine coreTemplateEngine) {
+        this.coreTemplateEngine = coreTemplateEngine;
+    }
 
     /**
      * Build {@link ResultsWriter} for the given {@link OutputFormat}.

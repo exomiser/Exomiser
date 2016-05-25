@@ -27,11 +27,11 @@ import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.tribble.readers.TabixReader;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.EnvironmentTestUtils;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -299,7 +299,6 @@ public class ExomiserAutoConfigurationTest {
         assertThat(dataSource.getConnection().isValid(1), is(true));
     }
 
-    @Ignore
     @Test
     public void cacheingDisabledByDefault() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
@@ -307,13 +306,37 @@ public class ExomiserAutoConfigurationTest {
         assertThat(cache.getCacheNames().isEmpty(), is(true));
     }
 
-    @Ignore
+    @Test(expected = RuntimeException.class)
+    public void cacheingThrowsExceptionWhenNameNotRecognised() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=wibble");
+    }
+
     @Test
-    public void cacheingCanBeDefined() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "spring.cache.ehcache.config=src/main/resources/ehcache.xml");
+    public void cacheingCanBeDisabledExplicitly() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=none");
         CacheManager cache = context.getBean(CacheManager.class);
-        System.out.println(cache);
-        assertThat(cache.getCacheNames().isEmpty(), is(false));
+        assertThat(cache.getCacheNames().isEmpty(), is(true));
+    }
+
+    @Test
+    public void cacheingInMemCanBeDefined() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=mem");
+        CacheManager cache = context.getBean(CacheManager.class);
+        assertThat(cache.getCacheNames(), hasItems("pathogenicity", "frequency", "diseaseHp", "diseases","hpo", "mpo", "zpo", "cadd", "remm"));
+    }
+
+    @Test
+    public void cacheingEhCacheCanBeDefined() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=ehcache");
+        CacheManager cache = context.getBean(CacheManager.class);
+        assertThat(cache.getCacheNames(), hasItems("pathogenicity", "frequency", "diseaseHp", "diseases","hpo", "mpo", "zpo", "cadd", "remm"));
+    }
+
+    @Test
+    public void cacheingCanBeOverridden() {
+        load(BeanOverrideConfiguration.class, TEST_DATA_ENV, "exomiser.cache=ehcache");
+        CacheManager cache = context.getBean(CacheManager.class);
+        assertThat(cache.getCacheNames(), hasItems("wibble"));
     }
 
     @Configuration
@@ -350,6 +373,11 @@ public class ExomiserAutoConfigurationTest {
         @Bean
         public DataMatrix randomWalkMatrix() {
             return Mockito.mock(DataMatrix.class);
+        }
+
+        @Bean
+        public CacheManager cacheManager() {
+            return new ConcurrentMapCacheManager("wibble");
         }
 
     }

@@ -43,7 +43,9 @@ public class ExomiserProperties {
     //http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html
 //    private CacheType cache = CacheType.NONE;
 
-    //none/mem/ehcache
+    /**
+     * none/mem/ehcache
+     */
     private String cache = "none";
 
     /**
