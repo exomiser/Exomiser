@@ -308,6 +308,7 @@ public class ExomiserAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public Resource ehCacheConfig() {
         return new ClassPathResource("ehcache.xml");
     }
