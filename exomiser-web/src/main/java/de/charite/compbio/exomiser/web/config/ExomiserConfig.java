@@ -24,7 +24,7 @@
  */
 package de.charite.compbio.exomiser.web.config;
 
-import de.charite.compbio.exomiser.core.config.EnableExomiser;
+import de.charite.compbio.exomiser.autoconfigure.EnableExomiser;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -35,7 +35,7 @@ import org.springframework.context.annotation.PropertySource;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@PropertySource({"classpath:application.properties","classpath:exomiser.properties"})
+@PropertySource({"classpath:application.properties"})
 @EnableExomiser
 public class ExomiserConfig {
 
