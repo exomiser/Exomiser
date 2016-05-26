@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -34,8 +34,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -231,19 +235,15 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @return
      */
     protected float calculateNonAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
-        List<Float> filterScores = new ArrayList<>();
+        List<Float> filterScores = variantEvaluations.stream()
+                .filter(VariantEvaluation::passedFilters)
+                .map(VariantEvaluation::getVariantScore)
+                .sorted(Collections.reverseOrder())
+                .collect(toList());
 
-        for (VariantEvaluation ve : variantEvaluations) {
-            filterScores.add(ve.getVariantScore());
-        }
-        //maybe the variants were all crappy and nothing passed....
-        if (filterScores.isEmpty()) {
-            return 0f;
-        }
-
-        sortFilterScoresInDecendingOrder(filterScores);
-        //Not autosomal recessive, there is just one heterozygous mutation
-        //thus return only the single best score.
-        return filterScores.get(0);
+        //maybe the variants were all crappy and nothing passed..
+        //Otherwise for non-autosomal recessive, there is just one heterozygous mutation
+        //thus return only the single highest score.
+        return (filterScores.isEmpty()) ? 0f : filterScores.get(0);
     }
 }

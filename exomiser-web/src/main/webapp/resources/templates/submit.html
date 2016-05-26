@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~
+  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Affero General Public License as
+  ~  published by the Free Software Foundation, either version 3 of the
+  ~  License, or (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Affero General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Affero General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="en" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Analysis Settings</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../chosen_v1.2.0/chosen.css" th:href="@{/resources/chosen_v1.2.0/chosen.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../chosen_v1.2.0/chosen-bootstrap.css" th:href="@{/resources/chosen_v1.2.0/chosen-bootstrap.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../bootstrap-3.2.0/css/bootstrap.min.css" th:href="@{/resources/bootstrap-3.2.0/css/bootstrap.min.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" href="../css/sanger-pagesmith-shim.css" th:href="@{/resources/css/sanger-pagesmith-shim.css}"/>
+    </head>
+
+    <body>
+
+        <div class="container">
+            <h2>Exomiser Analysis Options</h2>
+            <form role="form" id="configure-analysis" action="submit" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+                <div class="panel panel-default" id="input-data">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-cloud-upload"/> Upload Sample Files</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <label for="vcf">VCF file:</label>
+                                <input type="file" draggable="true" name="vcf" id="vcf"/>
+
+                                <p class="help-block"><em>Required.</em> Upload exome sequencing results in VCF format. We can only accept files containing up to <span th:text="${@maxVariants}">100000</span> variants.
+                                    <a href="resources/Pfeiffer.vcf">Example file</a> with causative FGFR2 
+                                    variant for the autosomal dominant Pfeiffer syndrome added to exome of a
+                                    <a href="http://manuelcorpas.com/2012/02/06/my-personal-exome-analysis-part-i-first-findings">healthy individual</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-group">
+                                <label for="ped">PED file:</label>
+                                <input type="file" draggable="true" name="ped" id="ped"/>
+                                <p class="help-block">Only required for multi-sample VCF files</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4"></div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-tasks"/> Enter Sample Phenotypes</h3>
+                    </div>
+                    <div class="panel-body">
+
+                        <div class="col-sm-6">
+                            <label for="omimid">Phenotypes associated with Mendelian disease:</label>
+                            <div class="form-group" id="disease-selector">
+                                <select title="" class="chosen-select" data-placeholder="e.g. Pfeiffer syndrome" name="disease" id="omimid" >
+                                    <option value=""></option>
+                                    <!--<input class="mediumlong james {url:'/resources/databases/exomiser/query/form/autocomplete',varname:'term',minlength:1}" name="omimid" id="omimid" type="text" autocomplete="off" placeholder="PFEIFFER SYNDROME"/>-->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="hpo">Clinical phenotypes:</label>
+                            <div class="form-group">
+                                <select data-placeholder=" e.g. Craniosynostosis, Malar flattening, Wide nasal bridge" class="chosen-select" multiple="true" tabindex="4" name="phenotypes" id="hpo">
+                                </select>
+                                <!--<input class="form-control" type="text" name="hpo" id="hpo" placeholder="Craniosynostosis, Malar flattening, Wide nasal bridge"></input>
+                                        <input name="hpo" id="hpo" type="text" autocomplete="off" class="medium james {url:'/resources/databases/exomiser/query/form/autocomplete2',varname:'term',restricted:1,minlength:1,multiple:1,keydelay:100}" placeholder="Craniosynostosis, Malar flattening, Wide nasal bridge"/>-->
+                                <p class="help-block">Input terms from the <a href="http://www.human-phenotype-ontology.org/">HPO</a>. <i>These will override any phenotypes derived from the specified disease!</i></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default" id="filters">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-filter"/> Set Filtering Parameters</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="col-sm-4">
+                            <label for="quality">Minimum variant call quality:</label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Phred</span>
+                                    <input class="form-control" type="text" name="quality" id="quality" placeholder="e.g. 30.0"/>
+                                </div>
+                            </div>
+
+                            <label for="remove-dbsnp">Remove all dbSNP variants: </label>
+                            <div class="form-group">
+                                <select name="remove-dbsnp" id="remove-dbsnp" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="false">False</option>
+                                    <option value="true">True</option>                               
+                                </select>
+                            </div>
+
+                            <label for="keep-off-target">Keep off-target variants: </label>
+                            <div class="form-group">
+                                <select name="keep-off-target" id="keep-off-target" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="false">False</option>
+                                    <option value="true">True</option>                               
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">  
+                            <label for="interval">Genetic interval:</label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Chr</span>
+                                    <input class="form-control" type="text" name="interval" id="interval" placeholder="e.g. 1:12339-3242525"/>
+                                </div>
+                            </div>
+
+                            <label for="keep-non-pathogenic">Keep non-pathogenic variants: </label>
+                            <div class="form-group">
+                                <select name="keep-non-pathogenic" id="keep-non-pathogenic" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="false">False</option>
+                                    <option value="true">True</option>                                
+                                </select>
+                            </div>
+
+                            <label for="inheritance">Inheritance model: </label>
+                            <div class="form-group">
+                                <select name="inheritance" id="inheritance" data-toggle="dropdown" class="chosen-select">
+                                    <option selected="true" value="UNINITIALIZED">None</option>
+                                    <option value="AUTOSOMAL_DOMINANT">Autosomal dominant</option>
+                                    <option value="AUTOSOMAL_RECESSIVE">Autosomal recessive</option>
+                                    <option value="X_RECESSIVE">X-linked</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">  
+                            <label for="frequency">Maximum minor allele frequency:</label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">MAF</span>
+                                    <input class="form-control" type="text" name="frequency" id="frequency" value="1.0"/>
+                                    <span class="input-group-addon">%</span>
+                                </div>
+                            </div>
+
+                            <label for="gene-filter">Filter for genes:</label>
+                            <div class="form-group">
+                                <select data-placeholder=" e.g. FGFR2" class="chosen-select" multiple="true" tabindex="3" name="genes-to-keep" id="gene-filter">
+                                </select>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><span class="glyphicon glyphicon-sort"/> Choose Prioritiser</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="col-sm-4">
+                            <label for="prioritiser">Prioritise genes using:</label>
+                            <select name="prioritiser" id="prioritiser_dropdown" class="chosen-select">
+                                <option selected="true" value="HIPHIVE_PRIORITY">hiPHIVE (compare phenotypes against all species)</option>
+                                <option value="PHIVE_PRIORITY">PHIVE (compare phenotypes against mouse only)</option>
+                                <option value="PHENIX_PRIORITY">PhenIX (compare phenotypes against human only)</option>
+                                <option value="NONE">None - filter only</option>
+                                <!--<option value="EXOMEWALKER_PRIORITY">ExomeWalker (protein interaction)</option>-->
+                            </select>
+                        </div>
+                    </div> 
+                </div>
+                <div>
+                    <button type="reset" class="btn btn-default" id="button_form_reset" name="reset">
+                        <span class="glyphicon glyphicon-refresh"></span> Reset
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="button_form_submit" name="submit" data-loading-text="Processing..."
+                            data-toggle="popover" title="Popover title" data-content="And here's some amazing content. It's very engaging. Right?">
+                        <span class="glyphicon glyphicon-thumbs-up"></span> Submit
+                    </button> 
+                    <p class="help-block">
+                        Please be patient and do not mash the submit button - the analysis could take a minute or two depending on the size of the sample and load on the server. 
+                        VCF files are stored as temporary files on our server and deleted following analysis. For performance reasons only the top <span th:text="${@maxGenes}">100</span> genes are returned. 
+                        If you require the Exomiser for analysing large samples or batches of multiple samples we <em>strongly</em> suggest you download and run the 
+                        offline version available from the <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/">FTP site</a>. 
+                        The Exomiser is freely available for academic users or for private use. Other users are requested to contact us to obtain a license.
+                    </p>
+
+                    <!--<p class="help-block">Need more info? Try the <a href="/resources/databases/exomiser/query/public/Tutorial.pdf">Tutorial</a></p>-->
+                </div>
+            </form>
+        </div>
+        <script type="text/javascript" src="resources/bootstrap-3.2.0/js/jquery-2.1.1.min.js" th:href="@{/resources/bootstrap-3.2.0/js/jquery-2.1.1.min}"/>
+        <script type="text/javascript" src="resources/bootstrap-3.2.0/js/bootstrap.min.js" th:href="@{/resources/bootstrap-3.2.0/js/bootstrap.min.js}"/>
+        <script type="text/javascript" src="resources/chosen_v1.2.0/chosen.jquery.js" th:href="@{/resources/chosen_v1.2.0/chosen.jquery.js}"/>
+        <script type="text/javascript" src="resources/chosen_v1.2.0/ajax-chosen.min.js" th:href="@{/resources/chosen_v1.2.0/ajax-chosen.min.js}"/>
+
+        <script type="text/javascript" >
+            $(document).ready(function () {
+                $(".chosen-select").chosen({
+                    disable_search_threshold: 10,
+                    width: "100%",
+                    allow_single_deselect: true
+                });
+            });
+        </script>
+        <script type="text/javascript" >
+            $("#omimid").ajaxChosen({
+                type: 'GET',
+                url: 'data/disease',
+                dataType: 'json'
+            }, function (data) {
+
+                var results = [];
+
+                $.each(data, function (i, val) {
+                    results.push({value: val.value, text: val.text});
+                });
+                //add empty result 
+                results.push({value: "", text: ""});
+                console.log(results);
+                return results;
+            });
+        </script>
+
+        <script type="text/javascript" >
+            $("#hpo").ajaxChosen({
+                type: 'GET',
+                url: 'data/hpo',
+                dataType: 'json'
+            }, function (data) {
+
+                var results = [];
+
+                $.each(data, function (i, val) {
+                    results.push({value: val.value, text: val.text});
+                });
+                results.push({value: "", text: ""});
+                console.log(results);
+                return results;
+            });
+        </script>
+        <script type="text/javascript" >
+            $("#gene-filter").ajaxChosen({
+                type: 'GET',
+                url: 'data/gene',
+                dataType: 'json'
+            }, function (data) {
+
+                var results = [];
+
+                $.each(data, function (i, val) {
+                    results.push({value: val.value, text: val.text});
+                });
+                results.push({value: "", text: ""});
+                console.log(results);
+                return results;
+            });
+        </script>
+        <script type="text/javascript" >
+            $('#button_form_submit').on('click', function () {
+                console.log("submit button clicked");
+                var $btn = $(this).button('loading');
+                // business logic...
+                $btn.button('loading');
+            });
+        </script>
+    </body>
+</html>

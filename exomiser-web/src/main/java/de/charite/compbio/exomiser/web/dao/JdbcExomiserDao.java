@@ -1,18 +1,20 @@
 /*
- * Copyright (C) 2014 jj8
+ * The Exomiser - A tool to annotate and prioritize variants
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package de.charite.compbio.exomiser.web.dao;
 
@@ -20,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,11 +30,13 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class JdbcExomiserDao implements ExomiserDao {
 
     Logger logger = LoggerFactory.getLogger(JdbcExomiserDao.class);
@@ -53,7 +58,7 @@ public class JdbcExomiserDao implements ExomiserDao {
             logger.error("Error executing getDiseases query: ", e);
         }
 
-        return new HashMap<>();
+        return Collections.emptyMap();
     }
 
     @Override
@@ -70,7 +75,7 @@ public class JdbcExomiserDao implements ExomiserDao {
             logger.error("Error executing getHpoTerms query: ", e);
         }
 
-        return new HashMap<>();
+        return Collections.emptyMap();
     }
     
     @Override
@@ -87,7 +92,7 @@ public class JdbcExomiserDao implements ExomiserDao {
             logger.error("Error executing getGenes query: ", e);
         }
 
-        return new HashMap<>();
+        return Collections.emptyMap();
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, String query) throws SQLException {
@@ -100,9 +105,11 @@ public class JdbcExomiserDao implements ExomiserDao {
 
         while (rs.next()) {
             String diseaseId = rs.getString(1);
-            String diseaseTerm = rs.getString(2);
-            diseaseId = diseaseId.trim();
-            diseaseIdToTerms.put(diseaseId, diseaseTerm);
+            String diseaseTerm = (rs.getString(2) == null)? "": rs.getString(2);
+            if (diseaseId != null) {
+                diseaseId = diseaseId.trim();
+                diseaseIdToTerms.put(diseaseId, diseaseTerm);
+            }
         }
 
         return diseaseIdToTerms;

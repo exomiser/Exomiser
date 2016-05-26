@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,6 +19,7 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
@@ -53,12 +54,15 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
 /**
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class AnalysisParser {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisParser.class);
@@ -66,6 +70,7 @@ public class AnalysisParser {
     private final PriorityFactory prioritiserFactory;
     private final VariantDataService variantDataService;
 
+    @Autowired
     public AnalysisParser(PriorityFactory prioritiserFactory, VariantDataService variantDataService) {
         this.prioritiserFactory = prioritiserFactory;
         this.variantDataService = variantDataService;

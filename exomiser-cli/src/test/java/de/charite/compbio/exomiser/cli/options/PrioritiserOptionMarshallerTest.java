@@ -28,12 +28,10 @@ import de.charite.compbio.exomiser.cli.CommandLineParseError;
 import de.charite.compbio.exomiser.core.analysis.Settings;
 import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 /**
@@ -130,4 +128,5 @@ public class PrioritiserOptionMarshallerTest {
         assertThat(description, containsString("uber-pheno"));
         assertThat(description, containsString("none"));
     }
+    
 }

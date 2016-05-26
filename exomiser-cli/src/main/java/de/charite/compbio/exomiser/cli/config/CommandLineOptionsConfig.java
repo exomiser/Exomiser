@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -8,6 +27,7 @@ package de.charite.compbio.exomiser.cli.config;
 import de.charite.compbio.exomiser.cli.CommandLineOptionsParser;
 import de.charite.compbio.exomiser.cli.options.*;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +38,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.cli.OptionBuilder;
 
 /**
  * Spring configuration for setting-up the command-line options. If you want a
@@ -121,38 +140,4 @@ public class CommandLineOptionsConfig {
         return options;
     }
 
-        //the original options:
-//        options.addOption(new Option("h", "HELP_OPTION", false, "Shows this HELP_OPTION"));
-//        options.addOption(new Option("H", "HELP_OPTION", false, "Shows this HELP_OPTION"));
-//        options.addOption(new Option("variant", "VCF_OPTION", true, "Path to VCF_OPTION file with mutations to be analyzed."));
-//        options.addOption(new Option("o", "outfile", true, "name of out file (default: \"exomizer.html\")"));
-//        options.addOption(new Option("l", "log", true, "Configuration file for logger"));
-//        // / Filtering options
-//        options.addOption(new Option("A", "omim_disease", true, "OMIM ID for disease being sequenced"));
-//        options.addOption(new Option("B", "boqa", true, "comma-separated list of HPO terms for BOQA"));
-//        options.addOption(new Option("D", "file_for_deserialising", true, "De-serialise"));
-//        options.addOption(new Option("F", "freq_threshold", true, "Frequency threshold for variants"));
-//        options.addOption(new Option("I", "inheritance", true, "Filter variants for inheritance pattern (AR,AD,X)"));
-//        options.addOption(new Option("M", "mgi_phenotypes", false, "Filter variants for MGI phenodigm score"));
-//
-//        options.addOption(new Option("P", "path", false, "Filter variants for predicted pathogenicity"));
-//        options.addOption(new Option("Q", "qual_threshold", true, "Quality threshold for variants"));
-//        options.addOption(new Option("S", "SeedGenes", true, "Comma separated list of seed genes for random walk"));
-//        options.addOption(new Option("W", "RWmatrix", true, "Random walk matrix file"));
-//        options.addOption(new Option("X", "RWindex", true, "Random walk index file"));
-//        options.addOption(new Option("Z", "zfin_phenotypes", false, "Filter variants for ZFIN phenodigm score"));
-//
-//        // Annotations that do not filter
-//        options.addOption(new Option(null, "interval", true, "Restrict to interval (e.g., chr2:12345-67890)"));
-//        options.addOption(new Option(null, "tsv", false, "Output tab-separated value (TSV) file instead of HTML"));
-//        options.addOption(new Option(null, "vcf_output", false, "Output VCF_OPTION file instead of HTML"));
-//        options.addOption(new Option(null, "CANDIDATE_GENE_OPTION", true, "Known or suspected gene association"));
-//        options.addOption(new Option(null, "dbsnp", false, "Filter out all variants with an entry in dbSNP/ESP (regardless of frequency)"));
-//        options.addOption(new Option(null, "PED_OPTION", true, "pedigree (PED_OPTION) file"));
-//        options.addOption(new Option(null, "hpo", true, "HPO Ontology (obo) file"));
-//        options.addOption(new Option(null, "hpoannot", true, "HPO Annotations file"));
-//        options.addOption(new Option(null, "HPO_IDS_OPTION", true, "HPO IDs for the sample being sequenced"));
-//        options.addOption(new Option(null, "ngenes", true, "Number of genes to show in output"));
-//        options.addOption(new Option(null, "withinFirewall", false, "Set flag that we are running on private server"));
-//        options.addOption(new Option(null, "phenomizerData", true, "Phenomizer data directory"));
 }

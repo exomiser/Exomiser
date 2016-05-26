@@ -20,12 +20,6 @@
 package de.charite.compbio.exomiser.rest.analysis.service;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.rest.analysis.model.AnalysisResponse;
 import de.charite.compbio.exomiser.rest.analysis.model.AnalysisStatus;
@@ -34,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -53,9 +46,10 @@ public class AnalysisServiceDefaultImpl implements AnalysisService {
     //TODO: this should become a DAO
     private final Map<Long, Analysis> analysisMap = new ConcurrentHashMap<>();
 
+
     @Override
-    public AnalysisResponse createAnalysisJob(Analysis analysis) {
-        long id = analysisId.incrementAndGet();
+    public synchronized AnalysisResponse createAnalysisJob(Analysis analysis) {
+        final long id = analysisId.incrementAndGet();
         analysisMap.put(id, analysis);
         logger.info("Created analysis job {}", id);
         return new AnalysisResponse(id, AnalysisStatus.AWAITING_VCF, "Analysis received.");

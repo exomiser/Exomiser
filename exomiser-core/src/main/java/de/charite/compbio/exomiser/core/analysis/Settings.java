@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -211,8 +211,17 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
             return this;
         }
 
-        @JsonSetter("keepNonPathogenic")
+        @Deprecated
+        /**
+         * Use {@link keepNonPathogenic} instead.
+         */
         public SettingsBuilder removePathFilterCutOff(boolean value) {
+            removePathFilterCutOff = value;
+            return this;
+        }
+
+        @JsonSetter("keepNonPathogenic")
+        public SettingsBuilder keepNonPathogenic(boolean value) {
             removePathFilterCutOff = value;
             return this;
         }
@@ -265,8 +274,17 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
             return this;
         }
 
-        @JsonSetter
+        /**
+         * Deprecated - use genesToKeep instead.
+         */
+        @Deprecated
         public SettingsBuilder genesToKeepList(Set<Integer> value) {
+            geneIdsToKeep = value;
+            return this;
+        }
+
+        @JsonSetter
+        public SettingsBuilder genesToKeep(Set<Integer> value) {
             geneIdsToKeep = value;
             return this;
         }
@@ -406,9 +424,15 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         return geneticInterval;
     }
 
-    @JsonProperty
     @Override
+    @Deprecated
     public boolean removePathFilterCutOff() {
+        return keepNonPathogenicVariants;
+    }
+
+    @JsonProperty("keepNonPathogenic")
+    @Override
+    public boolean keepNonPathogenicVariants() {
         return keepNonPathogenicVariants;
     }
 
@@ -620,7 +644,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     @Override
     public String toString() {
-        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", removePathFilterCutOff=" + keepNonPathogenicVariants + ", removeDbSnp=" + removeKnownVariants + ", removeOffTargetVariants=" + keepOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outputPrefix + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
+        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", keepNonPathogenicVariants=" + keepNonPathogenicVariants + ", removeDbSnp=" + removeKnownVariants + ", removeOffTargetVariants=" + keepOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outputPrefix + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
     }
 
 }
