@@ -56,7 +56,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>Genome Research Limited and CharitÃ© UniversitÃ¤tsmedizin Berlin</project.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.17-SNAPSHOT</jannovar.version>
+        <jannovar.version>0.16</jannovar.version>
     </properties>
  
     <repositories>

@@ -34,8 +34,14 @@ import de.charite.compbio.jannovar.htsjdk.InvalidCoordinatesException;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import htsjdk.variant.variantcontext.*;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -46,11 +52,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import static java.util.stream.Collectors.toList;
 
@@ -179,7 +180,9 @@ public class VariantFactory {
         try {
             //builds one annotation list for each alternative allele
             //beware - this needs synchronisation in jannovar versions 0.16 and below
-            return variantAnnotator.buildAnnotations(variantContext);
+            synchronized (this) {
+                return variantAnnotator.buildAnnotations(variantContext);
+            }
         } catch (InvalidCoordinatesException ex) {
             //Not all genes can be assigned to a chromosome, so these will fail here.
             //Should we report these? They will not be used in the analysis or appear in the output anywhere.
