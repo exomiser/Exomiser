@@ -19,7 +19,7 @@
 
 package de.charite.compbio.exomiser.cli.config;
 
-import de.charite.compbio.exomiser.core.config.DefaultExomiserConfiguration;
+import de.charite.compbio.exomiser.autoconfigure.EnableExomiser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,16 +42,16 @@ import java.nio.file.Paths;
 
 
 /**
- * Provides configuration details from the settings.properties file located in
- * the classpath.
+ * Provides configuration details from the application.properties file located in
+ * the jarfile directory.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@ComponentScan(basePackages = {"de.charite.compbio.exomiser.cli"})
+@ComponentScan(basePackages = {"de.charite.compbio.exomiser.cli", "de.charite.compbio.exomiser.core"})
 @PropertySource("file:${jarFilePath}/application.properties")
-//@EnableExomiser
-public class MainConfig extends DefaultExomiserConfiguration {
+@EnableExomiser
+public class MainConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
@@ -87,9 +87,8 @@ public class MainConfig extends DefaultExomiserConfiguration {
     }
 
 
-    @Override
     @Bean
-    public Path dataPath() {
+    public Path exomiserDataDirectory() {
         String dataDirValue = env.getProperty("dataDir");
         logger.info("Data source directory defined in properties as: {}", dataDirValue);
         Path dataPath = jarFilePath().resolve(dataDirValue);
@@ -98,7 +97,7 @@ public class MainConfig extends DefaultExomiserConfiguration {
     }
 
     @Bean
-    public Resource ehCachConfig() {
+    public Resource ehCacheConfig() {
       return new PathResource(jarFilePath().resolve("ehcache.xml"));
     }
 
