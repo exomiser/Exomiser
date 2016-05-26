@@ -23,9 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 import java.io.IOException;
@@ -37,18 +35,16 @@ import java.nio.file.Paths;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@ComponentScan("de.charite.compbio.exomiser.rest.analysis")
-@PropertySource({"classpath:application.properties", "classpath:exomiser.properties"})
-public class ExomiserConfig {
+public class AnalysisConfig {
 
-    private static Logger logger = LoggerFactory.getLogger(ExomiserConfig.class);
+    private static Logger logger = LoggerFactory.getLogger(AnalysisConfig.class);
 
     @Autowired
     Environment environment;
 
     @Bean
     Path analysisPath() {
-        Path analysisPath = Paths.get(environment.getProperty("exomiser.analysisPath"));
+        Path analysisPath = Paths.get(environment.getProperty("exomiser.working-directory"));
         try {
             if (!Files.exists(analysisPath)) {
                 logger.info("Setting up analysis path at {}", analysisPath);

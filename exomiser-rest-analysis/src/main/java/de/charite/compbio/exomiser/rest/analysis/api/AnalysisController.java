@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.inject.Named;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -48,6 +49,7 @@ public class AnalysisController {
     private static final Logger logger = LoggerFactory.getLogger(AnalysisController.class);
 
     @Autowired
+    @Named("exomiserWorkingDirectory")
     private Path analysisPath;
 
     @Autowired
