@@ -30,7 +30,7 @@
     <parent>
         <groupId>de.charite.compbio</groupId>
         <artifactId>Exomiser</artifactId>
-        <version>7.2.1</version>
+        <version>7.3.0-SNAPSHOT</version>
     </parent>
   
     <properties>
