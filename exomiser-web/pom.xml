@@ -37,6 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--path to where the database and other resources are found in exomiser.properties-->
         <data.dir>C:/Users/jj8/Documents/exomiser-cli-4.0.0/data</data.dir>
+        <h2.dir>C:/Users/jj8/Documents/exomiser-cli-4.0.0/data</h2.dir>
         <warName>exomiser</warName>
     </properties>
 
@@ -45,6 +46,7 @@
             <id>sanger</id>
             <properties>
                 <data.dir>/www/data/exomiser</data.dir>
+                <h2.dir>/www/data/exomiser/data</h2.dir>
                 <warName>resources#software#exomiser</warName>
             </properties>
         </profile>
@@ -53,8 +55,8 @@
     <dependencies>
         <dependency>
             <groupId>de.charite.compbio</groupId>
-            <artifactId>exomiser-core</artifactId>
-            <version>${project.version}</version>
+            <artifactId>exomiser-spring-boot-starter</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <!--Spring framework-->
         <dependency>
@@ -69,6 +71,10 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
         <!--https://github.com/jayway/JsonPath-->
         <!--Jayway is a Java DSL for reading JSON documents-->
@@ -90,18 +96,16 @@
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
+            <artifactId>jackson-datatype-jdk7</artifactId>
         </dependency>
         <!--Templating engine for the views-->
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring4</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>

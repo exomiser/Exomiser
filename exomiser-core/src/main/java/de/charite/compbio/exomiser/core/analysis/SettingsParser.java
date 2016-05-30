@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Will set-up an {@link Exomiser} exome {@link Analysis} according to the original 
@@ -59,6 +61,7 @@ import org.slf4j.LoggerFactory;
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class SettingsParser {
 
     private static final Logger logger = LoggerFactory.getLogger(SettingsParser.class);
@@ -80,6 +83,7 @@ public class SettingsParser {
     private final PriorityFactory prioritiserFactory;
     private final VariantDataService variantDataService;
 
+    @Autowired
     public SettingsParser(PriorityFactory prioritiserFactory, VariantDataService variantDataService) {
         this.prioritiserFactory = prioritiserFactory;
         this.variantDataService = variantDataService;

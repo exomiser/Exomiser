@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -34,8 +34,14 @@ import de.charite.compbio.jannovar.htsjdk.InvalidCoordinatesException;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.reference.GenomeVariant;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import htsjdk.variant.variantcontext.*;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -47,10 +53,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -58,6 +60,7 @@ import static java.util.stream.Collectors.toList;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class VariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
@@ -69,8 +72,8 @@ public class VariantFactory {
     private final int UNKNOWN_CHROMOSOME = 0;
 
     /**
-     * @deprecated Use alternative constructor requiring JannovarData
      * @param variantAnnotator
+     * @deprecated Use alternative constructor requiring JannovarData
      */
     @Deprecated
     public VariantFactory(VariantAnnotator variantAnnotator) {
@@ -155,7 +158,7 @@ public class VariantFactory {
      * This means that a multi allele Variant record in a VCF can result in several VariantEvaluations - one for each
      * alternate allele.
      */
-     private Function<VariantContext, Stream<VariantEvaluation>> streamVariantEvaluations() {
+    private Function<VariantContext, Stream<VariantEvaluation>> streamVariantEvaluations() {
         return variantContext -> {
             final List<VariantAnnotations> variantAlleleAnnotations = buildVariantAnnotations(variantContext);
 //            logger.info("Making variantEvaluations for alternate alleles {}:{} {} {}", variantContext.getContig(), variantContext.getStart(), variantContext.getAlleles(), variantContext.getGenotypes());
@@ -168,15 +171,16 @@ public class VariantFactory {
 
     /**
      * Returns a list of variants of known reference. If a VariantContext has no
-     * know reference on the genome an empty list will be returned.
+     * known reference on the genome an empty list will be returned.
      *
      * @param variantContext {@link VariantContext} to get {@link Variant} objects for
      * @return one {@link Variant} object for each alternative allele in vc.
      */
     public List<VariantAnnotations> buildVariantAnnotations(VariantContext variantContext) {
         try {
+            //builds one annotation list for each alternative allele
+            //beware - this needs synchronisation in jannovar versions 0.16 and below
             synchronized (this) {
-                //builds one annotation list for each alternative allele
                 return variantAnnotator.buildAnnotations(variantContext);
             }
         } catch (InvalidCoordinatesException ex) {

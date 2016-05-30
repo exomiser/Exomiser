@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -10,6 +29,7 @@ import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
@@ -27,6 +47,11 @@ import org.junit.Test;
  */
 public class RawScoreGeneScorerTest {
 
+    private static final PassFilterResult PASS_FREQUENCY = new PassFilterResult(FilterType.FREQUENCY_FILTER);
+    private static final FailFilterResult FAIL_FREQUENCY = new FailFilterResult(FilterType.FREQUENCY_FILTER);
+    private static final PassFilterResult PASS_PATHOGENICITY = new PassFilterResult(FilterType.PATHOGENICITY_FILTER);
+    private static final FailFilterResult FAIL_PATHOGENICITY = new FailFilterResult(FilterType.PATHOGENICITY_FILTER);
+
     private RawScoreGeneScorer instance;
     
     private VariantEvaluation failedFrequency;
@@ -38,20 +63,32 @@ public class RawScoreGeneScorerTest {
     public void setUp() {
         instance = new RawScoreGeneScorer();
         
-        failedFrequency = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedFrequency.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER));
+        failedFrequency = new VariantEvaluation
+                .VariantBuilder(1, 1, "A", "T")
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        failedFrequency.addFilterResult(FAIL_FREQUENCY);
 
-        failedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedPathogenicity.addFilterResult(new FailFilterResult(FilterType.PATHOGENICITY_FILTER));
+        failedPathogenicity = new VariantEvaluation
+                .VariantBuilder(1, 1, "A", "T")
+                .variantEffect(VariantEffect.CODING_SEQUENCE_VARIANT)
+                .build();
+        failedPathogenicity.addFilterResult(FAIL_PATHOGENICITY);
 
-        failedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        failedFrequencyPassedPathogenicity.addFilterResult(new FailFilterResult(FilterType.FREQUENCY_FILTER));
-        failedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.PATHOGENICITY_FILTER));
+        failedFrequencyPassedPathogenicity = new VariantEvaluation
+                .VariantBuilder(1, 1, "A", "T")
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        failedFrequencyPassedPathogenicity.addFilterResult(FAIL_FREQUENCY);
+        failedFrequencyPassedPathogenicity.addFilterResult(PASS_PATHOGENICITY);
         
         // Scoring should only includes variants which have actually passed all the filters
-        passedFrequencyPassedPathogenicity = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
-        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.FREQUENCY_FILTER));
-        passedFrequencyPassedPathogenicity.addFilterResult(new PassFilterResult(FilterType.PATHOGENICITY_FILTER));
+        passedFrequencyPassedPathogenicity = new VariantEvaluation
+                .VariantBuilder(1, 1, "A", "T")
+                .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
+                .build();
+        passedFrequencyPassedPathogenicity.addFilterResult(PASS_FREQUENCY);
+        passedFrequencyPassedPathogenicity.addFilterResult(PASS_PATHOGENICITY);
     }
 
     @Test
@@ -79,9 +116,16 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testCalculateNonAutosomalRecessiveFilterScoreReturnsHighestFilterScore() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
+        VariantEvaluation passedFrequencyPassedPathogenicityMissense = new VariantEvaluation
+                .VariantBuilder(1, 1, "A", "T")
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        passedFrequencyPassedPathogenicityMissense.addFilterResult(PASS_FREQUENCY);
+        passedFrequencyPassedPathogenicityMissense.addFilterResult(PASS_PATHOGENICITY);
 
         variantEvaluations.add(failedFrequency);
         variantEvaluations.add(failedFrequencyPassedPathogenicity);
+        variantEvaluations.add(passedFrequencyPassedPathogenicityMissense);
         variantEvaluations.add(passedFrequencyPassedPathogenicity);
 
         float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();

@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -46,7 +65,7 @@ public class FilterSettingsImplTest {
         assertThat(instance.getMaximumFrequency(), equalTo(MAX_FREQ_DEFAULT));
         assertThat(instance.getMinimumQuality(), equalTo(MIN_QUAL_DEFAULT));
         assertThat(instance.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
-        assertThat(instance.removePathFilterCutOff(), equalTo(KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT));
+        assertThat(instance.keepNonPathogenicVariants(), equalTo(KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT));
         assertThat(instance.removeKnownVariants(), equalTo(REMOVE_KNOWN_VARIANTS_DEFAULT));
         assertThat(instance.keepOffTargetVariants(), equalTo(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(instance.getGenesToKeep(), equalTo(GENE_IDS_TO_KEEP_DEFAULT));
@@ -78,7 +97,7 @@ public class FilterSettingsImplTest {
     public void testKeepNonPathogenic() {
         boolean keepNonPathogenic = false;
         instance = builder.keepNonPathogenic(keepNonPathogenic).build();
-        assertThat(instance.removePathFilterCutOff(), equalTo(keepNonPathogenic));
+        assertThat(instance.keepNonPathogenicVariants(), equalTo(keepNonPathogenic));
     }
     
     @Test

@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -8,47 +27,44 @@ package de.charite.compbio.exomiser.core.writers;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.PassFilterResult;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
+import de.charite.compbio.exomiser.core.model.pathogenicity.*;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.pedigree.Genotype;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.TemplateEngine;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.rules.TemporaryFolder;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = ThymeleafConfig.class)
 public class HtmlResultsWriterTest {
 
     private HtmlResultsWriter instance;
@@ -60,7 +76,8 @@ public class HtmlResultsWriterTest {
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    private static TemplateEngine templateEngine;
+    @Autowired
+    private TemplateEngine templateEngine;
 
     private String testOutFilePrefix;
 
@@ -72,17 +89,6 @@ public class HtmlResultsWriterTest {
 
     private Gene gene1;
     private Gene gene2;
-
-    @BeforeClass
-    public static void makeTemplateEngine() {
-        TemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setTemplateMode("HTML5");
-        templateResolver.setPrefix("html/templates/");
-        templateResolver.setSuffix(".html");
-        templateResolver.setCacheable(true);
-        templateEngine = new TemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver);
-    }
 
     @Before
     public void setUp() {

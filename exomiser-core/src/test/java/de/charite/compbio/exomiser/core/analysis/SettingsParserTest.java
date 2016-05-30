@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -147,8 +147,8 @@ public class SettingsParserTest {
         
         Settings settings = settingsBuilder
                 .modeOfInheritance(autosomal_dominant)
-                .genesToKeepList(geneIdsToKeep)
-                .removePathFilterCutOff(true)
+                .genesToKeep(geneIdsToKeep)
+                .keepNonPathogenic(true)
                 .removeKnownVariants(true)
                 .maximumFrequency(0.25f)
                 .minimumQuality(2f)
