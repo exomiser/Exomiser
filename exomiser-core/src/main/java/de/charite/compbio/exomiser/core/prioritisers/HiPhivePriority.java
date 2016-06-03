@@ -19,10 +19,12 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.OrganismPhenotypeMatches;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
@@ -199,10 +201,11 @@ public class HiPhivePriority implements Prioritiser {
         logger.info("Fetching HUMAN-{} phenotype matches...", species);
         Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
         for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
+            //todo: make this immutable
             Set<PhenotypeMatch> termMatches = priorityService.getSpeciesMatchesForHpoTerm(hpoTerm, species);
             speciesPhenotypeMatches.put(hpoTerm, termMatches);
         }
-        return new OrganismPhenotypeMatches(species, queryHpoPhenotypes, speciesPhenotypeMatches);
+        return new OrganismPhenotypeMatches(species, ImmutableMap.copyOf(speciesPhenotypeMatches));
     }
 
 //    class BestScores
@@ -520,92 +523,6 @@ public class HiPhivePriority implements Prioritiser {
                 + "hpoIds=" + hpoIds
                 + ", options=" + options
                 + '}';
-    }
-
-    class OrganismPhenotypeMatches {
-
-        private final Organism organism;
-        private final List<PhenotypeTerm> queryTerms;
-        private final Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches;
-
-        public OrganismPhenotypeMatches(Organism organism, List<PhenotypeTerm> queryTerms, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
-            this.organism = organism;
-            this.queryTerms = queryTerms;
-            this.termPhenotypeMatches = ImmutableMap.copyOf(termPhenotypeMatches);
-        }
-
-        public Organism getOrganism() {
-            return organism;
-        }
-
-        public List<PhenotypeTerm> getQueryTerms() {
-            return queryTerms;
-        }
-
-        public Map<PhenotypeTerm, Set<PhenotypeMatch>> getTermPhenotypeMatches() {
-            return termPhenotypeMatches;
-        }
-
-        public Set<PhenotypeMatch> getBestPhenotypeMatches() {
-            Map<PhenotypeTerm, PhenotypeMatch> bestMatches = new HashMap<>();
-
-            for (Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : termPhenotypeMatches.entrySet()) {
-                PhenotypeTerm queryTerm = entry.getKey();
-                for (PhenotypeMatch match : entry.getValue()) {
-                    double score = match.getScore();
-                    if (bestMatches.containsKey(queryTerm)) {
-                        if (score > bestMatches.get(queryTerm).getScore()) {
-                            bestMatches.put(queryTerm, match);
-                        }
-                    } else {
-                        bestMatches.put(queryTerm, match);
-                    }
-                }
-            }
-            for (PhenotypeMatch bestMatch : bestMatches.values()) {
-                logger.debug("Best match: {}-{}={}", bestMatch.getQueryPhenotypeId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
-            }
-            return ImmutableSet.copyOf(bestMatches.values());
-        }
-
-        public Map<String, PhenotypeMatch> getCompoundKeyIndexedPhenotypeMatches() {
-            //'hpId + mpId' : phenotypeMatch
-            Map<String, PhenotypeMatch> speciesPhenotypeMatches = new HashMap<>();
-
-            for (Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : termPhenotypeMatches.entrySet()) {
-                PhenotypeTerm queryTerm = entry.getKey();
-                String hpId = queryTerm.getId();
-                for (PhenotypeMatch match : entry.getValue()) {
-                    PhenotypeTerm matchTerm = match.getMatchPhenotype();
-                    String mpId = matchTerm.getId();
-                    String matchIds = hpId + mpId;
-                    speciesPhenotypeMatches.put(matchIds, match);
-                }
-            }
-            return ImmutableMap.copyOf(speciesPhenotypeMatches);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof OrganismPhenotypeMatches)) return false;
-            OrganismPhenotypeMatches that = (OrganismPhenotypeMatches) o;
-            return organism == that.organism &&
-                    Objects.equals(termPhenotypeMatches, that.termPhenotypeMatches);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(organism, termPhenotypeMatches);
-        }
-
-        @Override
-        public String toString() {
-            return "OrganismPhenotypeMatches{" +
-                    "organism=" + organism +
-                    ", speciesPhenotypeMatches=" + termPhenotypeMatches +
-                    '}';
-        }
     }
 
 }
