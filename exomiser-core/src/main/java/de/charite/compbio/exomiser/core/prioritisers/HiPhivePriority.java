@@ -19,7 +19,9 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
 import de.charite.compbio.exomiser.core.prioritisers.util.OrganismPhenotypeMatches;
@@ -92,12 +94,12 @@ public class HiPhivePriority implements Prioritiser {
         }
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
+        ListMultimap<Integer, Model> bestGeneModels = ArrayListMultimap.create();
+
         //TODO: this is repetitive, surely there must be a better way to deal with these, perhaps a GeneModelMatrix class?
         final Map<Integer, Model> bestDiseaseModelForGene = makeHpToHumanMatches(options.runHuman(), hpoPhenotypeTerms, Organism.HUMAN);
         final Map<Integer, Model> bestMouseModelForGene = makeHpToOtherSpeciesMatches(options.runMouse(), hpoPhenotypeTerms, Organism.MOUSE);
         final Map<Integer, Model> bestFishModelForGene = makeHpToOtherSpeciesMatches(options.runFish(), hpoPhenotypeTerms, Organism.FISH);
-
-        ListMultimap<Integer, Model> bestGeneModels = ArrayListMultimap.create();
 
         bestDiseaseModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
         bestMouseModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
@@ -110,16 +112,16 @@ public class HiPhivePriority implements Prioritiser {
 
         logger.info("Prioritising genes...");
         for (Gene gene : genes) {
-            HiPhivePriorityResult priorityResult = makePriorityResultForGene(gene, hpoPhenotypeTerms, bestDiseaseModelForGene, bestMouseModelForGene, bestFishModelForGene, weightedHighQualityMatrix);
+            HiPhivePriorityResult priorityResult = makePriorityResultForGene(gene, hpoPhenotypeTerms, bestGeneModels, weightedHighQualityMatrix);
             gene.addPriorityResult(priorityResult);
         }
 
     }
 
-    private HiPhivePriorityResult makePriorityResultForGene(Gene gene, List<PhenotypeTerm> hpoPhenotypeTerms, final Map<Integer, Model> bestDiseaseModelForGene, final Map<Integer, Model> bestMouseModelForGene, final Map<Integer, Model> bestFishModelForGene, FloatMatrix weightedHighQualityMatrix) {
+    private HiPhivePriorityResult makePriorityResultForGene(Gene gene, List<PhenotypeTerm> hpoPhenotypeTerms, ListMultimap<Integer, Model> bestGeneModels, FloatMatrix weightedHighQualityMatrix) {
 
         Integer entrezGeneId = gene.getEntrezGeneID();
-        List<Model> bestPhenotypeMatchModels = getBestPhenotypeMatchesForGene(entrezGeneId, bestDiseaseModelForGene, bestMouseModelForGene, bestFishModelForGene);
+        List<Model> bestPhenotypeMatchModels = bestGeneModels.get(entrezGeneId);
         double score = 0;
         for (Model model : bestPhenotypeMatchModels) {
             score = Math.max(score, model.getScore());
@@ -138,7 +140,7 @@ public class HiPhivePriority implements Prioritiser {
                 walkerScore = 0d;
             } else {
                 Integer closestGeneId = highQualityPhenoMatchedGenes.get(columnIndex);
-                closestPhysicallyInteractingGeneModels = getBestPhenotypeMatchesForGene(closestGeneId, bestDiseaseModelForGene, bestMouseModelForGene, bestFishModelForGene);
+                closestPhysicallyInteractingGeneModels = bestGeneModels.get(closestGeneId);
             }
         }
         logger.debug("Making result for {} {} score={}", gene.getGeneSymbol(), entrezGeneId, score);
@@ -148,24 +150,6 @@ public class HiPhivePriority implements Prioritiser {
     private boolean matchesCandidateGeneSymbol(Gene gene) {
         //new Jannovar labelling can have multiple genes per var but first one is most pathogenic- we'll take this one.
         return options.getCandidateGeneSymbol().equals(gene.getGeneSymbol()) || gene.getGeneSymbol().startsWith(options.getCandidateGeneSymbol() + ",");
-    }
-    
-    //TODO: replace with call to Collection<Model> getBestPhenotypeMatchesForGene = bestGeneModels.get(entrezGeneId);
-    private List<Model> getBestPhenotypeMatchesForGene(Integer entrezGeneId, final Map<Integer, Model> bestDiseaseModelForGene, final Map<Integer, Model> bestMouseModelForGene, final Map<Integer, Model> bestFishModelForGene) {
-        List<Model> bestPhenotypeMatchModels = new ArrayList<>();
-        if (bestDiseaseModelForGene.containsKey(entrezGeneId)) {
-            Model bestDiseseModel = bestDiseaseModelForGene.get(entrezGeneId);
-            bestPhenotypeMatchModels.add(bestDiseseModel);
-        }
-        if (bestMouseModelForGene.containsKey(entrezGeneId)) {
-            Model bestMouseModel = bestMouseModelForGene.get(entrezGeneId);
-            bestPhenotypeMatchModels.add(bestMouseModel);
-        }
-        if (bestFishModelForGene.containsKey(entrezGeneId)) {
-            Model bestFishModel = bestFishModelForGene.get(entrezGeneId);
-            bestPhenotypeMatchModels.add(bestFishModel);
-        }
-        return bestPhenotypeMatchModels;
     }
 
     private String makeStatsMessage(List<Gene> genes) {
@@ -404,7 +388,7 @@ public class HiPhivePriority implements Prioritiser {
                 if (options.isBenchmarkingEnabled() && options.isBenchmarkHit(model)) {
                     logger.info("Found benchmarking hit {}:{} - skipping model", options.getDiseaseId(), options.getCandidateGeneSymbol());
                 } else {
-                    // normal behaviour when not trying to exclude candidate gene to simulate novel gene disovery in benchmarking
+                    // normal behaviour when not trying to exclude candidate gene to simulate novel gene discovery in benchmarking
                     // only build PPI network for high qual hits
                     if (score > 0.6) {
                         logger.debug("Adding high quality score for {} score={}", model.getHumanGeneSymbol(), model.getScore());
