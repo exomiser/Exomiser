@@ -49,15 +49,15 @@ public class HiPhivePriority implements Prioritiser {
 
     private static final PriorityType PRIORITY_TYPE = PriorityType.HIPHIVE_PRIORITY;
 
-    private final List<String> hpoIds;
     private final HiPhiveOptions options;
     private final DataMatrix randomWalkMatrix;
 
+    //TODO: make final - add to constructor
     private PriorityService priorityService;
 
+    //TODO: make local
+    private final List<String> hpoIds;
     private List<Integer> highQualityPhenoMatchedGenes = new ArrayList<>();
-
-
     private Map<Integer, Double> geneScores = new HashMap<>();
 
     private double bestMaxScore = 0d;
@@ -94,19 +94,34 @@ public class HiPhivePriority implements Prioritiser {
         }
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
-        ListMultimap<Integer, Model> bestGeneModels = ArrayListMultimap.create();
+        ListMultimap<Integer, Model> bestGeneModels = makeBestGeneModelsForOrganisms(hpoPhenotypeTerms, Organism.HUMAN, options.getOrganismsToRun());
 
-        //TODO: this is repetitive, surely there must be a better way to deal with these, perhaps a GeneModelMatrix class?
-        final Map<Integer, Model> bestDiseaseModelForGene = makeHpToHumanMatches(options.runHuman(), hpoPhenotypeTerms, Organism.HUMAN);
-        final Map<Integer, Model> bestMouseModelForGene = makeHpToOtherSpeciesMatches(options.runMouse(), hpoPhenotypeTerms, Organism.MOUSE);
-        final Map<Integer, Model> bestFishModelForGene = makeHpToOtherSpeciesMatches(options.runFish(), hpoPhenotypeTerms, Organism.FISH);
-
-        bestDiseaseModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
-        bestMouseModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
-        bestFishModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
+        // catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
+        if (options.isBenchmarkingEnabled()) {
+            removeKnownGeneDiseaseAssociationModel(bestGeneModels);
+        }
 
         FloatMatrix weightedHighQualityMatrix = FloatMatrix.EMPTY;
         if (options.runPpi()) {
+            for (Model model : bestGeneModels.values()) {
+                Integer entrezId = model.getEntrezGeneId();
+                Double score = model.getScore();
+                // normal behaviour when not trying to exclude candidate gene to simulate novel gene discovery in benchmarking
+                // only build PPI network for high qual hits
+                if (score > 0.6) {
+                    logger.debug("Adding high quality score for {} score={}", model.getHumanGeneSymbol(), model.getScore());
+                    //TODO: this is a bit round-the-houses as it's used in getColumnIndexOfMostPhenotypicallySimilarGene() would probably
+                    //be better using a LinkedHashMap to join these two values together, or use a GeneIdentifier class....?
+                    highQualityPhenoMatchedGenes.add(entrezId);
+                    //TODO: geneScores is only ever queried using highQualityPhenoMatchedGenes so the two can be merged so we have the highest score from all models
+                    //linked to a gene id. This is used to find the weighted high-quality matrix.
+                }
+                //why use this? Just return the high-quality gene-model matches and iterate through the fuckers.
+                //also used by makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes
+                if (!geneScores.containsKey(entrezId) || score > geneScores.get(entrezId)) {
+                    geneScores.put(entrezId, score);
+                }
+            }
             weightedHighQualityMatrix = makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes(highQualityPhenoMatchedGenes, geneScores);
         }
 
@@ -116,6 +131,29 @@ public class HiPhivePriority implements Prioritiser {
             gene.addPriorityResult(priorityResult);
         }
 
+    }
+
+    private ListMultimap<Integer, Model> makeBestGeneModelsForOrganisms(List<PhenotypeTerm> hpoPhenotypeTerms, Organism referenceOrganism, Set<Organism> organismsToCompare) {
+        ListMultimap<Integer, Model> bestGeneModels = ArrayListMultimap.create();
+
+        //TODO: this is repetitive, surely there must be a better way to deal with these, perhaps a GeneModelMatrix class?
+        final Map<Integer, Model> bestDiseaseModelForGene = makeHpToHumanMatches(options.runHuman(), hpoPhenotypeTerms);
+        final Map<Integer, Model> bestMouseModelForGene = makeHpToOtherSpeciesMatches(options.runMouse(), hpoPhenotypeTerms, Organism.MOUSE);
+        final Map<Integer, Model> bestFishModelForGene = makeHpToOtherSpeciesMatches(options.runFish(), hpoPhenotypeTerms, Organism.FISH);
+
+        bestDiseaseModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
+        bestMouseModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
+        bestFishModelForGene.entrySet().stream().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
+        return bestGeneModels;
+    }
+
+    private void removeKnownGeneDiseaseAssociationModel(ListMultimap<Integer, Model> bestGeneModels) {
+        bestGeneModels.values().stream()
+                .filter(model -> options.isBenchmarkHit(model))
+                .forEach(model -> {
+                    bestGeneModels.remove(model.getEntrezGeneId(), model);
+                    logger.info("Found benchmarking hit {}:{} - removing model {}", options.getDiseaseId(), options.getCandidateGeneSymbol(), model);
+                });
     }
 
     private HiPhivePriorityResult makePriorityResultForGene(Gene gene, List<PhenotypeTerm> hpoPhenotypeTerms, ListMultimap<Integer, Model> bestGeneModels, FloatMatrix weightedHighQualityMatrix) {
@@ -165,16 +203,16 @@ public class HiPhivePriority implements Prioritiser {
                 numGenesWithPhenotypeOrPpiData, totalGenes, 100f * (numGenesWithPhenotypeOrPpiData / (float) totalGenes));
     }
 
-    private Map<Integer, Model> makeHpToHumanMatches(boolean runHuman, List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
+    private Map<Integer, Model> makeHpToHumanMatches(boolean runHuman, List<PhenotypeTerm> queryHpoPhenotypes) {
         //TODO: this must always run in order that the best score is set 
         // Human
-        OrganismPhenotypeMatches humanPhenotypeMatches = getMatchingPhenotypesForOrganism(queryHpoPhenotypes, organism);
+        OrganismPhenotypeMatches humanPhenotypeMatches = getMatchingPhenotypesForOrganism(queryHpoPhenotypes, Organism.HUMAN);
         Set<PhenotypeMatch> bestMatches = humanPhenotypeMatches.getBestPhenotypeMatches();
 
         calculateBestScoresFromHumanPhenotypes(bestMatches, queryHpoPhenotypes);
 
         if (runHuman) {
-            List<Model> organismModels = priorityService.getModelsForOrganism(organism);
+            List<Model> organismModels = priorityService.getModelsForOrganism(Organism.HUMAN);
             Map<Integer, Set<Model>> geneModelPhenotypeMatches = calculateGeneModelPhenotypeMatches(humanPhenotypeMatches, organismModels);
             return makeBestGeneModelForGenes(geneModelPhenotypeMatches);
         } else {
@@ -197,7 +235,6 @@ public class HiPhivePriority implements Prioritiser {
         logger.info("Fetching HUMAN-{} phenotype matches...", species);
         Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
         for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
-            //todo: make this immutable
             Set<PhenotypeMatch> termMatches = priorityService.getSpeciesMatchesForHpoTerm(hpoTerm, species);
             speciesPhenotypeMatches.put(hpoTerm, termMatches);
         }
@@ -212,39 +249,8 @@ public class HiPhivePriority implements Prioritiser {
      *
      * @param bestMatches
      */
-    //TODO: return a DTO for the scores here in order to keep things in local scope, or can be a function on OrganismPhenotypeMatches
+    //Should be a function on OrganismPhenotypeMatches?
     private void calculateBestScoresFromHumanPhenotypes(Collection<PhenotypeMatch> bestMatches, List<PhenotypeTerm> queryHpoPhenotypes) {
-        //this is the original algorithm for mixes species matches using hashes instead of PhenotypeMatches:
-
-//         // calculate perfect model scores for human
-//         // loop over each hp id should start here
-//        for (String hpId : hpIdsWithPhenotypeMatch) {
-//            if (bestMappedTermScore.containsKey(hpId)) {
-//                double hpScore = bestMappedTermScore.get(hpId);
-//                logger.info("Best forwardHit {}={}", hpId, hpScore);
-//                // add in scores for best match for the HP term
-//                sumBestScore += hpScore;
-//
-//                bestMaxScore = Math.max(hpScore, bestMaxScore);
-//                //logger.info("ADDING SCORE FOR " + hpid + " TO " + bestMappedTermMpId.get(hpid) + " WITH SCORE " + hpScore + ", SUM NOW " + sumBestScore + ", MAX NOW " + bestMaxScore);
-//                // add in MP-HP hits
-//                String mpId = bestMappedTermMpId.get(hpId);
-//                double bestScore = 0d;
-//                String bestReciprocalHit = "";
-//                for (String hpId2 : hpIdsWithPhenotypeMatch) {
-//                    String hashKey = hpId2 + mpId;
-//                    if (speciesPhenotypeMatches.containsKey(hashKey) && speciesPhenotypeMatches.get(hashKey).getScore() > bestScore) {
-//                        bestScore = speciesPhenotypeMatches.get(hashKey).getScore();
-//                        bestReciprocalHit = hashKey;
-//                    }
-//                }
-//                logger.info("Best reciprocalHit {}={}", bestReciprocalHit, bestScore);
-//                // add in scores for best match for the MP term
-//                sumBestScore += bestScore;
-//                //logger.info("ADDING RECIPROCAL SCORE FOR " + mpid + " WITH SCORE " + bestScore + ", SUM NOW " + sumBestScore + ", MAX NOW " + bestMaxScore);
-//                bestMaxScore = Math.max(hpScore, bestMaxScore);
-//            }
-//        }
         double sumBestScore = 0d;
         for (PhenotypeMatch bestMatch : bestMatches) {
             double matchScore = bestMatch.getScore();
@@ -380,37 +386,13 @@ public class HiPhivePriority implements Prioritiser {
 
         for (Entry<Integer, Set<Model>> entry : geneModelPhenotypeMatches.entrySet()) {
             Integer entrezId = entry.getKey();
-            
             for (Model model : entry.getValue()) {
-                double score = model.getScore();
-
-                // catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
-                if (options.isBenchmarkingEnabled() && options.isBenchmarkHit(model)) {
-                    logger.info("Found benchmarking hit {}:{} - skipping model", options.getDiseaseId(), options.getCandidateGeneSymbol());
-                } else {
-                    // normal behaviour when not trying to exclude candidate gene to simulate novel gene discovery in benchmarking
-                    // only build PPI network for high qual hits
-                    if (score > 0.6) {
-                        logger.debug("Adding high quality score for {} score={}", model.getHumanGeneSymbol(), model.getScore());
-                        //TODO: this is a bit round-the-houses as it's used in getColumnIndexOfMostPhenotypicallySimilarGene() would probably
-                        //be better using a LinkedHashMap to join these two values together, or use a GeneIdentifier class....?
-                        highQualityPhenoMatchedGenes.add(entrezId);
-                        //TODO: geneScores is only ever queried using highQualityPhenoMatchedGenes so the two can be merged so we have the highest score from all models
-                        //linked to a gene id. This is used to find the weighted high-quality matrix.
-                    }
-                    //why use this? Just return the high-quality gene-model matches and iterate through the fuckers.
-                    //also used by makeWeightedProteinInteractionMatrixFromHighQualityPhenotypeMatchedGenes 
-                    if (!geneScores.containsKey(entrezId) || score > geneScores.get(entrezId)) {
-                        geneScores.put(entrezId, score);
-                    }
-
-                    if (!bestGeneModelForGenes.containsKey(entrezId)) {
-                        logger.debug("Adding new model for {} score={} to bestGeneModels", model.getHumanGeneSymbol(), model.getScore());
-                        bestGeneModelForGenes.put(entrezId, model);
-                    } else if (bestGeneModelForGenes.get(entrezId).getScore() < model.getScore()) {
-                        logger.debug("Updating best model for {} score={}", model.getHumanGeneSymbol(), model.getScore());
-                        bestGeneModelForGenes.put(entrezId, model);
-                    }
+                if (!bestGeneModelForGenes.containsKey(entrezId)) {
+                    logger.debug("Adding new model for {} score={} to bestGeneModels", model.getHumanGeneSymbol(), model.getScore());
+                    bestGeneModelForGenes.put(entrezId, model);
+                } else if (bestGeneModelForGenes.get(entrezId).getScore() < model.getScore()) {
+                    logger.debug("Updating best model for {} score={}", model.getHumanGeneSymbol(), model.getScore());
+                    bestGeneModelForGenes.put(entrezId, model);
                 }
             }
         }
