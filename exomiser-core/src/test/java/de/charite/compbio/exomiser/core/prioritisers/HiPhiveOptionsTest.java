@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -8,18 +27,17 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import de.charite.compbio.exomiser.core.model.DiseaseModel;
 import de.charite.compbio.exomiser.core.model.GeneModel;
 import de.charite.compbio.exomiser.core.model.Model;
-
-import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import de.charite.compbio.exomiser.core.model.Organism;
+import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -267,5 +285,35 @@ public class HiPhiveOptionsTest {
         instance = new HiPhiveOptions("diseaseId", "geneSymbol", "human,mouse");
         String defaultString  = "HiPhiveOptions{diseaseId='diseaseId', candidateGeneSymbol='geneSymbol', benchmarkingEnabled=true, runPpi=false, runHuman=true, runMouse=true, runFish=false}";
         assertThat(instance.toString(), equalTo(defaultString));
+    }
+
+    @Test
+    public void testGetOrganismsToRun_AllOrganisms() {
+        instance = new HiPhiveOptions("diseaseId", "geneSymbol", "human,mouse,fish");
+        assertThat(instance.getOrganismsToRun(), equalTo(EnumSet.of(Organism.HUMAN, Organism.MOUSE, Organism.FISH)));
+    }
+
+    @Test
+    public void testGetOrganismsToRun_NoOrganisms() {
+        instance = new HiPhiveOptions("diseaseId", "geneSymbol", "ppi");
+        assertThat(instance.getOrganismsToRun(), equalTo(Collections.emptySet()));
+    }
+
+    @Test
+    public void testGetOrganismsToRun_NothingDefinedMeansAll() {
+        instance = new HiPhiveOptions("diseaseId", "geneSymbol", "");
+        assertThat(instance.getOrganismsToRun(), equalTo(EnumSet.of(Organism.HUMAN, Organism.MOUSE, Organism.FISH)));
+    }
+
+    @Test
+    public void testGetOrganismsToRun_HumanMouseOnly() {
+        instance = new HiPhiveOptions("diseaseId", "geneSymbol", "human,mouse");
+        assertThat(instance.getOrganismsToRun(), equalTo(EnumSet.of(Organism.HUMAN, Organism.MOUSE)));
+    }
+
+    @Test
+    public void testGetOrganismsToRun_FishOnly() {
+        instance = new HiPhiveOptions("diseaseId", "geneSymbol", "fish");
+        assertThat(instance.getOrganismsToRun(), equalTo(EnumSet.of(Organism.FISH)));
     }
 }
