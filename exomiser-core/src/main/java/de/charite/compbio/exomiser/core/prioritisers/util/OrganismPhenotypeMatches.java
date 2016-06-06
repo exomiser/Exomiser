@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ImmutableList;
@@ -13,6 +32,8 @@ import java.util.*;
 
 
 /**
+ * Stores the PhenotypeMatches for a set of query PhenotypeTerms for an Organism.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class OrganismPhenotypeMatches {
@@ -22,6 +43,10 @@ public class OrganismPhenotypeMatches {
     private final Organism organism;
     private final Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches;
 
+    /**
+     * @param organism             - The organism for which these PhenotypeMatches are associated.
+     * @param termPhenotypeMatches - Map of query PhenotypeTerms and their corresponding PhenotypeMatches. If there is no match then an empty Set of PhenotypeMatches is expected.
+     */
     public OrganismPhenotypeMatches(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
         this.organism = organism;
         this.termPhenotypeMatches = ImmutableMap.copyOf(termPhenotypeMatches);
