@@ -24,6 +24,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrixIO;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
@@ -222,7 +223,7 @@ public class ExomiserAutoConfiguration {
         String randomWalkIndexFileNameValue = properties.getRandomWalkIndexFileName();
         Path randomWalkIndexFilePath = resolveRelativeToDataDir(randomWalkIndexFileNameValue);
 
-        return new DataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
+        return DataMatrixIO.loadDataMatrix(randomWalkFilePath.toString(), randomWalkIndexFilePath.toString(), true);
     }
 
     @Bean
