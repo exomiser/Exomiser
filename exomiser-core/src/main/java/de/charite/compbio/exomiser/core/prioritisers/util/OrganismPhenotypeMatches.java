@@ -42,6 +42,9 @@ public class OrganismPhenotypeMatches {
 
     private final Organism organism;
     private final Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches;
+    private final Set<PhenotypeMatch> bestPhenotypeMatches;
+    private final double bestMatchScore;
+    private final double bestAverageScore;
 
     /**
      * @param organism             - The organism for which these PhenotypeMatches are associated.
@@ -50,21 +53,12 @@ public class OrganismPhenotypeMatches {
     public OrganismPhenotypeMatches(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
         this.organism = organism;
         this.termPhenotypeMatches = ImmutableMap.copyOf(termPhenotypeMatches);
+        this.bestPhenotypeMatches = makeBestPhenotypeMatches(termPhenotypeMatches);
+        this.bestMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
+        this.bestAverageScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).average().orElse(0d);
     }
 
-    public Organism getOrganism() {
-        return organism;
-    }
-
-    public List<PhenotypeTerm> getQueryTerms() {
-        return ImmutableList.copyOf(termPhenotypeMatches.keySet());
-    }
-
-    public Map<PhenotypeTerm, Set<PhenotypeMatch>> getTermPhenotypeMatches() {
-        return termPhenotypeMatches;
-    }
-
-    public Set<PhenotypeMatch> getBestPhenotypeMatches() {
+    private Set<PhenotypeMatch> makeBestPhenotypeMatches(Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
         Map<PhenotypeTerm, PhenotypeMatch> bestMatches = new HashMap<>();
 
         for (Map.Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : termPhenotypeMatches.entrySet()) {
@@ -81,11 +75,23 @@ public class OrganismPhenotypeMatches {
                 }
             }
         }
-        logger.info("Best {} phenotype matches:", organism);
-        for (PhenotypeMatch bestMatch : bestMatches.values()) {
-            logger.info("{}-{}={}", bestMatch.getQueryPhenotypeId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
-        }
         return ImmutableSet.copyOf(bestMatches.values());
+    }
+
+    public Organism getOrganism() {
+        return organism;
+    }
+
+    public List<PhenotypeTerm> getQueryTerms() {
+        return ImmutableList.copyOf(termPhenotypeMatches.keySet());
+    }
+
+    public Map<PhenotypeTerm, Set<PhenotypeMatch>> getTermPhenotypeMatches() {
+        return termPhenotypeMatches;
+    }
+
+    public Set<PhenotypeMatch> getBestPhenotypeMatches() {
+        return bestPhenotypeMatches;
     }
 
     public Map<String, PhenotypeMatch> getCompoundKeyIndexedPhenotypeMatches() {
@@ -105,25 +111,38 @@ public class OrganismPhenotypeMatches {
         return ImmutableMap.copyOf(speciesPhenotypeMatches);
     }
 
+    public double getBestMatchScore() {
+        return bestMatchScore;
+    }
+
+    public double getBestAverageScore() {
+        return bestAverageScore;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof OrganismPhenotypeMatches)) return false;
         OrganismPhenotypeMatches that = (OrganismPhenotypeMatches) o;
-        return organism == that.organism &&
-                Objects.equals(termPhenotypeMatches, that.termPhenotypeMatches);
+        return Double.compare(that.bestMatchScore, bestMatchScore) == 0 &&
+                Double.compare(that.bestAverageScore, bestAverageScore) == 0 &&
+                organism == that.organism &&
+                Objects.equals(termPhenotypeMatches, that.termPhenotypeMatches) &&
+                Objects.equals(bestPhenotypeMatches, that.bestPhenotypeMatches);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(organism, termPhenotypeMatches);
+        return Objects.hash(organism, termPhenotypeMatches, bestPhenotypeMatches, bestMatchScore, bestAverageScore);
     }
 
     @Override
     public String toString() {
         return "OrganismPhenotypeMatches{" +
                 "organism=" + organism +
-                ", termPhenotypeMatches=" + termPhenotypeMatches +
+                ", bestMatchScore=" + bestMatchScore +
+                ", bestAverageScore=" + bestAverageScore +
+                ", bestPhenotypeMatches=" + bestPhenotypeMatches +
                 '}';
     }
 }
