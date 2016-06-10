@@ -25,9 +25,11 @@
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import org.jblas.FloatMatrix;
+import org.jblas.ranges.IntervalRange;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -48,37 +50,16 @@ public class DataMatrixTest {
 
     @Before
     public void setUp() {
-        floatMatrix = new FloatMatrix(4, 4);
+        float[][] matrix = {
+                {0.0f, 0.1f, 0.2f, 0.3f},
+                {1.0f, 1.1f, 1.2f, 1.3f},
+                {2.0f, 2.1f, 2.2f, 2.3f},
+                {3.0f, 3.1f, 3.2f, 3.3f}
+        };
 
-        //produce the following matrix:
-        //  0  1  2  3
-        //0 00 01 02 03
-        //1 10 11 12 13
-        //2 20 21 22 23
-        //3 30 31 32 33
+        floatMatrix = new FloatMatrix(matrix);
 
         //Here the single integer row is linked to an Entrez geneId in the entrezIdToRowIndex
-
-        //floatMatrix.put(row, column, value);
-        floatMatrix.put(0, 0, 00);
-        floatMatrix.put(0, 1, 01);
-        floatMatrix.put(0, 2, 02);
-        floatMatrix.put(0, 3, 03);
-
-        floatMatrix.put(1, 0, 10);
-        floatMatrix.put(1, 1, 11);
-        floatMatrix.put(1, 2, 12);
-        floatMatrix.put(1, 3, 13);
-
-        floatMatrix.put(2, 0, 20);
-        floatMatrix.put(2, 1, 21);
-        floatMatrix.put(2, 2, 22);
-        floatMatrix.put(2, 3, 23);
-
-        floatMatrix.put(3, 0, 30);
-        floatMatrix.put(3, 1, 31);
-        floatMatrix.put(3, 2, 32);
-        floatMatrix.put(3, 3, 33);
 
         entrezIdToRowIndex = new TreeMap<>();
         entrezIdToRowIndex.put(0000, 0);
@@ -87,6 +68,14 @@ public class DataMatrixTest {
         entrezIdToRowIndex.put(3333, 3);
 
         instance = new DataMatrix(floatMatrix, entrezIdToRowIndex);
+    }
+
+    @Test
+    public void testEmptyMatrix() {
+        DataMatrix emptyMatrix = DataMatrix.EMPTY;
+        assertThat(emptyMatrix.containsGene(112), is(false));
+        assertThat(emptyMatrix.getEntrezIdToRowIndex(), equalTo(Collections.emptyMap()));
+        assertThat(emptyMatrix.getMatrix().isEmpty(), is(true));
     }
 
     @Test
@@ -122,29 +111,54 @@ public class DataMatrixTest {
     @Test
     public void testGetColumnMatrixForGeneInIndex() {
         //expect a new single column matrix with 4 rows
-        FloatMatrix geneColumn = new FloatMatrix(4, 1);
-        geneColumn.put(0, 0, 03);
-        geneColumn.put(1, 0, 13);
-        geneColumn.put(2, 0, 23);        
-        geneColumn.put(3, 0, 33);
-        
+        float[] column = {0.3f, 1.3f, 2.3f, 3.3f};
+        FloatMatrix geneColumn = new FloatMatrix(column);
+
         assertThat(instance.getColumnMatrixForGene(3333), equalTo(geneColumn));
+        System.out.println("Column matrix for gene 3333:");
         for (float value : geneColumn.toArray()) {
             System.out.println(value);
         }
 
-        for (float value : geneColumn.mul(2.0f).toArray()) {
+        System.out.println("Column matrix for gene 3333 multiplied by 2:");
+        for (float value : instance.getColumnMatrixForGene(3333).mul(2.0f).toArray()) {
             System.out.println(value);
         }
 
-        System.out.printf("Matrix is %d rows * %d columns%n", instance.getMatrix().rows, instance.getMatrix().columns);
+        System.out.printf("%nMatrix is (%d rows * %d columns:%n)", floatMatrix.rows, floatMatrix.columns);
+        System.out.println(floatMatrix);
+
+        System.out.println("Matrix as columns:");
         List<FloatMatrix> columns = floatMatrix.columnsAsList();
-        for (FloatMatrix matrix : columns) {
+        for (int i = 0; i < columns.size(); i++) {
+            FloatMatrix matrix = columns.get(i);
+            System.out.printf("Column %d: ", i);
             for (float value : matrix.toArray()) {
-                System.out.println(value);
+                System.out.printf("%f ", value);
             }
+            System.out.println();
         }
-        System.out.println();
+        System.out.println("Matrix as rows:");
+        List<FloatMatrix> rows = floatMatrix.rowsAsList();
+        for (int i = 0; i < rows.size(); i++) {
+            FloatMatrix matrix = rows.get(i);
+            System.out.printf("Row %d: ", i);
+            for (float value : matrix.toArray()) {
+                System.out.printf("%f, ", value);
+            }
+            System.out.println();
+        }
+    }
+
+    @Test
+    public void testMakeSubMatrix() {
+        float[][] matrix = {{0.0f, 0.1f, 0.2f}, {1.0f, 1.1f, 1.2f}, {2.0f, 2.1f, 2.2f}};
+        FloatMatrix expected = new FloatMatrix(matrix);
+
+        FloatMatrix subMatrix = floatMatrix.get(new IntervalRange(0, 3), new IntervalRange(0, 3));
+        System.out.println(subMatrix);
+        assertThat(subMatrix, equalTo(expected));
+
     }
 
     @Test

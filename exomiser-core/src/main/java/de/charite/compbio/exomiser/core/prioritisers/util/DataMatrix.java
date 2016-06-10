@@ -23,6 +23,7 @@ import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -35,6 +36,8 @@ import java.util.Objects;
 public class DataMatrix {
 
     private static final Logger logger = LoggerFactory.getLogger(DataMatrix.class);
+
+    public static final DataMatrix EMPTY = new DataMatrix(FloatMatrix.EMPTY, Collections.emptyMap());
 
     private final FloatMatrix matrix;
     private final Map<Integer, Integer> entrezIdToRowIndex;
@@ -61,6 +64,7 @@ public class DataMatrix {
     }
 
     public FloatMatrix getColumnMatrixForGene(int entrezGeneId) {
+        //the PPI float matrix is symmetrical so this will work here.
         Integer rowIndex = entrezIdToRowIndex.get(entrezGeneId);
         return matrix.getColumn(rowIndex);
     }
