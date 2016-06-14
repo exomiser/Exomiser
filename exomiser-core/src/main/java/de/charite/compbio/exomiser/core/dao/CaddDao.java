@@ -23,18 +23,18 @@
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.dao;
- 
+
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import htsjdk.tribble.readers.TabixReader;
- 
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
  
 /**
  *
@@ -106,7 +106,7 @@ public class CaddDao {
         } catch (IOException e) {
             logger.error("Unable to read from Indel tabix file {}", inDelTabixReader.getSource(), e);
         }
-        return new PathogenicityData();
+        return PathogenicityData.EMPTY_DATA;
     }
  
     private PathogenicityData getSnvCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
@@ -125,7 +125,7 @@ public class CaddDao {
         } catch (IOException e) {
             logger.error("Unable to read from SNV tabix file {}", snvTabixReader.getSource(), e);
         }        
-        return new PathogenicityData();
+        return PathogenicityData.EMPTY_DATA;
     }
  
     private PathogenicityData makeCaddPathData(String phredScaledCaddScore) {
