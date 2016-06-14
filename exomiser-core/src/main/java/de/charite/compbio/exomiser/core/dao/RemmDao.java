@@ -25,17 +25,17 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.pathogenicity.RemmScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.RemmScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.tribble.readers.TabixReader;
-
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /**
  *
@@ -57,7 +57,7 @@ public class RemmDao {
     public PathogenicityData getPathogenicityData(Variant variant) {
         // MNCDS has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
-            return new PathogenicityData();
+            return PathogenicityData.EMPTY_DATA;
         }
         return processResults(variant);
     }

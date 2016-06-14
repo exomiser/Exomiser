@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -25,21 +25,23 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.model.pathogenicity.RemmScore;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.RemmScore;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.tribble.readers.TabixReader;
 import htsjdk.variant.variantcontext.VariantContext;
-import java.io.IOException;
-import java.util.Arrays;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -76,13 +78,13 @@ public class RemmDaoTest {
     public void testGetPathogenicityData_missenseVariant() {
         //missense variants are by definition protein-coding and therefore cannot be non-coding so we expect nothing 
         VariantEvaluation missenseVariant = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").variantEffect(VariantEffect.MISSENSE_VARIANT).build();
-        assertThat(instance.getPathogenicityData(missenseVariant), equalTo(new PathogenicityData()));
+        assertThat(instance.getPathogenicityData(missenseVariant), equalTo(PathogenicityData.EMPTY_DATA));
     }
     
     @Test
     public void testGetPathogenicityData_unableToReadFromSource() {
         Mockito.when(remmTabixReader.query("1:1-1")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData()));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.EMPTY_DATA));
     }
     
     @Test
@@ -90,7 +92,7 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList());
         Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData()));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.EMPTY_DATA));
     }
     
     @Test
