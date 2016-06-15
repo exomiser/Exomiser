@@ -21,7 +21,6 @@ package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
@@ -29,6 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.*;
 
 
 /**
@@ -59,23 +61,21 @@ public class OrganismPhenotypeMatches {
     }
 
     private Set<PhenotypeMatch> makeBestPhenotypeMatches(Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
-        Map<PhenotypeTerm, PhenotypeMatch> bestMatches = new HashMap<>();
+        return termPhenotypeMatches.values()
+                .stream()
+                .map(bestPhenotypeMatch())
+                .collect(collectingAndThen(toSet(), Collections::unmodifiableSet));
+    }
 
-        for (Map.Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : termPhenotypeMatches.entrySet()) {
-            PhenotypeTerm queryTerm = entry.getKey();
-            for (PhenotypeMatch match : entry.getValue()) {
-                ///todo: simple sort on score and pick top value
-                double score = match.getScore();
-                if (bestMatches.containsKey(queryTerm)) {
-                    if (score > bestMatches.get(queryTerm).getScore()) {
-                        bestMatches.put(queryTerm, match);
-                    }
-                } else {
-                    bestMatches.put(queryTerm, match);
-                }
-            }
-        }
-        return ImmutableSet.copyOf(bestMatches.values());
+    /**
+     * Finds the best PhenotypeMatch for that phenotype term. This is the one with the highest score.
+     */
+    private Function<Set<PhenotypeMatch>, PhenotypeMatch> bestPhenotypeMatch() {
+        return phenotypeMatches -> phenotypeMatches
+                .stream()
+                .sorted(Comparator.comparingDouble(PhenotypeMatch::getScore).reversed())
+                .findFirst()
+                .get();
     }
 
     public Organism getOrganism() {
@@ -96,19 +96,13 @@ public class OrganismPhenotypeMatches {
 
     public Map<String, PhenotypeMatch> getCompoundKeyIndexedPhenotypeMatches() {
         //'hpId + mpId' : phenotypeMatch
-        Map<String, PhenotypeMatch> speciesPhenotypeMatches = new HashMap<>();
-
-        for (Map.Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : termPhenotypeMatches.entrySet()) {
-            PhenotypeTerm queryTerm = entry.getKey();
-            String hpId = queryTerm.getId();
-            for (PhenotypeMatch match : entry.getValue()) {
-                PhenotypeTerm matchTerm = match.getMatchPhenotype();
-                String mpId = matchTerm.getId();
-                String matchIds = hpId + mpId;
-                speciesPhenotypeMatches.put(matchIds, match);
-            }
-        }
-        return ImmutableMap.copyOf(speciesPhenotypeMatches);
+        return termPhenotypeMatches.values().stream()
+                .flatMap(Collection::stream)
+                .collect(collectingAndThen(
+                        toMap(
+                                phenotypeMatch -> phenotypeMatch.getQueryPhenotypeId() + phenotypeMatch.getMatchPhenotypeId(),
+                                Function.identity()),
+                        Collections::unmodifiableMap));
     }
 
     public double getBestMatchScore() {

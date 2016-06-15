@@ -26,10 +26,7 @@ import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -125,4 +122,14 @@ public class OrganismPhenotypeMatchesTest {
     }
 
 
+    @Test
+    public void testGetCompoundKeyIndexedPhenotypeMatches() {
+        Map<String, PhenotypeMatch> expected = new HashMap<>();
+        expected.put("HP:0000001HP:0000001", perfectNoseMatch);
+        expected.put("HP:0000001HP:0000003", noseMatch);
+        expected.put("HP:0000005HP:0000007", bestToeMatch);
+        expected.put("HP:0000005HP:0000006", bigToeCrookedToeMatch);
+
+        assertThat(instance.getCompoundKeyIndexedPhenotypeMatches(), equalTo(expected));
+    }
 }
