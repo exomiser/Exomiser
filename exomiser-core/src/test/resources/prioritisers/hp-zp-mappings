@@ -1,0 +1,292 @@
+# Test data for HP-ZP mappings
+# Contains the top 10 matches for the phenotypes HP:0001156, HP:0001363, HP:0011304, HP:0010055
+#
+#queryTerm.getId(), queryTerm.getTerm(), queryTerm.getIc(),matchTerm.getId(), matchTerm.getTerm(), matchTerm.getIc(),lcs.getId(), lcs.getTerm(), lcs.getIc(), match.getSimJ(), match.getScore()
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0012193	null	0.000000	HP:0040069	Abnormality of lower limb bone	3.355809	0.423529	1.192176
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0012199	null	0.000000	HP:0040069	Abnormality of lower limb bone	3.355809	0.409091	1.171679
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0001082	abnormal(ly) physical object quality preoptic area	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.390805	1.013222
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0006782	abnormal(ly) curved ventral axis	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.386364	1.007448
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0011993	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.386364	1.007448
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0000875	abnormal(ly) aplastic Meckel's cartilage	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.386364	1.007448
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0000874	abnormal(ly) bent Meckel's cartilage	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.386364	1.007448
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0010902	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.386364	1.007448
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0008615	abnormal(ly) has fewer parts of type otic vesicle towards otolith	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.382022	1.001773
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0011078	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.382022	1.001773
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0005162	abnormal(ly) hypoplastic pharyngeal arch 2 skeleton	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.382022	1.001773
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0010587	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.377778	0.996192
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0003965	abnormal(ly) chromatic property blood	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.377778	0.996192
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0009802	abnormal(ly) increased size somite 15	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.377778	0.996192
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0001042	abnormal(ly) green pancreas	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.313253	0.907136
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0010673	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.298851	0.886037
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0012198	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.295455	0.880988
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0009803	abnormal(ly) fused with somite 15 dorso-medial margin towards somite 15 dorso-medial margin	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.288889	0.871144
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0012194	null	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.202381	0.779298
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0012191	null	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.200000	0.774701
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0012192	null	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.197917	0.770655
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007406	abnormal(ly) present in fewer numbers in organism facial nerve motor nucleus	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.183908	0.742881
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007407	abnormal(ly) aplastic vagal lobe	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.183908	0.742881
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0010586	null	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.179775	0.734487
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0011420	null	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.171717	0.717837
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007348	abnormal(ly) notched ventral mandibular arch	0.000000	MP:0009250	abnormal appendicular skeleton morphology	2.529091	0.180851	0.676305
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0001965	abnormal(ly) subdermal Rohon-Beard neuron axon	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.125000	0.612455
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0002322	abnormal(ly) increased rate retinal cell programmed cell death	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.123967	0.609919
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0000235	abnormal(ly) disrupted striated muscle cell development	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.123967	0.609919
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0003543	abnormal(ly) disrupted lipid phosphatase activity	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.123967	0.609919
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0003955	abnormal(ly) present in fewer numbers in organism posterior lateral line neuron	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.120000	0.600081
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0001087	abnormal(ly) decreased length Kupffer's vesicle cilium	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.120000	0.600081
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0001041	abnormal(ly) green liver	0.000000	HP:0009115	Aplasia/hypoplasia involving the skeleton	3.000806	0.119048	0.597695
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0009641	abnormal(ly) loose atrial myocardium cardiac muscle cell	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.115044	0.549237
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0002799	abnormal(ly) morphology post-vent region muscle cell	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.114035	0.546823
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0009980	abnormal(ly) mislocalised ventrally pharyngeal arch 3-7	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.114035	0.546823
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007755	abnormal(ly) decreased occurrence neural crest cell migration	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.114035	0.546823
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007220	abnormal(ly) morphology skeletal muscle cell sarcomere	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.114035	0.546823
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007221	abnormal(ly) morphology skeletal muscle cell M band	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.114035	0.546823
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007219	abnormal(ly) deformed muscle	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.114035	0.546823
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007218	abnormal(ly) disorganized heart cardiac muscle cell	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.113043	0.544440
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007403	abnormal(ly) present in fewer numbers in organism angiogenic sprout	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.104348	0.523081
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0002798	abnormal(ly) dystrophic whole organism	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.103448	0.520822
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007402	abnormal(ly) decreased length angiogenic sprout	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.101695	0.516389
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0010851	null	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.100000	0.512068
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007227	abnormal(ly) morphology leukocyte	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.097345	0.505225
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007226	abnormal(ly) process quality leukocyte chemotaxis	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.097345	0.505225
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0010850	null	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.091603	0.490097
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0011777	null	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.090226	0.486399
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0011778	null	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.089552	0.484580
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007750	abnormal(ly) decreased width Meckel's cartilage	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.076087	0.446666
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0009612	abnormal(ly) malformed neuroectoderm	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.075269	0.444258
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0009613	abnormal(ly) mislocalised axial mesoderm mesodermal cell	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.070707	0.430585
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0011775	null	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.068627	0.424206
+HP:0001156	Brachydactyly syndrome	0.000000	ZP:0007189	abnormal(ly) decreased rate mitochondrial electron transport, NADH to ubiquinone	0.000000	null	UBERON:0004288PHENOTYPE	2.622135	0.064220	0.410358
+HP:0001363	Craniosynostosis	0.000000	ZP:0003564	abnormal(ly) absent pigment cell	0.000000	MP:0002835	abnormal cranial suture morphology	5.605829	0.682540	1.956068
+HP:0001363	Craniosynostosis	0.000000	ZP:0003565	abnormal(ly) absent neural crest cell	0.000000	null	UBERON:0003685PHENOTYPE	5.569829	0.634921	1.880532
+HP:0001363	Craniosynostosis	0.000000	ZP:0010770	null	0.000000	null	UBERON:0002209PHENOTYPE	5.481673	0.609375	1.827675
+HP:0001363	Craniosynostosis	0.000000	ZP:0003562	abnormal(ly) disorganized post-vent region somite border	0.000000	null	UBERON:0002209PHENOTYPE	5.481673	0.609375	1.827675
+HP:0001363	Craniosynostosis	0.000000	ZP:0003563	abnormal(ly) present in fewer numbers in organism myocardial precursor	0.000000	null	UBERON:0002209PHENOTYPE	5.481673	0.593750	1.804091
+HP:0001363	Craniosynostosis	0.000000	ZP:0003561	abnormal(ly) disorganized trunk somite border	0.000000	null	UBERON:0002209PHENOTYPE	5.481673	0.593750	1.804091
+HP:0001363	Craniosynostosis	0.000000	ZP:0012148	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.617647	1.720868
+HP:0001363	Craniosynostosis	0.000000	ZP:0012007	null	0.000000	MP:0003418	premature intramembranous bone ossification	6.599970	0.421053	1.667014
+HP:0001363	Craniosynostosis	0.000000	ZP:0002803	abnormal(ly) morphology muscle sarcomere	0.000000	MP:0008273	abnormal intramembranous bone ossification	6.574774	0.400000	1.621700
+HP:0001363	Craniosynostosis	0.000000	ZP:0007941	abnormal(ly) increased mass density vertebra	0.000000	MP:0008273	abnormal intramembranous bone ossification	6.574774	0.387097	1.595329
+HP:0001363	Craniosynostosis	0.000000	ZP:0006418	abnormal(ly) rough caudal fin upper lobe	0.000000	ZP:0006418	abnormal	6.437272	0.372881	1.549303
+HP:0001363	Craniosynostosis	0.000000	ZP:0003964	abnormal(ly) decreased process quality erythrocyte maturation	0.000000	null	GO:0036072PHENOTYPE	6.545803	0.360656	1.536483
+HP:0001363	Craniosynostosis	0.000000	ZP:0004198	abnormal(ly) partially paralysed whole organism	0.000000	ZP:0006418	abnormal	6.437272	0.349206	1.499312
+HP:0001363	Craniosynostosis	0.000000	ZP:0010767	null	0.000000	ZP:0012066	null	5.711380	0.376812	1.467009
+HP:0001363	Craniosynostosis	0.000000	ZP:0010771	null	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.539683	1.428284
+HP:0001363	Craniosynostosis	0.000000	ZP:0007465	abnormal(ly) collapsed atrium	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.539683	1.428284
+HP:0001363	Craniosynostosis	0.000000	ZP:0012066	null	0.000000	ZP:0012066	null	5.711380	0.355932	1.425785
+HP:0001363	Craniosynostosis	0.000000	ZP:0008490	abnormal(ly) disorganized cranial nerve VII	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.531250	1.417082
+HP:0001363	Craniosynostosis	0.000000	ZP:0006539	abnormal(ly) functionality cloacal chamber cilium	0.000000	ZP:0012066	null	5.711380	0.350000	1.413854
+HP:0001363	Craniosynostosis	0.000000	ZP:0002315	abnormal(ly) increased size lens	0.000000	ZP:0012066	null	5.711380	0.350000	1.413854
+HP:0001363	Craniosynostosis	0.000000	ZP:0000870	abnormal(ly) absent opercular lateral line neuromast	0.000000	ZP:0012066	null	5.711380	0.350000	1.413854
+HP:0001363	Craniosynostosis	0.000000	ZP:0010247	null	0.000000	ZP:0012066	null	5.711380	0.350000	1.413854
+HP:0001363	Craniosynostosis	0.000000	ZP:0010842	null	0.000000	ZP:0012066	null	5.711380	0.348485	1.410790
+HP:0001363	Craniosynostosis	0.000000	ZP:0007212	abnormal(ly) hemorrhagic pharynx	0.000000	ZP:0012066	null	5.711380	0.344262	1.402217
+HP:0001363	Craniosynostosis	0.000000	ZP:0010772	null	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.513514	1.393226
+HP:0001363	Craniosynostosis	0.000000	ZP:0002804	abnormal(ly) present in fewer numbers in organism muscle sarcomere	0.000000	ZP:0012066	null	5.711380	0.333333	1.379780
+HP:0001363	Craniosynostosis	0.000000	ZP:0000119	abnormal(ly) disrupted endochondral ossification	0.000000	ZP:0012066	null	5.711380	0.328125	1.368958
+HP:0001363	Craniosynostosis	0.000000	ZP:0003960	abnormal(ly) displaced pharyngeal arch 1	0.000000	ZP:0012066	null	5.711380	0.328125	1.368958
+HP:0001363	Craniosynostosis	0.000000	ZP:0009445	abnormal(ly) present in fewer numbers in organism head pterinosome	0.000000	ZP:0012066	null	5.711380	0.328125	1.368958
+HP:0001363	Craniosynostosis	0.000000	ZP:0000226	abnormal(ly) delayed ossification involved in bone maturation	0.000000	ZP:0012066	null	5.711380	0.323077	1.358387
+HP:0001363	Craniosynostosis	0.000000	ZP:0011991	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.382353	1.353972
+HP:0001363	Craniosynostosis	0.000000	ZP:0007942	abnormal(ly) undulate lepidotrichium	0.000000	ZP:0012066	null	5.711380	0.318182	1.348057
+HP:0001363	Craniosynostosis	0.000000	ZP:0010649	null	0.000000	ZP:0012066	null	5.711380	0.318182	1.348057
+HP:0001363	Craniosynostosis	0.000000	ZP:0011780	null	0.000000	ZP:0012066	null	5.711380	0.313953	1.339070
+HP:0001363	Craniosynostosis	0.000000	ZP:0002827	abnormal(ly) decreased functionality Kupffer's vesicle motile primary cilium	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.466667	1.328155
+HP:0001363	Craniosynostosis	0.000000	ZP:0010764	null	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.459459	1.317860
+HP:0001363	Craniosynostosis	0.000000	ZP:0003531	abnormal(ly) disrupted otolith morphogenesis	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.454545	1.310793
+HP:0001363	Craniosynostosis	0.000000	ZP:0003530	abnormal(ly) malformed unfertilized egg chorion	0.000000	HP:0002683	Abnormality of the calvaria	3.779994	0.453333	1.309044
+HP:0001363	Craniosynostosis	0.000000	ZP:0012011	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.342105	1.280729
+HP:0001363	Craniosynostosis	0.000000	ZP:0012145	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.340426	1.277581
+HP:0001363	Craniosynostosis	0.000000	ZP:0008385	abnormal(ly) has fewer parts of type levator operculi towards skeletal muscle cell	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.333333	1.264203
+HP:0001363	Craniosynostosis	0.000000	ZP:0002711	abnormal(ly) malformed melanocyte melanosome	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.329114	1.256176
+HP:0001363	Craniosynostosis	0.000000	ZP:0011776	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.317647	1.234098
+HP:0001363	Craniosynostosis	0.000000	ZP:0012143	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.317647	1.234098
+HP:0001363	Craniosynostosis	0.000000	ZP:0012006	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.317073	1.232983
+HP:0001363	Craniosynostosis	0.000000	ZP:0012144	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.313253	1.225533
+HP:0001363	Craniosynostosis	0.000000	ZP:0008895	abnormal(ly) decreased process quality high voltage-gated calcium channel activity	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.312500	1.224059
+HP:0001363	Craniosynostosis	0.000000	ZP:0000888	abnormal(ly) decreased size pharyngeal arch 2 skeleton	0.000000	null	UBERON:0011134PHENOTYPE	5.470256	0.273810	1.223850
+HP:0001363	Craniosynostosis	0.000000	ZP:0000887	abnormal(ly) orientation ventral mandibular arch towards eye	0.000000	null	UBERON:0011134PHENOTYPE	5.470256	0.273810	1.223850
+HP:0001363	Craniosynostosis	0.000000	ZP:0012142	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.310345	1.219831
+HP:0001363	Craniosynostosis	0.000000	ZP:0012146	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.309524	1.218216
+HP:0001363	Craniosynostosis	0.000000	ZP:0004599	abnormal(ly) circular brain cell	0.000000	null	UBERON:0011134PHENOTYPE	5.470256	0.270270	1.215914
+HP:0001363	Craniosynostosis	0.000000	ZP:0006781	abnormal(ly) decreased process quality taxis	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.307692	1.214607
+HP:0001363	Craniosynostosis	0.000000	ZP:0006540	abnormal(ly) decreased speed olfactory epithelium motile cilium	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.307692	1.214607
+HP:0001363	Craniosynostosis	0.000000	ZP:0012002	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.307692	1.214607
+HP:0001363	Craniosynostosis	0.000000	ZP:0012147	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.307692	1.214607
+HP:0001363	Craniosynostosis	0.000000	ZP:0011779	null	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.305882	1.211029
+HP:0001363	Craniosynostosis	0.000000	ZP:0002797	abnormal(ly) decreased speed whole organism	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.303030	1.205370
+HP:0001363	Craniosynostosis	0.000000	ZP:0002715	abnormal(ly) increased occurrence chromosome condensation	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.295455	1.190208
+HP:0001363	Craniosynostosis	0.000000	ZP:0002709	abnormal(ly) necrotic melanocyte	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.295455	1.190208
+HP:0001363	Craniosynostosis	0.000000	ZP:0002637	abnormal(ly) shape intestinal epithelium	0.000000	MP:0008271	abnormal bone ossification	4.794626	0.277778	1.154054
+HP:0001363	Craniosynostosis	0.000000	ZP:0002831	abnormal(ly) degenerate lens	0.000000	MP:0003795	abnormal bone structure	3.353833	0.384615	1.135753
+HP:0001363	Craniosynostosis	0.000000	ZP:0005169	abnormal(ly) present in fewer numbers in organism secondary motor neuron cell body	0.000000	MP:0003795	abnormal bone structure	3.353833	0.379747	1.128542
+HP:0001363	Craniosynostosis	0.000000	ZP:0003967	abnormal(ly) decreased process quality establishment of blood-brain barrier	0.000000	MP:0003795	abnormal bone structure	3.353833	0.375000	1.121467
+HP:0001363	Craniosynostosis	0.000000	ZP:0002836	abnormal(ly) shape eye	0.000000	MP:0003795	abnormal bone structure	3.353833	0.348837	1.081639
+HP:0001363	Craniosynostosis	0.000000	ZP:0002834	abnormal(ly) displaced lens	0.000000	MP:0003795	abnormal bone structure	3.353833	0.337079	1.063252
+HP:0001363	Craniosynostosis	0.000000	ZP:0002819	abnormal(ly) arrested detection of light stimulus involved in visual perception	0.000000	MP:0003795	abnormal bone structure	3.353833	0.333333	1.057329
+HP:0001363	Craniosynostosis	0.000000	ZP:0002820	abnormal(ly) decreased process quality notochord cell development	0.000000	MP:0003795	abnormal bone structure	3.353833	0.330000	1.052029
+HP:0001363	Craniosynostosis	0.000000	ZP:0009676	abnormal(ly) colored trunk xanthophore	0.000000	MP:0003795	abnormal bone structure	3.353833	0.330000	1.052029
+HP:0001363	Craniosynostosis	0.000000	ZP:0002837	abnormal(ly) mislocalised ventrally eye	0.000000	MP:0003795	abnormal bone structure	3.353833	0.329670	1.051503
+HP:0001363	Craniosynostosis	0.000000	ZP:0005165	abnormal(ly) has extra parts of type pars superior ear towards anterior crista	0.000000	MP:0003795	abnormal bone structure	3.353833	0.326733	1.046808
+HP:0001363	Craniosynostosis	0.000000	ZP:0005170	abnormal(ly) disorganized retinal ganglion cell axon	0.000000	MP:0003795	abnormal bone structure	3.353833	0.326087	1.045773
+HP:0001363	Craniosynostosis	0.000000	ZP:0002832	abnormal(ly) hypoplastic lens	0.000000	MP:0003795	abnormal bone structure	3.353833	0.323529	1.041664
+HP:0001363	Craniosynostosis	0.000000	ZP:0000878	abnormal(ly) fused with Meckel's cartilage towards palatoquadrate cartilage	0.000000	MP:0003795	abnormal bone structure	3.353833	0.315789	1.029128
+HP:0001363	Craniosynostosis	0.000000	ZP:0003541	abnormal(ly) structure EVL	0.000000	MP:0003795	abnormal bone structure	3.353833	0.255814	0.926260
+HP:0001363	Craniosynostosis	0.000000	ZP:0003884	abnormal(ly) disrupted intraciliary transport	0.000000	MP:0003795	abnormal bone structure	3.353833	0.250000	0.915674
+HP:0001363	Craniosynostosis	0.000000	ZP:0005166	abnormal(ly) disorganized primary motor neuron axon	0.000000	MP:0003795	abnormal bone structure	3.353833	0.250000	0.915674
+HP:0001363	Craniosynostosis	0.000000	ZP:0002835	abnormal(ly) shape midbrain hindbrain boundary	0.000000	MP:0003795	abnormal bone structure	3.353833	0.246753	0.909708
+HP:0001363	Craniosynostosis	0.000000	ZP:0005163	abnormal(ly) malformed pharyngeal arch 2 skeleton joint	0.000000	MP:0003795	abnormal bone structure	3.353833	0.243902	0.904438
+HP:0001363	Craniosynostosis	0.000000	ZP:0002821	abnormal(ly) decreased process quality epithelial cilium movement involved in determination of left/right asymmetry	0.000000	MP:0003795	abnormal bone structure	3.353833	0.243590	0.903858
+HP:0001363	Craniosynostosis	0.000000	ZP:0003966	abnormal(ly) decreased process quality angiogenesis	0.000000	MP:0003795	abnormal bone structure	3.353833	0.240964	0.898973
+HP:0001363	Craniosynostosis	0.000000	ZP:0007955	abnormal(ly) present in greater numbers in organism brain neuron	0.000000	MP:0003795	abnormal bone structure	3.353833	0.240964	0.898973
+HP:0001363	Craniosynostosis	0.000000	ZP:0007954	abnormal(ly) decreased size extrahepatic duct	0.000000	MP:0003795	abnormal bone structure	3.353833	0.240964	0.898973
+HP:0001363	Craniosynostosis	0.000000	ZP:0007961	abnormal(ly) lacks parts or has fewer parts of type yolk towards granulocyte	0.000000	MP:0003795	abnormal bone structure	3.353833	0.240964	0.898973
+HP:0001363	Craniosynostosis	0.000000	ZP:0002840	abnormal(ly) present in fewer numbers in organism lateral plate mesoderm laminin complex	0.000000	MP:0003795	abnormal bone structure	3.353833	0.240506	0.898119
+HP:0001363	Craniosynostosis	0.000000	ZP:0002839	abnormal(ly) disorganized lateral plate mesoderm	0.000000	MP:0003795	abnormal bone structure	3.353833	0.240506	0.898119
+HP:0001363	Craniosynostosis	0.000000	ZP:0002833	abnormal(ly) disorganized lens	0.000000	MP:0003795	abnormal bone structure	3.353833	0.240506	0.898119
+HP:0001363	Craniosynostosis	0.000000	ZP:0009654	abnormal(ly) has extra parts of type dorsal telencephalon ventricular zone towards neuron	0.000000	MP:0003795	abnormal bone structure	3.353833	0.239583	0.896394
+HP:0001363	Craniosynostosis	0.000000	ZP:0009727	abnormal(ly) sharpness head	0.000000	MP:0003795	abnormal bone structure	3.353833	0.238095	0.893606
+HP:0001363	Craniosynostosis	0.000000	ZP:0007962	abnormal(ly) lacks parts or has fewer parts of type yolk towards macrophage	0.000000	MP:0003795	abnormal bone structure	3.353833	0.234694	0.887200
+HP:0001363	Craniosynostosis	0.000000	ZP:0009695	abnormal(ly) hypoplastic palate	0.000000	MP:0003795	abnormal bone structure	3.353833	0.232558	0.883154
+HP:0001363	Craniosynostosis	0.000000	ZP:0005405	abnormal(ly) process quality cardiac muscle tissue morphogenesis	0.000000	MP:0002932	abnormal joint morphology	2.846653	0.271429	0.879013
+HP:0001363	Craniosynostosis	0.000000	ZP:0002223	abnormal(ly) condensed mandibular arch skeleton	0.000000	MP:0003795	abnormal bone structure	3.353833	0.229730	0.877767
+HP:0001363	Craniosynostosis	0.000000	ZP:0002818	abnormal(ly) decreased process quality lateral mesoderm morphogenesis	0.000000	MP:0003795	abnormal bone structure	3.353833	0.226667	0.871896
+HP:0001363	Craniosynostosis	0.000000	ZP:0007095	abnormal(ly) rough perichondrium	0.000000	MP:0003795	abnormal bone structure	3.353833	0.226667	0.871896
+HP:0001363	Craniosynostosis	0.000000	ZP:0004545	abnormal(ly) present in fewer numbers in organism eye iridophore	0.000000	MP:0003795	abnormal bone structure	3.353833	0.226667	0.871896
+HP:0001363	Craniosynostosis	0.000000	ZP:0006784	abnormal(ly) disorganized slow muscle cell striated muscle thin filament	0.000000	MP:0003795	abnormal bone structure	3.353833	0.223684	0.866141
+HP:0001363	Craniosynostosis	0.000000	ZP:0002816	abnormal(ly) decreased process quality determination of pancreatic left/right asymmetry	0.000000	MP:0003795	abnormal bone structure	3.353833	0.223684	0.866141
+HP:0001363	Craniosynostosis	0.000000	ZP:0010712	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.223684	0.866141
+HP:0001363	Craniosynostosis	0.000000	ZP:0010729	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.223684	0.866141
+HP:0001363	Craniosynostosis	0.000000	ZP:0012182	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.223684	0.866141
+HP:0001363	Craniosynostosis	0.000000	ZP:0002854	abnormal(ly) present in fewer numbers in organism brainstem and spinal white matter axon	0.000000	MP:0003795	abnormal bone structure	3.353833	0.222222	0.863305
+HP:0001363	Craniosynostosis	0.000000	ZP:0005403	abnormal(ly) unpigmented melanocyte	0.000000	MP:0002932	abnormal joint morphology	2.846653	0.260274	0.860761
+HP:0001363	Craniosynostosis	0.000000	ZP:0003524	abnormal(ly) mislocalised oocyte stage I microtubule	0.000000	MP:0003795	abnormal bone structure	3.353833	0.220779	0.860498
+HP:0001363	Craniosynostosis	0.000000	ZP:0005171	abnormal(ly) displaced to retinal ganglion cell axon towards eye	0.000000	MP:0003795	abnormal bone structure	3.353833	0.220779	0.860498
+HP:0001363	Craniosynostosis	0.000000	ZP:0002714	abnormal(ly) disrupted mitotic centrosome separation	0.000000	MP:0003795	abnormal bone structure	3.353833	0.218391	0.855831
+HP:0001363	Craniosynostosis	0.000000	ZP:0002708	abnormal(ly) decreased size melanocyte	0.000000	MP:0003795	abnormal bone structure	3.353833	0.218391	0.855831
+HP:0001363	Craniosynostosis	0.000000	ZP:0000721	abnormal(ly) displaced simple columnar epithelium	0.000000	MP:0003795	abnormal bone structure	3.353833	0.215909	0.850954
+HP:0001363	Craniosynostosis	0.000000	ZP:0011999	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.215190	0.849536
+HP:0001363	Craniosynostosis	0.000000	ZP:0002841	abnormal(ly) bilateral symmetry liver	0.000000	MP:0003795	abnormal bone structure	3.353833	0.215190	0.849536
+HP:0001363	Craniosynostosis	0.000000	ZP:0007967	abnormal(ly) increased magnitude ossification	0.000000	MP:0003795	abnormal bone structure	3.353833	0.213483	0.846160
+HP:0001363	Craniosynostosis	0.000000	ZP:0011996	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.212500	0.844209
+HP:0001363	Craniosynostosis	0.000000	ZP:0008359	abnormal(ly) malformed spinal cord motor neuron	0.000000	MP:0003795	abnormal bone structure	3.353833	0.212500	0.844209
+HP:0001363	Craniosynostosis	0.000000	ZP:0002828	abnormal(ly) dispersed retinal ganglion cell layer	0.000000	MP:0003795	abnormal bone structure	3.353833	0.212500	0.844209
+HP:0001363	Craniosynostosis	0.000000	ZP:0010803	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.211268	0.841758
+HP:0001363	Craniosynostosis	0.000000	ZP:0008362	abnormal(ly) malformed cranial nerve V	0.000000	MP:0003795	abnormal bone structure	3.353833	0.208333	0.835892
+HP:0001363	Craniosynostosis	0.000000	ZP:0008361	abnormal(ly) malformed cranial nerve VII	0.000000	MP:0003795	abnormal bone structure	3.353833	0.208333	0.835892
+HP:0001363	Craniosynostosis	0.000000	ZP:0004547	abnormal(ly) hypertrophic retinal pigmented epithelium	0.000000	MP:0003795	abnormal bone structure	3.353833	0.208333	0.835892
+HP:0001363	Craniosynostosis	0.000000	ZP:0000127	abnormal(ly) composition ceratobranchial 5 bone	0.000000	MP:0003795	abnormal bone structure	3.353833	0.206522	0.832250
+HP:0001363	Craniosynostosis	0.000000	ZP:0002847	abnormal(ly) decreased size notochord vacuole	0.000000	MP:0003795	abnormal bone structure	3.353833	0.206522	0.832250
+HP:0001363	Craniosynostosis	0.000000	ZP:0002849	abnormal(ly) bilateral symmetry pancreas	0.000000	MP:0003795	abnormal bone structure	3.353833	0.206522	0.832250
+HP:0001363	Craniosynostosis	0.000000	ZP:0002848	abnormal(ly) present in fewer numbers in organism notochord vacuole	0.000000	MP:0003795	abnormal bone structure	3.353833	0.206522	0.832250
+HP:0001363	Craniosynostosis	0.000000	ZP:0002850	abnormal(ly) mislocalised pancreas endocrine cell	0.000000	MP:0003795	abnormal bone structure	3.353833	0.206522	0.832250
+HP:0001363	Craniosynostosis	0.000000	ZP:0007231	abnormal(ly) absent notochord	0.000000	MP:0003795	abnormal bone structure	3.353833	0.206522	0.832250
+HP:0001363	Craniosynostosis	0.000000	ZP:0012003	null	0.000000	MP:0001533	abnormal skeleton physiology	2.898230	0.238095	0.830695
+HP:0001363	Craniosynostosis	0.000000	ZP:0006947	abnormal(ly) present in fewer numbers in organism caudal vein plexus hematopoietic stem cell	0.000000	MP:0003795	abnormal bone structure	3.353833	0.204301	0.827763
+HP:0001363	Craniosynostosis	0.000000	ZP:0005172	abnormal(ly) disrupted cardiac atrium development	0.000000	MP:0003795	abnormal bone structure	3.353833	0.204301	0.827763
+HP:0001363	Craniosynostosis	0.000000	ZP:0002845	abnormal(ly) cellular quality notochord	0.000000	MP:0003795	abnormal bone structure	3.353833	0.202381	0.823864
+HP:0001363	Craniosynostosis	0.000000	ZP:0002822	abnormal(ly) disrupted muscle tissue development	0.000000	MP:0003795	abnormal bone structure	3.353833	0.202381	0.823864
+HP:0001363	Craniosynostosis	0.000000	ZP:0009801	abnormal(ly) fused with somite 12 dorso-medial margin towards somite 12 dorso-medial margin	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.237500	0.819346
+HP:0001363	Craniosynostosis	0.000000	ZP:0005175	abnormal(ly) deformed atrium	0.000000	MP:0003795	abnormal bone structure	3.353833	0.200000	0.819003
+HP:0001363	Craniosynostosis	0.000000	ZP:0010768	null	0.000000	MP:0001533	abnormal skeleton physiology	2.898230	0.229730	0.815972
+HP:0001363	Craniosynostosis	0.000000	ZP:0003106	abnormal(ly) inverted ceratohyal bone	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.232558	0.810777
+HP:0001363	Craniosynostosis	0.000000	ZP:0006950	abnormal(ly) present in fewer numbers in organism otic vesicle motile cilium	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.227273	0.801511
+HP:0001363	Craniosynostosis	0.000000	ZP:0007760	abnormal(ly) spherical eye	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.227273	0.801511
+HP:0001363	Craniosynostosis	0.000000	ZP:0000934	abnormal(ly) disrupted anterior/posterior axon guidance	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.223881	0.795507
+HP:0001363	Craniosynostosis	0.000000	ZP:0003109	abnormal(ly) decreased size pectoral fin skeleton	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.220588	0.789636
+HP:0001363	Craniosynostosis	0.000000	ZP:0002823	abnormal(ly) decreased process quality Kupffer's vesicle development	0.000000	MP:0003795	abnormal bone structure	3.353833	0.184783	0.787229
+HP:0001363	Craniosynostosis	0.000000	ZP:0002838	abnormal(ly) mislocalised lateral plate mesoderm	0.000000	MP:0003795	abnormal bone structure	3.353833	0.184783	0.787229
+HP:0001363	Craniosynostosis	0.000000	ZP:0007940	abnormal(ly) shape vertebra	0.000000	MP:0003795	abnormal bone structure	3.353833	0.182927	0.783266
+HP:0001363	Craniosynostosis	0.000000	ZP:0006769	abnormal(ly) increased duration M phase	0.000000	MP:0003795	abnormal bone structure	3.353833	0.180723	0.778534
+HP:0001363	Craniosynostosis	0.000000	ZP:0008363	abnormal(ly) increased branchiness MiP motor neuron axon	0.000000	MP:0003795	abnormal bone structure	3.353833	0.180556	0.778173
+HP:0001363	Craniosynostosis	0.000000	ZP:0003566	abnormal(ly) delayed angiogenesis	0.000000	MP:0003795	abnormal bone structure	3.353833	0.180556	0.778173
+HP:0001363	Craniosynostosis	0.000000	ZP:0009730	abnormal(ly) disrupted forebrain neuron differentiation	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.211268	0.772773
+HP:0001363	Craniosynostosis	0.000000	ZP:0000935	abnormal(ly) increased occurrence collateral sprouting in absence of injury	0.000000	MP:0002932	abnormal joint morphology	2.846653	0.209677	0.772579
+HP:0001363	Craniosynostosis	0.000000	ZP:0005104	abnormal(ly) shape primordial germ cell	0.000000	MP:0003795	abnormal bone structure	3.353833	0.173333	0.762451
+HP:0001363	Craniosynostosis	0.000000	ZP:0000911	abnormal(ly) quality pigment cell	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.202703	0.756947
+HP:0001363	Craniosynostosis	0.000000	ZP:0003108	abnormal(ly) aplastic horizontal myoseptum	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.202532	0.756628
+HP:0001363	Craniosynostosis	0.000000	ZP:0009805	abnormal(ly) increased size somite 13	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.171429	0.696109
+HP:0001363	Craniosynostosis	0.000000	ZP:0006782	abnormal(ly) curved ventral axis	0.000000	MP:0003795	abnormal bone structure	3.353833	0.144231	0.695504
+HP:0001363	Craniosynostosis	0.000000	ZP:0011993	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.144231	0.695504
+HP:0001363	Craniosynostosis	0.000000	ZP:0001159	abnormal(ly) apoptotic neuron	0.000000	MP:0001533	abnormal skeleton physiology	2.898230	0.166667	0.695010
+HP:0001363	Craniosynostosis	0.000000	ZP:0005162	abnormal(ly) hypoplastic pharyngeal arch 2 skeleton	0.000000	MP:0003795	abnormal bone structure	3.353833	0.142857	0.692184
+HP:0001363	Craniosynostosis	0.000000	ZP:0003965	abnormal(ly) chromatic property blood	0.000000	MP:0003795	abnormal bone structure	3.353833	0.141509	0.688912
+HP:0001363	Craniosynostosis	0.000000	ZP:0008615	abnormal(ly) has fewer parts of type otic vesicle towards otolith	0.000000	MP:0003795	abnormal bone structure	3.353833	0.132075	0.665552
+HP:0001363	Craniosynostosis	0.000000	ZP:0006744	abnormal(ly) decreased size skeletal muscle	0.000000	MP:0003795	abnormal bone structure	3.353833	0.120690	0.636218
+HP:0001363	Craniosynostosis	0.000000	ZP:0001172	abnormal(ly) present in fewer numbers in organism hypothalamus dopaminergic neuron	0.000000	MP:0003795	abnormal bone structure	3.353833	0.118881	0.631433
+HP:0001363	Craniosynostosis	0.000000	ZP:0011980	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.118644	0.630803
+HP:0001363	Craniosynostosis	0.000000	ZP:0001170	abnormal(ly) decreased thickness cardiac ventricle	0.000000	MP:0003795	abnormal bone structure	3.353833	0.117241	0.627063
+HP:0001363	Craniosynostosis	0.000000	ZP:0009885	abnormal(ly) increased size caudal commissure	0.000000	MP:0003795	abnormal bone structure	3.353833	0.115942	0.623579
+HP:0001363	Craniosynostosis	0.000000	ZP:0000559	abnormal(ly) morphology central nervous system	0.000000	MP:0003795	abnormal bone structure	3.353833	0.114754	0.620376
+HP:0001363	Craniosynostosis	0.000000	ZP:0003789	abnormal(ly) lacks all parts of type pectoral fin towards scapulocoracoid	0.000000	MP:0003795	abnormal bone structure	3.353833	0.112000	0.612886
+HP:0001363	Craniosynostosis	0.000000	ZP:0007763	abnormal(ly) disorganized retina photoreceptor cell	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.131148	0.608858
+HP:0001363	Craniosynostosis	0.000000	ZP:0007943	abnormal(ly) broken lepidotrichium	0.000000	MP:0003795	abnormal bone structure	3.353833	0.110345	0.608341
+HP:0001363	Craniosynostosis	0.000000	ZP:0012176	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.109375	0.605661
+HP:0001363	Craniosynostosis	0.000000	ZP:0000936	abnormal(ly) increased branchiness trigeminal ganglion axon	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.129032	0.603928
+HP:0001363	Craniosynostosis	0.000000	ZP:0012175	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.107692	0.600984
+HP:0001363	Craniosynostosis	0.000000	ZP:0010798	null	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.126984	0.599115
+HP:0001363	Craniosynostosis	0.000000	ZP:0002092	abnormal(ly) decreased length trigeminal motor nucleus axon	0.000000	MP:0003795	abnormal bone structure	3.353833	0.106061	0.596414
+HP:0001363	Craniosynostosis	0.000000	ZP:0012174	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.105263	0.594168
+HP:0001363	Craniosynostosis	0.000000	ZP:0009607	abnormal(ly) decreased length hair cell posterior macula kinocilium	0.000000	MP:0003795	abnormal bone structure	3.353833	0.102941	0.587578
+HP:0001363	Craniosynostosis	0.000000	ZP:0009803	abnormal(ly) fused with somite 15 dorso-medial margin towards somite 15 dorso-medial margin	0.000000	null	UBERON:0000982PHENOTYPE	2.826646	0.118812	0.579516
+HP:0001363	Craniosynostosis	0.000000	ZP:0001178	abnormal(ly) cuboid head	0.000000	MP:0003795	abnormal bone structure	3.353833	0.096552	0.569050
+HP:0001363	Craniosynostosis	0.000000	ZP:0012173	null	0.000000	MP:0003795	abnormal bone structure	3.353833	0.092715	0.557630
+HP:0001363	Craniosynostosis	0.000000	ZP:0011669	null	0.000000	null	BFO:0000003	3.171512	0.090909	0.536954
+HP:0001363	Craniosynostosis	0.000000	ZP:0011670	null	0.000000	null	BFO:0000003	3.171512	0.089888	0.533929
+HP:0001363	Craniosynostosis	0.000000	ZP:0011667	null	0.000000	null	BFO:0000003	3.171512	0.086538	0.523887
+HP:0001363	Craniosynostosis	0.000000	ZP:0012042	null	0.000000	null	BFO:0000003	3.171512	0.085714	0.521387
+HP:0001363	Craniosynostosis	0.000000	ZP:0010809	null	0.000000	null	BFO:0000003	3.171512	0.082353	0.511061
+HP:0001363	Craniosynostosis	0.000000	ZP:0012099	null	0.000000	null	BFO:0000003	3.171512	0.081395	0.508081
+HP:0001363	Craniosynostosis	0.000000	ZP:0010675	null	0.000000	null	BFO:0000003	3.171512	0.080357	0.504830
+HP:0001363	Craniosynostosis	0.000000	ZP:0001523	abnormal(ly) increased size diencephalon	0.000000	null	BFO:0000003	3.171512	0.080000	0.503707
+HP:0001363	Craniosynostosis	0.000000	ZP:0010808	null	0.000000	null	BFO:0000003	3.171512	0.079545	0.502274
+HP:0001363	Craniosynostosis	0.000000	ZP:0012262	null	0.000000	null	BFO:0000003	3.171512	0.079545	0.502274
+HP:0001363	Craniosynostosis	0.000000	ZP:0007933	abnormal(ly) increased curvature postcranial axial skeleton	0.000000	null	BFO:0000003	3.171512	0.078261	0.498202
+HP:0001363	Craniosynostosis	0.000000	ZP:0010676	null	0.000000	null	BFO:0000003	3.171512	0.078261	0.498202
+HP:0001363	Craniosynostosis	0.000000	ZP:0008752	abnormal(ly) decreased process quality neuron mitochondrion localization	0.000000	null	BFO:0000003	3.171512	0.077670	0.496317
+HP:0001363	Craniosynostosis	0.000000	ZP:0003441	abnormal(ly) open optic furrow	0.000000	null	BFO:0000003	3.171512	0.077670	0.496317
+HP:0001363	Craniosynostosis	0.000000	ZP:0008753	abnormal(ly) disrupted protein lipidation	0.000000	null	BFO:0000003	3.171512	0.076190	0.491568
+HP:0001363	Craniosynostosis	0.000000	ZP:0012012	null	0.000000	null	BFO:0000003	3.171512	0.076190	0.491568
+HP:0001363	Craniosynostosis	0.000000	ZP:0001524	abnormal(ly) increased size eye	0.000000	null	BFO:0000003	3.171512	0.075472	0.489244
+HP:0001363	Craniosynostosis	0.000000	ZP:0007181	abnormal(ly) branchiness angiogenic sprout	0.000000	null	BFO:0000003	3.171512	0.073684	0.483415
+HP:0001363	Craniosynostosis	0.000000	ZP:0012261	null	0.000000	null	BFO:0000003	3.171512	0.072165	0.478406
+HP:0011304	Broad thumb	0.000000	ZP:0001082	abnormal(ly) physical object quality preoptic area	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.359223	1.196541
+HP:0011304	Broad thumb	0.000000	ZP:0006782	abnormal(ly) curved ventral axis	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.355769	1.190775
+HP:0011304	Broad thumb	0.000000	ZP:0011993	null	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.355769	1.190775
+HP:0011304	Broad thumb	0.000000	ZP:0000875	abnormal(ly) aplastic Meckel's cartilage	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.355769	1.190775
+HP:0011304	Broad thumb	0.000000	ZP:0000874	abnormal(ly) bent Meckel's cartilage	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.355769	1.190775
+HP:0011304	Broad thumb	0.000000	ZP:0010902	null	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.355769	1.190775
+HP:0011304	Broad thumb	0.000000	ZP:0008615	abnormal(ly) has fewer parts of type otic vesicle towards otolith	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.352381	1.185091
+HP:0011304	Broad thumb	0.000000	ZP:0011078	null	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.352381	1.185091
+HP:0011304	Broad thumb	0.000000	ZP:0005162	abnormal(ly) hypoplastic pharyngeal arch 2 skeleton	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.352381	1.185091
+HP:0011304	Broad thumb	0.000000	ZP:0010587	null	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.349057	1.179487
+HP:0011304	Broad thumb	0.000000	ZP:0003965	abnormal(ly) chromatic property blood	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.349057	1.179487
+HP:0011304	Broad thumb	0.000000	ZP:0009802	abnormal(ly) increased size somite 15	0.000000	HP:0040065	Abnormal morphology of bones of the upper limbs	3.985573	0.349057	1.179487
+HP:0011304	Broad thumb	0.000000	ZP:0001042	abnormal(ly) green pancreas	0.000000	HP:0040070	Abnormality of upper limb bone	3.386785	0.280000	0.973807
+HP:0011304	Broad thumb	0.000000	ZP:0010673	null	0.000000	HP:0040070	Abnormality of upper limb bone	3.386785	0.269231	0.954896
+HP:0011304	Broad thumb	0.000000	ZP:0012198	null	0.000000	HP:0040070	Abnormality of upper limb bone	3.386785	0.266667	0.950338
+HP:0011304	Broad thumb	0.000000	ZP:0009803	abnormal(ly) fused with somite 15 dorso-medial margin towards somite 15 dorso-medial margin	0.000000	HP:0040070	Abnormality of upper limb bone	3.386785	0.261682	0.941415
+HP:0011304	Broad thumb	0.000000	ZP:0012193	null	0.000000	MP:0002115	abnormal limb bone morphology	2.592217	0.284404	0.858625
+HP:0011304	Broad thumb	0.000000	ZP:0012199	null	0.000000	MP:0002115	abnormal limb bone morphology	2.592217	0.276786	0.847047
+HP:0011304	Broad thumb	0.000000	ZP:0007348	abnormal(ly) notched ventral mandibular arch	0.000000	MP:0003723	abnormal long bone morphology	3.565024	0.171171	0.781172
+HP:0011304	Broad thumb	0.000000	ZP:0012192	null	0.000000	MP:0003723	abnormal long bone morphology	3.565024	0.165217	0.767466
+HP:0010055	Broad hallux	0.000000	ZP:0012193	null	0.000000	HP:0002814	Abnormality of the lower limb	2.771061	0.430380	1.092066
+HP:0010055	Broad hallux	0.000000	ZP:0012199	null	0.000000	HP:0002814	Abnormality of the lower limb	2.771061	0.414634	1.071903
+HP:0010055	Broad hallux	0.000000	ZP:0001082	abnormal(ly) physical object quality preoptic area	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.430380	1.063287
+HP:0010055	Broad hallux	0.000000	ZP:0006782	abnormal(ly) curved ventral axis	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.425000	1.056621
+HP:0010055	Broad hallux	0.000000	ZP:0011993	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.425000	1.056621
+HP:0010055	Broad hallux	0.000000	ZP:0000875	abnormal(ly) aplastic Meckel's cartilage	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.425000	1.056621
+HP:0010055	Broad hallux	0.000000	ZP:0000874	abnormal(ly) bent Meckel's cartilage	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.425000	1.056621
+HP:0010055	Broad hallux	0.000000	ZP:0010902	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.425000	1.056621
+HP:0010055	Broad hallux	0.000000	ZP:0008615	abnormal(ly) has fewer parts of type otic vesicle towards otolith	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.419753	1.050078
+HP:0010055	Broad hallux	0.000000	ZP:0011078	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.419753	1.050078
+HP:0010055	Broad hallux	0.000000	ZP:0005162	abnormal(ly) hypoplastic pharyngeal arch 2 skeleton	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.419753	1.050078
+HP:0010055	Broad hallux	0.000000	ZP:0010587	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.414634	1.043656
+HP:0010055	Broad hallux	0.000000	ZP:0003965	abnormal(ly) chromatic property blood	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.414634	1.043656
+HP:0010055	Broad hallux	0.000000	ZP:0009802	abnormal(ly) increased size somite 15	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.414634	1.043656
+HP:0010055	Broad hallux	0.000000	ZP:0001042	abnormal(ly) green pancreas	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.346667	0.954291
+HP:0010055	Broad hallux	0.000000	ZP:0010673	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.329114	0.929818
+HP:0010055	Broad hallux	0.000000	ZP:0012198	null	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.325000	0.923988
+HP:0010055	Broad hallux	0.000000	ZP:0009803	abnormal(ly) fused with somite 15 dorso-medial margin towards somite 15 dorso-medial margin	0.000000	HP:0002817	Abnormality of the upper limb	2.626935	0.317073	0.912650
+HP:0010055	Broad hallux	0.000000	ZP:0007348	abnormal(ly) notched ventral mandibular arch	0.000000	MP:0009250	abnormal appendicular skeleton morphology	2.529091	0.197674	0.707062
+HP:0010055	Broad hallux	0.000000	ZP:0012192	null	0.000000	MP:0009250	abnormal appendicular skeleton morphology	2.529091	0.188889	0.691171
