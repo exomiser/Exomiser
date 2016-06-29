@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,12 +25,14 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
-import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -20,8 +41,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -74,18 +93,15 @@ public class TsvGeneResultsWriter implements ResultsWriter {
      * character.
      *
      * @param gene
-     * @param candidateGene
      * @return
      */
     protected String makeGeneLine(Gene gene) {
-        float humanPhenScore = 0f;
-        float mousePhenScore = 0f;
-        float fishPhenScore = 0f;
-        float rawWalkerScore = 0f;
-        float walkerScaledMaxScore = 0f;
-        float walkerScore = 0f;
-        float phiveAllSpeciesScore = 0f;
-        float omimScore = 0f;
+        double humanPhenScore = 0;
+        double mousePhenScore = 0;
+        double fishPhenScore = 0;
+        double walkerScore = 0;
+        double phiveAllSpeciesScore = 0;
+        double omimScore = 0;
         String phenoEvidence = "";
         //flag to indicate if the gene matches the candidate gene specified by the user
         int matchesCandidateGene = 0;
@@ -109,8 +125,6 @@ public class TsvGeneResultsWriter implements ResultsWriter {
             } else if (type == PriorityType.EXOMEWALKER_PRIORITY) {
                 ExomeWalkerPriorityResult wandererScore = (ExomeWalkerPriorityResult) prioritiserResult;
                 walkerScore = prioritiserResult.getScore();
-                rawWalkerScore = (float) wandererScore.getRawScore();
-                walkerScaledMaxScore = (float) wandererScore.getScaledScore();
             }
         }
 
@@ -123,8 +137,6 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 humanPhenScore,
                 mousePhenScore,
                 fishPhenScore,
-                //rawWalkerScore,
-                //walkerScaledMaxScore,
                 walkerScore,
                 phiveAllSpeciesScore,
                 omimScore,

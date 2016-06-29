@@ -20,30 +20,12 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 /**
- * Filter Variants on the basis of Uberpheno semantic similarity measure between
- * the HPO clinical phenotypes associated with the disease being sequenced and
- * MP annotated MGI mouse models and/or Zebrafish phenotypes.
- *
- * @author Sebastian Koehler
- * @version 0.02 (April 2, 2013).
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class UberphenoPriorityResult extends AbstractPriorityResult {
+public class MockPriorityResult extends AbstractPriorityResult {
 
-    private static final PriorityType priorityType = PriorityType.UBERPHENO_PRIORITY;
-
-    /**
-     * @param uberphenoSemSimScore
-     */
-    public UberphenoPriorityResult(int geneId, String geneSymbol, double uberphenoSemSimScore) {
-        super(priorityType, geneId, geneSymbol, uberphenoSemSimScore);
-    }
-
-    /* (non-Javadoc)
-     * @see exomizer.filter.Triage#getHTMLCode()
-     */
-    @Override
-    public String getHTMLCode() {
-        return "";
+    public MockPriorityResult(PriorityType PriorityType, int geneId, String geneSymbol, double score) {
+        super(PriorityType, geneId, geneSymbol, score);
     }
 
 }

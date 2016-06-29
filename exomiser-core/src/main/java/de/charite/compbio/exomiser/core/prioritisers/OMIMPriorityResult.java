@@ -1,6 +1,24 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,7 +29,7 @@ import java.util.List;
  * @author Peter N Robinson
  * @version 0.08 (9 February, 2014).
  */
-public class OMIMPriorityResult implements PriorityResult {
+public class OMIMPriorityResult extends AbstractPriorityResult {
 
     /**
      * A list of all diseases in OMIM that are associated with the gene affected
@@ -25,30 +43,14 @@ public class OMIMPriorityResult implements PriorityResult {
      * with autosomal recessive inheritance would get a score of 1.0. If the
      * gene only has one het variant, the disease would get a score of 0.5.
      */
-    private static final float DEFAULT_SCORE = -0.1f;
+    private static final double DEFAULT_SCORE = -0.1d;
 
-    private float score = DEFAULT_SCORE;
+    private double score = DEFAULT_SCORE;
 
-    /**
-     * @return true (Always, this Triage is not intended to filter out variants,
-     * only to annotate them)
-     */
-    public boolean passesFilter() {
-        return true;
-    }
 
-    /**
-     * @return return 1.0 for true
-     */
-    public float filterResult() {
-        return 1f;
-    }
-
-    /**
-     * @return A string with a summary of the filtering results .
-     */
-    public String getFilterResultSummary() {
-        return null;
+    public OMIMPriorityResult(int geneId,  String geneSymbol, double score, List<String> mimEntryList) {
+        super(PriorityType.OMIM_PRIORITY, geneId, geneSymbol, score);
+        this.mimEntryList = mimEntryList;
     }
 
     /**
@@ -59,17 +61,12 @@ public class OMIMPriorityResult implements PriorityResult {
         return this.mimEntryList;
     }
 
-    @Override
-    public PriorityType getPriorityType() {
-        return PriorityType.OMIM_PRIORITY;
-    }
-
     /**
      * @return 1 if the inheritance pattern of the diseases associated with the
      * gene match the variants, otherwise 0.5
      */
     @Override
-    public float getScore() {
+    public double getScore() {
         if (this.score == DEFAULT_SCORE) {
             return 1f;
         } else {
@@ -77,7 +74,7 @@ public class OMIMPriorityResult implements PriorityResult {
         }
     }
 
-    public boolean is_empty() {
+    private boolean is_empty() {
         return this.mimEntryList.size() == 0;
     }
 
@@ -144,13 +141,8 @@ public class OMIMPriorityResult implements PriorityResult {
     public void addOrphanetRow(String orphanum, String disease) {
         String[] orphaParts = orphanum.split(":");
         String url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s", orphaParts[1]);
-        String href = String.format("<a href=\"%s\">%s</a>",
-                url, disease);
+        String href = String.format("<a href=\"%s\">%s</a>", url, disease);
         mimEntryList.add(href);
-    }
-
-    public OMIMPriorityResult() {
-        this.mimEntryList = new ArrayList<String>();
     }
 
     /**

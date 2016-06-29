@@ -261,14 +261,15 @@ public class VariantFactory {
         String ref = buildRef(variantAnnotations);
         String alt = buildAlt(variantAnnotations);
 
-        VariantEffect variantEffect = getVariantEffect(variantAnnotations, chr, pos);
+        VariantEffect variantEffect = variantAnnotations.getHighestImpactEffect();
         GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
 
         return new VariantEvaluation.VariantBuilder(chr, pos, ref, alt)
                 //HTSJDK derived data are only used for writing out the
-                //VCF/TSV-VARIANT formatted files 
+                //VCF/TSV-VARIANT formatted files
+                //TODO: remove this direct dependency
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
@@ -280,12 +281,10 @@ public class VariantFactory {
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
                 .geneId(buildGeneId(highestImpactAnnotation))
                 .variantEffect(variantEffect)
+                //TODO: remove this direct dependency - store the transcript ids as a list<String> e.g. Annotation.getTranscript().getAccession().
+                //These can then be rehydrated into Annotation objects when required
                 .annotations(variantAnnotations.getAnnotations())
                 .build();
-    }
-
-    private VariantEffect getVariantEffect(VariantAnnotations variantAnnotations, int chr, int pos) {
-        return variantAnnotations.getHighestImpactEffect();
     }
 
     /**

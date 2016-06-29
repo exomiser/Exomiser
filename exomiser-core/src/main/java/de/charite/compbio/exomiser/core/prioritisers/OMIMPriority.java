@@ -1,17 +1,35 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is designed to do two things. First, it will add annotations to
@@ -51,7 +69,7 @@ public class OMIMPriority implements Prioritiser {
      * method to implement a Phenomizer-type prioritization at a later time
      * point.
      *
-     * @param genes A list of the {@link exomizer.exome.Gene Gene} objects that
+     * @param genes A list of the {@link Gene} objects that
      * have suvived the filtering (i.e., have rare, potentially pathogenic
      * variants).
      */
@@ -72,19 +90,16 @@ public class OMIMPriority implements Prioritiser {
      * @param gene The gene which is being evaluated.
      */
     private OMIMPriorityResult retrieveOmimData(Gene gene) {
-        OMIMPriorityResult priorityResult = new OMIMPriorityResult();
         int entrez = gene.getEntrezGeneID();
         if (entrez < 0) {
-            return priorityResult; 
-
+            return new OMIMPriorityResult(entrez, gene.getGeneSymbol(), 0, Collections.emptyList());
         }
-        getOmimDiseasesForGene(gene, priorityResult);
-//        findOrphaNetDiseasesForGene(gene, priorityResult);
-
-        return priorityResult;
+        return getOmimDiseasesForGene(gene);
     }
 
-    private void getOmimDiseasesForGene(Gene gene, OMIMPriorityResult rel) {
+    private OMIMPriorityResult getOmimDiseasesForGene(Gene gene) {
+
+
         String omimQuery = "SELECT disease_id, omim_gene_id, diseasename, type, inheritance "
                 + "FROM disease "
                 + "WHERE gene_id = ?";
@@ -103,15 +118,21 @@ public class OMIMPriority implements Prioritiser {
                     char typ = rs.getString(4).charAt(0);
                     char inheritance = rs.getString(5).charAt(0);
                     float factor = getInheritanceFactor(gene, inheritance);
-                    rel.addRow(diseaseId, omimGeneId, diseaseName, typ, inheritance, factor);            
-                } else {
-                    rel.addOrphanetRow(diseaseId, diseaseName);
+         //TODO!!! Return a list of DTOs
+//                    priorityResult.addRow(diseaseId, omimGeneId, diseaseName, typ, inheritance, factor);
 
+                } else {
+//                    priorityResult.addOrphanetRow(diseaseId, diseaseName);
                 }
             }
         } catch (SQLException e) {
             logger.error("Error executing OMIM query", e);
         }
+//        if (factor > this.score) {
+//            this.score = factor;
+//        }
+        double score = 1d;
+        return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, Collections.emptyList());
     }
 
     private void findOrphaNetDiseasesForGene(Gene gene, OMIMPriorityResult rel) {

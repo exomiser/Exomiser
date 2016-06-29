@@ -186,13 +186,12 @@ public class ExomeWalkerPriority implements Prioritiser {
     }
 
     /**
-     * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
+     * Prioritize a list of candidate {@link Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      * <P>
      * You have to call {@link #setParameters} before running this function.
      *
      * @param geneList List of candidate genes.
-     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
     public void prioritizeGenes(List<Gene> geneList) {
@@ -200,25 +199,17 @@ public class ExomeWalkerPriority implements Prioritiser {
             throw new RuntimeException("Please specify a valid list of known genes!");
         }
 
-        int PPIdataAvailable = 0;
-        int totalGenes = geneList.size();
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
-            ExomeWalkerPriorityResult relScore = null;
-            if (randomWalkMatrix.containsGene(gene.getEntrezGeneID())) {
-                double val = computeSimStartNodesToNode(gene);
-                if (val > max) {
-                    max = val;
-                }
-                if (val < min) {
-                    min = val;
-                }
-                relScore = new ExomeWalkerPriorityResult(val);
-                ++PPIdataAvailable;
-            } else {
-                relScore = ExomeWalkerPriorityResult.noPPIDataScore();
+            double score = calculateGeneScore(gene);
+            if (score > max) {
+                max = score;
             }
+            if (score < min) {
+                min = score;
+            }
+            ExomeWalkerPriorityResult relScore = new ExomeWalkerPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
             gene.addPriorityResult(relScore);
         }
 
@@ -243,6 +234,14 @@ public class ExomeWalkerPriority implements Prioritiser {
 //            sb.append(seed + "&nbsp;");
 //        }
 //        this.messages.add(sb.toString());
+    }
+
+    private double calculateGeneScore(Gene gene) {
+        if (randomWalkMatrix.containsGene(gene.getEntrezGeneID())) {
+            return computeSimStartNodesToNode(gene);
+        } else {
+            return 0;
+        }
     }
 
     /**

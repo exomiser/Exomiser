@@ -1,7 +1,23 @@
-package de.charite.compbio.exomiser.core.prioritisers;
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-import java.util.ArrayList;
-import java.util.List;
+package de.charite.compbio.exomiser.core.prioritisers;
 
 /**
  * Semantic Similarity in HPO
@@ -9,7 +25,7 @@ import java.util.List;
  * @author Sebastian Koehler
  * @version 0.05 (6 January, 2014).
  */
-public class PhenixPriorityResult implements PriorityResult {
+public class PhenixPriorityResult extends AbstractPriorityResult {
 
     /**
      * The semantic similarity score as implemented in PhenIX (also know as
@@ -31,31 +47,29 @@ public class PhenixPriorityResult implements PriorityResult {
     /**
      * @param negLogPVal The negative logarithm of the p-val
      */
-    public PhenixPriorityResult(double negLogPVal) {
+    public PhenixPriorityResult(int geneId, String geneSymbol, double negLogPVal) {
+        super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, negLogPVal);
         this.negativeLogPval = negLogPVal;
     }
 
-    public PhenixPriorityResult(double negLogPVal, double semScore) {
+    //TODO: negLogPVal - this isn't actually used - apart from in getHTMLCode where it is simply reversed.
+    //TODO: NORMALIZATION_FACTOR is STATIC and will likely clash with other runs when used in a webserver.
+    //TODO: calculate (hpoSemSimScore * NORMALIZATION_FACTOR) and use this directly.
+    public PhenixPriorityResult(int geneId, String geneSymbol, double negLogPVal, double semScore) {
+        super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, semScore);
         this.negativeLogPval = negLogPVal;
         this.hpoSemSimScore = semScore;
     }
 
-    @Override
-    public PriorityType getPriorityType() {
-        return PriorityType.PHENIX_PRIORITY;
-    }
-
     /**
-     * @see exomizer.priority.IRelevanceScore#getRelevanceScore
      * @return the HPO semantic similarity score calculated via Phenomizer.
      */
     @Override
-    public float getScore() {
-        return (float) (hpoSemSimScore * NORMALIZATION_FACTOR);
+    public double getScore() {
+        return (hpoSemSimScore * NORMALIZATION_FACTOR);
     }
 
     /**
-     * @see exomizer.filter.Triage#getHTMLCode()
      */
     @Override
     public String getHTMLCode() {

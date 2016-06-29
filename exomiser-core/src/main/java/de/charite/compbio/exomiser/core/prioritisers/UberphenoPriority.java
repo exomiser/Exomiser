@@ -1,24 +1,37 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
 import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoIO;
-import java.io.File;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
-
 import ontologizer.go.Ontology;
 import ontologizer.go.Term;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import similarity.concepts.ResnikSimilarity;
 import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
 
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.prioritisers.util.UberphenoAnnotationContainer;
-import java.util.Map;
-import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.File;
+import java.util.*;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified
@@ -60,12 +73,6 @@ public class UberphenoPriority implements Prioritiser {
      * elsewhere.
      */
     private List<String> messages = new ArrayList<>();
-
-    /**
-     * Keeps track of the number of variants for which data was available in
-     * Uberpheno annotation.
-     */
-    private int found_annotation_in_uberpheno;
 
     /**
      * Modificiation date of the Uberpheno obo file
@@ -184,24 +191,18 @@ public class UberphenoPriority implements Prioritiser {
     }
 
     /**
-     * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
+     * Prioritize a list of candidate {@link Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      *
      * @param gene_list List of candidate genes.
-     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
     public void prioritizeGenes(List<Gene> gene_list) {
-        this.found_annotation_in_uberpheno = 0;
         int analysedGenes = gene_list.size();
 
         for (Gene gene : gene_list) {
-            try {
-                UberphenoPriorityResult uberphenoRelScore = scoreVariantUberpheno(gene);
-                gene.addPriorityResult(uberphenoRelScore);
-            } catch (Exception e) {
-                errorMessages.add(e.toString());
-            }
+            UberphenoPriorityResult uberphenoRelScore = scoreVariantUberpheno(gene);
+            gene.addPriorityResult(uberphenoRelScore);
         }
 
         String s = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)", analysedGenes);
@@ -209,19 +210,18 @@ public class UberphenoPriority implements Prioritiser {
     }
 
     /**
-     * @param g A {@link exomizer.exome.Gene Gene} whose score is to be
-     * determined.
+     * @param gene A {@link Gene Gene} whose score is to be determined.
      */
-    private UberphenoPriorityResult scoreVariantUberpheno(Gene g) {
+    private UberphenoPriorityResult scoreVariantUberpheno(Gene gene) {
 
-        int entrezGeneId = g.getEntrezGeneID();
+        int entrezGeneId = gene.getEntrezGeneID();
         Set<Term> terms = uberphenoAnnotationContainer.getAnnotationsOfGene(entrezGeneId);
         if (terms == null || terms.size() < 1) {
-            return new UberphenoPriorityResult(-10.0f);
+            return new UberphenoPriorityResult(entrezGeneId, gene.getGeneSymbol(), -10.0f);
         }
         List<Term> termsAl = new ArrayList<>(terms);
         double similarityScore = similarityMeasure.computeObjectSimilarity((ArrayList) annotationsOfDisease, (ArrayList) termsAl);
-        return new UberphenoPriorityResult(similarityScore);
+        return new UberphenoPriorityResult(entrezGeneId, gene.getGeneSymbol(), similarityScore);
     }
 
     @Override

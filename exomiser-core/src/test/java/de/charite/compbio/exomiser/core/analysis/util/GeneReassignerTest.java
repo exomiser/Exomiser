@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,29 +19,37 @@
 
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import de.charite.compbio.exomiser.core.factories.*;
+import de.charite.compbio.exomiser.core.factories.GeneTranscriptModelBuilder;
+import de.charite.compbio.exomiser.core.factories.TestFactory;
+import de.charite.compbio.exomiser.core.factories.VariantContextBuilder;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.TopologicalDomain;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.BasePriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.MockPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.reference.Strand;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.hamcrest.*;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -116,14 +124,19 @@ public class GeneReassignerTest {
         return new GeneReassigner(hiphivePriority, allGenes, tadIndex);
     }
 
+
+    private void addPriorityResultWithScore(Gene gene, double score) {
+        gene.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), score));
+    }
+
     /**
      * This is the simplest case happy path test .
      */
     @Test
     public void assignsRegulatoryVariantToBestPhenotypicMatch_variantOriginallyAssociatedWithBestCandidateGene() {
 
-        gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
-        gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));
+        addPriorityResultWithScore(gene1, 1d);
+        addPriorityResultWithScore(gene2, 0d);
 
         TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
@@ -133,6 +146,21 @@ public class GeneReassignerTest {
 
         assertThat(variant, isAssignedTo(gene1));
     }
+
+    @Test
+    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotOriginallyAssociatedWithBestCandidateGene() {
+        addPriorityResultWithScore(gene1, 1d);
+        addPriorityResultWithScore(gene2, 0d);
+
+        TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
+        instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
+
+        VariantEvaluation variant = regulatoryVariantInTad(tad, gene2);
+        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+
+        assertThat(variant, isAssignedTo(gene1));
+    }
+
 
     @Test
     public void noneTypePrioritiser() {
@@ -148,8 +176,8 @@ public class GeneReassignerTest {
     @Test
     public void variantInGeneNotAssociatedAnyTad() {
 
-        gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
-        gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));
+        addPriorityResultWithScore(gene1, 1d);
+        addPriorityResultWithScore(gene2, 0d);;
 
         TopologicalDomain tad = makeTad(1, 1, 20000, gene1);
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
@@ -161,26 +189,12 @@ public class GeneReassignerTest {
     }
 
     @Test
-    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotOriginallyAssociatedWithBestCandidateGene() {
-        gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
-        gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));
-
-        TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
-        instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
-
-        VariantEvaluation variant = regulatoryVariantInTad(tad, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
-
-        assertThat(variant, isAssignedTo(gene1));
-    }
-
-    @Test
     public void assignsRegulatoryVariantToBestPhenotypicMatch_variantAssociatedWithGeneInOtherTad() {
 
-        gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
+        addPriorityResultWithScore(gene1, 1d);
         TopologicalDomain tad1 = makeTad(1, 1, 20000, gene1);
 
-        gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));
+        addPriorityResultWithScore(gene2, 0d);
         TopologicalDomain tad2 = makeTad(1, 40000, 80000, gene2);
 
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad1, tad2);
@@ -193,8 +207,8 @@ public class GeneReassignerTest {
 
     @Test
     public void assignsRegulatoryVariantToBestPhenotypicMatch_ignoresNonRegulatoryVariant() {
-        gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 1f));
-        gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0f));
+        addPriorityResultWithScore(gene1, 1d);
+        addPriorityResultWithScore(gene2, 0d);
 
         TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
@@ -207,8 +221,8 @@ public class GeneReassignerTest {
 
     @Test
     public void assignsRegulatoryVariantToBestPhenotypicMatch_variantNotMovedWhenAllGenesHaveEqualScore() {
-        gene1.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0.5f));
-        gene2.addPriorityResult(new BasePriorityResult(PriorityType.HIPHIVE_PRIORITY, 0.5f));
+        addPriorityResultWithScore(gene1, 0.5d);
+        addPriorityResultWithScore(gene2, 0.5d);
 
         TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);

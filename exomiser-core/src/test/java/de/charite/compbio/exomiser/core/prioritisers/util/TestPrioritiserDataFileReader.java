@@ -51,7 +51,7 @@ public class TestPrioritiserDataFileReader {
     }
 
     private static Function<String, GeneModel> lineToGeneModel() {
-        //MOUSE	MGI:95523_118	2263	FGFR2	MGI:95523	Fgfr2	[MP:0009522, MP:0009525]
+        //MOUSE	MGI:95523_118	2263	FGFR2	MGI:95523	Fgfr2	MP:0009522,MP:0009525
         //FISH	ZDB-GENE-081119-4_3835	341640	HGNC:25396	ZDB-GENE-081119-4	frem2b	ZP:0004670,ZP:0004671,ZP:0004669
         return line -> {
             String[] fields = line.split("\t");

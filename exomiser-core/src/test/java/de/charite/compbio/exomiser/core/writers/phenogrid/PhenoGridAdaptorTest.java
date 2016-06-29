@@ -1,31 +1,38 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.writers.phenogrid;
 
-import de.charite.compbio.exomiser.core.model.DiseaseModel;
-import de.charite.compbio.exomiser.core.model.GeneModel;
-import de.charite.compbio.exomiser.core.model.Model;
-import de.charite.compbio.exomiser.core.model.Organism;
-import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
-import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
+import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import org.hamcrest.CoreMatchers;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -142,12 +149,12 @@ public class PhenoGridAdaptorTest {
         allModels.add(mouseModel);
         allModels.add(fishModel);
 
-        allModelsHiPhiveResult = new HiPhivePriorityResult(phenoGridId, allModelScore, queryPhenotypeTerms, allModels, new ArrayList<Model>(), allModelWalkerScore, false);
+        allModelsHiPhiveResult = new HiPhivePriorityResult(allModelEntrezGeneId, allModelGeneSymbol, allModelScore, queryPhenotypeTerms, allModels, new ArrayList<Model>(), allModelWalkerScore, false);
     
         List<Model> models = new ArrayList<>();
         models.add(diseaseModel);
 
-        onlyDiseaseModelHiPhiveResult = new HiPhivePriorityResult(phenoGridId, onlyDiseaseModelScore, queryPhenotypeTerms, models, new ArrayList<Model>(), onlyDiseaseModelWalkerScore, false);
+        onlyDiseaseModelHiPhiveResult = new HiPhivePriorityResult(onlyDiseaseEntrezGeneId, onlyDiseaseGeneSymbol, onlyDiseaseModelScore, queryPhenotypeTerms, models, new ArrayList<Model>(), onlyDiseaseModelWalkerScore, false);
     
     }
 

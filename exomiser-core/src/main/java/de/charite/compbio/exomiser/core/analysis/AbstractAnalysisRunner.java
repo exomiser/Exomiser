@@ -23,7 +23,10 @@ import de.charite.compbio.exomiser.core.analysis.util.*;
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import de.charite.compbio.exomiser.core.filters.*;
+import de.charite.compbio.exomiser.core.filters.GeneFilter;
+import de.charite.compbio.exomiser.core.filters.GeneFilterRunner;
+import de.charite.compbio.exomiser.core.filters.VariantFilter;
+import de.charite.compbio.exomiser.core.filters.VariantFilterRunner;
 import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -35,7 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -90,7 +95,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             //The analysis steps are run in groups of VARIANT_FILTER, GENE_ONLY_DEPENDENT or INHERITANCE_MODE_DEPENDENT
             AnalysisStep firstStep = analysisGroup.get(0);
             logger.debug("Running {} group: {}", firstStep.getType(), analysisGroup);
-            if (firstStep.isVariantFilter() & !variantsLoaded) {
+            if (firstStep.isVariantFilter() && !variantsLoaded) {
                 //variants take up 99% of all the memory in an analysis - this scales approximately linearly with the sample size
                 //so for whole genomes this is best run as a stream to filter out the unwanted variants with as many filters as possible in one go
                 variantEvaluations = loadAndFilterVariants(vcfPath, allGenes, analysisGroup, analysis);
@@ -103,6 +108,9 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
         //the results might be a bit meaningless.
+        //See issue #129 This is an excellent place to put the output of a gene phenotype score only run.
+        //i.e. stream in the variants, annotate them (assign a gene symbol) then write out that variant with the calculated GENE_PHENO_SCORE (prioritiser scores).
+        //this would fit well with a lot of people's pipelines where they only want the phenotype score as they are using VEP or ANNOVAR for variant analysis.
         if (!variantsLoaded) {
             try(Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
                 variantEvaluations = variantStream.collect(toList());

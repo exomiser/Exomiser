@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,19 +25,15 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.BasePriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.MockPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import org.hamcrest.CoreMatchers;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -68,7 +83,7 @@ public class PriorityScoreFilterTest {
 
     @Test
     public void testRunFilter_FailsGeneWithWrongPriorityType_ScoreSameAsThreshold() {
-        PriorityResult priorityResult = new BasePriorityResult(PriorityType.OMIM_PRIORITY, minPriorityScore);
+        PriorityResult priorityResult = new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), minPriorityScore);
         gene.addPriorityResult(priorityResult);
         
         FilterResult result = instance.runFilter(gene);
@@ -78,7 +93,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_PassesGeneWithCorrectPriorityType_ScoreSameAsThreshold() {
-        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore);
+        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore);
         gene.addPriorityResult(priorityResult);
         
         FilterResult result = instance.runFilter(gene);
@@ -88,7 +103,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_PassesGeneWithCorrectPriorityType_ScoreOverThreshold() {
-        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore + 0.2f);
+        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore + 0.2f);
         gene.addPriorityResult(priorityResult);
 
         FilterResult result = instance.runFilter(gene);
@@ -98,9 +113,9 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_FailsGeneWithCorrectPriorityType_ScoreUnderThreshold() {
-        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore - 0.2f);
+        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2f);
         gene.addPriorityResult(priorityResult);
-        
+
         FilterResult result = instance.runFilter(gene);
         
         assertFails(result);
@@ -108,7 +123,7 @@ public class PriorityScoreFilterTest {
     
     @Test
     public void testRunFilter_VariantInFailedGeneAlsoFailsTheFilter() {
-        PriorityResult priorityResult = new BasePriorityResult(priorityType, minPriorityScore - 0.2f);
+        PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2f);
         gene.addPriorityResult(priorityResult);
         VariantEvaluation variant = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
         gene.addVariant(variant);
@@ -118,6 +133,10 @@ public class PriorityScoreFilterTest {
         assertFails(result);
         assertThat(variant.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
         assertThat(variant.getFailedFilterTypes(), hasItem(FilterType.PRIORITY_SCORE_FILTER));
+    }
+
+    private PriorityResult makeDefaultPriorityResult(float score) {
+        return new MockPriorityResult(priorityType, gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
     }
 
     @Test

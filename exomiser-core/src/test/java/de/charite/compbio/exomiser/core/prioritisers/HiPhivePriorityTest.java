@@ -28,31 +28,34 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
+import de.charite.compbio.exomiser.core.prioritisers.util.TestPriorityService;
 import org.jblas.DoubleMatrix;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class HiPhivePriorityTest {
     
     private HiPhivePriority instance;
     
     private List<String> hpoIds;
-    private String candidateGene;
-    private String disease;
-    private String exomiser2params;
+
+    private PriorityService priorityService = TestPriorityService.TEST_SERVICE;
+    private DataMatrix testMatrix;
 
     @Before
     public void setUp() {
@@ -61,10 +64,6 @@ public class HiPhivePriorityTest {
         hpoIds.add("HP:0001363");
         hpoIds.add("HP:0001156");
         hpoIds.add("HP:0011304");
-
-        candidateGene = "FGFR2";
-        disease = "OMIM:101600";
-        exomiser2params = "";
 
         double[][] ppiMatrix = {
                 {0.707653999329, 0.000000009625, 0.000000008875, 0.000000372898, 0.000000268611, 0.000000023074, 0.000000040680, 0.000000133227, 0.000000064774, 0.000000113817},
@@ -80,33 +79,29 @@ public class HiPhivePriorityTest {
         };
         DoubleMatrix doubleMatrix = new DoubleMatrix(ppiMatrix);
 
-        Arrays.stream(doubleMatrix.getRow(5).toArray()).forEach(val -> System.out.printf("%.12f, ", val));
-        System.out.println();
-        Arrays.stream(doubleMatrix.getColumn(5).toArray()).forEach(val -> System.out.printf("%.12f, ", val));
-        System.out.println();
+        testMatrix = new DataMatrix(doubleMatrix.toFloat(), new HashMap<>());
 
+        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions(), testMatrix, priorityService);
 
-        DataMatrix testMatrix = new DataMatrix(doubleMatrix.toFloat(), new HashMap<>());
-
-        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions(), testMatrix);
-//        instance.setPriorityService();
-
-//        HP:0010055-HP:0010055=2.7796420474783035
-//        HP:0001363-HP:0001363=2.4336466530917122
-//        HP:0001156-HP:0001156=1.9399600254934881
-//        HP:0011304-HP:0011304=2.7485534157741984
-
-//        HP:0010055-MP:0009049=2.530139606718946
-//        HP:0001363-MP:0000081=2.6914281512491542
-//        HP:0001156-MP:0002544=2.2666863877455286
-//        HP:0011304-MP:0002543=2.170374978266971
-
-//        HP:0010055-ZP:0012193=1.0920661382591106
-//        HP:0001363-ZP:0003564=1.9560677583289208
-//        HP:0001156-ZP:0012193=1.1921761629223673
-//        HP:0011304-ZP:0001082=1.1965410868294204
     }
 
+    private List<Gene> getGenes() {
+        return Lists.newArrayList(
+                new Gene("FGFR2", 2263),
+                new Gene("ROR2", 4920),
+                new Gene("FREM2", 341640),
+                new Gene("ZNF738", 148203)
+        );
+    }
+
+    //TODO: this should be the output of a Prioritiser: Genes + HPO -> PrioritiserResults
+    private List<PriorityResult> getPriorityResultsOrderedByScore(List<Gene> genes) {
+        return genes.stream()
+                .flatMap(gene -> gene.getPriorityResults().values()
+                        .stream())
+                .sorted(Comparator.comparingDouble(PriorityResult::getScore).reversed())
+                .collect(Collectors.toList());
+    }
 
 
     @Test
@@ -114,18 +109,51 @@ public class HiPhivePriorityTest {
         assertThat(instance.getPriorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
 
-    @Ignore
     @Test
     public void testPrioritizeGenes() {
-        instance.prioritizeGenes(new ArrayList<Gene>());
+        List<Gene> genes = getGenes();
+
+        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions("", "", "human,mouse,fish"), null, priorityService);
+        instance.prioritizeGenes(genes);
+//        List<PriorityResult> results = instance.prioritizeGenes(genes);
+
+        List<PriorityResult> results = getPriorityResultsOrderedByScore(genes);
+        assertThat(results.isEmpty(), is(false));
+
+        results.forEach(result ->
+                {
+                    HiPhivePriorityResult priorityResult = (HiPhivePriorityResult) result;
+                    assertThat(priorityResult, notNullValue());
+                    System.out.println(priorityResult);
+                }
+
+        );
     }
 
-
-    @Ignore
     @Test
     public void testPrioritizeGenesInBenchmarkingMode() {
-        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions(disease, candidateGene), null);
-        instance.prioritizeGenes(new ArrayList<Gene>());
+        List<Gene> genes = getGenes();
+
+        String candidateGeneSymbol = "FGFR2";
+        String candidateDiseaseId = "OMIM:101600";
+
+        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions(candidateDiseaseId, candidateGeneSymbol, "human,mouse,fish"), null, priorityService);
+        instance.prioritizeGenes(genes);
+
+        List<PriorityResult> results = getPriorityResultsOrderedByScore(genes);
+        assertThat(results.isEmpty(), is(false));
+
+        HiPhivePriorityResult topResult = (HiPhivePriorityResult) results.get(0);
+        assertThat(topResult.getGeneSymbol(), not(equalTo(candidateGeneSymbol)));
+
+        results.forEach(result ->
+                {
+                    HiPhivePriorityResult priorityResult = (HiPhivePriorityResult) result;
+                    assertThat(priorityResult, notNullValue());
+                    System.out.println(priorityResult);
+                }
+
+        );
     }
 
     @Ignore

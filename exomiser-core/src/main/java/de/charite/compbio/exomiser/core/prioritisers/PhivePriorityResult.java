@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers;
 
 /**
@@ -16,14 +35,8 @@ package de.charite.compbio.exomiser.core.prioritisers;
  * @author Damian Smedley
  * @version 0.06 (April 22, 2013).
  */
-public class PhivePriorityResult implements PriorityResult {
+public class PhivePriorityResult extends AbstractPriorityResult {
 
-    /**
-     * The phenodigm score as calculated by OWLsim. This score indicates the
-     * similarity between a humam disease and the phenotype of a genetically
-     * modified mouse model.
-     */
-    private final float phenodigmScore;
     /**
      * The MGI id of the model most similar to the gene being analysed. For
      * instance, the MGI id MGI:101757 corresponding to the webpage
@@ -36,30 +49,19 @@ public class PhivePriorityResult implements PriorityResult {
     /**
      * The gene symbol corresponding to the mouse gene, e.g., Cfl1.
      */
-    private final String geneSymbol;
+    private final String mgiGeneSymbol;
 
     /**
-     * @param mgiGeneId An ID from Mouse Genome Informatics such as MGI:101757
      * @param geneSymbol The corresponding gene symbol, e.g., Gfl1
-     * @param phenodigmScore the phenodigm score for this gene.
+     * @param phenodigmScore the phenodigm score for this gene as calculated by OWLsim. This score indicates the
+     * similarity between a humam disease and the phenotype of a genetically
+     * modified mouse model.
+     * @param mgiGeneId An ID from Mouse Genome Informatics such as MGI:101757
      */
-    public PhivePriorityResult(String mgiGeneId, String geneSymbol, float phenodigmScore) {
+    public PhivePriorityResult(int geneId, String geneSymbol, float phenodigmScore, String mgiGeneId, String mgiGeneSymbol) {
+        super(PriorityType.PHIVE_PRIORITY, geneId, geneSymbol, phenodigmScore);
         this.mgiId = mgiGeneId;
-        this.geneSymbol = geneSymbol;
-        this.phenodigmScore = phenodigmScore;
-    }
-
-    @Override
-    public PriorityType getPriorityType() {
-        return PriorityType.PHIVE_PRIORITY;
-    }
-
-    /**
-     * @return Relevance score for the current Gene
-     */
-    @Override
-    public float getScore() {
-        return phenodigmScore;
+        this.mgiGeneSymbol = mgiGeneSymbol;
     }
 
     /**
@@ -68,7 +70,7 @@ public class PhivePriorityResult implements PriorityResult {
      */
     @Override
     public String getHTMLCode() {
-        if (phenodigmScore == PhivePriority.NO_MOUSE_MODEL_SCORE) {
+        if (score == PhivePriority.NO_MOUSE_MODEL_SCORE) {
             return "<dl><dt>No mouse model for this gene</dt></dl>";
         } else {
             String link = makeMgiGeneLink();
@@ -84,7 +86,7 @@ public class PhivePriorityResult implements PriorityResult {
      */
     private String makeMgiGeneLink() {
         String url = String.format("http://www.informatics.jax.org/marker/%s", mgiId);
-        String anchor = String.format("<a href=\"%s\">%s</a>", url, geneSymbol);
+        String anchor = String.format("<a href=\"%s\">%s</a>", url, mgiGeneSymbol);
         return anchor;
     }
 

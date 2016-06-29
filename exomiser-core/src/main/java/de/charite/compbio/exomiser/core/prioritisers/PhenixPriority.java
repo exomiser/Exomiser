@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -23,28 +23,19 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.ScoreDistribution;
 import de.charite.compbio.exomiser.core.prioritisers.util.ScoreDistributionContainer;
 import hpo.HPOutils;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import ontologizer.go.OBOParser;
-import ontologizer.go.OBOParserException;
-import ontologizer.go.Ontology;
-import ontologizer.go.Term;
-import ontologizer.go.TermContainer;
+import ontologizer.go.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import similarity.SimilarityUtilities;
 import similarity.concepts.ResnikSimilarity;
 import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified
@@ -355,7 +346,7 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * @param gene A {@link exomizer.exome.Gene Gene} whose score is to be
+     * @param gene A {@link Gene Gene} whose score is to be
      * determined.
      */
     private PhenixPriorityResult scoreVariantHPO(Gene gene) {
@@ -364,9 +355,9 @@ public class PhenixPriority implements Prioritiser {
         String entrezGeneIdString = entrezGeneId + "";
 
         if (!geneId2annotations.containsKey(entrezGeneIdString)) {
-            //System.err.println("INVALID GENE GIVEN (will set to default-score): Entrez ID: " + g.getEntrezGeneID() + " / " + g.getGeneSymbol());
+            logger.error("INVALID GENE (will set to default-score): Entrez:{} ({})", gene.getEntrezGeneID(), gene.getGeneSymbol());
             this.offTargetGenes++;
-            return new PhenixPriorityResult(DEFAULT_SCORE);
+            return new PhenixPriorityResult(entrezGeneId, gene.getGeneSymbol(), DEFAULT_SCORE);
         }
 
         List<Term> annotationsOfGene = geneId2annotations.get(entrezGeneIdString);
@@ -379,23 +370,18 @@ public class PhenixPriority implements Prioritiser {
             errorMessages.add("Error: score was NAN for gene:" + gene + " : " + hpoQueryTerms + " <-> " + annotationsOfGene);
         }
 
-        ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(entrezGeneIdString, numberQueryTerms, symmetric,
-                scoredistributionFolder);
+        ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(entrezGeneIdString, numberQueryTerms, symmetric, scoredistributionFolder);
 
 	// get the pvalue
-        double rawPvalue;
+        double negLogPvalue;
         if (scoreDist == null) {
-            return new PhenixPriorityResult(DEFAULT_SCORE);
+            return new PhenixPriorityResult(entrezGeneId, gene.getGeneSymbol(), DEFAULT_SCORE);
         } else {
-            rawPvalue = scoreDist.getPvalue(similarityScore, 1000.);
-            rawPvalue = Math.log(rawPvalue) * -1.0; /* Negative log of p value : most significant get highest score */
-
-            if (rawPvalue > maxNegLogP) {
-                maxNegLogP = rawPvalue;
-            }
+            double rawPvalue = scoreDist.getPvalue(similarityScore, 1000.);
+            negLogPvalue = Math.log(rawPvalue) * -1.0; /* Negative log of p value : most significant get highest score */
         }
 
-        return new PhenixPriorityResult(rawPvalue, similarityScore);
+        return new PhenixPriorityResult(entrezGeneId, gene.getGeneSymbol(), negLogPvalue, similarityScore);
 	// // filter genes not associated with any disease
         // if
         // (!HPOutils.diseaseGeneMapper.entrezId2diseaseIds.containsKey(entrezGeneId))

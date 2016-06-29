@@ -1,9 +1,28 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.analysis.AnalysisStep;
-import java.util.List;
-
 import de.charite.compbio.exomiser.core.model.Gene;
+
+import java.util.List;
 
 /**
  * This interface is implemented by classes that perform prioritization of genes
@@ -39,6 +58,8 @@ public interface Prioritiser extends AnalysisStep {
      * @param genes
      */
     public void prioritizeGenes(List<Gene> genes);
+
+//    public List<PriorityResult> prioritizeGenes(Collection<String> hpoIds, List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.

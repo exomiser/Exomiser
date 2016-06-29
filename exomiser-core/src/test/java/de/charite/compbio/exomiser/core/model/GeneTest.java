@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -10,22 +29,18 @@ import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
-import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.MockPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-
-import java.util.*;
-import org.hamcrest.CoreMatchers;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -303,11 +318,11 @@ public class GeneTest {
     
     @Test
     public void testCanAddAndRetrievePriorityScoreByPriorityType() {
-        PriorityResult omimPriorityResult = new OMIMPriorityResult();
         PriorityType priorityType = PriorityType.OMIM_PRIORITY;
+        PriorityResult omimPriorityResult = new MockPriorityResult(priorityType, instance.getEntrezGeneID(), instance.getGeneSymbol(), 0f);
 
         instance.addPriorityResult(omimPriorityResult);
-        instance.addPriorityResult(new ExomeWalkerPriorityResult(0.0d));
+        instance.addPriorityResult(new ExomeWalkerPriorityResult(instance.getEntrezGeneID(), instance.getGeneSymbol(), 0.0d));
         assertThat(instance.getPriorityResult(priorityType), equalTo(omimPriorityResult));
     }
 

@@ -120,6 +120,11 @@
             <artifactId>logback-classic</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Groovy is required for logback.groovy processing-->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>

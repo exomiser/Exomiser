@@ -1,29 +1,60 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers;
 
 /**
  * Prioritization of Genes results in a relevance score for each tested
- * {@link exomizer.exome.Gene Gene} object. The methods may also annotate the
+ * {@link de.charite.compbio.exomiser.core.model.Gene Gene} object. The methods may also annotate the
  genes with data (e.g., a link to OMIM or a link to Phenodigm or uberpheno
  data. Each prioritization is expected to result on an object of a class that
  implements PriorityResult
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface PriorityResult {
-    
+
     /**
-     * @return return a float representation of the filter result [0..1]. If the
-     * result is boolean, return 0.0 for false and 1.0 for true
+     * @return the gene id for which this result is associated.
      */
-    public float getScore();
+    int getGeneId();
+
+    /**
+     * @return the gene symbol for which this result is associated.
+     */
+    String getGeneSymbol();
+
+    /**
+     * @return return a float representation of the prioritiser result with values between 0..1 where zero means no match
+     * and one is the best match.
+     */
+    double getScore();
     
-    public PriorityType getPriorityType();
+    //TODO: is a PriorityType strictly necessary? Investigate...
+    PriorityType getPriorityType();
 
     /**
      * @return HTML code representing this prioritization/relevance score
      * @deprecated this should be handled by the writers
      */
     @Deprecated
-    public String getHTMLCode();
+    String getHTMLCode();
 
 }

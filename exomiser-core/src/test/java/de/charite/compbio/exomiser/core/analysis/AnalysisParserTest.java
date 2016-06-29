@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -8,44 +27,25 @@ package de.charite.compbio.exomiser.core.analysis;
 import de.charite.compbio.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import de.charite.compbio.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.IntervalFilter;
-import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
+import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
-import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
-import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriority;
-import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
-import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.exomiser.core.prioritisers.*;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.nio.file.Paths;
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -306,8 +306,8 @@ public class AnalysisParserTest {
         analysisSteps.add(new PathogenicityFilter(false));
         analysisSteps.add(new InheritanceFilter(modeOfInheritance));
         analysisSteps.add(new OMIMPriority());
-        analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions(), null));
-        analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions("OMIM:101600", "FGFR2", "mouse,fish,human,ppi"), null));
+        analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions(), null, null));
+        analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions("OMIM:101600", "FGFR2", "mouse,fish,human,ppi"), null, null));
         analysisSteps.add(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.7f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }

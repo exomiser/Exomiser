@@ -55,6 +55,7 @@ import org.thymeleaf.TemplateEngine;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
@@ -110,13 +111,13 @@ public class HtmlResultsWriterTest {
         gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
         gene2.addVariant(indelVariantEvaluation);
 
-        gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
-        gene2.addPriorityResult(new PhivePriorityResult("MGI:54321", "Gene2", 0.98f));
+        gene1.addPriorityResult(new PhivePriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 0.99f, "MGI:12345", "Gene1"));
+        gene2.addPriorityResult(new PhivePriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 0.98f, "MGI:54321", "Gene2"));
 
-        OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
+        OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, new ArrayList());
         gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
         gene1.addPriorityResult(gene1PriorityScore);
-        gene2.addPriorityResult(new OMIMPriorityResult());
+        gene2.addPriorityResult(new OMIMPriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 1f, Collections.emptyList()));
 
         unAnnotatedVariantEvaluation1 = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
         unAnnotatedVariantEvaluation2 = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);

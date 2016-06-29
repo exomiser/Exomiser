@@ -1,3 +1,22 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers;
 
 /**
@@ -5,47 +24,13 @@ package de.charite.compbio.exomiser.core.prioritisers;
  * @author Sebastian Koehler
  * @version 0.06 (6 January, 2014).
  */
-public class ExomeWalkerPriorityResult implements PriorityResult {
-
-    /**
-     * The Random walk similarity score.
-     */
-    private double score;
-    private final double rawScore;
-    private double scaledByMaxScore = -10;
+public class ExomeWalkerPriorityResult extends AbstractPriorityResult {
 
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public ExomeWalkerPriorityResult(double score) {
-        this.score = score;
-        this.rawScore = score;
-    }
-
-    @Override
-    public PriorityType getPriorityType() {
-        return PriorityType.EXOMEWALKER_PRIORITY;
-    }
-
-    /**
-     * 
-     */
-    @Override
-    public float getScore() {
-        return (float) score;
-    }
-
-    /**
-     * This is call for genes with no PPI data; they are assigned a score of
-     * zero. They will be assigned a score equivalent to the median of all genes
-     * by the function {@code prioritize_listofgenes} in
-     * {@link exomizer.priority.Priority Priority}. basically as a kind of
-     * uniform prior.
-     */
-    public static ExomeWalkerPriorityResult noPPIDataScore() {
-        float nodatascore = 0f;
-        ExomeWalkerPriorityResult grs = new ExomeWalkerPriorityResult(nodatascore);
-        return grs;
+    public ExomeWalkerPriorityResult(int geneId, String geneSymbol, double score) {
+        super(PriorityType.EXOMEWALKER_PRIORITY, geneId, geneSymbol, score);
     }
 
     /**
@@ -56,30 +41,6 @@ public class ExomeWalkerPriorityResult implements PriorityResult {
     @Override
     public String getHTMLCode() {
         return String.format("<dl><dt>Random walk similarity score: %.3f</dt></dl>", this.score);
-    }
-
-    public double getRawScore() {
-        return this.rawScore;
-    }
-
-    public double getScaledScore() {
-        return this.scaledByMaxScore;
-    }
-
-    /**
-     * Resets the value of the relevance score to a number between 0 and 1 The
-     * scores resulting from random walk analysis are renormalized such that the
-     * highest score is equal to 1 and the lowest score to 0. The
-     * renormalization is performed by
-     * {@link exomizer.priority.GenewandererPriority GenewandererPriority}
-     *
-     * @param newscore new value for relevance score
-     */
-    public void setScore(float newscore) {
-        this.score = newscore;
-        if (this.scaledByMaxScore == -10) {
-            this.scaledByMaxScore = newscore;
-        }
     }
 
 }

@@ -1,42 +1,54 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
 import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
+import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
+import de.charite.compbio.exomiser.core.filters.FailFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.filters.PassFilterResult;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
+import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
+import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+import htsjdk.variant.vcf.VCFFileReader;
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
-
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
-import htsjdk.variant.vcf.VCFFileReader;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
-import de.charite.compbio.exomiser.core.filters.FailFilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.PassFilterResult;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
-import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
-import de.charite.compbio.jannovar.pedigree.Genotype;
 
 /**
  * Tests for the {@link VcfResultsWriter} class.
@@ -137,13 +149,13 @@ public class VcfResultsWriterTest {
         gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
         gene2.addVariant(indelVariantEvaluation);
 
-        gene1.addPriorityResult(new PhivePriorityResult("MGI:12345", "Gene1", 0.99f));
-        gene2.addPriorityResult(new PhivePriorityResult("MGI:54321", "Gene2", 0.98f));
+        gene1.addPriorityResult(new PhivePriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 0.99f, "MGI:12345", "Gene1"));
+        gene2.addPriorityResult(new PhivePriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 0.98f, "MGI:54321", "Gene2"));
 
-        OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult();
+        OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, new ArrayList());
         gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
         gene1.addPriorityResult(gene1PriorityScore);
-        gene2.addPriorityResult(new OMIMPriorityResult());
+        gene2.addPriorityResult(new OMIMPriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 1f, Collections.emptyList()));
 
         unAnnotatedVariantEvaluation1 = new VariantEvaluation.VariantBuilder(5, 11, "AC", "AT").quality(1).build();
         unAnnotatedVariantEvaluation2 = new VariantEvaluation.VariantBuilder(5, 14, "T", "TG").quality(1).build();

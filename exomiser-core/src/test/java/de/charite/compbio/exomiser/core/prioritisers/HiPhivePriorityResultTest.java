@@ -45,6 +45,7 @@ import static org.junit.Assert.assertThat;
 public class HiPhivePriorityResultTest {
     
     private HiPhivePriorityResult instance;
+    private final int geneId = 12345;
     private final String geneSymbol = "FGFR2";
     private final double score = 0.87d;
     private List<PhenotypeTerm> queryPhenotypeTerms;
@@ -58,7 +59,7 @@ public class HiPhivePriorityResultTest {
         queryPhenotypeTerms = new ArrayList<>();
         phenotypeEvidence = new ArrayList<>();
         ppiEvidence = new ArrayList<>();
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, phenotypeEvidence, ppiEvidence, walkerScore, matchesCandidateGene);
+        instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, phenotypeEvidence, ppiEvidence, walkerScore, matchesCandidateGene);
     }
 
     private GeneModel makeStubGeneModelForOrganismWithScore(Organism organism, double score) {
@@ -79,7 +80,8 @@ public class HiPhivePriorityResultTest {
 
     @Test
     public void testGetScore() {
-        assertThat(instance.getScore(), equalTo((float) score));
+//        assertThat(instance.getScore(), closeTo(score, 0.0001));
+        assertThat(instance.getScore(), equalTo(score));
     }
 
     @Test
@@ -104,62 +106,67 @@ public class HiPhivePriorityResultTest {
 
     @Test
     public void testGetHumanScoreIsZeroWithNoDiseaseEvidence() {
-        assertThat(instance.getHumanScore(), equalTo(0f));
+        assertThat(instance.getHumanScore(), equalTo(0d));
     }
     
     @Test
     public void testGetHumanScoreMatchesModelScore() {
-        double modelScore = 1f;
+        double modelScore = 1d;
         GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.HUMAN, modelScore);
                 
         List<Model> models = new ArrayList<>();
         models.add(geneModel);
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
+        instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
-        assertThat(instance.getHumanScore(), equalTo((float) modelScore));
+        assertThat(instance.getHumanScore(), equalTo(modelScore));
     }
 
     @Test
     public void testGetMouseScoreIsZeroWithNoDiseaseEvidence() {
-        assertThat(instance.getMouseScore(), equalTo(0f));
+        assertThat(instance.getMouseScore(), equalTo(0d));
     }
 
     @Test
     public void testGetMouseScoreMatchesModelScore() {
-        double modelScore = 1f;
+        double modelScore = 1d;
         GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.MOUSE, modelScore);
                 
         List<Model> models = new ArrayList<>();
         models.add(geneModel);
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
+        instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
-        assertThat(instance.getMouseScore(), equalTo((float) modelScore));
+        assertThat(instance.getMouseScore(), equalTo(modelScore));
     }
     
     @Test
     public void testGetFishScoreIsZeroWithNoDiseaseEvidence() {
-        assertThat(instance.getFishScore(), equalTo(0f));
+        assertThat(instance.getFishScore(), equalTo(0d));
     }
 
     @Test
     public void testGetFishScoreMatchesModelScore() {
-        double modelScore = 1f;
+        double modelScore = 1d;
         GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.FISH, modelScore);
                 
         List<Model> models = new ArrayList<>();
         models.add(geneModel);
-        instance = new HiPhivePriorityResult(geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
+        instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
-        assertThat(instance.getFishScore(), equalTo((float) modelScore));
+        assertThat(instance.getFishScore(), equalTo(modelScore));
     }
 
     @Test
     public void testGetWalkerScore() {
-        assertThat(instance.getWalkerScore(), equalTo((float) walkerScore));
+        assertThat(instance.getWalkerScore(), equalTo(walkerScore));
     }
     
     @Test
     public void testIsCandidateGeneMatch_MatchesConstructorArg() {
         assertThat(instance.isCandidateGeneMatch(), is(matchesCandidateGene));
+    }
+
+    @Test
+    public void testToString() {
+        System.out.println(instance.toString());
     }
 }

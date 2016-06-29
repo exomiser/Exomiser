@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -33,7 +33,10 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -75,14 +78,14 @@ public class GeneReassigner {
         Gene geneWithHighestPhenotypeScore = null;
         Gene currentlyAssignedGene = allGenes.get(variantEvaluation.getGeneSymbol());
         //assign this to the variant's current gene as we don't necessarily want ALL the regulatory region variants to clump into one gene.
-        float bestScore = prioritiserScore(currentlyAssignedGene);
+        double bestScore = prioritiserScore(currentlyAssignedGene);
         List<String> genesInTad = getGenesInTadForVariant(variantEvaluation);
 
         for (String geneSymbol : genesInTad) {
             Gene gene = allGenes.get(geneSymbol);
             logger.debug("Checking gene {}", gene);
             if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
-                float geneScore = prioritiserScore(gene);
+                double geneScore = prioritiserScore(gene);
                 logger.debug("Gene {} in TAD has score {}", geneSymbol, geneScore);
                 if (geneScore > bestScore) {
                     bestScore = geneScore;
@@ -100,7 +103,7 @@ public class GeneReassigner {
         assignVariantToGene(variantEvaluation, geneWithHighestPhenotypeScore);
     }
 
-    private float prioritiserScore(Gene gene) {
+    private double prioritiserScore(Gene gene) {
         //TODO: local variable, only one call to get? Otherwise will throw NPE if not guarded against.
         return (gene.getPriorityResult(priorityType) == null)? 0f : gene.getPriorityResult(priorityType).getScore();
     }
@@ -128,7 +131,7 @@ public class GeneReassigner {
         Gene geneWithHighestPhenotypeScore = null;
         VariantEffect variantEffectForTopHit = null;
         Gene currentlyAssignedGene = allGenes.get(variantEvaluation.getGeneSymbol());
-        float bestScore = 0f;
+        double bestScore;
         if (currentlyAssignedGene == null){
             // very rarely a variant just has a single annotation with no gene i.e. geneSymbol is .
             return;
@@ -161,7 +164,7 @@ public class GeneReassigner {
             Gene gene = allGenes.get(geneSymbol);
             VariantEffect ve = variantEffects.get(i);
             if (gene != null && (gene.getPriorityResult(priorityType)) != null) {
-                float geneScore = prioritiserScore(gene);
+                double geneScore = prioritiserScore(gene);
                 if (geneScore > bestScore) {
                     bestScore = geneScore;
                     geneWithHighestPhenotypeScore = gene;
