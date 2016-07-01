@@ -1,5 +1,9 @@
 # The Exomiser Command Line Executable - Changelog
 
+## 7.2.2 2016-07-01
+- Fix for issue when using OmimPrioritiser with UNDEFINED inheritance mode which led to gene phenotype scores being halved.
+- Fix for VCF output multiple allele line duplications. VCF output will now have alternate alleles written out on the same line if they were originally like that in the input VCF. The variant scores will be concatenated to correspond with the alleles. VCFs containing alleles split onto seperate lines in the input file will continue to have them like this in the output file.
+
 ## 7.2.1 2016-01-05
 - Fix for incorrect inheritance mode calculations where the variant chromosome number is prefixed with 'chr' in VCF file.
 
