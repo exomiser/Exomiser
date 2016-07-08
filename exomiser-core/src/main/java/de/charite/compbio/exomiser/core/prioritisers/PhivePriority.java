@@ -26,12 +26,12 @@ import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified
@@ -43,11 +43,9 @@ import java.util.*;
  * (i.e., it is use on genes for which we have found rare, potentially
  * pathogenic variants).
  * <P>
- * This class uses a database connection that it obtains from the main Exomizer
- * driver program (if the Exomizer was started from the command line) or from a
- * tomcat server (etc.) if the Exomizer was called from a Webserver.
  *
  * @author Damian Smedley
+ * @author Jules Jacobsen
  * @version 0.05 (April 6, 2013)
  */
 public class PhivePriority implements Prioritiser {
@@ -60,17 +58,6 @@ public class PhivePriority implements Prioritiser {
 
     private final List<String> hpoIds;
     private final PriorityService priorityService;
-
-    double bestMaxScore = 0d;
-    double bestAvgScore = 0d;
-
-    private DataSource dataSource;
-
-    /**
-     * Keeps track of the number of variants for which data was available in
-     * Phenodigm.
-     */
-    private int foundDataForMgiPhenodigm;
 
     public PhivePriority(List<String> hpoIds, PriorityService priorityService) {
         this.hpoIds = hpoIds;
@@ -109,70 +96,110 @@ public class PhivePriority implements Prioritiser {
         OrganismPhenotypeMatches humanMousePhenotypeMatches = getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
         logOrganismPhenotypeMatches(humanMousePhenotypeMatches);
 
-        foundDataForMgiPhenodigm = 0;
-
-        Set<String> hpIdsWithPhenotypeMatch = new LinkedHashSet<>();
-//        Map<String, Double> bestMappedTermScore = new HashMap<>();
-//        Map<String, String> bestMappedTermMpId = new HashMap<>();
-        //knownMps.size() might be the reason that the scores from phive are slightly different to hiPhive mouse
-        Set<String> knownMps = new LinkedHashSet<>();
-        Map<String, Double> mappedTerms = new HashMap<>();
-
-        String mappingQuery = "SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?";
-
-        for (String hpId : hpoIds) {
-            try (Connection connection = dataSource.getConnection()) {
-                PreparedStatement findMappingStatement = connection.prepareStatement(mappingQuery);
-                findMappingStatement.setString(1, hpId);
-                ResultSet rs = findMappingStatement.executeQuery();
-                int found = 0;
-                while (rs.next()) {
-                    found = 1;
-                    String mpId = rs.getString(1);
-                    knownMps.add(mpId);
-                    String hashKey = hpId + mpId;
-                    double score = rs.getDouble("score");
-                    mappedTerms.put(hashKey, score);
-//                    if (bestMappedTermScore.containsKey(hpId)) {
-//                        if (score > bestMappedTermScore.get(hpId)) {
-//                            bestMappedTermScore.put(hpId, score);
-//                            bestMappedTermMpId.put(hpId, mpId);
-//                        }
-//                    } else {
-//                        bestMappedTermScore.put(hpId, score);
-//                        bestMappedTermMpId.put(hpId, mpId);
-//                    }
-                }
-                if (found == 1) {
-                    hpIdsWithPhenotypeMatch.add(hpId);
-                }
-            } catch (SQLException e) {
-                logger.error("Problem setting up SQL query: {}", mappingQuery, e);
-            }
-        }
-
-//        calculateBestPhenotypeMatchScores(hpIdsWithPhenotypeMatch, bestMappedTermScore, bestMappedTermMpId, mappedTerms);
-
-        bestMaxScore = humanMousePhenotypeMatches.getBestMatchScore();
-        bestAvgScore = humanMousePhenotypeMatches.getBestAverageScore();
-
         List<Model> mouseModels = priorityService.getModelsForOrganism(Organism.MOUSE);
 
-//        Map<Integer, Set<Model>> geneModelPhenotypeMatches = calculateGeneModelPhenotypeMatches(bestMaxScore, bestAvgScore, humanMousePhenotypeMatches, mouseModels);
-//        Map<Integer, Model> bestGeneModels = getBestGeneModelForGenes(geneModelPhenotypeMatches);
+        List<Model> scoredModels = scoreModels(humanMousePhenotypeMatches, mouseModels);
 
+        Map<Integer, List<Model>> geneMouseModels = scoredModels.parallelStream()
+                .sorted(Comparator.comparingDouble(Model::getScore).reversed())
+                .collect(Collectors.groupingBy(Model::getEntrezGeneId));
 
         for (Gene gene : genes) {
-//            GeneModel bestModelForGene = bestGeneModels.get(gene.getEntrezGeneID());
-//            if(bestModelForGene == null) {
-//                 new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null, null);
-//            }
-//            new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), bestModelForGene.getScore(), bestModelForGene.getModelGeneId(), bestModelForGene.getModelGeneSymbol());
+            List<Model> geneModels = geneMouseModels.getOrDefault(gene.getEntrezGeneID(), Collections.emptyList());
+            PhivePriorityResult phiveScore = geneModels.stream()
+                    .findFirst()
+                    .map(makeModelPhivePriorityResult())
+                    .orElse(new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null, null));
 
-            PhivePriorityResult phiveScore = prioritiseGene(gene, knownMps, hpIdsWithPhenotypeMatch, mappedTerms);
             gene.addPriorityResult(phiveScore);
         }
 //        messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", genes.size()));
+    }
+
+    private Function<Model, PhivePriorityResult> makeModelPhivePriorityResult() {
+        return model -> {
+            GeneModel bestModelForGene = (GeneModel) model;
+            return new PhivePriorityResult(bestModelForGene.getEntrezGeneId(), bestModelForGene.getHumanGeneSymbol(), bestModelForGene.getScore(), bestModelForGene.getModelGeneId(), bestModelForGene.getModelGeneSymbol());
+        };
+    }
+
+    private List<Model> scoreModels(OrganismPhenotypeMatches humanMousePhenotypeMatches, List<Model> mouseModels) {
+        //TODO: this is common to both phive and hiPhive and loks like the responsibility should lie with the OrganismPhenotypeMatches
+        //or a CrossSpeciesModelPhenotypeScorer or something
+        Set<String> hpIdsWithPhenotypeMatch = humanMousePhenotypeMatches.getBestPhenotypeMatches().stream().map(PhenotypeMatch::getQueryPhenotypeId).collect(toCollection(TreeSet::new));
+//        logger.info("hpIds with phenotype match={}", hpIdsWithPhenotypeMatch);
+
+        Map<String, PhenotypeMatch> mappedTerms = humanMousePhenotypeMatches.getCompoundKeyIndexedPhenotypeMatches();
+        Set<String> matchedPhenotypeIdsForSpecies = mappedTerms.values().stream().map(PhenotypeMatch::getMatchPhenotypeId).collect(toCollection(TreeSet::new));
+
+        for (Model model : mouseModels) {
+
+            List<String> matchedPhenotypeIdsForModel = model.getPhenotypeIds().stream()
+                    .filter(matchedPhenotypeIdsForSpecies::contains)
+                    .collect(toList());
+
+            double maxModelMatchScore = 0f;
+            double sumModelBestMatchScores = 0f;
+
+            for (String hpId : hpIdsWithPhenotypeMatch) {
+                double bestScore = 0f;
+                for (String mpId : matchedPhenotypeIdsForModel) {
+                    String hashKey = hpId + mpId;
+                    if (mappedTerms.containsKey(hashKey)) {
+                        PhenotypeMatch match = mappedTerms.get(hashKey);
+                        double score = match.getScore();
+                        // identify best match
+                        bestScore = Math.max(bestScore, score);
+                    }
+                }
+                if (bestScore != 0) {
+                    sumModelBestMatchScores += bestScore;
+                    maxModelMatchScore = Math.max(bestScore, maxModelMatchScore);
+                }
+            }
+            // Reciprocal hits
+            for (String mpId : matchedPhenotypeIdsForModel) {
+                double bestScore = 0f;
+                for (String hpId : hpIdsWithPhenotypeMatch) {
+                    String hashKey = hpId + mpId;
+                    if (mappedTerms.containsKey(hashKey)) {
+                        PhenotypeMatch match = mappedTerms.get(hashKey);
+                        double score = match.getScore();
+                        // identify best match
+                        bestScore = Math.max(bestScore, score);
+                    }
+                }
+                if (bestScore != 0) {
+                    sumModelBestMatchScores += bestScore;
+                    maxModelMatchScore = Math.max(bestScore, maxModelMatchScore);
+                }
+            }
+
+            //in hiPhive we now use humanMousePhenotypeMatches.getQueryTerms().size()
+//            int rowColumnCount = humanMousePhenotypeMatches.getQueryTerms().size() + matchedPhenotypeIdsForModel.size();
+            int rowColumnCount = hpIdsWithPhenotypeMatch.size() + matchedPhenotypeIdsForModel.size();
+            double modelScore = calculateModelScore(humanMousePhenotypeMatches, rowColumnCount, maxModelMatchScore, sumModelBestMatchScores);
+            model.setScore(modelScore);
+//            logger.info("{} model score = {}", modelId, modelScore);
+        }
+
+        return mouseModels;
+    }
+
+    private double calculateModelScore(OrganismPhenotypeMatches humanMousePhenotypeMatches, int rowColumnCount, double maxModelMatchScore, double sumModelBestMatchScores) {
+        // calculate combined score
+        double bestMaxScore = humanMousePhenotypeMatches.getBestMatchScore();
+        double bestAvgScore = humanMousePhenotypeMatches.getBestAverageScore();
+
+        if (sumModelBestMatchScores != 0) {
+            double avgBestHitRowsColumnsScore = sumModelBestMatchScores / rowColumnCount;
+            double combinedScore = 50 * (maxModelMatchScore / bestMaxScore + avgBestHitRowsColumnsScore / bestAvgScore);
+            if (combinedScore > 100) {
+                combinedScore = 100;
+            }
+            return combinedScore / 100;
+        }
+        return 0;
     }
 
     //TODO: turn this into a CrossSpeciesPhenotypeMatcher? - THIS IS CURRENTLY COPIED FROM HIPHIVEPRIORITY
@@ -192,171 +219,6 @@ public class PhivePriority implements Prioritiser {
             logger.info("{}-{}={}", bestMatch.getQueryPhenotypeId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
         }
         logger.info("bestMaxScore={} bestAvgScore={}", organismPhenotypeMatches.getBestMatchScore(), organismPhenotypeMatches.getBestAverageScore(), organismPhenotypeMatches.getBestPhenotypeMatches().size());
-    }
-
-    private void calculateBestPhenotypeMatchScores(Set<String> hpIdsWithPhenotypeMatch, Map<String, Float> bestMappedTermScore, Map<String, String> bestMappedTermMpId, Map<String, Float> mappedTerms) {
-        // calculate perfect mouse model scores
-        float sumBestScore = 0f;
-
-        int bestHitCounter = 0;
-        // loop over each hp id should start here
-        for (String hpid : hpIdsWithPhenotypeMatch) {
-            if (bestMappedTermScore.get(hpid) != null) {
-                float hpScore = bestMappedTermScore.get(hpid);
-                // add in scores for best match for the HP term                                                                                                                                                
-                sumBestScore += hpScore;
-                bestHitCounter++;
-                if (hpScore > bestMaxScore) {
-                    bestMaxScore = hpScore;
-                }
-                // add in MP-HP hits                                                                                                                                                                           
-                String mpId = bestMappedTermMpId.get(hpid);
-                float bestScore = 0f;
-                for (String hpId2 : hpIdsWithPhenotypeMatch) {
-                    String hashKey = hpId2 + mpId;
-                    if (mappedTerms.containsKey(hashKey) && mappedTerms.get(hashKey) > bestScore) {
-                        //System.out.println("added in best score for mp term:"+mpid);
-                        bestScore = mappedTerms.get(hashKey);
-                    }
-                }
-                // add in scores for best match for the MP term                                                                                                                                                
-                sumBestScore += bestScore;
-                bestHitCounter++;
-                if (bestScore > bestMaxScore) {
-                    bestMaxScore = bestScore;
-                }
-            }
-        }
-        bestAvgScore = sumBestScore / bestHitCounter;
-    }
-
-    private PhivePriorityResult prioritiseGene(Gene gene, Set<String> knownMps, Set<String> hpIdsWithPhenotypeMatch, Map<String, Double> mappedTerms) {
-        double mgiScore = NO_PHENOTYPE_HIT_SCORE;
-        String mgiGeneId = null;
-        String mgiGeneSymbol = null;
-        String genesymbol = gene.getGeneSymbol();
-        
-        /* Note that there are two queries. The testGeneStatement basically tests
-         * whether the gene in question is in the database; it must have both an
-         * orthologue in the table {@code human2mouse_orthologs}, and there must be
-         * some data on it in the table {@code  mgi_mp}.
-         * 
-         * Then, we select the MGI gene id (e.g., MGI:1234567), the corresponding
-         * mouse gene symbol and the phenodigm score. There is currently one score
-         * for each pair of OMIM diseases and MGI genes.
-         */
-        //TODO: test this using one statement only:
-        // SELECT mouse_model_id, mp_id, M.mgi_gene_id, M.mgi_gene_symbol
-        // FROM mgi_mp M, human2mouse_orthologs H
-        // WHERE M.mgi_gene_id = H.mgi_gene_id AND human_gene_symbol = ?
-        try (Connection connection = dataSource.getConnection()) {
-            String testGeneQuery = "SELECT human_gene_symbol "
-                    + "FROM mgi_mp M, human2mouse_orthologs H "
-                    + "WHERE M.mgi_gene_id = H.mgi_gene_id "
-                    + "AND human_gene_symbol = ? LIMIT 1";
-            PreparedStatement testGeneStatement = connection.prepareStatement(testGeneQuery);
-            testGeneStatement.setString(1, genesymbol);
-            ResultSet rs2 = testGeneStatement.executeQuery();
-            if (rs2.next()) {
-                // calculate score for this gene
-                String mouseAnnotationQuery = "SELECT mouse_model_id, mp_id, M.mgi_gene_id, M.mgi_gene_symbol "
-                        + "FROM mgi_mp M, human2mouse_orthologs H "
-                        + "WHERE M.mgi_gene_id = H.mgi_gene_id "
-                        + "AND human_gene_symbol = ?";
-                PreparedStatement findMouseAnnotationStatement = connection.prepareStatement(mouseAnnotationQuery);
-                findMouseAnnotationStatement.setString(1, genesymbol);
-                ResultSet rs = findMouseAnnotationStatement.executeQuery();
-                double bestCombinedScore = 0f;// keep track of best score for gene
-                while (rs.next()) {
-                    int mouseModelId = rs.getInt(1);
-                    //System.out.println("Calculating score for mouse model id "+mouse_model_id+" gene "+genesymbol);
-                    String mpIds = rs.getString(2);
-                    mgiGeneId = rs.getString(3);
-                    mgiGeneSymbol = rs.getString(4);
-                    String[] mpInitial = mpIds.split(",");
-                    //TODO: this should be the MP terms from the model matches
-                    List<String> mpList = new ArrayList<>();
-                    for (String mpId : mpInitial) {
-                        if (knownMps.contains(mpId)) {
-                            mpList.add(mpId);
-                        }
-                    }
-
-                    int rowColumnCount = hpIdsWithPhenotypeMatch.size() + mpList.size();
-                    double maxScore = 0f;
-                    double sumBestHitRowsColumnsScore = 0f;
-
-                    for (String hpId : hpIdsWithPhenotypeMatch) {
-                        double bestScore = 0f;
-                        for (String mpId : mpList) {
-                            String hashKey = hpId + mpId;
-                            if (mappedTerms.containsKey(hashKey)) {
-                                double score = mappedTerms.get(hashKey);
-                                // identify best match
-                                if (score > bestScore) {
-                                    bestScore = score;
-                                }
-                            }
-                        }
-                        if (bestScore != 0) {
-                            sumBestHitRowsColumnsScore += bestScore;
-                            if (bestScore > maxScore) {
-                                maxScore = bestScore;
-                            }
-                        }
-                    }
-                    // Reciprocal hits
-                    for (String mpId : mpList) {
-                        double bestScore = 0f;
-                        for (String hpId : hpIdsWithPhenotypeMatch) {
-                            String hashKey = hpId + mpId;
-                            if (mappedTerms.containsKey(hashKey)) {
-                                double score = mappedTerms.get(hashKey);
-                                // identify best match
-                                if (score > bestScore) {
-                                    bestScore = score;
-                                }
-                            }
-                        }
-                        if (bestScore != 0) {
-                            sumBestHitRowsColumnsScore += bestScore;
-                            if (bestScore > maxScore) {
-                                maxScore = bestScore;
-                            }
-                        }
-                    }
-                    // calculate combined score
-                    if (sumBestHitRowsColumnsScore != 0) {
-                        double avgBestHitRowsColumnsScore = sumBestHitRowsColumnsScore / rowColumnCount;
-                        double combinedScore = 50 * (maxScore / bestMaxScore + avgBestHitRowsColumnsScore / bestAvgScore);
-                        if (combinedScore > 100) {
-                            combinedScore = 100;
-                        }
-                        // is this the best score so far for this gene?
-                        if (combinedScore > bestCombinedScore) {
-                            bestCombinedScore = combinedScore;
-                        }
-                    }
-                    // do next mouse model
-                }
-                rs.close();
-                mgiScore = bestCombinedScore / 100;
-                if (mgiScore >= 0) {
-                    foundDataForMgiPhenodigm++;
-                }
-            } else {
-                // no mouse model exists in MGI for this gene
-                mgiScore = NO_MOUSE_MODEL_SCORE;
-            }
-            rs2.close();
-        } catch (SQLException e) {
-            logger.error("Error executing Phenodigm query: ", e);
-        }
-        return new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), mgiScore, mgiGeneId, mgiGeneSymbol);
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
     }
 
     @Override

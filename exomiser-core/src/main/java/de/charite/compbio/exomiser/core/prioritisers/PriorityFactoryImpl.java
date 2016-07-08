@@ -124,7 +124,6 @@ public class PriorityFactoryImpl implements PriorityFactory {
     @Override
     public PhivePriority makePhivePrioritiser(List<String> hpoIds) {
         PhivePriority priority = new PhivePriority(hpoIds, priorityService);
-        priority.setDataSource(dataSource);
         return priority;
     }
 

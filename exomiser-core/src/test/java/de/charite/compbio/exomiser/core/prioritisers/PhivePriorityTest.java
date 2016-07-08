@@ -20,16 +20,12 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import com.google.common.collect.Lists;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 
-import javax.sql.DataSource;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -44,29 +40,6 @@ import static org.junit.Assert.assertThat;
 public class PhivePriorityTest {
 
     private Logger logger = LoggerFactory.getLogger(PhivePriorityTest.class);
-
-    //going to run this off the live database for the time being.
-    @Bean
-    public DataSource dataSource() {
-        return new HikariDataSource(h2Config());
-    }
-
-    @Bean
-    public HikariConfig h2Config() {
-
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl("jdbc:h2:file:C:/Users/jj8/Documents/exomiser-cli-4.0.0/data/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;");
-        config.setUsername("sa");
-        config.setPassword("");
-        config.setMaximumPoolSize(3);
-        config.setPoolName("exomiser-H2");
-
-        logger.info("DataSource using maximum of {} database connections", config.getMaximumPoolSize());
-        logger.info("Returning a new {} DataSource pool to URL {} user: {}", config.getPoolName(), config.getJdbcUrl(), config.getUsername());
-
-        return config;
-    }
 
     private List<Gene> getGenes() {
         return Lists.newArrayList(
@@ -99,7 +72,6 @@ public class PhivePriorityTest {
 
         List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
         PhivePriority phivePriority = new PhivePriority(hpoIds, TestPriorityServiceFactory.TEST_SERVICE);
-        phivePriority.setDataSource(dataSource());
         phivePriority.prioritizeGenes(genes);
 //        List<PriorityResult> results = instance.prioritizeGenes(genes);
 
@@ -109,12 +81,13 @@ public class PhivePriorityTest {
             System.out.println(result);
         });
 
+//      Scores from flatfile (these will have suffered slight rounding errors compared to the database)
         List<PhivePriorityResult> expected = Lists.newArrayList(
-                new PhivePriorityResult(2263, "FGFR2", 0.8278620846776202, "MGI:95523", "Fgfr2"),
-                new PhivePriorityResult(4920, "ROR2", 0.6999089165402461, "MGI:1347521", "Ror2"),
-                new PhivePriorityResult(341640, "FREM2", 0.6208762939500725, "MGI:2444465", "Frem2"),
+                new PhivePriorityResult(2263, "FGFR2", 0.8278620340423056, "MGI:95523", "Fgfr2"),
+                new PhivePriorityResult(4920, "ROR2", 0.6999088391144016, "MGI:1347521", "Ror2"),
+                new PhivePriorityResult(341640, "FREM2", 0.6208762175615226, "MGI:2444465", "Frem2"),
                 new PhivePriorityResult(148203, "ZNF738", 0.6000000238418579, null, null)
-                );
+        );
         assertThat(results, equalTo(expected));
     }
 
