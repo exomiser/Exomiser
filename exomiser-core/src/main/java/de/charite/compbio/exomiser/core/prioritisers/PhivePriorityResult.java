@@ -19,6 +19,8 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import java.util.Objects;
+
 /**
  * Filter Variants on the basis of OWLSim phenotypic comparisons between the HPO
  * clinical phenotypes associated with the disease being sequenced and MP
@@ -58,7 +60,7 @@ public class PhivePriorityResult extends AbstractPriorityResult {
      * modified mouse model.
      * @param mgiGeneId An ID from Mouse Genome Informatics such as MGI:101757
      */
-    public PhivePriorityResult(int geneId, String geneSymbol, float phenodigmScore, String mgiGeneId, String mgiGeneSymbol) {
+    public PhivePriorityResult(int geneId, String geneSymbol, double phenodigmScore, String mgiGeneId, String mgiGeneSymbol) {
         super(PriorityType.PHIVE_PRIORITY, geneId, geneSymbol, phenodigmScore);
         this.mgiId = mgiGeneId;
         this.mgiGeneSymbol = mgiGeneSymbol;
@@ -90,4 +92,29 @@ public class PhivePriorityResult extends AbstractPriorityResult {
         return anchor;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PhivePriorityResult)) return false;
+        if (!super.equals(o)) return false;
+        PhivePriorityResult result = (PhivePriorityResult) o;
+        return Objects.equals(mgiId, result.mgiId) &&
+                Objects.equals(mgiGeneSymbol, result.mgiGeneSymbol);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mgiId, mgiGeneSymbol);
+    }
+
+    @Override
+    public String toString() {
+        return "PhivePriorityResult{" +
+                "geneId=" + geneId +
+                ", geneSymbol='" + geneSymbol + '\'' +
+                ", score=" + score +
+                ", mgiId='" + mgiId + '\'' +
+                ", mgiGeneSymbol='" + mgiGeneSymbol + '\'' +
+                "}";
+    }
 }

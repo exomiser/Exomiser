@@ -25,6 +25,7 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.prioritisers.util.DataMatrix;
+import de.charite.compbio.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
 import org.jblas.FloatMatrix;
 
 import java.util.LinkedHashMap;
@@ -54,7 +55,7 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public PhivePriority makePhivePrioritiser(List<String> hpoIds) {
-        return new PhivePriority(hpoIds);
+        return new PhivePriority(hpoIds, TestPriorityServiceFactory.STUB_SERVICE);
     }
 
     @Override
@@ -65,7 +66,7 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
-        return new HiPhivePriority(hpoIds, hiPhiveOptions, null, null);
+        return new HiPhivePriority(hpoIds, hiPhiveOptions, null, TestPriorityServiceFactory.STUB_SERVICE);
     }
 
     private DataMatrix makeDataMatrixWithGeneIds(List<Integer> entrezSeedGenes) {

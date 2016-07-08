@@ -25,6 +25,7 @@ import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,11 +34,27 @@ import java.util.stream.Collectors;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class TestPriorityService {
+public class TestPriorityServiceFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestPriorityService.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestPriorityServiceFactory.class);
+
 
     public static final PriorityService TEST_SERVICE = setUpPriorityService();
+
+    public static final PriorityService STUB_SERVICE = setUpStubPriorityService();
+
+    private static PriorityService setUpStubPriorityService() {
+        ModelService testModelService = new TestModelService(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+
+        OntologyService testOntologyService = TestOntologyService.newBuilder()
+                .setHpIdPhenotypeTerms(Collections.emptyMap())
+                .setHumanHumanMappings(Collections.emptyMap())
+                .setHumanMouseMappings(Collections.emptyMap())
+                .setHumanFishMappings(Collections.emptyMap())
+                .build();
+
+        return new PriorityService(testOntologyService, testModelService, null);
+    }
 
     private static PriorityService setUpPriorityService() {
         logger.info("Creating test priority service - this is static test data");
@@ -84,7 +101,6 @@ public class TestPriorityService {
                 .setHumanMouseMappings(createPhenotypeMap(hpMpMappings))
                 .setHumanFishMappings(createPhenotypeMap(hpZpMappings))
                 .build();
-
 
         return new PriorityService(testOntologyService, testModelService, null);
     }

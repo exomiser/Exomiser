@@ -19,7 +19,10 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.model.Gene;
+import com.google.common.collect.ImmutableMap;
+import de.charite.compbio.exomiser.core.model.*;
+import de.charite.compbio.exomiser.core.prioritisers.util.OrganismPhenotypeMatches;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +59,10 @@ public class PhivePriority implements Prioritiser {
     static final float NO_MOUSE_MODEL_SCORE = 0.6f;
 
     private final List<String> hpoIds;
+    private final PriorityService priorityService;
 
-    float bestMaxScore = 0f;
-    float bestAvgScore = 0f;
+    double bestMaxScore = 0d;
+    double bestAvgScore = 0d;
 
     private DataSource dataSource;
 
@@ -68,8 +72,9 @@ public class PhivePriority implements Prioritiser {
      */
     private int foundDataForMgiPhenodigm;
 
-    public PhivePriority(List<String> hpoIds) {
+    public PhivePriority(List<String> hpoIds, PriorityService priorityService) {
         this.hpoIds = hpoIds;
+        this.priorityService = priorityService;
         //This can be moved into a report section - FilterReport should probably turn into an AnalysisStepReport
         //Then can remove getMessages from the interface. 
 //        messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
@@ -99,13 +104,19 @@ public class PhivePriority implements Prioritiser {
     @Override
     public void prioritizeGenes(List<Gene> genes) {
 
+        List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
+
+        OrganismPhenotypeMatches humanMousePhenotypeMatches = getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
+        logOrganismPhenotypeMatches(humanMousePhenotypeMatches);
+
         foundDataForMgiPhenodigm = 0;
 
         Set<String> hpIdsWithPhenotypeMatch = new LinkedHashSet<>();
-        Map<String, Float> bestMappedTermScore = new HashMap<>();
-        Map<String, String> bestMappedTermMpId = new HashMap<>();
+//        Map<String, Double> bestMappedTermScore = new HashMap<>();
+//        Map<String, String> bestMappedTermMpId = new HashMap<>();
+        //knownMps.size() might be the reason that the scores from phive are slightly different to hiPhive mouse
         Set<String> knownMps = new LinkedHashSet<>();
-        Map<String, Float> mappedTerms = new HashMap<>();
+        Map<String, Double> mappedTerms = new HashMap<>();
 
         String mappingQuery = "SELECT mp_id, score FROM hp_mp_mappings M WHERE M.hp_id = ?";
 
@@ -120,17 +131,17 @@ public class PhivePriority implements Prioritiser {
                     String mpId = rs.getString(1);
                     knownMps.add(mpId);
                     String hashKey = hpId + mpId;
-                    float score = rs.getFloat("score");
+                    double score = rs.getDouble("score");
                     mappedTerms.put(hashKey, score);
-                    if (bestMappedTermScore.containsKey(hpId)) {
-                        if (score > bestMappedTermScore.get(hpId)) {
-                            bestMappedTermScore.put(hpId, score);
-                            bestMappedTermMpId.put(hpId, mpId);
-                        }
-                    } else {
-                        bestMappedTermScore.put(hpId, score);
-                        bestMappedTermMpId.put(hpId, mpId);
-                    }
+//                    if (bestMappedTermScore.containsKey(hpId)) {
+//                        if (score > bestMappedTermScore.get(hpId)) {
+//                            bestMappedTermScore.put(hpId, score);
+//                            bestMappedTermMpId.put(hpId, mpId);
+//                        }
+//                    } else {
+//                        bestMappedTermScore.put(hpId, score);
+//                        bestMappedTermMpId.put(hpId, mpId);
+//                    }
                 }
                 if (found == 1) {
                     hpIdsWithPhenotypeMatch.add(hpId);
@@ -139,13 +150,48 @@ public class PhivePriority implements Prioritiser {
                 logger.error("Problem setting up SQL query: {}", mappingQuery, e);
             }
         }
-        calculateBestPhenotypeMatchScores(hpIdsWithPhenotypeMatch, bestMappedTermScore, bestMappedTermMpId, mappedTerms);
+
+//        calculateBestPhenotypeMatchScores(hpIdsWithPhenotypeMatch, bestMappedTermScore, bestMappedTermMpId, mappedTerms);
+
+        bestMaxScore = humanMousePhenotypeMatches.getBestMatchScore();
+        bestAvgScore = humanMousePhenotypeMatches.getBestAverageScore();
+
+        List<Model> mouseModels = priorityService.getModelsForOrganism(Organism.MOUSE);
+
+//        Map<Integer, Set<Model>> geneModelPhenotypeMatches = calculateGeneModelPhenotypeMatches(bestMaxScore, bestAvgScore, humanMousePhenotypeMatches, mouseModels);
+//        Map<Integer, Model> bestGeneModels = getBestGeneModelForGenes(geneModelPhenotypeMatches);
+
 
         for (Gene gene : genes) {
+//            GeneModel bestModelForGene = bestGeneModels.get(gene.getEntrezGeneID());
+//            if(bestModelForGene == null) {
+//                 new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null, null);
+//            }
+//            new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), bestModelForGene.getScore(), bestModelForGene.getModelGeneId(), bestModelForGene.getModelGeneSymbol());
+
             PhivePriorityResult phiveScore = prioritiseGene(gene, knownMps, hpIdsWithPhenotypeMatch, mappedTerms);
             gene.addPriorityResult(phiveScore);
         }
 //        messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", genes.size()));
+    }
+
+    //TODO: turn this into a CrossSpeciesPhenotypeMatcher? - THIS IS CURRENTLY COPIED FROM HIPHIVEPRIORITY
+    private OrganismPhenotypeMatches getMatchingPhenotypesForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
+        logger.info("Fetching HUMAN-{} phenotype matches...", organism);
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
+        for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
+            Set<PhenotypeMatch> termMatches = priorityService.getSpeciesMatchesForHpoTerm(hpoTerm, organism);
+            speciesPhenotypeMatches.put(hpoTerm, termMatches);
+        }
+        return new OrganismPhenotypeMatches(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
+    }
+
+    private void logOrganismPhenotypeMatches(OrganismPhenotypeMatches organismPhenotypeMatches) {
+        logger.info("Best {} phenotype matches:", organismPhenotypeMatches.getOrganism());
+        for (PhenotypeMatch bestMatch : organismPhenotypeMatches.getBestPhenotypeMatches()) {
+            logger.info("{}-{}={}", bestMatch.getQueryPhenotypeId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
+        }
+        logger.info("bestMaxScore={} bestAvgScore={}", organismPhenotypeMatches.getBestMatchScore(), organismPhenotypeMatches.getBestAverageScore(), organismPhenotypeMatches.getBestPhenotypeMatches().size());
     }
 
     private void calculateBestPhenotypeMatchScores(Set<String> hpIdsWithPhenotypeMatch, Map<String, Float> bestMappedTermScore, Map<String, String> bestMappedTermMpId, Map<String, Float> mappedTerms) {
@@ -153,7 +199,7 @@ public class PhivePriority implements Prioritiser {
         float sumBestScore = 0f;
 
         int bestHitCounter = 0;
-        // loop over each hp id should start herre
+        // loop over each hp id should start here
         for (String hpid : hpIdsWithPhenotypeMatch) {
             if (bestMappedTermScore.get(hpid) != null) {
                 float hpScore = bestMappedTermScore.get(hpid);
@@ -184,8 +230,8 @@ public class PhivePriority implements Prioritiser {
         bestAvgScore = sumBestScore / bestHitCounter;
     }
 
-    private PhivePriorityResult prioritiseGene(Gene gene, Set<String> knownMps, Set<String> hpIdsWithPhenotypeMatch, Map<String, Float> mappedTerms) {
-        float mgiScore = NO_PHENOTYPE_HIT_SCORE;
+    private PhivePriorityResult prioritiseGene(Gene gene, Set<String> knownMps, Set<String> hpIdsWithPhenotypeMatch, Map<String, Double> mappedTerms) {
+        double mgiScore = NO_PHENOTYPE_HIT_SCORE;
         String mgiGeneId = null;
         String mgiGeneSymbol = null;
         String genesymbol = gene.getGeneSymbol();
@@ -220,7 +266,7 @@ public class PhivePriority implements Prioritiser {
                 PreparedStatement findMouseAnnotationStatement = connection.prepareStatement(mouseAnnotationQuery);
                 findMouseAnnotationStatement.setString(1, genesymbol);
                 ResultSet rs = findMouseAnnotationStatement.executeQuery();
-                float bestCombinedScore = 0f;// keep track of best score for gene
+                double bestCombinedScore = 0f;// keep track of best score for gene
                 while (rs.next()) {
                     int mouseModelId = rs.getInt(1);
                     //System.out.println("Calculating score for mouse model id "+mouse_model_id+" gene "+genesymbol);
@@ -228,6 +274,7 @@ public class PhivePriority implements Prioritiser {
                     mgiGeneId = rs.getString(3);
                     mgiGeneSymbol = rs.getString(4);
                     String[] mpInitial = mpIds.split(",");
+                    //TODO: this should be the MP terms from the model matches
                     List<String> mpList = new ArrayList<>();
                     for (String mpId : mpInitial) {
                         if (knownMps.contains(mpId)) {
@@ -236,15 +283,15 @@ public class PhivePriority implements Prioritiser {
                     }
 
                     int rowColumnCount = hpIdsWithPhenotypeMatch.size() + mpList.size();
-                    float maxScore = 0f;
-                    float sumBestHitRowsColumnsScore = 0f;
+                    double maxScore = 0f;
+                    double sumBestHitRowsColumnsScore = 0f;
 
                     for (String hpId : hpIdsWithPhenotypeMatch) {
-                        float bestScore = 0f;
+                        double bestScore = 0f;
                         for (String mpId : mpList) {
                             String hashKey = hpId + mpId;
                             if (mappedTerms.containsKey(hashKey)) {
-                                float score = mappedTerms.get(hashKey);
+                                double score = mappedTerms.get(hashKey);
                                 // identify best match
                                 if (score > bestScore) {
                                     bestScore = score;
@@ -260,11 +307,11 @@ public class PhivePriority implements Prioritiser {
                     }
                     // Reciprocal hits
                     for (String mpId : mpList) {
-                        float bestScore = 0f;
+                        double bestScore = 0f;
                         for (String hpId : hpIdsWithPhenotypeMatch) {
                             String hashKey = hpId + mpId;
                             if (mappedTerms.containsKey(hashKey)) {
-                                float score = mappedTerms.get(hashKey);
+                                double score = mappedTerms.get(hashKey);
                                 // identify best match
                                 if (score > bestScore) {
                                     bestScore = score;
@@ -280,9 +327,8 @@ public class PhivePriority implements Prioritiser {
                     }
                     // calculate combined score
                     if (sumBestHitRowsColumnsScore != 0) {
-                        float avgBestHitRowsColumnsScore = sumBestHitRowsColumnsScore / rowColumnCount;
-                        float combinedScore = 50 * (maxScore / bestMaxScore
-                                + avgBestHitRowsColumnsScore / bestAvgScore);
+                        double avgBestHitRowsColumnsScore = sumBestHitRowsColumnsScore / rowColumnCount;
+                        double combinedScore = 50 * (maxScore / bestMaxScore + avgBestHitRowsColumnsScore / bestAvgScore);
                         if (combinedScore > 100) {
                             combinedScore = 100;
                         }
