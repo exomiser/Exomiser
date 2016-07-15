@@ -42,7 +42,7 @@ import static java.util.stream.Collectors.*;
  */
 public class OrganismPhenotypeMatches {
 
-    private static Logger logger = LoggerFactory.getLogger(OrganismPhenotypeMatches.class);
+    private static final Logger logger = LoggerFactory.getLogger(OrganismPhenotypeMatches.class);
 
     private final Organism organism;
     private final Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches;
