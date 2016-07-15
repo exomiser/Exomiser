@@ -32,7 +32,7 @@ import static java.util.stream.Collectors.toSet;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ModelScorer {
+public class TheoreticalModel {
 
     private final Organism organism;
     //These could be pulled out into a BestTheoreticalModel and then other Models can be compared to this.
@@ -40,7 +40,7 @@ public class ModelScorer {
     private final double theoreticalMaxMatchScore;
     private final double theoreticalBestAvgScore;
 
-    ModelScorer(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
+    TheoreticalModel(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
         this.organism = organism;
         this.bestPhenotypeMatches = makeBestPhenotypeMatches(termPhenotypeMatches);
         this.theoreticalMaxMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
@@ -64,15 +64,19 @@ public class ModelScorer {
                 .get();
     }
 
+    public Organism getOrganism() {
+        return organism;
+    }
+
     public Set<PhenotypeMatch> getBestPhenotypeMatches() {
         return bestPhenotypeMatches;
     }
 
-    public double getTheoreticalMaxMatchScore() {
+    public double getMaxMatchScore() {
         return theoreticalMaxMatchScore;
     }
 
-    public double getTheoreticalBestAvgScore() {
+    public double getBestAvgScore() {
         return theoreticalBestAvgScore;
     }
 
@@ -91,8 +95,8 @@ public class ModelScorer {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ModelScorer)) return false;
-        ModelScorer that = (ModelScorer) o;
+        if (!(o instanceof TheoreticalModel)) return false;
+        TheoreticalModel that = (TheoreticalModel) o;
         return Double.compare(that.theoreticalMaxMatchScore, theoreticalMaxMatchScore) == 0 &&
                 Double.compare(that.theoreticalBestAvgScore, theoreticalBestAvgScore) == 0 &&
                 organism == that.organism &&
@@ -106,11 +110,11 @@ public class ModelScorer {
 
     @Override
     public String toString() {
-        return "ModelScorer{" +
+        return "TheoreticalModel{" +
                 "organism=" + organism +
+                ", bestPhenotypeMatches=" + bestPhenotypeMatches +
                 ", bestMatchScore=" + theoreticalMaxMatchScore +
                 ", bestAverageScore=" + theoreticalBestAvgScore +
-                ", bestPhenotypeMatches=" + bestPhenotypeMatches +
                 '}';
     }
 }

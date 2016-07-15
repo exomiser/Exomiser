@@ -84,8 +84,10 @@ public class PhivePriorityTest {
 //      Scores from flatfile (these will have suffered slight rounding errors compared to the database)
         List<PhivePriorityResult> expected = Lists.newArrayList(
                 new PhivePriorityResult(2263, "FGFR2", 0.8278620340423056, "MGI:95523", "Fgfr2"),
-                new PhivePriorityResult(4920, "ROR2", 0.6999088391144016, "MGI:1347521", "Ror2"),
+                new PhivePriorityResult(4920, "ROR2", 0.6999088391144015, "MGI:1347521", "Ror2"),
                 new PhivePriorityResult(341640, "FREM2", 0.6208762175615226, "MGI:2444465", "Frem2"),
+//                new PhivePriorityResult(4920, "ROR2", 0.6999088391144016, "MGI:1347521", "Ror2"),
+//                new PhivePriorityResult(341640, "FREM2", 0.6208762175615224, "MGI:2444465", "Frem2"),
                 new PhivePriorityResult(148203, "ZNF738", 0.6000000238418579, null, null)
         );
         assertThat(results, equalTo(expected));

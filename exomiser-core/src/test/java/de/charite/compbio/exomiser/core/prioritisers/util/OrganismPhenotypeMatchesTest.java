@@ -19,6 +19,7 @@
 
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
@@ -72,10 +73,8 @@ public class OrganismPhenotypeMatchesTest {
         OrganismPhenotypeMatches instance = new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap());
 
         assertThat(instance.getOrganism(), equalTo(Organism.HUMAN));
-        assertThat(instance.getBestPhenotypeMatches(), equalTo(Collections.emptySet()));
         assertThat(instance.getQueryTerms(), equalTo(Collections.emptyList()));
         assertThat(instance.getTermPhenotypeMatches(), equalTo(Collections.emptyMap()));
-        assertThat(instance.getCompoundKeyIndexedPhenotypeMatches(), equalTo(Collections.emptyMap()));
     }
 
     @Test
@@ -94,42 +93,26 @@ public class OrganismPhenotypeMatchesTest {
     }
 
     @Test
-    public void testGetBestPhenotypeMatches() throws Exception {
-        assertThat(instance.getBestPhenotypeMatches(), equalTo(bestMatches));
+    public void testGetMatchedHpIds() throws Exception {
+        Set expected = Sets.newTreeSet(Arrays.asList("HP:0000001", "HP:0000005"));
+        assertThat(instance.getMatchedHpIds(), equalTo(expected));
     }
 
     @Test
-    public void testGetBestMatchScore() {
-        assertThat(instance.getBestMatchScore(), equalTo(4.0));
+    public void testGetBestForwardAndReciprocalMatches_returnsEmptyListFromEmptyQuery() throws Exception {
+        assertThat(instance.getBestForwardAndReciprocalMatches(Collections.emptyList()), equalTo(Collections.emptyList()));
     }
 
     @Test
-    public void testGetBestMatchScoreNoMatches() {
-        OrganismPhenotypeMatches noMatchesInstance = new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap());
-        assertThat(noMatchesInstance.getBestMatchScore(), equalTo(0.0));
+    public void testGetBestForwardAndReciprocalMatches() throws Exception {
+        List<String> modelPhenotypes = Lists.newArrayList(littleNose.getId(), longToe.getId());
+        List<PhenotypeMatch> expected = Lists.newArrayList(noseMatch, bestToeMatch, noseMatch, bestToeMatch);
+        expected.forEach(match -> System.out.printf("%s-%s=%f%n", match.getQueryPhenotypeId(), match.getMatchPhenotypeId(), match.getScore()));
+        assertThat(instance.getBestForwardAndReciprocalMatches(modelPhenotypes), equalTo(expected));
     }
 
     @Test
-    public void testGetBestAverageScore() {
-        double expected = (bestToeMatch.getScore() + perfectNoseMatch.getScore()) / 2.0;
-        assertThat(instance.getBestAverageScore(), equalTo(expected));
-    }
-
-    @Test
-    public void testGetBestAverageScoreNoMatches() {
-        OrganismPhenotypeMatches noMatchesInstance = new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap());
-        assertThat(noMatchesInstance.getBestAverageScore(), equalTo(0.0));
-    }
-
-
-    @Test
-    public void testGetCompoundKeyIndexedPhenotypeMatches() {
-        Map<String, PhenotypeMatch> expected = new HashMap<>();
-        expected.put("HP:0000001HP:0000001", perfectNoseMatch);
-        expected.put("HP:0000001HP:0000003", noseMatch);
-        expected.put("HP:0000005HP:0000007", bestToeMatch);
-        expected.put("HP:0000005HP:0000006", bigToeCrookedToeMatch);
-
-        assertThat(instance.getCompoundKeyIndexedPhenotypeMatches(), equalTo(expected));
+    public void testCanGetTheoreticalBestModel() {
+        assertThat(instance.getBestTheoreticalModel(), equalTo(new TheoreticalModel(Organism.HUMAN, instance.getTermPhenotypeMatches())));
     }
 }

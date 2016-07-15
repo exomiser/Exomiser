@@ -144,11 +144,12 @@ public class HiPhivePriorityTest {
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
         Map<String, List<Double>> geneScores = new LinkedHashMap<>();
         geneScores.put("FGFR2", Lists.newArrayList(0.8762904736638727, 0.8039423769154914, 0.0, 0.0, 0.0));
-        geneScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932035, 0.0, 0.0, 0.0));
+        geneScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
         geneScores.put("FREM2", Lists.newArrayList(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
         geneScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
 
         results.forEach(checkScores(geneScores));
+        //TODO: need to also check the
     }
 
     @Test
@@ -165,7 +166,7 @@ public class HiPhivePriorityTest {
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
         Map<String, List<Double>> geneScores = new LinkedHashMap<>();
         geneScores.put("FGFR2", Lists.newArrayList(0.0, 0.8039423769154914, 0.0, 0.0, 0.0));
-        geneScores.put("ROR2", Lists.newArrayList(0.0, 0.6796978490932035, 0.0, 0.0, 0.0));
+        geneScores.put("ROR2", Lists.newArrayList(0.0, 0.6796978490932033, 0.0, 0.0, 0.0));
         geneScores.put("FREM2", Lists.newArrayList(0.0, 0.6033446654591643, 0.0, 0.0, 0.0));
         geneScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
 
@@ -191,7 +192,7 @@ public class HiPhivePriorityTest {
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
         Map<String, List<Double>> geneScores = new LinkedHashMap<>();
         geneScores.put("FGFR2", Lists.newArrayList(0.0, 0.8039423769154914, 0.0, 0.0, 1.0));
-        geneScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932035, 0.0, 0.0, 0.0));
+        geneScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
         geneScores.put("FREM2", Lists.newArrayList(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
         geneScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
 

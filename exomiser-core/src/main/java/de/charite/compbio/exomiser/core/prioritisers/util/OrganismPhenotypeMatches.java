@@ -29,7 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
+import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
 
 
@@ -44,9 +46,13 @@ public class OrganismPhenotypeMatches {
 
     private final Organism organism;
     private final Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches;
-    private final Set<PhenotypeMatch> bestPhenotypeMatches;
-    private final double bestMatchScore;
-    private final double bestAverageScore;
+
+    private final TheoreticalModel bestTheoreticalModel;
+
+    private final Set<String> matchedOrganismPhenotypeIds;
+    private final Set<String> matchedQueryPhenotypeIds;
+    //make this private? It's not all that nice and only used here.
+    private final Map<String, PhenotypeMatch> mappedTerms;
 
     /**
      * @param organism             - The organism for which these PhenotypeMatches are associated.
@@ -55,27 +61,21 @@ public class OrganismPhenotypeMatches {
     public OrganismPhenotypeMatches(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
         this.organism = organism;
         this.termPhenotypeMatches = ImmutableMap.copyOf(termPhenotypeMatches);
-        this.bestPhenotypeMatches = makeBestPhenotypeMatches(termPhenotypeMatches);
-        this.bestMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
-        this.bestAverageScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).average().orElse(0d);
-    }
 
-    private Set<PhenotypeMatch> makeBestPhenotypeMatches(Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
-        return termPhenotypeMatches.values()
-                .stream()
-                .map(bestPhenotypeMatch())
-                .collect(collectingAndThen(toSet(), Collections::unmodifiableSet));
-    }
+        this.bestTheoreticalModel = new TheoreticalModel(this.organism, this.termPhenotypeMatches);
 
-    /**
-     * Finds the best PhenotypeMatch for that phenotype term. This is the one with the highest score.
-     */
-    private Function<Set<PhenotypeMatch>, PhenotypeMatch> bestPhenotypeMatch() {
-        return phenotypeMatches -> phenotypeMatches
-                .stream()
-                .sorted(Comparator.comparingDouble(PhenotypeMatch::getScore).reversed())
-                .findFirst()
-                .get();
+        this.matchedOrganismPhenotypeIds = termPhenotypeMatches
+                .values().stream()
+                .flatMap(set -> set.stream().map(PhenotypeMatch::getMatchPhenotypeId))
+                .collect(collectingAndThen(toCollection(TreeSet::new), Collections::unmodifiableSet));
+
+        this.matchedQueryPhenotypeIds = termPhenotypeMatches
+                .keySet().stream()
+                .map(PhenotypeTerm::getId)
+                .collect(collectingAndThen(toCollection(TreeSet::new), Collections::unmodifiableSet));
+        logger.info("hpIds with phenotype match={}", matchedQueryPhenotypeIds);
+
+        this.mappedTerms = getCompoundKeyIndexedPhenotypeMatches();
     }
 
     public Organism getOrganism() {
@@ -90,27 +90,54 @@ public class OrganismPhenotypeMatches {
         return termPhenotypeMatches;
     }
 
-    public Set<PhenotypeMatch> getBestPhenotypeMatches() {
-        return bestPhenotypeMatches;
-    }
-
-    public Map<String, PhenotypeMatch> getCompoundKeyIndexedPhenotypeMatches() {
+    private Map<String, PhenotypeMatch> getCompoundKeyIndexedPhenotypeMatches() {
         //'hpId + mpId' : phenotypeMatch
         return termPhenotypeMatches.values().stream()
                 .flatMap(Collection::stream)
                 .collect(collectingAndThen(
-                        toMap(
-                                phenotypeMatch -> phenotypeMatch.getQueryPhenotypeId() + phenotypeMatch.getMatchPhenotypeId(),
-                                Function.identity()),
+                        toMap(match -> String.join("", match.getQueryPhenotypeId() + match.getMatchPhenotypeId()), Function.identity()),
                         Collections::unmodifiableMap));
     }
 
-    public double getBestMatchScore() {
-        return bestMatchScore;
+    public Set<String> getMatchedHpIds() {
+        return matchedQueryPhenotypeIds;
     }
 
-    public double getBestAverageScore() {
-        return bestAverageScore;
+    public List<PhenotypeMatch> getBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
+        List<String> matchedModelPhenotypeIds = modelPhenotypes.stream()
+                .filter(matchedOrganismPhenotypeIds::contains)
+                .collect(toList());
+
+        //loop - 191, 206, 211, 293, 260, 221, 229, 247, 203, 204. (226 ms)
+        //stream - 1208, 773, 1231, 799, 655, 566, 467, 1037, 792, 722. (825 ms)
+        //This takes ~0.7 secs compared to ~0.2 secs using the original loop implementation, although it is now returning
+        //the values. Can it be made faster? Do we care?
+        List<PhenotypeMatch> forwardMatches = matchedQueryPhenotypeIds.stream()
+                .map(hp -> matchedModelPhenotypeIds.stream()
+                        .map(mp -> String.join("", hp, mp))
+                        .map(mappedTerms::get)
+                        .filter(match -> match != null)
+                        .max(comparingDouble(PhenotypeMatch::getScore)))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
+
+        //CAUTION!!! This looks very similar to the forward match statement but there are several important differences...
+        List<PhenotypeMatch> reciprocalMatches = matchedModelPhenotypeIds.stream()
+                .map(mp -> matchedQueryPhenotypeIds.stream()
+                        .map(hp -> String.join("", hp, mp))
+                        .map(mappedTerms::get)
+                        .filter(match -> match != null)
+                        .max(comparingDouble(PhenotypeMatch::getScore)))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
+
+        return Stream.concat(forwardMatches.stream(), reciprocalMatches.stream()).collect(collectingAndThen(toList(), ImmutableList::copyOf));
+    }
+
+    public TheoreticalModel getBestTheoreticalModel() {
+        return bestTheoreticalModel;
     }
 
     @Override
@@ -118,25 +145,21 @@ public class OrganismPhenotypeMatches {
         if (this == o) return true;
         if (!(o instanceof OrganismPhenotypeMatches)) return false;
         OrganismPhenotypeMatches that = (OrganismPhenotypeMatches) o;
-        return Double.compare(that.bestMatchScore, bestMatchScore) == 0 &&
-                Double.compare(that.bestAverageScore, bestAverageScore) == 0 &&
-                organism == that.organism &&
-                Objects.equals(termPhenotypeMatches, that.termPhenotypeMatches) &&
-                Objects.equals(bestPhenotypeMatches, that.bestPhenotypeMatches);
+        return organism == that.organism &&
+                Objects.equals(termPhenotypeMatches, that.termPhenotypeMatches);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(organism, termPhenotypeMatches, bestPhenotypeMatches, bestMatchScore, bestAverageScore);
+        return Objects.hash(organism, termPhenotypeMatches);
     }
+
 
     @Override
     public String toString() {
         return "OrganismPhenotypeMatches{" +
                 "organism=" + organism +
-                ", bestMatchScore=" + bestMatchScore +
-                ", bestAverageScore=" + bestAverageScore +
-                ", bestPhenotypeMatches=" + bestPhenotypeMatches +
+                ", termPhenotypeMatches=" + termPhenotypeMatches +
                 '}';
     }
 }
