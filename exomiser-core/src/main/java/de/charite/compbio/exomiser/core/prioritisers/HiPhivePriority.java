@@ -233,7 +233,10 @@ public class HiPhivePriority implements Prioritiser {
         Duration duration = Duration.between(timeStart, Instant.now());
         logger.info("Done scoring {} models - {} ms", organism, duration.toMillis());
 
-        Map<Integer, Set<Model>> geneModelPhenotypeMatches = organismModels.parallelStream().collect(groupingBy(Model::getEntrezGeneId, toSet()));
+        Map<Integer, Set<Model>> geneModelPhenotypeMatches = organismModels.parallelStream()
+                .filter(model -> model.getScore() > 0)
+                .collect(groupingBy(Model::getEntrezGeneId, toSet()));
+
         return getBestGeneModelForGenes(geneModelPhenotypeMatches);
     }
 
