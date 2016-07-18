@@ -153,7 +153,6 @@ public class PhivePriority implements Prioritiser {
         return models;
     }
 
-
     //n.b. this is *almost* identical to HiPhivePriority.calculateModelBestAvgScore(), apart from the comment
     private double calculateModelBestAvgScore(int numMatchedQueryPhenotypes, List<PhenotypeMatch> bestForwardAndBackwardMatches) {
         double sumBestForwardAndBackwardMatchScores = bestForwardAndBackwardMatches.stream().mapToDouble(PhenotypeMatch::getScore).sum();
