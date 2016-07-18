@@ -51,7 +51,7 @@ public class OrganismPhenotypeMatches {
 
     private final Set<String> matchedOrganismPhenotypeIds;
     private final Set<String> matchedQueryPhenotypeIds;
-    //make this private? It's not all that nice and only used here.
+
     private final Map<String, PhenotypeMatch> mappedTerms;
 
     /**
@@ -73,7 +73,6 @@ public class OrganismPhenotypeMatches {
                 .keySet().stream()
                 .map(PhenotypeTerm::getId)
                 .collect(collectingAndThen(toCollection(TreeSet::new), Collections::unmodifiableSet));
-        logger.info("hpIds with phenotype match={}", matchedQueryPhenotypeIds);
 
         this.mappedTerms = getCompoundKeyIndexedPhenotypeMatches();
     }
@@ -103,6 +102,12 @@ public class OrganismPhenotypeMatches {
         return matchedQueryPhenotypeIds;
     }
 
+    /**
+     * Calculates the best forward and reverse matches for a given set of model phenotypes against the sub-graph of matches
+     * for the query phenotypes against this organism. The best forward and reverse matches are not necessarily the same.
+     * @param modelPhenotypes
+     * @return
+     */
     public List<PhenotypeMatch> getBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
         List<String> matchedModelPhenotypeIds = modelPhenotypes.stream()
                 .filter(matchedOrganismPhenotypeIds::contains)
