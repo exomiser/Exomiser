@@ -19,7 +19,6 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.util.OrganismPhenotypeMatches;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
@@ -29,11 +28,15 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.groupingByConcurrent;
+import static java.util.stream.Collectors.maxBy;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified
@@ -64,22 +67,6 @@ public class PhivePriority implements Prioritiser {
     public PhivePriority(List<String> hpoIds, PriorityService priorityService) {
         this.hpoIds = hpoIds;
         this.priorityService = priorityService;
-        //This can be moved into a report section - FilterReport should probably turn into an AnalysisStepReport
-        //Then can remove getMessages from the interface. 
-//        messages.add(String.format("<a href = \"http://www.sanger.ac.uk/resources/databases/phenodigm\">Mouse PhenoDigm Filter</a>"));
-//        if (disease != null) {
-//            String url = String.format("http://omim.org/%s", disease);
-//            if (disease.contains("ORPHANET")) {
-//                String diseaseId = disease.split(":")[1];
-//                url = String.format("http://www.orpha.net/consor/cgi-bin/OC_Exp.php?lng=en&Expert=%s", diseaseId);
-//            }
-//            String anchor = String.format("Mouse phenotypes for candidate genes were compared to <a href=\"%s\">%s</a>\n", url, disease);
-//            this.messages.add(String.format("Mouse PhenoDigm Filter for OMIM"));
-//            messages.add(anchor);
-//        } else {
-//            String anchor = String.format("Mouse phenotypes for candidate genes were compared to user-supplied clinical phenotypes");
-//            messages.add(anchor);
-//        }
     }
 
     /**
@@ -95,39 +82,28 @@ public class PhivePriority implements Prioritiser {
         logger.info("Starting {}", PRIORITY_TYPE);
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
-        OrganismPhenotypeMatches humanMousePhenotypeMatches = getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
+        OrganismPhenotypeMatches humanMousePhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
         TheoreticalModel bestTheoreticalModel = humanMousePhenotypeMatches.getBestTheoreticalModel();
         logTheoreticalModel(bestTheoreticalModel);
         
         List<Model> scoredModels = getAndScoreModels(bestTheoreticalModel, humanMousePhenotypeMatches);
 
-        Map<Integer, List<Model>> geneMouseModels = scoredModels.parallelStream()
-                .sorted(comparingDouble(Model::getScore).reversed())
-                .collect(groupingBy(Model::getEntrezGeneId));
+        //n.b. this will contain models but with a phenotype score of zero
+        Map<Integer, Optional<Model>> geneModelPhenotypeMatches = scoredModels.parallelStream()
+//                .filter(model -> model.getScore() > 0)
+                .collect(groupingByConcurrent(Model::getEntrezGeneId, maxBy(comparingDouble(Model::getScore))));
 
         for (Gene gene : genes) {
-            List<Model> geneModels = geneMouseModels.getOrDefault(gene.getEntrezGeneID(), Collections.emptyList());
-            PhivePriorityResult phiveScore = geneModels.stream()
-                    .findFirst()
+
+            PhivePriorityResult phiveScore = geneModelPhenotypeMatches.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
                     .map(makeModelPhivePriorityResult())
-                    //TODO: should this *really* be set to 0.6? The rankings are quite different to hiPhive because of this - HiPhive uses 0 if there are no models.
+                    //should this *really* be set to 0.6? The rankings are quite different to hiPhive because of this - HiPhive uses 0 if there are no models.
+                    //n.b. this ranks genes with no model higher than those with a model with a score of zero.
                     .orElse(new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null, null));
 
             gene.addPriorityResult(phiveScore);
         }
-//        messages.add(String.format("Data analysed for %d genes using Mouse PhenoDigm", genes.size()));
         logger.info("Finished {}", PRIORITY_TYPE);
-    }
-
-    //TODO: turn this into a CrossSpeciesPhenotypeMatcher? - THIS IS CURRENTLY COPIED FROM HIPHIVEPRIORITY
-    private OrganismPhenotypeMatches getMatchingPhenotypesForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
-        logger.info("Fetching HUMAN-{} phenotype matches...", organism);
-        Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
-        for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
-            Set<PhenotypeMatch> termMatches = priorityService.getSpeciesMatchesForHpoTerm(hpoTerm, organism);
-            speciesPhenotypeMatches.put(hpoTerm, termMatches);
-        }
-        return new OrganismPhenotypeMatches(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
     }
 
     private void logTheoreticalModel(TheoreticalModel theoreticalModel) {
@@ -147,7 +123,7 @@ public class PhivePriority implements Prioritiser {
 
     private List<Model> getAndScoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches) {
         Organism organism = organismPhenotypeMatches.getOrganism();
-        List<Model> mouseModels = priorityService.getModelsForOrganism(organism);
+        List<Model> models = priorityService.getModelsForOrganism(organism);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();
@@ -156,7 +132,7 @@ public class PhivePriority implements Prioritiser {
                 .map(PhenotypeMatch::getQueryPhenotypeId)
                 .count();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
-        mouseModels.parallelStream().forEach(model -> {
+        models.parallelStream().forEach(model -> {
             List<PhenotypeMatch> bestForwardAndBackwardMatches = organismPhenotypeMatches.getBestForwardAndReciprocalMatches(model.getPhenotypeIds());
 
             //Remember the model needs to collect its best matches from the forward and backward best matches otherwise the modelMaxMatchScore will be zero.
@@ -173,10 +149,12 @@ public class PhivePriority implements Prioritiser {
         });
 
         Duration duration = Duration.between(timeStart, Instant.now());
-        logger.info("Done scoring models - {} ms", duration.toMillis());
-        return mouseModels;
+        logger.info("Scored {} {} models - {} ms", models.size(), organism, duration.toMillis());
+        return models;
     }
 
+
+    //n.b. this is *almost* identical to HiPhivePriority.calculateModelBestAvgScore(), apart from the comment
     private double calculateModelBestAvgScore(int numMatchedQueryPhenotypes, List<PhenotypeMatch> bestForwardAndBackwardMatches) {
         double sumBestForwardAndBackwardMatchScores = bestForwardAndBackwardMatches.stream().mapToDouble(PhenotypeMatch::getScore).sum();
         long numMatchedModelPhenotypes = (int) bestForwardAndBackwardMatches.stream().map(PhenotypeMatch::getMatchPhenotypeId).distinct().count();

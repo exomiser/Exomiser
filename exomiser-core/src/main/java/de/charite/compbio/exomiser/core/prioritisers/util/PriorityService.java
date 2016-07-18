@@ -24,6 +24,7 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.Organism;
@@ -34,9 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
@@ -83,6 +82,16 @@ public class PriorityService {
 
     public List<String> getHpoIdsForDiseaseId(String diseaseId) {
         return ontologyService.getHpoIdsForDiseaseId(diseaseId);
+    }
+
+    public OrganismPhenotypeMatches getMatchingPhenotypesForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
+        logger.info("Fetching HUMAN-{} phenotype matches...", organism);
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
+        for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
+            Set<PhenotypeMatch> termMatches = getSpeciesMatchesForHpoTerm(hpoTerm, organism);
+            speciesPhenotypeMatches.put(hpoTerm, termMatches);
+        }
+        return new OrganismPhenotypeMatches(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
     }
 
     public Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {
