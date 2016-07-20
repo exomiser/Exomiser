@@ -118,6 +118,7 @@ public class OMIMPriority implements Prioritiser {
                     char typ = rs.getString(4).charAt(0);
                     char inheritance = rs.getString(5).charAt(0);
                     float factor = getInheritanceFactor(gene, inheritance);
+                    logger.info("{}, {}, {}, {}, {}, {}", diseaseId, omimGeneId, diseaseName, typ, inheritance, factor);
          //TODO!!! Return a list of DTOs
 //                    priorityResult.addRow(diseaseId, omimGeneId, diseaseName, typ, inheritance, factor);
 
