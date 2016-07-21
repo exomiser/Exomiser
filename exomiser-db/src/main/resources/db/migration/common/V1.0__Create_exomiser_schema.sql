@@ -227,7 +227,7 @@ CREATE TABLE disease (
     diseasename character varying(2056),
     gene_id integer NOT NULL,
     type character(1),
-    inheritance CHAR
+    inheritance character(2)
 );
 
 
