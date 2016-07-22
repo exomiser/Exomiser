@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -11,45 +30,43 @@ package de.charite.compbio.exomiser.core.model;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum InheritanceMode {
-    
-    RECESSIVE("HP:0000007", "R"),
-    DOMINANT("HP:0000006", "D"),
-    //HP:0000005 is the root inheritance term - 'Mode of inheritance'. So not 
-    //really unknown, but vague enough. 
-    UNKNOWN("HP:0000005", "U"),
-    X_LINKED("HP:0001417", "X"),
-    X_RECESSIVE("HP:0001419", "X"),
-    X_DOMINANT("HP:0001423", "X"),
-    DOMINANT_AND_RECESSIVE("-", "B"),
-//    MULTIFACTORIAL("HP:0001426"),
-//    SPORADIC("HP:0003745"),
-    SOMATIC("HP:0001428", "S"),
-    MITOCHONDRIAL("HP:0001427", "M"),
-    POLYGENIC("HP:0010982", "P"),
-    Y_LINKED("HP:0001450", "Y");
-    
-    
+    //n.b. This is tightly coupled to parsing the input files and inserting disease data into the database, so don't change the inheritanceCodes
+    UNKNOWN("unknown", "U"),
+
+    RECESSIVE("autosomal recessive", "R"),
+    DOMINANT("autosomal dominant", "D"),
+    DOMINANT_AND_RECESSIVE("autosomal dominant/recessive", "B"),
+
+    X_LINKED("X-linked", "X"),
+    X_RECESSIVE("X-linked recessive", "XR"),
+    X_DOMINANT("X-linked dominant", "XD"),
+
+    Y_LINKED("Y-linked", "Y"),
+
+    SOMATIC("somatic", "S"),
+    MITOCHONDRIAL("mitochondrial", "M"),
+    POLYGENIC("polygenic", "P");
+
     private final String hpoTerm;
     //short form letter code for the inheritance mode
     private final String inheritanceCode;
     
-    private InheritanceMode(String hpoTerm, String inheritanceCode) {
+    InheritanceMode(String hpoTerm, String inheritanceCode) {
         this.hpoTerm = hpoTerm;
         this.inheritanceCode = inheritanceCode;
     }
         
-    public String getHpoTerm() {
+    public String getTerm() {
         return hpoTerm;
     }
-    
+
     public String getInheritanceCode() {
         return inheritanceCode;
     }
     
     /**
      * Returns the InheritanceMode for a given inheritanceCode. Will return UNKNOWN
-     * as a default. This is currently lossy as X could refer to either X-linked
-     * dominant, recessive or uncharacterised.
+     * as a default.
      * @param inheritanceCode
      * @return 
      */

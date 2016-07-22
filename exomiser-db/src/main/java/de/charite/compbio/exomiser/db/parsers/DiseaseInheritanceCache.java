@@ -1,8 +1,30 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.db.parsers;
 
 import de.charite.compbio.exomiser.core.model.InheritanceMode;
 import de.charite.compbio.exomiser.db.resources.Resource;
 import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,8 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class has some common functionality for the OMIM and Orphanet parser
@@ -29,13 +49,32 @@ public class DiseaseInheritanceCache implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DiseaseInheritanceCache.class);
 
+    private final Map<String, InheritanceMode> hpoInheritanceCodes;
+
     /**
      * Key: OMIM id (or Orphanet ID) for a disease, Value: InheritanceMode
      */
     private Map<Integer, InheritanceMode> diseaseInheritanceModeMap;
 
     public DiseaseInheritanceCache() {
-        
+        hpoInheritanceCodes = setUpHpoInheritanceCodes();
+    }
+
+    private Map<String,InheritanceMode> setUpHpoInheritanceCodes() {
+        Map map = new HashMap<>();
+        //HP:0000005 is the root inheritance term - 'Mode of inheritance'. So not
+        //really unknown, but vague enough.
+        map.put("HP:0000005", InheritanceMode.UNKNOWN);
+        map.put("HP:0000007", InheritanceMode.RECESSIVE);
+        map.put("HP:0000006", InheritanceMode.DOMINANT);
+        map.put("HP:0001417", InheritanceMode.X_LINKED);
+        map.put("HP:0001419", InheritanceMode.X_RECESSIVE);
+        map.put("HP:0001423", InheritanceMode.X_DOMINANT);
+        map.put("HP:0001450", InheritanceMode.Y_LINKED);
+        map.put("HP:0001428", InheritanceMode.SOMATIC);
+        map.put("HP:0001427", InheritanceMode.MITOCHONDRIAL);
+        map.put("HP:0010982", InheritanceMode.POLYGENIC);
+        return map;
     }
 
     @Override
@@ -128,7 +167,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
                 //get the hpo term
                 String hpoTerm = fields[4];
                 //only add the known inheritance mode
-                InheritanceMode currentInheritance = InheritanceMode.valueOfHpoTerm(hpoTerm);
+                InheritanceMode currentInheritance = hpoInheritanceCodes.getOrDefault(hpoTerm, InheritanceMode.UNKNOWN); //InheritanceMode.valueOfHpoTerm(hpoTerm);
                 if (currentInheritance != InheritanceMode.UNKNOWN) {
                     inheritanceModes.add(currentInheritance);
                 }
