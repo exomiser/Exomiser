@@ -51,17 +51,18 @@ public class TheoreticalModel {
         return termPhenotypeMatches.values()
                 .stream()
                 .map(bestPhenotypeMatch())
+                .filter(match -> match != null)
                 .collect(collectingAndThen(toSet(), Collections::unmodifiableSet));
     }
 
     /**
-     * Finds the best PhenotypeMatch for that phenotype term. This is the one with the highest score.
+     * Finds the best PhenotypeMatch for that phenotype term. This is the one with the highest score. OR returns a null
      */
     private Function<Set<PhenotypeMatch>, PhenotypeMatch> bestPhenotypeMatch() {
         return phenotypeMatches -> phenotypeMatches.stream()
                 .sorted(Comparator.comparingDouble(PhenotypeMatch::getScore).reversed())
                 .findFirst()
-                .get();
+                .orElse(null);
     }
 
     public Organism getOrganism() {

@@ -41,6 +41,9 @@ public class TheoreticalModelTest {
 
     private TheoreticalModel instance;
 
+    //No phenotype match
+    private final PhenotypeTerm noMatchTerm = new PhenotypeTerm("HP:0000000", "No match phenotype", 0.0);
+
     //Nose phenotypes
     private final PhenotypeTerm bigNose = new PhenotypeTerm("HP:0000001", "Big nose", 2.0);
     private final PhenotypeTerm nose = new PhenotypeTerm("HP:0000002", "Nose", 1.0);
@@ -67,6 +70,37 @@ public class TheoreticalModelTest {
         phenotypeMatches.put(bigToe, Sets.newHashSet(bestToeMatch, bigToeCrookedToeMatch));
 
         instance = new TheoreticalModel(Organism.HUMAN, phenotypeMatches);
+    }
+
+    @Test
+    public void testWithNoPhenotypeMatch() {
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> noPhenotypeMatches = new LinkedHashMap<>();
+        noPhenotypeMatches.put(noMatchTerm, Collections.emptySet());
+        TheoreticalModel noMatchModel = new TheoreticalModel(Organism.HUMAN, noPhenotypeMatches);
+
+        assertThat(noMatchModel.getBestPhenotypeMatches(), equalTo(Collections.emptySet()));
+        assertThat(noMatchModel.getOrganism(), equalTo(Organism.HUMAN));
+        assertThat(noMatchModel.getBestAvgScore(), equalTo(0.0));
+        assertThat(noMatchModel.getMaxMatchScore(), equalTo(0.0));
+
+        assertThat(noMatchModel.compare(4.0, 3.0), equalTo(1d));
+        assertThat(noMatchModel.compare(0.0, 3.0), equalTo(0d));
+
+    }
+
+    @Test
+    public void testWithSomeEmptyPhenotypeMatches() {
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> phenotypeMatches = new LinkedHashMap<>();
+        phenotypeMatches.put(bigNose, Sets.newHashSet(perfectNoseMatch, noseMatch));
+        phenotypeMatches.put(noMatchTerm, Collections.emptySet());
+        TheoreticalModel matchModel = new TheoreticalModel(Organism.HUMAN, phenotypeMatches);
+
+        assertThat(matchModel.getBestPhenotypeMatches(), equalTo(Sets.newHashSet(perfectNoseMatch)));
+        assertThat(matchModel.getOrganism(), equalTo(Organism.HUMAN));
+        assertThat(matchModel.getBestAvgScore(), equalTo(4d));
+        assertThat(matchModel.getMaxMatchScore(), equalTo(4d));
+
+        assertThat(matchModel.compare(4d, 4d), equalTo(1d));
     }
 
     @Test

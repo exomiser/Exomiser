@@ -147,7 +147,9 @@ public class HiPhivePriority implements Prioritiser {
         //CAUTION!! this must always run in order that the best score is set - HUMAN runs first as we are comparing HP to other phenotype ontology terms.
         OrganismPhenotypeMatches referenceOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, referenceOrganism);
         TheoreticalModel bestTheoreticalModel = referenceOrganismPhenotypeMatches.getBestTheoreticalModel();
-
+        if (bestTheoreticalModel.getBestPhenotypeMatches().isEmpty()) {
+            logger.warn("{} has no phenotype matches for input set {}", bestTheoreticalModel, hpoPhenotypeTerms);
+        }
         List<OrganismPhenotypeMatches> bestOrganismPhenotypeMatches = getBestOrganismPhenotypeMatches(hpoPhenotypeTerms, referenceOrganismPhenotypeMatches, organismsToCompare);
 
         ListMultimap<Integer, Model> bestGeneModels = ArrayListMultimap.create();
