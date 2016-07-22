@@ -136,41 +136,22 @@ public class GeneModel implements Model {
     }
 
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 79 * hash + this.entrezGeneId;
-        hash = 79 * hash + Objects.hashCode(this.organism);
-        hash = 79 * hash + Objects.hashCode(this.humanGeneSymbol);
-        hash = 79 * hash + Objects.hashCode(this.modelId);
-        hash = 79 * hash + Objects.hashCode(this.phenotypeIds);
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GeneModel)) return false;
+        GeneModel geneModel = (GeneModel) o;
+        return entrezGeneId == geneModel.entrezGeneId &&
+                Objects.equals(modelId, geneModel.modelId) &&
+                organism == geneModel.organism &&
+                Objects.equals(humanGeneSymbol, geneModel.humanGeneSymbol) &&
+                Objects.equals(modelGeneId, geneModel.modelGeneId) &&
+                Objects.equals(modelGeneSymbol, geneModel.modelGeneSymbol) &&
+                Objects.equals(phenotypeIds, geneModel.phenotypeIds);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final GeneModel other = (GeneModel) obj;
-        if (this.organism != other.organism) {
-            return false;
-        }
-        if (this.entrezGeneId != other.entrezGeneId) {
-            return false;
-        }
-        if (!Objects.equals(this.humanGeneSymbol, other.humanGeneSymbol)) {
-            return false;
-        }
-        if (!Objects.equals(this.modelId, other.modelId)) {
-            return false;
-        }
-        if (!Objects.equals(this.phenotypeIds, other.phenotypeIds)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        return Objects.hash(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, phenotypeIds);
     }
 
     @Override
