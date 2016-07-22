@@ -27,7 +27,6 @@ package de.charite.compbio.exomiser.core.writers;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
@@ -43,7 +42,6 @@ import java.nio.file.Paths;
 import java.util.Locale;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class TsvGeneResultsWriter implements ResultsWriter {
@@ -78,7 +76,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     public String writeString(Analysis analysis, OutputSettings settings) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(HEADER_LINE);
-        
+
         SampleData sampleData = analysis.getSampleData();
         for (Gene gene : sampleData.getGenes()) {
             if (gene.passedFilters()) {
@@ -105,7 +103,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
         String phenoEvidence = "";
         //flag to indicate if the gene matches the candidate gene specified by the user
         int matchesCandidateGene = 0;
-        
+
         // priority score calculation
         for (PriorityResult prioritiserResult : gene.getPriorityResults().values()) {
             PriorityType type = prioritiserResult.getPriorityType();
@@ -123,7 +121,6 @@ public class TsvGeneResultsWriter implements ResultsWriter {
             } else if (type == PriorityType.OMIM_PRIORITY) {
                 omimScore = prioritiserResult.getScore();
             } else if (type == PriorityType.EXOMEWALKER_PRIORITY) {
-                ExomeWalkerPriorityResult wandererScore = (ExomeWalkerPriorityResult) prioritiserResult;
                 walkerScore = prioritiserResult.getScore();
             }
         }
