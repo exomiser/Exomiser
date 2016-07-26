@@ -71,15 +71,6 @@ public class VariantFactory {
     //requirement of a variant having an integer chromosome
     private final int UNKNOWN_CHROMOSOME = 0;
 
-    /**
-     * @param variantAnnotator
-     * @deprecated Use alternative constructor requiring JannovarData
-     */
-    @Deprecated
-    public VariantFactory(VariantAnnotator variantAnnotator) {
-        this.variantAnnotator = variantAnnotator.getVariantContextAnnotator();
-    }
-
     @Autowired
     public VariantFactory(JannovarData jannovarData) {
         this.variantAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());

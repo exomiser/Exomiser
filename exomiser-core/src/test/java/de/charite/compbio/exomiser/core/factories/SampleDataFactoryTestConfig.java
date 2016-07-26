@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -25,7 +25,6 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -47,15 +46,8 @@ public class SampleDataFactoryTestConfig {
     }
 
     @Bean
-    public VariantAnnotator variantAnnotator() {
-        JannovarData jannovarData = jannovarData();
-        VariantContextAnnotator variantContextAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
-        return new VariantAnnotator(variantContextAnnotator);
-    }
-
-    @Bean
     public VariantFactory variantFactory() {
-        return new VariantFactory(variantAnnotator());
+        return new VariantFactory(jannovarData());
     }
 
 }
