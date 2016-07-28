@@ -1,25 +1,35 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.writers.phenogrid;
 
-import de.charite.compbio.exomiser.core.model.DiseaseModel;
-import de.charite.compbio.exomiser.core.model.GeneModel;
-import de.charite.compbio.exomiser.core.model.Model;
-import de.charite.compbio.exomiser.core.model.Organism;
-import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
-import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
+import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriorityResult;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * Makes a Phenogrid from a set of HiPhivePriorityResults
@@ -29,9 +39,9 @@ public class PhenoGridAdaptor {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenoGridAdaptor.class);
     
-    protected static final PhenoGridMatchTaxon HUMAN_TAXON = new PhenoGridMatchTaxon("NCBITaxon:9606", Organism.HUMAN.getSpeciesName());
-    protected static final PhenoGridMatchTaxon MOUSE_TAXON = new PhenoGridMatchTaxon("NCBITaxon:10090", Organism.MOUSE.getSpeciesName());
-    protected static final PhenoGridMatchTaxon FISH_TAXON = new PhenoGridMatchTaxon("NCBITaxon:7955", Organism.FISH.getSpeciesName());
+    protected static final PhenoGridMatchTaxon HUMAN_TAXON = new PhenoGridMatchTaxon("NCBITaxon:9606", "Homo sapiens");
+    protected static final PhenoGridMatchTaxon MOUSE_TAXON = new PhenoGridMatchTaxon("NCBITaxon:10090", "Mus musculus");
+    protected static final PhenoGridMatchTaxon FISH_TAXON = new PhenoGridMatchTaxon("NCBITaxon:7955", "Danio rerio");
 
     public PhenoGrid makePhenoGridFromHiPhiveResults(String phenoGridId, List<HiPhivePriorityResult> hiPhiveResults) {
         Set<String> phenotypeIds = new LinkedHashSet<>();
