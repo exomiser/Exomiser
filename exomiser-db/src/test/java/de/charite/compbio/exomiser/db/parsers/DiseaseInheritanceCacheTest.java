@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,16 +25,14 @@
 
 package de.charite.compbio.exomiser.db.parsers;
 
-import de.charite.compbio.exomiser.db.parsers.DiseaseInheritanceCache;
 import de.charite.compbio.exomiser.core.model.InheritanceMode;
+import de.charite.compbio.exomiser.db.parsers.DiseaseInheritanceCache;
 import de.charite.compbio.exomiser.db.resources.Resource;
+import org.junit.*;
+
 import java.nio.file.Paths;
-import org.junit.After;
-import org.junit.AfterClass;
+
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Tests for Class DiseaseInheritanceCache.
@@ -65,7 +82,7 @@ public class DiseaseInheritanceCacheTest {
     @Test
     public void testGetInheritanceCodeBoth() {
         Integer phenID = 100300;
-        InheritanceMode expResult = InheritanceMode.DOMINANT_AND_RECESSIVE;
+        InheritanceMode expResult = InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
         InheritanceMode result = instance.getInheritanceMode(phenID);
         assertEquals(expResult, result);
     }
@@ -76,7 +93,7 @@ public class DiseaseInheritanceCacheTest {
     @Test
     public void testGetInheritanceCodeRecessive() {
         Integer phenID = 100100;
-        InheritanceMode expResult = InheritanceMode.RECESSIVE;
+        InheritanceMode expResult = InheritanceMode.AUTOSOMAL_RECESSIVE;
         InheritanceMode result = instance.getInheritanceMode(phenID);
         assertEquals(expResult, result);
     }
@@ -87,7 +104,7 @@ public class DiseaseInheritanceCacheTest {
     @Test
     public void testGetInheritanceCodeDominant() {
         Integer phenID = 100200;
-        InheritanceMode expResult = InheritanceMode.DOMINANT;
+        InheritanceMode expResult = InheritanceMode.AUTOSOMAL_DOMINANT;
         InheritanceMode result = instance.getInheritanceMode(phenID);
         assertEquals(expResult, result);
     }  
