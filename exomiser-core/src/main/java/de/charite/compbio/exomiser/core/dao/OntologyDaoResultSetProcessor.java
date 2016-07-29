@@ -49,7 +49,7 @@ public class OntologyDaoResultSetProcessor {
             String id = rs.getString("id");
             String term = rs.getString("term");
             id = id.trim();
-            PhenotypeTerm phenotypeTerm = new PhenotypeTerm(id, term, 0.0d);
+            PhenotypeTerm phenotypeTerm = PhenotypeTerm.of(id, term);
             termsCache.add(phenotypeTerm);
         }
         return termsCache.build();
@@ -61,7 +61,7 @@ public class OntologyDaoResultSetProcessor {
             //simj, ic, score, hp_id_hit AS hit_id, hp_hit_term AS hit_term, lcs_id, lcs_term 
             String matchId = rs.getString("hit_id");
             String matchTerm = rs.getString("hit_term");
-            PhenotypeTerm matchPhenotype = new PhenotypeTerm(matchId, matchTerm, 0.0d);
+            PhenotypeTerm matchPhenotype = PhenotypeTerm.of(matchId, matchTerm);
             
             double lcsIc = rs.getDouble("ic");
             String lcsId = rs.getString("lcs_id");

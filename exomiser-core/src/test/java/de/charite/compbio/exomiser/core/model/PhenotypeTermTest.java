@@ -1,17 +1,34 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.model;
 
-import org.hamcrest.CoreMatchers;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -22,16 +39,16 @@ public class PhenotypeTermTest {
     private PhenotypeTerm instance;
     
     private String id;
-    private String term;
+    private String label;
     private double ic;
     
     @Before
     public void setUp() {
         id = "ID:12344";
-        term = "big nose";
+        label = "big nose";
         ic = 2.00d;
         
-        instance = new PhenotypeTerm(id, term, ic);
+        instance = new PhenotypeTerm(id, label, ic);
     }
 
     @Test
@@ -41,7 +58,7 @@ public class PhenotypeTermTest {
 
     @Test
     public void testGetTerm() {
-        assertThat(instance.getTerm(), equalTo(term));
+        assertThat(instance.getLabel(), equalTo(label));
     }
 
     @Test
@@ -61,13 +78,13 @@ public class PhenotypeTermTest {
 
     @Test
     public void testEqualsOther() {
-        PhenotypeTerm other = new PhenotypeTerm(id, term, ic);
+        PhenotypeTerm other = new PhenotypeTerm(id, label, ic);
         assertThat(instance, equalTo(other));
     }
     
     @Test
     public void testNotEqualsOther() {
-        PhenotypeTerm other = new PhenotypeTerm("wibble", term, ic);
+        PhenotypeTerm other = PhenotypeTerm.of("other", label);
         assertThat(instance, not(equalTo(other)));
     }
     
@@ -75,5 +92,20 @@ public class PhenotypeTermTest {
     public void testToString() {
         assertThat(instance.toString().isEmpty(), is(false));
     }
-    
+
+    @Test
+    public void testOf() {
+        assertThat(PhenotypeTerm.of("id", "label"), equalTo(PhenotypeTerm.of("id", "label")));
+        assertThat(PhenotypeTerm.of("id", "label").isPresent(), is(true));
+        assertThat(PhenotypeTerm.of("id", "label").notPresent(), is(false));
+        assertThat(PhenotypeTerm.of("otherId", "otherLabel"), not(equalTo(PhenotypeTerm.of("id", "label"))));
+    }
+
+    @Test
+    public void testNotOf() {
+        assertThat(PhenotypeTerm.notOf("id", "label"), equalTo(PhenotypeTerm.notOf("id", "label")));
+        assertThat(PhenotypeTerm.notOf("id", "label"), not(equalTo(PhenotypeTerm.of("id", "label"))));
+        assertThat(PhenotypeTerm.notOf("id", "label").isPresent(), is(false));
+        assertThat(PhenotypeTerm.notOf("id", "label").notPresent(), is(true));
+    }
 }
