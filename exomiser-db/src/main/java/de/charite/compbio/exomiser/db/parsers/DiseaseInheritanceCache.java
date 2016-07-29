@@ -65,8 +65,8 @@ public class DiseaseInheritanceCache implements ResourceParser {
         //HP:0000005 is the root inheritance term - 'Mode of inheritance'. So not
         //really unknown, but vague enough.
         map.put("HP:0000005", InheritanceMode.UNKNOWN);
-        map.put("HP:0000007", InheritanceMode.RECESSIVE);
-        map.put("HP:0000006", InheritanceMode.DOMINANT);
+        map.put("HP:0000007", InheritanceMode.AUTOSOMAL_RECESSIVE);
+        map.put("HP:0000006", InheritanceMode.AUTOSOMAL_DOMINANT);
         map.put("HP:0001417", InheritanceMode.X_LINKED);
         map.put("HP:0001419", InheritanceMode.X_RECESSIVE);
         map.put("HP:0001423", InheritanceMode.X_DOMINANT);
@@ -201,10 +201,10 @@ public class DiseaseInheritanceCache implements ResourceParser {
             //trim out the unknowns
             for (InheritanceMode mode : entry.getValue()) {
                 //bizzarrely some diseases appear to be both dominant and recessive
-                if (mode == InheritanceMode.DOMINANT) {
+                if (mode == InheritanceMode.AUTOSOMAL_DOMINANT) {
                     isDominant = true;
                 }
-                if (mode == InheritanceMode.RECESSIVE) {
+                if (mode == InheritanceMode.AUTOSOMAL_RECESSIVE) {
                     isRecessive = true;
                 }
                 if (mode != InheritanceMode.UNKNOWN) {
@@ -218,11 +218,11 @@ public class DiseaseInheritanceCache implements ResourceParser {
             //check wether the observed inheritance patterns of the exome sequences match
             //that of the known disease.
             if (isDominant && isRecessive) {
-                inheritanceMode = InheritanceMode.DOMINANT_AND_RECESSIVE;
+                inheritanceMode = InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE;
             } else if (isDominant) {
-                inheritanceMode = InheritanceMode.DOMINANT;
+                inheritanceMode = InheritanceMode.AUTOSOMAL_DOMINANT;
             } else if (isRecessive) {
-                inheritanceMode = InheritanceMode.RECESSIVE;
+                inheritanceMode = InheritanceMode.AUTOSOMAL_RECESSIVE;
             }
             logger.debug("Setting inheritanceMode for {} to {}", entry.getKey(), inheritanceMode);
 

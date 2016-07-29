@@ -33,9 +33,9 @@ public enum InheritanceMode {
     //n.b. This is tightly coupled to parsing the input files and inserting disease data into the database, so don't change the inheritanceCodes
     UNKNOWN("unknown", "U"),
 
-    RECESSIVE("autosomal recessive", "R"),
-    DOMINANT("autosomal dominant", "D"),
-    DOMINANT_AND_RECESSIVE("autosomal dominant/recessive", "B"),
+    AUTOSOMAL_RECESSIVE("autosomal recessive", "R"),
+    AUTOSOMAL_DOMINANT("autosomal dominant", "D"),
+    AUTOSOMAL_DOMINANT_AND_RECESSIVE("autosomal dominant/recessive", "B"),
 
     X_LINKED("X-linked", "X"),
     X_RECESSIVE("X-linked recessive", "XR"),
@@ -78,19 +78,39 @@ public enum InheritanceMode {
         }
         return UNKNOWN;
     }
-    
-    /**
-     * Returns the InheritanceMode for a given HPO term. Will return UNKNOWN
-     * as a default.
-     * @param hpoTerm
-     * @return 
-     */
-    public static InheritanceMode valueOfHpoTerm(String hpoTerm) {
-        for (InheritanceMode inheritanceMode : InheritanceMode.values()) {
-            if (inheritanceMode.hpoTerm.equals(hpoTerm)) {
-                return inheritanceMode;
-            }
+
+    public boolean isCompatibleWithDominant() {
+        switch(this) {
+            case AUTOSOMAL_DOMINANT:
+                return true;
+            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
+                return true;
+            default:
+                return false;
         }
-        return UNKNOWN;
+    }
+
+    public boolean isCompatibleWithRecessive() {
+        switch(this) {
+            case AUTOSOMAL_RECESSIVE:
+                return true;
+            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isXlinked() {
+        switch(this) {
+            case X_LINKED:
+                return true;
+            case X_DOMINANT:
+                return true;
+            case X_RECESSIVE:
+                return true;
+            default:
+                return false;
+        }
     }
 }

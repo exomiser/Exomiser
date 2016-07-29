@@ -28,6 +28,7 @@ package de.charite.compbio.exomiser.core.model;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -49,7 +50,7 @@ public class InheritanceModeTest {
      */
     @Test
     public void testGetTerm() {
-        assertThat(InheritanceMode.RECESSIVE.getTerm(), equalTo("autosomal recessive"));
+        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.getTerm(), equalTo("autosomal recessive"));
     }
 
     /**
@@ -65,9 +66,9 @@ public class InheritanceModeTest {
      */
     @Test
     public void testValueOfInheritanceCode() {
-        assertThat(InheritanceMode.valueOfInheritanceCode("D"), equalTo(InheritanceMode.DOMINANT));
-        assertThat(InheritanceMode.valueOfInheritanceCode("R"), equalTo(InheritanceMode.RECESSIVE));
-        assertThat(InheritanceMode.valueOfInheritanceCode("B"), equalTo(InheritanceMode.DOMINANT_AND_RECESSIVE));
+        assertThat(InheritanceMode.valueOfInheritanceCode("D"), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT));
+        assertThat(InheritanceMode.valueOfInheritanceCode("R"), equalTo(InheritanceMode.AUTOSOMAL_RECESSIVE));
+        assertThat(InheritanceMode.valueOfInheritanceCode("B"), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE));
         assertThat(InheritanceMode.valueOfInheritanceCode("X"), equalTo(InheritanceMode.X_LINKED));
         assertThat(InheritanceMode.valueOfInheritanceCode("XD"), equalTo(InheritanceMode.X_DOMINANT));
         assertThat(InheritanceMode.valueOfInheritanceCode("XR"), equalTo(InheritanceMode.X_RECESSIVE));
@@ -76,14 +77,32 @@ public class InheritanceModeTest {
         assertThat(InheritanceMode.valueOfInheritanceCode("S"), equalTo(InheritanceMode.SOMATIC));
         assertThat(InheritanceMode.valueOfInheritanceCode("P"), equalTo(InheritanceMode.POLYGENIC));
         assertThat(InheritanceMode.valueOfInheritanceCode("U"), equalTo(InheritanceMode.UNKNOWN));
+        assertThat(InheritanceMode.valueOfInheritanceCode("unrecognised code"), equalTo(InheritanceMode.UNKNOWN));
     }
 
-    /**
-     * Test of valueOfHpoTerm method, of class InheritanceMode.
-     */
     @Test
-    public void testValueOfHpoTerm() {
-        assertThat(InheritanceMode.valueOfHpoTerm("kjghdgh"), equalTo(InheritanceMode.UNKNOWN));
+    public void isCompatibleWithDominant() {
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isCompatibleWithDominant(), is(true));
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWithDominant(), is(true));
+
+        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWithDominant(), is(false));
+    }
+
+    @Test
+    public void isCompatibleWithRecessive() {
+        assertThat(InheritanceMode.AUTOSOMAL_RECESSIVE.isCompatibleWithRecessive(), is(true));
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT_AND_RECESSIVE.isCompatibleWithRecessive(), is(true));
+
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isCompatibleWithRecessive(), is(false));
+    }
+
+    @Test
+    public void isXlinked() {
+        assertThat(InheritanceMode.X_DOMINANT.isXlinked(), is(true));
+        assertThat(InheritanceMode.X_LINKED.isXlinked(), is(true));
+        assertThat(InheritanceMode.X_RECESSIVE.isXlinked(), is(true));
+
+        assertThat(InheritanceMode.AUTOSOMAL_DOMINANT.isXlinked(), is(false));
     }
 
     @Test
