@@ -23,8 +23,6 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.InheritanceMode;
 import de.charite.compbio.exomiser.core.prioritisers.util.Disease;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -52,11 +50,9 @@ import static java.util.stream.Collectors.toList;
  */
 public class OMIMPriority implements Prioritiser {
 
-    private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
-
     private static final double DEFAULT_SCORE = 1d;
 
-    private PriorityService priorityService;
+    private final PriorityService priorityService;
 
     public OMIMPriority(PriorityService priorityService) {
         this.priorityService = priorityService;
@@ -117,7 +113,7 @@ public class OMIMPriority implements Prioritiser {
      * 1 for any gene with X-linked inheritance if the disease in question is
      * listed as X chromosomal.
      */
-    private ToDoubleFunction<? super InheritanceMode> scoreInheritanceMode(Gene gene) {
+    private ToDoubleFunction<InheritanceMode> scoreInheritanceMode(Gene gene) {
         return inheritanceMode -> {
             /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
             if (inheritanceMode == InheritanceMode.UNKNOWN) {
@@ -171,7 +167,7 @@ public class OMIMPriority implements Prioritiser {
         final OMIMPriority other = (OMIMPriority) obj;
         return true;
     }
-  
+
     @Override
     public String toString() {
         return "OmimPrioritiser{}";
