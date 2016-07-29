@@ -1,34 +1,49 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.writers;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.htsjdk.InfoFields;
 import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
-import htsjdk.variant.vcf.VCFFileReader;
-import htsjdk.variant.vcf.VCFFilterHeaderLine;
-import htsjdk.variant.vcf.VCFHeader;
-import htsjdk.variant.vcf.VCFHeaderLine;
-import htsjdk.variant.vcf.VCFHeaderLineType;
-import htsjdk.variant.vcf.VCFInfoHeaderLine;
+import htsjdk.variant.vcf.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 // TODO(holtgrew): Write out to sorting VariantContextWriter?
 /**
@@ -63,7 +78,9 @@ public class VcfResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
         SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
-                outFile.toString(), InfoFields.BOTH, getAdditionalHeaderLines())) {
+                outFile.toString(),
+                InfoFields.BOTH,
+                getAdditionalHeaderLines())) {
             writeData(sampleData, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
@@ -74,8 +91,10 @@ public class VcfResultsWriter implements ResultsWriter {
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SampleData sampleData = analysis.getSampleData();
-        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(), baos,
-                InfoFields.BOTH, getAdditionalHeaderLines())) {
+        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
+                baos,
+                InfoFields.BOTH,
+                getAdditionalHeaderLines())) {
             writeData(sampleData, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
@@ -83,6 +102,7 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     private void writeData(SampleData sampleData, boolean writeOnlyPassVariants, VariantContextWriter writer) {
+        writeUnannotatedVariants(sampleData, writer);
         // actually write the data and close writer again
         if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
@@ -92,12 +112,15 @@ public class VcfResultsWriter implements ResultsWriter {
         }
     }
 
+    private void writeUnannotatedVariants(SampleData sampleData, VariantContextWriter writer) {
+        List<VariantContext> updatedRecords = updateGeneVariantRecords(null, sampleData.getUnAnnotatedVariantEvaluations());
+        updatedRecords.forEach(record-> writer.add(record));
+    }
+
     private void writeOnlyPassSampleData(SampleData sampleData, VariantContextWriter writer) {
-        writeUnannotatedVariants(sampleData, writer);
         for (Gene gene : sampleData.getGenes()) {
-            for (VariantEvaluation variant : gene.getPassedVariantEvaluations()) {
-                writeRecord(variant, writer, gene);
-            }
+            List<VariantContext> updatedRecords = updateGeneVariantRecords(gene, gene.getPassedVariantEvaluations());
+            updatedRecords.forEach(record-> writer.add(record));
         }
     }
 
@@ -112,45 +135,66 @@ public class VcfResultsWriter implements ResultsWriter {
      * @param writer writer to write to
      */
     private void writeAllSampleData(SampleData sampleData, VariantContextWriter writer) {
-        writeUnannotatedVariants(sampleData, writer);
         for (Gene gene : sampleData.getGenes()) {
-            for (VariantEvaluation variant : gene.getVariantEvaluations()) {
-                writeRecord(variant, writer, gene);
-            }
+            logger.debug("updating variant records for gene {}", gene);
+            List<VariantContext> updatedRecords = updateGeneVariantRecords(gene, gene.getVariantEvaluations());
+            updatedRecords.forEach(record-> writer.add(record));
         }
     }
 
-    private void writeUnannotatedVariants(SampleData sampleData, VariantContextWriter writer) {
-        for (VariantEvaluation variant : sampleData.getUnAnnotatedVariantEvaluations()) {
-            writeRecord(variant, writer, null);
+    //this needs a MultiMap<VariantContext, VariantEvaluation> (see InheritanceModeAnalyser for this)
+    private List<VariantContext> updateGeneVariantRecords(Gene gene, List<VariantEvaluation> variants) {
+        if (variants.isEmpty()) {
+            return Collections.emptyList();
         }
+//        maybe check if the variant is multi-allelic first?
+        Multimap<String, VariantEvaluation> variantContextToEvaluations = mapVariantEvaluationsToVariantContextString(variants);
+        return variantContextToEvaluations.asMap()
+                .values()
+                .stream()
+                .map(variantEvaluations -> updateRecord(Lists.newArrayList(variantEvaluations), gene))
+                .collect(toList());
+    }
+
+    private Multimap<String, VariantEvaluation> mapVariantEvaluationsToVariantContextString(List<VariantEvaluation> variantEvaluations) {
+        //using ArrayListMultimap is important as the order of the values (alleles) must be preserved so that they match the order listed in the ALT fildl
+        ArrayListMultimap<String, VariantEvaluation> geneVariants = ArrayListMultimap.create();
+        for (VariantEvaluation variantEvaluation : variantEvaluations) {
+            geneVariants.put(variantContextKeyValue(variantEvaluation.getVariantContext()), variantEvaluation);
+        }
+        return geneVariants;
     }
 
     /**
-     * Write out <code>ve</code> as one record into <code>write</code>.
-     *
-     * @param ve record to write out
-     * @param writer writer to write to
-     * @param gene the {@link Gene} to use when writing out, <code>null</code>
-     * for unannotated variants.
+     * A {@link VariantContext} cannot be used directly as a key in a Map or put into a Set as it does not override equals or hashCode.
+     * Also simply using toString isn't an option as the compatible variants returned from the
+     * {@link de.charite.compbio.exomiser.core.analysis.util.InheritanceModeAnalyser#inheritanceCompatibilityChecker}
+     * are different instances and have had their genotype strings changed. This method solves these problems.
      */
-    private void writeRecord(VariantEvaluation ve, VariantContextWriter writer, Gene gene) {
+    private String variantContextKeyValue(VariantContext variantContext) {
+        //using StringBuilder instead of String.format as the performance is better and we're going to be doing this for every variant in the VCF
+        // chr10-123256215-T*-[G, A]
+        // chr5-11-AC*-[AT]
+        StringBuilder keyValueBuilder = new StringBuilder();
+        keyValueBuilder.append(variantContext.getContig()).append('-');
+        keyValueBuilder.append(variantContext.getStart()).append('-');
+        keyValueBuilder.append(variantContext.getReference()).append('-');
+        keyValueBuilder.append(variantContext.getAlternateAlleles());
+        return keyValueBuilder.toString();
+    }
+
+    private VariantContext updateRecord(List<VariantEvaluation> variantEvaluations, Gene gene) {
         // create a new VariantContextBuilder, based on the original line
-        // n.b. variantContexts with alternative alleles will be shared between 
+        // n.b. variantContexts with alternative alleles will be shared between
         // the alternative allele variant objects - Exomiser works on a 1 Variant = 1 Allele principle
-        VariantContext variantContext = ve.getVariantContext();
+        VariantEvaluation variantEvaluation = variantEvaluations.get(0);
+
+        VariantContext variantContext = variantEvaluation.getVariantContext();
         VariantContextBuilder builder = new VariantContextBuilder(variantContext);
-//        Allele refAllele = variantContext.getReference();
-//        logger.info("Genotypes: {}", variantContext.getGenotypes());
-//        for (int i = 0; i < variantContext.getAlternateAlleles().size(); i++) {
-//            Allele altAllele = variantContext.getAlternateAllele(i);
-//            Genotype genotype = variantContext.getGenotype(0);
-//            logger.info("{} {} {} {}", refAllele, altAllele, genotype.getType(), genotype.getAlleles());
-//        }
         // update filter and info fields and write out to writer.
-        updateFilterField(builder, ve);
-        updateInfoField(builder, ve, gene);
-        writer.add(builder.make());
+        updateFilterField(builder, variantEvaluation);
+        updateInfoField(builder, variantEvaluations, gene);
+        return builder.make();
     }
 
     /**
@@ -177,27 +221,37 @@ public class VcfResultsWriter implements ResultsWriter {
      * <code>builder</code>.
      */
     private void updateFailedFilters(VariantContextBuilder builder, Set<FilterType> failedFilterTypes) {
-        Set<String> set = new HashSet<>();
-        for (FilterType ft : failedFilterTypes) {
-            set.add(ft.toString());
-        }
-        builder.filters(set);
+        Set<String> failedFilters = failedFilterTypes.stream().map(FilterType::toString).collect(toSet());
+        builder.filters(failedFilters);
     }
 
     /**
      * Update the INFO field of <code>builder</code> given the
      * {@link VariantEvaluation} and <code>gene</code>.
      */
-    private void updateInfoField(VariantContextBuilder builder, VariantEvaluation ve, Gene gene) {
-        if (ve.hasAnnotations() && gene != null) {
+    private void updateInfoField(VariantContextBuilder builder, List<VariantEvaluation> variantEvaluations, Gene gene) {
+        if (!variantEvaluations.isEmpty() && gene != null) {
             builder.attribute("EXOMISER_GENE", gene.getGeneSymbol());
-            builder.attribute("EXOMISER_VARIANT_SCORE", ve.getVariantScore());
+            builder.attribute("EXOMISER_GENE_COMBINED_SCORE", gene.getCombinedScore());
             builder.attribute("EXOMISER_GENE_PHENO_SCORE", gene.getPriorityScore());
             builder.attribute("EXOMISER_GENE_VARIANT_SCORE", gene.getFilterScore());
-            builder.attribute("EXOMISER_GENE_COMBINED_SCORE", gene.getCombinedScore());
+            builder.attribute("EXOMISER_VARIANT_SCORE", buildVariantScore(variantEvaluations)); //this needs a list of VariantEvaluations to concatenate the fields from in Allele order
+//            builder.attribute("EXOMISER_VARIANT_EFFECT", ve.getVariantEffect());
         } else {
             builder.attribute("EXOMISER_WARNING", "VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS");
         }
+    }
+
+    private String buildVariantScore(List<VariantEvaluation> variantEvaluations) {
+        if (variantEvaluations.size() == 1) {
+            return String.valueOf(variantEvaluations.get(0).getVariantScore());
+        }
+        StringBuilder variantScoreBuilder = new StringBuilder();
+        variantScoreBuilder.append(variantEvaluations.get(0).getVariantScore());
+        for (int i = 1; i < variantEvaluations.size(); i++) {
+            variantScoreBuilder.append(',').append(variantEvaluations.get(i).getVariantScore());
+        }
+        return variantScoreBuilder.toString();
     }
 
     /**
@@ -210,12 +264,9 @@ public class VcfResultsWriter implements ResultsWriter {
         // add INFO descriptions
         lines.add(new VCFInfoHeaderLine("EXOMISER_GENE", 1, VCFHeaderLineType.String, "Exomiser gene"));
         lines.add(new VCFInfoHeaderLine("EXOMISER_VARIANT_SCORE", 1, VCFHeaderLineType.Float, "Exomiser variant score"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_PHENO_SCORE", 1, VCFHeaderLineType.Float,
-                "Exomiser gene phenotype score"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_VARIANT_SCORE", 1, VCFHeaderLineType.Float,
-                "Exomiser gene variant score"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_COMBINED_SCORE", 1, VCFHeaderLineType.Float,
-                "Exomiser gene combined"));
+        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_PHENO_SCORE", 1, VCFHeaderLineType.Float, "Exomiser gene phenotype score"));
+        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_VARIANT_SCORE", 1, VCFHeaderLineType.Float, "Exomiser gene variant score"));
+        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_COMBINED_SCORE", 1, VCFHeaderLineType.Float, "Exomiser gene combined"));
         lines.add(new VCFInfoHeaderLine("EXOMISER_WARNING", 1, VCFHeaderLineType.String, "Exomiser gene"));
 
         // add FILTER descriptions

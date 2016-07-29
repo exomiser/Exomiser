@@ -1,42 +1,60 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.AnalysisMode;
 import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
-import htsjdk.variant.vcf.VCFFileReader;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
+import de.charite.compbio.exomiser.core.factories.TestFactory;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
+import de.charite.compbio.exomiser.core.factories.VariantFactory;
 import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
+import htsjdk.variant.vcf.VCFFileReader;
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Tests for the {@link VcfResultsWriter} class.
@@ -77,6 +95,8 @@ public class VcfResultsWriterTest {
     private VcfResultsWriter instance;
 
     private static VCFFileReader reader;
+
+    private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -214,27 +234,70 @@ public class VcfResultsWriterTest {
                 .outputPassVariantsOnly(true)
                 .outputPrefix(outPath + "testWrite").build();
         
-        String vcf = instance.writeString(analysis, outputPassVariantsOnlySettings);
-        final String EXPECTED = EXPECTED_HEADER
+        String output = instance.writeString(analysis, outputPassVariantsOnlySettings);
+        String expected = EXPECTED_HEADER
                 + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
-        Assert.assertEquals(EXPECTED, vcf);
+        assertThat(output, equalTo(expected));
+    }
+
+    @Test
+    public void testWritePassVariantsWithNoPassingVariants() {
+        missenseVariantEvaluation.addFilterResult(failTargetResult);
+        indelVariantEvaluation.addFilterResult(failTargetResult);
+        sampleData.setGenes(Arrays.asList(gene1, gene2));
+
+        OutputSettings outputPassVariantsOnlySettings = new OutputSettingsBuilder()
+                .outputFormats(EnumSet.of(OutputFormat.VCF))
+                .outputPassVariantsOnly(true)
+                .outputPrefix(outPath + "testWrite").build();
+
+        String output = instance.writeString(analysis, outputPassVariantsOnlySettings);
+        assertThat(output, equalTo(EXPECTED_HEADER));
     }
     
     @Test
     public void testAlternativeAllelesAreWrittenOnSuccessiveLines() {
         TestVariantFactory varFactory = new TestVariantFactory();
         VariantEvaluation alt1 = varFactory.constructVariant(1, 120612040, "T", "TCCGCCG", Genotype.HETEROZYGOUS, 30, 0, 258.62);
-        VariantEvaluation alt2 = varFactory.constructVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HETEROZYGOUS, 30, 1, 258.62);
+        VariantEvaluation alt2 = varFactory.constructVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HOMOZYGOUS_ALT, 30, 1, 258.62);
         Gene gene = new Gene("TEST", 12345);
         gene.addVariant(alt1);
         gene.addVariant(alt2);
         
         sampleData.setGenes(Arrays.asList(gene));
-        String vcf = instance.writeString(analysis, settings);
-        System.out.println(vcf);
-        final String EXPECTED = EXPECTED_HEADER
+        String output = instance.writeString(analysis, settings);
+        System.out.println(output);
+        String expected = EXPECTED_HEADER
                 + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr1\t120612041\t.\tT\tTCCTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n";
-        Assert.assertEquals(EXPECTED, vcf);
+                + "chr1\t120612041\t.\tT\tTCCTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t1/1:30\n";
+        assertThat(output, equalTo(expected));
+    }
+
+    @Test
+    public void testHomozygousAltAlleleOutputVcfContainsConcatenatedVariantScoresOnOneLine() {
+        Path vcfPath = Paths.get("src/test/resources/multiAlleleGenotypes.vcf");
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(vcfPath);
+        variants.forEach(System.out::println);
+        // 1/2 HETEROZYGOUS_ALT - needs to be written back out as a single line
+        //TODO: Check that all alleles are analysed - i.e. 0/1, 1/1, 1/2, 0/2 and 2/2 are always represented
+        VariantEvaluation altAlleleOne = variants.get(3);
+        //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
+        //variant score is 0.85
+        altAlleleOne.setVariantEffect(VariantEffect.COMPLEX_SUBSTITUTION);
+
+        //variant score is 0.6
+        VariantEvaluation altAlleleTwo = variants.get(4);
+
+        Gene gene = new Gene(altAlleleOne.getGeneSymbol(), altAlleleOne.getEntrezGeneId());
+        gene.addVariant(altAlleleOne);
+        gene.addVariant(altAlleleTwo);
+
+        sampleData.setGenes(Arrays.asList(gene));
+        String output = instance.writeString(analysis, settings);
+        System.out.println(output);
+        //expected should have concatenated variant score for multi-allele line: EXOMISER_VARIANT_SCORE=0.85,0.6
+        String expected = EXPECTED_HEADER
+                + "10\t123256215\t.\tT\tG,A\t100\t.\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.85,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
+        assertThat(output, equalTo(expected));
     }
 }
