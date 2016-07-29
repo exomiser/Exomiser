@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,17 +19,19 @@
 
 package de.charite.compbio.exomiser.core.filters;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import java.util.List;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@JsonRootName("regulatoryFeatureFilter")
 public class RegulatoryFeatureFilter implements VariantFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(RegulatoryFeatureFilter.class);

@@ -24,11 +24,11 @@
  */
 package de.charite.compbio.exomiser.core.writers;
 
+import com.google.common.collect.Lists;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.PassFilterResult;
+import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -38,6 +38,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.*;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PhivePriority;
 import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.pedigree.Genotype;
@@ -52,6 +53,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.thymeleaf.TemplateEngine;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -114,9 +116,7 @@ public class HtmlResultsWriterTest {
         gene1.addPriorityResult(new PhivePriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 0.99f, "MGI:12345", "Gene1"));
         gene2.addPriorityResult(new PhivePriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 0.98f, "MGI:54321", "Gene2"));
 
-        OMIMPriorityResult gene1PriorityScore = new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, new ArrayList());
-        gene1PriorityScore.addRow("OMIM:12345", "OMIM:67890", "Disease syndrome", 'D', 'D', 1f);
-        gene1.addPriorityResult(gene1PriorityScore);
+        gene1.addPriorityResult(new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, new ArrayList()));
         gene2.addPriorityResult(new OMIMPriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 1f, Collections.emptyList()));
 
         unAnnotatedVariantEvaluation1 = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
@@ -187,6 +187,30 @@ public class HtmlResultsWriterTest {
 
         instance.writeFile(analysis, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
+        Files.readAllLines(testOutFile).forEach(System.out::println);
+
+        assertTrue(testOutFile.toFile().exists());
+    }
+
+    @Test
+    public void testWriteTemplateWithEmptyDataAndFullAnalysis() throws Exception {
+        testOutFilePrefix = tmpFolder.newFile("testWrite").toString();
+
+        Analysis analysis = makeAnalysis(new ArrayList<>(), new ArrayList<>());
+        analysis.setHpoIds(Lists.newArrayList("HP:000001", "HP:000002"));
+        analysis.addStep(new RegulatoryFeatureFilter());
+        analysis.addStep(new FrequencyFilter(0.1f));
+        analysis.addStep(new PathogenicityFilter(true));
+        analysis.addStep(new PhivePriority(Collections.emptyList(), null));
+
+        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+
+        String output = instance.writeString(analysis, settings);
+        System.out.println(output);
+
+        Path testOutFile = Paths.get(testOutFilePrefix);
+
+
         assertTrue(testOutFile.toFile().exists());
     }
 
