@@ -305,9 +305,9 @@ public class AnalysisParserTest {
         analysisSteps.add(new FrequencyFilter(1.0f));
         analysisSteps.add(new PathogenicityFilter(false));
         analysisSteps.add(new InheritanceFilter(modeOfInheritance));
-        analysisSteps.add(new OMIMPriority());
-        analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions(), null, null));
-        analysisSteps.add(new HiPhivePriority(hpoIds, new HiPhiveOptions("OMIM:101600", "FGFR2", "mouse,fish,human,ppi"), null, null));
+        analysisSteps.add(priorityFactory.makeOmimPrioritiser());
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions("OMIM:101600", "FGFR2", "mouse,fish,human,ppi")));
         analysisSteps.add(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.7f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }

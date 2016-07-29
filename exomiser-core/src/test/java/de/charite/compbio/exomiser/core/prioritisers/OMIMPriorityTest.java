@@ -21,14 +21,17 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import com.google.common.collect.Lists;
 import de.charite.compbio.exomiser.core.model.Gene;
-import org.h2.jdbcx.JdbcConnectionPool;
+import de.charite.compbio.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.sql.DataSource;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -38,18 +41,9 @@ public class OMIMPriorityTest {
 
     private OMIMPriority instance;
 
-    private DataSource dataSource() {
-        String url = "jdbc:h2:file:C:/Users/jj8/Documents/exomiser-cli-4.0.0/data/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
-        String user = "sa";
-        String password = "";
-
-        return JdbcConnectionPool.create(url, user, password);
-    }
-
     @Before
     public void setUp() {
-        instance = new OMIMPriority();
-        instance.setDataSource(dataSource());
+        instance = new OMIMPriority(TestPriorityServiceFactory.TEST_SERVICE);
     }
 
     private List<Gene> getGenes() {
@@ -67,9 +61,76 @@ public class OMIMPriorityTest {
     }
 
     @Test
-    public void prioritizeGenes() throws Exception {
+    public void prioritizeGenes_unrecognisedGene() throws Exception {
+        List<Gene> genes = Lists.newArrayList(new Gene("Wibble", 999999999));
+
+        instance.prioritizeGenes(genes);
+
+        genes.forEach(gene -> {
+            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            assertThat(result.getScore(), equalTo(1d));
+            assertThat(result.getAssociatedDiseases().isEmpty(), is(true));
+        });
+    }
+
+    @Test
+    public void prioritizeGenes_NoInheritanceModes() throws Exception {
         List<Gene> genes = getGenes();
         instance.prioritizeGenes(genes);
+        genes.forEach(gene -> {
+            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            assertThat(result.getScore(), equalTo(1d));
+        });
+    }
+
+    @Test
+    public void prioritizeGenes_NoAssociatedDiseases() throws Exception {
+        //ZNF738 has no associated conditions.
+        Gene znf738 = new Gene("ZNF738", 148203);
+        List<Gene> genes = Lists.newArrayList(znf738);
+
+        instance.prioritizeGenes(Collections.emptyList(), genes).forEach(result -> {
+            System.out.println(result);
+            assertThat(result.getScore(), equalTo(1d));
+            assertThat(result.getAssociatedDiseases().isEmpty(), is(true));
+        });
+    }
+
+    @Test
+    public void prioritizeGenes_InheritanceModeIsCompatible() throws Exception {
+        //ROR2 has two associated conditions, one recessive, the other dominant.
+        // We're going to simulate this matching the recissive one.
+        Gene ror2 = new Gene("ROR2", 4920);
+        ror2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        List<Gene> genes = Lists.newArrayList(ror2);
+
+        instance.prioritizeGenes(genes);
+
+        genes.forEach(gene -> {
+            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            assertThat(result.getScore(), equalTo(1d));
+            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+        });
+    }
+
+    @Test
+    public void prioritizeGenes_InheritanceModeIsNotCompatible() throws Exception {
+        //FREM2 has only one associated condition (recessive). We're going to simulate this not matching.
+        Gene frem2 = new Gene("FREM2", 341640);
+        frem2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        List<Gene> genes = Lists.newArrayList(frem2);
+
+        instance.prioritizeGenes(genes);
+
+        genes.forEach(gene -> {
+            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            assertThat(result.getScore(), equalTo(0.5d));
+            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+        });
     }
 
 }

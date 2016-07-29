@@ -19,8 +19,11 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import com.google.common.collect.Lists;
+import de.charite.compbio.exomiser.core.prioritisers.util.Disease;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -39,4 +42,52 @@ public class OMIMPriorityResultTest {
         assertThat(instance.getPriorityType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
 
+    @Test
+    public void testGetScore() {
+        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList());
+        assertThat(instance.getScore(), equalTo(1d));
+    }
+
+    @Test
+    public void testAssociatedDiseases() {
+        Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
+        ArrayList<Disease> diseases = Lists.newArrayList(disease);
+        instance = new OMIMPriorityResult(1234, "GENE1", 1d, diseases);
+        assertThat(instance.getAssociatedDiseases(), equalTo(diseases));
+    }
+
+    @Test
+    public void testToHtml_noDiseases() {
+        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Collections.emptyList());
+        System.out.println(instance.getHTMLCode());
+    }
+
+    @Test
+    public void testToHtml_OmimDiseases() {
+        Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
+        Disease nonDisease = Disease.builder().diseaseId("OMIM:54321").diseaseName("OMIM non-disease name").diseaseType(Disease.DiseaseType.NON_DISEASE).inheritanceModeCode("U").build();
+        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease, nonDisease));
+        System.out.println(instance.getHTMLCode());
+    }
+
+    @Test
+    public void testToHtml_IncompatibleOmimDiseases() {
+        Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("Incompatible OMIM disease name").build();
+        instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease));
+        System.out.println(instance.getHTMLCode());
+    }
+
+    @Test
+    public void testToHtml_IncompatibleOrphanetDiseases() {
+        Disease disease = Disease.builder().diseaseId("ORPHANET:12345").diseaseName("Incompatible Orphanet disease name").build();
+        instance = new OMIMPriorityResult(1234, "GENE1", 0.5d, Lists.newArrayList(disease));
+        System.out.println(instance.getHTMLCode());
+    }
+
+    @Test
+    public void testToHtml_UnknownDiseaseId() {
+        Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
+        instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease));
+        System.out.println(instance.getHTMLCode());
+    }
 }

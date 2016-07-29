@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -27,15 +27,17 @@ import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
 import de.charite.compbio.exomiser.core.prioritisers.MockPrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
  *
@@ -51,7 +53,7 @@ public class AnalysisStepCheckerTest {
     private static final KnownVariantFilter KNOWN_VARIANT_FILTER = new KnownVariantFilter();
     private static final FrequencyFilter FREQUENCY_FILTER = new FrequencyFilter(0.1f);
     private static final InheritanceFilter INHERITANCE_FILTER = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-    private static final OMIMPriority OMIM_PRIORITISER = new OMIMPriority();
+    private static final OMIMPriority OMIM_PRIORITISER = new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);
     private static final PriorityScoreFilter OMIM_PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.OMIM_PRIORITY, 0f);
     private static final MockPrioritiser NONE_TYPE_PRIORITISER = new MockPrioritiser(PriorityType.NONE, new HashMap<>());
     private static final PriorityScoreFilter NONE_TYPE_PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.NONE, 0f);

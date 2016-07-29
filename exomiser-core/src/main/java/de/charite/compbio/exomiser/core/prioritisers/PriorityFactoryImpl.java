@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -49,8 +48,6 @@ public class PriorityFactoryImpl implements PriorityFactory {
 
     @Autowired
     private PriorityService priorityService;
-    @Autowired
-    private DataSource dataSource;
     @Autowired
     @Lazy
     private DataMatrix randomWalkMatrix;
@@ -110,9 +107,7 @@ public class PriorityFactoryImpl implements PriorityFactory {
 
     @Override
     public OMIMPriority makeOmimPrioritiser() {
-        OMIMPriority priority = new OMIMPriority();
-        priority.setDataSource(dataSource);
-        return priority;
+        return new OMIMPriority(priorityService);
     }
 
     @Override
@@ -123,8 +118,7 @@ public class PriorityFactoryImpl implements PriorityFactory {
 
     @Override
     public PhivePriority makePhivePrioritiser(List<String> hpoIds) {
-        PhivePriority priority = new PhivePriority(hpoIds, priorityService);
-        return priority;
+        return new PhivePriority(hpoIds, priorityService);
     }
 
     @Override

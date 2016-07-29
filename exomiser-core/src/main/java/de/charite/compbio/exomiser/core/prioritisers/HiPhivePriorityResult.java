@@ -229,7 +229,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
             if (bestModelPhenotypeMatches.containsKey(queryTerm)) {// && bestModelPhenotypeMatches.get(queryTerm).getScore() > 1.75) {// RESTRICT TO HIGH QUALITY MATCHES
                 PhenotypeMatch match = bestModelPhenotypeMatches.get(queryTerm);
                 PhenotypeTerm matchTerm = match.getMatchPhenotype();
-                stringBuilder.append(String.format("%s (%s)-%s (%s), ", queryTerm.getTerm(), queryTerm.getId(), matchTerm.getTerm(), matchTerm.getId()));
+                stringBuilder.append(String.format("%s (%s)-%s (%s), ", queryTerm.getLabel(), queryTerm.getId(), matchTerm.getLabel(), matchTerm.getId()));
             } else {
                 //stringBuilder.append(String.format("%s (%s)-No match, ", queryTerm.getTerm(), queryTerm.getId()));
             }
@@ -242,9 +242,9 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
             if (bestModelPhenotypeMatches.containsKey(queryTerm)) {
                 PhenotypeMatch match = bestModelPhenotypeMatches.get(queryTerm);
                 PhenotypeTerm matchTerm = match.getMatchPhenotype();
-                stringBuilder.append(String.format("<dd>%s, %s - %s, %s</dd>", queryTerm.getId(), queryTerm.getTerm(), matchTerm.getId(), matchTerm.getTerm()));
+                stringBuilder.append(String.format("<dd>%s, %s - %s, %s</dd>", queryTerm.getId(), queryTerm.getLabel(), matchTerm.getId(), matchTerm.getLabel()));
             } else {
-                stringBuilder.append(String.format("<dd>%s, %s -</dd>", queryTerm.getId(), queryTerm.getTerm()));
+                stringBuilder.append(String.format("<dd>%s, %s -</dd>", queryTerm.getId(), queryTerm.getLabel()));
             }
         }
     }

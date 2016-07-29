@@ -59,7 +59,29 @@ public class TestPrioritiserDataFileReader {
         };
     }
 
-    public static List<Model> readDiseaseData(String diseaseModelTestDataFile) {
+    public static List<Disease> readDiseaseData(String diseaseModelTestDataFile) {
+        return readLines(diseaseModelTestDataFile)
+                .filter(line -> !line.startsWith(COMMENT_LINE_PREFIX))
+                .map(lineToDiseaseData())
+                .collect(toList());
+    }
+
+    private static Function<String, Disease> lineToDiseaseData() {
+        //HUMAN	2263	FGFR2	OMIM:613659	Gastric cancer,somatic	D	S	HP:0012126
+        return line -> {
+            String[] fields = line.split("\t");
+            return Disease.builder().diseaseId(fields[3])
+                    .diseaseName(fields[4])
+                    .associatedGeneId(Integer.valueOf(fields[1]))
+                    .associatedGeneSymbol(fields[2])
+                    .diseaseTypeCode(fields[5])
+                    .inheritanceModeCode(fields[6])
+                    .phenotypeIds(getOntologyTerms(fields[7]))
+                    .build();
+        };
+    }
+
+    public static List<Model> readDiseaseModelData(String diseaseModelTestDataFile) {
         return readLines(diseaseModelTestDataFile)
                 .filter(line -> !line.startsWith(COMMENT_LINE_PREFIX))
                 .map(lineToDiseaseModel())
@@ -67,11 +89,11 @@ public class TestPrioritiserDataFileReader {
     }
 
     private static Function<String, DiseaseModel> lineToDiseaseModel() {
-        //HUMAN	2263	FGFR2	OMIM:613659	Gastric cancer, somatic	HP:0012126
+        //HUMAN	2263	FGFR2	OMIM:613659	Gastric cancer,somatic	D	S	HP:0012126
         return line -> {
             String[] fields = line.split("\t");
             String modelId = fields[3] + "_" + fields[1];
-            return new DiseaseModel(modelId, Organism.valueOf(fields[0]), Integer.valueOf(fields[1]), fields[2], fields[3], fields[4], getOntologyTerms(fields[5]));
+            return new DiseaseModel(modelId, Organism.valueOf(fields[0]), Integer.valueOf(fields[1]), fields[2], fields[3], fields[4], getOntologyTerms(fields[7]));
         };
     }
 

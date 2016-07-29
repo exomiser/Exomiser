@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class DiseaseData {
+public final class Disease {
 
     public enum DiseaseType {
 
@@ -59,7 +59,7 @@ public final class DiseaseData {
             return value;
         }
 
-        public String getColumnValue() {
+        public String getCode() {
             return columnValue;
         }
     }
@@ -67,19 +67,19 @@ public final class DiseaseData {
     private final String diseaseId;
     private final String diseaseName;
 
-    private final int entrezGeneId;
-    private final String humanGeneSymbol;
+    private final int associatedGeneId;
+    private final String associateGeneSymbol;
 
     private final DiseaseType diseaseType;
     private final InheritanceMode inheritanceMode;
 
     private final List<String> phenotypeIds;
 
-    private DiseaseData(DiseaseDataBuilder builder) {
+    private Disease(DiseaseDataBuilder builder) {
         this.diseaseId = builder.diseaseId;
         this.diseaseName = builder.diseaseName;
-        this.entrezGeneId = builder.entrezGeneId;
-        this.humanGeneSymbol = builder.humanGeneSymbol;
+        this.associatedGeneId = builder.entrezGeneId;
+        this.associateGeneSymbol = builder.humanGeneSymbol;
         this.diseaseType = builder.diseaseType;
         this.inheritanceMode = builder.inheritanceMode;
         this.phenotypeIds = builder.phenotypeIds;
@@ -94,11 +94,11 @@ public final class DiseaseData {
     }
 
     public int getAssociatedGeneId() {
-        return entrezGeneId;
+        return associatedGeneId;
     }
 
     public String getAssociatedGeneSymbol() {
-        return humanGeneSymbol;
+        return associateGeneSymbol;
     }
 
     public DiseaseType getDiseaseType() {
@@ -116,12 +116,12 @@ public final class DiseaseData {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DiseaseData)) return false;
-        DiseaseData that = (DiseaseData) o;
-        return entrezGeneId == that.entrezGeneId &&
+        if (!(o instanceof Disease)) return false;
+        Disease that = (Disease) o;
+        return associatedGeneId == that.associatedGeneId &&
                 Objects.equals(diseaseId, that.diseaseId) &&
                 Objects.equals(diseaseName, that.diseaseName) &&
-                Objects.equals(humanGeneSymbol, that.humanGeneSymbol) &&
+                Objects.equals(associateGeneSymbol, that.associateGeneSymbol) &&
                 diseaseType == that.diseaseType &&
                 inheritanceMode == that.inheritanceMode &&
                 Objects.equals(phenotypeIds, that.phenotypeIds);
@@ -129,17 +129,17 @@ public final class DiseaseData {
 
     @Override
     public int hashCode() {
-        return Objects.hash(diseaseId, diseaseName, entrezGeneId, humanGeneSymbol, diseaseType, inheritanceMode, phenotypeIds);
+        return Objects.hash(diseaseId, diseaseName, associatedGeneId, associateGeneSymbol, diseaseType, inheritanceMode, phenotypeIds);
     }
 
 
     @Override
     public String toString() {
-        return "DiseaseData{" +
+        return "Disease{" +
                 "diseaseId='" + diseaseId + '\'' +
                 ", diseaseName='" + diseaseName + '\'' +
-                ", entrezGeneId=" + entrezGeneId +
-                ", humanGeneSymbol='" + humanGeneSymbol + '\'' +
+                ", associatedGeneId=" + associatedGeneId +
+                ", associateGeneSymbol='" + associateGeneSymbol + '\'' +
                 ", diseaseType=" + diseaseType +
                 ", inheritanceMode=" + inheritanceMode +
                 ", phenotypeIds=" + phenotypeIds +
@@ -211,8 +211,8 @@ public final class DiseaseData {
             return this;
         }
 
-        public DiseaseData build() {
-            return new DiseaseData(this);
+        public Disease build() {
+            return new Disease(this);
         }
 
     }

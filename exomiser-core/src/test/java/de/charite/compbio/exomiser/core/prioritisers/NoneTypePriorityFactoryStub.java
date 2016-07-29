@@ -45,7 +45,7 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
     public OMIMPriority makeOmimPrioritiser() {
-        return new OMIMPriority();
+        return new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);
     }
 
     @Override

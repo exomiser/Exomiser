@@ -20,16 +20,17 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.InheritanceMode;
+import de.charite.compbio.exomiser.core.prioritisers.util.Disease;
+import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.ToDoubleFunction;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * This class is designed to do two things. First, it will add annotations to
@@ -43,7 +44,7 @@ import java.util.List;
  * similar functionality for Orphanet). Thus, if we find a heterozygous mutation
  * but the disease is autosomal recessive, then it the corresponding
  * disease/gene is not a good candidate, and its OMIM relevance score is reduced
- * by a factor of 50%. See the function {@link #getInheritanceFactor} for
+ * by a factor of 50%. See the function {@link #scoreInheritanceMode} for
  * details on this weighting scheme.
  *
  * @author Peter N Robinson
@@ -53,7 +54,13 @@ public class OMIMPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
 
-    private DataSource dataSource;
+    private static final double DEFAULT_SCORE = 1d;
+
+    private PriorityService priorityService;
+
+    public OMIMPriority(PriorityService priorityService) {
+        this.priorityService = priorityService;
+    }
 
     /**
      * Flag for output field representing OMIM.
@@ -75,85 +82,28 @@ public class OMIMPriority implements Prioritiser {
      */
     @Override
     public void prioritizeGenes(List<Gene> genes) {
-        for (Gene g : genes) {
-            OMIMPriorityResult mimrel = retrieveOmimData(g);
-            g.addPriorityResult(mimrel);
+        for (Gene gene : genes) {
+            OMIMPriorityResult result = prioritiseGene(gene);
+            gene.addPriorityResult(result);
         }
     }
 
+    public List<OMIMPriorityResult> prioritizeGenes(Collection<String> hpoIds, List<Gene> genes) {
+        return genes.stream().map(gene -> prioritiseGene(gene)).collect(toList());
+    }
+
     /**
-     * Note that if there is no EntrezGene IDfor this gene, its field
-     * entrezGeneID will be set to -10. If this is the case, we return an empty
+     * If the gene is not contained in the database, we return an empty
      * but initialized RelevanceScore object. Otherwise, we retrieve a list of
      * all OMIM and Orphanet diseases associated with the entrez Gene.
      *
      * @param gene The gene which is being evaluated.
      */
-    private OMIMPriorityResult retrieveOmimData(Gene gene) {
-        int entrez = gene.getEntrezGeneID();
-        if (entrez < 0) {
-            return new OMIMPriorityResult(entrez, gene.getGeneSymbol(), 0, Collections.emptyList());
-        }
-        return getOmimDiseasesForGene(gene);
-    }
-
-    private OMIMPriorityResult getOmimDiseasesForGene(Gene gene) {
-
-
-        String omimQuery = "SELECT disease_id, omim_gene_id, diseasename, type, inheritance "
-                + "FROM disease "
-                + "WHERE gene_id = ?";
-
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(omimQuery);
-            preparedStatement.setInt(1, gene.getEntrezGeneID());
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                // The way the db was constructed, there is just one line for each such query.
-                //  phenmim,genemim,diseasename,type"+
-                String diseaseId = rs.getString(1);
-                String diseaseName = rs.getString(3);
-                if (diseaseId.startsWith("OMIM")) {
-                    String omimGeneId = rs.getString(2);
-                    char typ = rs.getString(4).charAt(0);
-                    char inheritance = rs.getString(5).charAt(0);
-                    float factor = getInheritanceFactor(gene, inheritance);
-                    logger.info("{}, {}, {}, {}, {}, {}", diseaseId, omimGeneId, diseaseName, typ, inheritance, factor);
-         //TODO!!! Return a list of DTOs
-//                    priorityResult.addRow(diseaseId, omimGeneId, diseaseName, typ, inheritance, factor);
-
-                } else {
-//                    priorityResult.addOrphanetRow(diseaseId, diseaseName);
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error executing OMIM query", e);
-        }
-//        if (factor > this.score) {
-//            this.score = factor;
-//        }
-        double score = 1d;
-        return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, Collections.emptyList());
-    }
-
-    private void findOrphaNetDiseasesForGene(Gene gene, OMIMPriorityResult rel) {
-        // Now try to get the Orphanet data
-        String orphanetQuery = "SELECT disease_id, diseasename "
-                + "FROM disease "
-                + "WHERE disease_id LIKE '%ORPHA%' AND gene_id = ?";
-        
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(orphanetQuery);
-            preparedStatement.setInt(1, gene.getEntrezGeneID());
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                String orphanum = rs.getString(1);
-                String disease = rs.getString(2);
-                rel.addOrphanetRow(orphanum, disease);
-            }
-        } catch (SQLException e) {
-            logger.error("Exception caused by Orphanet query!", e);
-        }
+    private OMIMPriorityResult prioritiseGene(Gene gene) {
+        List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.getEntrezGeneID());
+        //this is a pretty non-punitive prioritiser. We're relying on the other prioritisers to do the main ranking
+        double score = diseases.stream().map(Disease::getInheritanceMode).mapToDouble(scoreInheritanceMode(gene)).max().orElse(DEFAULT_SCORE);
+        return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, diseases);
     }
 
     /**
@@ -167,41 +117,41 @@ public class OMIMPriority implements Prioritiser {
      * 1 for any gene with X-linked inheritance if the disease in question is
      * listed as X chromosomal.
      */
-    private float getInheritanceFactor(Gene gene, char inheritance) {
-        if (inheritance == 'U') {
+    private ToDoubleFunction<? super InheritanceMode> scoreInheritanceMode(Gene gene) {
+        return inheritanceMode -> {
             /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
-            return 1f;
-      
-        } else if (inheritance == 'Y') {
+            if (inheritanceMode == InheritanceMode.UNKNOWN) {
+                return DEFAULT_SCORE;
             /* Y chromosomal, rare. */
-            return 1f; 
-        } else if (inheritance == 'M') {
+            } else if (inheritanceMode == InheritanceMode.Y_LINKED) {
+                return DEFAULT_SCORE;
             /* mitochondrial. */
-            return 1f; 
-        } else if (inheritance == 'S') {
+            } else if (inheritanceMode == InheritanceMode.MITOCHONDRIAL) {
+                return DEFAULT_SCORE;
             /* gene only associated with somatic mutations */
-            return 0.5f; 
-        } else if (inheritance == 'P') {
+            } else if (inheritanceMode == InheritanceMode.SOMATIC) {
+                return 0.5d;
             /* gene only associated with polygenic */
-            return 0.5f; 
-        } else if (gene.getInheritanceModes().isEmpty()) {
+            } else if (inheritanceMode == InheritanceMode.POLYGENIC) {
+                return 0.5d;
             /* No mode of inheritance is defined (UNDEFINED) */
-            return 1f;    
-        } else if (gene.isCompatibleWithDominant() && (inheritance == 'D' || inheritance == 'B')) {
+            } else if (gene.getInheritanceModes().isEmpty()) {
+                return 1f;
             /* inheritance of disease is dominant or both (dominant/recessive) */
-            return 1f;
-        } else if (gene.isCompatibleWithRecessive() && (inheritance == 'R' || inheritance == 'B')) {
+//            } else if (gene.isCompatibleWithDominant() && (inheritanceMode == 'D' || inheritanceMode == 'B')) {
+            } else if (gene.isCompatibleWithDominant() && inheritanceMode.isCompatibleWithDominant()) {
+                return DEFAULT_SCORE;
             /* inheritance of disease is recessive or both (dominant/recessive) */
-            return 1f;
-        } else if (gene.isXChromosomal() && inheritance == 'X') {
-            return 1f;
-        } else {
-            return 0.5f;
-        }
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+//            } else if (gene.isCompatibleWithRecessive() && (inheritanceMode == 'R' || inheritanceMode == 'B')) {
+            } else if (gene.isCompatibleWithRecessive() && inheritanceMode.isCompatibleWithRecessive()) {
+                return DEFAULT_SCORE;
+//            } else if (gene.isXChromosomal() && inheritanceMode == 'X') {
+            } else if (gene.isXChromosomal() && inheritanceMode.isXlinked()) {
+                return DEFAULT_SCORE;
+            } else {
+                return 0.5d;
+            }
+        };
     }
 
     @Override

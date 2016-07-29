@@ -30,29 +30,29 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class DiseaseDataTest {
+public class DiseaseTest {
 
     @Test
     public void testDiseaseData() {
         //2263	FGFR2	OMIM:101600	Craniofacial-skeletal-dermatologic dysplasia	D	D	HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304
-        DiseaseData instance = DiseaseData.builder()
+        Disease instance = Disease.builder()
                 .diseaseId("OMIM:101600")
                 .diseaseName("Craniofacial-skeletal-dermatologic dysplasia")
                 .associatedGeneId(2263)
                 .associatedGeneSymbol("FGFR2")
-                .diseaseType(DiseaseData.DiseaseType.DISEASE)
-                .inheritanceMode(InheritanceMode.DOMINANT)
+                .diseaseType(Disease.DiseaseType.DISEASE)
+                .inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT)
                 .phenotypeIds(Arrays.asList("HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304".split(",")))
                 .build();
         System.out.println(instance);
 
-        DiseaseData other = DiseaseData.builder()
+        Disease other = Disease.builder()
                 .diseaseId("OMIM:101600")
                 .diseaseName("Craniofacial-skeletal-dermatologic dysplasia")
                 .associatedGeneId(2263)
                 .associatedGeneSymbol("FGFR2")
-                .diseaseType(DiseaseData.DiseaseType.DISEASE)
-                .inheritanceMode(InheritanceMode.DOMINANT)
+                .diseaseType(Disease.DiseaseType.DISEASE)
+                .inheritanceMode(InheritanceMode.AUTOSOMAL_DOMINANT)
                 .phenotypeIds(Arrays.asList("HP:0000174,HP:0000194,HP:0000218,HP:0000238,HP:0000244,HP:0000272,HP:0000303,HP:0000316,HP:0000322,HP:0000324,HP:0000327,HP:0000348,HP:0000431,HP:0000452,HP:0000453,HP:0000470,HP:0000486,HP:0000494,HP:0000508,HP:0000586,HP:0000678,HP:0001156,HP:0001249,HP:0002308,HP:0002676,HP:0002780,HP:0003041,HP:0003070,HP:0003196,HP:0003272,HP:0003307,HP:0003795,HP:0004209,HP:0004322,HP:0004440,HP:0005048,HP:0005280,HP:0005347,HP:0006101,HP:0006110,HP:0009602,HP:0009773,HP:0010055,HP:0010669,HP:0011304".split(",")))
                 .build();
         System.out.println(other);
@@ -62,31 +62,31 @@ public class DiseaseDataTest {
 
     @Test
     public void testInheritanceCode() {
-        assertThat(DiseaseData.builder()
+        assertThat(Disease.builder()
                 .inheritanceModeCode("D")
-                .build().getInheritanceMode(), equalTo(InheritanceMode.DOMINANT));
+                .build().getInheritanceMode(), equalTo(InheritanceMode.AUTOSOMAL_DOMINANT));
     }
 
     @Test
     public void testDiseaseCode() {
-        assertThat(DiseaseData.builder()
+        assertThat(Disease.builder()
                 .diseaseTypeCode("D")
-                .build().getDiseaseType(), equalTo(DiseaseData.DiseaseType.DISEASE));
+                .build().getDiseaseType(), equalTo(Disease.DiseaseType.DISEASE));
 
-        assertThat(DiseaseData.builder()
+        assertThat(Disease.builder()
                 .diseaseTypeCode("N")
-                .build().getDiseaseType(), equalTo(DiseaseData.DiseaseType.NON_DISEASE));
+                .build().getDiseaseType(), equalTo(Disease.DiseaseType.NON_DISEASE));
 
-        assertThat(DiseaseData.builder()
+        assertThat(Disease.builder()
                 .diseaseTypeCode("S")
-                .build().getDiseaseType(), equalTo(DiseaseData.DiseaseType.SUSCEPTIBILITY));
+                .build().getDiseaseType(), equalTo(Disease.DiseaseType.SUSCEPTIBILITY));
 
-        assertThat(DiseaseData.builder()
+        assertThat(Disease.builder()
                 .diseaseTypeCode("C")
-                .build().getDiseaseType(), equalTo(DiseaseData.DiseaseType.CNV));
+                .build().getDiseaseType(), equalTo(Disease.DiseaseType.CNV));
 
-        assertThat(DiseaseData.builder()
+        assertThat(Disease.builder()
                 .diseaseTypeCode("U")
-                .build().getDiseaseType(), equalTo(DiseaseData.DiseaseType.UNCONFIRMED));
+                .build().getDiseaseType(), equalTo(Disease.DiseaseType.UNCONFIRMED));
     }
 }

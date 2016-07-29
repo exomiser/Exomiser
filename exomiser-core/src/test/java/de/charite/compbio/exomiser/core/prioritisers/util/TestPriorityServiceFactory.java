@@ -66,7 +66,7 @@ public class TestPriorityServiceFactory {
         hpPhenotypesTerms.put("HP:0011304", new PhenotypeTerm("HP:0011304", "Broad thumb", 0));
 
         logger.info("This data links {} phenotypes:", hpPhenotypesTerms.size());
-        hpPhenotypesTerms.values().forEach(term ->logger.info("    {} - {}", term.getId(), term.getTerm()));
+        hpPhenotypesTerms.values().forEach(term ->logger.info("    {} - {}", term.getId(), term.getLabel()));
 
         logger.info("Via cross-species phenotype mappings:");
         List<PhenotypeMatch> hpHpMappings = TestPrioritiserDataFileReader.readOntologyMatchData("src/test/resources/prioritisers/hp-hp-mappings");
@@ -79,7 +79,7 @@ public class TestPriorityServiceFactory {
         logger.info("    hp-zp: " + hpZpMappings.size());
 
         logger.info("To the following models:");
-        List<Model> diseaseModels = TestPrioritiserDataFileReader.readDiseaseData("src/test/resources/prioritisers/disease-models");
+        List<Model> diseaseModels = TestPrioritiserDataFileReader.readDiseaseModelData("src/test/resources/prioritisers/disease-models");
         logger.info("    Disease Models: " + diseaseModels.size());
 
         List<Model> mouseModels = TestPrioritiserDataFileReader.readOrganismData("src/test/resources/prioritisers/mouse-models");
@@ -102,7 +102,10 @@ public class TestPriorityServiceFactory {
                 .setHumanFishMappings(createPhenotypeMap(hpZpMappings))
                 .build();
 
-        return new PriorityService(testOntologyService, testModelService, null);
+        List<Disease> diseases = TestPrioritiserDataFileReader.readDiseaseData("src/test/resources/prioritisers/disease-models");
+        TestDiseaseDao testDiseaseDao = new TestDiseaseDao(diseases);
+
+        return new PriorityService(testOntologyService, testModelService, testDiseaseDao);
     }
 
     private static Map<PhenotypeTerm, List<PhenotypeMatch>> createPhenotypeMap(List<PhenotypeMatch> crossOntologyMappings) {

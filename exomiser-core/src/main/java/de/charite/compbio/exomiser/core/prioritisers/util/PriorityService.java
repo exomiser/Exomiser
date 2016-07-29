@@ -121,8 +121,8 @@ public class PriorityService {
         }
     }
 
-    public String getDiseaseTermForId(String diseaseId) {
-        return diseaseDao.getDiseaseIdToTerms().get(diseaseId);
+    public List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId) {
+        return diseaseDao.getDiseaseDataAssociatedWithGeneId(geneId);
     }
 
 }

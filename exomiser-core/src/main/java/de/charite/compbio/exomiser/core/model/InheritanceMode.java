@@ -113,4 +113,13 @@ public enum InheritanceMode {
                 return false;
         }
     }
+
+
+    @Override
+    public String toString() {
+        return "InheritanceMode{" +
+                "hpoTerm='" + hpoTerm + '\'' +
+                ", inheritanceCode='" + inheritanceCode + '\'' +
+                "} " + super.toString();
+    }
 }

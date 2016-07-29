@@ -59,7 +59,9 @@ public interface Prioritiser extends AnalysisStep {
      */
     public void prioritizeGenes(List<Gene> genes);
 
-//    public List<PriorityResult> prioritizeGenes(Collection<String> hpoIds, List<Gene> genes);
+    //TODO: Enable this. Consider using GeneIdentifier objects as we want to decouple Gene from this package.
+    // OmimiPrioritiser will break though as this is the only prioritiser using anything other than geneId and geneSymbol.
+//    public List<? extends PriorityResult> prioritizeGenes(Collection<String> hpoIds, List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.

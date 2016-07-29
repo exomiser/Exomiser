@@ -1,26 +1,43 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import javax.sql.DataSource;
+import com.google.common.collect.ImmutableList;
+import de.charite.compbio.exomiser.core.prioritisers.util.Disease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  *
@@ -62,22 +79,42 @@ public class DefaultDiseaseDao implements DiseaseDao {
 
     @Cacheable(value="diseases")
     @Override
-    public Map<String, String> getDiseaseIdToTerms() {
-        Map<String, String> termsCache = new HashMap();
-        String diseaseNameQuery = "SELECT disease_id, diseasename FROM disease";
+    public List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId) {
+        String query = "SELECT gene_id as entrez_id, symbol as human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_name, d.TYPE AS disease_type, d.INHERITANCE as inheritance_code, hp_id as pheno_ids FROM entrez2sym e, disease_hp dhp, disease d  WHERE dhp.disease_id = d.DISEASE_ID and e.entrezid = d.GENE_ID and d.GENE_ID = ?";
+
         try (Connection connection = dataSource.getConnection();
-                PreparedStatement ontologyTermsStatement = connection.prepareStatement(diseaseNameQuery);
-                ResultSet rs = ontologyTermsStatement.executeQuery()) {
-            while (rs.next()) {
-                String id = rs.getString(1);
-                String term = rs.getString(2);
-                id = id.trim();
-                termsCache.put(id, term);
-            }
+             PreparedStatement statement = setQueryGeneId(connection, query, geneId);
+             ResultSet rs = statement.executeQuery()){
+
+            return processDiseaseResults(rs);
+
         } catch (SQLException e) {
-            logger.error("Unable to execute query '{}' for disease terms cache", diseaseNameQuery, e);
+            logger.error("Unable to execute query '{}' for geneId: '{}'", query, geneId, e);
         }
-        logger.info("Created {} disease id : term mappings", termsCache.size());
-        return termsCache;
+        return Collections.emptyList();
+    }
+
+    private PreparedStatement setQueryGeneId(Connection connection, String query, int geneId) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(query);
+        ps.setInt(1, geneId);
+        return ps;
+    }
+
+    private List<Disease> processDiseaseResults(ResultSet rs) throws SQLException{
+        ImmutableList.Builder<Disease> listBuilder = ImmutableList.builder();
+        while(rs.next()) {
+            List<String> phenotypes = ImmutableList.copyOf(rs.getString("pheno_ids").split(","));
+            Disease disease = Disease.builder()
+                    .diseaseId(rs.getString("disease_id"))
+                    .diseaseName(rs.getString("disease_name"))
+                    .associatedGeneId(rs.getInt("entrez_id"))
+                    .associatedGeneSymbol(rs.getString("human_gene_symbol"))
+                    .inheritanceModeCode(rs.getString("inheritance_code"))
+                    .diseaseTypeCode(rs.getString("disease_type"))
+                    .phenotypeIds(phenotypes)
+                    .build();
+            listBuilder.add(disease);
+        }
+        return listBuilder.build();
     }
 }

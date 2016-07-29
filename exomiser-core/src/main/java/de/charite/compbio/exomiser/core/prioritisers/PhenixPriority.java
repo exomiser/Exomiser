@@ -68,7 +68,6 @@ public class PhenixPriority implements Prioritiser {
      */
     private List<String> errorMessages = null;
 
-
     /**
      * The semantic similarity measure used to calculate phenotypic similarity
      */
@@ -79,7 +78,7 @@ public class PhenixPriority implements Prioritiser {
      */
     private List<Term> hpoQueryTerms;
 
-    private float DEFAULT_SCORE = 0f;
+    private final float DEFAULT_SCORE = 0f;
 
     private Map<String, List<Term>> geneId2annotations;
 
@@ -201,7 +200,6 @@ public class PhenixPriority implements Prioritiser {
      * @param hpoAnnotationFile path to the file
      */
     private void parseAnnotations(String hpoAnnotationFile) throws IOException {
-        geneId2annotations = new HashMap<>();
 
         BufferedReader in = new BufferedReader(new FileReader(hpoAnnotationFile));
         String line = null;
@@ -229,6 +227,7 @@ public class PhenixPriority implements Prioritiser {
             }
 
             List<Term> annotations;
+            geneId2annotations = new HashMap<>();
 
             if (geneId2annotations.containsKey(entrez)) {
                 annotations = geneId2annotations.get(entrez);
@@ -337,6 +336,7 @@ public class PhenixPriority implements Prioritiser {
         if (maxSemSim < 1) {
             return;
         }
+        //TODO: AAARGH! Can't run more than one PheniX at a time without the risk of this differing. There is no need for this to be a static variable in the PhenixPriorityResult.
         PhenixPriorityResult.setNormalizationFactor(1d / maxSemSim);
         /*for (Gene g : genes) {
          float score = g.getRelevagetScorepe.PHENIX_PRIORITY);

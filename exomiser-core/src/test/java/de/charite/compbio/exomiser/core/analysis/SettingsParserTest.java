@@ -20,36 +20,26 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
-import static de.charite.compbio.exomiser.core.analysis.SettingsParser.NON_EXONIC_VARIANT_EFFECTS;
 import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.IntervalFilter;
-import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
+import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
-import de.charite.compbio.exomiser.core.prioritisers.OMIMPriority;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.nio.file.Paths;
+import java.util.*;
+
+import static de.charite.compbio.exomiser.core.analysis.SettingsParser.NON_EXONIC_VARIANT_EFFECTS;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 /**
 *
@@ -64,10 +54,11 @@ public class SettingsParserTest {
     
     private final ModeOfInheritance autosomal_dominant = ModeOfInheritance.AUTOSOMAL_DOMINANT;
     private final GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
-    
+
+    private final PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
+
     @Before
-    public void setUp() {       
-        PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
+    public void setUp() {
         instance = new SettingsParser(stubPriorityFactory, new VariantDataServiceStub());
         
         settingsBuilder = new SettingsBuilder().vcfFilePath(Paths.get("vcf"));
@@ -177,7 +168,7 @@ public class SettingsParserTest {
                 .build();
         
         addDefaultVariantFilters(analysis);
-        analysis.addStep(new OMIMPriority());
+        analysis.addStep(stubPriorityFactory.makeOmimPrioritiser());
         
         Analysis result = instance.parse(settings);
         assertThat(result, equalTo(analysis));
@@ -199,7 +190,7 @@ public class SettingsParserTest {
         
         analysis.setHpoIds(hpoIds);
         addDefaultVariantFilters(analysis);
-        analysis.addStep(new OMIMPriority());
+        analysis.addStep(stubPriorityFactory.makeOmimPrioritiser());
         analysis.addStep(new NoneTypePrioritiser());
         System.out.println(analysis);
         

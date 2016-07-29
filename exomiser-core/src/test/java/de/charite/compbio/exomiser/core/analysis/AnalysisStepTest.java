@@ -42,7 +42,7 @@ public class AnalysisStepTest {
     private static final AnalysisStep PHIVE_PRIORITY = new PhivePriority(new ArrayList<>(), TestPriorityServiceFactory.STUB_SERVICE);
     private static final AnalysisStep PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.6f);
     private static final AnalysisStep KNOWN_VARIANT_FILTER = new KnownVariantFilter();
-    private static final AnalysisStep OMIM_PRIORITY = new OMIMPriority();
+    private static final AnalysisStep OMIM_PRIORITY = new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);
     private static final AnalysisStep INHERITANCE_FILTER = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
     
     @Test
