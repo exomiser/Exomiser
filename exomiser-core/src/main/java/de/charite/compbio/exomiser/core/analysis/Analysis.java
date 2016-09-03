@@ -24,7 +24,18 @@
  */
 package de.charite.compbio.exomiser.core.analysis;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -32,14 +43,6 @@ import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is analogous to the {@link Settings} class, although the key difference is that here the {@see #addStep}
@@ -61,7 +64,7 @@ public class Analysis {
     private SampleData sampleData = new SampleData();
     //these are more optional variables
     private List<String> hpoIds = new ArrayList<>();
-    private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
+    private Set<ModeOfInheritance> modesOfInheritance = EnumSet.of(ModeOfInheritance.UNINITIALIZED);
     private ScoringMode scoringMode = ScoringMode.RAW_SCORE;
     private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
     private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
@@ -150,12 +153,16 @@ public class Analysis {
         this.sampleData = sampleData;
     }
 
-    public ModeOfInheritance getModeOfInheritance() {
-        return modeOfInheritance;
+    public Set<ModeOfInheritance> getModesOfInheritance() {
+        return modesOfInheritance;
     }
 
     public void setModeOfInheritance(ModeOfInheritance modeOfInheritance) {
-        this.modeOfInheritance = modeOfInheritance;
+        this.modesOfInheritance = EnumSet.of(modeOfInheritance);
+    }
+    
+    public void setModesOfInheritance(Set<ModeOfInheritance> modesOfInheritance) {
+        this.modesOfInheritance = modesOfInheritance;
     }
 
     public ScoringMode getScoringMode() {
@@ -216,7 +223,7 @@ public class Analysis {
         hash = 73 * hash + Objects.hashCode(this.vcfPath);
         hash = 73 * hash + Objects.hashCode(this.pedPath);
         hash = 73 * hash + Objects.hashCode(this.hpoIds);
-        hash = 73 * hash + Objects.hashCode(this.modeOfInheritance);
+        hash = 73 * hash + Objects.hashCode(this.modesOfInheritance);
         hash = 73 * hash + Objects.hashCode(this.scoringMode);
         hash = 73 * hash + Objects.hashCode(this.analysisMode);
         hash = 73 * hash + Objects.hashCode(this.frequencySources);
@@ -239,7 +246,7 @@ public class Analysis {
         if (!Objects.equals(this.hpoIds, other.hpoIds)) {
             return false;
         }
-        if (this.modeOfInheritance != other.modeOfInheritance) {
+        if (!Objects.equals(this.modesOfInheritance,other.modesOfInheritance)) {
             return false;
         }
         if (this.scoringMode != other.scoringMode) {
@@ -259,7 +266,7 @@ public class Analysis {
 
     @Override
     public String toString() {
-        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", scoringMode=" + scoringMode + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
+        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modesOfInheritance + ", scoringMode=" + scoringMode + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
 
 }

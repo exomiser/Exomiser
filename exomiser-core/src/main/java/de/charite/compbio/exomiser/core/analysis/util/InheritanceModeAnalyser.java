@@ -24,13 +24,10 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import com.google.common.collect.ArrayListMultimap;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.pedigree.*;
-import de.charite.compbio.jannovar.pedigree.Genotype;
-import htsjdk.variant.variantcontext.*;
+import static java.util.stream.Collectors.toSet;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -38,14 +35,18 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
+import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.jannovar.pedigree.Genotype;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
-import static java.util.stream.Collectors.toSet;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
 
 /**
  * This class allows us to do segregation analysis for the variants supplied to
@@ -58,12 +59,12 @@ public class InheritanceModeAnalyser {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
-    private final ModeOfInheritance modeOfInheritance;
+    private final Set<ModeOfInheritance> modesOfInheritance;
     private final InheritanceCompatibilityChecker inheritanceCompatibilityChecker;
 
-    public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
-        this.modeOfInheritance = modeOfInheritance;
-        inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
+    public InheritanceModeAnalyser(Pedigree pedigree, Set<ModeOfInheritance> modesOfInheritance) {
+        this.modesOfInheritance = modesOfInheritance;
+        inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addModes(modesOfInheritance).build();
     }
 
     /**
@@ -76,19 +77,26 @@ public class InheritanceModeAnalyser {
     }
 
     /**
-     * Analyses the compatibility of a {@link Gene} with the {@link ModeOfInheritance} used in the constructor
+     * Analyses the compatibility of a {@link Gene} with one of the {@link ModeOfInheritance} used in the constructor
      * of this class according to the observed pattern of inheritance in the {@link Pedigree}. This will only be applied
-     * to the variants in the gene which have *PASSED* filtering.
+     * to the variants in the gene which have *PASSED* filtering. 
+     * @param gene to check
+     * @return All inheritance modes that fits with the inheritance modes of the gene.
      */
-    public boolean analyseInheritanceModes(Gene gene) {
+    public Set<ModeOfInheritance> analyseInheritanceModes(Gene gene) {
         if (gene.passedFilters()) {
             checkInheritanceCompatibilityOfPassedVariants(gene);
         }
-        return gene.isCompatibleWith(modeOfInheritance);
+        Set<ModeOfInheritance> matchedModes = EnumSet.noneOf(ModeOfInheritance.class);
+        for (ModeOfInheritance modeOfInheritance : modesOfInheritance) {
+        	if (gene.isCompatibleWith(modeOfInheritance))
+        		matchedModes.add(modeOfInheritance);
+		}
+        return matchedModes;
     }
 
     private void checkInheritanceCompatibilityOfPassedVariants(Gene gene) {
-        if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
+        if (modesOfInheritance.contains(ModeOfInheritance.UNINITIALIZED)) {
             return;
         }
         //it is *CRITICAL* that only the PASSED variantEvaluations are taken into account here.
@@ -98,7 +106,7 @@ public class InheritanceModeAnalyser {
         List<VariantContext> compatibleVariants = getCompatibleVariantContexts(passedVariantEvaluations);
 
         if (!compatibleVariants.isEmpty()) {
-            logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
+            logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modesOfInheritance);
             gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
             setVariantEvaluationInheritanceModes(geneVariants, compatibleVariants);
         }
@@ -142,7 +150,7 @@ public class InheritanceModeAnalyser {
                     //using toStringWithoutGenotypes as the genotype string gets changed and VariantContext does not override equals or hashcode so this cannot be used as a key
                     Collection<VariantEvaluation> variants = geneVariants.get(toKeyValue(variantContext));
                     variants.forEach(variant -> {
-                        variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
+                        variant.setInheritanceModes(modesOfInheritance);
                         logger.debug("{}: {}", variant.getInheritanceModes(), variant);
                     });
                 });

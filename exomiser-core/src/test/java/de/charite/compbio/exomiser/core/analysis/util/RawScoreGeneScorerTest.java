@@ -33,6 +33,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -140,7 +141,7 @@ public class RawScoreGeneScorerTest {
 
         List<VariantEvaluation> emptyVariantEvaluations = new ArrayList<>();
 
-        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, ModeOfInheritance.UNINITIALIZED);
+        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, EnumSet.of(ModeOfInheritance.UNINITIALIZED));
 
         assertThat(calculatedScore, equalTo(0f));
     }
@@ -154,7 +155,7 @@ public class RawScoreGeneScorerTest {
 
         float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
 
-        float calculatedScore = instance.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED);
+        float calculatedScore = instance.calculateFilterScore(variantEvaluations, EnumSet.of(ModeOfInheritance.UNINITIALIZED));
 
         assertThat(calculatedScore, equalTo(bestScore));
     }

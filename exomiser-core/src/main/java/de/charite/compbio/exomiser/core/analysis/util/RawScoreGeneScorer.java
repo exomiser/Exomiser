@@ -66,15 +66,15 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @param modeOfInheritance
      */
     @Override
-    public void scoreGenes(List<Gene> genes, ModeOfInheritance modeOfInheritance) {
+    public void scoreGenes(List<Gene> genes, Set<ModeOfInheritance> modesOfInheritance) {
         for (Gene gene : genes) {
-            scoreGene(gene, modeOfInheritance);
+            scoreGene(gene, modesOfInheritance);
         }
         Collections.sort(genes);
     }
 
-    protected void scoreGene(Gene gene, ModeOfInheritance modeOfInheritance) {
-        float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance);
+    protected void scoreGene(Gene gene, Set<ModeOfInheritance> modesOfInheritance) {
+        float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modesOfInheritance);
         gene.setFilterScore(filterScore);
         
         float priorityScore = setGenePriorityScore(gene);
@@ -103,12 +103,12 @@ public class RawScoreGeneScorer implements GeneScorer {
      * recessive.
      * @return
      */
-    protected float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance) {
+    protected float calculateFilterScore(List<VariantEvaluation> variantEvaluations, Set<ModeOfInheritance> modesOfInheritance) {
 
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }
-        if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
+        if (modesOfInheritance.contains(ModeOfInheritance.AUTOSOMAL_RECESSIVE)) {
             return calculateAutosomalRecessiveFilterScore(variantEvaluations);
         } // not autosomal recessive
 

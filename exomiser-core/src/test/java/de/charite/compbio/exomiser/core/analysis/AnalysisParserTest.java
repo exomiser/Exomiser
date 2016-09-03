@@ -99,7 +99,7 @@ public class AnalysisParserTest {
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
-        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(analysis.getModesOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT)));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
@@ -293,7 +293,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getModeOfInheritance(), equalTo(modeOfInheritance));
+        assertThat(analysis.getModesOfInheritance(), equalTo(EnumSet.of(modeOfInheritance)));
         assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));

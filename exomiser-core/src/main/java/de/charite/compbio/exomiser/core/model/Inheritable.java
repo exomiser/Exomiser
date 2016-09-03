@@ -21,7 +21,7 @@ public interface Inheritable {
     public void setInheritanceModes(Set<ModeOfInheritance> inheritanceModes);
 
     /**
-     * @param modeOfInheritance
+     * @param modeOfInheritances
      * @return true if the variants for this gene are compatible with the given
      * {@code ModeOfInheritance} otherwise false.
      */

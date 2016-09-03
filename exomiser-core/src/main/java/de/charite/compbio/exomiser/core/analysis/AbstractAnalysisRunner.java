@@ -34,6 +34,8 @@ import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -98,7 +100,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, new ArrayList<>(allGenes.values()), pedigree, analysis.getModeOfInheritance());
+                runSteps(analysisGroup, new ArrayList<>(allGenes.values()), pedigree, analysis.getModesOfInheritance());
             }
         }
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
@@ -115,7 +117,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         final List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
         sampleData.setVariantEvaluations(variants);
 
-        scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
+        scoreGenes(genes, analysis.getScoringMode(), analysis.getModesOfInheritance());
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 //        logTopNumScoringGenes(5, genes, analysis);
 
@@ -284,11 +286,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     //might this be a nascent class waiting to get out here?
-    private void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+    private void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree, Set<ModeOfInheritance> modeOfInheritances) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisSteps) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
-                analyseGeneCompatibilityWithInheritanceMode(genes, pedigree, modeOfInheritance);
+                analyseGeneCompatibilityWithInheritanceMode(genes, pedigree, modeOfInheritances);
                 inheritanceModesCalculated = true;
             }
             runStep(analysisStep, genes);
@@ -319,16 +321,16 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
     }
 
-    private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
-        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(pedigree, modeOfInheritance);
-        logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
+    private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, Pedigree pedigree, Set<ModeOfInheritance> modeOfInheritances) {
+        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(pedigree, modeOfInheritances);
+        logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", Joiner.on(",").join(modeOfInheritances));
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
 
-    private void scoreGenes(List<Gene> genes, ScoringMode scoreMode, ModeOfInheritance modeOfInheritance) {
+    private void scoreGenes(List<Gene> genes, ScoringMode scoreMode, Set<ModeOfInheritance> modeOfInheritances) {
         logger.info("Scoring genes");
         GeneScorer geneScorer = getGeneScorer(scoreMode);
-        geneScorer.scoreGenes(genes, modeOfInheritance);
+        geneScorer.scoreGenes(genes, modeOfInheritances);
     }
 
     private GeneScorer getGeneScorer(ScoringMode scoreMode) {

@@ -91,14 +91,14 @@ public class AnalysisTest {
 
     @Test
     public void modeOfInheritanceDefaultsToUnspecified() {
-        assertThat(instance.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
+        assertThat(instance.getModesOfInheritance(), equalTo(EnumSet.of(ModeOfInheritance.UNINITIALIZED)));
     }
 
     @Test
     public void testCanMakeAnalysis_specifyModeOfInheritance() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
         instance.setModeOfInheritance(modeOfInheritance);
-        assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritance));
+        assertThat(instance.getModesOfInheritance(), equalTo(EnumSet.of(modeOfInheritance)));
     }
 
     @Test

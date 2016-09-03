@@ -25,7 +25,7 @@
 package de.charite.compbio.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
-import de.charite.compbio.exomiser.core.factories.PedigreeFactory;
+
 import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
@@ -41,14 +41,13 @@ import static org.hamcrest.CoreMatchers.is;
 
 import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.vcf.VCFHeader;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -139,7 +138,7 @@ public class InheritanceModeAnalyserTest {
         Gene gene = new Gene("ABC", 123);
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.UNINITIALIZED);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.UNINITIALIZED));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -153,7 +152,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.UNINITIALIZED);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.UNINITIALIZED));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -176,7 +175,7 @@ public class InheritanceModeAnalyserTest {
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -199,7 +198,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -222,7 +221,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -247,7 +246,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -282,7 +281,7 @@ public class InheritanceModeAnalyserTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -317,7 +316,7 @@ public class InheritanceModeAnalyserTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -352,7 +351,7 @@ public class InheritanceModeAnalyserTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -388,7 +387,7 @@ public class InheritanceModeAnalyserTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -435,7 +434,7 @@ public class InheritanceModeAnalyserTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -481,7 +480,7 @@ public class InheritanceModeAnalyserTest {
         PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
         Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson, fatherPerson);
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -511,7 +510,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -540,7 +539,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -569,7 +568,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
@@ -598,7 +597,7 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         instance.analyseInheritanceModes(gene);
         assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
