@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,7 +25,9 @@
 package de.charite.compbio.exomiser.core.factories;
 
 import de.charite.compbio.exomiser.core.model.SampleData;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import org.junit.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,22 +37,22 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SampleDataFactoryTestConfig.class)
 public class SampleDataFactoryTest {
     
-    @Autowired
-    private SampleDataFactory instance;
+    private SampleDataFactory instance = new SampleDataFactory(variantFactory(), jannovarData());
+
+    private JannovarData jannovarData() {
+        return TestFactory.buildDefaultJannovarData();
+    }
+
+    private VariantFactory variantFactory() {
+        return new VariantFactory(jannovarData());
+    }
+
 
     @Test(expected = NullPointerException.class)
     public void testNullVcfThrowsANullPointer() {

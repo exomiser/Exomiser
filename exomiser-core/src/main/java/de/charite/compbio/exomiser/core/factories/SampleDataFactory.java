@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -24,21 +24,20 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
-import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
-
-import java.nio.file.Path;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Handles creating the {@code de.charite.compbio.exomiser.common.SampleData}
@@ -53,19 +52,13 @@ public class SampleDataFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SampleDataFactory.class);
 
-    @Autowired
-    private VariantFactory variantFactory;
-    @Autowired
-    private JannovarData jannovarData;
+    private final VariantFactory variantFactory;
+    private final JannovarData jannovarData;
 
     private final PedigreeFactory pedigreeFactory;
     private final GeneFactory geneFactory;
 
-    public SampleDataFactory() {
-        pedigreeFactory = new PedigreeFactory();
-        geneFactory = new GeneFactory();
-    }
-
+    @Autowired
     public SampleDataFactory(VariantFactory variantFactory, JannovarData jannovarData) {
         this.variantFactory = variantFactory;
         this.jannovarData = jannovarData;
