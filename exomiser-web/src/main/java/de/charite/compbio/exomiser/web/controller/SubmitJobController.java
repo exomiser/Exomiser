@@ -135,7 +135,7 @@ public class SubmitJobController {
         }
 
         Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
-        exomiser.run(analysis);
+        SampleData sampleData = exomiser.run(analysis);
 
         Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), session.getId());
         try {
@@ -150,11 +150,13 @@ public class SubmitJobController {
                 .outputPrefix(outFileName)
                 .outputFormats(EnumSet.of(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
                 .build();
+
         for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
             ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, outputSettings);
+            resultsWriter.writeFile(analysis, sampleData, outputSettings);
         }
-        buildResultsModel(model, analysis);
+
+        buildResultsModel(model, analysis, sampleData);
         logger.info("Returning {} results to user", vcfPath.getFileName());
         cleanUpSampleFiles(vcfPath, pedPath);
         return "results";
@@ -207,13 +209,15 @@ public class SubmitJobController {
                 .diseaseId(diseaseId)
                 .build();
 
-        Analysis analysis = settingsParser.parse(settings);
-        analysis.setAnalysisMode(AnalysisMode.PASS_ONLY);
+        Analysis sparseAnalysis = settingsParser.parse(settings);
 
-        return analysis;
+        return sparseAnalysis
+                .copy()
+                .analysisMode(AnalysisMode.PASS_ONLY)
+                .build();
     }
 
-    private void buildResultsModel(Model model, Analysis analysis) {
+    private void buildResultsModel(Model model, Analysis analysis, SampleData sampleData) {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
@@ -227,13 +231,12 @@ public class SubmitJobController {
         }
         model.addAttribute("settings", jsonSettings);
 
-        SampleData sampleData = analysis.getSampleData();
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
         model.addAttribute("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the filter reports section
-        List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis);
+        List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis, sampleData);
         model.addAttribute("filterReports", filterReports);
 
         List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();

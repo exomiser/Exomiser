@@ -72,11 +72,10 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, OutputSettings settings) {
+    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
-        SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
                 outFile.toString(),
                 InfoFields.BOTH,
@@ -87,10 +86,9 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(Analysis analysis, OutputSettings settings) {
+    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SampleData sampleData = analysis.getSampleData();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
                 baos,
                 InfoFields.BOTH,

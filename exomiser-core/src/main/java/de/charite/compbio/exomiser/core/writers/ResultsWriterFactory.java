@@ -25,6 +25,8 @@
 
 package de.charite.compbio.exomiser.core.writers;
 
+import de.charite.compbio.exomiser.core.analysis.Analysis;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
@@ -36,7 +38,7 @@ import org.thymeleaf.TemplateEngine;
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 @Component
-public class ResultsWriterFactory {
+public class ResultsWriterFactory implements ResultsWriter {
 
     private final TemplateEngine coreTemplateEngine;
 
@@ -67,5 +69,15 @@ public class ResultsWriterFactory {
             default:
                 return new HtmlResultsWriter(coreTemplateEngine);
         }
-    }   
+    }
+
+    @Override
+    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+
+    }
+
+    @Override
+    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+        return null;
+    }
 }

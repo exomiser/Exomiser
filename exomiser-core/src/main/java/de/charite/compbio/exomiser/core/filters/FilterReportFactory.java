@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,17 +25,17 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.AnalysisStep;
 import de.charite.compbio.exomiser.core.model.Filterable;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Factory class for producing {@code FilterReport} lists from the list of
@@ -38,30 +57,15 @@ public class FilterReportFactory {
      * @param analysis
      * @return a List of {@code FilterReport}
      */
-    public List<FilterReport> makeFilterReports(Analysis analysis) {
-
-        SampleData sampleData = analysis.getSampleData();
-        List<FilterReport> filterReports = new ArrayList<>();
+    public List<FilterReport> makeFilterReports(Analysis analysis, SampleData sampleData) {
 
         List<Filter> filters = getFiltersFromAnalysis(analysis);
 
-        for (Filter filter : filters) {
-            filterReports.add(makeFilterReport(filter, sampleData));
-        }
-
-        return filterReports;
+        return filters.stream().map(filter -> makeFilterReport(filter, sampleData)).collect(Collectors.toList());
     }
 
     private List<Filter> getFiltersFromAnalysis(Analysis analysis) {
-        List<Filter> filters = new ArrayList<>();
-
-        for (AnalysisStep step : analysis.getAnalysisSteps()) {
-            if (Filter.class.isInstance(step)) {
-                filters.add((Filter) step);
-            }
-        }
-
-        return filters;
+        return analysis.getAnalysisSteps().stream().filter(Filter.class::isInstance).map(step -> (Filter) step).collect(Collectors.toList());
     }
 
     /**
@@ -143,12 +147,16 @@ public class FilterReportFactory {
 
         int total = report.getPassed() + report.getFailed();
 
-        report.addMessage(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, 100f * (double) numNotInDatabase / total));
-        report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, 100 * (double) numDbSnpRsId / total));
-        report.addMessage(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, 100f * (double) numDbSnpFreqData / total));
-        report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, 100f * (double) numEspFreqData / total));
-        report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, 100f * (double) numExaCFreqData / total));
+        report.addMessage(String.format("Removed %d variants with no RSID or frequency data (%.1f%%)", numNotInDatabase, asPercent(numNotInDatabase, total)));
+        report.addMessage(String.format("dbSNP \"rs\" id available for %d variants (%.1f%%)", numDbSnpRsId, asPercent(numDbSnpRsId, total)));
+        report.addMessage(String.format("Data available in dbSNP (for 1000 Genomes Phase I) for %d variants (%.1f%%)", numDbSnpFreqData, asPercent(numDbSnpFreqData, total)));
+        report.addMessage(String.format("Data available in Exome Server Project for %d variants (%.1f%%)", numEspFreqData, asPercent(numEspFreqData, total)));
+        report.addMessage(String.format("Data available from ExAC Project for %d variants (%.1f%%)", numExaCFreqData, asPercent(numExaCFreqData, total)));
         return report;
+    }
+
+    private double asPercent(double number, int total) {
+        return 100f * number / total;
     }
 
     private FilterReport makeFrequencyFilterReport(FrequencyFilter filter, List<VariantEvaluation> variantEvaluations) {

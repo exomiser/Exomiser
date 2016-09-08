@@ -59,12 +59,12 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, OutputSettings settings) {
+    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-            writer.write(writeString(analysis, settings));
+            writer.write(writeString(analysis, sampleData, settings));
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -73,11 +73,10 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(Analysis analysis, OutputSettings settings) {
+    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(HEADER_LINE);
 
-        SampleData sampleData = analysis.getSampleData();
         for (Gene gene : sampleData.getGenes()) {
             if (gene.passedFilters()) {
                 stringBuilder.append(makeGeneLine(gene));

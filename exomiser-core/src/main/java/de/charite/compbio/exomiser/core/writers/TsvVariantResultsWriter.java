@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -21,21 +21,6 @@ package de.charite.compbio.exomiser.core.writers;
 
 import com.google.common.base.Joiner;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
@@ -43,21 +28,25 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
-
-import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
-
 import de.charite.compbio.exomiser.core.model.pathogenicity.BasePathogenicityScore;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.thymeleaf.util.StringUtils;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collections;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.*;
 
-import java.util.Locale;
-
-import org.thymeleaf.util.StringUtils;
+import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 
 /**
  * @author Max Schubach <max.schubach@charite.de>
@@ -86,11 +75,11 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, OutputSettings settings) {
+    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(analysis, settings.outputPassVariantsOnly(), printer);
+            writeData(analysis, sampleData, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -99,18 +88,17 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(Analysis analysis, OutputSettings settings) {
+    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(analysis, settings.outputPassVariantsOnly(), printer);
+            writeData(analysis, sampleData, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}.", output, ex);
         }
         return output.toString();
     }
 
-    private void writeData(Analysis analysis, boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
-        SampleData sampleData = analysis.getSampleData();
+    private void writeData(Analysis analysis, SampleData sampleData, boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
         if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
             for (Gene gene : sampleData.getGenes()) {

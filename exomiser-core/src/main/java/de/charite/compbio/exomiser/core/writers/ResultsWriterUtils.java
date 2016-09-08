@@ -1,28 +1,42 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.writers;
 
+import com.google.common.collect.ImmutableSet;
+import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.filters.FilterReport;
 import de.charite.compbio.exomiser.core.filters.FilterReportFactory;
 import de.charite.compbio.exomiser.core.model.Gene;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableSet;
-import de.charite.compbio.exomiser.core.analysis.Analysis;
 import java.nio.file.Path;
-import java.util.EnumSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -35,7 +49,11 @@ public class ResultsWriterUtils {
     private static final FilterReportFactory filterReportFactory = new FilterReportFactory();
 
     private static final String DEFAULT_OUTPUT_DIR = "results";
-    
+
+    private ResultsWriterUtils() {
+        //Empty - this is a static class.
+    }
+
     /**
      * Determines the correct file extension for a file given what was specified
      * in the {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
@@ -122,8 +140,8 @@ public class ResultsWriterUtils {
         return effectCounter;
     }
 
-    public static List<FilterReport> makeFilterReports(Analysis analysis) {
-        return filterReportFactory.makeFilterReports(analysis);
+    public static List<FilterReport> makeFilterReports(Analysis analysis, SampleData sampleData) {
+        return filterReportFactory.makeFilterReports(analysis, sampleData);
     }
 
     public static List<Gene> getMaxPassedGenes(List<Gene> genes, int maxGenes) {

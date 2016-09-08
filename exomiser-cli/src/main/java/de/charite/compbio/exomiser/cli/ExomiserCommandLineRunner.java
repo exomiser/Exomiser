@@ -24,6 +24,7 @@ import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.analysis.AnalysisParser;
 import de.charite.compbio.exomiser.core.analysis.Settings;
 import de.charite.compbio.exomiser.core.analysis.SettingsParser;
+import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.exomiser.core.writers.ResultsWriter;
@@ -145,15 +146,15 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     }
 
     private void runAnalysisAndWriteResults(Analysis analysis, OutputSettings outputSettings) {
-        exomiser.run(analysis);
-        writeResults(analysis, outputSettings);
+        SampleData sampleData = exomiser.run(analysis);
+        writeResults(analysis, sampleData, outputSettings);
     }
 
-    private void writeResults(Analysis analysis, OutputSettings outputSettings) {
+    private void writeResults(Analysis analysis, SampleData sampleData, OutputSettings outputSettings) {
         logger.info("Writing results");
         for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
             ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, outputSettings);
+            resultsWriter.writeFile(analysis, sampleData, outputSettings);
         }
     }
 

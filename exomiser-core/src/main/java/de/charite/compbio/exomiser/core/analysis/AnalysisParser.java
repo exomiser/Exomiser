@@ -19,24 +19,23 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
-import com.fasterxml.jackson.annotation.JacksonInject;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
-import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriority;
-import de.charite.compbio.exomiser.core.prioritisers.HiPhiveOptions;
-import de.charite.compbio.exomiser.core.prioritisers.HiPhivePriority;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
-import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
-import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
+import de.charite.compbio.exomiser.core.prioritisers.*;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,19 +43,12 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
-
-import static java.nio.file.Files.newInputStream;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.yaml.snakeyaml.Yaml;
+import static java.nio.file.Files.newInputStream;
 
 /**
  * @since 7.0.0
@@ -102,8 +94,7 @@ public class AnalysisParser {
 
     private Analysis constructAnalysisFromMap(Map settingsMap) {
         AnalysisConstructor analysisConstructor = new AnalysisConstructor();
-        Analysis analysis = analysisConstructor.construct((Map) settingsMap.get("analysis"));
-        return analysis;
+        return analysisConstructor.construct((Map) settingsMap.get("analysis"));
     }
 
     private OutputSettings constructOutputSettingsFromMap(Map settingsMap) {
@@ -205,16 +196,17 @@ public class AnalysisParser {
 
         public Analysis construct(Map analysisMap) {
 
-            Analysis analysis = new Analysis();
-            analysis.setVcfPath(parseVcf(analysisMap));
-            analysis.setPedPath(parsePed(analysisMap));
-            analysis.setHpoIds(parseHpoIds(analysisMap));
-            analysis.setModeOfInheritance(parseModeOfInheritance(analysisMap));
-            analysis.setScoringMode(parseScoringMode(analysisMap));
-            analysis.setAnalysisMode(parseAnalysisMode(analysisMap));
-            analysis.setFrequencySources(parseFrequencySources(analysisMap));
-            analysis.setPathogenicitySources(parsePathogenicitySources(analysisMap));
-            analysis.addAllSteps(makeAnalysisSteps(analysisMap));
+            Analysis analysis = Analysis.newBuilder()
+                    .vcfPath(parseVcf(analysisMap))
+                    .pedPath(parsePed(analysisMap))
+                    .hpoIds(parseHpoIds(analysisMap))
+                    .modeOfInheritance(parseModeOfInheritance(analysisMap))
+                    .scoringMode(parseScoringMode(analysisMap))
+                    .analysisMode(parseAnalysisMode(analysisMap))
+                    .frequencySources(parseFrequencySources(analysisMap))
+                    .pathogenicitySources(parsePathogenicitySources(analysisMap))
+                    .steps(makeAnalysisSteps(analysisMap))
+                    .build();
 
             logger.debug("Made analysis: {}", analysis);
             return analysis;
@@ -232,6 +224,9 @@ public class AnalysisParser {
                     }
                 }
             }
+            //should this be optional for people really wanting to screw about with the steps at the risk of catastrophic failure?
+            //it's really an optimiser step of a compiler.
+            new AnalysisStepChecker().check(analysisSteps);
             return analysisSteps;
         }
 

@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,19 +25,6 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.nio.file.Paths;
-import java.util.EnumSet;
-
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
@@ -26,9 +32,20 @@ import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.pedigree.Genotype;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.EnumSet;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -82,7 +99,7 @@ public class TsvVariantResultsWriterTest {
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
         
-        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
+        analysis = Analysis.newBuilder().build();
     }
 
     private void makePassVariant(TestVariantFactory varFactory) {
@@ -99,7 +116,7 @@ public class TsvVariantResultsWriterTest {
     @Test
     public void testWrite() {
         OutputSettings settings = settingsBuilder.outputPrefix("testWrite").build();
-        instance.writeFile(analysis, settings);
+        instance.writeFile(analysis, sampleData, settings);
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().delete());
     }
@@ -107,7 +124,7 @@ public class TsvVariantResultsWriterTest {
     @Test
     public void testWriteStringContainsAllVariants() {
         OutputSettings settings = settingsBuilder.build();
-        String outString = instance.writeString(analysis, settings);
+        String outString = instance.writeString(analysis, sampleData, settings);
         String expected = HEADER
                 + PASS_VARIANT_LINE
                 + FAIL_VARIANT_LINE;
@@ -117,7 +134,7 @@ public class TsvVariantResultsWriterTest {
     @Test
     public void testWritePassVariantsOnlyStringContainsOnlyPassedVariants() {
         OutputSettings settings = settingsBuilder.outputPassVariantsOnly(true).build();
-        String outString = instance.writeString(analysis, settings);
+        String outString = instance.writeString(analysis, sampleData, settings);
         String expected = HEADER +
                 PASS_VARIANT_LINE;
         assertThat(outString, equalTo(expected));

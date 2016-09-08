@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,18 +25,19 @@
 package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
-import de.charite.compbio.exomiser.core.model.frequency.Frequency;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.frequency.Frequency;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
+import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,10 +46,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertThat;
 
 /**
  * Tests for FilterReportFactory.
@@ -40,12 +57,10 @@ public class FilterReportFactoryTest {
 
     private FilterReportFactory instance;
 
+    private SampleData sampleData;
     private List<VariantEvaluation> variantEvaluations;
     private List<Gene> genes;
-    private SampleData sampleData;
 
-    private Analysis analysis;
-    
     @Before
     public void setUp() {
         instance = new FilterReportFactory();
@@ -56,7 +71,6 @@ public class FilterReportFactoryTest {
         sampleData.setVariantEvaluations(variantEvaluations);
         sampleData.setGenes(genes);
         
-        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
     }
 
     private VariantEvaluation makeFailedVariant(FilterType filterType) {
@@ -89,28 +103,32 @@ public class FilterReportFactoryTest {
     public void testMakeFilterReportsNoTypesSpecifiedReturnsEmptyList() {
         List<FilterReport> emptyFilterReportList = new ArrayList<>();
 
-        List<FilterReport> reports = instance.makeFilterReports(analysis);
+        List<FilterReport> reports = instance.makeFilterReports(Analysis.newBuilder().build(), sampleData);
 
         assertThat(reports, equalTo(emptyFilterReportList));
     }
 
     @Test
     public void testMakeFilterReportsFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
-        analysis.addStep(new FrequencyFilter(0.1f));
-        analysis.addStep(new PathogenicityFilter(true));
+        Analysis analysis = Analysis.newBuilder()
+            .addStep(new FrequencyFilter(0.1f))
+            .addStep(new PathogenicityFilter(true))
+            .build();
         
-        List<FilterReport> reports = instance.makeFilterReports(analysis);
+        List<FilterReport> reports = instance.makeFilterReports(analysis, sampleData);
 
         assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
     }
     
     @Test
     public void testMakeFilterReportsDecoratedFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
-        analysis.addStep(new FrequencyDataProvider(null, Collections.emptySet(), new KnownVariantFilter()));
-        analysis.addStep(new FrequencyDataProvider(null, Collections.emptySet(), new FrequencyFilter(0.1f)));
-        analysis.addStep(new PathogenicityDataProvider(null, Collections.emptySet(), new PathogenicityFilter(true)));
+        Analysis analysis = Analysis.newBuilder()
+                .addStep(new FrequencyDataProvider(null, Collections.emptySet(), new KnownVariantFilter()))
+                .addStep(new FrequencyDataProvider(null, Collections.emptySet(), new FrequencyFilter(0.1f)))
+                .addStep(new PathogenicityDataProvider(null, Collections.emptySet(), new PathogenicityFilter(true)))
+                .build();
         
-        List<FilterReport> reports = instance.makeFilterReports(analysis);
+        List<FilterReport> reports = instance.makeFilterReports(analysis, sampleData);
 
         assertThat(reports.size(), equalTo(analysis.getAnalysisSteps().size()));
         assertThat(reports.get(0).getFilterType(), equalTo(FilterType.KNOWN_VARIANT_FILTER));

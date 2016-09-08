@@ -2,7 +2,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -20,32 +20,22 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.GeneFilter;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
-import de.charite.compbio.exomiser.core.filters.VariantFilter;
-import de.charite.compbio.exomiser.core.model.SampleData;
+import com.google.common.collect.Lists;
+import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.NoneTypePrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.junit.Test;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -53,147 +43,195 @@ import org.junit.Test;
  */
 public class AnalysisTest {
 
-    private Analysis instance;
+    private static final Analysis DEFAULT_ANALYSIS = Analysis.newBuilder().build();
 
-    private SampleData sampleData;
-
-    @Before
-    public void setUp() {
-        sampleData = new SampleData();
-        instance = new Analysis();
+    private Analysis.Builder newBuilder() {
+        return Analysis.newBuilder();
     }
 
-    @Test
-    public void canSetVcfPathInConstructor() {
-        Path vcfPath = Paths.get("vcf");
-        instance = new Analysis(vcfPath);
-        assertThat(instance.getVcfPath(), equalTo(vcfPath));
+    private List<AnalysisStep> getAnalysisSteps() {
+        VariantFilter geneIdFilter = new EntrezGeneIdFilter(new HashSet<>());
+        Prioritiser noneTypePrioritiser = new NoneTypePrioritiser();
+        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
+        VariantFilter targetFilter = new PassAllVariantEffectsFilter();
+
+        return Lists.newArrayList(geneIdFilter, noneTypePrioritiser, inheritanceFilter, targetFilter);
     }
-    
+
     @Test
     public void testCanSetAndGetVcfFilePath() {
         Path vcfPath = Paths.get("vcf");
-        instance.setVcfPath(vcfPath);
+        Analysis instance = newBuilder()
+                .vcfPath(vcfPath)
+                .build();
         assertThat(instance.getVcfPath(), equalTo(vcfPath));
     }
 
     @Test
     public void testCanSetAndGetPedFilePath() {
         Path pedPath = Paths.get("ped");
-        instance.setPedPath(pedPath);
+        Analysis instance = newBuilder()
+                .pedPath(pedPath)
+                .build();
         assertThat(instance.getPedPath(), equalTo(pedPath));
     }
 
     @Test
-    public void testCanGetSampleData() {
-        assertThat(instance.getSampleData(), equalTo(sampleData));
-    }
-
-    @Test
     public void modeOfInheritanceDefaultsToUnspecified() {
-        assertThat(instance.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
+        assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
     }
 
     @Test
     public void testCanMakeAnalysis_specifyModeOfInheritance() {
         ModeOfInheritance modeOfInheritance = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-        instance.setModeOfInheritance(modeOfInheritance);
+        Analysis instance = newBuilder()
+                .modeOfInheritance(modeOfInheritance)
+                .build();
         assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritance));
     }
 
     @Test
     public void testGeneScoringModeDefaultsToRawScore() {
-        assertThat(instance.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
+        assertThat(DEFAULT_ANALYSIS.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
     }
 
     @Test
     public void testGeneScoringModeCanBeSpecified() {
         ScoringMode scoringMode = ScoringMode.RANK_BASED;
-        instance.setScoringMode(scoringMode);
+        Analysis instance = newBuilder()
+                .scoringMode(scoringMode)
+                .build();
         assertThat(instance.getScoringMode(), equalTo(scoringMode));
     }
 
     @Test
     public void analysisModeDefaultsToPassOnly() {
-        assertThat(instance.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
+        assertThat(DEFAULT_ANALYSIS.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
     }
 
     @Test
     public void analysisCanSpecifyAlternativeAnalysisMode() {
-        instance.setAnalysisMode(AnalysisMode.FULL);
+        Analysis instance = newBuilder()
+                .analysisMode(AnalysisMode.FULL)
+                .build();
         assertThat(instance.getAnalysisMode(), equalTo(AnalysisMode.FULL));
     }
 
     @Test
     public void testFrequencySourcesAreEmptyByDefault() {
-        assertThat(instance.getFrequencySources().isEmpty(), is(true));
+        assertThat(DEFAULT_ANALYSIS.getFrequencySources().isEmpty(), is(true));
     }
 
     @Test
     public void canSpecifyFrequencySources() {
         Set<FrequencySource> sources = EnumSet.allOf(FrequencySource.class);
-        instance.setFrequencySources(sources);
+        Analysis instance = newBuilder()
+                .frequencySources(sources)
+                .build();
         assertThat(instance.getFrequencySources(), equalTo(sources));
     }
-    
+
     @Test
     public void testPathogenicitySourcesAreEmptyByDefault() {
-        assertThat(instance.getPathogenicitySources().isEmpty(), is(true));
+        assertThat(DEFAULT_ANALYSIS.getPathogenicitySources().isEmpty(), is(true));
     }
 
     @Test
     public void canSpecifyPathogenicitySources() {
         Set<PathogenicitySource> sources = EnumSet.allOf(PathogenicitySource.class);
-        instance.setPathogenicitySources(sources);
+        Analysis instance = newBuilder()
+                .pathogenicitySources(sources)
+                .build();
         assertThat(instance.getPathogenicitySources(), equalTo(sources));
     }
-    
+
     @Test
     public void testGetAnalysisSteps_ReturnsEmptyListWhenNoStepsHaveBeedAdded() {
         List<AnalysisStep> steps = Collections.emptyList();
-        assertThat(instance.getAnalysisSteps(), equalTo(steps));
+        assertThat(DEFAULT_ANALYSIS.getAnalysisSteps(), equalTo(steps));
     }
 
     @Test
     public void testCanAddVariantFilterAsAnAnalysisStep() {
         VariantFilter variantFilter = new PassAllVariantEffectsFilter();
-        instance.addStep(variantFilter);
+        Analysis instance = newBuilder()
+                .addStep(variantFilter)
+                .build();
         assertThat(instance.getAnalysisSteps(), hasItem(variantFilter));
     }
 
     @Test
     public void testCanAddGeneFilterAsAnAnalysisStep() {
         GeneFilter geneFilter = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
-        instance.addStep(geneFilter);
+        Analysis instance = newBuilder()
+                .addStep(geneFilter)
+                .build();
         assertThat(instance.getAnalysisSteps(), hasItem(geneFilter));
     }
 
     @Test
     public void testCanAddPrioritiserAsAnAnalysisStep() {
         Prioritiser prioritiser = new NoneTypePrioritiser();
-        instance.addStep(prioritiser);
+        Analysis instance = newBuilder()
+                .addStep(prioritiser)
+                .build();
         assertThat(instance.getAnalysisSteps(), hasItem(prioritiser));
     }
 
     @Test
     public void testGetAnalysisSteps_ReturnsListOfStepsAdded() {
-        List<AnalysisStep> steps = new ArrayList<>();
-        VariantFilter geneIdFilter = new EntrezGeneIdFilter(new HashSet<>());
-        Prioritiser noneType = new NoneTypePrioritiser();
-        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
-        VariantFilter targetFilter = new PassAllVariantEffectsFilter();
+        List<AnalysisStep> steps = getAnalysisSteps();
 
-        steps.add(geneIdFilter);
-        steps.add(noneType);
-        steps.add(inheritanceFilter);
-        steps.add(targetFilter);
+        Analysis.Builder builder = newBuilder();
+        steps.forEach(builder::addStep);
 
-        instance.addStep(geneIdFilter);
-        instance.addStep(noneType);
-        instance.addStep(inheritanceFilter);
-        instance.addStep(targetFilter);
+        Analysis instance = builder.build();
 
         assertThat(instance.getAnalysisSteps(), equalTo(steps));
     }
 
+    @Test
+    public void testBuilderCanSetAllSteps() {
+        List<AnalysisStep> steps = getAnalysisSteps();
+
+        Analysis instance = newBuilder()
+                .steps(steps)
+                .build();
+
+        assertThat(instance.getAnalysisSteps(), equalTo(steps));
+    }
+
+    @Test
+    public void testCopyReturnsBuilder() {
+        Analysis.Builder analysisBuilder = DEFAULT_ANALYSIS.copy();
+        Analysis copy = analysisBuilder.build();
+        assertThat(copy, equalTo(DEFAULT_ANALYSIS));
+    }
+
+    @Test
+    public void testCopyBuilderCanChangeFrequencySources() {
+        Analysis.Builder analysisBuilder = DEFAULT_ANALYSIS.copy();
+        Analysis copy = analysisBuilder
+                .frequencySources(EnumSet.of(FrequencySource.ESP_ALL))
+                .build();
+        assertThat(copy.getFrequencySources(), equalTo(EnumSet.of(FrequencySource.ESP_ALL)));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCopyBuilderCannotAddNewAnalysisStep() {
+        // this is likely a nonsense thing to do anyway - the order of the steps is important so copying and adding a new
+        // one is probably a silly thing to do.
+        Analysis copy = DEFAULT_ANALYSIS.copy()
+                .addStep(new NoneTypePrioritiser())
+                .build();
+    }
+
+    @Test
+    public void testCopyBuilderCanSetAnalysisSteps() {
+        List<AnalysisStep> newSteps = getAnalysisSteps();
+        Analysis copy = DEFAULT_ANALYSIS.copy()
+                .steps(newSteps)
+                .build();
+        assertThat(copy.getAnalysisSteps(), equalTo(newSteps));
+    }
 }

@@ -58,7 +58,7 @@ public class AnalysisServiceDefaultImpl implements AnalysisService {
     @Override
     public AnalysisResponse createAnalysisJobFromYaml(String analysisYaml) {
         //TODO: Validate YAML transform into Analysis (use AnalysisFactory)
-        return createAnalysisJob(new Analysis());
+        return createAnalysisJob(Analysis.newBuilder().build());
     }
 
     @Override

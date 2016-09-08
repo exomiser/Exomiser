@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -20,25 +20,19 @@
 package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.filters.*;
-import de.charite.compbio.exomiser.core.model.FilterStatus;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.MockPrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.util.EnumSet;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -57,10 +51,8 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {
         Analysis analysis = makeAnalysis(vcfPath);
-        
-        instance.runAnalysis(analysis);
 
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
         for (Gene gene : sampleData.getGenes()) {
@@ -76,9 +68,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
@@ -106,9 +96,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
@@ -146,9 +134,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
@@ -187,11 +173,15 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
-        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        Analysis analysis = Analysis.newBuilder()
+                .vcfPath(vcfPath)
+                .addStep(intervalFilter)
+                .addStep(qualityFilter)
+                .addStep(mockHiPhivePrioritiser)
+                .addStep(inheritanceFilter)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
@@ -235,9 +225,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
@@ -279,9 +267,7 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter, intervalFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
 
@@ -324,12 +310,17 @@ public class SimpleAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        Analysis analysis = makeAnalysis(vcfPath, qualityFilter, prioritiser, priorityScoreFilter, intervalFilter, inheritanceFilter);
-        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        instance.runAnalysis(analysis);
-
+        Analysis analysis = Analysis.newBuilder()
+                .vcfPath(vcfPath)
+                .addStep(qualityFilter)
+                .addStep(prioritiser)
+                .addStep(priorityScoreFilter)
+                .addStep(intervalFilter)
+                .addStep(inheritanceFilter)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
         //TODO: remove all this repetitive cruft into common method
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,11 +19,13 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
+import de.charite.compbio.exomiser.core.model.SampleData;
+
 /**
  *
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface AnalysisRunner {
-    void runAnalysis(Analysis analysis);
+    SampleData run(Analysis analysis);
 }

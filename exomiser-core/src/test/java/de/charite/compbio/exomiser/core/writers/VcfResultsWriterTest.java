@@ -20,7 +20,6 @@
 package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import de.charite.compbio.exomiser.core.factories.TestFactory;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
@@ -140,7 +139,7 @@ public class VcfResultsWriterTest {
         sampleData = new SampleData();
         sampleData.setVcfHeader(reader.getFileHeader());
         
-        analysis = new TestAnalysisBuilder().sampleData(sampleData).build();
+        analysis = Analysis.newBuilder().build();
         
         TestVariantFactory varFactory = new TestVariantFactory();
 
@@ -171,7 +170,7 @@ public class VcfResultsWriterTest {
     /* test that the extended header is written out properly */
     @Test
     public void testWriteHeaderFile() {
-        Assert.assertEquals(EXPECTED_HEADER, instance.writeString(analysis, settings));
+        Assert.assertEquals(EXPECTED_HEADER, instance.writeString(analysis, sampleData, settings));
     }
 
     /* test writing out unannotated variants */
@@ -179,7 +178,7 @@ public class VcfResultsWriterTest {
     public void testWriteUnannotatedVariants() {       
         sampleData.setVariantEvaluations(Arrays.asList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2));
         
-        String vcf = instance.writeString(analysis, settings);
+        String vcf = instance.writeString(analysis, sampleData, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr5\t11\t.\tAC\tAT\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
                 + "chr5\t14\t.\tT\tTG\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
@@ -191,7 +190,7 @@ public class VcfResultsWriterTest {
     public void testWriteAnnotatedVariantsNoFiltersApplied() {
         sampleData.setGenes(Arrays.asList(gene1, gene2));
 
-        String vcf = instance.writeString(analysis, settings);
+        String vcf = instance.writeString(analysis, sampleData, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\t.\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n"
                 + "chr7\t155604801\t.\tC\tCTT\t1\t.\tEXOMISER_GENE=SHH;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.95;RD=30\tGT:RD\t0/1:30\n";
@@ -204,7 +203,7 @@ public class VcfResultsWriterTest {
         missenseVariantEvaluation.addFilterResult(passTargetResult);
         sampleData.setGenes(Arrays.asList(gene1));
 
-        String vcf = instance.writeString(analysis, settings);
+        String vcf = instance.writeString(analysis, sampleData, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
         Assert.assertEquals(EXPECTED, vcf);
@@ -216,7 +215,7 @@ public class VcfResultsWriterTest {
         missenseVariantEvaluation.addFilterResult(failTargetResult);
         sampleData.setGenes(Arrays.asList(gene1));
 
-        String vcf = instance.writeString(analysis, settings);
+        String vcf = instance.writeString(analysis, sampleData, settings);
         final String EXPECTED = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
         Assert.assertEquals(EXPECTED, vcf);
@@ -233,7 +232,7 @@ public class VcfResultsWriterTest {
                 .outputPassVariantsOnly(true)
                 .outputPrefix(outPath + "testWrite").build();
         
-        String output = instance.writeString(analysis, outputPassVariantsOnlySettings);
+        String output = instance.writeString(analysis, sampleData, outputPassVariantsOnlySettings);
         String expected = EXPECTED_HEADER
                 + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
         assertThat(output, equalTo(expected));
@@ -250,7 +249,7 @@ public class VcfResultsWriterTest {
                 .outputPassVariantsOnly(true)
                 .outputPrefix(outPath + "testWrite").build();
 
-        String output = instance.writeString(analysis, outputPassVariantsOnlySettings);
+        String output = instance.writeString(analysis, sampleData, outputPassVariantsOnlySettings);
         assertThat(output, equalTo(EXPECTED_HEADER));
     }
     
@@ -264,7 +263,7 @@ public class VcfResultsWriterTest {
         gene.addVariant(alt2);
         
         sampleData.setGenes(Arrays.asList(gene));
-        String output = instance.writeString(analysis, settings);
+        String output = instance.writeString(analysis, sampleData, settings);
         System.out.println(output);
         String expected = EXPECTED_HEADER
                 + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tEXOMISER_GENE=TEST;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.0;RD=30\tGT:RD\t0/1:30\n"
@@ -292,7 +291,7 @@ public class VcfResultsWriterTest {
         gene.addVariant(altAlleleTwo);
 
         sampleData.setGenes(Arrays.asList(gene));
-        String output = instance.writeString(analysis, settings);
+        String output = instance.writeString(analysis, sampleData, settings);
         System.out.println(output);
         //expected should have concatenated variant score for multi-allele line: EXOMISER_VARIANT_SCORE=0.85,0.6
         String expected = EXPECTED_HEADER

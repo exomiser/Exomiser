@@ -26,7 +26,6 @@ package de.charite.compbio.exomiser.core.writers;
 
 import com.google.common.collect.Lists;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
-import de.charite.compbio.exomiser.core.analysis.TestAnalysisBuilder;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.Gene;
@@ -128,27 +127,26 @@ public class HtmlResultsWriterTest {
         Paths.get(testOutFilePrefix).toFile().delete();
     }
 
-    private Analysis makeAnalysis(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
+    private SampleData makeSampleData(List<Gene> genes, List<VariantEvaluation> variantEvaluations) {
         SampleData sampleData = new SampleData();
-        List<String> sampleNames = new ArrayList<>();
-        sampleNames.add("Slartibartfast");
-        sampleData.setSampleNames(sampleNames);
+        sampleData.setSampleNames(Lists.newArrayList("Slartibartfast"));
         sampleData.setNumberOfSamples(1);
         sampleData.setGenes(genes);
         sampleData.setVariantEvaluations(variantEvaluations);
 
-        return new TestAnalysisBuilder().sampleData(sampleData).build();
+        return sampleData;
     }
 
     @Test
     public void testWriteTemplateWithEmptyData() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWrite.html").toString();
 
-        Analysis analysis = makeAnalysis(new ArrayList<Gene>(), new ArrayList<VariantEvaluation>());
+        Analysis analysis = Analysis.newBuilder().build();
+        SampleData sampleData = makeSampleData(Collections.emptyList(), Collections.emptyList());
        
         OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(analysis, settings);
+        instance.writeFile(analysis, sampleData, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
 
@@ -157,14 +155,14 @@ public class HtmlResultsWriterTest {
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData.html").toString();
-        List<VariantEvaluation> variantData = new ArrayList<>();
-        variantData.add(unAnnotatedVariantEvaluation1);
-        variantData.add(unAnnotatedVariantEvaluation2);
-        Analysis analysis = makeAnalysis(new ArrayList<Gene>(), variantData);
-        
+        Analysis analysis = Analysis.newBuilder().build();
+
+        List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
+        SampleData sampleData = makeSampleData(Collections.emptyList(), variants);
+
         OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(analysis, settings);
+        instance.writeFile(analysis, sampleData, settings);
 
         Path testOutFile = Paths.get(testOutFilePrefix);
         assertTrue(testOutFile.toFile().exists());
@@ -173,19 +171,15 @@ public class HtmlResultsWriterTest {
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html").toString();
-        List<VariantEvaluation> variantData = new ArrayList<>();
-        variantData.add(unAnnotatedVariantEvaluation1);
-        variantData.add(unAnnotatedVariantEvaluation2);
+        Analysis analysis = Analysis.newBuilder().build();
 
-        List<Gene> genes = new ArrayList<>();
-        genes.add(gene1);
-        genes.add(gene2);
+        List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
+        List<Gene> genes = Lists.newArrayList(gene1, gene2);
+        SampleData sampleData = makeSampleData(genes, variants);
 
-        Analysis analysis = makeAnalysis(genes, variantData);
-        
         OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
-        instance.writeFile(analysis, settings);
+        instance.writeFile(analysis, sampleData, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
         Files.readAllLines(testOutFile).forEach(System.out::println);
 
@@ -196,20 +190,22 @@ public class HtmlResultsWriterTest {
     public void testWriteTemplateWithEmptyDataAndFullAnalysis() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWrite").toString();
 
-        Analysis analysis = makeAnalysis(new ArrayList<>(), new ArrayList<>());
-        analysis.setHpoIds(Lists.newArrayList("HP:000001", "HP:000002"));
-        analysis.addStep(new RegulatoryFeatureFilter());
-        analysis.addStep(new FrequencyFilter(0.1f));
-        analysis.addStep(new PathogenicityFilter(true));
-        analysis.addStep(new PhivePriority(Collections.emptyList(), null));
+        SampleData sampleData = makeSampleData(Collections.emptyList(), Collections.emptyList());
+
+        Analysis analysis = Analysis.newBuilder()
+                .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
+                .addStep(new RegulatoryFeatureFilter())
+                .addStep(new FrequencyFilter(0.1f))
+                .addStep(new PathogenicityFilter(true))
+                .addStep(new PhivePriority(Collections.emptyList(), null))
+                .build();
 
         OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
-        String output = instance.writeString(analysis, settings);
+        String output = instance.writeString(analysis, sampleData, settings);
         System.out.println(output);
 
         Path testOutFile = Paths.get(testOutFilePrefix);
-
 
         assertTrue(testOutFile.toFile().exists());
     }

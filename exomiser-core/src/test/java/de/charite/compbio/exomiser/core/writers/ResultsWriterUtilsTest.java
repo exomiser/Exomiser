@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -12,20 +31,20 @@ import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -123,18 +142,20 @@ public class ResultsWriterUtilsTest {
     
     @Test
     public void canMakeFilterReportsFromAnalysis_returnsEmptyListWhenNoFiltersAdded(){
-        Analysis analysis = new Analysis();
-       
-        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis);
+        Analysis analysis = Analysis.newBuilder().build();
+        SampleData sampleData = new SampleData();
+        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, sampleData);
         
         assertThat(results.isEmpty(), is(true));
     }
     
     @Test
     public void canMakeFilterReportsFromAnalysis(){
-        Analysis analysis = new Analysis();
-        analysis.addStep(new PassAllVariantEffectsFilter());
-        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis);
+        Analysis analysis = Analysis.newBuilder()
+                .addStep(new PassAllVariantEffectsFilter())
+                .build();
+        SampleData sampleData = new SampleData();
+        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, sampleData);
         
         for (FilterReport result : results) {
             System.out.println(result);

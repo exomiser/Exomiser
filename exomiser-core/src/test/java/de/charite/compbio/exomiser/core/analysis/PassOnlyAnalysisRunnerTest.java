@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,34 +19,20 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Ignore;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.GeneFilter;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.IntervalFilter;
-import de.charite.compbio.exomiser.core.filters.PriorityScoreFilter;
-import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.VariantFilter;
-import de.charite.compbio.exomiser.core.model.FilterStatus;
-import de.charite.compbio.exomiser.core.model.Gene;
-import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.filters.*;
+import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.MockPrioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -63,10 +49,9 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {
         Analysis analysis = makeAnalysis(vcfPath);
-        
-        instance.runAnalysis(analysis);
 
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
+
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
         for (Gene gene : sampleData.getGenes()) {
@@ -82,9 +67,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
 
@@ -99,9 +82,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().isEmpty(), is(true));
         assertThat(sampleData.getVariantEvaluations().isEmpty(), is(true));
@@ -117,9 +98,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
 
@@ -146,11 +125,15 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser, inheritanceFilter);
-        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        Analysis analysis = Analysis.newBuilder()
+                .vcfPath(vcfPath)
+                .addStep(intervalFilter)
+                .addStep(qualityFilter)
+                .addStep(mockHiPhivePrioritiser)
+                .addStep(inheritanceFilter)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
 
@@ -179,9 +162,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
 
@@ -205,9 +186,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter, intervalFilter);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
 
@@ -240,11 +219,16 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         
-        Analysis analysis = makeAnalysis(vcfPath, qualityFilter, prioritiser, priorityScoreFilter, intervalFilter, inheritanceFilter);
-        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        instance.runAnalysis(analysis);
-
-        SampleData sampleData = analysis.getSampleData();
+        Analysis analysis = Analysis.newBuilder()
+                .vcfPath(vcfPath)
+                .addStep(qualityFilter)
+                .addStep(prioritiser)
+                .addStep(priorityScoreFilter)
+                .addStep(intervalFilter)
+                .addStep(inheritanceFilter)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
 
@@ -271,12 +255,14 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     public void testRunAnalysis_autosomalDominantTrioDeNovoInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-    	Analysis analysis = makeAnalysis(inheritanceFilterVCFPath, qualityFilter, inheritanceFilter);
-        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-    	analysis.setPedPath(childAffectedPedPath);
-    	instance.runAnalysis(analysis);
-    	
-    	SampleData sampleData = analysis.getSampleData();
+    	Analysis analysis = Analysis.newBuilder()
+                .vcfPath(inheritanceFilterVCFPath)
+                .addStep(qualityFilter)
+                .addStep(inheritanceFilter)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .pedPath(childAffectedPedPath)
+                .build();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
         
@@ -296,12 +282,14 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     public void testRunAnalysis_autosomalDominantTrioSharedInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-    	Analysis analysis = makeAnalysis(inheritanceFilterVCFPath, qualityFilter, inheritanceFilter);
-    	analysis.setPedPath(twoAffectedPedPath);
-        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-    	instance.runAnalysis(analysis);
-    	
-    	SampleData sampleData = analysis.getSampleData();
+        Analysis analysis = Analysis.newBuilder()
+                .vcfPath(inheritanceFilterVCFPath)
+                .addStep(qualityFilter)
+                .addStep(inheritanceFilter)
+                .pedPath(twoAffectedPedPath)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .build();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(1));
         
@@ -321,12 +309,14 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     public void testRunAnalysis_autosomalRecessiveTrioInheritanceFilter() {
     	VariantFilter qualityFilter = new QualityFilter(5);
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-    	Analysis analysis = makeAnalysis(inheritanceFilterVCFPath, qualityFilter, inheritanceFilter);
-    	analysis.setPedPath(childAffectedPedPath);
-        analysis.setModeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-    	instance.runAnalysis(analysis);
-    	
-    	SampleData sampleData = analysis.getSampleData();
+    	Analysis analysis = Analysis.newBuilder()
+                .vcfPath(inheritanceFilterVCFPath)
+                .addStep(qualityFilter)
+                .addStep(inheritanceFilter)
+                .pedPath(childAffectedPedPath)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
+                .build();
+        SampleData sampleData = instance.run(analysis);
         printResults(sampleData);
         assertThat(sampleData.getGenes().size(), equalTo(2));
         

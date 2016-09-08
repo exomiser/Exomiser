@@ -38,6 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,19 +72,15 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     @Override
-    public void runAnalysis(Analysis analysis) {
+    public SampleData run(Analysis analysis) {
 
         final SampleData sampleData = makeSampleDataWithoutGenesOrVariants(analysis);
 
         logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
-        long startAnalysisTimeMillis = System.currentTimeMillis();
+        Instant timeStart = Instant.now();
 
         final Pedigree pedigree = sampleData.getPedigree();
         final Path vcfPath = analysis.getVcfPath();
-        final List<AnalysisStep> analysisSteps = analysis.getAnalysisSteps();
-        //should this be optional for people really wanting to screw about with the steps at the risk of catastrophic failure?
-        //it's really an optimiser step of a compiler, so perhaps it should be in the AnalysisParser?
-        new AnalysisStepChecker().check(analysisSteps);
 
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
@@ -127,9 +125,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 //        logTopNumScoringGenes(5, genes, analysis);
 
-        long endAnalysisTimeMillis = System.currentTimeMillis();
-        double analysisTimeSecs = (double) (endAnalysisTimeMillis - startAnalysisTimeMillis) / 1000;
-        logger.info("Finished analysis in {} secs", analysisTimeSecs);
+        Duration duration = Duration.between(timeStart, Instant.now());
+        long ms = duration.toMillis();
+        logger.info("Finished analysis in {}m {}s {}ms ({} ms)", (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
+        return sampleData;
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
@@ -255,7 +254,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private SampleData makeSampleDataWithoutGenesOrVariants(Analysis analysis) {
         final SampleData sampleData = sampleDataFactory.createSampleDataWithoutVariantsOrGenes(analysis.getVcfPath(), analysis.getPedPath());
-        analysis.setSampleData(sampleData);
         return sampleData;
     }
 

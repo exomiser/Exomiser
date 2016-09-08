@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -24,20 +24,23 @@
  */
 package de.charite.compbio.exomiser.core.analysis;
 
-import de.charite.compbio.exomiser.core.factories.*;
+import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.exomiser.core.factories.TestFactory;
+import de.charite.compbio.exomiser.core.factories.VariantDataService;
+import de.charite.compbio.exomiser.core.factories.VariantDataServiceStub;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import static java.util.stream.Collectors.toMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Contains common methods required by the AnalysisRunnerTest classes.
@@ -59,12 +62,11 @@ public abstract class AnalysisRunnerTestBase {
     
     
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
-        Analysis analysis = new Analysis(vcfPath);
-        if (analysisSteps.length != 0) {
-            analysis.addAllSteps(Arrays.asList(analysisSteps));
+        return Analysis.newBuilder()
+                .vcfPath(vcfPath)
+                .steps(Arrays.asList(analysisSteps))
+                .build();
         }
-        return analysis;
-    }
 
     Map<String, Gene> makeResults(List<Gene> genes) {
         return genes.stream().collect(toMap(Gene::getGeneSymbol, gene -> gene));

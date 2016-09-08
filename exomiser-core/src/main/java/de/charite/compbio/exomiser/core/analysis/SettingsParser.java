@@ -21,20 +21,7 @@ package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.EntrezGeneIdFilter;
-import de.charite.compbio.exomiser.core.filters.Filter;
-import de.charite.compbio.exomiser.core.filters.FilterSettings;
-import de.charite.compbio.exomiser.core.filters.FrequencyDataProvider;
-import de.charite.compbio.exomiser.core.filters.FrequencyFilter;
-import de.charite.compbio.exomiser.core.filters.GeneFilter;
-import de.charite.compbio.exomiser.core.filters.InheritanceFilter;
-import de.charite.compbio.exomiser.core.filters.IntervalFilter;
-import de.charite.compbio.exomiser.core.filters.KnownVariantFilter;
-import de.charite.compbio.exomiser.core.filters.PathogenicityDataProvider;
-import de.charite.compbio.exomiser.core.filters.PathogenicityFilter;
-import de.charite.compbio.exomiser.core.filters.QualityFilter;
-import de.charite.compbio.exomiser.core.filters.VariantEffectFilter;
-import de.charite.compbio.exomiser.core.filters.VariantFilter;
+import de.charite.compbio.exomiser.core.filters.*;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
@@ -43,14 +30,15 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityFactory;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Will set-up an {@link Exomiser} exome {@link Analysis} according to the original 
@@ -100,27 +88,21 @@ public class SettingsParser {
         logger.info("SETTING-UP ANALYSIS");
         PriorityType prioritiserType = settings.getPrioritiserType();
 
-        Analysis analysis = new Analysis();
-        analysis.setVcfPath(settings.getVcfPath());
-        analysis.setPedPath(settings.getPedPath());
-        analysis.setModeOfInheritance(settings.getModeOfInheritance());
-        analysis.setHpoIds(settings.getHpoIds());
-        analysis.setFrequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES);
-        analysis.setPathogenicitySources(MISSENSE_VARIANT_PATH_SOURCES);
-        analysis.setScoringMode(prioritiserType.getScoringMode());
-        if (settings.runFullAnalysis()) {
-            analysis.setAnalysisMode(AnalysisMode.FULL);
-        } else {
-            analysis.setAnalysisMode(AnalysisMode.SPARSE);
-        }
+        return Analysis.newBuilder()
+            .vcfPath(settings.getVcfPath())
+            .pedPath(settings.getPedPath())
+            .modeOfInheritance(settings.getModeOfInheritance())
+            .hpoIds(settings.getHpoIds())
+            .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
+            .pathogenicitySources(MISSENSE_VARIANT_PATH_SOURCES)
+            .scoringMode(prioritiserType.getScoringMode())
+            .analysisMode(makeAnalysisMode(settings.runFullAnalysis()))
+            .steps(makeAnalysisSteps(settings, settings))
+            .build();
+    }
 
-        List<AnalysisStep> analysisSteps = makeAnalysisSteps(settings, settings);
-        analysisSteps.forEach(step -> {
-            logger.info("ADDING ANALYSIS STEP {}", step);
-            analysis.addStep(step);
-        });
-
-        return analysis;
+    private AnalysisMode makeAnalysisMode(boolean runFullAnalysis) {
+        return runFullAnalysis ? AnalysisMode.FULL : AnalysisMode.SPARSE;
     }
 
     public List<AnalysisStep> makeAnalysisSteps(FilterSettings filterSettings, PrioritiserSettings prioritiserSettings) {
@@ -128,6 +110,9 @@ public class SettingsParser {
         steps.addAll(makeFilters(filterSettings));
         //Prioritisers should ALWAYS run last.
         steps.addAll(makePrioritisers(prioritiserSettings));
+        steps.forEach(step -> {
+            logger.info("ADDING ANALYSIS STEP {}", step);
+        });
         return steps;
     }
 

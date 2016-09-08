@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -85,87 +84,84 @@ public class AnalysisFactory {
     public static class AnalysisBuilder {
 
         private final PriorityFactory priorityFactory;
-        private final Analysis analysis;
-
-        private final List<AnalysisStep> analysisSteps = new ArrayList<>();
+        private final Analysis.Builder analysisBuilder;
 
         private AnalysisBuilder(PriorityFactory priorityFactory, Path vcfPath) {
             this.priorityFactory = priorityFactory;
-            analysis = new Analysis(vcfPath);
+            analysisBuilder = Analysis.newBuilder().vcfPath(vcfPath);
         }
 
         public Analysis build() {
-            analysis.addAllSteps(analysisSteps);
-            return analysis;
+            return analysisBuilder.build();
         }
 
         public AnalysisBuilder pedPath(Path pedPath) {
-            analysis.setPedPath(pedPath);
+            analysisBuilder.pedPath(pedPath);
             return this;
         }
 
         public AnalysisBuilder hpoIds(List<String> hpoIds) {
-            analysis.setHpoIds(hpoIds);
+            analysisBuilder.hpoIds(hpoIds);
             return this;
         }
 
         public AnalysisBuilder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
-            analysis.setModeOfInheritance(modeOfInheritance);
+            analysisBuilder.modeOfInheritance(modeOfInheritance);
             return this;
         }
 
         public AnalysisBuilder scoringMode(ScoringMode scoreMode) {
-            analysis.setScoringMode(scoreMode);
+            analysisBuilder.scoringMode(scoreMode);
             return this;
         }
 
         public AnalysisBuilder analysisMode(AnalysisMode analysisMode) {
-            analysis.setAnalysisMode(analysisMode);
+            analysisBuilder.analysisMode(analysisMode);
             return this;
         }
 
         public AnalysisBuilder frequencySources(Set<FrequencySource> frequencySources) {
-            analysis.setFrequencySources(frequencySources);
+            analysisBuilder.frequencySources(frequencySources);
             return this;
         }
 
         public AnalysisBuilder pathogenicitySources(Set<PathogenicitySource> pathogenicitySources) {
-            analysis.setPathogenicitySources(pathogenicitySources);
+            analysisBuilder.pathogenicitySources(pathogenicitySources);
             return this;
         }
 
         public AnalysisBuilder addOmimPrioritiser() {
-            analysis.addStep(priorityFactory.makeOmimPrioritiser());
+            analysisBuilder.addStep(priorityFactory.makeOmimPrioritiser());
             return this;
         }
 
         public AnalysisBuilder addPhivePrioritiser(List<String> hpoIds) {
-            analysis.addStep(priorityFactory.makePhivePrioritiser(hpoIds));
+            analysisBuilder.addStep(priorityFactory.makePhivePrioritiser(hpoIds));
             return this;
         }
 
         public AnalysisBuilder addHiPhivePrioritiser(List<String> hpoIds) {
-            analysis.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
+            analysisBuilder.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
             return this;
         }
 
         public AnalysisBuilder addHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
-            analysis.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
+            analysisBuilder.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
             return this;
         }
 
         public AnalysisBuilder addPhenixPrioritiser(List<String> hpoIds) {
-            analysis.addStep(priorityFactory.makePhenixPrioritiser(hpoIds));
+            analysisBuilder.addStep(priorityFactory.makePhenixPrioritiser(hpoIds));
             return this;
         }
 
         public AnalysisBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes) {
-            analysis.addStep(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
+            analysisBuilder.addStep(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
             return this;
         }
 
         public AnalysisBuilder addAnalysisStep(AnalysisStep analysisStep) {
-            analysis.addStep(analysisStep);
+            analysisBuilder.addStep(analysisStep);
             return this;
         }
     }

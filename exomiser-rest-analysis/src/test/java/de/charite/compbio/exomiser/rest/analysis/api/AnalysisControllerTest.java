@@ -78,9 +78,10 @@ public class AnalysisControllerTest {
     public void setup() throws IOException{
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        Analysis analysis = new Analysis();
-        analysis.setFrequencySources(FrequencySource.ALL_ESP_SOURCES);
-        analysis.setPathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.CADD));
+        Analysis analysis = Analysis.newBuilder()
+                .frequencySources(FrequencySource.ALL_ESP_SOURCES)
+                .pathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.CADD))
+                .build();
         //TODO: get these to serialise
 //        analysis.addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f));
 //        analysis.addStep(new FrequencyFilter(1.0f));

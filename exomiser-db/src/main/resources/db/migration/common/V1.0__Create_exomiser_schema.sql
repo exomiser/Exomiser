@@ -416,10 +416,10 @@ CREATE INDEX entrez_id_2 ON human2fish_orthologs (entrez_id);
 
 CREATE INDEX mgi_gene_id ON human2mouse_orthologs (mgi_gene_id);
 
-CREATE INDEX e2 ON regulatory_features (chromosome, start, "end");
-CREATE INDEX e5 ON regulatory_features (chromosome);
-CREATE INDEX e6 ON regulatory_features (start);
-CREATE INDEX e7 ON regulatory_features ("end");
+-- CREATE INDEX e2 ON regulatory_features (chromosome, start, "end");
+-- CREATE INDEX e5 ON regulatory_features (chromosome);
+-- CREATE INDEX e6 ON regulatory_features (start);
+-- CREATE INDEX e7 ON regulatory_features ("end");
 
 create index tad1 on tad (chromosome,start,"end");
 

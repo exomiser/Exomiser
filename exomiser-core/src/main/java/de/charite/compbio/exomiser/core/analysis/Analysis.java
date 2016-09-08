@@ -24,22 +24,22 @@
  */
 package de.charite.compbio.exomiser.core.analysis;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.charite.compbio.exomiser.core.model.SampleData;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.prioritisers.ScoringMode;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * This class is analogous to the {@link Settings} class, although the key difference is that here the {@see #addStep}
@@ -47,52 +47,71 @@ import org.slf4j.LoggerFactory;
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@JsonDeserialize(builder = Analysis.Builder.class)
+@JsonPropertyOrder({"vcfPath", "pedPath", "hpoIds", "modeOfInheritance", "scoringMode", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
 public class Analysis {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
 
     //Store the path of the file used to create this data.
-    private Path vcfPath = null;
+    private final Path vcfPath;
     //there is often no pedigree. 
-    private Path pedPath = null;
-    //SampleData is not final as it requires building from the VCF/PED files. 
-    //This could happen at a separate time to the analysis initially being built.
-    @JsonIgnore
-    private SampleData sampleData = new SampleData();
+    private final Path pedPath;
     //these are more optional variables
-    private List<String> hpoIds = new ArrayList<>();
-    private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
-    private ScoringMode scoringMode = ScoringMode.RAW_SCORE;
-    private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
-    private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
-    private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
-    private final List<AnalysisStep> analysisSteps = new ArrayList<>();
+    private final List<String> hpoIds;
+    private final ModeOfInheritance modeOfInheritance;
+    private final ScoringMode scoringMode;
+    private final AnalysisMode analysisMode;
+    private final Set<FrequencySource> frequencySources;
+    private final Set<PathogenicitySource> pathogenicitySources;
+    private final List<AnalysisStep> analysisSteps;
 
-    public Analysis() {
-    }
-
-    public Analysis(Path vcfPath) {
-        this.vcfPath = vcfPath;
+    private Analysis(Builder builder) {
+        this.vcfPath = builder.vcfPath;
+        this.pedPath = builder.pedPath;
+        this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
+        this.modeOfInheritance = builder.modeOfInheritance;
+        this.scoringMode = builder.scoringMode;
+        this.analysisMode = builder.analysisMode;
+        this.frequencySources = EnumSet.copyOf(builder.frequencySources);
+        this.pathogenicitySources = EnumSet.copyOf(builder.pathogenicitySources);
+        this.analysisSteps = ImmutableList.copyOf(builder.analysisSteps);
     }
 
     public Path getVcfPath() {
         return vcfPath;
     }
 
-    public void setVcfPath(Path vcfPath) {
-        this.vcfPath = vcfPath;
-    }
-
     public Path getPedPath() {
         return pedPath;
     }
 
-    public void setPedPath(Path pedPath) {
-        this.pedPath = pedPath;
+    public ModeOfInheritance getModeOfInheritance() {
+        return modeOfInheritance;
     }
 
-    public SampleData getSampleData() {
-        return sampleData;
+    public ScoringMode getScoringMode() {
+        return scoringMode;
+    }
+
+    public List<String> getHpoIds() {
+        return hpoIds;
+    }
+
+    public AnalysisMode getAnalysisMode() {
+        return analysisMode;
+    }
+
+    public Set<FrequencySource> getFrequencySources() {
+        return frequencySources;
+    }
+
+    public Set<PathogenicitySource> getPathogenicitySources() {
+        return pathogenicitySources;
+    }
+
+    public List<AnalysisStep> getAnalysisSteps() {
+        return analysisSteps;
     }
 
     @JsonIgnore
@@ -139,76 +158,98 @@ public class Analysis {
         return groups;
     }
 
+    @JsonCreator
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
     /**
-     * The creation and setting of sample data should not be under the control
-     * of an external user. In production this should only be set by the
-     * AnalysisRunner as otherwise the entire process will become inconsistent.
-     *
-     * @param sampleData
+     * Creates a shallow copy of the current Analysis. This is only a potential issue for the AnalysisSteps as all other
+     * compound classes are immutable.
+     * @return an Analysis.Builder copy of the current Analysis.
      */
-    protected void setSampleData(SampleData sampleData) {
-        this.sampleData = sampleData;
+    public Builder copy() {
+        return newBuilder()
+                .vcfPath(vcfPath)
+                .pedPath(pedPath)
+                .hpoIds(hpoIds)
+                .modeOfInheritance(modeOfInheritance)
+                .scoringMode(scoringMode)
+                .analysisMode(analysisMode)
+                .frequencySources(frequencySources)
+                .pathogenicitySources(pathogenicitySources)
+                .steps(analysisSteps);
     }
 
-    public ModeOfInheritance getModeOfInheritance() {
-        return modeOfInheritance;
+    public static class Builder {
+
+        private Path vcfPath = null;
+        //there is often no pedigree.
+        private Path pedPath = null;
+        //these are more optional variables
+        private List<String> hpoIds = new ArrayList<>();
+        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
+        private ScoringMode scoringMode = ScoringMode.RAW_SCORE;
+        private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
+        private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
+        private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
+        private List<AnalysisStep> analysisSteps = new ArrayList<>();
+
+        public Analysis build() {
+            return new Analysis(this);
+        }
+
+        public Builder vcfPath(Path vcfPath) {
+            this.vcfPath = vcfPath;
+            return this;
+        }
+
+        public Builder pedPath(Path pedPath) {
+            this.pedPath = pedPath;
+            return this;
+        }
+
+        public Builder hpoIds(List<String> hpoIds) {
+            this.hpoIds = hpoIds;
+            return this;
+        }
+
+        public Builder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
+            this.modeOfInheritance = modeOfInheritance;
+            return this;
+        }
+
+        public Builder scoringMode(ScoringMode scoringMode) {
+            this.scoringMode = scoringMode;
+            return this;
+        }
+
+        public Builder analysisMode(AnalysisMode analysisMode) {
+            this.analysisMode = analysisMode;
+            return this;
+        }
+
+        public Builder frequencySources(Set<FrequencySource> frequencySources) {
+            this.frequencySources = frequencySources;
+            return this;
+        }
+
+        public Builder pathogenicitySources(Set<PathogenicitySource> pathogenicitySources) {
+            this.pathogenicitySources = pathogenicitySources;
+            return this;
+        }
+
+        public Builder addStep(AnalysisStep step) {
+            this.analysisSteps.add(step);
+            return this;
+        }
+
+        public Builder steps(List<AnalysisStep> analysisSteps) {
+            this.analysisSteps = analysisSteps;
+            return this;
+        }
     }
 
-    public void setModeOfInheritance(ModeOfInheritance modeOfInheritance) {
-        this.modeOfInheritance = modeOfInheritance;
-    }
-
-    public ScoringMode getScoringMode() {
-        return scoringMode;
-    }
-
-    public void setScoringMode(ScoringMode scoreMode) {
-        this.scoringMode = scoreMode;
-    }
-
-    public List<String> getHpoIds() {
-        return hpoIds;
-    }
-
-    public void setHpoIds(List<String> hpoIds) {
-        this.hpoIds = hpoIds;
-    }
-
-    public AnalysisMode getAnalysisMode() {
-        return analysisMode;
-    }
-
-    public void setAnalysisMode(AnalysisMode analysisMode) {
-        this.analysisMode = analysisMode;
-    }
-
-    public Set<FrequencySource> getFrequencySources() {
-        return frequencySources;
-    }
-
-    public void setFrequencySources(Set<FrequencySource> frequencySources) {
-        this.frequencySources = frequencySources;
-    }
-
-    public Set<PathogenicitySource> getPathogenicitySources() {
-        return pathogenicitySources;
-    }
-
-    public void setPathogenicitySources(Set<PathogenicitySource> pathogenicitySources) {
-        this.pathogenicitySources = pathogenicitySources;
-    }
-
-    public void addStep(AnalysisStep step) {
-        this.analysisSteps.add(step);
-    }
-
-    public void addAllSteps(List<AnalysisStep> analysisSteps) {
-        this.analysisSteps.addAll(analysisSteps);
-    }
-
-    public List<AnalysisStep> getAnalysisSteps() {
-        return analysisSteps;
-    }
 
     @Override
     public int hashCode() {
@@ -261,5 +302,4 @@ public class Analysis {
     public String toString() {
         return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", scoringMode=" + scoringMode + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
-
 }
