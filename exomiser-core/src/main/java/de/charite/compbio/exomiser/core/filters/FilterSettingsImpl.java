@@ -28,7 +28,6 @@ import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -138,12 +137,6 @@ public class FilterSettingsImpl implements FilterSettings {
     @Override
     public boolean removeKnownVariants() {
         return removeKnownVariants;
-    }
-
-    @Deprecated
-    @Override
-    public boolean removePathFilterCutOff() {
-        return keepNonPathogenicVariants;
     }
 
     @Override
