@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,32 +28,24 @@ import de.charite.compbio.exomiser.cli.config.CommandLineOptionsConfig;
 import de.charite.compbio.exomiser.core.analysis.Settings;
 import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
-import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.Parser;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import org.apache.commons.cli.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -122,7 +133,7 @@ public class CommandLineOptionsParserTest {
         settingsBuilder.usePrioritiser(PriorityType.PHIVE_PRIORITY);
         settingsBuilder.maximumFrequency(0.01f);
         settingsBuilder.minimumQuality(0f);
-        settingsBuilder.removePathFilterCutOff(true);
+        settingsBuilder.keepNonPathogenic(true);
         settingsBuilder.removeKnownVariants(true);
         settingsBuilder.keepOffTargetVariants(true);
         settingsBuilder.candidateGene("FGFR2");
@@ -151,7 +162,7 @@ public class CommandLineOptionsParserTest {
 
         System.out.println(exomiserSettings);
         assertThat(exomiserSettings.getMaximumFrequency(), equalTo(100f));
-        assertThat(exomiserSettings.removePathFilterCutOff(), is(false));
+        assertThat(exomiserSettings.keepNonPathogenicVariants(), is(false));
     }
 
     @Test
@@ -270,23 +281,23 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
-    public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsTrueWhenSet() {
+    public void shouldProduceSettingsWithKeepNonPathogenicVariantsDefaultAsTrueWhenSet() {
         String option = "keep-non-pathogenic";
         String input = String.format("-v 123.vcf --%s --prioritiser=phive", option);
         System.out.println(input);
 
         Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removePathFilterCutOff(), equalTo(true));
+        assertThat(exomiserSettings.keepNonPathogenicVariants(), equalTo(true));
     }
 
     @Test
-    public void shouldProduceSettingsWithRemovePathFilterCutOffDefaultAsFalseWhenNotSet() {
+    public void shouldProduceSettingsWithKeepNonPathogenicVariantsDefaultAsFalseWhenNotSet() {
         String input = "-v 123.vcf --prioritiser=phive";
 
         Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.removePathFilterCutOff(), is(false));
+        assertThat(exomiserSettings.keepNonPathogenicVariants(), is(false));
     }
 
     @Test

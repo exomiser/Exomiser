@@ -29,21 +29,16 @@ import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * Tests for {@link de.charite.compbio.exomiser.core.analysis.Settings}.
@@ -75,8 +70,8 @@ public class SettingsTest {
     private static final float MIMIMUM_QUALITY = 666.24f;
     private static final GeneticInterval GENETIC_INTERVAL_DEFAULT = null;
     private static final GeneticInterval GENETIC_INTERVAL = new GeneticInterval((byte) 2, 12345, 67890);
-    private static final boolean REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT = false;
-    private static final boolean REMOVE_PATHOGENIC_FILTER_CUTOFF = true;
+    private static final boolean KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT = false;
+    private static final boolean KEEP_NON_PATHOGENIC_VARIANTS = true;
     private static final boolean REMOVE_KNOWN_VARIANTS_DEFAULT = false;
     private static final boolean REMOVE_KNOWN_VARIANTS = true;
     private static final boolean KEEP_OFF_TARGET_VARIANTS_DEFAULT = false;
@@ -127,7 +122,7 @@ public class SettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
-        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
+        assertThat(settings.keepNonPathogenicVariants(), is(KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT));
         assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
         assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
@@ -300,14 +295,14 @@ public class SettingsTest {
     @Test
     public void testThatBuilderProducesIncludePathogenicDefault() {
         Settings settings = instance.build();
-        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
+        assertThat(settings.keepNonPathogenicVariants(), is(KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT));
     }
 
     @Test
     public void testThatBuilderProducesIncludePathogenicWhenSet() {
-        instance.keepNonPathogenic(REMOVE_PATHOGENIC_FILTER_CUTOFF);
+        instance.keepNonPathogenic(KEEP_NON_PATHOGENIC_VARIANTS);
         Settings settings = instance.build();
-        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
+        assertThat(settings.keepNonPathogenicVariants(), is(KEEP_NON_PATHOGENIC_VARIANTS));
     }
 
     @Test
@@ -502,7 +497,7 @@ public class SettingsTest {
                 .maximumFrequency(MAXIMUM_FREQUENCY)
                 .minimumQuality(MIMIMUM_QUALITY)
                 .geneticInterval(GENETIC_INTERVAL)
-                .keepNonPathogenic(REMOVE_PATHOGENIC_FILTER_CUTOFF)
+                .keepNonPathogenic(KEEP_NON_PATHOGENIC_VARIANTS)
                 .removeKnownVariants(REMOVE_KNOWN_VARIANTS)
                 .keepOffTargetVariants(KEEP_OFF_TARGET_VARIANTS)
                 .candidateGene(CANDIDATE_GENE_NAME)
@@ -524,7 +519,7 @@ public class SettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL));
-        assertThat(settings.removePathFilterCutOff(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF));
+        assertThat(settings.keepNonPathogenicVariants(), is(KEEP_NON_PATHOGENIC_VARIANTS));
         assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS));
         assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME));
@@ -560,7 +555,7 @@ public class SettingsTest {
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
         assertThat(settings.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
-        assertThat(settings.keepNonPathogenicVariants(), is(REMOVE_PATHOGENIC_FILTER_CUTOFF_DEFAULT));
+        assertThat(settings.keepNonPathogenicVariants(), is(KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT));
         assertThat(settings.removeKnownVariants(), is(REMOVE_KNOWN_VARIANTS_DEFAULT));
         assertThat(settings.keepOffTargetVariants(), is(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(settings.getCandidateGene(), equalTo(CANDIDATE_GENE_NAME_DEFAULT));
