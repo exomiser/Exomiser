@@ -29,17 +29,11 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.util.stream.Collectors.toList;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  *
@@ -74,11 +68,13 @@ public class RawScoreGeneScorer implements GeneScorer {
     }
 
     protected void scoreGene(Gene gene, ModeOfInheritance modeOfInheritance) {
+        //It is critical only the PASS variants are used in the scoring
         float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance);
         gene.setFilterScore(filterScore);
         
-        float priorityScore = setGenePriorityScore(gene);
-        
+        float priorityScore = calculateGenePriorityScore(gene);
+        gene.setPriorityScore(priorityScore);
+
         float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityResults().keySet());
         gene.setCombinedScore(combinedScore);
     }
@@ -103,24 +99,21 @@ public class RawScoreGeneScorer implements GeneScorer {
      * recessive.
      * @return
      */
-    protected float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance) {
-
+    private float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance) {
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }
         if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
             return calculateAutosomalRecessiveFilterScore(variantEvaluations);
-        } // not autosomal recessive
-
+        }
         return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
     }
 
-    private float setGenePriorityScore(Gene gene) {
+    private float calculateGenePriorityScore(Gene gene) {
         if (gene.getPriorityResults().isEmpty()) {
             return 0f;
         }
         float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
-        gene.setPriorityScore(priorityScore);
         return priorityScore;
     }
 
@@ -130,7 +123,7 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @param priorityScores of the gene
      * @return
      */
-    protected float calculatePriorityScore(Collection<PriorityResult> priorityScores) {
+    private float calculatePriorityScore(Collection<PriorityResult> priorityScores) {
         float finalPriorityScore = 1f;
         for (PriorityResult priorityScore : priorityScores) {
             finalPriorityScore *= priorityScore.getScore();
@@ -149,7 +142,7 @@ public class RawScoreGeneScorer implements GeneScorer {
      * been called.
      *
      */
-    protected float calculateCombinedScore(float filterScore, float priorityScore, Set<PriorityType> prioritiesRun) {
+    private float calculateCombinedScore(float filterScore, float priorityScore, Set<PriorityType> prioritiesRun) {
 
         //TODO: what if we ran all of these? It *is* *possible* to do so. 
         if (prioritiesRun.contains(PriorityType.HIPHIVE_PRIORITY)) {
@@ -168,7 +161,6 @@ public class RawScoreGeneScorer implements GeneScorer {
     }
 
 
-
     /**
      * For assumed autosomal recessive variants, this method calculates the mean
      * of the worst(highest numerical) two variants.
@@ -176,74 +168,64 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @param variantEvaluations
      * @return
      */
-    protected float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
-        List<Float> hetFilterScores = new ArrayList<>();
-        List<Float> homFilterScores = new ArrayList<>();
+    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
 
-        for (VariantEvaluation ve : variantEvaluations) {
-            // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
-            // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
-            if (variantIsHomozygousAlt(ve)){
-                homFilterScores.add(ve.getVariantScore());
-            }
-            else if (variantIsHeterozygous(ve)){
-                hetFilterScores.add(ve.getVariantScore());
-            }
-        }
-        //maybe the variants were all crappy and nothing passed....
-        if (hetFilterScores.isEmpty() && homFilterScores.isEmpty()) {
-            return 0f;
-        }
-        sortFilterScoresInDecendingOrder(homFilterScores);
-        sortFilterScoresInDecendingOrder(hetFilterScores);
+        /////maybe this would be good to have in the Gene so that these can be reported back to the user?
+//        List<VariantEvaluation> heterozygous = variantEvaluations.stream()
+//                .filter(variantIsHeterozygous())
+//                .sorted(Comparator.comparing(VariantEvaluation::getVariantScore).reversed())
+//                .collect(toList());
+//
+//        List<VariantEvaluation> homozygousAlts = variantEvaluations.stream()
+//                .filter(variantIsHomozygousAlt())
+//                .sorted(Comparator.comparing(VariantEvaluation::getVariantScore).reversed())
+//                .collect(toList());
+//
+//        logger.info("heterozygous: {}", heterozygous);
+//        logger.info("homozygousAlts: {}", homozygousAlts);
 
-        float bestCmpHetScore = 0f;
-        float bestHomScore = 0f;
-        if (hetFilterScores.size() >= 2) {
-            bestCmpHetScore = calculateAverageOfFirstTwoScores(hetFilterScores);
-        }
-        if (!homFilterScores.isEmpty()){
-            bestHomScore = homFilterScores.get(0);
-        }
+
+        // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
+        // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
+        float bestCmpHetScore = (float) variantEvaluations.stream()
+                .filter(variantIsHeterozygous())
+                .map(VariantEvaluation::getVariantScore)
+                .sorted(Comparator.reverseOrder())
+                .limit(2)
+                .mapToDouble(Float::doubleValue)
+                .average()
+                .orElse(0f);
+
+        float bestHomScore = variantEvaluations.stream()
+                .filter(variantIsHomozygousAlt())
+                .map(VariantEvaluation::getVariantScore)
+                .max(Comparator.naturalOrder())
+                .orElse(0f);
+
         return Float.max(bestHomScore, bestCmpHetScore);
     }
     
-    private boolean variantIsHomozygousAlt(VariantEvaluation ve) {
-        return ve.getVariantContext().getGenotype(0).isHomVar();
+    private Predicate<VariantEvaluation> variantIsHomozygousAlt() {
+        return ve -> ve.getVariantContext().getGenotype(0).isHomVar();
     }
 
-    private boolean variantIsHeterozygous(VariantEvaluation ve) {
-        return ve.getVariantContext().getGenotype(0).isHet();
-    }
-    
-    private void sortFilterScoresInDecendingOrder(List<Float> filterScores) {
-        Collections.sort(filterScores, Collections.reverseOrder());
-    }
-
-    private float calculateAverageOfFirstTwoScores(List<Float> filterScores) {
-        float x = filterScores.get(0);
-        float y = filterScores.get(1);
-        float filterScore = (x + y) / (2f);
-        return filterScore;
+    private Predicate<VariantEvaluation> variantIsHeterozygous() {
+        return ve -> ve.getVariantContext().getGenotype(0).isHet();
     }
 
     /**
      * For other variants with non-autosomal recessive modes of inheritance, the
-     * worst (highest numerical) value is taken.
+     * most deleterious variant (highest numerical variantScore value) is taken.
      *
      * @param variantEvaluations
      * @return
      */
-    protected float calculateNonAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
-        List<Float> filterScores = variantEvaluations.stream()
-                .filter(VariantEvaluation::passedFilters)
-                .map(VariantEvaluation::getVariantScore)
-                .sorted(Collections.reverseOrder())
-                .collect(toList());
-
-        //maybe the variants were all crappy and nothing passed..
+    private float calculateNonAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
         //Otherwise for non-autosomal recessive, there is just one heterozygous mutation
         //thus return only the single highest score.
-        return (filterScores.isEmpty()) ? 0f : filterScores.get(0);
+        return variantEvaluations.stream()
+                .map(VariantEvaluation::getVariantScore)
+                .max(Comparator.naturalOrder())
+                .orElse(0f);
     }
 }

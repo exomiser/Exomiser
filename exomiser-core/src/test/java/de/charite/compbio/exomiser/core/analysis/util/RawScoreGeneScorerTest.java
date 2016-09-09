@@ -24,22 +24,25 @@
  */
 package de.charite.compbio.exomiser.core.analysis.util;
 
-import de.charite.compbio.exomiser.core.analysis.util.RawScoreGeneScorer;
+import com.google.common.collect.Lists;
 import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.filters.PassFilterResult;
+import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
+import de.charite.compbio.exomiser.core.prioritisers.MockPriorityResult;
+import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -54,145 +57,221 @@ public class RawScoreGeneScorerTest {
 
     private RawScoreGeneScorer instance;
     
-    private VariantEvaluation failedFrequency;
-    private VariantEvaluation failedPathogenicity;
-    private VariantEvaluation failedFrequencyPassedPathogenicity;
-    private VariantEvaluation passedFrequencyPassedPathogenicity;
+    private VariantEvaluation failFreq;
+    private VariantEvaluation failPath;
+    private VariantEvaluation failFreqPassPath;
+    private VariantEvaluation passAllFrameshift;
+    private VariantEvaluation passAllMissense;
+    private VariantEvaluation passAllSynonymous;
 
     @Before
     public void setUp() {
         instance = new RawScoreGeneScorer();
         
-        failedFrequency = new VariantEvaluation
+        failFreq = new VariantEvaluation
                 .VariantBuilder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
-        failedFrequency.addFilterResult(FAIL_FREQUENCY);
+        failFreq.addFilterResult(FAIL_FREQUENCY);
 
-        failedPathogenicity = new VariantEvaluation
+        failPath = new VariantEvaluation
                 .VariantBuilder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.CODING_SEQUENCE_VARIANT)
                 .build();
-        failedPathogenicity.addFilterResult(FAIL_PATHOGENICITY);
+        failPath.addFilterResult(FAIL_PATHOGENICITY);
 
-        failedFrequencyPassedPathogenicity = new VariantEvaluation
+        failFreqPassPath = new VariantEvaluation
                 .VariantBuilder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
-        failedFrequencyPassedPathogenicity.addFilterResult(FAIL_FREQUENCY);
-        failedFrequencyPassedPathogenicity.addFilterResult(PASS_PATHOGENICITY);
+        failFreqPassPath.addFilterResult(FAIL_FREQUENCY);
+        failFreqPassPath.addFilterResult(PASS_PATHOGENICITY);
         
         // Scoring should only includes variants which have actually passed all the filters
-        passedFrequencyPassedPathogenicity = new VariantEvaluation
+        passAllFrameshift = new VariantEvaluation
                 .VariantBuilder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
                 .build();
-        passedFrequencyPassedPathogenicity.addFilterResult(PASS_FREQUENCY);
-        passedFrequencyPassedPathogenicity.addFilterResult(PASS_PATHOGENICITY);
-    }
+        passAllFrameshift.addFilterResult(PASS_FREQUENCY);
+        passAllFrameshift.addFilterResult(PASS_PATHOGENICITY);
 
-    @Test
-    public void testCalculateNonAutosomalRecessiveFilterScoreReturnsZeroIfVariantListIsEmpty() {
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-
-        float calculatedScore = instance.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
-
-        assertThat(calculatedScore, equalTo(0f));
-    }
-
-    @Test
-    public void testCalculateNonAutosomalRecessiveFilterScoreReturnsZeroIfAllVariantsInVariantListHaveFailedFiltering() {
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-
-        variantEvaluations.add(failedFrequency);
-        variantEvaluations.add(failedPathogenicity);
-        variantEvaluations.add(failedFrequencyPassedPathogenicity);
-
-        float calculatedScore = instance.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
-
-        assertThat(calculatedScore, equalTo(0f));
-    }
-
-    @Test
-    public void testCalculateNonAutosomalRecessiveFilterScoreReturnsHighestFilterScore() {
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        VariantEvaluation passedFrequencyPassedPathogenicityMissense = new VariantEvaluation
+        passAllMissense = new VariantEvaluation
                 .VariantBuilder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
-        passedFrequencyPassedPathogenicityMissense.addFilterResult(PASS_FREQUENCY);
-        passedFrequencyPassedPathogenicityMissense.addFilterResult(PASS_PATHOGENICITY);
+        passAllFrameshift.addFilterResult(PASS_FREQUENCY);
+        passAllFrameshift.addFilterResult(PASS_PATHOGENICITY);
 
-        variantEvaluations.add(failedFrequency);
-        variantEvaluations.add(failedFrequencyPassedPathogenicity);
-        variantEvaluations.add(passedFrequencyPassedPathogenicityMissense);
-        variantEvaluations.add(passedFrequencyPassedPathogenicity);
+        passAllSynonymous = new VariantEvaluation
+                .VariantBuilder(1, 1, "A", "T")
+                .variantEffect(VariantEffect.SYNONYMOUS_VARIANT)
+                .build();
+        passAllSynonymous.addFilterResult(PASS_FREQUENCY);
+        passAllSynonymous.addFilterResult(PASS_PATHOGENICITY);
+    }
 
-        float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
-
-        float calculatedScore = instance.calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
-
-        assertThat(calculatedScore, equalTo(bestScore));
+    private Gene newGene(VariantEvaluation... variantEvaluations) {
+        Gene gene = new Gene("TEST1", 1234);
+        Arrays.stream(variantEvaluations).forEach(gene::addVariant);
+        return gene;
     }
 
     @Test
-    public void testThatCalculateFilterScoreReturnsZeroWithAnEmptyVariantEvaluationList() {
-
-        List<VariantEvaluation> emptyVariantEvaluations = new ArrayList<>();
-
-        float calculatedScore = instance.calculateFilterScore(emptyVariantEvaluations, ModeOfInheritance.UNINITIALIZED);
-
-        assertThat(calculatedScore, equalTo(0f));
+    public void testScoreGeneWithoutPriorityResultsOrVariants_UNINITIALIZED() {
+        Gene gene = newGene();
+        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(0f));
     }
 
     @Test
-    public void testThatCalculateFilterScoreReturnsScoreWithAPassedVariantEvaluationInList() {
-
-        List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        variantEvaluations.add(failedFrequency);
-        variantEvaluations.add(passedFrequencyPassedPathogenicity);
-
-        float bestScore = passedFrequencyPassedPathogenicity.getVariantScore();
-
-        float calculatedScore = instance.calculateFilterScore(variantEvaluations, ModeOfInheritance.UNINITIALIZED);
-
-        assertThat(calculatedScore, equalTo(bestScore));
+    public void testScoreGeneWithoutPriorityResultsOrVariants_AUTOSOMAL_RECESSIVE() {
+        Gene gene = newGene();
+        instance.scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(0f));
     }
 
-    // FIXME(holtgrew): the following were already commented out
-    // @Test
-    // public void testCalculatePriorityScore() {
-    // Collection<PriorityScore> priorityScores = null;
-    // float expResult = 0.0F;
-    // float result = GeneScorer.calculatePriorityScore(priorityScores);
-    // assertEquals(expResult, result, 0.0);
-    // // TODO review the generated test code and remove the default call to fail.
-    // fail("The test case is a prototype.");
-    // }
-    //
-    // @Test
-    // public void testCalculateAutosomalRecessiveFilterScore() {
-    // System.out.println("calculateAutosomalRecessiveFilterScore");
-    // List<VariantEvaluation> variantEvaluations = null;
-    // Pedigree pedigree = null;
-    // float expResult = 0.0F;
-    // float result = GeneScorer.calculateAutosomalRecessiveFilterScore(variantEvaluations, pedigree);
-    // assertEquals(expResult, result, 0.0);
-    // // TODO review the generated test code and remove the default call to fail.
-    // fail("The test case is a prototype.");
-    // }
-    //
-    //
-    // @Test
-    // public void testCalculateCombinedScore() {
-    // System.out.println("calculateCombinedScore");
-    // float filterScore = 0.0F;
-    // float priorityScore = 0.0F;
-    // Set<PriorityType> prioritiesRun = null;
-    // float expResult = 0.0F;
-    // float result = GeneScorer.calculateCombinedScore(filterScore, priorityScore, prioritiesRun);
-    // assertEquals(expResult, result, 0.0);
-    // // TODO review the generated test code and remove the default call to fail.
-    // fail("The test case is a prototype.");
-    // }
+    @Test
+    public void testScoreGeneWithSingleFailedVariant_UNINITIALIZED() {
+        Gene gene = newGene(failFreq);
+        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testScoreGeneWithSingleFailedVariant_AUTOSOMAL_RECESSIVE() {
+        Gene gene = newGene(failFreq);
+        instance.scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testScoreGeneWithSinglePassedVariant() {
+        Gene gene = newGene(passAllFrameshift);
+        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+
+        float variantScore = passAllFrameshift.getVariantScore();
+
+        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testScoreGeneWithSinglePassedAndSingleFailedVariantOnlyPassedVariantIsConsidered() {
+        Gene gene = newGene(passAllFrameshift, failFreq);
+        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+
+        float variantScore = passAllFrameshift.getVariantScore();
+
+        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testScoreGeneWithTwoPassedVariants_UNINITIALIZED_inheritance() {
+        Gene gene = newGene(passAllFrameshift, passAllMissense);
+        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+
+        float variantScore = passAllFrameshift.getVariantScore();
+
+        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testScoreGeneWithTwoPassedVariants_AUTOSOMAL_DOMINANT_inheritance() {
+        Gene gene = newGene(passAllFrameshift, passAllMissense);
+        instance.scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT);
+
+        float variantScore = passAllFrameshift.getVariantScore();
+
+        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testScoreGeneWithTwoPassedVariants_X_DOMINANT_inheritance() {
+        Gene gene = newGene(passAllFrameshift, passAllMissense);
+        instance.scoreGene(gene, ModeOfInheritance.X_DOMINANT);
+
+        float variantScore = passAllFrameshift.getVariantScore();
+
+        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testScoreGeneWithTwoPassedVariants_AUTOSOMAL_RECESSIVE_inheritance() {
+        Gene gene = newGene(passAllMissense, passAllFrameshift);
+        instance.scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+
+        float variantScore = (passAllFrameshift.getVariantScore() + passAllMissense.getVariantScore()) / 2f;
+        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testScoreGeneWithThreePassedVariants_AUTOSOMAL_RECESSIVE_inheritance() {
+        Gene gene = newGene(passAllMissense, passAllSynonymous, passAllFrameshift);
+        instance.scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+
+        float variantScore = (passAllFrameshift.getVariantScore() + passAllMissense.getVariantScore()) / 2f;
+        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testGenesAreRankedAccordingToScore() {
+        Gene first = new Gene("FIRST", 1111);
+        first.addVariant(passAllFrameshift);
+        first.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, first.getEntrezGeneID(), first.getGeneSymbol(), 1d));
+
+        Gene middle = new Gene("MIDDLE", 2222);
+        middle.addVariant(passAllMissense);
+        middle.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, middle.getEntrezGeneID(), middle.getGeneSymbol(), 1d));
+
+        Gene last = new Gene("LAST", 3333);
+        last.addVariant(passAllSynonymous);
+        last.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, last.getEntrezGeneID(), last.getGeneSymbol(), 1d));
+
+        List<Gene> genes = Lists.newArrayList(last, first, middle);
+        Collections.shuffle(genes);
+
+        instance.scoreGenes(genes, ModeOfInheritance.UNINITIALIZED);
+
+        genes.forEach(System.out::println);
+
+        assertThat(genes.indexOf(first), equalTo(0));
+        assertThat(genes.indexOf(middle), equalTo(1));
+        assertThat(genes.indexOf(last), equalTo(2));
+    }
+
+    ///Priority and Combined score tests
+    @Test
+    public void testCalculateCombinedScoreFromUnoptimisedPrioritiser() {
+        Gene gene = newGene();
+        gene.addPriorityResult(new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), 1d));
+
+        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+
+        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getPriorityScore(), equalTo(1f));
+        assertThat(gene.getCombinedScore(), equalTo(0.5f));
+    }
+
+
 }
