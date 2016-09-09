@@ -113,8 +113,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         if (gene.getPriorityResults().isEmpty()) {
             return 0f;
         }
-        float priorityScore = calculatePriorityScore(gene.getPriorityResults().values());
-        return priorityScore;
+        return calculatePriorityScore(gene.getPriorityResults().values());
     }
 
     /**

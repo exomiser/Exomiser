@@ -19,6 +19,7 @@
 
 package de.charite.compbio.exomiser.core.analysis;
 
+import com.google.common.collect.Sets;
 import de.charite.compbio.exomiser.core.Exomiser;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.filters.*;
@@ -36,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +54,7 @@ public class SettingsParser {
 
     private static final Logger logger = LoggerFactory.getLogger(SettingsParser.class);
 
-    public static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = EnumSet.of(
+    public static final Set<VariantEffect> NON_EXONIC_VARIANT_EFFECTS = Sets.immutableEnumSet(
             VariantEffect.UPSTREAM_GENE_VARIANT,
             VariantEffect.INTERGENIC_VARIANT,
             VariantEffect.DOWNSTREAM_GENE_VARIANT,
@@ -65,7 +65,7 @@ public class SettingsParser {
             VariantEffect.REGULATORY_REGION_VARIANT
     );
 
-    private static final Set<PathogenicitySource> MISSENSE_VARIANT_PATH_SOURCES = EnumSet.of(
+    private static final Set<PathogenicitySource> MISSENSE_VARIANT_PATH_SOURCES = Sets.immutableEnumSet(
             PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT);
 
     private final PriorityFactory prioritiserFactory;
@@ -110,9 +110,7 @@ public class SettingsParser {
         steps.addAll(makeFilters(filterSettings));
         //Prioritisers should ALWAYS run last.
         steps.addAll(makePrioritisers(prioritiserSettings));
-        steps.forEach(step -> {
-            logger.info("ADDING ANALYSIS STEP {}", step);
-        });
+        steps.forEach(step -> logger.info("ADDING ANALYSIS STEP {}", step));
         return steps;
     }
 
@@ -159,7 +157,7 @@ public class SettingsParser {
         //PATHOGENICITY
         // if keeping off-target variants need to remove the pathogenicity cutoff to ensure that these variants always
         // pass the pathogenicity filter and still get scored for pathogenicity
-        variantFilters.add(new PathogenicityDataProvider(variantDataService, MISSENSE_VARIANT_PATH_SOURCES, new PathogenicityFilter(settings.removePathFilterCutOff())));
+        variantFilters.add(new PathogenicityDataProvider(variantDataService, MISSENSE_VARIANT_PATH_SOURCES, new PathogenicityFilter(settings.keepNonPathogenicVariants())));
         return variantFilters;
     }
 

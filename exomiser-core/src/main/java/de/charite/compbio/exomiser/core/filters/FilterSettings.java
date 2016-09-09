@@ -26,6 +26,7 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+
 import java.util.Set;
 
 /**
@@ -44,12 +45,6 @@ public interface FilterSettings {
     public boolean keepOffTargetVariants();
 
     public boolean removeKnownVariants();
-
-    /**
-     * Deprecated - Use keepNonPathogenicVariants method instead.
-     */
-    @Deprecated
-    public boolean removePathFilterCutOff();
 
     public boolean keepNonPathogenicVariants();
 

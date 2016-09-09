@@ -66,7 +66,6 @@ public class AnalysisFactory {
             case SPARSE:
                 return new SparseAnalysisRunner(sampleDataFactory, variantDataService);
             case PASS_ONLY:
-                return passOnlyAnalysisRunner();
             default:
                 //this guy takes up the least RAM
                 return passOnlyAnalysisRunner();

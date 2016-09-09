@@ -31,15 +31,11 @@ import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Class for storing the options data required for running the Exomiser.
@@ -211,15 +207,6 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
             return this;
         }
 
-        @Deprecated
-        /**
-         * Use {@link keepNonPathogenic} instead.
-         */
-        public SettingsBuilder removePathFilterCutOff(boolean value) {
-            removePathFilterCutOff = value;
-            return this;
-        }
-
         @JsonSetter("keepNonPathogenic")
         public SettingsBuilder keepNonPathogenic(boolean value) {
             removePathFilterCutOff = value;
@@ -271,15 +258,6 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         @JsonSetter
         public SettingsBuilder seedGeneList(List<Integer> value) {
             seedGeneList = value;
-            return this;
-        }
-
-        /**
-         * Deprecated - use genesToKeep instead.
-         */
-        @Deprecated
-        public SettingsBuilder genesToKeepList(Set<Integer> value) {
-            geneIdsToKeep = value;
             return this;
         }
 
@@ -392,7 +370,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     @JsonProperty
     public Path getPedFileName() {
-        return ((pedFilePath == null) ? null : pedFilePath.getFileName());
+        return pedFilePath == null ? null : pedFilePath.getFileName();
     }
 
     @JsonProperty
@@ -422,12 +400,6 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
     @Override
     public GeneticInterval getGeneticInterval() {
         return geneticInterval;
-    }
-
-    @Override
-    @Deprecated
-    public boolean removePathFilterCutOff() {
-        return keepNonPathogenicVariants;
     }
 
     @JsonProperty("keepNonPathogenic")

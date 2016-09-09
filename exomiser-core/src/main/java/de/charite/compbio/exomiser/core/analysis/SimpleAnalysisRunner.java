@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -21,7 +21,9 @@ package de.charite.compbio.exomiser.core.analysis;
 
 import de.charite.compbio.exomiser.core.factories.SampleDataFactory;
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
-import de.charite.compbio.exomiser.core.filters.*;
+import de.charite.compbio.exomiser.core.filters.SimpleGeneFilterRunner;
+import de.charite.compbio.exomiser.core.filters.SimpleVariantFilterRunner;
+import de.charite.compbio.exomiser.core.filters.VariantFilter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 
@@ -52,5 +54,10 @@ class SimpleAnalysisRunner extends AbstractAnalysisRunner {
             variantFilters.stream().forEach(filter -> variantFilterRunner.run(filter, variantEvaluation));
             return true;
         };
+    }
+
+    @Override
+    protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
+        return variants;
     }
 }

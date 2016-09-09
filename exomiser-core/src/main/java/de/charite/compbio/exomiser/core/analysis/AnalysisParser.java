@@ -99,8 +99,7 @@ public class AnalysisParser {
 
     private OutputSettings constructOutputSettingsFromMap(Map settingsMap) {
         OutputSettingsConstructor outputSettingsConstructor = new OutputSettingsConstructor();
-        OutputSettings outputSettings = outputSettingsConstructor.construct((Map) settingsMap.get("outputOptions"));
-        return outputSettings;
+        return outputSettingsConstructor.construct((Map) settingsMap.get("outputOptions"));
     }
 
     private BufferedReader readPath(Path analysisDoc) {
@@ -109,15 +108,12 @@ public class AnalysisParser {
             Reader reader = new InputStreamReader(newInputStream(analysisDoc), decoder);
             return new BufferedReader(reader);
         } catch (IOException ex) {
-            throw new AnalysisFileNotFoundException("Unable to find analysis file: " + ex.getMessage());
+            throw new AnalysisFileNotFoundException("Unable to find analysis file: " + ex.getMessage(), ex);
         }
     }
 
     protected static class AnalysisFileNotFoundException extends RuntimeException {
-
-        AnalysisFileNotFoundException(String message) {
-            super(message);
-        }
+        AnalysisFileNotFoundException(String message, Exception e) { super(message, e);}
     }
 
     private class OutputSettingsConstructor {
@@ -319,7 +315,7 @@ public class AnalysisParser {
                 case "priorityScoreFilter":
                     return makePriorityScoreFilter(analysisStepMap);
                 case "regulatoryFeatureFilter":
-                    return makeRegulatoryFeatureFilter(analysisStepMap);
+                    return makeRegulatoryFeatureFilter();
                 case "omimPrioritiser":
                     return prioritiserFactory.makeOmimPrioritiser();
                 case "hiPhivePrioritiser":
@@ -364,7 +360,7 @@ public class AnalysisParser {
                     VariantEffect variantEffect = VariantEffect.valueOf(effect);
                     variantEffects.add(variantEffect);
                 } catch (IllegalArgumentException ex) {
-                    throw new AnalysisParserException(String.format("Illegal VariantEffect: '%s'.%nPermitted effects are any of: %s.", effect, EnumSet.allOf(VariantEffect.class)), options);
+                    throw new AnalysisParserException(String.format("Illegal VariantEffect: '%s'.%nPermitted effects are any of: %s.", effect, EnumSet.allOf(VariantEffect.class)), options, ex);
                 }
             }
             return new VariantEffectFilter(EnumSet.copyOf(variantEffects));
@@ -413,7 +409,7 @@ public class AnalysisParser {
                     FrequencySource frequencySource = FrequencySource.valueOf(source);
                     sources.add(frequencySource);
                 } catch (IllegalArgumentException ex) {
-                    throw new AnalysisParserException(String.format("Illegal FrequencySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(FrequencySource.class)), options);
+                    throw new AnalysisParserException(String.format("Illegal FrequencySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(FrequencySource.class)), options, ex);
                 }
             }
             if (sources.isEmpty()) {
@@ -444,7 +440,7 @@ public class AnalysisParser {
                     PathogenicitySource pathogenicitySource = PathogenicitySource.valueOf(source);
                     sources.add(pathogenicitySource);
                 } catch (IllegalArgumentException ex) {
-                    throw new AnalysisParserException(String.format("Illegal PathogenicitySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(PathogenicitySource.class)), options);
+                    throw new AnalysisParserException(String.format("Illegal PathogenicitySource: '%s'.%nPermitted sources are any of: %s.", source, EnumSet.allOf(PathogenicitySource.class)), options, ex);
                 }
             }
             if (sources.isEmpty()) {
@@ -467,7 +463,7 @@ public class AnalysisParser {
             return new PriorityScoreFilter(priorityType, minPriorityScore.floatValue());
         }
 
-        private VariantFilter makeRegulatoryFeatureFilter(Map<String, Double> options) {
+        private VariantFilter makeRegulatoryFeatureFilter() {
             return new RegulatoryFeatureFilter();
         }
 
@@ -514,6 +510,10 @@ public class AnalysisParser {
 
         AnalysisParserException(String message, Map options) {
             super(message + " was " + new Yaml().dump(options));
+        }
+
+        AnalysisParserException(String message, Map options, Exception e) {
+            super(message + " was " + new Yaml().dump(options), e);
         }
     }
 

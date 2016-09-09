@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.Prioritiser;
@@ -73,8 +74,8 @@ public class Analysis {
         this.modeOfInheritance = builder.modeOfInheritance;
         this.scoringMode = builder.scoringMode;
         this.analysisMode = builder.analysisMode;
-        this.frequencySources = EnumSet.copyOf(builder.frequencySources);
-        this.pathogenicitySources = EnumSet.copyOf(builder.pathogenicitySources);
+        this.frequencySources = Sets.immutableEnumSet(builder.frequencySources);
+        this.pathogenicitySources = Sets.immutableEnumSet(builder.pathogenicitySources);
         this.analysisSteps = ImmutableList.copyOf(builder.analysisSteps);
     }
 

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,18 +19,14 @@
 
 package de.charite.compbio.exomiser.core.filters;
 
-import java.lang.*;
+import com.google.common.collect.Sets;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.annotation.Annotation;
-
-
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Filters variants according to their {@link VariantEffect}. The filter will mark variants as failed if they are contained
@@ -51,7 +47,7 @@ public class VariantEffectFilter implements VariantFilter {
     private final Set<VariantEffect> offTargetVariantTypes;
     
     public VariantEffectFilter(Set<VariantEffect> notWanted) {
-        offTargetVariantTypes = notWanted;
+        offTargetVariantTypes = Sets.immutableEnumSet(notWanted);
     }
 
     public Set<VariantEffect> getOffTargetVariantTypes() {
