@@ -116,12 +116,13 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             assignVariantsToGenes(variantEvaluations, allGenes);
         }
 
-        final List<Gene> genes = getFinalGeneList(allGenes);
+        final List<Gene> genes = getGenesWithVariants(allGenes);
+        scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
         sampleData.setGenes(genes);
+
         final List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
         sampleData.setVariantEvaluations(variants);
 
-        scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 //        logTopNumScoringGenes(5, genes, analysis);
 
@@ -268,7 +269,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @param allGenes
      * @return
      */
-    protected List<Gene> getFinalGeneList(Map<String, Gene> allGenes) {
+    protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
                 .filter(gene -> !gene.getVariantEvaluations().isEmpty())
