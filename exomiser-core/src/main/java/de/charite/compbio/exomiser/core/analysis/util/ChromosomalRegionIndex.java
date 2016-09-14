@@ -46,9 +46,9 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
     private Map<Integer, IntervalArray<T>> populateIndex(Collection<T> chromosomalRegions) {
         Map<Integer, Set<T>> regionIndex = createRegionIndex(chromosomalRegions);
-        Map<Integer, IntervalArray<T>> index = createChromosomeIntervalTreeIndex(regionIndex);
-        logger.debug("Created index for {} chromosomes totalling {} regions", index.keySet().size(), chromosomalRegions.size());
-        return index;
+        Map<Integer, IntervalArray<T>> intervalTreeIndex = createChromosomeIntervalTreeIndex(regionIndex);
+        logger.debug("Created index for {} chromosomes totalling {} regions", intervalTreeIndex.keySet().size(), chromosomalRegions.size());
+        return intervalTreeIndex;
     }
 
     private Map<Integer, Set<T>> createRegionIndex(Collection<T> chromosomalRegions) {
@@ -67,8 +67,9 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
     private Map<Integer, IntervalArray<T>> createChromosomeIntervalTreeIndex(Map<Integer, Set<T>> regionIndex) {
         Map<Integer, IntervalArray<T>> index = new HashMap<>();
-        for (Integer chrId : regionIndex.keySet()) {
-            IntervalArray<T> intervalTree = new IntervalArray<>(regionIndex.get(chrId), new ChromosomalRegionEndExtractor());
+        for (Map.Entry<Integer, Set<T>> entry :regionIndex.entrySet()) {
+            Integer chrId = entry.getKey();
+            IntervalArray<T> intervalTree = new IntervalArray<>(entry.getValue(), new ChromosomalRegionEndExtractor());
             logger.debug("Chr: {} - {} regions", chrId, intervalTree.size());
             index.put(chrId, intervalTree);
         }
@@ -98,10 +99,12 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
 
     private class ChromosomalRegionEndExtractor implements IntervalEndExtractor<T> {
 
+        @Override
         public int getBegin(T region) {
             return region.getStart() - 1;
         }
 
+        @Override
         public int getEnd(T region) {
             return region.getEnd();
         }

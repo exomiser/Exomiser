@@ -57,7 +57,7 @@ public class DataMatrixIO {
                 addLineDataToIndex(line, index);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DataMatrixIoException(e);
         }
         return index;
     }
@@ -83,7 +83,7 @@ public class DataMatrixIO {
                 i++;
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DataMatrixIoException(e);
         }
         return floatMatrix;
     }
@@ -114,7 +114,7 @@ public class DataMatrixIO {
             InputStream inputStream = new GZIPInputStream(new FileInputStream(file), bufferSizeInBytes);
             bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         } else {
-            throw new RuntimeException("FATAL: file not found " + file.getName());
+            throw new DataMatrixIoException(new RuntimeException("FATAL: file not found " + file.getName()));
         }
         return bufferedReader;
     }
@@ -146,8 +146,9 @@ public class DataMatrixIO {
                 BufferedWriter outMatrix = new BufferedWriter(new FileWriter(file));
                 BufferedWriter outIndexMap = new BufferedWriter(new FileWriter(file + "_id2index"))) {
 
-            for (String entrezId : id2index.keySet()) {
-                outIndexMap.write(entrezId + "\t" + id2index.get(entrezId) + "\n");
+            for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
+                String entrezId = entry.getKey();
+                outIndexMap.write(new StringBuilder().append(entrezId).append("\t").append(entry.getValue()).append("\n").toString());
             }
 
             for (int i = 0; i < matrix.rows; i++) {
@@ -194,9 +195,8 @@ public class DataMatrixIO {
     public static void writeMatrixInclHeaderAndRowIDs(FloatMatrix matrix, String file, Map<String, Integer> id2index, boolean doLogarithm) {
         try (BufferedWriter outMatrix = new BufferedWriter(new FileWriter(file))) {
             Map<Integer, String> index2id = new HashMap<>();
-            for (String s : id2index.keySet()) {
-                int idx = id2index.get(s);
-                index2id.put(idx, s);
+            for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
+                index2id.put(entry.getValue(), entry.getKey());
             }
             outMatrix.write("Key");
             for (int i = 0; i < id2index.size(); i++) {
@@ -219,6 +219,17 @@ public class DataMatrixIO {
             }
         } catch (IOException e) {
             logger.info("Unable to write DataMatrix with headers to file {}", file);
+        }
+    }
+
+    public static class DataMatrixIoException extends RuntimeException {
+
+        public DataMatrixIoException(Throwable cause) {
+            super(cause);
+        }
+
+        public DataMatrixIoException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 

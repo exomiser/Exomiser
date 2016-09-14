@@ -82,7 +82,6 @@ public enum InheritanceMode {
     public boolean isCompatibleWithDominant() {
         switch(this) {
             case AUTOSOMAL_DOMINANT:
-                return true;
             case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
                 return true;
             default:
@@ -93,7 +92,6 @@ public enum InheritanceMode {
     public boolean isCompatibleWithRecessive() {
         switch(this) {
             case AUTOSOMAL_RECESSIVE:
-                return true;
             case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
                 return true;
             default:
@@ -104,9 +102,7 @@ public enum InheritanceMode {
     public boolean isXlinked() {
         switch(this) {
             case X_LINKED:
-                return true;
             case X_DOMINANT:
-                return true;
             case X_RECESSIVE:
                 return true;
             default:

@@ -214,7 +214,7 @@ public class HiPhivePriority implements Prioritiser {
             List<PhenotypeMatch> bestForwardAndBackwardMatches = organismPhenotypeMatches.getBestForwardAndReciprocalMatches(model.getPhenotypeIds());
 
             //Remember the model needs to collect its best matches from the forward and backward best matches otherwise the modelMaxMatchScore will be zero.
-            bestForwardAndBackwardMatches.forEach(match -> model.addMatchIfAbsentOrBetterThanCurrent(match));
+            bestForwardAndBackwardMatches.forEach(model::addMatchIfAbsentOrBetterThanCurrent);
             double modelMaxMatchScore = model.getBestPhenotypeMatchForTerms().values().stream()
                     .mapToDouble(PhenotypeMatch::getScore)
                     .max()
