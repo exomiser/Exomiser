@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -24,10 +24,10 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public interface Variant extends VariantCoordinates {
 
-    static final Set<VariantEffect> codingVariantEffects = EnumSet.of(
+    static final Set<VariantEffect> codingVariantEffects = Sets.immutableEnumSet(
             VariantEffect.STOP_LOST,
             VariantEffect.STOP_RETAINED_VARIANT,
             VariantEffect.STOP_GAINED,
@@ -60,7 +60,7 @@ public interface Variant extends VariantCoordinates {
             VariantEffect.COMPLEX_SUBSTITUTION
     );
 
-    static final Set<VariantEffect> regulatoryNonCodingVariantEffects = EnumSet.of(
+    static final Set<VariantEffect> regulatoryNonCodingVariantEffects = Sets.immutableEnumSet(
             VariantEffect.MIRNA,
             VariantEffect.REGULATORY_REGION_VARIANT,
             VariantEffect.FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT,

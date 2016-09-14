@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -15,11 +34,11 @@ import java.util.Objects;
 abstract class AbstractFilterResult implements FilterResult {
     
     private final FilterType filterType;
-    private final FilterResultStatus filterResultStatus;
+    private final Status status;
 
-    AbstractFilterResult(FilterType filterType, FilterResultStatus filterResultStatus) {
+    AbstractFilterResult(FilterType filterType, Status status) {
         this.filterType = filterType;
-        this.filterResultStatus = filterResultStatus;
+        this.status = status;
     }
 
     @Override
@@ -28,20 +47,25 @@ abstract class AbstractFilterResult implements FilterResult {
     }
 
     @Override
-    public FilterResultStatus getResultStatus() {
-        return filterResultStatus;
+    public boolean passed() {
+        return status == Status.PASS;
     }
 
     @Override
-    public boolean passedFilter() {
-        return filterResultStatus == FilterResultStatus.PASS;
+    public boolean failed() {
+        return status == Status.FAIL;
+    }
+
+    @Override
+    public boolean wasRun() {
+        return status != Status.NOT_RUN;
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 59 * hash + Objects.hashCode(this.filterType);
-        hash = 59 * hash + Objects.hashCode(this.filterResultStatus);
+        hash = 59 * hash + Objects.hashCode(this.status);
         return hash;
     }
 
@@ -57,12 +81,12 @@ abstract class AbstractFilterResult implements FilterResult {
         if (this.filterType != other.filterType) {
             return false;
         }
-        return this.filterResultStatus == other.filterResultStatus;
+        return this.status == other.status;
     }
         
     @Override
     public String toString() {
-        return String.format(Locale.UK, "Filter=%s status=%s",filterType, filterResultStatus);
+        return String.format(Locale.UK, "Filter=%s status=%s",filterType, status);
     }
     
 }

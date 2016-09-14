@@ -1,15 +1,34 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.filters;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -30,20 +49,20 @@ public class AbstractFilterResultTest {
     @Test
     public void testPassedFilterIsTrueWhenFilterResultStatusIsPass() {
         FilterResult instance = new PassFilterResult(FilterType.FREQUENCY_FILTER);
-        assertThat(instance.passedFilter(), is(true));
+        assertThat(instance.passed(), is(true));
     }
 
     @Test
     public void testPassedFilterIsFalseWhenFilterResultStatusIsFail() {
         FilterResult instance = new FailFilterResult(FilterType.FREQUENCY_FILTER);
-        assertThat(instance.passedFilter(), is(false));
+        assertThat(instance.passed(), is(false));
     }
 
-    @Test
-    public void testGetResultStatus() {
-        FilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER);
-        assertThat(instance.getResultStatus(), equalTo(FilterResultStatus.PASS));
-    }
+//    @Test
+//    public void testGetResultStatus() {
+//        FilterResult instance = new PassFilterResult(FilterType.INTERVAL_FILTER);
+//        assertThat(instance.getResultStatus(), equalTo(FilterResultStatus.PASS));
+//    }
 
     @Test
     public void testHashCode() {

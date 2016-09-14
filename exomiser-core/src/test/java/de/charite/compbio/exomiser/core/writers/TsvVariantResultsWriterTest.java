@@ -26,9 +26,8 @@ package de.charite.compbio.exomiser.core.writers;
 
 import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
-import de.charite.compbio.exomiser.core.filters.FailFilterResult;
+import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -104,13 +103,13 @@ public class TsvVariantResultsWriterTest {
 
     private void makePassVariant(TestVariantFactory varFactory) {
         passVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        passVariant.addFilterResult(new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER));
+        passVariant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         passVariant.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f)));
     }
     
     private void makeFailVariant(TestVariantFactory varFactory) {
         failVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
-        failVariant.addFilterResult(new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER));
+        failVariant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
     }
 
     @Test

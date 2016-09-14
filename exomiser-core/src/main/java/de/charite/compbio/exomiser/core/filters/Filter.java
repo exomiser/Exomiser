@@ -41,7 +41,7 @@ public interface Filter<T extends Filterable> extends AnalysisStep {
      * on the filters that the user has chosen.
      */
     @JsonIgnore
-    public FilterType getFilterType();
+    FilterType getFilterType();
 
     /**
      * True or false depending on whether the {@code VariantEvaluation} passes the runFilter or not.
@@ -49,5 +49,5 @@ public interface Filter<T extends Filterable> extends AnalysisStep {
      * @param filterable
      * @return true if the {@code VariantEvaluation} passes the runFilter.
      */
-    public FilterResult runFilter(T filterable);
+    FilterResult runFilter(T filterable);
 }

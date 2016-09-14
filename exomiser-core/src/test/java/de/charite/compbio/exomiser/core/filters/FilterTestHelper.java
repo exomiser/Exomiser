@@ -17,21 +17,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.charite.compbio.exomiser.core.filters;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PassFilterResult extends AbstractFilterResult {
+public class FilterTestHelper {
 
-    PassFilterResult(FilterType filterType) {
-        super(filterType, Status.PASS);
+    private FilterTestHelper() {
+        //non-instantiable
     }
-    
+
+    public static void assertPassed(FilterResult filterResult) {
+        assertThat("Expected passed " + filterResult.getFilterType() + " filter", filterResult.passed(), is(true));
+    }
+
+    public static void assertFailed(FilterResult filterResult) {
+        assertThat("Expected failed " + filterResult.getFilterType() + " filter", filterResult.failed(), is(true));
+    }
 }

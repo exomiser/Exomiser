@@ -23,10 +23,8 @@ import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.factories.TestFactory;
 import de.charite.compbio.exomiser.core.factories.TestVariantFactory;
 import de.charite.compbio.exomiser.core.factories.VariantFactory;
-import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
@@ -143,9 +141,9 @@ public class VcfResultsWriterTest {
         
         TestVariantFactory varFactory = new TestVariantFactory();
 
-        passTargetResult = new PassFilterResult(FilterType.VARIANT_EFFECT_FILTER);
-        failTargetResult = new FailFilterResult(FilterType.VARIANT_EFFECT_FILTER);
-        failFrequencyResult = new FailFilterResult(FilterType.FREQUENCY_FILTER);
+        passTargetResult = FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER);
+        failTargetResult = FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER);
+        failFrequencyResult = FilterResult.fail(FilterType.FREQUENCY_FILTER);
 
         missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f)));

@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -20,21 +20,14 @@
 package de.charite.compbio.exomiser.core.model;
 
 import de.charite.compbio.exomiser.core.filters.FilterResult;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
 import de.charite.compbio.exomiser.core.filters.FilterType;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -74,11 +67,11 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     /**
      * A list of all of the variants that affect this gene.
      */
-    private final List<VariantEvaluation> variantEvaluations;
+    private final List<VariantEvaluation> variantEvaluations = new ArrayList();
 
-    private final Set<FilterType> failedFilterTypes;
-    private final Set<FilterType> passedFilterTypes;
-    private final Map<FilterType, FilterResult> filterResults;
+    private final Set<FilterType> failedFilterTypes = new LinkedHashSet<>();
+    private final Set<FilterType> passedFilterTypes = new LinkedHashSet<>();
+    private final Map<FilterType, FilterResult> filterResults = new LinkedHashMap<>();
 
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
@@ -97,8 +90,8 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     private float combinedScore = 0f;
 
-    private final Map<PriorityType, PriorityResult> priorityResultsMap;
-    private Set<ModeOfInheritance> inheritanceModes;
+    private final Map<PriorityType, PriorityResult> priorityResultsMap = new LinkedHashMap();
+    private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
     private final String geneSymbol;
     private final int entrezGeneId;
 
@@ -111,12 +104,6 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     public Gene(String geneSymbol, int geneId) {
         this.geneSymbol = geneSymbol;
         this.entrezGeneId = geneId;
-        variantEvaluations = new ArrayList();
-        inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-        failedFilterTypes = new LinkedHashSet<>();
-        passedFilterTypes = new LinkedHashSet<>();
-        filterResults = new LinkedHashMap<>();
-        priorityResultsMap = new LinkedHashMap();
     }
 
     /**
@@ -176,7 +163,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     private void addGeneFilterResultsToVariant(VariantEvaluation var) {
         filterResults.values().stream()
                 .filter(isNotInheritanceFilterResult())
-                .forEach(result -> var.addFilterResult(result));
+                .forEach(var::addFilterResult);
     }
     
     private Predicate<FilterResult> isNotInheritanceFilterResult() {
@@ -403,7 +390,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
         filterResults.put(filterResult.getFilterType(), filterResult);
-        if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
+        if (filterResult.passed()) {
             return addPassedFilterResult(filterResult);
         }
         return addFailedFilterResult(filterResult);

@@ -24,10 +24,8 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.prioritisers.ExomeWalkerPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.MockPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
@@ -59,12 +57,12 @@ public class GeneTest {
     private VariantEvaluation variantEvaluation1;
     private VariantEvaluation variantEvaluation2;
 
-    private static final FilterResult PASS_VARIANT_FILTER_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER);
-    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult PASS_VARIANT_FILTER_RESULT = FilterResult.pass(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult FAIL_VARIANT_FILTER_RESULT = FilterResult.fail(FilterType.FREQUENCY_FILTER);
     //there's nothing magical about a FilterResult being a Gene or Variant filter result, it's where/how they are used which makes the difference.
     //their type is used for reporting which filter was passed or failed.
-    private static final FilterResult PASS_GENE_FILTER_RESULT = new PassFilterResult(FilterType.INHERITANCE_FILTER);
-    private static final FilterResult FAIL_GENE_FILTER_RESULT = new FailFilterResult(FilterType.INHERITANCE_FILTER);
+    private static final FilterResult PASS_GENE_FILTER_RESULT = FilterResult.pass(FilterType.INHERITANCE_FILTER);
+    private static final FilterResult FAIL_GENE_FILTER_RESULT = FilterResult.fail(FilterType.INHERITANCE_FILTER);
 
     @Before
     public void setUp() {
@@ -282,7 +280,7 @@ public class GeneTest {
     @Test
     public void testAddVariant_AfterGeneIsFilteredAppliesPassGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
-        instance.addFilterResult(new PassFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
         
         instance.addVariant(variantEvaluation1);
         
@@ -293,7 +291,7 @@ public class GeneTest {
     @Test
     public void testAddVariant_AfterGeneIsFilteredAppliesFailGeneFilterResultsToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
-        instance.addFilterResult(new FailFilterResult(FilterType.PRIORITY_SCORE_FILTER));
+        instance.addFilterResult(FilterResult.fail(FilterType.PRIORITY_SCORE_FILTER));
         
         instance.addVariant(variantEvaluation1);
         
@@ -306,8 +304,8 @@ public class GeneTest {
     public void testAddVariant_AfterGeneIsFilteredDoesNotApplyInheritanceFilterResultToVariant() {
         variantEvaluation1.addFilterResult(PASS_VARIANT_FILTER_RESULT);
         
-        instance.addFilterResult(new PassFilterResult(FilterType.PRIORITY_SCORE_FILTER));
-        instance.addFilterResult(new FailFilterResult(FilterType.INHERITANCE_FILTER));
+        instance.addFilterResult(FilterResult.pass(FilterType.PRIORITY_SCORE_FILTER));
+        instance.addFilterResult(FilterResult.fail(FilterType.INHERITANCE_FILTER));
         
         instance.addVariant(variantEvaluation1);
         

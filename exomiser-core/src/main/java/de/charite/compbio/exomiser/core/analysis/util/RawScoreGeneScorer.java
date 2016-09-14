@@ -32,8 +32,11 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Predicate;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -169,39 +172,36 @@ public class RawScoreGeneScorer implements GeneScorer {
      */
     private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
 
-        /////maybe this would be good to have in the Gene so that these can be reported back to the user?
-//        List<VariantEvaluation> heterozygous = variantEvaluations.stream()
-//                .filter(variantIsHeterozygous())
-//                .sorted(Comparator.comparing(VariantEvaluation::getVariantScore).reversed())
-//                .collect(toList());
+        List<VariantEvaluation> heterozygous = variantEvaluations.stream()
+                .filter(variantIsHeterozygous())
+                .sorted(Comparator.comparing(VariantEvaluation::getVariantScore).reversed())
+                .limit(2)
+                .collect(toList());
 //
-//        List<VariantEvaluation> homozygousAlts = variantEvaluations.stream()
-//                .filter(variantIsHomozygousAlt())
-//                .sorted(Comparator.comparing(VariantEvaluation::getVariantScore).reversed())
-//                .collect(toList());
-//
-//        logger.info("heterozygous: {}", heterozygous);
-//        logger.info("homozygousAlts: {}", homozygousAlts);
-
+        Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
+                .filter(variantIsHomozygousAlt())
+                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
 
         // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
         // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
-        float bestCmpHetScore = (float) variantEvaluations.stream()
-                .filter(variantIsHeterozygous())
-                .map(VariantEvaluation::getVariantScore)
-                .sorted(Comparator.reverseOrder())
-                .limit(2)
-                .mapToDouble(Float::doubleValue)
+        double bestCompHetScore = heterozygous.stream()
+                .mapToDouble(VariantEvaluation::getVariantScore)
                 .average()
                 .orElse(0f);
 
-        float bestHomScore = variantEvaluations.stream()
-                .filter(variantIsHomozygousAlt())
+        double bestHomAltScore = bestHomozygousAlt
                 .map(VariantEvaluation::getVariantScore)
-                .max(Comparator.naturalOrder())
                 .orElse(0f);
 
-        return Float.max(bestHomScore, bestCmpHetScore);
+        double bestScore = Double.max(bestHomAltScore, bestCompHetScore);
+
+        if (BigDecimal.valueOf(bestScore).equals(BigDecimal.valueOf(bestCompHetScore))) {
+            heterozygous.forEach(VariantEvaluation::setAsContributingToGeneScore);
+        } else {
+            bestHomozygousAlt.ifPresent(VariantEvaluation::setAsContributingToGeneScore);
+        }
+
+        return (float) bestScore;
     }
     
     private Predicate<VariantEvaluation> variantIsHomozygousAlt() {
@@ -222,9 +222,12 @@ public class RawScoreGeneScorer implements GeneScorer {
     private float calculateNonAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
         //Otherwise for non-autosomal recessive, there is just one heterozygous mutation
         //thus return only the single highest score.
-        return variantEvaluations.stream()
-                .map(VariantEvaluation::getVariantScore)
-                .max(Comparator.naturalOrder())
-                .orElse(0f);
+        Optional<VariantEvaluation> bestVariant = variantEvaluations
+                .stream()
+                .max(Comparator.comparing(VariantEvaluation::getVariantScore));
+
+        bestVariant.ifPresent(VariantEvaluation::setAsContributingToGeneScore);
+
+        return bestVariant.map(VariantEvaluation::getVariantScore).orElse(0f);
     }
 }

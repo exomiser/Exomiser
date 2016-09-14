@@ -20,33 +20,19 @@
 package de.charite.compbio.exomiser.core.model;
 
 import com.google.common.base.Joiner;
-import de.charite.compbio.exomiser.core.filters.FilterResultStatus;
-import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
+import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.VariantTypePathogenicityScores;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.GenotypeBuilder;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.variantcontext.VariantContextBuilder;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
+import htsjdk.variant.variantcontext.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * This class is a wrapper for the {@code Variant} class from the jannovar
@@ -95,6 +81,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     //score-related stuff
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
+    private boolean contributesToGeneScore = false;
 
     //bit of an orphan variable - look into refactoring this
     private List<String> mutationRefList = null;
@@ -118,8 +105,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         variantContext = builder.variantContext;
         altAlleleId = builder.altAlleleId;
 
-        passedFilterResultsMap = new LinkedHashMap<>();
-        failedFilterTypes = EnumSet.noneOf(FilterType.class);
+        passedFilterResultsMap = builder.passedFilterResultsMap;
+        failedFilterTypes = builder.failedFilterTypes;
 
         frequencyData = builder.frequencyData;
         pathogenicityData = builder.pathogenicityData;
@@ -388,7 +375,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
-        if (filterResult.getResultStatus() == FilterResultStatus.PASS) {
+        if (filterResult.passed()) {
             return addPassedFilterResult(filterResult);
         }
         return addFailedFilterResult(filterResult);
@@ -520,6 +507,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.pathogenicityData = pathogenicityData;
     }
 
+    public void setAsContributingToGeneScore() {
+        contributesToGeneScore = true;
+    }
+
+    public boolean contributesToGeneScore() {
+        return contributesToGeneScore;
+    }
+
     /**
      * @return true or false depending on whether the variant effect is considered pathogenic. Pathogenoic variants are
      * considered to be those with a pathogenicity score greater than 0.5. Missense variants will always return true.
@@ -612,8 +607,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     public String toString() {
-        //TODO: expose variantEffect, frequency and pathogenicity scores?
-        return "chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet() + " compatibleWith=" + inheritanceModes;
+        //TODO: expose frequency and pathogenicity scores?
+        if(contributesToGeneScore) {
+            //Add a star to the output string between the variantEffect and the score
+            return "VariantEvaluation{chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet() + " compatibleWith=" + inheritanceModes + "}";
+        }
+        return "VariantEvaluation{chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet() + " compatibleWith=" + inheritanceModes + "}";
     }
 
     /**
@@ -642,6 +641,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         private PathogenicityData pathogenicityData = PathogenicityData.EMPTY_DATA;
         private FrequencyData frequencyData = FrequencyData.EMPTY_DATA;
+
+        private final Map<FilterType, FilterResult> passedFilterResultsMap = new LinkedHashMap<>();
+        private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
 
         /**
          * Creates a minimal variant
@@ -703,7 +705,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             Allele refAllele = Allele.create(ref, true);
             Allele altAllele = Allele.create(alt);
             List<Allele> alleles = Arrays.asList(refAllele, altAllele);
-            
+
             VariantContextBuilder vcBuilder = new VariantContextBuilder();
 
             // build Genotype
@@ -777,6 +779,21 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
+        public VariantBuilder filterResults(FilterResult... filterResults) {
+            return filterResults(Arrays.asList(filterResults));
+        }
+
+        public VariantBuilder filterResults(Collection<FilterResult> filterResults) {
+            for (FilterResult filterResult : filterResults) {
+                if (filterResult.passed()) {
+                    this.passedFilterResultsMap.put(filterResult.getFilterType(), filterResult);
+                } else {
+                    this.failedFilterTypes.add(filterResult.getFilterType());
+                }
+            }
+            return this;
+        }
+
         public VariantEvaluation build() {
             if (chromosomeName == null) {
                 chromosomeName = buildChromosomeName(chr);
@@ -793,5 +810,4 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
 
     }
-
 }

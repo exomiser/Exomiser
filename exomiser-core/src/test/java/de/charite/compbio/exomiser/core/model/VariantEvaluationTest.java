@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -24,10 +24,9 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import de.charite.compbio.exomiser.core.filters.FailFilterResult;
+import com.google.common.collect.Maps;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
@@ -37,21 +36,13 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
-import java.util.ArrayList;
-import java.util.Collections;
-
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * Tests for non-bean (i.e. logic-containing) methods in
@@ -78,10 +69,10 @@ public class VariantEvaluationTest {
     private static final String GENE2_GENE_SYMBOL = "GENE2";
     private static final int GENE2_ENTREZ_GENE_ID = 7654321;
 
-    private static final FilterResult FAIL_FREQUENCY_RESULT = new FailFilterResult(FilterType.FREQUENCY_FILTER);
-    private static final FilterResult PASS_FREQUENCY_RESULT = new PassFilterResult(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult FAIL_FREQUENCY_RESULT = FilterResult.fail(FilterType.FREQUENCY_FILTER);
+    private static final FilterResult PASS_FREQUENCY_RESULT = FilterResult.pass(FilterType.FREQUENCY_FILTER);
 
-    private static final FilterResult PASS_QUALITY_RESULT = new PassFilterResult(FilterType.QUALITY_FILTER);
+    private static final FilterResult PASS_QUALITY_RESULT = FilterResult.pass(FilterType.QUALITY_FILTER);
 
 
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
@@ -306,6 +297,30 @@ public class VariantEvaluationTest {
         instance.addFilterResult(PASS_QUALITY_RESULT);
 
         assertThat(instance.getFailedFilterTypes(), equalTo(expectedFilters));
+    }
+
+    @Test
+    public void testBuilderFilterResultsGetFailedFilterTypesDontContainPassedFilterTypes() {
+        Set<FilterType> expectedFilters = EnumSet.of(FAIL_FREQUENCY_RESULT.getFilterType());
+        VariantEvaluation variantEvaluation = testVariantBuilder()
+                .filterResults(FAIL_FREQUENCY_RESULT)
+                .build();
+
+        assertThat(variantEvaluation.getFailedFilterTypes(), equalTo(expectedFilters));
+    }
+
+    @Test
+    public void testBuilderFilterResults_AddPassAndFailedFilters() {
+        Set<FilterType> expectedFilters = EnumSet.of(FAIL_FREQUENCY_RESULT.getFilterType());
+        Map<FilterType, FilterResult> passedFilters = Maps.newLinkedHashMap();
+        passedFilters.put(PASS_QUALITY_RESULT.getFilterType(), PASS_QUALITY_RESULT);
+
+        VariantEvaluation variantEvaluation = testVariantBuilder()
+                .filterResults(FAIL_FREQUENCY_RESULT, PASS_QUALITY_RESULT)
+                .build();
+
+        assertThat(variantEvaluation.getFailedFilterTypes(), equalTo(expectedFilters));
+        assertThat(variantEvaluation.getFilterResults(), equalTo(passedFilters));
     }
 
     @Test
@@ -542,6 +557,19 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    public void testDoesNotContributeToGeneScoreByDefault() {
+        instance = testVariantBuilder().build();
+        assertThat(instance.contributesToGeneScore(), is(false));
+    }
+
+    @Test
+    public void testCanSetAsContributingToGeneScore() {
+        instance = testVariantBuilder().build();
+        instance.setAsContributingToGeneScore();
+        assertThat(instance.contributesToGeneScore(), is(true));
+    }
+
+    @Test
     public void testSetAndGetCompatibleInheritanceModes() {
         Set<ModeOfInheritance> compatibleModes = new HashSet<>();
         compatibleModes.add(ModeOfInheritance.AUTOSOMAL_DOMINANT);
@@ -596,7 +624,15 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]";
+        String expected = "VariantEvaluation{chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        System.out.println(instance);
+        assertThat(instance.toString(), equalTo(expected));
+    }
+
+    @Test
+    public void testToStringVariant_ContributesToGeneScore() {
+        String expected = "VariantEvaluation{chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        instance.setAsContributingToGeneScore();
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }

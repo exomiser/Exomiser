@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,13 +28,14 @@ package de.charite.compbio.exomiser.core.filters;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import static de.charite.compbio.exomiser.core.filters.FilterTestHelper.assertFailed;
+import static de.charite.compbio.exomiser.core.filters.FilterTestHelper.assertPassed;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -67,25 +87,25 @@ public class IntervalFilterTest {
     @Test
     public void testThatRightChromosomeRightPositionPassesFilter() {
         FilterResult filterResult = instance.runFilter(rightChromosomeRightPosition);
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.PASS));
+        assertPassed(filterResult);
     }
 
     @Test
     public void testThatRightChromosomeWrongPositionFailsFilter() {
         FilterResult filterResult = instance.runFilter(rightChromosomeWrongPosition);
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+        assertFailed(filterResult);
     }
 
     @Test
     public void testThatWrongChromosomeRightPositionFailsFilter() {
         FilterResult filterResult = instance.runFilter(wrongChromosomeRightPosition);
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+        assertFailed(filterResult);
     }
 
     @Test
     public void testThatWrongChromosomeWrongPositionFailsFilter() {
         FilterResult filterResult = instance.runFilter(wrongChromosomeWrongPosition);
-        assertThat(filterResult.getResultStatus(), equalTo(FilterResultStatus.FAIL));
+        assertFailed(filterResult);
     }
 
     @Test

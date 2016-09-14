@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -25,24 +25,13 @@
 package de.charite.compbio.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
-import de.charite.compbio.exomiser.core.factories.PedigreeFactory;
-import de.charite.compbio.exomiser.core.filters.FailFilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterResult;
 import de.charite.compbio.exomiser.core.filters.FilterType;
-import de.charite.compbio.exomiser.core.filters.PassFilterResult;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.pedigree.*;
-
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-
 import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.vcf.VCFHeader;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -51,7 +40,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -149,7 +140,7 @@ public class InheritanceModeAnalyserTest {
     @Test
     public void testAnalyseInheritanceModes_SingleSample_NoPassedVariants() {
         Gene gene = new Gene("ABC", 123);
-        gene.addVariant(filteredVariant(1, 1 , "A", "T", new FailFilterResult(FilterType.FREQUENCY_FILTER)));
+        gene.addVariant(filteredVariant(1, 1 , "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER)));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
@@ -171,7 +162,7 @@ public class InheritanceModeAnalyserTest {
         System.out.println("Built variant context " + variantContext);
 
         Gene gene = new Gene("ABC", 123);
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
@@ -195,7 +186,7 @@ public class InheritanceModeAnalyserTest {
         System.out.println("Built variant context " + variantContext);
 
         Gene gene = new Gene("ABC", 123);
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
@@ -218,7 +209,7 @@ public class InheritanceModeAnalyserTest {
         System.out.println("Built variant context " + variantContext);
 
         Gene gene = new Gene("ABC", 123);
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
@@ -243,7 +234,7 @@ public class InheritanceModeAnalyserTest {
         System.out.println("Built variant context " + variantContext);
 
         Gene gene = new Gene("ABC", 123);
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
@@ -275,7 +266,7 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
@@ -310,7 +301,7 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
@@ -345,7 +336,7 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
@@ -380,8 +371,8 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
-        gene.addVariant(filteredVariant(1, 12345, "A", "C", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
@@ -427,8 +418,8 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new FailFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
-        gene.addVariant(filteredVariant(1, 12345, "A", "C", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
         PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<String>());
@@ -472,8 +463,8 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, brother, mother, father);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new FailFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
-        gene.addVariant(filteredVariant(1, 12345, "A", "C", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<String>());
         PedPerson brotherPerson = new PedPerson("Family", "Abel", "Adam", "Eve", Sex.MALE, Disease.UNAFFECTED, new ArrayList<String>());
@@ -506,8 +497,8 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new FailFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
-        gene.addVariant(filteredVariant(1, 12345, "A", "C", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
@@ -535,8 +526,8 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
-        gene.addVariant(filteredVariant(1, 12345, "A", "C", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
@@ -564,8 +555,8 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
-        gene.addVariant(filteredVariant(1, 12345, "A", "C", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
@@ -593,8 +584,8 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband);
         System.out.println("Built variant context " + variantContext);
 
-        gene.addVariant(filteredVariant(1, 12345, "A", "T", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
-        gene.addVariant(filteredVariant(1, 12345, "A", "C", new PassFilterResult(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
+        gene.addVariant(filteredVariant(1, 12345, "A", "C", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Cain");
 
