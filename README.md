@@ -1,8 +1,8 @@
 The Exomiser - A Tool to Annotate and Prioritize Exome Variants
 ===============================================================
 ####Branch build status:
-[![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/master.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/master)
-[![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/development.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/master)
+Master: [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/master.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/master)
+Development: [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/development.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/development)
 
 ####Package Structure:
 
