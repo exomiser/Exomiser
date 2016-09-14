@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -203,10 +204,9 @@ public class HtmlResultsWriterTest {
         OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
 
         String output = instance.writeString(analysis, sampleData, settings);
-        System.out.println(output);
 
         Path testOutFile = Paths.get(testOutFilePrefix);
-
+        assertFalse(output.isEmpty());
         assertTrue(testOutFile.toFile().exists());
     }
 
