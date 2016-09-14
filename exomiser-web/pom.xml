@@ -36,7 +36,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--path to where the database and other resources are found in exomiser.properties-->
-        <data.dir>C:/Users/jj8/Documents/exomiser-cli-4.0.0/data</data.dir>
+        <data.dir>src/test/resources/data</data.dir>
         <h2.dir>C:/Users/jj8/Documents/exomiser-cli-4.0.0/data</h2.dir>
         <warName>exomiser</warName>
     </properties>
