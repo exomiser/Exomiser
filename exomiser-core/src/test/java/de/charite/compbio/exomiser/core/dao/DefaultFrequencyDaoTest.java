@@ -30,20 +30,17 @@ import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import java.util.Collections;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 
 /**
@@ -59,14 +56,14 @@ public class DefaultFrequencyDaoTest {
     @Autowired
     private DefaultFrequencyDao instance;
 
-    Variant variantNotInDatabase;
-    Variant variantInDatabaseWithRsId;
+    private Variant variantNotInDatabase;
+    private Variant variantInDatabaseWithRsId;
 
-    RsId rsId = new RsId(121918506);
-    Frequency dbSnp = new Frequency(0.01f, FrequencySource.THOUSAND_GENOMES);
-    Frequency espAll = new Frequency(0.02f, FrequencySource.ESP_ALL);
-    Frequency espAa = new Frequency(0.03f, FrequencySource.ESP_AFRICAN_AMERICAN);
-    Frequency espEa = new Frequency(0.04f, FrequencySource.ESP_EUROPEAN_AMERICAN);
+    private RsId rsId = new RsId(121918506);
+    private Frequency dbSnp = new Frequency(0.01f, FrequencySource.THOUSAND_GENOMES);
+    private Frequency espAll = new Frequency(0.02f, FrequencySource.ESP_ALL);
+    private Frequency espAa = new Frequency(0.03f, FrequencySource.ESP_AFRICAN_AMERICAN);
+    private Frequency espEa = new Frequency(0.04f, FrequencySource.ESP_EUROPEAN_AMERICAN);
 
     private static final FrequencyData NO_DATA = FrequencyData.EMPTY_DATA;
 
