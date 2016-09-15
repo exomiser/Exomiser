@@ -21,7 +21,11 @@ import org.slf4j.LoggerFactory;
 public class FileDownloadUtils {
     
     private static final Logger logger = LoggerFactory.getLogger(FileDownloadUtils.class);
-    
+
+    private FileDownloadUtils() {
+        //this class should not be instantiated
+    }
+
     /**
      * Fetches the file from the source URL and writes it out to the destination
      * file. 

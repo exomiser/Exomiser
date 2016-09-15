@@ -41,7 +41,7 @@ public final class Disease {
         private final String value;
         private final String columnValue;
 
-        private DiseaseType(String value, String columnValue) {
+        DiseaseType(String value, String columnValue) {
             this.value = value;
             this.columnValue = columnValue;
         }

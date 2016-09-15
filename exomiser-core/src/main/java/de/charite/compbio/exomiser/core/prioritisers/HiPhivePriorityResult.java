@@ -175,7 +175,6 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
      */
     @Override
     public String getHTMLCode() {
-        //return String.format("<ul><li>Similarity score: %.3f %s</li></ul>",this.genewandererScore,this.evidence);
         StringBuilder stringBuilder = new StringBuilder();
 
         for (Model model : phenotypeEvidence) {
@@ -230,8 +229,6 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                 PhenotypeMatch match = bestModelPhenotypeMatches.get(queryTerm);
                 PhenotypeTerm matchTerm = match.getMatchPhenotype();
                 stringBuilder.append(String.format("%s (%s)-%s (%s), ", queryTerm.getLabel(), queryTerm.getId(), matchTerm.getLabel(), matchTerm.getId()));
-            } else {
-                //stringBuilder.append(String.format("%s (%s)-No match, ", queryTerm.getTerm(), queryTerm.getId()));
             }
         }
     }
