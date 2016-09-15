@@ -1,10 +1,33 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.db.parsers;
 
 /**
  * Command line functions from apache
  */
+
 import de.charite.compbio.exomiser.db.resources.Resource;
 import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -16,8 +39,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is intended to parseResource the information about the OMIM phenotypic
@@ -174,7 +195,7 @@ public class PhenoSeriesParser implements ResourceParser {
 
         private String seriesID = null;
         private String seriesName = null;
-        Set<String> geneIDset = null;
+        private Set<String> geneIDset = null;
 
         Phenoseries(String id, String name, String entrezgene) {
             this.geneIDset = new HashSet<>();

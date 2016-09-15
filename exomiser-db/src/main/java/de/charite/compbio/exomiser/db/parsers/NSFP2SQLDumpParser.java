@@ -248,7 +248,7 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * @param line
      * @return
      */
-    VariantPathogenicity parseLine(String line) {
+    private VariantPathogenicity parseLine(String line) {
 
         String[] fields = line.split("\t");
         if (fields.length < N_NSFP_FIELDS) {
