@@ -122,7 +122,7 @@ public class ExomiserAutoConfiguration {
         try {
             return new JannovarDataSerializer(ucscFilePath().toString()).load();
         } catch (SerializationException e) {
-            throw new RuntimeException("Could not load Jannovar data from " + ucscFilePath(), e);
+            throw new ExomiserAutoConfigurationException("Could not load Jannovar data from " + ucscFilePath(), e);
         }
     }
 
@@ -175,7 +175,7 @@ public class ExomiserAutoConfiguration {
         try {
             return new TabixReader(tabixGzPathValue);
         } catch (IOException e) {
-            throw new RuntimeException(tabixGzPathValue + " file not found. Please check exomiser properties file points to a valid tabix .gz file.", e);
+            throw new ExomiserAutoConfigurationException(tabixGzPathValue + " file not found. Please check exomiser properties file points to a valid tabix .gz file.", e);
         }
     }
 
@@ -290,8 +290,9 @@ public class ExomiserAutoConfiguration {
                 cacheNames.addAll(Arrays.asList(ehCacheCacheManager().getCacheManager().getCacheNames()));
                 break;
             default:
-                logger.error("Unrecognised value '{}' for exomiser cache option. Please choose 'none', 'mem' or 'ehcache'.", cacheOption);
-                throw new RuntimeException("Unrecognised value '" + cacheOption + "' for exomiser cache option. Please choose 'none', 'mem' or 'ehcache'.");
+                String message = String.format("Unrecognised value '%s' for exomiser cache option. Please choose 'none', 'mem' or 'ehcache'.", cacheOption);
+                logger.error(message);
+                throw new ExomiserAutoConfigurationException(message);
         }
         logger.info("Set up {} caches: {}", cacheOption, cacheNames);
         return cacheManager;
@@ -304,8 +305,7 @@ public class ExomiserAutoConfiguration {
 
 
     private EhCacheCacheManager ehCacheCacheManager() {
-        EhCacheCacheManager ehCacheCacheManager = new EhCacheCacheManager(ehCacheManager().getObject());
-        return ehCacheCacheManager;
+        return new EhCacheCacheManager(ehCacheManager().getObject());
     }
 
     @Bean
