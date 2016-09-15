@@ -54,8 +54,10 @@ public class DefaultDiseaseDao implements DiseaseDao {
     @Override
     public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
         String hpoListString = "";
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?");
+        try (
+            Connection connection = dataSource.getConnection();
+            PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?")
+        ) {
             hpoIdsStatement.setString(1, diseaseId);
             ResultSet rs = hpoIdsStatement.executeQuery();
             rs.next();
