@@ -114,11 +114,9 @@ public class DiseaseModel implements Model {
     @Override
     public void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match) {
         PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
-        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm)) {
+        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm) || (bestPhenotypeMatchForTerms.get(matchQueryTerm).getScore() < match.getScore())) {
             bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
-        } else if (bestPhenotypeMatchForTerms.get(matchQueryTerm).getScore() < match.getScore()) {
-            bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
-        } 
+        }
     }
 
     @Override
