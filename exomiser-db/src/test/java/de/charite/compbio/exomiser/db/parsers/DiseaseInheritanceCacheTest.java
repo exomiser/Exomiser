@@ -26,7 +26,6 @@
 package de.charite.compbio.exomiser.db.parsers;
 
 import de.charite.compbio.exomiser.core.model.InheritanceMode;
-import de.charite.compbio.exomiser.db.parsers.DiseaseInheritanceCache;
 import de.charite.compbio.exomiser.db.resources.Resource;
 import org.junit.*;
 
@@ -41,9 +40,6 @@ import static org.junit.Assert.*;
 public class DiseaseInheritanceCacheTest {
     
     private static DiseaseInheritanceCache instance;
-    
-    public DiseaseInheritanceCacheTest() {    
-    }
     
     @BeforeClass
     public static void setUpClass() {
