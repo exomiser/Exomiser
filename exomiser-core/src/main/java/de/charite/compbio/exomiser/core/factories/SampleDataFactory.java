@@ -128,7 +128,7 @@ public class SampleDataFactory {
         sampleData.setVcfHeader(vcfHeader);
         sampleData.setSampleNames(vcfHeader.getGenotypeSamples());
         sampleData.setNumberOfSamples(vcfHeader.getNGenotypeSamples());
-
+        vcfReader.close();
         return sampleData;
     }
 
