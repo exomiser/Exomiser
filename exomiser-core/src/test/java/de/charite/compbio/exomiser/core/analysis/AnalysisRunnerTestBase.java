@@ -51,14 +51,14 @@ public abstract class AnalysisRunnerTestBase {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisRunnerTestBase.class);
  
-    final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
-    
-    final Path twoAffectedPedPath = Paths.get("src/test/resources/inheritance/twoAffected.ped");
-    final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
-    final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
+    protected final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
 
-    final SampleDataFactory sampleDataFactory = TestFactory.buildDefaultSampleDataFactory();
-    final VariantDataService stubDataService = new VariantDataServiceStub();
+    protected final Path twoAffectedPedPath = Paths.get("src/test/resources/inheritance/twoAffected.ped");
+    protected final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
+    protected final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
+
+    protected final SampleDataFactory sampleDataFactory = TestFactory.buildDefaultSampleDataFactory();
+    protected final VariantDataService stubDataService = new VariantDataServiceStub();
     
     
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
