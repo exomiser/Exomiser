@@ -192,7 +192,7 @@ and open the template in the editor.
                                         <!--</div>-->
                                         <div class="col-sm-6" >
                                                 <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant score: 0.600</b>
-                                        <span class="label label-info" th:if="${variantEvaluation.contributesToGeneScore()}" th:text="'LIKELY CAUSATIVE VARIANT'">LIKELY CAUSATIVE VARIANT</span>
+                                        <span class="label label-info" th:if="${variantEvaluation.contributesToGeneScore()}" th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
                                                 <dd th:each="annotation: ${variantEvaluation.annotations}" 
