@@ -141,7 +141,7 @@ public class SubmitJobController {
         try {
             Files.createDirectory(outputDir);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Unable to create directory {}", outputDir, e);
         }
         logger.info("Output dir: {}", outputDir);
         String outFileName = outputDir.toString() + "/results";
@@ -171,8 +171,7 @@ public class SubmitJobController {
 
     private int countVariantLinesInVcf(Path vcfPath) {
         int variantCount = 0;
-        try {
-            BufferedReader fileReader = Files.newBufferedReader(vcfPath, StandardCharsets.UTF_8);
+        try (BufferedReader fileReader = Files.newBufferedReader(vcfPath, StandardCharsets.UTF_8)) {
             boolean readingVariants = false;
             String line;
             for (line = fileReader.readLine(); fileReader.readLine() != null;) {
