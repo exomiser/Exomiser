@@ -57,7 +57,7 @@ public class ControllerConfig extends WebMvcConfigurerAdapter {
     private Environment env;
 
     @Bean
-    MultipartResolver multipartResolver() {
+    public MultipartResolver multipartResolver() {
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
         int maxUploadSizeInMb = 50 * 1024 * 1204; //50MB filesize
 
