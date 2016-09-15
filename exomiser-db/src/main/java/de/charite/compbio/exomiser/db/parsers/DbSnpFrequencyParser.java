@@ -1,24 +1,37 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.db.parsers;
 
-import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
 import de.charite.compbio.exomiser.db.reference.Frequency;
 import de.charite.compbio.exomiser.db.resources.Resource;
+import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class is designed to parseResource the dbSNP file {@code 00-All.vcf}
@@ -35,22 +48,11 @@ import org.slf4j.LoggerFactory;
 public class DbSnpFrequencyParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DbSnpFrequencyParser.class);
-    /**
-     * Total number of unique exons
-     */
-    private int n_exons;
-    /**
-     * Total number of variants found to be located in exons
-     */
-    private int n_exonic_vars;
-    /**
-     * Total number of variants found to be located outside of exonic sequences
-     */
-    private int n_non_exonic_vars;
+    
     /**
      * Total number of duplicate entries in dbSNP.
      */
-    private int n_duplicates;
+    private int numDuplicates;
     /**
      * List of all variants that pass threshold for inclusion in database
      * because they are exonic
@@ -69,7 +71,6 @@ public class DbSnpFrequencyParser implements ResourceParser {
     /*
      * use to avoid duplicate entries.
      */
-    Frequency previous = null;
     byte chromosome;
 
     /**
@@ -138,8 +139,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
 //            return;
 //        }
 
-        try {
-            FileInputStream fis = new FileInputStream(inFile.toString());
+        try (FileInputStream fis = new FileInputStream(inFile.toString())){
             InputStream is;
 
             /*
@@ -149,8 +149,9 @@ public class DbSnpFrequencyParser implements ResourceParser {
             try {
                 is = new GZIPInputStream(fis);
             } catch (IOException exp) {
-                fis.close();
-                is = fis = new FileInputStream(inFile.toString());
+                //ought to use Apache Tika to determine the filetype first, then choose appropriate InputStream
+                logger.info("dbSNP file {} is apparently not in gzip format", inFile);
+                is = fis;
             }
 
             FileChannel fc = fis.getChannel();
@@ -167,18 +168,12 @@ public class DbSnpFrequencyParser implements ResourceParser {
                 vcount++;
 
                 String[] fields = line.split("\t");
-                byte chrom = 0;
-                try {
-                    chrom = (byte) refDict.getContigNameToID().get(fields[0]).intValue();
-                } catch (NumberFormatException e) {
-                    logger.error("Unable to parse chromosome: {}. Error occured parsing line: {}", fields[0], line);
-                    logger.error("", e.getMessage());
-                    System.exit(1);
-                }
+                byte chrom = parseChromosomeField(line, fields[0]);
                 if (chrom > chromosome) {
                     break;
                 }
 
+                Frequency previous = null;
                 List<Frequency> frequencyPerLine = vcf2FrequencyParser.parseVCFline(line, chromosome);
                 //TODO - once gone past chromosome should just break here rather than scanning
                 for (Frequency frequency : frequencyPerLine) {
@@ -187,7 +182,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
                     if (previous != null && previous.isIdenticalSNP(frequency)) {
                         float x = previous.getMaximumFrequency();
                         float y = frequency.getMaximumFrequency();
-                        this.n_duplicates++;
+                        numDuplicates++;
                         if (y > x) {
                             previous.resetFrequencyValues(frequency);
                         }
@@ -204,11 +199,10 @@ public class DbSnpFrequencyParser implements ResourceParser {
                     startTime = now;
                 }
             }
-            logger.info("Found " + n_exonic_vars + " exonic vars and " + n_non_exonic_vars + " non-exonics");
-            logger.info("Got " + n_duplicates + " duplicates");
+            logger.info("Got " + numDuplicates + " duplicates");
 
             status = ResourceOperationStatus.SUCCESS;
-
+            is.close();
         } catch (FileNotFoundException ex) {
             logger.error(null, ex);
             status = ResourceOperationStatus.FILE_NOT_FOUND;
@@ -219,6 +213,17 @@ public class DbSnpFrequencyParser implements ResourceParser {
 
         resource.setParseStatus(status);
         logger.info("{}", status);
+    }
+
+    private byte parseChromosomeField(String line, String chromField) {
+        byte chrom;
+        try {
+            chrom = refDict.getContigNameToID().get(chromField).byteValue();
+        } catch (NumberFormatException e) {
+            String message = String.format("Unable to parse chromosome: %s. Error occured parsing line: %s", chromField, line);
+            throw new ResourceParserException(message, e);
+        }
+        return chrom;
     }
 //    /**
 //     * This function is to be called following the processing of the VCF line

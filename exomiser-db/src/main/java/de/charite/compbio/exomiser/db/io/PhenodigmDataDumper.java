@@ -1,10 +1,35 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.db.io;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -14,11 +39,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * Connects to Phenodigm and dumps out data in pipe delimited format to the
@@ -30,12 +50,9 @@ import org.springframework.stereotype.Component;
 public class PhenodigmDataDumper {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenodigmDataDumper.class);
-    
+
     @Autowired
     private DataSource phenodigmDataSource;
-
-    public PhenodigmDataDumper() {
-    }
 
     /**
      *
@@ -296,34 +313,6 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    
-//    protected File dumpDiseaseDiseaseSummary(Path outputPath, String outName) {
-//        File outfile = new File(outputPath.toFile(), outName);
-//        logger.info("Dumping Phenodigm diseaseDiseaseSummary data to file: {}", outfile);
-//
-//        String sql = "select disease_id , disease_match , disease_to_disease_perc_score from disease_disease_association";
-//        //no need to close things when using the try-with-resources            
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-//                Connection connection = phenodigmConnection.getConnection();
-//                PreparedStatement ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);) {
-//            ps.setFetchSize(Integer.MIN_VALUE);
-//
-//            ResultSet rs = ps.executeQuery();
-//            while (rs.next()) {
-//                String diseaseId = rs.getString("disease_id");
-//                String diseaseMatch = rs.getString("disease_match");
-//                String score = rs.getString("disease_to_disease_perc_score");
-//
-//                String outLine = String.format("%s|%s|%s", diseaseId, diseaseMatch, score);
-//                writer.write(outLine);
-//                writer.newLine();
-//            }
-//
-//        } catch (IOException | SQLException ex) {
-//            logger.error(null, ex);
-//        }
-//        return outfile;
-//    }
     protected File dumpOmimTerms(Path outputPath, String outName) {
         File outfile = new File(outputPath.toFile(), outName);
         logger.info("Dumping Phenodigm omimTerms data to file: {}", outfile);
@@ -375,15 +364,12 @@ public class PhenodigmDataDumper {
                 String simJ = rs.getString("simJ");
                 String ic = rs.getString("ic");
                 String lcs = rs.getString("lcs");
-                //logger.info(lcs);
                 String lcsId = "";
                 String lcsTerm = lcs;
                 String[] lcsParts = lcs.split("\\(");
                 if (lcsParts.length != 1){
-                    int terms = lcsParts.length;
                     lcsTerm = lcsParts[0].trim();
-                    lcsId = lcsParts[terms - 1];
-                    lcsId = lcsId.replace(")", "");
+                    lcsId = getLcsId(lcsParts);
                 }
                 String outLine = String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s", id, hpId, hpTerm, mpId, mpTerm, simJ, ic, score, lcsId, lcsTerm);
                 writer.write(outLine);
@@ -420,15 +406,12 @@ public class PhenodigmDataDumper {
                 String simJ = rs.getString("simJ");
                 String ic = rs.getString("ic");
                 String lcs = rs.getString("lcs");
-                //logger.info(lcs);
                 String lcsId = "";
                 String lcsTerm = lcs;
                 String[] lcsParts = lcs.split("\\(");
                 if (lcsParts.length != 1){
-                    int terms = lcsParts.length;
                     lcsTerm = lcsParts[0].trim();
-                    lcsId = lcsParts[terms - 1];
-                    lcsId = lcsId.replace(")", "");
+                    lcsId = getLcsId(lcsParts);
                 }
                 String outLine = String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s", id, hpId, hpTerm, zpId, zpTerm, simJ, ic, score, lcsId, lcsTerm);
                 writer.write(outLine);
@@ -466,15 +449,12 @@ public class PhenodigmDataDumper {
                 String simJ = rs.getString("simJ");
                 String ic = rs.getString("ic");
                 String lcs = rs.getString("lcs");
-                //logger.info(lcs);
                 String lcsId = "";
                 String lcsTerm = lcs;
                 String[] lcsParts = lcs.split("\\(");
                 if (lcsParts.length != 1){
-                    int terms = lcsParts.length;
                     lcsTerm = lcsParts[0].trim();
-                    lcsId = lcsParts[terms - 1];
-                    lcsId = lcsId.replace(")", "");
+                    lcsId = getLcsId(lcsParts);
                 }
                 String outLine = String.format("%d|%s|%s|%s|%s|%s|%s|%s|%s|%s", id, hpId, hpTerm, hpIdHit, hpTermHit, simJ, ic, score, lcsId, lcsTerm);
                 writer.write(outLine);
@@ -487,5 +467,12 @@ public class PhenodigmDataDumper {
         return outfile;
     }
 
-    
+    private String getLcsId(String[] lcsParts) {
+        String lcsId;
+        lcsId = lcsParts[lcsParts.length - 1];
+        lcsId = lcsId.replace(")", "");
+        return lcsId;
+    }
+
+
 }

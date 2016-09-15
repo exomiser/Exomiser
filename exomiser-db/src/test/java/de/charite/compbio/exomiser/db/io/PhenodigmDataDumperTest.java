@@ -24,8 +24,6 @@
  */
 package de.charite.compbio.exomiser.db.io;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,19 +67,6 @@ public class PhenodigmDataDumperTest {
 
     }
 
-    @Before
-    public void setUp() {
-
-    }
-
-    @After
-    public void tearDown() {
-        //clean up all files
-        for (File file : outputDir.listFiles()) {
-            //file.delete();
-        }
-    }
-    
     @Test
     public void testIsNotNull() {
         assertThat(instance, notNullValue());

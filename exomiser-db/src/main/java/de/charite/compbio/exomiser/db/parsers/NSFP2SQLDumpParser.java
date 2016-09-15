@@ -1,24 +1,36 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.db.parsers;
 
 import de.charite.compbio.exomiser.db.reference.VariantPathogenicity;
 import de.charite.compbio.exomiser.db.resources.Resource;
 import de.charite.compbio.exomiser.db.resources.ResourceOperationStatus;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Parse information from the NSFP chromosome files. Create an SQL dump file
@@ -183,16 +195,6 @@ public class NSFP2SQLDumpParser implements ResourceParser {
         return totalGenesCount;
     }
 
-    /**
-     * The constructor initializes the File output streams.
-     * 
-     * @param refDict
-     *            the {@link ReferenceDictionary} to use for converting contig names to numeric ids
-     */
-    public NSFP2SQLDumpParser() {//ReferenceDictionary refDict) {
-        //this.refDict = refDict;
-    }
-
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
 
@@ -250,8 +252,9 @@ public class NSFP2SQLDumpParser implements ResourceParser {
 
         String[] fields = line.split("\t");
         if (fields.length < N_NSFP_FIELDS) {
-            logger.error("Malformed line '{}' - Only {} fields found (expecting {})", line, fields.length, N_NSFP_FIELDS);
-            System.exit(1);
+            String message = String.format("Malformed line '%s' - Only %d fields found (expecting %d)", line, fields.length, N_NSFP_FIELDS);
+            logger.error(message);
+            throw new ResourceParserException(message);
         }
         //variant position
         /* if work out what Jules was doing with ReferenceDictionary 
@@ -508,5 +511,6 @@ public class NSFP2SQLDumpParser implements ResourceParser {
             }                    
         }
     }
+
 
 }
