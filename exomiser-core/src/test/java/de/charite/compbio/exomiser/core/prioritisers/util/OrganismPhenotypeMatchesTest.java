@@ -41,18 +41,18 @@ public class OrganismPhenotypeMatchesTest {
     private OrganismPhenotypeMatches instance;
 
     //Nose phenotypes
-    private final PhenotypeTerm bigNose = new PhenotypeTerm("HP:0000001", "Big nose", 2.0);
-    private final PhenotypeTerm nose = new PhenotypeTerm("HP:0000002", "Nose", 1.0);
-    private final PhenotypeTerm littleNose = new PhenotypeTerm("HP:0000003", "Little nose", 2.0);
+    private final PhenotypeTerm bigNose = PhenotypeTerm.of("HP:0000001", "Big nose");
+    private final PhenotypeTerm nose = PhenotypeTerm.of("HP:0000002", "Nose");
+    private final PhenotypeTerm littleNose = PhenotypeTerm.of("HP:0000003", "Little nose");
 
     private final PhenotypeMatch perfectNoseMatch = new PhenotypeMatch(bigNose, bigNose, 1.0, 4.0, bigNose);
     private final PhenotypeMatch noseMatch = new PhenotypeMatch(bigNose, littleNose, 0.5, 1.0, nose);
 
     //Toe phenotypes
-    private final PhenotypeTerm toe = new PhenotypeTerm("HP:0000004", "Toe", 1.0);
-    private final PhenotypeTerm bigToe = new PhenotypeTerm("HP:0000005", "Big toe", 2.0);
-    private final PhenotypeTerm crookedToe = new PhenotypeTerm("HP:0000006", "Crooked toe", 2.0);
-    private final PhenotypeTerm longToe = new PhenotypeTerm("HP:0000007", "Long toe", 2.0);
+    private final PhenotypeTerm toe = PhenotypeTerm.of("HP:0000004", "Toe");
+    private final PhenotypeTerm bigToe = PhenotypeTerm.of("HP:0000005", "Big toe");
+    private final PhenotypeTerm crookedToe = PhenotypeTerm.of("HP:0000006", "Crooked toe");
+    private final PhenotypeTerm longToe = PhenotypeTerm.of("HP:0000007", "Long toe");
 
     private final PhenotypeMatch bestToeMatch = new PhenotypeMatch(bigToe, longToe, 1.0, 2.0, toe);
     private final PhenotypeMatch bigToeCrookedToeMatch = new PhenotypeMatch(bigToe, crookedToe, 1.0, 1.5, toe);
