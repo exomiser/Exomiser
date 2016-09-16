@@ -146,7 +146,7 @@ public class VcfResultsWriterTest {
         failFrequencyResult = FilterResult.fail(FilterType.FREQUENCY_FILTER);
 
         missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(new PolyPhenScore(1f)));
+        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)));
         indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
 
         gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneId());

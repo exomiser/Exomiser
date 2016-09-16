@@ -24,13 +24,19 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
+import com.google.common.collect.Maps;
+import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
-import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
-import de.charite.compbio.exomiser.core.model.Variant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,13 +46,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.sql.DataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
+import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 
 /**
  * Default implementation of the FrequencyDao. Can be configured to use caching.
@@ -64,19 +65,19 @@ public class DefaultFrequencyDao implements FrequencyDao {
     private final Map<FrequencySource, String> frequencySourceColumnMappings;
     
     public DefaultFrequencyDao() {
-        frequencySourceColumnMappings = new LinkedHashMap<>();
-        frequencySourceColumnMappings.put(THOUSAND_GENOMES, "dbSNPmaf");
-        frequencySourceColumnMappings.put(ESP_AFRICAN_AMERICAN, "espAAmaf");
-        frequencySourceColumnMappings.put(ESP_EUROPEAN_AMERICAN, "espEAmaf");
-        frequencySourceColumnMappings.put(ESP_ALL, "espAllmaf");
-        frequencySourceColumnMappings.put(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, "exacAFRmaf");
-        frequencySourceColumnMappings.put(EXAC_AMERICAN, "exacAMRmaf");
-        frequencySourceColumnMappings.put(EXAC_EAST_ASIAN, "exacEASmaf");
-        frequencySourceColumnMappings.put(EXAC_FINNISH, "exacFINmaf");
-        frequencySourceColumnMappings.put(EXAC_NON_FINNISH_EUROPEAN, "exacNFEmaf");
-        frequencySourceColumnMappings.put(EXAC_SOUTH_ASIAN, "exacSASmaf");
-        frequencySourceColumnMappings.put(EXAC_OTHER, "exacOTHmaf");
-        
+        Map<FrequencySource, String> frequencyMap = new LinkedHashMap<>();
+        frequencyMap.put(THOUSAND_GENOMES, "dbSNPmaf");
+        frequencyMap.put(ESP_AFRICAN_AMERICAN, "espAAmaf");
+        frequencyMap.put(ESP_EUROPEAN_AMERICAN, "espEAmaf");
+        frequencyMap.put(ESP_ALL, "espAllmaf");
+        frequencyMap.put(EXAC_AFRICAN_INC_AFRICAN_AMERICAN, "exacAFRmaf");
+        frequencyMap.put(EXAC_AMERICAN, "exacAMRmaf");
+        frequencyMap.put(EXAC_EAST_ASIAN, "exacEASmaf");
+        frequencyMap.put(EXAC_FINNISH, "exacFINmaf");
+        frequencyMap.put(EXAC_NON_FINNISH_EUROPEAN, "exacNFEmaf");
+        frequencyMap.put(EXAC_SOUTH_ASIAN, "exacSASmaf");
+        frequencyMap.put(EXAC_OTHER, "exacOTHmaf");
+        frequencySourceColumnMappings = Maps.immutableEnumMap(frequencyMap);
         logger.debug("FrequencySource to columnLabel mappings: {}", frequencySourceColumnMappings);
     }
 
@@ -158,7 +159,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
             FrequencySource source = sourceColumnMapping.getKey();
             String columnLabel = sourceColumnMapping.getValue();
             float freq = rs.getFloat(columnLabel);
-            if (!rs.wasNull() && freq != 0f) {
+            if (!rs.wasNull() && freq != 0) {
                 frequencies.add(new Frequency(freq, source));
             }
         }

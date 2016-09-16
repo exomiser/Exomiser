@@ -136,7 +136,7 @@ public class CaddDao {
     private CaddScore parseCaddScore(String phredScaledCaddScore) throws NumberFormatException {
         float score = Float.parseFloat(phredScaledCaddScore);
         float cadd = rescaleLogTenBasedScore(score);
-        return new CaddScore(cadd);
+        return CaddScore.valueOf(cadd);
     }
  
     /**

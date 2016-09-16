@@ -25,15 +25,15 @@
 
 package de.charite.compbio.exomiser.core.model.frequency;
 
-import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
-import java.util.ArrayList;
-import java.util.List;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -141,7 +141,25 @@ public class FrequencyDataTest {
         instance = new FrequencyData(RSID, ESP_ALL_PASS);
         assertThat(instance.hasEspData(), is(true));
     }
-    
+
+    @Test
+    public void testHasEspDataFalseWhenEmpty() {
+        instance = noFreqData;
+        assertThat(instance.hasEspData(), is(false));
+    }
+
+    @Test
+    public void testHasEspDataIsFalseWhenOnlyNonEspFrequenciesArePresent() {
+        instance = new FrequencyData(RSID, new Frequency(PASS_FREQ, EXAC_FINNISH));
+        assertThat(instance.hasEspData(), is(false));
+    }
+
+    @Test
+    public void testHasEspDataIsTrueWhenOtherNonEspFrequenciesArePresent() {
+        instance = new FrequencyData(RSID, new Frequency(PASS_FREQ, THOUSAND_GENOMES), ESP_AA_PASS, new Frequency(PASS_FREQ, EXAC_FINNISH));
+        assertThat(instance.hasEspData(), is(true));
+    }
+
     @Test
     public void testHasExacDataTrue() {
         instance = new FrequencyData(RSID, new Frequency(PASS_FREQ, EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
@@ -152,12 +170,6 @@ public class FrequencyDataTest {
     public void testHasExacDataFalse() {
         instance = new FrequencyData(RSID, ESP_ALL_PASS);
         assertThat(instance.hasExacData(), is(false));
-    }
-    
-    @Test
-    public void testHasEspDataFalse() {
-        instance = noFreqData;
-        assertThat(instance.hasEspData(), is(false));
     }
 
     @Test

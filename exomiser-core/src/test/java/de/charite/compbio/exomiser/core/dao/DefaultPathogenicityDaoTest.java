@@ -26,23 +26,18 @@ package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.*;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -56,10 +51,10 @@ public class DefaultPathogenicityDaoTest {
     @Autowired
     private DefaultPathogenicityDao instance;
 
-    private static final SiftScore SIFT_SCORE = new SiftScore(0f);
-    private static final PolyPhenScore POLY_PHEN_SCORE = new PolyPhenScore(0.998f);
-    private static final MutationTasterScore MUTATION_TASTER_SCORE = new MutationTasterScore(1.0f);
-    private static final CaddScore CADD_SCORE = new CaddScore(23.7f);
+    private static final SiftScore SIFT_SCORE = SiftScore.valueOf(0f);
+    private static final PolyPhenScore POLY_PHEN_SCORE = PolyPhenScore.valueOf(0.998f);
+    private static final MutationTasterScore MUTATION_TASTER_SCORE = MutationTasterScore.valueOf(1.0f);
+    private static final CaddScore CADD_SCORE = CaddScore.valueOf(23.7f);
 
     private static final PathogenicityData NO_PATH_DATA = PathogenicityData.EMPTY_DATA;
 

@@ -132,16 +132,13 @@ public class OMIMPriority implements Prioritiser {
                 return 0.5d;
             /* No mode of inheritance is defined (UNDEFINED) */
             } else if (gene.getInheritanceModes().isEmpty()) {
-                return 1f;
+                return DEFAULT_SCORE;
             /* inheritance of disease is dominant or both (dominant/recessive) */
-//            } else if (gene.isCompatibleWithDominant() && (inheritanceMode == 'D' || inheritanceMode == 'B')) {
             } else if (gene.isCompatibleWithDominant() && inheritanceMode.isCompatibleWithDominant()) {
                 return DEFAULT_SCORE;
             /* inheritance of disease is recessive or both (dominant/recessive) */
-//            } else if (gene.isCompatibleWithRecessive() && (inheritanceMode == 'R' || inheritanceMode == 'B')) {
             } else if (gene.isCompatibleWithRecessive() && inheritanceMode.isCompatibleWithRecessive()) {
                 return DEFAULT_SCORE;
-//            } else if (gene.isXChromosomal() && inheritanceMode == 'X') {
             } else if (gene.isXChromosomal() && inheritanceMode.isXlinked()) {
                 return DEFAULT_SCORE;
             } else {

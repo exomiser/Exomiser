@@ -199,7 +199,7 @@ public class FilterReportFactoryTest {
         variantEvaluations.add(completelyNovelVariantEval);
         
         VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
-        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
+        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
         
         FilterReport report = new FilterReport(filterType, 1, 1);
@@ -220,7 +220,7 @@ public class FilterReportFactoryTest {
         variantEvaluations.add(completelyNovelVariantEval);
         
         VariantEvaluation mostCommonVariantEvalInTheWorld = makeFailedVariant(filterType);
-        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency[]{new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)}));
+        mostCommonVariantEvalInTheWorld.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(100f, FrequencySource.THOUSAND_GENOMES), new Frequency(100f, FrequencySource.ESP_ALL), new Frequency(100f, FrequencySource.EXAC_OTHER)));
         variantEvaluations.add(mostCommonVariantEvalInTheWorld);
         
         FilterReport report = new FilterReport(filterType, 1, 1);

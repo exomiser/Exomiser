@@ -56,7 +56,7 @@ public class RemmDaoTest {
     private TabixReader remmTabixReader;
     
     private MockTabixIterator mockIterator;
-    
+
     @Before
     public void setUp() {
         mockIterator = new MockTabixIterator();
@@ -100,7 +100,7 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData(new RemmScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData(RemmScore.valueOf(1f))));
     }
     
     @Test
@@ -108,7 +108,7 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(new PathogenicityData(new RemmScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(new PathogenicityData(RemmScore.valueOf(1f))));
     }
     
     @Test
@@ -116,6 +116,6 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(new PathogenicityData(new RemmScore(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(new PathogenicityData(RemmScore.valueOf(1f))));
     }
 }

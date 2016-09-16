@@ -24,27 +24,20 @@
  */
 package de.charite.compbio.exomiser.core.dao;
 
-import de.charite.compbio.exomiser.core.model.pathogenicity.CaddScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
 import de.charite.compbio.exomiser.core.model.Variant;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.*;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *
@@ -140,7 +133,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         float rowVal = rs.getFloat("sift");
         if (valueNotNullOrNoParseFloat(rs, rowVal)) {
             if (score == null || rowVal < score.getScore()) {
-                return new SiftScore(rowVal);
+                return SiftScore.valueOf(rowVal);
             }
         }
         return score;
@@ -150,7 +143,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         float rowVal = rs.getFloat("polyphen");
         if (valueNotNullOrNoParseFloat(rs, rowVal)) {
             if (score == null || rowVal > score.getScore()) {
-                return new PolyPhenScore(rowVal);
+                return PolyPhenScore.valueOf(rowVal);
             }
         }
         return score;
@@ -160,7 +153,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         float rowVal = rs.getFloat("mut_taster");
         if (valueNotNullOrNoParseFloat(rs, rowVal)) {
             if (score == null || rowVal > score.getScore()) {
-                return new MutationTasterScore(rowVal);
+                return MutationTasterScore.valueOf(rowVal);
             }
         }
         return score;
@@ -170,7 +163,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         float rowVal = rs.getFloat("cadd");
         if (valueNotNullOrNoParseFloat(rs, rowVal)) {
             if (score == null || rowVal > score.getScore()) {
-                return new CaddScore(rowVal);
+                return CaddScore.valueOf(rowVal);
             }
         }
         return score;

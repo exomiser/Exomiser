@@ -107,7 +107,7 @@ public class RemmDao {
             }
             //logger.info("Final score " + ncds);
             if (!Float.isNaN(ncds)) {
-                return new PathogenicityData(new RemmScore(ncds));
+                return new PathogenicityData(RemmScore.valueOf(ncds));
             }
         } catch (IOException e) {
             logger.error("Unable to read from REMM tabix file {}", remmTabixReader.getSource(), e);

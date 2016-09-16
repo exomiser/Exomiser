@@ -19,16 +19,13 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -36,31 +33,25 @@ import static org.junit.Assert.*;
  */
 public class PathogenicityDataTest {
     
-    private PathogenicityData instance;
+    private PathogenicityData instance = PathogenicityData.EMPTY_DATA;
     
     private static final float SIFT_PASS_SCORE = SiftScore.SIFT_THRESHOLD - 0.01f;
     private static final float SIFT_FAIL_SCORE = SiftScore.SIFT_THRESHOLD + 0.01f;
 
-    private static final SiftScore SIFT_PASS = new SiftScore(SIFT_PASS_SCORE);
-    private static final SiftScore SIFT_FAIL = new SiftScore(SIFT_FAIL_SCORE);
+    private static final SiftScore SIFT_PASS = SiftScore.valueOf(SIFT_PASS_SCORE);
+    private static final SiftScore SIFT_FAIL = SiftScore.valueOf(SIFT_FAIL_SCORE);
 
     private static final float POLYPHEN_PASS_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f;
     private static final float POLYPHEN_FAIL_SCORE = PolyPhenScore.POLYPHEN_THRESHOLD - 0.1f;
 
-    private static final PolyPhenScore POLYPHEN_PASS = new PolyPhenScore(POLYPHEN_PASS_SCORE);
-    private static final PolyPhenScore POLYPHEN_FAIL = new PolyPhenScore(POLYPHEN_FAIL_SCORE);
+    private static final PolyPhenScore POLYPHEN_PASS = PolyPhenScore.valueOf(POLYPHEN_PASS_SCORE);
+    private static final PolyPhenScore POLYPHEN_FAIL = PolyPhenScore.valueOf(POLYPHEN_FAIL_SCORE);
 
     private static final float MTASTER_PASS_SCORE = MutationTasterScore.MTASTER_THRESHOLD + 0.01f;
     private static final float MTASTER_FAIL_SCORE = MutationTasterScore.MTASTER_THRESHOLD - 0.01f;
 
-    private static final MutationTasterScore MTASTER_PASS = new MutationTasterScore(MTASTER_PASS_SCORE);
-    private static final MutationTasterScore MTASTER_FAIL = new MutationTasterScore(MTASTER_FAIL_SCORE);
-
-
-    @Before
-    public void setUp() {
-        instance = new PathogenicityData();
-    }
+    private static final MutationTasterScore MTASTER_PASS = MutationTasterScore.valueOf(MTASTER_PASS_SCORE);
+    private static final MutationTasterScore MTASTER_FAIL = MutationTasterScore.valueOf(MTASTER_FAIL_SCORE);
 
     @Test
     public void testEmptyData() {
@@ -134,9 +125,9 @@ public class PathogenicityDataTest {
     
     @Test
     public void testGetRemmScore() {
-        instance = new PathogenicityData(new RemmScore(1f));
+        instance = new PathogenicityData(RemmScore.valueOf(1f));
         RemmScore result = instance.getRemmScore();
-        assertThat(result, equalTo(new RemmScore(1f)));
+        assertThat(result, equalTo(RemmScore.valueOf(1f)));
     }
     
     @Test
@@ -148,7 +139,7 @@ public class PathogenicityDataTest {
 
     @Test
     public void testGetCaddScore() {
-        CaddScore caddScore = new CaddScore(POLYPHEN_PASS_SCORE);
+        CaddScore caddScore = CaddScore.valueOf(POLYPHEN_PASS_SCORE);
         instance = new PathogenicityData(caddScore);
         CaddScore result = instance.getCaddScore();
         assertThat(result, equalTo(caddScore));

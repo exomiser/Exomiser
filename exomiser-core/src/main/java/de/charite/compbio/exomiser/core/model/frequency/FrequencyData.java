@@ -24,18 +24,12 @@
  */
 package de.charite.compbio.exomiser.core.model.frequency;
 
-import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+
+import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.THOUSAND_GENOMES;
 
 /**
  * Frequency data for the variant from the Thousand Genomes, the Exome Server
@@ -64,9 +58,9 @@ public class FrequencyData {
         this(rsId, new HashSet<>(Arrays.asList(frequency)));
     } 
 
-    public FrequencyData(RsId rsId, Set<Frequency> frequencies) {
+    public FrequencyData(RsId rsId, Collection<Frequency> frequencies) {
         this.rsId = rsId;
-        knownFrequencies = new EnumMap(FrequencySource.class);
+        knownFrequencies = new EnumMap<>(FrequencySource.class);
         for (Frequency frequency : frequencies) {
             knownFrequencies.put(frequency.getSource(), frequency);
         }
@@ -108,6 +102,7 @@ public class FrequencyData {
                 case ESP_EUROPEAN_AMERICAN:
                 case ESP_ALL:
                     return true;
+                default:
             }
         }
         return false;
@@ -124,6 +119,7 @@ public class FrequencyData {
                 case EXAC_OTHER:
                 case EXAC_SOUTH_ASIAN:
                     return true;
+                default:
             }
         }
         return false;

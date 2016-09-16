@@ -32,8 +32,8 @@ public abstract class AbstractPriorityResult implements PriorityResult {
     final String geneSymbol;
     final double score;
 
-    public AbstractPriorityResult(PriorityType PriorityType, int geneId, String geneSymbol, double score) {
-        this.priorityType = PriorityType;
+    public AbstractPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) {
+        this.priorityType = priorityType;
         this.geneId = geneId;
         this.geneSymbol = geneSymbol;
         this.score = score;

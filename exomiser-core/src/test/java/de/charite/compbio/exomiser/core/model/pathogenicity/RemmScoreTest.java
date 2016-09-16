@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -19,10 +19,10 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  */
 public class RemmScoreTest {
     
-    RemmScore instance = new RemmScore(1f);
+    RemmScore instance = RemmScore.valueOf(1f);
     
     @Test
     public void testGetSource() {

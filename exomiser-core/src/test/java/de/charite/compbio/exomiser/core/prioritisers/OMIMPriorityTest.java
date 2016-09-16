@@ -99,11 +99,46 @@ public class OMIMPriorityTest {
     }
 
     @Test
-    public void prioritizeGenes_InheritanceModeIsCompatible() throws Exception {
+    public void prioritizeGenes_RECESSIVE_ModeIsCompatible() throws Exception {
         //ROR2 has two associated conditions, one recessive, the other dominant.
-        // We're going to simulate this matching the recissive one.
+        // We're going to simulate this matching the recessive one.
         Gene ror2 = new Gene("ROR2", 4920);
         ror2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        List<Gene> genes = Lists.newArrayList(ror2);
+
+        instance.prioritizeGenes(genes);
+
+        genes.forEach(gene -> {
+            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            assertThat(result.getScore(), equalTo(1d));
+            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+        });
+    }
+
+    @Test
+    public void prioritizeGenes_DOMINANT_ModeIsCompatible() throws Exception {
+        //ROR2 has two associated conditions, one recessive, the other dominant.
+        // We're going to simulate this matching the dominant one.
+        Gene ror2 = new Gene("ROR2", 4920);
+        ror2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        List<Gene> genes = Lists.newArrayList(ror2);
+
+        instance.prioritizeGenes(genes);
+
+        genes.forEach(gene -> {
+            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+            assertThat(result.getScore(), equalTo(1d));
+            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+        });
+    }
+
+    @Test
+    public void prioritizeGenes_NoModeSet() throws Exception {
+        //ROR2 has two associated conditions, one recessive, the other dominant.
+        // We're going to simulate this matching the dominant one.
+        Gene ror2 = new Gene("ROR2", 4920);
         List<Gene> genes = Lists.newArrayList(ror2);
 
         instance.prioritizeGenes(genes);
@@ -131,6 +166,8 @@ public class OMIMPriorityTest {
             assertThat(result.getScore(), equalTo(0.5d));
             assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
         });
+
+
     }
 
 }

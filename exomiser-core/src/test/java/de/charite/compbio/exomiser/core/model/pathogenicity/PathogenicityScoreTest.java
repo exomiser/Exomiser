@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -6,17 +25,15 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
-import de.charite.compbio.exomiser.core.model.pathogenicity.SiftScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.MutationTasterScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
-import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -34,10 +51,10 @@ public class PathogenicityScoreTest {
     
     @Test
     public void testComparableOnlySiftScores() {
-        SiftScore mostPathogenic = new SiftScore(0.001f);
-        SiftScore belowThreshold = new SiftScore(SiftScore.SIFT_THRESHOLD + 0.01f);
-        SiftScore aboveThreshold = new SiftScore(SiftScore.SIFT_THRESHOLD - 0.01f);
-        SiftScore leastPathogenic = new SiftScore(0.999f);
+        SiftScore mostPathogenic = SiftScore.valueOf(0.001f);
+        SiftScore belowThreshold = SiftScore.valueOf(SiftScore.SIFT_THRESHOLD + 0.01f);
+        SiftScore aboveThreshold = SiftScore.valueOf(SiftScore.SIFT_THRESHOLD - 0.01f);
+        SiftScore leastPathogenic = SiftScore.valueOf(0.999f);
         
         
         List<PathogenicityScore> scores = new ArrayList<>();
@@ -60,12 +77,12 @@ public class PathogenicityScoreTest {
     
     @Test
     public void testComparableWithSiftScores() {
-        SiftScore mostPathogenic = new SiftScore(0.001f);
-        SiftScore leastPathogenic = new SiftScore(0.998f);
-        PolyPhenScore overThreshold = new PolyPhenScore(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
-        PolyPhenScore belowThreshold = new PolyPhenScore(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
-        MutationTasterScore damaging = new MutationTasterScore(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
-        MutationTasterScore notdamaging = new MutationTasterScore(MutationTasterScore.MTASTER_THRESHOLD - 0.001f);
+        SiftScore mostPathogenic = SiftScore.valueOf(0.001f);
+        SiftScore leastPathogenic = SiftScore.valueOf(0.998f);
+        PolyPhenScore overThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
+        PolyPhenScore belowThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
+        MutationTasterScore damaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
+        MutationTasterScore notdamaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD - 0.001f);
         
         List<PathogenicityScore> scores = new ArrayList<>();
         scores.add(damaging);
@@ -92,9 +109,9 @@ public class PathogenicityScoreTest {
     @Test
     public void testComparableNoSiftScores() {
 
-        PolyPhenScore overThreshold = new PolyPhenScore(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
-        PolyPhenScore belowThreshold = new PolyPhenScore(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
-        MutationTasterScore damaging = new MutationTasterScore(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
+        PolyPhenScore overThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD + 0.1f);
+        PolyPhenScore belowThreshold = PolyPhenScore.valueOf(PolyPhenScore.POLYPHEN_THRESHOLD - 0.01f);
+        MutationTasterScore damaging = MutationTasterScore.valueOf(MutationTasterScore.MTASTER_THRESHOLD + 0.001f);
         
         List<PathogenicityScore> scores = new ArrayList<>();
         scores.add(damaging);
@@ -114,7 +131,7 @@ public class PathogenicityScoreTest {
     
     @Test(expected = NullPointerException.class)
     public void comparingAPathogenicityScoreToANullThrowsANullPOinterException() {
-        PolyPhenScore polyPhenScore = new PolyPhenScore(1);
+        PolyPhenScore polyPhenScore = PolyPhenScore.valueOf(1);
         PolyPhenScore nullScore = null;
         
         polyPhenScore.compareTo(nullScore);

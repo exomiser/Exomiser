@@ -19,17 +19,9 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
-import static de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource.*;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import static de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
 /**
  * Container for PathogenicityScore data about a variant.
@@ -46,8 +38,8 @@ public class PathogenicityData {
         this(new HashSet<>(Arrays.asList(pathScore)));
     }
 
-    public PathogenicityData(Set<PathogenicityScore> pathScores) {
-        pathogenicityScores = new EnumMap(PathogenicitySource.class);
+    public PathogenicityData(Collection<PathogenicityScore> pathScores) {
+        pathogenicityScores = new EnumMap<>(PathogenicitySource.class);
         for (PathogenicityScore pathScore : pathScores) {
             if (pathScore != null) {
                 pathogenicityScores.put(pathScore.getSource(), pathScore);
@@ -108,8 +100,8 @@ public class PathogenicityData {
         }
         List<PathogenicityScore> knownPathScores = this.getPredictedPathogenicityScores();
         Collections.sort(knownPathScores);
-        PathogenicityScore mostPathogenic = knownPathScores.get(0);
-        return mostPathogenic;
+        return knownPathScores.get(0);
+//        return pathogenicityScores.values().stream().max(Comparator.naturalOrder()).orElse(null);
     }
 
 
