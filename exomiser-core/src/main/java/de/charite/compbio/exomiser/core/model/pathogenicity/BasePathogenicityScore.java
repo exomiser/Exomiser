@@ -24,6 +24,8 @@
  */
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
+import java.util.Objects;
+
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -53,27 +55,27 @@ abstract class BasePathogenicityScore implements PathogenicityScore {
     public PathogenicitySource getSource() {
         return source;
     }
-    
+
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 67 * hash + Float.floatToIntBits(this.score);
-        return hash;
+        return Objects.hash(score, source);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PathogenicityScore)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        final BasePathogenicityScore other = (BasePathogenicityScore) o;
+
+        if (source != other.source) {
             return false;
         }
-        final BasePathogenicityScore other = (BasePathogenicityScore) obj;
-        if (Float.floatToIntBits(this.score) != Float.floatToIntBits(other.score)) {
-            return false;
-        }
-        return true;
+
+        return Float.compare(other.score, score) == 0;
     }
 
     /**

@@ -37,13 +37,11 @@ import static org.junit.Assert.assertThat;
  * @author Jules  Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FrequencyTest {
-    
-    private Frequency instance;
-    
+
     @Test
     public void testfrequencyOnlyConstructor(){
         float frequency = 1.0f;
-        instance = Frequency.valueOf(frequency, UNKNOWN);
+        Frequency instance = Frequency.valueOf(frequency, UNKNOWN);
         assertThat(instance.getFrequency(), equalTo(frequency));
         assertThat(instance.getSource(), equalTo(FrequencySource.UNKNOWN));
         System.out.println(instance);
@@ -53,8 +51,8 @@ public class FrequencyTest {
     public void testfrequencySourceInConstructor(){
         float frequency = 1.0f;
         FrequencySource source = EXAC_NON_FINNISH_EUROPEAN;
-        
-        instance = Frequency.valueOf(frequency, source);
+
+        Frequency instance = Frequency.valueOf(frequency, source);
         assertThat(instance.getFrequency(), equalTo(frequency));
         assertThat(instance.getSource(), equalTo(source));
         System.out.println(instance);
@@ -63,7 +61,7 @@ public class FrequencyTest {
     @Test
     public void testFrequencyIsOverThreshold() {
         float threshold = 2.0f;
-        instance = Frequency.valueOf(4.0f, ESP_AFRICAN_AMERICAN);
+        Frequency instance = Frequency.valueOf(4.0f, ESP_AFRICAN_AMERICAN);
         
         assertThat(instance.isOverThreshold(threshold), is(true));
     }
@@ -71,7 +69,7 @@ public class FrequencyTest {
     @Test
     public void testFrequencyIsNotOverThreshold() {
         float threshold = 2.0f;
-        instance = Frequency.valueOf(1.0f, ESP_AFRICAN_AMERICAN);
+        Frequency instance = Frequency.valueOf(1.0f, ESP_AFRICAN_AMERICAN);
         
         assertThat(instance.isOverThreshold(threshold), is(false));
     }
@@ -79,35 +77,35 @@ public class FrequencyTest {
     @Test
     public void testNotEqualToOtherFrequencyOfDifferentSource() {
         Frequency other = Frequency.valueOf(1.0f, UNKNOWN);
-        instance = Frequency.valueOf(1.0f, ESP_AFRICAN_AMERICAN);
+        Frequency instance = Frequency.valueOf(1.0f, ESP_AFRICAN_AMERICAN);
         assertThat(instance, not(equalTo(other)));
     }
     
     @Test
     public void testEqualToOtherFrequencyOfSameSourceAndFrequecy() {
         Frequency other = Frequency.valueOf(1.0f, UNKNOWN);
-        instance = Frequency.valueOf(1.0f, UNKNOWN);
+        Frequency instance = Frequency.valueOf(1.0f, UNKNOWN);
         assertThat(instance, equalTo(other));
     }
     
     @Test
     public void testHashCodeEqual() {
         Frequency other = Frequency.valueOf(1.0f, UNKNOWN);
-        instance = Frequency.valueOf(1.0f, UNKNOWN);
+        Frequency instance = Frequency.valueOf(1.0f, UNKNOWN);
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
     
     @Test
     public void testHashCodeNotEqual() {
         Frequency other = Frequency.valueOf(1.0f, UNKNOWN);
-        instance = Frequency.valueOf(1.1f, UNKNOWN);
+        Frequency instance = Frequency.valueOf(1.1f, UNKNOWN);
         assertThat(instance.hashCode(), not(equalTo(other.hashCode())));
     }
     
     @Test
     public void testToString() {
         float frequency = 1.0f;
-        instance = Frequency.valueOf(frequency, UNKNOWN);
+        Frequency instance = Frequency.valueOf(frequency, UNKNOWN);
         assertThat(instance.toString(), equalTo(String.format(Locale.UK, "Frequency{%s source=UNKNOWN}", frequency)));
     }
 }

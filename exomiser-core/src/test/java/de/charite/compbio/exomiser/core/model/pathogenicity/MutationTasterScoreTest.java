@@ -36,7 +36,7 @@ import static org.junit.Assert.assertThat;
  */
 public class MutationTasterScoreTest {
     
-    private MutationTasterScore instance = MutationTasterScore.valueOf(1.0f);
+    private final MutationTasterScore instance = MutationTasterScore.valueOf(1.0f);
 
     @Test
     public void testGetSource() {

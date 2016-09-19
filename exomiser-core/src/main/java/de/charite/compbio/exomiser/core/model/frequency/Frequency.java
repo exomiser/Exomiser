@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class Frequency {
+public final class Frequency {
 
     private final float frequency;
     private final FrequencySource source;
@@ -59,25 +59,22 @@ public class Frequency {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 67 * hash + Float.floatToIntBits(this.frequency);
-        hash = 67 * hash + Objects.hashCode(this.source);
-        return hash;
+        return Objects.hash(frequency, source);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Frequency)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        Frequency frequency1 = (Frequency) o;
+        if (source != frequency1.source) {
             return false;
         }
-        final Frequency other = (Frequency) obj;
-        if (this.source != other.source) {
-            return false;
-        }
-        return Float.floatToIntBits(this.frequency) == Float.floatToIntBits(other.frequency);
+        return Float.compare(frequency1.frequency, frequency) == 0;
     }
 
     @Override

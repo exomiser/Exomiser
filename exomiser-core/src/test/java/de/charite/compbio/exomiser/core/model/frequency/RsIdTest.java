@@ -25,7 +25,6 @@
 
 package de.charite.compbio.exomiser.core.model.frequency;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -37,18 +36,9 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class RsIdTest {
-    
-    RsId instance;
-    
+
     private static final int ID = 234567364;
-    
-    public RsIdTest() {
-    }
-    
-    @Before
-    public void setUp() {
-        instance = RsId.valueOf(ID);
-    }
+    private static final RsId instance = RsId.valueOf(ID);
 
     @Test
     public void testGetId() {
@@ -57,29 +47,29 @@ public class RsIdTest {
 
     @Test
     public void testHashCode() {
-        System.out.println("hashCode");
         RsId other = RsId.valueOf(ID);
         int expected = other.hashCode();
         assertThat(instance.hashCode(), equalTo(expected));
-
     }
 
     @Test
     public void testEqualsNotNull() {
-        Object obj = null;
-        assertThat(instance.equals(obj), is(false));
+        assertThat(instance.equals(null), is(false));
     }
     
     @Test
     public void testEqualsNotSomethingElse() {
-        Object obj = "1335464574";
-        assertThat(instance.equals(obj), is(false));
+        assertThat(instance.equals("1335464574"), is(false));
     }
-    
+
+    @Test
+    public void testNotEqualsDifferentId() {
+        assertThat(instance.equals(RsId.valueOf(ID + 1)), is(false));
+    }
+
     @Test
     public void testEquals() {
-        RsId obj = RsId.valueOf(ID);
-        assertThat(instance.equals(obj), is(true));
+        assertThat(instance.equals(RsId.valueOf(ID)), is(true));
     }
 
     @Test
