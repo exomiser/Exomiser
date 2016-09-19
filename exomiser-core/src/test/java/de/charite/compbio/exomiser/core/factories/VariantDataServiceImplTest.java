@@ -72,7 +72,7 @@ public class VariantDataServiceImplTest {
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
     private static final PathogenicityData PATH_DATA = new PathogenicityData(PolyPhenScore.valueOf(1), MutationTasterScore.valueOf(1), SiftScore.valueOf(0));
-    private static final FrequencyData FREQ_DATA = new FrequencyData(new RsId(1234567), new Frequency(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
+    private static final FrequencyData FREQ_DATA = new FrequencyData(RsId.valueOf(1234567), Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
     private static final PathogenicityData CADD_DATA = new PathogenicityData(CaddScore.valueOf(1));
     private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
@@ -165,7 +165,7 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsEmptyFrequencyDataWithRsIdForVariantWhenNoSourcesAreDefined() {
         FrequencyData result = instance.getVariantFrequencyData(variant, Collections.emptySet());
-        assertThat(result, equalTo(new FrequencyData(new RsId(1234567))));
+        assertThat(result, equalTo(new FrequencyData(RsId.valueOf(1234567))));
     }
 
     @Test
@@ -176,20 +176,19 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsSpecifiedFrequencyDataForVariant() {
-        FrequencyData frequencyData = new FrequencyData(new RsId(234567), new Frequency(1f, FrequencySource.ESP_AFRICAN_AMERICAN), new Frequency(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
+        FrequencyData frequencyData = new FrequencyData(RsId.valueOf(234567), Frequency.valueOf(1f, FrequencySource.ESP_AFRICAN_AMERICAN), Frequency.valueOf(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
         Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
         
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN));
-        assertThat(result, equalTo(new FrequencyData(new RsId(234567), new Frequency(1f, FrequencySource.ESP_AFRICAN_AMERICAN))));
+        assertThat(result, equalTo(new FrequencyData(RsId.valueOf(234567), Frequency.valueOf(1f, FrequencySource.ESP_AFRICAN_AMERICAN))));
     }
 
     @Test
     public void serviceReturnsEmptyFrequencyDataWhenSpecifiedFrequencyDataIsUnavailable() {
-        FrequencyData frequencyData = new FrequencyData();
-        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
+        Mockito.when(mockFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.EMPTY_DATA);
                 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
-        assertThat(result, equalTo(new FrequencyData()));
+        assertThat(result, equalTo(FrequencyData.EMPTY_DATA));
     }
 
     @Test

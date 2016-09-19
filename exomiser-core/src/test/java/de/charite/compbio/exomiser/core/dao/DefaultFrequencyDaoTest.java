@@ -59,11 +59,11 @@ public class DefaultFrequencyDaoTest {
     private Variant variantNotInDatabase;
     private Variant variantInDatabaseWithRsId;
 
-    private RsId rsId = new RsId(121918506);
-    private Frequency dbSnp = new Frequency(0.01f, FrequencySource.THOUSAND_GENOMES);
-    private Frequency espAll = new Frequency(0.02f, FrequencySource.ESP_ALL);
-    private Frequency espAa = new Frequency(0.03f, FrequencySource.ESP_AFRICAN_AMERICAN);
-    private Frequency espEa = new Frequency(0.04f, FrequencySource.ESP_EUROPEAN_AMERICAN);
+    private RsId rsId = RsId.valueOf(121918506);
+    private Frequency dbSnp = Frequency.valueOf(0.01f, FrequencySource.THOUSAND_GENOMES);
+    private Frequency espAll = Frequency.valueOf(0.02f, FrequencySource.ESP_ALL);
+    private Frequency espAa = Frequency.valueOf(0.03f, FrequencySource.ESP_AFRICAN_AMERICAN);
+    private Frequency espEa = Frequency.valueOf(0.04f, FrequencySource.ESP_EUROPEAN_AMERICAN);
 
     private static final FrequencyData NO_DATA = FrequencyData.EMPTY_DATA;
 

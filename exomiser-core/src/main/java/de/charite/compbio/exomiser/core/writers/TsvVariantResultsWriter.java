@@ -44,7 +44,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.*;
 
@@ -178,7 +181,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
     private void addFrequencyData(FrequencyData frequencyData, List<Object> record) {
         if (frequencyData == null) {
-            frequencyData = new FrequencyData(null, Collections.EMPTY_SET);
+            frequencyData = FrequencyData.EMPTY_DATA;
         }
         // DBSNP_ID
         record.add(dotIfNull(frequencyData.getRsId()));

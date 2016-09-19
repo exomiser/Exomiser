@@ -1,16 +1,35 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.model.frequency;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -23,7 +42,7 @@ public class FrequencyIT {
 
     public static void main(String[] args) {
 
-//        sleep(20);
+        sleep(10);
 
         List exomeMafList = createObjects(VARIANTS_IN_EXOME);
         compareThresholdForObjects(exomeMafList, 23.0f);
@@ -57,18 +76,21 @@ public class FrequencyIT {
         List<Frequency> mafList = new ArrayList<>();
         while (i < numObjects) {
             i++;
-            Frequency maf1 = new Frequency(getRandomPercentage());
-            mafList.add(maf1);
-            Frequency maf2 = new Frequency(getRandomPercentage());
-            mafList.add(maf2);
-            Frequency maf3 = new Frequency(getRandomPercentage());
-            mafList.add(maf3);
-            Frequency maf4 = new Frequency(getRandomPercentage());
-            mafList.add(maf4);
+            //we're creating four variants here
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.ESP_ALL));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.ESP_AFRICAN_AMERICAN));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.ESP_EUROPEAN_AMERICAN));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.THOUSAND_GENOMES));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_AMERICAN));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_FINNISH));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_EAST_ASIAN));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_NON_FINNISH_EUROPEAN));
+            mafList.add(Frequency.valueOf(getRandomPercentage(), FrequencySource.EXAC_OTHER));
         }
         long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Took %dms to create %s %s objects", end - start, (long) i * 4, Frequency.class.getName()));
+        System.out.println(String.format("Took %dms to create %s %s objects", end - start, mafList.size(), Frequency.class.getName()));
         return mafList;
     }
     
@@ -92,10 +114,15 @@ public class FrequencyIT {
         int i = 0;
         while (i < numObjects) {
             i++;
-            float maf1 = getRandomPercentage();
-            float maf2 = getRandomPercentage();
-            float maf3 = getRandomPercentage();
-            float maf4 = getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
+            getRandomPercentage();
         }
         long end = System.currentTimeMillis();
 
@@ -112,10 +139,16 @@ public class FrequencyIT {
             floatList.add(getRandomPercentage());
             floatList.add(getRandomPercentage());
             floatList.add(getRandomPercentage());
+            floatList.add(getRandomPercentage());
+            floatList.add(getRandomPercentage());
+            floatList.add(getRandomPercentage());
+            floatList.add(getRandomPercentage());
+            floatList.add(getRandomPercentage());
+            floatList.add(getRandomPercentage());
         }
         long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Took %dms to create %s %s objects", end - start, (long) i * 4, Float.class.getName()));
+        System.out.println(String.format("Took %dms to create %s %s objects", end - start, floatList.size(), Float.class.getName()));
         return floatList;
     }
 
@@ -139,22 +172,15 @@ public class FrequencyIT {
         return (float) Math.random() * 100;
     }
 
-    public FrequencyIT() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
     /**
      * Attach the performance monitor to this method...
      */
     @Test
     public void testConstructorPerformanceGenome() {
         int i = 0;
-        while (i < VARIANTS_IN_GENOME) {
+        while (i < VARIANTS_IN_GENOME * 10) {
             i++;
-            Frequency maf = new Frequency(20f);
+            Frequency maf = Frequency.valueOf(20f, FrequencySource.UNKNOWN);
         }
         System.out.println(i);
 
@@ -167,8 +193,8 @@ public class FrequencyIT {
     public void testOverThresholdPerformanceGenome() {
         float threshold = 24.56f;
 
-        for (int i = 0; i < VARIANTS_IN_GENOME; i++) {
-            Frequency maf = new Frequency(20f);
+        for (int i = 0; i < VARIANTS_IN_GENOME * 10; i++) {
+            Frequency maf = Frequency.valueOf(20f, FrequencySource.UNKNOWN);
         }
     }
 }

@@ -42,14 +42,14 @@ import static de.charite.compbio.exomiser.core.model.frequency.FrequencySource.T
 public class FrequencyData {
 
     private static final Logger logger = LoggerFactory.getLogger(FrequencyData.class);
-    
+
     private final RsId rsId;
 
     private final Map<FrequencySource, Frequency> knownFrequencies;
 
     public static final FrequencyData EMPTY_DATA = new FrequencyData();
 
-    public FrequencyData() {
+    private FrequencyData() {
         this.rsId = null;
         this.knownFrequencies = Collections.emptyMap();
     }
@@ -66,7 +66,7 @@ public class FrequencyData {
         }
     }
 
-    //TODO: RSID ought to belong to the Variant, not the frequencyData 
+    //RSID ought to belong to the Variant, not the frequencyData, but its here for convenience
     public RsId getRsId() {
         return rsId;
     }

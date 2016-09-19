@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -7,7 +26,6 @@ package de.charite.compbio.exomiser.core.filters;
 
 import de.charite.compbio.exomiser.core.factories.VariantDataService;
 import de.charite.compbio.exomiser.core.factories.VariantDataServiceMock;
-import static de.charite.compbio.exomiser.core.filters.FilterType.*;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
@@ -15,18 +33,15 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.*;
+
+import static de.charite.compbio.exomiser.core.filters.FilterType.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -79,8 +94,8 @@ public class SimpleVariantFilterRunnerTest {
     }
 
     private Map<Variant, FrequencyData> mockFrequencyData() {
-        FrequencyData passFrequency = new FrequencyData(new RsId(12345), new Frequency(0.01f, FrequencySource.UNKNOWN));
-        FrequencyData failFrequency = new FrequencyData(new RsId(54321), new Frequency(100f, FrequencySource.UNKNOWN));
+        FrequencyData passFrequency = new FrequencyData(RsId.valueOf(12345), Frequency.valueOf(0.01f, FrequencySource.UNKNOWN));
+        FrequencyData failFrequency = new FrequencyData(RsId.valueOf(54321), Frequency.valueOf(100f, FrequencySource.UNKNOWN));
 
         Map<Variant, FrequencyData> frequecyData = new HashMap<>();
         frequecyData.put(passesAllFilters, passFrequency);

@@ -100,7 +100,7 @@ public class HtmlResultsWriterTest {
         TestVariantFactory varFactory = new TestVariantFactory();
 
         missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        missenseVariantEvaluation.setFrequencyData(new FrequencyData(new RsId(123456), new Frequency(0.01f, FrequencySource.THOUSAND_GENOMES)));
+        missenseVariantEvaluation.setFrequencyData(new FrequencyData(RsId.valueOf(123456), Frequency.valueOf(0.01f, FrequencySource.THOUSAND_GENOMES)));
         missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f), MutationTasterScore.valueOf(1f), SiftScore.valueOf(0f), CaddScore.valueOf(1f)));
         missenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));
         missenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));

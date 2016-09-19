@@ -48,21 +48,21 @@ public class FrequencyFilterTest {
     private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
     private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
 
-    private static final Frequency ESP_ALL_PASS = new Frequency(PASS_FREQ, FrequencySource.ESP_ALL);
-    private static final Frequency ESP_ALL_FAIL = new Frequency(FAIL_FREQ);
+    private static final Frequency ESP_ALL_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.ESP_ALL);
+    private static final Frequency ESP_ALL_FAIL = Frequency.valueOf(FAIL_FREQ, FrequencySource.ESP_ALL);
 
-    private static final Frequency ESP_AA_PASS = new Frequency(PASS_FREQ, FrequencySource.ESP_AFRICAN_AMERICAN);
+    private static final Frequency ESP_AA_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.ESP_AFRICAN_AMERICAN);
 
-    private static final Frequency ESP_EA_PASS = new Frequency(PASS_FREQ, FrequencySource.ESP_EUROPEAN_AMERICAN);
+    private static final Frequency ESP_EA_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.ESP_EUROPEAN_AMERICAN);
 
-    private static final Frequency DBSNP_PASS = new Frequency(PASS_FREQ, FrequencySource.THOUSAND_GENOMES);
+    private static final Frequency DBSNP_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.THOUSAND_GENOMES);
 
     private static final FrequencyData espAllPassData = new FrequencyData(null, ESP_ALL_PASS);
     private static final FrequencyData espAllFailData = new FrequencyData(null, ESP_ALL_FAIL);
     private static final FrequencyData espAaPassData = new FrequencyData(null, ESP_AA_PASS);
     private static final FrequencyData espEaPassData = new FrequencyData(null, ESP_EA_PASS);
     private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS);
-    private static final FrequencyData noFreqData = new FrequencyData();
+    private static final FrequencyData noFreqData = FrequencyData.EMPTY_DATA;
 
     @Before
     public void setUp() throws Exception {

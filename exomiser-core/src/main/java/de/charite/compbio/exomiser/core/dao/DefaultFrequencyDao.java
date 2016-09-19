@@ -41,8 +41,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -65,7 +65,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
     private final Map<FrequencySource, String> frequencySourceColumnMappings;
     
     public DefaultFrequencyDao() {
-        Map<FrequencySource, String> frequencyMap = new LinkedHashMap<>();
+        Map<FrequencySource, String> frequencyMap = new EnumMap<>(FrequencySource.class);
         frequencyMap.put(THOUSAND_GENOMES, "dbSNPmaf");
         frequencyMap.put(ESP_AFRICAN_AMERICAN, "espAAmaf");
         frequencyMap.put(ESP_EUROPEAN_AMERICAN, "espEAmaf");
@@ -149,7 +149,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
     private RsId makeRsId(ResultSet rs) throws SQLException {
         int dbSNPid = rs.getInt("rsid");
         if (!rs.wasNull() && dbSNPid != 0) {
-            return new RsId(dbSNPid);
+            return RsId.valueOf(dbSNPid);
         }
         return null;
     }
@@ -160,7 +160,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
             String columnLabel = sourceColumnMapping.getValue();
             float freq = rs.getFloat(columnLabel);
             if (!rs.wasNull() && freq != 0) {
-                frequencies.add(new Frequency(freq, source));
+                frequencies.add(Frequency.valueOf(freq, source));
             }
         }
         return frequencies;

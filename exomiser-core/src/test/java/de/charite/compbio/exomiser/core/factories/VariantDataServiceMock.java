@@ -1,7 +1,7 @@
 /*
  * The Exomiser - A tool to annotate and prioritize variants
  *
- * Copyright (C) 2012 - 2015  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -32,11 +32,7 @@ import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Mock of VariantDataService to provide canned responses for variants. Enables
@@ -109,7 +105,7 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
-        FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, new FrequencyData());
+        FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.EMPTY_DATA);
         return frequencyDataFromSpecifiedSources(allFrequencyData, frequencySources);
     }
 

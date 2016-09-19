@@ -49,12 +49,12 @@ public class FrequencyDataTest {
     private static final float PASS_FREQ = FREQ_THRESHOLD - 0.02f;
     private static final float FAIL_FREQ = FREQ_THRESHOLD + 1.0f;
     
-    private static final Frequency ESP_ALL_PASS = new Frequency(PASS_FREQ, ESP_ALL);
-    private static final Frequency ESP_AA_PASS = new Frequency(PASS_FREQ, ESP_AFRICAN_AMERICAN);
-    private static final Frequency ESP_EA_PASS = new Frequency(PASS_FREQ, ESP_EUROPEAN_AMERICAN);
-    private static final Frequency DBSNP_PASS = new Frequency(PASS_FREQ, THOUSAND_GENOMES);
+    private static final Frequency ESP_ALL_PASS = Frequency.valueOf(PASS_FREQ, ESP_ALL);
+    private static final Frequency ESP_AA_PASS = Frequency.valueOf(PASS_FREQ, ESP_AFRICAN_AMERICAN);
+    private static final Frequency ESP_EA_PASS = Frequency.valueOf(PASS_FREQ, ESP_EUROPEAN_AMERICAN);
+    private static final Frequency DBSNP_PASS = Frequency.valueOf(PASS_FREQ, THOUSAND_GENOMES);
     
-    private static final RsId RSID = new RsId(12335);
+    private static final RsId RSID = RsId.valueOf(12335);
        
     @Before
     public void setUp() {
@@ -72,14 +72,6 @@ public class FrequencyDataTest {
         System.out.println(instance);
     }
 
-    @Test
-    public void testNoArgsConstructorHasNullRsIdAndNoKnownFrequencies() {
-        instance = new FrequencyData();
-        assertThat(instance.getRsId(), nullValue());
-        assertThat(instance.getKnownFrequencies().isEmpty(), is(true));
-        assertThat(instance.isRepresentedInDatabase(), is(false));
-    }
-    
     @Test
     public void testGetRsId() {
         assertThat(instance.getRsId(), equalTo(RSID));
@@ -150,19 +142,19 @@ public class FrequencyDataTest {
 
     @Test
     public void testHasEspDataIsFalseWhenOnlyNonEspFrequenciesArePresent() {
-        instance = new FrequencyData(RSID, new Frequency(PASS_FREQ, EXAC_FINNISH));
+        instance = new FrequencyData(RSID, Frequency.valueOf(PASS_FREQ, EXAC_FINNISH));
         assertThat(instance.hasEspData(), is(false));
     }
 
     @Test
     public void testHasEspDataIsTrueWhenOtherNonEspFrequenciesArePresent() {
-        instance = new FrequencyData(RSID, new Frequency(PASS_FREQ, THOUSAND_GENOMES), ESP_AA_PASS, new Frequency(PASS_FREQ, EXAC_FINNISH));
+        instance = new FrequencyData(RSID, Frequency.valueOf(PASS_FREQ, THOUSAND_GENOMES), ESP_AA_PASS, Frequency.valueOf(PASS_FREQ, EXAC_FINNISH));
         assertThat(instance.hasEspData(), is(true));
     }
 
     @Test
     public void testHasExacDataTrue() {
-        instance = new FrequencyData(RSID, new Frequency(PASS_FREQ, EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
+        instance = new FrequencyData(RSID, Frequency.valueOf(PASS_FREQ, EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
         assertThat(instance.hasExacData(), is(true));
     }
     
@@ -174,7 +166,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testGetKnownFrequencies_noFrequencyData() {
-        instance = new FrequencyData();
+        instance = FrequencyData.EMPTY_DATA;
         
         List<Frequency> result = instance.getKnownFrequencies();
         
@@ -218,7 +210,7 @@ public class FrequencyDataTest {
     @Test
     public void testGetMaxFreqWithData() {
         float maxFreq = 89.5f;
-        Frequency maxFrequency = new Frequency(maxFreq);
+        Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
         instance = new FrequencyData(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
     }
@@ -231,7 +223,7 @@ public class FrequencyDataTest {
     @Test
     public void testGetScore_commonVariant() {
         float maxFreq = 100.0f;
-        Frequency maxFrequency = new Frequency(maxFreq, FrequencySource.THOUSAND_GENOMES);
+        Frequency maxFrequency = Frequency.valueOf(maxFreq, THOUSAND_GENOMES);
         instance = new FrequencyData(RSID, maxFrequency);
         assertThat(instance.getScore(), equalTo(0f));
     }
@@ -239,7 +231,7 @@ public class FrequencyDataTest {
     @Test
     public void testGetScore_rareVariant() {
         float maxFreq = 0.1f;
-        Frequency maxFrequency = new Frequency(maxFreq);
+        Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
         instance = new FrequencyData(null, maxFrequency);
         assertThat(instance.getScore(), equalTo(0.8504372f));
     }
