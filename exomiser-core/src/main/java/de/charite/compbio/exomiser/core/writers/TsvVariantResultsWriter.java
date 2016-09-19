@@ -28,7 +28,7 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.frequency.Frequency;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencyData;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
-import de.charite.compbio.exomiser.core.model.pathogenicity.BasePathogenicityScore;
+import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityScore;
 import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -213,7 +213,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
     }
 
-    private Object getPatScore(BasePathogenicityScore score) {
+    private Object getPatScore(PathogenicityScore score) {
         if (score == null) {
             return ".";
         } else {
