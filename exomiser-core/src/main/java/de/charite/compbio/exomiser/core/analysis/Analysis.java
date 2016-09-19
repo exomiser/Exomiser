@@ -160,7 +160,7 @@ public class Analysis {
     }
 
     @JsonCreator
-    public static Builder newBuilder() {
+    public static Builder builder() {
         return new Builder();
     }
 
@@ -170,7 +170,7 @@ public class Analysis {
      * @return an Analysis.Builder copy of the current Analysis.
      */
     public Builder copy() {
-        return newBuilder()
+        return builder()
                 .vcfPath(vcfPath)
                 .pedPath(pedPath)
                 .hpoIds(hpoIds)

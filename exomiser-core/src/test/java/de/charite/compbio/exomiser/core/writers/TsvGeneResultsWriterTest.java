@@ -66,7 +66,7 @@ public class TsvGeneResultsWriterTest {
         gene = new Gene(GENE_SYMBOL, GENE_ID);        
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
-        analysis = Analysis.newBuilder().build();
+        analysis = Analysis.builder().build();
     }
 
     @Test

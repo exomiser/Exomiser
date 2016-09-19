@@ -88,7 +88,7 @@ public class SettingsParser {
         logger.info("SETTING-UP ANALYSIS");
         PriorityType prioritiserType = settings.getPrioritiserType();
 
-        return Analysis.newBuilder()
+        return Analysis.builder()
             .vcfPath(settings.getVcfPath())
             .pedPath(settings.getPedPath())
             .modeOfInheritance(settings.getModeOfInheritance())

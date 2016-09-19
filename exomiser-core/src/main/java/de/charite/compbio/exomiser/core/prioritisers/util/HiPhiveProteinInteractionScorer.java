@@ -162,7 +162,7 @@ public class HiPhiveProteinInteractionScorer {
         Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
         List<Model> models = bestGeneModels.get(closestGeneId);
 
-        return GeneMatch.newBuilder()
+        return GeneMatch.builder()
                 .queryGeneId(entrezGeneId)
                 .matchGeneId(closestGeneId)
                 .score(walkerScore)

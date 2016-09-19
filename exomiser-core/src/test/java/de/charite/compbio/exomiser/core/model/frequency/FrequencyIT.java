@@ -180,10 +180,9 @@ public class FrequencyIT {
         int i = 0;
         while (i < VARIANTS_IN_GENOME * 10) {
             i++;
-            Frequency maf = Frequency.valueOf(20f, FrequencySource.UNKNOWN);
+            Frequency.valueOf(20f, FrequencySource.UNKNOWN);
         }
         System.out.println(i);
-
     }
 
     /**
@@ -194,7 +193,7 @@ public class FrequencyIT {
         float threshold = 24.56f;
 
         for (int i = 0; i < VARIANTS_IN_GENOME * 10; i++) {
-            Frequency maf = Frequency.valueOf(20f, FrequencySource.UNKNOWN);
+            Frequency.valueOf(20f, FrequencySource.UNKNOWN);
         }
     }
 }

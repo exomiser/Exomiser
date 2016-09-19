@@ -57,7 +57,7 @@ public class ExomiserTest {
     }
     
     private Analysis makeAnalysisWithMode(AnalysisMode analysisMode) {
-        return Analysis.newBuilder()
+        return Analysis.builder()
                 .vcfPath(Paths.get("src/test/resources/smallTest.vcf"))
                 .analysisMode(analysisMode)
                 .build();

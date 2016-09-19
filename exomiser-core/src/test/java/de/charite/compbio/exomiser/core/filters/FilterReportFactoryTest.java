@@ -103,14 +103,14 @@ public class FilterReportFactoryTest {
     public void testMakeFilterReportsNoTypesSpecifiedReturnsEmptyList() {
         List<FilterReport> emptyFilterReportList = new ArrayList<>();
 
-        List<FilterReport> reports = instance.makeFilterReports(Analysis.newBuilder().build(), sampleData);
+        List<FilterReport> reports = instance.makeFilterReports(Analysis.builder().build(), sampleData);
 
         assertThat(reports, equalTo(emptyFilterReportList));
     }
 
     @Test
     public void testMakeFilterReportsFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
             .addStep(new FrequencyFilter(0.1f))
             .addStep(new PathogenicityFilter(true))
             .build();
@@ -122,7 +122,7 @@ public class FilterReportFactoryTest {
     
     @Test
     public void testMakeFilterReportsDecoratedFrequencyPathogenicityTypesSpecifiedReturnsListWithTwoReports() {
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
                 .addStep(new FrequencyDataProvider(null, Collections.emptySet(), new KnownVariantFilter()))
                 .addStep(new FrequencyDataProvider(null, Collections.emptySet(), new FrequencyFilter(0.1f)))
                 .addStep(new PathogenicityDataProvider(null, Collections.emptySet(), new PathogenicityFilter(true)))

@@ -74,7 +74,7 @@ public class SettingsParserTest {
         settingsBuilder = new SettingsBuilder()
                 .vcfFilePath(Paths.get("vcf"));
 
-        analysisBuilder = Analysis.newBuilder()
+        analysisBuilder = Analysis.builder()
                 .analysisMode(AnalysisMode.SPARSE)
                 .vcfPath(Paths.get("vcf"))
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)

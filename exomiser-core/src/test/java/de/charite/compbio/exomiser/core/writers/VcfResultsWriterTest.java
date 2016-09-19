@@ -137,7 +137,7 @@ public class VcfResultsWriterTest {
         sampleData = new SampleData();
         sampleData.setVcfHeader(reader.getFileHeader());
         
-        analysis = Analysis.newBuilder().build();
+        analysis = Analysis.builder().build();
         
         TestVariantFactory varFactory = new TestVariantFactory();
 

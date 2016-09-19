@@ -88,7 +88,7 @@ public class GeneMatch {
                 '}';
     }
 
-    public static Builder newBuilder() {
+    public static Builder builder() {
         return new Builder();
     }
 

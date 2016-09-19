@@ -142,7 +142,7 @@ public class HtmlResultsWriterTest {
     public void testWriteTemplateWithEmptyData() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWrite.html").toString();
 
-        Analysis analysis = Analysis.newBuilder().build();
+        Analysis analysis = Analysis.builder().build();
         SampleData sampleData = makeSampleData(Collections.emptyList(), Collections.emptyList());
        
         OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
@@ -156,7 +156,7 @@ public class HtmlResultsWriterTest {
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantData() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantData.html").toString();
-        Analysis analysis = Analysis.newBuilder().build();
+        Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         SampleData sampleData = makeSampleData(Collections.emptyList(), variants);
@@ -172,7 +172,7 @@ public class HtmlResultsWriterTest {
     @Test
     public void testWriteTemplateWithUnAnnotatedVariantDataAndGenes() throws Exception {
         testOutFilePrefix = tmpFolder.newFile("testWriteTemplateWithUnAnnotatedVariantDataAndGenes.html").toString();
-        Analysis analysis = Analysis.newBuilder().build();
+        Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         List<Gene> genes = Lists.newArrayList(gene1, gene2);
@@ -193,7 +193,7 @@ public class HtmlResultsWriterTest {
 
         SampleData sampleData = makeSampleData(Collections.emptyList(), Collections.emptyList());
 
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
                 .hpoIds(Lists.newArrayList("HP:000001", "HP:000002"))
                 .addStep(new RegulatoryFeatureFilter())
                 .addStep(new FrequencyFilter(0.1f))

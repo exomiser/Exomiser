@@ -46,7 +46,7 @@ public class TestPriorityServiceFactory {
     private static PriorityService setUpStubPriorityService() {
         ModelService testModelService = new TestModelService(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
-        OntologyService testOntologyService = TestOntologyService.newBuilder()
+        OntologyService testOntologyService = TestOntologyService.builder()
                 .setHpIdPhenotypeTerms(Collections.emptyMap())
                 .setHumanHumanMappings(Collections.emptyMap())
                 .setHumanMouseMappings(Collections.emptyMap())
@@ -95,7 +95,7 @@ public class TestPriorityServiceFactory {
         logger.info("    Entrez:4920 - ROR2");
         logger.info("    Entrez:341640 - FREM2");
 
-        OntologyService testOntologyService = TestOntologyService.newBuilder()
+        OntologyService testOntologyService = TestOntologyService.builder()
                 .setHpIdPhenotypeTerms(hpPhenotypesTerms)
                 .setHumanHumanMappings(createPhenotypeMap(hpHpMappings))
                 .setHumanMouseMappings(createPhenotypeMap(hpMpMappings))

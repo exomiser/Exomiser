@@ -98,7 +98,7 @@ public class TsvVariantResultsWriterTest {
         sampleData = new SampleData();
         sampleData.setGenes(Arrays.asList(gene));
         
-        analysis = Analysis.newBuilder().build();
+        analysis = Analysis.builder().build();
     }
 
     private void makePassVariant(TestVariantFactory varFactory) {

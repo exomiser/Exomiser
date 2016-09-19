@@ -142,7 +142,7 @@ public class ResultsWriterUtilsTest {
     
     @Test
     public void canMakeFilterReportsFromAnalysis_returnsEmptyListWhenNoFiltersAdded(){
-        Analysis analysis = Analysis.newBuilder().build();
+        Analysis analysis = Analysis.builder().build();
         SampleData sampleData = new SampleData();
         List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, sampleData);
         
@@ -151,7 +151,7 @@ public class ResultsWriterUtilsTest {
     
     @Test
     public void canMakeFilterReportsFromAnalysis(){
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
                 .addStep(new PassAllVariantEffectsFilter())
                 .build();
         SampleData sampleData = new SampleData();

@@ -87,7 +87,7 @@ public class AnalysisFactory {
 
         private AnalysisBuilder(PriorityFactory priorityFactory, Path vcfPath) {
             this.priorityFactory = priorityFactory;
-            analysisBuilder = Analysis.newBuilder().vcfPath(vcfPath);
+            analysisBuilder = Analysis.builder().vcfPath(vcfPath);
         }
 
         public Analysis build() {

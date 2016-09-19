@@ -62,7 +62,7 @@ public abstract class AnalysisRunnerTestBase {
     
     
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
-        return Analysis.newBuilder()
+        return Analysis.builder()
                 .vcfPath(vcfPath)
                 .steps(Arrays.asList(analysisSteps))
                 .build();

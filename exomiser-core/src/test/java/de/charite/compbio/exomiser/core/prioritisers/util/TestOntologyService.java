@@ -91,7 +91,7 @@ public class TestOntologyService implements OntologyService {
         return hpIdPhenotypeTerms.get(hpoId);
     }
 
-    public static Builder newBuilder() {
+    public static Builder builder() {
         return new Builder();
     }
 

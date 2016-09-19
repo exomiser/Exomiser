@@ -132,7 +132,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
                 .vcfPath(vcfPath)
                 .addStep(intervalFilter)
                 .addStep(qualityFilter)
@@ -177,7 +177,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
                 .vcfPath(vcfPath)
                 .addStep(intervalFilter)
                 .addStep(qualityFilter)
@@ -311,7 +311,7 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
         InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
                 .vcfPath(vcfPath)
                 .addStep(qualityFilter)
                 .addStep(prioritiser)

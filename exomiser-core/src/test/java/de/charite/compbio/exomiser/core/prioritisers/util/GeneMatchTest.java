@@ -39,32 +39,32 @@ public class GeneMatchTest {
 
     @Test
     public void queryGeneId() throws Exception {
-        instance = GeneMatch.newBuilder().queryGeneId(1234).build();
+        instance = GeneMatch.builder().queryGeneId(1234).build();
         assertThat(instance.getQueryGeneId(), equalTo(1234));
     }
 
     @Test
     public void matchGeneId() throws Exception {
-        instance = GeneMatch.newBuilder().matchGeneId(4321).build();
+        instance = GeneMatch.builder().matchGeneId(4321).build();
         assertThat(instance.getMatchGeneId(), equalTo(4321));
     }
 
     @Test
     public void score() throws Exception {
-        instance = GeneMatch.newBuilder().score(1.0).build();
+        instance = GeneMatch.builder().score(1.0).build();
         assertThat(instance.getScore(), equalTo(1.0));
     }
 
     @Test
     public void bestMatchModels() throws Exception {
         List<Model> models = Lists.newArrayList(new GeneModel("Model:500", Organism.HUMAN, 4321, "GENE1", "HGNC:4321", "GENE1", Lists.newArrayList()));
-        instance = GeneMatch.newBuilder().bestMatchModels(models).build();
+        instance = GeneMatch.builder().bestMatchModels(models).build();
         assertThat(instance.getBestMatchModels(), equalTo(models));
     }
 
     @Test
     public void build() throws Exception {
-        instance = GeneMatch.newBuilder().build();
+        instance = GeneMatch.builder().build();
         assertThat(instance, equalTo(GeneMatch.NO_HIT));
     }
 

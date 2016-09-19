@@ -192,7 +192,7 @@ public class AnalysisParser {
 
         public Analysis construct(Map analysisMap) {
 
-            Analysis analysis = Analysis.newBuilder()
+            Analysis analysis = Analysis.builder()
                     .vcfPath(parseVcf(analysisMap))
                     .pedPath(parsePed(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))

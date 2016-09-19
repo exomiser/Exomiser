@@ -43,10 +43,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class AnalysisTest {
 
-    private static final Analysis DEFAULT_ANALYSIS = Analysis.newBuilder().build();
+    private static final Analysis DEFAULT_ANALYSIS = Analysis.builder().build();
 
     private Analysis.Builder newBuilder() {
-        return Analysis.newBuilder();
+        return Analysis.builder();
     }
 
     private List<AnalysisStep> getAnalysisSteps() {
