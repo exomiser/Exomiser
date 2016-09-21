@@ -1,4 +1,26 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.charite.compbio.exomiser.core.prioritisers.util;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -7,8 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ScoreDistributionContainer {
 
@@ -17,17 +37,15 @@ public class ScoreDistributionContainer {
 	private boolean verboseParsing;
 
 	private int maxNumberQueryTerms = 20;
+	private Map<String, Map<String, ScoreDistribution>> key2scoreDistribution;
 
-	public ScoreDistributionContainer(boolean verboseInParsing) {
-
-		this.verboseParsing = verboseInParsing;
-		this.key2scoreDistribution = new HashMap<String, Map<String, ScoreDistribution>>();
+	public ScoreDistributionContainer(boolean verboseParsing) {
+		this.verboseParsing = verboseParsing;
+		this.key2scoreDistribution = new HashMap<>();
 	}
 
-	private Map<String, Map<String, ScoreDistribution>> key2scoreDistribution = null;
-
 	public ScoreDistributionContainer() {
-		this.key2scoreDistribution = new HashMap<String, Map<String, ScoreDistribution>>();
+		this.key2scoreDistribution = new HashMap<>();
 	}
 
 	public synchronized void addDistribution(String diseaseId, int numberQueryTerms, boolean symmetric, ScoreDistribution actualDistribution) {
@@ -38,7 +56,7 @@ public class ScoreDistributionContainer {
 		if (key2scoreDistribution.containsKey(key))
 			mim2scoredist = key2scoreDistribution.get(key);
 		else
-			mim2scoredist = new HashMap<String, ScoreDistribution>();
+			mim2scoredist = new HashMap<>();
 
 		mim2scoredist.put(diseaseId, actualDistribution);
 		key2scoreDistribution.put(key, mim2scoredist);
@@ -46,11 +64,10 @@ public class ScoreDistributionContainer {
 	}
 
 	public static String getKey(boolean symmetric, int numberQueryTerms) {
-
 		if (symmetric)
-			return numberQueryTerms + "_symmetric";
+			return Integer.toString(numberQueryTerms) + "_symmetric";
 		else
-			return numberQueryTerms + "";
+			return Integer.toString(numberQueryTerms);
 	}
 
 	public ScoreDistribution getDistribution(String entrezGeneId, int numQueryTerms, boolean symmetric, String scoreDistributionFolder) {
@@ -68,26 +85,23 @@ public class ScoreDistributionContainer {
 
 			if (mim2scoredist == null || scoreDist == null) {
 				if (verboseParsing) {
-					System.err.println("Could not find scoreDistribution for entrezid " + entrezGeneId + " and " + numQueryTerms + " and "
-							+ symmetric);
-					System.err.println("Used key: " + key);
+					logger.error("Could not find scoreDistribution for entrezid {} numQueryTerms: {} symmetric: {} using key: {}" , entrezGeneId, numQueryTerms, symmetric, key);
 				}
 				if (numQueryTerms > 1) {
 					numQueryTerms = numQueryTerms - 1;
-					if (verboseParsing)
-						System.err.println("setting numQueryTerms to: " + numQueryTerms);
-
+					if (verboseParsing) {
+						logger.error("setting numQueryTerms to: {}", numQueryTerms);
+					}
 					if (!didParseDistributions(symmetric, numQueryTerms)) {
-						if (verboseParsing)
-							System.err.println("try parsing file for new numQueryTerms");
+						if (verboseParsing) {
+							logger.error("try parsing file for new numQueryTerms");
+						}
 						parseDistributions(symmetric, numQueryTerms, scoreDistributionFolder);
 					}
 
 				}
 				else {
-					System.err.println("NO WAY! Could not even find scoreDistribution for entrezgene " + entrezGeneId + " and " + numQueryTerms
-							+ " and " + symmetric);
-					System.err.println("returning null now");
+					logger.error("NO WAY! Could not even find scoreDistribution for entrezid {} numQueryTerms: {} symmetric: {} using key: {} - returning null", entrezGeneId, numQueryTerms, symmetric, key);
 					return null;
 				}
 			}

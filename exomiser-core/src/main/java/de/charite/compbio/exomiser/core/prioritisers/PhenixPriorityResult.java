@@ -38,11 +38,7 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
      */
     private final double negativeLogPval;
 
-    private static double NORMALIZATION_FACTOR = 1f;
-
-    public static void setNormalizationFactor(double factor) {
-        NORMALIZATION_FACTOR = factor;
-    }
+    private double normalizationFactor = 1d;
 
     /**
      * @param negLogPVal The negative logarithm of the p-val
@@ -52,13 +48,12 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
         this.negativeLogPval = negLogPVal;
     }
 
-    //TODO: negLogPVal - this isn't actually used - apart from in getHTMLCode where it is simply reversed.
-    //TODO: NORMALIZATION_FACTOR is STATIC and will likely clash with other runs when used in a webserver.
     //TODO: calculate (hpoSemSimScore * NORMALIZATION_FACTOR) and use this directly.
-    public PhenixPriorityResult(int geneId, String geneSymbol, double negLogPVal, double semScore) {
+    public PhenixPriorityResult(int geneId, String geneSymbol, double negLogPVal, double semScore, double normalizationFactor) {
         super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, semScore);
         this.negativeLogPval = negLogPVal;
         this.hpoSemSimScore = semScore;
+        this.normalizationFactor = normalizationFactor;
     }
 
     /**
@@ -66,7 +61,7 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
      */
     @Override
     public double getScore() {
-        return (hpoSemSimScore * NORMALIZATION_FACTOR);
+        return (hpoSemSimScore * normalizationFactor);
     }
 
     /**
