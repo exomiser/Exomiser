@@ -78,7 +78,7 @@ public class AnalysisControllerTest {
     public void setup() throws IOException{
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        Analysis analysis = Analysis.newBuilder()
+        Analysis analysis = Analysis.builder()
                 .frequencySources(FrequencySource.ALL_ESP_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.CADD))
                 .build();
