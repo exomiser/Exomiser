@@ -23,6 +23,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
  * Semantic Similarity in HPO
  *
  * @author Sebastian Koehler
+ * @author Jules Jacobsen
  * @version 0.05 (6 January, 2014).
  */
 public class PhenixPriorityResult extends AbstractPriorityResult {
@@ -36,32 +37,12 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
     /**
      * The negative logarithm of the p-value. e.g., 10 means p=10^{-10}
      */
-    private final double negativeLogPval;
+    private final double negativeLogP;
 
-    private double normalizationFactor = 1d;
-
-    /**
-     * @param negLogPVal The negative logarithm of the p-val
-     */
-    public PhenixPriorityResult(int geneId, String geneSymbol, double negLogPVal) {
-        super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, negLogPVal);
-        this.negativeLogPval = negLogPVal;
-    }
-
-    //TODO: calculate (hpoSemSimScore * NORMALIZATION_FACTOR) and use this directly.
-    public PhenixPriorityResult(int geneId, String geneSymbol, double negLogPVal, double semScore, double normalizationFactor) {
-        super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, semScore);
-        this.negativeLogPval = negLogPVal;
-        this.hpoSemSimScore = semScore;
-        this.normalizationFactor = normalizationFactor;
-    }
-
-    /**
-     * @return the HPO semantic similarity score calculated via Phenomizer.
-     */
-    @Override
-    public double getScore() {
-        return (hpoSemSimScore * normalizationFactor);
+    public PhenixPriorityResult(int geneId, String geneSymbol, double score, double semanticSimilarityScore, double negLogP) {
+        super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, score);
+        this.hpoSemSimScore = semanticSimilarityScore;
+        this.negativeLogP = negLogP;
     }
 
     /**
@@ -69,7 +50,7 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
     @Override
     public String getHTMLCode() {
         return String.format("<dl><dt>PhenIX semantic similarity score: %.2f (p-value: %f)</dt></dl>",
-                this.hpoSemSimScore, Math.exp(-1 * this.negativeLogPval));
+                this.hpoSemSimScore, Math.exp(-1 * this.negativeLogP));
     }
 
 }

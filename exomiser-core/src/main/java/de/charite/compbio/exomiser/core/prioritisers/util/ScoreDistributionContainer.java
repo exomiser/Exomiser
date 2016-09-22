@@ -34,71 +34,52 @@ public class ScoreDistributionContainer {
 
     private final Logger logger = LoggerFactory.getLogger(ScoreDistributionContainer.class);
     
-	private boolean verboseParsing;
-
-	private int maxNumberQueryTerms = 20;
+	private boolean verboseParsing = false;
+	private final String distributionsFolder;
+    private final boolean symmetric;
+    private final int numQueryTerms;
+	private static final int MAX_NUMBER_QUERY_TERMS = 20;
 	private Map<String, Map<String, ScoreDistribution>> key2scoreDistribution;
 
-	public ScoreDistributionContainer(boolean verboseParsing) {
-		this.verboseParsing = verboseParsing;
+	public ScoreDistributionContainer(String distributionsFolder, boolean symmetric, int numQueryTerms) {
+		this.distributionsFolder = distributionsFolder;
+        this.symmetric = symmetric;
+        this.numQueryTerms = limitNumQueryTerms(numQueryTerms);
 		this.key2scoreDistribution = new HashMap<>();
+        parseDistributions(this.numQueryTerms);
 	}
 
-	public ScoreDistributionContainer() {
-		this.key2scoreDistribution = new HashMap<>();
+	public void useVerboseParsing() {
+        this.verboseParsing = true;
+    }
+
+    private int limitNumQueryTerms(int numQueryTerms) {
+        //numQueryTerms is used as a look-up to a file with a filename prefixed with a number from 1-20
+        //the constant MAX_NUMBER_QUERY_TERMS is used to make sure the file will be found
+        return Math.min(numQueryTerms, MAX_NUMBER_QUERY_TERMS);
+    }
+
+    private static String getKey(boolean symmetric, int numberQueryTerms) {
+        return symmetric ? Integer.toString(numberQueryTerms) + "_symmetric" : Integer.toString(numberQueryTerms);
 	}
 
-	public synchronized void addDistribution(String diseaseId, int numberQueryTerms, boolean symmetric, ScoreDistribution actualDistribution) {
-
-		String key = getKey(symmetric, numberQueryTerms);
-
-		Map<String, ScoreDistribution> mim2scoredist;
-		if (key2scoreDistribution.containsKey(key))
-			mim2scoredist = key2scoreDistribution.get(key);
-		else
-			mim2scoredist = new HashMap<>();
-
-		mim2scoredist.put(diseaseId, actualDistribution);
-		key2scoreDistribution.put(key, mim2scoredist);
-
-	}
-
-	public static String getKey(boolean symmetric, int numberQueryTerms) {
-		if (symmetric)
-			return Integer.toString(numberQueryTerms) + "_symmetric";
-		else
-			return Integer.toString(numberQueryTerms);
-	}
-
-	public ScoreDistribution getDistribution(String entrezGeneId, int numQueryTerms, boolean symmetric, String scoreDistributionFolder) {
-
-		if (numQueryTerms > maxNumberQueryTerms)
-			numQueryTerms = maxNumberQueryTerms;
-
+	public ScoreDistribution getDistribution(String entrezGeneId) {
 		while (true) {
-
 			String key = getKey(symmetric, numQueryTerms);
 			Map<String, ScoreDistribution> mim2scoredist = key2scoreDistribution.get(key);
 			ScoreDistribution scoreDist = null;
-			if (mim2scoredist != null)
-				scoreDist = mim2scoredist.get(entrezGeneId);
-
+			if (mim2scoredist != null) {
+                scoreDist = mim2scoredist.get(entrezGeneId);
+            }
 			if (mim2scoredist == null || scoreDist == null) {
-				if (verboseParsing) {
-					logger.error("Could not find scoreDistribution for entrezid {} numQueryTerms: {} symmetric: {} using key: {}" , entrezGeneId, numQueryTerms, symmetric, key);
-				}
+                logger.error("Could not find scoreDistribution for entrezid {} numQueryTerms: {} symmetric: {} using key: {}" , entrezGeneId, numQueryTerms, symmetric, key);
 				if (numQueryTerms > 1) {
-					numQueryTerms = numQueryTerms - 1;
-					if (verboseParsing) {
-						logger.error("setting numQueryTerms to: {}", numQueryTerms);
+					int oneFewer = numQueryTerms - 1;
+                    logger.error("Trying to find distribution for {} terms", oneFewer);
+					if (!didParseDistributions(oneFewer)) {
+                        logger.error("Trying to parse {} term distribution", oneFewer);
+						parseDistributions(oneFewer);
 					}
-					if (!didParseDistributions(symmetric, numQueryTerms)) {
-						if (verboseParsing) {
-							logger.error("try parsing file for new numQueryTerms");
-						}
-						parseDistributions(symmetric, numQueryTerms, scoreDistributionFolder);
-					}
-
 				}
 				else {
 					logger.error("NO WAY! Could not even find scoreDistribution for entrezid {} numQueryTerms: {} symmetric: {} using key: {} - returning null", entrezGeneId, numQueryTerms, symmetric, key);
@@ -111,43 +92,29 @@ public class ScoreDistributionContainer {
 		}
 	}
 
-	public boolean didParseDistributions(boolean symmetric, int numQueryTerms) {
-
-		if (numQueryTerms > maxNumberQueryTerms)
-			numQueryTerms = maxNumberQueryTerms;
+	private boolean didParseDistributions(int numQueryTerms) {
 		return key2scoreDistribution.containsKey(getKey(symmetric, numQueryTerms));
 	}
 
 	/**
 	 * 
 	 * 
-	 * @param symmetric
 	 * @param numQueryTerms
-	 * @param distributionsFolder
 	 */
-	public synchronized void parseDistributions(boolean symmetric, int numQueryTerms, String distributionsFolder) {
-
-		if (numQueryTerms > maxNumberQueryTerms)
-			numQueryTerms = maxNumberQueryTerms;
+	private synchronized void parseDistributions(int numQueryTerms) {
 
 		String key = getKey(symmetric, numQueryTerms);
-		String line = null;
 		String file = distributionsFolder + key + ".out";
 
-		// if (name.startsWith("TermOv") || name.startsWith("SimpleFeature"))
-		// file = folder+key;
-		// else
-		// file = folder+key+".out";
-
 		if (verboseParsing)
-			logger.info("try parsing file: {}", file);
-		try {
-			final BufferedReader in = new BufferedReader(new FileReader(file));
-			ScoreDistribution actualDistribution = null;
+			logger.info("Reading distributions from file: {}", file);
+		try (BufferedReader in = new BufferedReader(new FileReader(file))){
+            ScoreDistribution actualDistribution = null;
 			String actualDiseaseId = null;
 			double numberRandomizations = -1;
-			List<Double> scores = new ArrayList<Double>();
-			List<Double> pvalues = new ArrayList<Double>();
+			List<Double> scores = new ArrayList<>();
+			List<Double> pvalues = new ArrayList<>();
+            String line;
 			while ((line = in.readLine()) != null) {
 
 				if (line.startsWith(">")) {
@@ -156,10 +123,11 @@ public class ScoreDistributionContainer {
 
 					if (actualDistribution != null) {
 						actualDistribution.setDistribution(scores, pvalues, numberRandomizations);
-						addDistribution(actualDiseaseId, numQueryTerms, symmetric, actualDistribution);
-						scores = new ArrayList<Double>();
-						pvalues = new ArrayList<Double>();
+						addDistribution(actualDiseaseId, actualDistribution);
+						scores = new ArrayList<>();
+						pvalues = new ArrayList<>();
 					}
+
 					actualDistribution = new ScoreDistribution();
 
 					String[] split = line.split("_");
@@ -180,22 +148,23 @@ public class ScoreDistributionContainer {
 					pvalues.add(pValue);
 				}
 			}// end while
-			if (verboseParsing)
-				logger.info("done while loop.... add last");
-
-			actualDistribution.setDistribution(scores, pvalues, numberRandomizations);
-			addDistribution(actualDiseaseId, numQueryTerms, symmetric, actualDistribution);
+			if (verboseParsing) {
+                logger.info("done while loop.... add last");
+            }
+            if (actualDistribution != null) {
+                actualDistribution.setDistribution(scores, pvalues, numberRandomizations);
+                addDistribution(actualDiseaseId, actualDistribution);
+            }
 		} catch (IOException e) {
-			throw new RuntimeException(line + "\n" + e);
-
+			logger.error("Unable access file {} to create PhenIX score distributions", file,  e);
 		}
 		if (verboseParsing)
 			logger.info("done parsing");
-
 	}
 
-	public void setMaxNumberQueryTerms(int maxNumberQueryTerms) {
-		this.maxNumberQueryTerms = maxNumberQueryTerms;
-	}
+    private synchronized void addDistribution(String diseaseId, ScoreDistribution actualDistribution) {
+        String key = getKey(symmetric, numQueryTerms);
+        key2scoreDistribution.computeIfAbsent(key, mim2scoreDist -> new HashMap<>()).put(diseaseId, actualDistribution);
+    }
 
 }

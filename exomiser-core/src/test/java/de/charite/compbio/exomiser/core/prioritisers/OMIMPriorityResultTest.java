@@ -24,7 +24,9 @@ import de.charite.compbio.exomiser.core.prioritisers.util.Disease;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -89,5 +91,19 @@ public class OMIMPriorityResultTest {
         Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
         instance = new OMIMPriorityResult(1234, "GENE1", 1d, Lists.newArrayList(disease));
         System.out.println(instance.getHTMLCode());
+    }
+
+    @Test
+    public void testOrdering() {
+        Disease disease = Disease.builder().diseaseId("WIBBLE:12345").diseaseName("Unknown diseaseId name").build();
+        PriorityResult one = new OMIMPriorityResult(1111, "BEST", 1d, Lists.newArrayList(disease));
+        PriorityResult two = new OMIMPriorityResult(22222, "MIDDLE_A", 0.5d, Lists.newArrayList(disease));
+        PriorityResult three = new OMIMPriorityResult(33333, "MIDDLE_B", 0.5d, Lists.newArrayList(disease));
+        PriorityResult four = new OMIMPriorityResult(44444, "WORST", 0.1d, Lists.newArrayList(disease));
+
+        List<PriorityResult> actual = Arrays.asList(two, four, three, one);
+        Collections.sort(actual);
+
+        assertThat(actual, equalTo(Arrays.asList(one, two, three, four)));
     }
 }

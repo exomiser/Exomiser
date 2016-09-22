@@ -64,16 +64,6 @@ public class PhenixPriority implements Prioritiser {
     private Ontology hpo;
 
     /**
-     * The HPO as SlimDirectedGraph (fast access to ancestors etc.)
-     */
-    private SlimDirectedGraphView<Term> hpoSlim;
-
-    /**
-     * A list of error-messages
-     */
-    private List<String> errorMessages = null;
-
-    /**
      * The semantic similarity measure used to calculate phenotypic similarity
      */
     private InformationContentObjectSimilarity similarityMeasure;
@@ -87,11 +77,14 @@ public class PhenixPriority implements Prioritiser {
 
     private Map<String, List<Term>> geneId2annotations;
 
-    private Map<Term, Double> term2ic;
+    private boolean symmetric;
+    /**
+     * Path to the directory that has the files needed to calculate the score
+     * distribution.
+     */
+    private String scoredistributionFolder;
 
-    private final ScoreDistributionContainer scoredistributionContainer = new ScoreDistributionContainer();
-
-    private int numberQueryTerms;
+//counters for stats
     /**
      * A counter of the number of genes that could not be found in the database
      * as being associated with a defined disease gene.
@@ -102,13 +95,6 @@ public class PhenixPriority implements Prioritiser {
      * associated disease.
      */
     private int analysedGenes;
-
-    private boolean symmetric;
-    /**
-     * Path to the directory that has the files needed to calculate the score
-     * distribution.
-     */
-    private String scoredistributionFolder;
     /**
      * Keeps track of the maximum semantic similarity score to date
      */
@@ -127,7 +113,6 @@ public class PhenixPriority implements Prioritiser {
      * @param hpoQueryTermIds List of HPO terms
      * @param symmetric Flag to indicate if the semantic similarity score should
      * be calculated using the symmetrix formula.
-     * @throws ExomizerInitializationException
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      * Hudson page</a>
      */
@@ -141,21 +126,19 @@ public class PhenixPriority implements Prioritiser {
             scoreDistributionFolder += File.separator;
         }
         this.scoredistributionFolder = scoreDistributionFolder;
+        this.symmetric = symmetric;
+
         String hpoOboFile = String.format("%s%s", scoreDistributionFolder, "hp.obo");
         String hpoAnnotationFile = String.format("%s%s", scoreDistributionFolder, "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt");
         //The phenixData directory must contain the files "hp.obo", "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt"
         //as well as the score distribution files "*.out", all of which can be downloaded from the HPO hudson server.
         this.hpo = parseOntology(hpoOboFile);
-        this.hpoSlim = hpo.getSlimGraphView();
-        this.geneId2annotations = parseAnnotations(hpoAnnotationFile);
+        //The HPO as SlimDirectedGraph (fast access to ancestors etc.)
+        SlimDirectedGraphView<Term> hpoSlim = hpo.getSlimGraphView();
+        this.geneId2annotations = parseAnnotations(hpoAnnotationFile, hpo, hpoSlim);
+        this.similarityMeasure = calculateInformationContentSimilarityMeasures(symmetric, hpo, hpoSlim, geneId2annotations);
 
-        term2ic = calculateTermIC(hpo, hpoSlim, geneId2annotations);
-        ResnikSimilarity resnik = new ResnikSimilarity(hpo, (HashMap<Term, Double>) term2ic);
-        this.symmetric = symmetric;
-        similarityMeasure = new InformationContentObjectSimilarity(resnik, symmetric, false);
-
-        //hpoQueryTerms and scoredistributionContainer can probably be calculated for each query and kept local
-
+        //hpoQueryTerms can probably be calculated for each query and kept local
         hpoQueryTerms = hpoQueryTermIds.stream()
                 .map(termIdString -> {
                     Term term = hpo.getTermIncludingAlternatives(termIdString);
@@ -167,13 +150,13 @@ public class PhenixPriority implements Prioritiser {
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
-
-        numberQueryTerms = hpoQueryTerms.size();
         logger.info("Created HPO query terms {}", hpoQueryTerms);
-        if (!scoredistributionContainer.didParseDistributions(symmetric, numberQueryTerms)) {
-            scoredistributionContainer.parseDistributions(symmetric, numberQueryTerms, scoreDistributionFolder);
-        }
+    }
 
+    private InformationContentObjectSimilarity calculateInformationContentSimilarityMeasures(boolean symmetric, Ontology hpo, SlimDirectedGraphView<Term> hpoSlim, Map<String, List<Term>> geneId2annotations) {
+        Map<Term, Double> term2ic = calculateTermIC(hpo, hpoSlim, geneId2annotations);
+        ResnikSimilarity resnik = new ResnikSimilarity(hpo, (HashMap<Term, Double>) term2ic);
+        return new InformationContentObjectSimilarity(resnik, symmetric, false);
     }
 
     /**
@@ -215,8 +198,8 @@ public class PhenixPriority implements Prioritiser {
      *
      * @param hpoAnnotationFile path to the file
      */
-    private Map<String, List<Term>> parseAnnotations(String hpoAnnotationFile) {
-        geneId2annotations = new HashMap<>();
+    private Map<String, List<Term>> parseAnnotations(String hpoAnnotationFile, Ontology hpo, SlimDirectedGraphView<Term> hpoSlim) {
+        Map<String, List<Term>> geneAnnotations = new HashMap<>();
         logger.info("Parsing Annotations file {}", hpoAnnotationFile);
 
         try (BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(hpoAnnotationFile))) {
@@ -239,44 +222,30 @@ public class PhenixPriority implements Prioritiser {
                         logger.error("{} '{}'", k, split[k]);
                     }
                     logger.error("", e);
-                    term = null;
                 }
-                if (term == null) {
-                    continue;
+                if (term != null) {
+                    geneAnnotations.computeIfAbsent(entrez, annotations -> new ArrayList<>()).add(term);
                 }
-
-                List<Term> annotations;
-
-                if (geneId2annotations.containsKey(entrez)) {
-                    annotations = geneId2annotations.get(entrez);
-                } else {
-                    annotations = new ArrayList<>();
-                }
-                annotations.add(term);
-                geneId2annotations.put(entrez, annotations);
             }
         } catch (IOException e) {
             logger.error("Error parsing annotation file {}", hpoAnnotationFile, e);
         }
-        logger.info("Made HPO annotations for {} genes", geneId2annotations.size());
 
         // cleanup annotations
-        for (Map.Entry<String, List<Term>> entry : geneId2annotations.entrySet()) {
+        for (Map.Entry<String, List<Term>> entry : geneAnnotations.entrySet()) {
             String entrezId = entry.getKey();
-            List<Term> terms = entry.getValue();
-            Set<Term> uniqueTerms = new HashSet<>(terms);
-            List<Term> uniqueTermsAL = new ArrayList<>();
-            uniqueTermsAL.addAll(uniqueTerms);
-            List<Term> termsMostSpecific = HPOutils.cleanUpAssociation((ArrayList<Term>)uniqueTermsAL, hpoSlim, hpo.getRootTerm());
-            geneId2annotations.put(entrezId, termsMostSpecific);
+            List<Term> uniqueTerms = entry.getValue().stream().distinct().collect(Collectors.toCollection(ArrayList::new));
+            List<Term> mostSpecificTerms = HPOutils.cleanUpAssociation((ArrayList<Term>) uniqueTerms, hpoSlim, hpo.getRootTerm());
+            geneAnnotations.put(entrezId, mostSpecificTerms);
         }
-        logger.info("Cleaned-up annotations for {} genes", geneId2annotations.size());
-        return geneId2annotations;
+        logger.info("Made HPO annotations for {} genes", geneAnnotations.size());
+        return geneAnnotations;
     }
 
     private Map<Term, Double> calculateTermIC(Ontology ontology, SlimDirectedGraphView<Term> hpoSlim, Map<String, List<Term>> geneId2annotations) {
 
         // prepare IC computation
+        // here we store which objects have been annotated with this term
         final Map<Term, Set<String>> annotationTerm2geneIds = new HashMap<>();
         for (Map.Entry<String, List<Term>> entry : geneId2annotations.entrySet()) {
             String entrezId = entry.getKey();
@@ -284,34 +253,22 @@ public class PhenixPriority implements Prioritiser {
             for (Term annot : annotations) {
                 List<Term> termAndAncestors = hpoSlim.getAncestors(annot);
                 for (Term term : termAndAncestors) {
-                    Set<String> objectsAnnotatedByTerm;
-                    // here we store which objects have been annotated with this term
-                    if (annotationTerm2geneIds.containsKey(term)) {
-                        objectsAnnotatedByTerm = annotationTerm2geneIds.get(term);
-                    } else {
-                        objectsAnnotatedByTerm = new HashSet<>();
-                    }
-                    // add the current object
-                    objectsAnnotatedByTerm.add(entrezId);
-                    annotationTerm2geneIds.put(term, objectsAnnotatedByTerm);
+                    annotationTerm2geneIds.computeIfAbsent(term, objectsAnnotatedByTerm -> new HashSet<>()).add(entrezId);
                 }
             }
         }
 
+        Map<Term, Integer> termFrequencies = annotationTerm2geneIds.entrySet().stream()
+                .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().size()));
+
         Term root = ontology.getRootTerm();
-        Map<Term, Integer> term2frequency = new HashMap<>();
-        for (Map.Entry<Term, Set<String>> entry : annotationTerm2geneIds.entrySet()) {
-            term2frequency.put(entry.getKey(), entry.getValue().size());
-        }
-
-        int maxFreq = term2frequency.get(root);
-        Map<Term, Double> term2informationContent = SimilarityUtilities.caculateInformationContent(maxFreq, (HashMap<Term, Integer>) term2frequency);
-
-        int frequencyZeroCounter = 0;
+        int maxFreq = termFrequencies.get(root);
         double ICzeroCountTerms = -1 * (Math.log(1 / (double) maxFreq));
 
+        Map<Term, Double> term2informationContent = SimilarityUtilities.caculateInformationContent(maxFreq, (HashMap<Term, Integer>) termFrequencies);
+        int frequencyZeroCounter = 0;
         for (Term t : ontology) {
-            if (!term2frequency.containsKey(t)) {
+            if (!termFrequencies.containsKey(t)) {
                 ++frequencyZeroCounter;
                 term2informationContent.put(t, ICzeroCountTerms);
             }
@@ -330,16 +287,17 @@ public class PhenixPriority implements Prioritiser {
     }
 
     /**
-     * Prioritize a list of candidate {@link exomizer.exome.Gene Gene} objects
+     * Prioritize a list of candidate {@link Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
      *
      * @param genes List of candidate genes.
-     * @see exomizer.filter.Filter#filter_list_of_variants(java.util.ArrayList)
      */
     @Override
     public void prioritizeGenes(List<Gene> genes) {
 
-        Map<Gene, PhenixScore> geneScores = genes.stream().collect(toMap(Function.identity(), scoreGene(hpoQueryTerms)));
+        ScoreDistributionContainer scoredistributionContainer = new ScoreDistributionContainer(scoredistributionFolder, symmetric, hpoQueryTerms.size());
+
+        Map<Gene, PhenixScore> geneScores = genes.stream().collect(toMap(Function.identity(), scoreGene(hpoQueryTerms, scoredistributionContainer)));
 
         double maxSemSimScore = geneScores.values().stream().mapToDouble(PhenixScore::getSemanticSimilarityScore).max().orElse(DEFAULT_SCORE);
         double maxNegLogP = geneScores.values().stream().mapToDouble(PhenixScore::getNegativeLogP).max().orElse(DEFAULT_SCORE);
@@ -348,25 +306,20 @@ public class PhenixPriority implements Prioritiser {
         for (Map.Entry<Gene, PhenixScore> entry : geneScores.entrySet()) {
             Gene gene = entry.getKey();
             PhenixScore phenixScore = entry.getValue();
-            PriorityResult result = new PhenixPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), phenixScore.getNegativeLogP(), phenixScore.getSemanticSimilarityScore(), normalisationFactor);
+            double score = phenixScore.getSemanticSimilarityScore() * normalisationFactor;
+            PriorityResult result = new PhenixPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, phenixScore.getSemanticSimilarityScore(), phenixScore.getNegativeLogP());
             gene.addPriorityResult(result);
         }
 
-        logger.info("Data investigated in HPO for {} genes. No data for {} genes", genes.size(), offTargetGenes);
+        logger.info("Data investigated in HPO for {} genes. No data for {} genes", genes.size(), geneId2annotations.keySet().size());
     }
 
-    /**
-     * @param gene A {@link Gene Gene} whose score is to be
-     * determined.
-     */
-    private Function<Gene, PhenixScore> scoreGene(List<Term> queryTerms) {
+    private Function<Gene, PhenixScore> scoreGene(List<Term> queryTerms, ScoreDistributionContainer scoredistributionContainer) {
         return gene -> {
             int entrezGeneId = gene.getEntrezGeneID();
             String geneIdString = Integer.toString(entrezGeneId);
 
             if (!geneId2annotations.containsKey(geneIdString)) {
-//            logger.debug("INVALID GENE (set to default-score: {}): Entrez:{} ({})", DEFAULT_SCORE, geneIdString, geneSymbol);
-                offTargetGenes++;
                 return new PhenixScore(DEFAULT_SCORE, DEFAULT_SCORE);
             }
 
@@ -376,14 +329,14 @@ public class PhenixPriority implements Prioritiser {
             if (Double.isNaN(semanticSimilarityScore)) {
                 logger.error("Score was NaN for geneId: {} : ", entrezGeneId, queryTerms);
             }
+            ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(geneIdString);
 
-            double negLogP = calculateNegLogP(geneIdString, semanticSimilarityScore, queryTerms.size());
+            double negLogP = calculateNegLogP(semanticSimilarityScore, scoreDist);
             return new PhenixScore(semanticSimilarityScore, negLogP);
         };
     }
 
-    private double calculateNegLogP(String entrezGeneIdString, double semanticSimilarityScore, int numberQueryTerms) {
-        ScoreDistribution scoreDist = scoredistributionContainer.getDistribution(entrezGeneIdString, numberQueryTerms, symmetric, scoredistributionFolder);
+    private double calculateNegLogP(double semanticSimilarityScore, ScoreDistribution scoreDist) {
         if (scoreDist == null) {
             return DEFAULT_SCORE;
         } else {

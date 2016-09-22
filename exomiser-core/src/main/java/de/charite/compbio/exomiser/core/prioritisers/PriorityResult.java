@@ -29,7 +29,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
  * @author Peter N Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface PriorityResult {
+public interface PriorityResult extends Comparable<PriorityResult> {
 
     /**
      * @return the gene id for which this result is associated.
@@ -56,5 +56,17 @@ public interface PriorityResult {
      */
     @Deprecated
     String getHTMLCode();
+
+    /**
+     * PriorityResults are sorted according to descending numerical value of the score (in other words higher is better)
+     * and if equal, by natural ordering of the gene symbol.
+     * @param o
+     * @return
+     */
+    @Override
+    default int compareTo(PriorityResult o) {
+        int scoreComparison = Double.compare(this.getScore(), o.getScore());
+        return scoreComparison == 0 ? this.getGeneSymbol().compareTo(o.getGeneSymbol()) : - scoreComparison;
+    }
 
 }
