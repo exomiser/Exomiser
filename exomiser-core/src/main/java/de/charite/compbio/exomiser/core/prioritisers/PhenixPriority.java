@@ -153,19 +153,19 @@ public class PhenixPriority implements Prioritiser {
         logger.info("Created HPO query terms {}", hpoQueryTerms);
     }
 
+    /**
+     * STUB CONSTRUCTOR - ONLY USED FOR TESTING PURPOSES TO AVOID NULL POINTERS FROM ORIGINAL CONSTRUCTOR. DO NOT USE FOR PRODUCTION CODE!!!!
+     * @param hpoIds
+     * @param symmetric
+     */
+    protected PhenixPriority (List<String> hpoIds, boolean symmetric) {
+        this.symmetric = symmetric;
+    }
+
     private InformationContentObjectSimilarity calculateInformationContentSimilarityMeasures(boolean symmetric, Ontology hpo, SlimDirectedGraphView<Term> hpoSlim, Map<String, List<Term>> geneId2annotations) {
         Map<Term, Double> term2ic = calculateTermIC(hpo, hpoSlim, geneId2annotations);
         ResnikSimilarity resnik = new ResnikSimilarity(hpo, (HashMap<Term, Double>) term2ic);
         return new InformationContentObjectSimilarity(resnik, symmetric, false);
-    }
-
-    /**
-     * STUB CONSTRUCTOR - ONLY USED FOR TESTING PURPOSES TO AVOID NULL POINTERS FROM ORIGINAL CONSTRUCTOR. DO NOT USE FOR PRODUCTION CODE!!!!
-     * @param hpoIds
-     * @param symmetric 
-     */
-    protected PhenixPriority (List<String> hpoIds, boolean symmetric) {
-        this.symmetric = symmetric;
     }
 
     /**
