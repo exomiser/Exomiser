@@ -41,9 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author jj8
  */
 public class PrioritiserRunnerTest {
-    
-    private PrioritiserRunner instance;
-    
+
     private List<Prioritiser> prioritisers;
     
     private Gene genePassedFilters;
@@ -53,7 +51,6 @@ public class PrioritiserRunnerTest {
     
     @Before
     public void setUp() {
-        instance = new PrioritiserRunner();
         prioritisers = new ArrayList<>();
         genes = new ArrayList<>();
         genePassedFilters = new Gene("PASSED_FILTERS", 12345);
@@ -70,7 +67,7 @@ public class PrioritiserRunnerTest {
         List<Gene> passedGenes = new ArrayList<>();
         passedGenes.add(genePassedFilters);
         
-        List<Gene> filteredGenes = instance.prioritiseFilteredGenes(prioritisers, genes);
+        List<Gene> filteredGenes = PrioritiserRunner.prioritiseFilteredGenes(prioritisers, genes);
         assertThat(filteredGenes, equalTo(passedGenes));
     }
 
@@ -78,7 +75,7 @@ public class PrioritiserRunnerTest {
     public void testPrioritiseGenes_ReturnsListOfAllGenesRegardlessOfFilterStatus() {
         prioritisers.add(new NoneTypePrioritiser());
         
-        List<Gene> filteredGenes = instance.prioritiseGenes(prioritisers, genes);
+        List<Gene> filteredGenes = PrioritiserRunner.prioritiseGenes(prioritisers, genes);
         assertThat(filteredGenes, equalTo(genes));
     }
     
