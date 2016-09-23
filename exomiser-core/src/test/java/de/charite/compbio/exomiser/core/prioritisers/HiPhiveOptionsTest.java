@@ -136,6 +136,15 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
+    public void testWillRemoveWhitespaceFromRunParams() {
+        instance = new HiPhiveOptions("diseaseId", "geneSymbol", "human,mouse,fish , ppi");
+        assertThat(instance.runHuman(), is(true));
+        assertThat(instance.runMouse(), is(true));
+        assertThat(instance.runFish(), is(true));
+        assertThat(instance.runPpi(), is(true));
+    }
+
+    @Test
     public void testGetDiseaseId() {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
