@@ -24,7 +24,7 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public abstract class AbstractPriorityResult implements PriorityResult {
+abstract class AbstractPriorityResult implements PriorityResult {
 
     final PriorityType priorityType;
 
@@ -32,7 +32,7 @@ public abstract class AbstractPriorityResult implements PriorityResult {
     final String geneSymbol;
     final double score;
 
-    public AbstractPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) {
+    protected AbstractPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) {
         this.priorityType = priorityType;
         this.geneId = geneId;
         this.geneSymbol = geneSymbol;

@@ -79,6 +79,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
     }
 
 
+    @Override
     public String getGeneSymbol() {
         return geneSymbol;
     }
