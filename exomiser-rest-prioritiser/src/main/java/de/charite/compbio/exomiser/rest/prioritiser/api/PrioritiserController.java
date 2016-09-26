@@ -19,8 +19,10 @@
 
 package de.charite.compbio.exomiser.rest.prioritiser.api;
 
+import de.charite.compbio.exomiser.core.factories.GeneFactory;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.*;
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -43,11 +44,13 @@ public class PrioritiserController {
 
     private static final Logger logger = LoggerFactory.getLogger(PrioritiserController.class);
 
-    private PriorityFactory priorityFactory;
+    private final PriorityFactory priorityFactory;
+    private final JannovarData jannovarData;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory) {
+    public PrioritiserController(PriorityFactory priorityFactory, JannovarData jannovarData) {
         this.priorityFactory = priorityFactory;
+        this.jannovarData = jannovarData;
     }
 
     @RequestMapping(value = "about", method = RequestMethod.GET)
@@ -60,7 +63,7 @@ public class PrioritiserController {
 
     @RequestMapping(value = "", method = RequestMethod.GET)
     public Collection<PriorityResult> prioritise(@RequestParam(value = "phenotypes") List<String> phenotypes,
-                                                 @RequestParam(value = "genes", required = false) List<Integer> genesIds,
+                                                 @RequestParam(value = "genes", required = false, defaultValue = "") List<Integer> genesIds,
                                                  @RequestParam(value = "prioritiser") String prioritiserName,
                                                  @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams
     ) {
@@ -69,12 +72,7 @@ public class PrioritiserController {
         PriorityType priorityType = parsePrioritserType(prioritiserName.trim());
         PrioritiserSettings prioritiserSettings = new PrioritiserSettingsImpl.PrioritiserSettingsBuilder().hpoIdList(phenotypes).exomiser2Params(prioritiserParams).build();
         Prioritiser prioritiser = priorityFactory.makePrioritiser(priorityType, prioritiserSettings);
-        if (genesIds == null) {
-            //todo: if not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
-            genesIds = Arrays.asList(2263);
-        }
-        //this is a hack - really the Prioritiser should only work on GeneIds, but currently this isn't possible as OmimPrioritiser uses some properties of Gene
-        List<Gene> genes = genesIds.stream().map(id -> new Gene("GENE:" + id, id)).collect(Collectors.toList());
+        List<Gene> genes = parseGeneIdentifiers(genesIds);
         prioritiser.prioritizeGenes(genes);
         //in an ideal world this would return prioritiser.prioritize(genesIds)
         return genes.stream().map(gene -> gene.getPriorityResult(prioritiser.getPriorityType())).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
@@ -90,8 +88,19 @@ public class PrioritiserController {
             default:
                 return PriorityType.HIPHIVE_PRIORITY;
         }
-
-
     }
+
+    private List<Gene> parseGeneIdentifiers(List<Integer> genesIds) {
+        if (genesIds.isEmpty()) {
+            logger.info("Gene identifiers not specified - will compare against all known genes.");
+            //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
+            //n.b. Gene is mutable so these can't be cached and returned.
+            return GeneFactory.createKnownGenes(jannovarData);
+        }
+        //this is a hack - really the Prioritiser should only work on GeneIds, but currently this isn't possible as OmimPrioritiser uses some properties of Gene
+        return genesIds.stream().map(id -> new Gene("GENE:" + id, id)).collect(Collectors.toList());
+    }
+
+
 
 }
