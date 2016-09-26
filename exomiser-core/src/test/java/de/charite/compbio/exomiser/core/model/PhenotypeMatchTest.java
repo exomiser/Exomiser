@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -8,11 +27,12 @@ package de.charite.compbio.exomiser.core.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -25,18 +45,20 @@ public class PhenotypeMatchTest {
     private PhenotypeTerm lcs;
     private PhenotypeTerm queryPhenotype;
     private PhenotypeTerm matchPhenotype;
+    private double ic;
     private double simJ;
     private double score;
     
     @Before
     public void setUp() {
-        lcs = new PhenotypeTerm("ID:12345", "nose", 1.00);
-        queryPhenotype = new PhenotypeTerm("ID:12344", "big nose", 2.00);
-        matchPhenotype = new PhenotypeTerm("ID:12355", "little nose", 2.00); 
+        lcs = PhenotypeTerm.of("ID:12345", "nose");
+        queryPhenotype = PhenotypeTerm.of("ID:12344", "big nose");
+        matchPhenotype = PhenotypeTerm.of("ID:12355", "little nose");
+        ic = 1.00;
         simJ = 0.8;
         score = 1.26;
-        
-        instance = new PhenotypeMatch(queryPhenotype, matchPhenotype, simJ, score, lcs);
+
+        instance = PhenotypeMatch.builder().query(queryPhenotype).match(matchPhenotype).lcs(lcs).ic(ic).simj(simJ).score(score).build();
     }
 
     @Test
@@ -46,7 +68,7 @@ public class PhenotypeMatchTest {
     
     @Test
     public void testGetQueryPhenotypeIdForNullInstance() {
-        instance = new PhenotypeMatch(null, matchPhenotype, simJ, score, lcs);
+        instance = PhenotypeMatch.builder().query(null).match(matchPhenotype).lcs(lcs).ic(ic).simj(simJ).score(score).build();
         assertThat(instance.getQueryPhenotypeId(), equalTo("null"));
     }
     
@@ -62,7 +84,7 @@ public class PhenotypeMatchTest {
     
     @Test
     public void testGetMatchPhenotypeIdForNullInstance() {
-        instance = new PhenotypeMatch(queryPhenotype, null, simJ, score, lcs);
+        instance = PhenotypeMatch.builder().query(queryPhenotype).match(null).lcs(lcs).ic(ic).simj(simJ).score(score).build();
         assertThat(instance.getMatchPhenotypeId(), equalTo("null"));
     }
     
@@ -74,6 +96,11 @@ public class PhenotypeMatchTest {
     @Test
     public void testGetLcs() {
         assertThat(instance.getLcs(), equalTo(lcs));
+    }
+
+    @Test
+    public void testGetIc() {
+        assertThat(instance.getIc(), equalTo(ic));
     }
 
     @Test

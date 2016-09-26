@@ -60,10 +60,10 @@ public class TestPriorityServiceFactory {
         logger.info("Creating test priority service - this is static test data");
 
         Map<String, PhenotypeTerm> hpPhenotypesTerms = new HashMap<>();
-        hpPhenotypesTerms.put("HP:0010055", new PhenotypeTerm("HP:0010055", "Broad hallux", 0));
-        hpPhenotypesTerms.put("HP:0001363", new PhenotypeTerm("HP:0001363", "Craniosynostosis", 0));
-        hpPhenotypesTerms.put("HP:0001156", new PhenotypeTerm("HP:0001156", "Brachydactyly syndrome", 0));
-        hpPhenotypesTerms.put("HP:0011304", new PhenotypeTerm("HP:0011304", "Broad thumb", 0));
+        hpPhenotypesTerms.put("HP:0010055", PhenotypeTerm.of("HP:0010055", "Broad hallux"));
+        hpPhenotypesTerms.put("HP:0001363", PhenotypeTerm.of("HP:0001363", "Craniosynostosis"));
+        hpPhenotypesTerms.put("HP:0001156", PhenotypeTerm.of("HP:0001156", "Brachydactyly syndrome"));
+        hpPhenotypesTerms.put("HP:0011304", PhenotypeTerm.of("HP:0011304", "Broad thumb"));
 
         logger.info("This data links {} phenotypes:", hpPhenotypesTerms.size());
         hpPhenotypesTerms.values().forEach(term ->logger.info("    {} - {}", term.getId(), term.getLabel()));

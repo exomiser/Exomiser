@@ -40,15 +40,12 @@ public class PhenotypeTermTest {
     
     private String id;
     private String label;
-    private double ic;
-    
+
     @Before
     public void setUp() {
         id = "ID:12344";
         label = "big nose";
-        ic = 2.00d;
-        
-        instance = new PhenotypeTerm(id, label, ic);
+        instance = PhenotypeTerm.of(id, label);
     }
 
     @Test
@@ -59,11 +56,6 @@ public class PhenotypeTermTest {
     @Test
     public void testGetTerm() {
         assertThat(instance.getLabel(), equalTo(label));
-    }
-
-    @Test
-    public void testGetIc() {
-        assertThat(instance.getIc(), equalTo(ic));
     }
 
     @Test
@@ -78,7 +70,7 @@ public class PhenotypeTermTest {
 
     @Test
     public void testEqualsOther() {
-        PhenotypeTerm other = new PhenotypeTerm(id, label, ic);
+        PhenotypeTerm other = PhenotypeTerm.of(id, label);
         assertThat(instance, equalTo(other));
     }
     

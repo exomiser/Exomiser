@@ -90,9 +90,8 @@ public class PhenoGridAdaptorTest {
     }
 
     private void setUpQueryTerms() {
-        queryTerm = new PhenotypeTerm("HP:0001363", "Craniosynostosis", 5.0);
-        queryPhenotypeTerms = new ArrayList<>();
-        queryPhenotypeTerms.add(queryTerm);
+        queryTerm = PhenotypeTerm.of("HP:0001363", "Craniosynostosis");
+        queryPhenotypeTerms = Arrays.asList(queryTerm);
 
         queryPhenotypeIds = new LinkedHashSet<>();
         queryPhenotypeIds.add(queryTerm.getId());
@@ -106,24 +105,42 @@ public class PhenoGridAdaptorTest {
     }
 
     private PhenotypeMatch makeDiseasePhenotypeMatch() {
-        PhenotypeTerm craniosynostosis = new PhenotypeTerm("HP:0001363", "Craniosynostosis", 5.0);
-        PhenotypeMatch diseaseCraniosynostosisMatch = new PhenotypeMatch(craniosynostosis, craniosynostosis, 1.0, 3.0, craniosynostosis);
-        return diseaseCraniosynostosisMatch;
+        PhenotypeTerm craniosynostosis = PhenotypeTerm.of("HP:0001363", "Craniosynostosis");
+        return PhenotypeMatch.builder()
+                .query(craniosynostosis)
+                .match(craniosynostosis)
+                .lcs(craniosynostosis)
+                .ic(5.0)
+                .simj(1.0)
+                .score(3.0)
+                .build();
     }
 
     private PhenotypeMatch makeMousePhenotypeMatch() {
-        PhenotypeTerm craniosynostosis = new PhenotypeTerm("HP:0001363", "Craniosynostosis", 5.0);
-        PhenotypeTerm prematureSutureClosure = new PhenotypeTerm("MP:0000081", "premature suture closure ", 4.0);
-        PhenotypeMatch mouseCraniosyntosisMatch = new PhenotypeMatch(craniosynostosis, prematureSutureClosure, 0.5, 2.0, prematureSutureClosure);
-        return mouseCraniosyntosisMatch;
+        PhenotypeTerm craniosynostosis = PhenotypeTerm.of("HP:0001363", "Craniosynostosis");
+        PhenotypeTerm prematureSutureClosure = PhenotypeTerm.of("MP:0000081", "premature suture closure ");
+        return PhenotypeMatch.builder()
+                .query(craniosynostosis)
+                .match(prematureSutureClosure)
+                .lcs(prematureSutureClosure)
+                .ic(4.0)
+                .simj(0.5)
+                .score(2.0)
+                .build();
     }
 
     private PhenotypeMatch makeFishPhenotypeMatch() {
-        PhenotypeTerm craniosynostosis = new PhenotypeTerm("HP:0001363", "Craniosynostosis", 5.0);
-        PhenotypeTerm increasedBoneMineralisation = new PhenotypeTerm("ZP:0006781", "abnormal(ly) increased process quality bone mineralization", 5.0);
-        PhenotypeTerm abnormalBoneOssification = new PhenotypeTerm("MP:0008271", "abnormal bone ossification", 4.6);
-        PhenotypeMatch fishCraniosyntosisMatch = new PhenotypeMatch(craniosynostosis, increasedBoneMineralisation, 0.2, 1.0, abnormalBoneOssification);
-        return fishCraniosyntosisMatch;
+        PhenotypeTerm craniosynostosis = PhenotypeTerm.of("HP:0001363", "Craniosynostosis");
+        PhenotypeTerm increasedBoneMineralisation = PhenotypeTerm.of("ZP:0006781", "abnormal(ly) increased process quality bone mineralization");
+        PhenotypeTerm abnormalBoneOssification = PhenotypeTerm.of("MP:0008271", "abnormal bone ossification");
+        return PhenotypeMatch.builder()
+                .query(craniosynostosis)
+                .match(increasedBoneMineralisation)
+                .lcs(abnormalBoneOssification)
+                .ic(4.6)
+                .simj(0.2)
+                .score(1.0)
+                .build();
     }
 
     private void setUpModels() {

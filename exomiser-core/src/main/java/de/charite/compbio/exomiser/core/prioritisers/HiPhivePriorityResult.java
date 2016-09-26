@@ -19,6 +19,7 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.exomiser.core.model.DiseaseModel;
 import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
@@ -33,17 +34,18 @@ import java.util.Map;
  */
 public class HiPhivePriorityResult extends AbstractPriorityResult {
 
+    private double humanScore = 0;
+    private double mouseScore = 0;
+    private double fishScore = 0;
+
+    private final double walkerScore;
+
+    private final boolean candidateGeneMatch;
+
     private final List<PhenotypeTerm> queryPhenotypeTerms;
     private final List<Model> phenotypeEvidence;
     private final List<Model> ppiEvidence;
 
-    private double humanScore = 0f;
-    private double mouseScore = 0f;
-    private double fishScore = 0f;
-
-    private final double walkerScore;
-    
-    private final boolean candidateGeneMatch;
 
     /**
      * @param score The similarity score assigned by the random walk.
@@ -124,6 +126,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
     /**
      * @return A summary for the text output formats
      */
+    @JsonIgnore
     public String getPhenotypeEvidenceText() {
         StringBuilder humanBuilder = new StringBuilder();
         StringBuilder mouseBuilder = new StringBuilder();
@@ -174,12 +177,12 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
 
     /**
      */
+    @JsonIgnore
     @Override
     public String getHTMLCode() {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (Model model : phenotypeEvidence) {
-            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = model.getBestPhenotypeMatchForTerms();
             switch (model.getOrganism()) {
                 case HUMAN:
                     DiseaseModel diseaseModel = (DiseaseModel) model;
@@ -193,6 +196,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                     stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>.</dt>", model.getScore(), model.getHumanGeneSymbol(), model.getHumanGeneSymbol()));
                     break;
             }
+            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = model.getBestPhenotypeMatchForTerms();
             makeBestPhenotypeMatchHtml(stringBuilder, bestMatchesForModel);
             stringBuilder.append("</dl>");
         }
@@ -200,7 +204,6 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         for (Model model : ppiEvidence) {
             String stringDbLink = "http://string-db.org/newstring_cgi/show_network_section.pl?identifiers=" + geneSymbol + "%0D" + model.getHumanGeneSymbol() + "&required_score=700&network_flavor=evidence&species=9606&limit=20";
 
-            Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = model.getBestPhenotypeMatchForTerms();
             switch (model.getOrganism()) {
                 case HUMAN:
                     DiseaseModel diseaseModel = (DiseaseModel) model;
@@ -214,6 +217,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                     stringBuilder.append(String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.</dt>", stringDbLink, model.getHumanGeneSymbol(), model.getHumanGeneSymbol()));
                     break;
             }
+            Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = model.getBestPhenotypeMatchForTerms();
             makeBestPhenotypeMatchHtml(stringBuilder, bestModelPhenotypeMatches);
             stringBuilder.append("</dl>");
         }

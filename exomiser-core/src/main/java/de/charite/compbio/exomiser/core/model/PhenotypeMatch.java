@@ -1,11 +1,33 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 package de.charite.compbio.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.util.Objects;
 
 /**
@@ -14,6 +36,7 @@ import java.util.Objects;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@JsonPropertyOrder({"query", "match", "lcs", "ic", "simj", "score"})
 public class PhenotypeMatch {
     
     private final PhenotypeTerm matchPhenotype;
@@ -21,15 +44,17 @@ public class PhenotypeMatch {
     //lowest common subsumer
     private final PhenotypeTerm lcs;
     //Jaccard similarity score
+    private final double ic;
     private final double simJ;
     private final double score;
-    
-    public PhenotypeMatch(PhenotypeTerm queryPhenotype, PhenotypeTerm matchPhenotype, double simJ, double score, PhenotypeTerm lcs) {
-        this.queryPhenotype = queryPhenotype;
-        this.matchPhenotype = matchPhenotype;
-        this.simJ = simJ;
-        this.lcs = lcs;
-        this.score = score;
+
+    public PhenotypeMatch(Builder builder) {
+        this.matchPhenotype = builder.matchPhenotype;
+        this.queryPhenotype = builder.queryPhenotype;
+        this.ic = builder.ic;
+        this.lcs = builder.lcs;
+        this.simJ = builder.simJ;
+        this.score = builder.score;
     }
 
     @JsonIgnore
@@ -37,7 +62,7 @@ public class PhenotypeMatch {
         return (queryPhenotype == null) ? "null" : queryPhenotype.getId();
     }
     
-    @JsonProperty("a")
+    @JsonProperty("query")
     public PhenotypeTerm getQueryPhenotype() {
         return queryPhenotype;
     }
@@ -47,7 +72,7 @@ public class PhenotypeMatch {
         return (matchPhenotype == null) ? "null" : matchPhenotype.getId();
     }
     
-    @JsonProperty("b")
+    @JsonProperty("match")
     public PhenotypeTerm getMatchPhenotype() {
         return matchPhenotype;
     }
@@ -57,57 +82,95 @@ public class PhenotypeMatch {
         return lcs;
     }
 
-    @JsonIgnore
+    @JsonProperty("ic")
+    public double getIc() {
+        return ic;
+    }
+
+    @JsonProperty("simj")
     public double getSimJ() {
         return simJ;
     }
 
-    @JsonIgnore
+    @JsonProperty("score")
     public double getScore() {
         return score;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 17 * hash + Objects.hashCode(this.matchPhenotype);
-        hash = 17 * hash + Objects.hashCode(this.queryPhenotype);
-        hash = 17 * hash + Objects.hashCode(this.lcs);
-        hash = 17 * hash + (int) (Double.doubleToLongBits(this.simJ) ^ (Double.doubleToLongBits(this.simJ) >>> 32));
-        hash = 17 * hash + (int) (Double.doubleToLongBits(this.score) ^ (Double.doubleToLongBits(this.score) >>> 32));
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PhenotypeMatch)) return false;
+        PhenotypeMatch that = (PhenotypeMatch) o;
+        return Double.compare(that.ic, ic) == 0 &&
+                Double.compare(that.simJ, simJ) == 0 &&
+                Double.compare(that.score, score) == 0 &&
+                Objects.equals(matchPhenotype, that.matchPhenotype) &&
+                Objects.equals(queryPhenotype, that.queryPhenotype) &&
+                Objects.equals(lcs, that.lcs);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final PhenotypeMatch other = (PhenotypeMatch) obj;
-        if (!Objects.equals(this.matchPhenotype, other.matchPhenotype)) {
-            return false;
-        }
-        if (!Objects.equals(this.queryPhenotype, other.queryPhenotype)) {
-            return false;
-        }
-        if (!Objects.equals(this.lcs, other.lcs)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.simJ) != Double.doubleToLongBits(other.simJ)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.score) != Double.doubleToLongBits(other.score)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        return Objects.hash(matchPhenotype, queryPhenotype, lcs, ic, simJ, score);
     }
 
     @Override
     public String toString() {
         return "PhenotypeMatch{" + "matchPhenotype=" + matchPhenotype + ", queryPhenotype=" + queryPhenotype + ", lcs=" + lcs + ", simJ=" + simJ + ", score=" + score + '}';
     }
-    
+
+    @JsonCreator
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private PhenotypeTerm queryPhenotype;
+        private PhenotypeTerm matchPhenotype;
+        //lowest common subsumer
+        private PhenotypeTerm lcs;
+        //information content (relates to LCS)
+        private double ic;
+        //Jaccard similarity score
+        private double simJ;
+        private double score;
+
+        private Builder() {
+        }
+
+        public Builder query(PhenotypeTerm queryPhenotype) {
+            this.queryPhenotype = queryPhenotype;
+            return this;
+        }
+
+        public Builder match(PhenotypeTerm matchPhenotype) {
+            this.matchPhenotype = matchPhenotype;
+            return this;
+        }
+
+        public Builder lcs(PhenotypeTerm lcs) {
+            this.lcs = lcs;
+            return this;
+        }
+
+        public Builder ic(double ic) {
+            this.ic = ic;
+            return this;
+        }
+
+        public Builder simj(double simJ) {
+            this.simJ = simJ;
+            return this;
+        }
+
+        public Builder score(double score) {
+            this.score = score;
+            return this;
+        }
+
+        public PhenotypeMatch build() {
+            return new PhenotypeMatch(this);
+        }
+    }
 }

@@ -63,14 +63,21 @@ public class OntologyDaoResultSetProcessor {
             String matchTerm = rs.getString("hit_term");
             PhenotypeTerm matchPhenotype = PhenotypeTerm.of(matchId, matchTerm);
             
-            double lcsIc = rs.getDouble("ic");
             String lcsId = rs.getString("lcs_id");
             String lcsTerm = rs.getString("lcs_term");
-            PhenotypeTerm lcsPhenotype = new PhenotypeTerm(lcsId, lcsTerm, lcsIc);
-            
+            PhenotypeTerm lcsPhenotype = PhenotypeTerm.of(lcsId, lcsTerm);
+
+            double ic = rs.getDouble("ic");
             double simj = rs.getDouble("simj");
             double score = rs.getDouble("score");
-            PhenotypeMatch match = new PhenotypeMatch(queryPhenotype, matchPhenotype, simj, score, lcsPhenotype);
+            PhenotypeMatch match = PhenotypeMatch.builder()
+                    .query(queryPhenotype)
+                    .match(matchPhenotype)
+                    .lcs(lcsPhenotype)
+                    .simj(simj)
+                    .ic(ic)
+                    .score(score)
+                    .build();
             phenotypeMatches.add(match);
         }
         return phenotypeMatches.build();

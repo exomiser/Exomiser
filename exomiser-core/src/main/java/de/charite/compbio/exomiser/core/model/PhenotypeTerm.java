@@ -23,6 +23,7 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -40,37 +41,24 @@ public class PhenotypeTerm {
 
     private final String id;
     private final String label;
-    private final double ic;
+
     @JsonIgnore
     private final Status status;
-
-    @Deprecated
-    public PhenotypeTerm(String id, String label, double ic) {
-        this.id = id;
-        this.label = label;
-        this.ic = ic;
-        this.status = Status.PRESENT;
-    }
 
     private PhenotypeTerm(String id, String label, Status status) {
         this.id = id;
         this.label = label;
-        this.ic = 0;
         this.status = status;
     }
-    
+
+    @JsonProperty
     public String getId() {
         return id;
     }
 
+    @JsonProperty
     public String getLabel() {
         return label;
-    }
-
-    @JsonProperty("IC")
-    @Deprecated
-    public double getIc() {
-        return ic;
     }
 
     @JsonIgnore
@@ -88,22 +76,23 @@ public class PhenotypeTerm {
         if (this == o) return true;
         if (!(o instanceof PhenotypeTerm)) return false;
         PhenotypeTerm that = (PhenotypeTerm) o;
-        return Double.compare(that.ic, ic) == 0 &&
-                Objects.equals(id, that.id) &&
+        return Objects.equals(id, that.id) &&
                 Objects.equals(label, that.label) &&
                 status == that.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, label, ic, status);
+        return Objects.hash(id, label, status);
     }
 
+    @JsonIgnore
     @Override
     public String toString() {
-        return "PhenotypeTerm{" + "id=" + id + ", label=" + label + ", ic=" + ic + ", present=" + isPresent() +'}';
+        return "PhenotypeTerm{" + "id=" + id + ", label=" + label + ", present=" + isPresent() +'}';
     }
 
+    @JsonCreator
     public static PhenotypeTerm of(String id, String label) {
         return new PhenotypeTerm(id, label, Status.PRESENT);
     }

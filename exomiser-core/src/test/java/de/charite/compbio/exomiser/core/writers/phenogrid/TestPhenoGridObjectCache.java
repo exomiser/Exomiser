@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -7,6 +26,7 @@ package de.charite.compbio.exomiser.core.writers.phenogrid;
 
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -74,35 +94,59 @@ public class TestPhenoGridObjectCache {
     }
 
     private PhenotypeMatch makeNosePhenotypeMatch() {
-        PhenotypeTerm poisonouslyWartyNose = new PhenotypeTerm("GRUF:444", "Poisonously warty nose", 4.0);
-        PhenotypeTerm hideouslyWartyNose = new PhenotypeTerm("GRUF:443", "Hideously warty nose", 4.0);
-        PhenotypeTerm wartyNose = new PhenotypeTerm("GRUF:440", "Warty nose", 2.0);
-        PhenotypeMatch noseMatch = new PhenotypeMatch(poisonouslyWartyNose, hideouslyWartyNose, 0.85, 2.0, wartyNose);
-        return noseMatch;
+        PhenotypeTerm poisonouslyWartyNose = PhenotypeTerm.of("GRUF:444", "Poisonously warty nose");
+        PhenotypeTerm hideouslyWartyNose = PhenotypeTerm.of("GRUF:443", "Hideously warty nose");
+        PhenotypeTerm wartyNose = PhenotypeTerm.of("GRUF:440", "Warty nose");
+        return PhenotypeMatch.builder()
+                .query(poisonouslyWartyNose)
+                .match(hideouslyWartyNose)
+                .lcs(wartyNose)
+                .ic(2.0)
+                .simj(0.85)
+                .score(2.0)
+                .build();
     }
 
     private PhenotypeMatch makeMonsterousTonguePhenotypeMatch() {
-        PhenotypeTerm blackTongue = new PhenotypeTerm("GRUF:333", "Black tongue", 5.0);
-        PhenotypeTerm forkedTongue = new PhenotypeTerm("GRUF:124", "Forked tongue", 5.0);
-        PhenotypeTerm abnormalTongue = new PhenotypeTerm("GRUF:120", "Abnormal tongue", 3.0);
-        PhenotypeMatch tongueMatch = new PhenotypeMatch(blackTongue, forkedTongue, 0.9, 3.0, abnormalTongue);
-        return tongueMatch;
+        PhenotypeTerm blackTongue = PhenotypeTerm.of("GRUF:333", "Black tongue");
+        PhenotypeTerm forkedTongue = PhenotypeTerm.of("GRUF:124", "Forked tongue");
+        PhenotypeTerm abnormalTongue = PhenotypeTerm.of("GRUF:120", "Abnormal tongue");
+        return PhenotypeMatch.builder()
+                .query(blackTongue)
+                .match(forkedTongue)
+                .lcs(abnormalTongue)
+                .ic(3.0)
+                .simj(0.9)
+                .score(3.0)
+                .build();
     }
 
     private PhenotypeMatch makePurplePricklesPhenotypeMatch() {
-        PhenotypeTerm purplePrickles = new PhenotypeTerm("GRUF:111", "Purple prickles", 4.0);
-        PhenotypeTerm redPrickles = new PhenotypeTerm("GRUF:112", "Red prickles", 4.0);
-        PhenotypeTerm colouredPrickles = new PhenotypeTerm("GRUF:110", "Coloured prickles", 2.0);
-        PhenotypeMatch prickleMatch = new PhenotypeMatch(purplePrickles, redPrickles, 0.7, 3.0, colouredPrickles);
-        return prickleMatch;
+        PhenotypeTerm purplePrickles = PhenotypeTerm.of("GRUF:111", "Purple prickles");
+        PhenotypeTerm redPrickles = PhenotypeTerm.of("GRUF:112", "Red prickles");
+        PhenotypeTerm colouredPrickles = PhenotypeTerm.of("GRUF:110", "Coloured prickles");
+        return PhenotypeMatch.builder()
+                .query(purplePrickles)
+                .match(redPrickles)
+                .lcs(colouredPrickles)
+                .ic(2.0)
+                .simj(0.7)
+                .score(3.0)
+                .build();
     }
 
     private PhenotypeMatch makeKnobblyKneePhenotypeMatch() {
-        PhenotypeTerm knobblyKnee = new PhenotypeTerm("GRUF:222", "Knobbly knees", 5.0);
-        PhenotypeTerm wobblyKnee = new PhenotypeTerm("GRUF:224", "Wobbly knees", 5.0);
-        PhenotypeTerm unstableKnee = new PhenotypeTerm("GRUF:220", "Unstable knees", 3.0);
-        PhenotypeMatch kneeMatch = new PhenotypeMatch(knobblyKnee, wobblyKnee, 0.9, 3.0, unstableKnee);
-        return kneeMatch;
+        PhenotypeTerm knobblyKnee = PhenotypeTerm.of("GRUF:222", "Knobbly knees");
+        PhenotypeTerm wobblyKnee = PhenotypeTerm.of("GRUF:224", "Wobbly knees");
+        PhenotypeTerm unstableKnee = PhenotypeTerm.of("GRUF:220", "Unstable knees");
+        return PhenotypeMatch.builder()
+                .query(knobblyKnee)
+                .match(wobblyKnee)
+                .lcs(unstableKnee)
+                .ic(3.0)
+                .simj(0.9)
+                .score(3.0)
+                .build();
     }
 
     public List<String> getQueryPhenotypeTermIds() {

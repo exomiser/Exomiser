@@ -45,8 +45,8 @@ public class OrganismPhenotypeMatchesTest {
     private final PhenotypeTerm nose = PhenotypeTerm.of("HP:0000002", "Nose");
     private final PhenotypeTerm littleNose = PhenotypeTerm.of("HP:0000003", "Little nose");
 
-    private final PhenotypeMatch perfectNoseMatch = new PhenotypeMatch(bigNose, bigNose, 1.0, 4.0, bigNose);
-    private final PhenotypeMatch noseMatch = new PhenotypeMatch(bigNose, littleNose, 0.5, 1.0, nose);
+    private final PhenotypeMatch perfectNoseMatch = PhenotypeMatch.builder().query(bigNose).match(bigNose).lcs(bigNose).simj(1.0).score(4.0).build();
+    private final PhenotypeMatch noseMatch = PhenotypeMatch.builder().query(bigNose).match(littleNose).lcs(nose).simj(0.5).score(1.0).build();
 
     //Toe phenotypes
     private final PhenotypeTerm toe = PhenotypeTerm.of("HP:0000004", "Toe");
@@ -54,8 +54,8 @@ public class OrganismPhenotypeMatchesTest {
     private final PhenotypeTerm crookedToe = PhenotypeTerm.of("HP:0000006", "Crooked toe");
     private final PhenotypeTerm longToe = PhenotypeTerm.of("HP:0000007", "Long toe");
 
-    private final PhenotypeMatch bestToeMatch = new PhenotypeMatch(bigToe, longToe, 1.0, 2.0, toe);
-    private final PhenotypeMatch bigToeCrookedToeMatch = new PhenotypeMatch(bigToe, crookedToe, 1.0, 1.5, toe);
+    private final PhenotypeMatch bestToeMatch = PhenotypeMatch.builder().query(bigToe).match(longToe).lcs(toe).score(2.0).build();
+    private final PhenotypeMatch bigToeCrookedToeMatch = PhenotypeMatch.builder().query(bigToe).match(crookedToe).lcs(toe).score(1.5).build();
 
     private final Set<PhenotypeMatch> bestMatches = Sets.newHashSet(perfectNoseMatch, bestToeMatch);
 

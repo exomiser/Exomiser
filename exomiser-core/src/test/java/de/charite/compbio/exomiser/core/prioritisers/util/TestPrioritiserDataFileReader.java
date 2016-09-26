@@ -112,11 +112,18 @@ public class TestPrioritiserDataFileReader {
         //HP:0010055	Broad hallux	0.000000	ZP:0012192	null	0.000000	MP:0009250	abnormal appendicular skeleton morphology	2.529091	0.188889	0.691171
         return line -> {
             String[] elements = line.split("\t");
-            PhenotypeTerm query = new PhenotypeTerm(elements[0], elements[1], Double.valueOf(elements[2]));
-            PhenotypeTerm match = new PhenotypeTerm(elements[3], elements[4], Double.valueOf(elements[5]));
-            PhenotypeTerm lcs = new PhenotypeTerm(elements[6], elements[7], Double.valueOf(elements[8]));
+            PhenotypeTerm query = PhenotypeTerm.of(elements[0], elements[1]);
+            PhenotypeTerm match = PhenotypeTerm.of(elements[3], elements[4]);
+            PhenotypeTerm lcs = PhenotypeTerm.of(elements[6], elements[7]);
 
-            return new PhenotypeMatch(query, match, Double.valueOf(elements[9]), Double.valueOf(elements[10]), lcs);
+            return PhenotypeMatch.builder()
+                    .query(query)
+                    .match(match)
+                    .lcs(lcs)
+                    .ic(Double.valueOf(elements[8]))
+                    .simj(Double.valueOf(elements[9]))
+                    .score(Double.valueOf(elements[10]))
+                    .build();
         };
     }
 

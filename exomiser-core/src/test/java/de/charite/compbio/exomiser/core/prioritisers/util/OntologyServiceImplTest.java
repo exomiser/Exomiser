@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -8,20 +27,8 @@ package de.charite.compbio.exomiser.core.prioritisers.util;
 import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.OntologyDao;
 import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +36,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -57,10 +70,10 @@ public class OntologyServiceImplTest {
     private Set<PhenotypeTerm> mpoTerms;
     private Set<PhenotypeTerm> zpoTerms;
 
-    private final PhenotypeTerm fingerJointHyperExtensibility = new PhenotypeTerm("HP:0001187", "Hyperextensibility of the finger joints", 0.0);
-    private final PhenotypeTerm conjunctivalNodule = new PhenotypeTerm("HP:0009903", "Conjunctival nodule", 0.0);
-    private final PhenotypeTerm cleftHelix = new PhenotypeTerm("HP:0009902", "Cleft helix", 0.0);
-    private final PhenotypeTerm thinEarHelix = new PhenotypeTerm("HP:0009905", "Thin ear helix", 0.0);
+    private final PhenotypeTerm fingerJointHyperExtensibility = PhenotypeTerm.of("HP:0001187", "Hyperextensibility of the finger joints");
+    private final PhenotypeTerm conjunctivalNodule = PhenotypeTerm.of("HP:0009903", "Conjunctival nodule");
+    private final PhenotypeTerm cleftHelix = PhenotypeTerm.of("HP:0009902", "Cleft helix");
+    private final PhenotypeTerm thinEarHelix = PhenotypeTerm.of("HP:0009905", "Thin ear helix");
 
     @Before
     public void setUp() {

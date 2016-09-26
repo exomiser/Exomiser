@@ -105,17 +105,21 @@ public class GeneModelTest {
     
     @Test
     public void testaddMatchIfWhenAbsent() {
-        PhenotypeMatch match = new PhenotypeMatch(null, null, score, 1.0, null);
+        PhenotypeMatch match = stubPhenotypeMatchOfScore(1.0);
         instance.addMatchIfAbsentOrBetterThanCurrent(match);
         assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(true));
     }
-    
+
+    private PhenotypeMatch stubPhenotypeMatchOfScore(double score) {
+        return PhenotypeMatch.builder().query(null).match(null).lcs(null).score(score).build();
+    }
+
     @Test
     public void testaddMatchWhenBetterThanCurrent() {
-        PhenotypeMatch match = new PhenotypeMatch(null, null, score, 0.5, null);
+        PhenotypeMatch match = stubPhenotypeMatchOfScore(0.5);
         instance.addMatchIfAbsentOrBetterThanCurrent(match);
         
-        PhenotypeMatch betterMatch = new PhenotypeMatch(null, null, score, 1.0, null);
+        PhenotypeMatch betterMatch = stubPhenotypeMatchOfScore(1.0);
         instance.addMatchIfAbsentOrBetterThanCurrent(betterMatch);
         
         assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(false));
@@ -125,10 +129,10 @@ public class GeneModelTest {
     
     @Test
     public void testaddMatchWhenNotBetterThanCurrent() {
-        PhenotypeMatch betterMatch = new PhenotypeMatch(null, null, score, 1.0, null);
+        PhenotypeMatch betterMatch = stubPhenotypeMatchOfScore(1.0);
         instance.addMatchIfAbsentOrBetterThanCurrent(betterMatch);
         
-        PhenotypeMatch match = new PhenotypeMatch(null, null, score, 0.5, null);
+        PhenotypeMatch match = stubPhenotypeMatchOfScore(0.5);
         instance.addMatchIfAbsentOrBetterThanCurrent(match);
         
         assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(false));
