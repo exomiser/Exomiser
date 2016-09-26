@@ -56,14 +56,12 @@ public class SampleDataFactory {
     private final JannovarData jannovarData;
 
     private final PedigreeFactory pedigreeFactory;
-    private final GeneFactory geneFactory;
 
     @Autowired
     public SampleDataFactory(VariantFactory variantFactory, JannovarData jannovarData) {
         this.variantFactory = variantFactory;
         this.jannovarData = jannovarData;
         pedigreeFactory = new PedigreeFactory();
-        geneFactory = new GeneFactory();
     }
 
     public VariantFactory getVariantFactory() {
@@ -94,7 +92,7 @@ public class SampleDataFactory {
         sampleData.setVariantEvaluations(variantEvaluations);
 
         //Don't try and create the Genes before annotating the Variants otherwise you'll have a single gene with all the variants in it...
-        List<Gene> geneList = createGenes(variantEvaluations);
+        List<Gene> geneList = GeneFactory.createGenes(variantEvaluations);
         sampleData.setGenes(geneList);
 
         return sampleData;
@@ -136,12 +134,8 @@ public class SampleDataFactory {
         return pedigreeFactory.createPedigreeForSampleData(pedigreeFilePath, sampleData);
     }
 
-    public List<Gene> createGenes(List<VariantEvaluation> variantEvaluations) {
-        return geneFactory.createGenes(variantEvaluations);
-    }
-
     public List<Gene> createKnownGenes() {
-        return geneFactory.createKnownGenes(jannovarData);
+        return GeneFactory.createKnownGenes(jannovarData);
     }
 
 }
