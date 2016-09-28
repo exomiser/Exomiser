@@ -51,7 +51,7 @@ public class TheoreticalModel {
         return termPhenotypeMatches.values()
                 .stream()
                 .map(bestPhenotypeMatch())
-                .filter(match -> match != null)
+                .filter(Objects::nonNull)
                 .collect(collectingAndThen(toSet(), Collections::unmodifiableSet));
     }
 
