@@ -127,7 +127,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_NoVariants() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.UNINITIALIZED);
@@ -139,7 +139,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_NoPassedVariants() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 1 , "A", "T", FilterResult.fail(FilterType.FREQUENCY_FILTER)));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
@@ -161,7 +161,7 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
         System.out.println("Built variant context " + variantContext);
 
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
@@ -185,7 +185,7 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
         System.out.println("Built variant context " + variantContext);
 
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
@@ -208,7 +208,7 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
         System.out.println("Built variant context " + variantContext);
 
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
@@ -233,7 +233,7 @@ public class InheritanceModeAnalyserTest {
         VariantContext variantContext = buildVariantContext(1, 12345, alleles, genotype);
         System.out.println("Built variant context " + variantContext);
 
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         gene.addVariant(filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext));
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
@@ -250,7 +250,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_MultiSample_OnePassedVariant_HOM_VAR_shouldBeCompatibelWith_RECESSIVE() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
@@ -285,7 +285,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_MultiSample_OnePassedVariant_HOM_REF_shouldNotBeCompatibleWith_AR() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
@@ -320,7 +320,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_MultiSample_OnePassedVariant_HET_shouldBeCompatibleWith_AD() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
@@ -355,7 +355,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_MultiSample_MultiAllelic_TwoPassedVariant_HOM_VAR_shouldBeCompatibleWith_AR() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
@@ -402,7 +402,7 @@ public class InheritanceModeAnalyserTest {
     @Ignore
     @Test
     public void testAnalyseInheritanceModes_MultiSample_MultiAllelic_OnePassedVariant_HOM_VAR_altAllele2_shouldBeCompatibleWith_AR() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
         // build Genotype
         //HomVar 1/1 or 1|1 variants are a really likely candidate for recessive rare diseases
@@ -445,7 +445,7 @@ public class InheritanceModeAnalyserTest {
     @Ignore
     @Test
     public void testAnalyseInheritanceModes_MultiSample_MultiAllelic_OnePassedVariant_HET_shouldBeCompatibleWith_AD() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
         Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(2));
@@ -485,10 +485,14 @@ public class InheritanceModeAnalyserTest {
                 });
     }
 
+    private Gene newGene() {
+        return new Gene("ABC", 123);
+    }
+
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_OnePassedVariant_HET_shouldBeCompatibleWith_AD() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
         Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(2));
@@ -517,7 +521,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_TwoPassedVariant_HET_shouldBeCompatibleWith_AD() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
         Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(2));
@@ -546,7 +550,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_TwoPassedVariant_HOM_VAR_Allele2_shouldBeCompatibleWith_AR() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
         Genotype proband = buildSampleGenotype("Cain", alleles.get(2), alleles.get(2));
@@ -575,7 +579,7 @@ public class InheritanceModeAnalyserTest {
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_MultiAllelic_TwoPassedVariant_HOM_VAR_Allele1_shouldBeCompatibleWith_AR() {
-        Gene gene = new Gene("ABC", 123);
+        Gene gene = newGene();
         List<Allele> alleles = buildAlleles("A", "T", "C");
 
         Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(1));

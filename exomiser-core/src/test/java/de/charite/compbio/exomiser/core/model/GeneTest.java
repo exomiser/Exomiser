@@ -71,7 +71,15 @@ public class GeneTest {
         // variant2 is the second one in in FGFR2 gene
         variantEvaluation2 = new VariantEvaluation.VariantBuilder(10, 123353325, "T", "A").build();
 
-        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance = newGeneOne();
+    }
+
+    private Gene newGeneOne() {
+        return new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+    }
+
+    private Gene newGeneTwo() {
+        return new Gene(GENE2_SYMBOL, GENE2_ENTREZ_GENE_ID);
     }
 
     @Test
@@ -96,8 +104,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithDifferentGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
-        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
-        Gene gene2 = new Gene(GENE2_SYMBOL, GENE2_ENTREZ_GENE_ID);
+        Gene gene1 = newGeneOne();
+        Gene gene2 = newGeneTwo();
 
         assertTrue(gene1.compareTo(gene2) < 0);
         assertTrue(gene2.compareTo(gene1) > 0);
@@ -105,8 +113,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithDifferentGeneSymbolsAreComparedByCombinedScore() {
-        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
-        Gene gene2 = new Gene(GENE2_SYMBOL, GENE2_ENTREZ_GENE_ID);
+        Gene gene1 = newGeneOne();
+        Gene gene2 = newGeneTwo();
 
         gene1.setCombinedScore(0.0f);
         gene2.setCombinedScore(1.0f);
@@ -117,8 +125,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithSameGeneSymbolsAreComparedByGeneSymbolWhenScoresAreEqual() {
-        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
-        Gene gene2 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        Gene gene1 = newGeneOne();
+        Gene gene2 = newGeneOne();
 
         assertTrue(gene1.compareTo(gene2) == 0);
         assertTrue(gene2.compareTo(gene1) == 0);
@@ -126,8 +134,8 @@ public class GeneTest {
 
     @Test
     public void testGenesWithSameGeneSymbolsAreComparedByCombinedScore() {
-        Gene gene1 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
-        Gene gene2 = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        Gene gene1 = newGeneOne();
+        Gene gene2 = newGeneOne();
 
         gene1.setCombinedScore(0.0f);
         gene2.setCombinedScore(1.0f);
@@ -398,13 +406,13 @@ public class GeneTest {
 
     @Test
     public void testIsCompatibleWithX_falseWhenVariantsIsEmpty() {
-        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance = newGeneOne();
         assertThat(instance.isXChromosomal(), is(false));
     }
 
     @Test
     public void testIsCompatibleWithX_falseWhenVariantIsNotCompatibleWithX() {
-        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance = newGeneOne();
         instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(false));
     }
@@ -412,20 +420,20 @@ public class GeneTest {
     @Test
     public void testIsCompatibleWithX_trueWhenVariantIsCompatibleWithX() {
         int X_CHROMOSOME = 23;
-        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance = newGeneOne();
         instance.addVariant(new VariantEvaluation.VariantBuilder(X_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(true));
     }
 
     @Test
     public void testIsCompatibleWithY_falseWhenVariantsIsEmpty() {
-        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance = newGeneOne();
         assertThat(instance.isYChromosomal(), is(false));
     }
 
     @Test
     public void testIsCompatibleWithY_falseWhenVariantIsNotCompatibleWithX() {
-        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance = newGeneOne();
         instance.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(false));
     }
@@ -433,7 +441,7 @@ public class GeneTest {
     @Test
     public void testIsCompatibleWithY_trueWhenVariantIsCompatibleWithX() {
         int Y_CHROMOSOME = 24;
-        instance = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        instance = newGeneOne();
         instance.addVariant(new VariantEvaluation.VariantBuilder(Y_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(true));
     }

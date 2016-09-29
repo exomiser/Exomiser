@@ -21,7 +21,7 @@ package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import de.charite.compbio.exomiser.core.model.Model;
+import de.charite.compbio.exomiser.core.model.ModelPhenotypeMatch;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,13 +37,13 @@ public class GeneMatch {
     private final Integer queryGeneId;
     private final Integer matchGeneId;
     private final double score;
-    private final List<Model> bestMatchModels;
+    private final List<ModelPhenotypeMatch> bestMatchModels;
 
-    private GeneMatch(Integer queryGeneId, Integer matchGeneId, double score, List<Model> bestMatchModels) {
+    private GeneMatch(Integer queryGeneId, Integer matchGeneId, double score, List<ModelPhenotypeMatch> bestMatchModels) {
         this.queryGeneId = queryGeneId;
         this.matchGeneId = matchGeneId;
         this.score = score;
-        this.bestMatchModels = bestMatchModels;
+        this.bestMatchModels = ImmutableList.copyOf(bestMatchModels);
     }
 
     public Integer getQueryGeneId() {
@@ -58,7 +58,7 @@ public class GeneMatch {
         return score;
     }
 
-    public List<Model> getBestMatchModels() {
+    public List<ModelPhenotypeMatch> getBestMatchModels() {
         return bestMatchModels;
     }
 
@@ -97,7 +97,7 @@ public class GeneMatch {
         private Integer queryGeneId = 0;
         private Integer matchGeneId = 0;
         private double score = 0;
-        private List<Model> bestMatchModels = Lists.newArrayList();
+        private List<ModelPhenotypeMatch> bestMatchModels = Lists.newArrayList();
 
 
         public Builder queryGeneId(Integer queryGeneId) {
@@ -115,13 +115,13 @@ public class GeneMatch {
             return this;
         }
 
-        public Builder bestMatchModels(List<Model> bestMatchModels) {
+        public Builder bestMatchModels(List<ModelPhenotypeMatch> bestMatchModels) {
             this.bestMatchModels = bestMatchModels;
             return this;
         }
 
         public GeneMatch build() {
-            return new GeneMatch(queryGeneId, matchGeneId, score, ImmutableList.copyOf(bestMatchModels));
+            return new GeneMatch(queryGeneId, matchGeneId, score, bestMatchModels);
         }
 
     }

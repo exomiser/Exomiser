@@ -24,9 +24,7 @@
  */
 package de.charite.compbio.exomiser.core.model;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -59,9 +57,6 @@ public class GeneModel implements Model {
     private final String modelGeneSymbol;
     
     private final List<String> phenotypeIds;
-
-    private double score = 0d;
-    private final Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms;
     
     public GeneModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String modelGeneId, String modelGeneSymbol, List<String> phenotypeIds) {
         this.modelId = modelId;
@@ -74,7 +69,6 @@ public class GeneModel implements Model {
         this.modelGeneSymbol = modelGeneSymbol;
         
         this.phenotypeIds = phenotypeIds;
-        this.bestPhenotypeMatchForTerms = new LinkedHashMap<>();
     }
 
     public String getModelGeneId() {
@@ -111,29 +105,6 @@ public class GeneModel implements Model {
     }
 
     @Override
-    public double getScore() {
-        return score;
-    }
-
-    @Override
-    public void setScore(double score) {
-        this.score = score;
-    }
-    
-    @Override
-    public Map<PhenotypeTerm, PhenotypeMatch> getBestPhenotypeMatchForTerms() {
-        return bestPhenotypeMatchForTerms;
-    }
-      
-    @Override
-    public void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match) {
-        PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
-        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm) || bestPhenotypeMatchForTerms.get(matchQueryTerm).getScore() < match.getScore()) {
-            bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
-        }
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof GeneModel)) return false;
@@ -162,8 +133,6 @@ public class GeneModel implements Model {
                 ", modelGeneId='" + modelGeneId + '\'' +
                 ", modelGeneSymbol='" + modelGeneSymbol + '\'' +
                 ", phenotypeIds=" + phenotypeIds +
-                ", score=" + score +
-                ", bestPhenotypeMatchForTerms=" + bestPhenotypeMatchForTerms +
                 '}';
     }
 }

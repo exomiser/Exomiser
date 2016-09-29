@@ -21,10 +21,11 @@ package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.Lists;
 import de.charite.compbio.exomiser.core.model.GeneModel;
-import de.charite.compbio.exomiser.core.model.Model;
+import de.charite.compbio.exomiser.core.model.ModelPhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.Organism;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -57,7 +58,8 @@ public class GeneMatchTest {
 
     @Test
     public void bestMatchModels() throws Exception {
-        List<Model> models = Lists.newArrayList(new GeneModel("Model:500", Organism.HUMAN, 4321, "GENE1", "HGNC:4321", "GENE1", Lists.newArrayList()));
+        ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0, new GeneModel("Model:500", Organism.HUMAN, 4321, "GENE1", "HGNC:4321", "GENE1", Lists.newArrayList()), Collections.emptyMap());
+        List<ModelPhenotypeMatch> models = Lists.newArrayList(modelPhenotypeMatch);
         instance = GeneMatch.builder().bestMatchModels(models).build();
         assertThat(instance.getBestMatchModels(), equalTo(models));
     }

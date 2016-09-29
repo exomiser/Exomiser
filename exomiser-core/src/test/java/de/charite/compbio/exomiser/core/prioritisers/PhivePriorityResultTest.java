@@ -19,34 +19,36 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import de.charite.compbio.exomiser.core.model.GeneModel;
+import de.charite.compbio.exomiser.core.model.ModelPhenotypeMatch;
+import de.charite.compbio.exomiser.core.model.Organism;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PhivePriorityResultTest {
+
+    private final GeneModel mouseModel = new GeneModel("mouse-model_1", Organism.MOUSE, 2263, "FGFR2", "MGI:95523", "Fgfr2", Collections.emptyList());
+    private final ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0.827862024307251, mouseModel, Collections.emptyMap());
+
     @Test
     public void testIsEquals() throws Exception {
-        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, "MGI:95523", "Fgfr2");
-        PhivePriorityResult other = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, "MGI:95523", "Fgfr2");
+        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, modelPhenotypeMatch);
+        PhivePriorityResult other = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, modelPhenotypeMatch);
         assertThat(result, equalTo(other));
     }
 
     @Test
-    public void testNotEquals() throws Exception {
-        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, "MGI:95523", "Fgfr3");
-        PhivePriorityResult other = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, "MGI:95523", "Fgfr2");
-        assertThat(result, not(equalTo(other)));
-    }
-
-    @Test
     public void testToString() throws Exception {
-        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, "MGI:95523", "Fgfr2");
-        assertThat(result.toString(), equalTo("PhivePriorityResult{geneId=2263, geneSymbol='FGFR2', score=0.827862024307251, mgiId='MGI:95523', mgiGeneSymbol='Fgfr2'}"));
+        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, modelPhenotypeMatch);
+        assertThat(result.toString(), startsWith("PhivePriorityResult{geneId=2263, geneSymbol='FGFR2', score=0.827862024307251"));
     }
 
 }

@@ -42,7 +42,6 @@ public class GeneModelTest {
     
     private GeneModel instance;
     private final Organism organism = Organism.MOUSE;
-    private final double score = 1.0d;
     private final int entrezGeneId = 12345;
     private final String humanGeneSymbol = "GENE1";
     private final String modelId = "gene1_model1";
@@ -53,24 +52,13 @@ public class GeneModelTest {
     @Before
     public void setUp() {
         //TODO: want it to work more like this I think - although a HUMAN modelOrganism would indicate a DiseaseModel
-//        humanGeneId = new GeneIdentifier(modelGeneId, modelGeneSymbol);
+//        humanGeneId = new GeneIdentifier(humanGeneId, humanGeneSymbol);
 //        modelGeneId = new GeneIdentifier(modelGeneId, modelGeneSymbol);
 //        diseaseId = new DiseaseIdentifier(diseaseId, diseaseTerm);
 //        modelOrganism = Organism.HUMAN
 //        instance = new GeneModel(modelOrganism, humanGeneId, modelGeneId, modelPhenotypeIds);
 //        instance = new DiseaseModel(modelOrganism, humanGeneId, diseaseId, modelPhenotypeIds);
         instance = new GeneModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
-    }
-
-    @Test
-    public void testScoreIsZeroByDefault() {
-        assertThat(instance.getScore(), equalTo(0d));
-    } 
-    
-    @Test
-    public void testCanSetScore() {
-        instance.setScore(score);
-        assertThat(instance.getScore(), equalTo(score));
     }
     
     @Test
@@ -98,47 +86,6 @@ public class GeneModelTest {
         assertThat(instance.getPhenotypeIds(), equalTo(modelPhenotypeIds));
     }
 
-    @Test
-    public void testBestPhenotypeMatchesIsEmptyByDefault() {
-        assertThat(instance.getBestPhenotypeMatchForTerms().isEmpty(), is(true));
-    }
-    
-    @Test
-    public void testaddMatchIfWhenAbsent() {
-        PhenotypeMatch match = stubPhenotypeMatchOfScore(1.0);
-        instance.addMatchIfAbsentOrBetterThanCurrent(match);
-        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(true));
-    }
-
-    private PhenotypeMatch stubPhenotypeMatchOfScore(double score) {
-        return PhenotypeMatch.builder().query(null).match(null).lcs(null).score(score).build();
-    }
-
-    @Test
-    public void testaddMatchWhenBetterThanCurrent() {
-        PhenotypeMatch match = stubPhenotypeMatchOfScore(0.5);
-        instance.addMatchIfAbsentOrBetterThanCurrent(match);
-        
-        PhenotypeMatch betterMatch = stubPhenotypeMatchOfScore(1.0);
-        instance.addMatchIfAbsentOrBetterThanCurrent(betterMatch);
-        
-        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(false));
-        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(betterMatch), is(true));
-    }
-    
-    
-    @Test
-    public void testaddMatchWhenNotBetterThanCurrent() {
-        PhenotypeMatch betterMatch = stubPhenotypeMatchOfScore(1.0);
-        instance.addMatchIfAbsentOrBetterThanCurrent(betterMatch);
-        
-        PhenotypeMatch match = stubPhenotypeMatchOfScore(0.5);
-        instance.addMatchIfAbsentOrBetterThanCurrent(match);
-        
-        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(match), is(false));
-        assertThat(instance.getBestPhenotypeMatchForTerms().containsValue(betterMatch), is(true));
-    }
-    
     @Test
     public void testHashCode() {
         GeneModel other = new GeneModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
@@ -183,7 +130,6 @@ public class GeneModelTest {
     
     @Test
     public void testToString() {
-        instance.setScore(score);
         assertThat(instance.toString(), not(startsWith("de.charite.compbio")));
     }
     

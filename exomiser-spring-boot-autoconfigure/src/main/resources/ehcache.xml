@@ -53,4 +53,9 @@
     <!--ZP terms -->
     <cache name="zpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
+    <!--Model caches-->
+    <cache name="diseaseModels" eternal="true" maxEntriesLocalHeap="100000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+    <cache name="mouseModels" eternal="true" maxEntriesLocalHeap="100000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+    <cache name="fishModels" eternal="true" maxEntriesLocalHeap="100000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
 </ehcache>

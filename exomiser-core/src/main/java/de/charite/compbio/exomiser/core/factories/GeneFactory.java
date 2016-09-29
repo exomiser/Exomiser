@@ -24,6 +24,7 @@
  */
 package de.charite.compbio.exomiser.core.factories;
 
+import com.google.common.collect.ImmutableMap;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.jannovar.data.JannovarData;
@@ -81,8 +82,16 @@ public class GeneFactory {
     }
 
     public static List<Gene> createKnownGenes(JannovarData jannovarData ) {
-        int approxKnownGenes = 23000;
-        Set<Gene> knownGenes = new HashSet<>(approxKnownGenes);
+        List<Gene> knownGenes = createKnownGeneIdentifiers(jannovarData).entrySet().stream()
+                .map(entry -> new Gene(entry.getValue(), Integer.parseInt(entry.getKey())))
+                .collect(toList());
+
+        logger.info("Created {} known genes.", knownGenes.size());
+        return knownGenes;
+    }
+
+    public static Map<String, String> createKnownGeneIdentifiers(JannovarData jannovarData) {
+        ImmutableMap.Builder<String, String> geneIdentifiers = ImmutableMap.builder();
         for (String geneSymbol : jannovarData.getTmByGeneSymbol().keySet()) {
             String geneId = "-1";
             Collection<TranscriptModel> transcriptModels = jannovarData.getTmByGeneSymbol().get(geneSymbol);
@@ -93,15 +102,12 @@ public class GeneFactory {
                     geneId = transcriptModel.getGeneID().substring("ENTREZ".length());
                 }
             }
-            Gene gene = new Gene(geneSymbol, Integer.parseInt(geneId));
-            knownGenes.add(gene);
             if (geneId.equals("-1")) {
-                logger.debug("No geneId associated with gene symbol {} geneId set to {}", gene.getGeneSymbol(), gene.getEntrezGeneID());
+                logger.debug("No geneId associated with gene symbol {} geneId set to {}", geneSymbol, geneId);
             }
+            geneIdentifiers.put(geneId, geneSymbol);
         }
-
-        logger.info("Created {} known genes.", knownGenes.size());
-        return knownGenes.stream().collect(toList());
+        return geneIdentifiers.build();
     }
 
 }

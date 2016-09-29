@@ -22,7 +22,7 @@ package de.charite.compbio.exomiser.core.prioritisers.util;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import de.charite.compbio.exomiser.core.model.Model;
+import de.charite.compbio.exomiser.core.model.ModelPhenotypeMatch;
 import org.jblas.FloatMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class HiPhiveProteinInteractionScorer {
 
     private final DataMatrix dataMatrix;
 
-    private final ListMultimap<Integer, Model> bestGeneModels;
+    private final ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels;
     private final double highQualityPhenoScoreCutOff;
 
     private final Map<Integer, Double> highQualityPhenoMatchedGeneScores;
@@ -62,7 +62,7 @@ public class HiPhiveProteinInteractionScorer {
         weightedHighQualityMatrix = FloatMatrix.EMPTY;
     }
 
-    public HiPhiveProteinInteractionScorer(DataMatrix dataMatrix, ListMultimap<Integer, Model> bestGeneModels, double highQualityPhenoScoreCutOff) {
+    public HiPhiveProteinInteractionScorer(DataMatrix dataMatrix, ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels, double highQualityPhenoScoreCutOff) {
         this.dataMatrix = dataMatrix;
         this.bestGeneModels = bestGeneModels;
         this.highQualityPhenoScoreCutOff = highQualityPhenoScoreCutOff;
@@ -74,12 +74,12 @@ public class HiPhiveProteinInteractionScorer {
 
     private Map<Integer, Double> getHighestGeneIdPhenoScores() {
         Map<Integer, Double> highestGeneIdPhenoScores = new LinkedHashMap<>();
-        for (Model model : bestGeneModels.values()) {
-            Integer entrezId = model.getEntrezGeneId();
-            Double score = model.getScore();
+        for (ModelPhenotypeMatch modelPhenotypeMatch : bestGeneModels.values()) {
+            Integer entrezId = modelPhenotypeMatch.getEntrezGeneId();
+            Double score = modelPhenotypeMatch.getScore();
             // only build PPI network for high quality hits
             if (score > highQualityPhenoScoreCutOff) {
-                logger.debug("Adding high quality score for {} score={}", model.getHumanGeneSymbol(), model.getScore());
+                logger.debug("Adding high quality score for {} score={}", modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore());
                 if (!highestGeneIdPhenoScores.containsKey(entrezId) || score > highestGeneIdPhenoScores.get(entrezId)) {
                     highestGeneIdPhenoScores.put(entrezId, score);
                 }
@@ -160,7 +160,7 @@ public class HiPhiveProteinInteractionScorer {
         double walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, columnIndex);
 
         Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
-        List<Model> models = bestGeneModels.get(closestGeneId);
+        List<ModelPhenotypeMatch> models = bestGeneModels.get(closestGeneId);
 
         return GeneMatch.builder()
                 .queryGeneId(entrezGeneId)
@@ -169,4 +169,5 @@ public class HiPhiveProteinInteractionScorer {
                 .bestMatchModels(models)
                 .build();
     }
+
 }

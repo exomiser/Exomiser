@@ -34,9 +34,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -228,5 +226,20 @@ public class GeneFactoryTest {
             assertThat(gene.getGeneSymbol(), not(equalTo("")));
             assertThat(knownGeneSymbols.contains(gene.getGeneSymbol()), is(true));
         });
+    }
+
+    @Test
+    public void testCreateKnownGeneIdentifiers() {
+
+        Map<String, String> expected = new LinkedHashMap<>();
+        expected.put("2263", "FGFR2");
+        expected.put("114814", "GNRHR2");
+        expected.put("9939", "RBM8A");
+        expected.put("6469", "SHH");
+
+        JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
+        Map<String, String> knownGenes = instance.createKnownGeneIdentifiers(jannovarData);
+
+        assertThat(knownGenes, equalTo(expected));
     }
 }

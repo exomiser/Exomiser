@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.groupingByConcurrent;
@@ -86,20 +87,21 @@ public class PhivePriority implements Prioritiser {
         TheoreticalModel bestTheoreticalModel = humanMousePhenotypeMatches.getBestTheoreticalModel();
         logTheoreticalModel(bestTheoreticalModel);
         
-        List<Model> scoredModels = getAndScoreModels(bestTheoreticalModel, humanMousePhenotypeMatches);
+        List<ModelPhenotypeMatch> scoredModels = getAndScoreModels(bestTheoreticalModel, humanMousePhenotypeMatches);
 
         //n.b. this will contain models but with a phenotype score of zero
-        Map<Integer, Optional<Model>> geneModelPhenotypeMatches = scoredModels.parallelStream()
+        Map<Integer, Optional<ModelPhenotypeMatch>> geneModelPhenotypeMatches = scoredModels.parallelStream()
 //                .filter(model -> model.getScore() > 0)
-                .collect(groupingByConcurrent(Model::getEntrezGeneId, maxBy(comparingDouble(Model::getScore))));
+                .collect(groupingByConcurrent(ModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(ModelPhenotypeMatch::getScore))));
 
         for (Gene gene : genes) {
 
             PhivePriorityResult phiveScore = geneModelPhenotypeMatches.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
                     .map(makeModelPhivePriorityResult())
-                    //should this *really* be set to 0.6? The rankings are quite different to hiPhive because of this - HiPhive uses 0 if there are no models.
+                    //This is set to 0.6 otherwsie the performance is poor for genes with no mouse models.
+                    //The rankings are quite different to hiPhive because of this - HiPhive uses 0 if there are no models.
                     //n.b. this ranks genes with no model higher than those with a model with a score of zero.
-                    .orElse(new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null, null));
+                    .orElse(new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null));
 
             gene.addPriorityResult(phiveScore);
         }
@@ -114,14 +116,11 @@ public class PhivePriority implements Prioritiser {
         logger.info("bestMaxScore={} bestAvgScore={}", theoreticalModel.getMaxMatchScore(), theoreticalModel.getBestAvgScore());
     }
 
-    private Function<Model, PhivePriorityResult> makeModelPhivePriorityResult() {
-        return model -> {
-            GeneModel bestModelForGene = (GeneModel) model;
-            return new PhivePriorityResult(bestModelForGene.getEntrezGeneId(), bestModelForGene.getHumanGeneSymbol(), bestModelForGene.getScore(), bestModelForGene.getModelGeneId(), bestModelForGene.getModelGeneSymbol());
-        };
+    private Function<ModelPhenotypeMatch, PhivePriorityResult> makeModelPhivePriorityResult() {
+        return modelPhenotypeMatch -> new PhivePriorityResult(modelPhenotypeMatch.getEntrezGeneId(), modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), modelPhenotypeMatch);
     }
 
-    private List<Model> getAndScoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches) {
+    private List<ModelPhenotypeMatch> getAndScoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches) {
         Organism organism = organismPhenotypeMatches.getOrganism();
         List<Model> models = priorityService.getModelsForOrganism(organism);
 
@@ -132,12 +131,23 @@ public class PhivePriority implements Prioritiser {
                 .map(PhenotypeMatch::getQueryPhenotypeId)
                 .count();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
-        models.parallelStream().forEach(model -> {
-            List<PhenotypeMatch> bestForwardAndBackwardMatches = organismPhenotypeMatches.getBestForwardAndReciprocalMatches(model.getPhenotypeIds());
+        List<ModelPhenotypeMatch> modelPhenotypeMatches = models.parallelStream()
+                .map(scoreModelPhenotypeMatch(bestTheoreticalModel, organismPhenotypeMatches, hpIdsWithPhenotypeMatch))
+                .collect(Collectors.toList());
+
+        Duration duration = Duration.between(timeStart, Instant.now());
+        logger.info("Scored {} {} models - {} ms", modelPhenotypeMatches.size(), organism, duration.toMillis());
+        return modelPhenotypeMatches;
+    }
+
+    private Function<Model, ModelPhenotypeMatch> scoreModelPhenotypeMatch(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, int hpIdsWithPhenotypeMatch) {
+        return model -> {
+            List<PhenotypeMatch> bestForwardAndBackwardMatches = organismPhenotypeMatches.calculateBestForwardAndReciprocalMatches(model.getPhenotypeIds());
+
+            Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchesByTerm = organismPhenotypeMatches.calculateBestPhenotypeMatchesByTerm(bestForwardAndBackwardMatches);
 
             //Remember the model needs to collect its best matches from the forward and backward best matches otherwise the modelMaxMatchScore will be zero.
-            bestForwardAndBackwardMatches.forEach(model::addMatchIfAbsentOrBetterThanCurrent);
-            double modelMaxMatchScore = model.getBestPhenotypeMatchForTerms().values().stream()
+            double modelMaxMatchScore = bestPhenotypeMatchesByTerm.values().stream()
                     .mapToDouble(PhenotypeMatch::getScore)
                     .max()
                     .orElse(0);
@@ -145,18 +155,14 @@ public class PhivePriority implements Prioritiser {
             double modelBestAvgScore = calculateModelBestAvgScore(hpIdsWithPhenotypeMatch, bestForwardAndBackwardMatches);
 
             double modelScore = bestTheoreticalModel.compare(modelMaxMatchScore, modelBestAvgScore);
-            model.setScore(modelScore);
-        });
-
-        Duration duration = Duration.between(timeStart, Instant.now());
-        logger.info("Scored {} {} models - {} ms", models.size(), organism, duration.toMillis());
-        return models;
+            return new ModelPhenotypeMatch(modelScore, model, bestPhenotypeMatchesByTerm);
+        };
     }
 
     //n.b. this is *almost* identical to HiPhivePriority.calculateModelBestAvgScore(), apart from the comment
     private double calculateModelBestAvgScore(int numMatchedQueryPhenotypes, List<PhenotypeMatch> bestForwardAndBackwardMatches) {
         double sumBestForwardAndBackwardMatchScores = bestForwardAndBackwardMatches.stream().mapToDouble(PhenotypeMatch::getScore).sum();
-        long numMatchedModelPhenotypes = (int) bestForwardAndBackwardMatches.stream().map(PhenotypeMatch::getMatchPhenotypeId).distinct().count();
+        long numMatchedModelPhenotypes = bestForwardAndBackwardMatches.stream().map(PhenotypeMatch::getMatchPhenotypeId).distinct().count();
 
         //in hiPhive we use humanMousePhenotypeMatches.getQueryTerms().size() i.e. hpoIds.size() - these are probably always going to be the same.
         //Shouldn't hpIdsWithPhenotypeMatch actually be bestForwardAndBackwardMatches.parallelStream().map(PhenotypeMatch::getQueryPhenotypeId).distinct().count(); ?

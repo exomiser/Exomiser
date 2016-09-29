@@ -19,6 +19,10 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.charite.compbio.exomiser.core.model.GeneModel;
+import de.charite.compbio.exomiser.core.model.ModelPhenotypeMatch;
+
 import java.util.Objects;
 
 /**
@@ -35,6 +39,7 @@ import java.util.Objects;
  * the model in question.
  *
  * @author Damian Smedley
+ * @author Jules Jacobsen
  * @version 0.06 (April 22, 2013).
  */
 public class PhivePriorityResult extends AbstractPriorityResult {
@@ -47,36 +52,35 @@ public class PhivePriorityResult extends AbstractPriorityResult {
      * with the several mouse models that have been made to investigate this
      * gene.
      */
-    private final String mgiId;
-    /**
-     * The gene symbol corresponding to the mouse gene, e.g., Cfl1.
-     */
-    private final String mgiGeneSymbol;
+    private final ModelPhenotypeMatch modelPhenotypeMatch;
 
     /**
      * @param geneSymbol The corresponding gene symbol, e.g., Gfl1
-     * @param phenodigmScore the phenodigm score for this gene as calculated by OWLsim. This score indicates the
+     * @param score the phenodigm score for this gene as calculated by OWLsim. This score indicates the
      * similarity between a humam disease and the phenotype of a genetically
      * modified mouse model.
-     * @param mgiGeneId An ID from Mouse Genome Informatics such as MGI:101757
+     * @param modelPhenotypeMatch the mouse model evidence for this result.
      */
-    public PhivePriorityResult(int geneId, String geneSymbol, double phenodigmScore, String mgiGeneId, String mgiGeneSymbol) {
-        super(PriorityType.PHIVE_PRIORITY, geneId, geneSymbol, phenodigmScore);
-        this.mgiId = mgiGeneId;
-        this.mgiGeneSymbol = mgiGeneSymbol;
+    public PhivePriorityResult(int geneId, String geneSymbol, double score, ModelPhenotypeMatch modelPhenotypeMatch) {
+        super(PriorityType.PHIVE_PRIORITY, geneId, geneSymbol, score);
+        this.modelPhenotypeMatch = modelPhenotypeMatch;
+    }
+
+    public ModelPhenotypeMatch getModelPhenotypeMatch() {
+        return modelPhenotypeMatch;
     }
 
     /**
      * @return HTML code with score the Phenodigm score for the current gene or
      * a message if no MGI data was found.
      */
+    @JsonIgnore
     @Override
     public String getHTMLCode() {
-        if (score == PhivePriority.NO_MOUSE_MODEL_SCORE) {
+        if (modelPhenotypeMatch == null) {
             return "<dl><dt>No mouse model for this gene</dt></dl>";
         } else {
-            String link = makeMgiGeneLink();
-            //String s1 = String.format("<ul><li>MGI: %s: Phenodigm score: %.3f%%</li></ul>",link,100*MGI_Phenodigm);
+            String link = makeMgiGeneLink((GeneModel) modelPhenotypeMatch.getModel());
             return String.format("<dl><dt>Mouse phenotype data for %s</dt></dl>", link);
         }
     }
@@ -86,10 +90,9 @@ public class PhivePriorityResult extends AbstractPriorityResult {
      * MGI:101757 it will create a link to
      * {@code http://www.informatics.jax.org/marker/MGI:101757}.
      */
-    private String makeMgiGeneLink() {
-        String url = String.format("http://www.informatics.jax.org/marker/%s", mgiId);
-        String anchor = String.format("<a href=\"%s\">%s</a>", url, mgiGeneSymbol);
-        return anchor;
+    private String makeMgiGeneLink(GeneModel geneModel) {
+        String url = String.format("http://www.informatics.jax.org/marker/%s", geneModel.getModelGeneId());
+        return String.format("<a href=\"%s\">%s</a>", url, geneModel.getModelGeneSymbol());
     }
 
     @Override
@@ -97,14 +100,13 @@ public class PhivePriorityResult extends AbstractPriorityResult {
         if (this == o) return true;
         if (!(o instanceof PhivePriorityResult)) return false;
         if (!super.equals(o)) return false;
-        PhivePriorityResult result = (PhivePriorityResult) o;
-        return Objects.equals(mgiId, result.mgiId) &&
-                Objects.equals(mgiGeneSymbol, result.mgiGeneSymbol);
+        PhivePriorityResult that = (PhivePriorityResult) o;
+        return Objects.equals(modelPhenotypeMatch, that.modelPhenotypeMatch);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), mgiId, mgiGeneSymbol);
+        return Objects.hash(super.hashCode(), modelPhenotypeMatch);
     }
 
     @Override
@@ -113,8 +115,7 @@ public class PhivePriorityResult extends AbstractPriorityResult {
                 "geneId=" + geneId +
                 ", geneSymbol='" + geneSymbol + '\'' +
                 ", score=" + score +
-                ", mgiId='" + mgiId + '\'' +
-                ", mgiGeneSymbol='" + mgiGeneSymbol + '\'' +
+                ", modelPhenotypeMatch=" + modelPhenotypeMatch +
                 "}";
     }
 }

@@ -38,7 +38,6 @@ import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.*;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PhivePriority;
-import de.charite.compbio.exomiser.core.prioritisers.PhivePriorityResult;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.After;
@@ -112,9 +111,6 @@ public class HtmlResultsWriterTest {
 
         gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
         gene2.addVariant(indelVariantEvaluation);
-
-        gene1.addPriorityResult(new PhivePriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 0.99f, "MGI:12345", "Gene1"));
-        gene2.addPriorityResult(new PhivePriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 0.98f, "MGI:54321", "Gene2"));
 
         gene1.addPriorityResult(new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, new ArrayList()));
         gene2.addPriorityResult(new OMIMPriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 1f, Collections.emptyList()));

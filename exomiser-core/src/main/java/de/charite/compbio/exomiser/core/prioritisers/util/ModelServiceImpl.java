@@ -1,4 +1,23 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize variants
+ *
+ * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,6 +28,13 @@ import de.charite.compbio.exomiser.core.model.DiseaseModel;
 import de.charite.compbio.exomiser.core.model.GeneModel;
 import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.Organism;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,11 +42,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  *
@@ -34,6 +55,7 @@ public class ModelServiceImpl implements ModelService {
     @Autowired
     private DataSource dataSource;
 
+    @Cacheable("diseaseModels")
     @Override
     public List<Model> getHumanDiseaseModels() {
         // We only connect to human2mouse_orthologs to get the human_gene_symbol but if there is no orthology mapping we get 0 results and no disease hit at all - this is daft!
@@ -43,12 +65,14 @@ public class ModelServiceImpl implements ModelService {
         return runDiseaseModelQuery(modelQuery);
     }
 
+    @Cacheable("mouseModels")
     @Override
     public List<Model> getMouseGeneModels() {
         String modelQuery = "SELECT 'MOUSE' as organism, entrez_id, human_gene_symbol, mouse_model_id as model_id, M.mgi_gene_id as model_gene_id, M.mgi_gene_symbol as model_gene_symbol, mp_id as pheno_ids FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
         return runGeneModelQuery(modelQuery);
     }
 
+    @Cacheable("fishModels")
     @Override
     public List<Model> getFishGeneModels() {
         String modelQuery = "SELECT 'FISH' as organism, entrez_id, human_gene_symbol, zfin_model_id as model_id, M.zfin_gene_id as model_gene_id, M.zfin_gene_symbol as model_gene_symbol, zp_id as pheno_ids FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";

@@ -25,13 +25,15 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.GeneModel;
-import de.charite.compbio.exomiser.core.model.Model;
+import de.charite.compbio.exomiser.core.model.ModelPhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -49,8 +51,8 @@ public class HiPhivePriorityResultTest {
     private final String geneSymbol = "FGFR2";
     private final double score = 0.87d;
     private List<PhenotypeTerm> queryPhenotypeTerms;
-    private List<Model> phenotypeEvidence;
-    private List<Model> ppiEvidence;
+    private List<ModelPhenotypeMatch> phenotypeEvidence;
+    private List<ModelPhenotypeMatch> ppiEvidence;
     private final double walkerScore = 0.6d;
     private final boolean matchesCandidateGene = true;
     
@@ -62,10 +64,9 @@ public class HiPhivePriorityResultTest {
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, phenotypeEvidence, ppiEvidence, walkerScore, matchesCandidateGene);
     }
 
-    private GeneModel makeStubGeneModelForOrganismWithScore(Organism organism, double score) {
-        GeneModel model = new GeneModel("gene1_model1", organism, 12345, geneSymbol, "MGI:12345", "gene1", null);
-        model.setScore(score);
-        return model;
+    private ModelPhenotypeMatch stubGeneModelPhenotypeMatch(Organism organism, double score) {
+        GeneModel model = new GeneModel("gene1_model1", organism, 12345, geneSymbol, "MGI:12345", "gene1", Collections.emptyList());
+        return new ModelPhenotypeMatch(score, model, Collections.emptyMap());
     }
         
     @Test
@@ -112,10 +113,9 @@ public class HiPhivePriorityResultTest {
     @Test
     public void testGetHumanScoreMatchesModelScore() {
         double modelScore = 1d;
-        GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.HUMAN, modelScore);
-                
-        List<Model> models = new ArrayList<>();
-        models.add(geneModel);
+        ModelPhenotypeMatch geneModel = stubGeneModelPhenotypeMatch(Organism.HUMAN, modelScore);
+
+        List<ModelPhenotypeMatch> models = Arrays.asList(geneModel);
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
         assertThat(instance.getHumanScore(), equalTo(modelScore));
@@ -129,10 +129,9 @@ public class HiPhivePriorityResultTest {
     @Test
     public void testGetMouseScoreMatchesModelScore() {
         double modelScore = 1d;
-        GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.MOUSE, modelScore);
-                
-        List<Model> models = new ArrayList<>();
-        models.add(geneModel);
+        ModelPhenotypeMatch geneModel = stubGeneModelPhenotypeMatch(Organism.MOUSE, modelScore);
+
+        List<ModelPhenotypeMatch> models = Arrays.asList(geneModel);
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
         assertThat(instance.getMouseScore(), equalTo(modelScore));
@@ -146,10 +145,9 @@ public class HiPhivePriorityResultTest {
     @Test
     public void testGetFishScoreMatchesModelScore() {
         double modelScore = 1d;
-        GeneModel geneModel = makeStubGeneModelForOrganismWithScore(Organism.FISH, modelScore);
-                
-        List<Model> models = new ArrayList<>();
-        models.add(geneModel);
+        ModelPhenotypeMatch geneModel = stubGeneModelPhenotypeMatch(Organism.FISH, modelScore);
+
+        List<ModelPhenotypeMatch> models = Arrays.asList(geneModel);
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, walkerScore, false);
 
         assertThat(instance.getFishScore(), equalTo(modelScore));

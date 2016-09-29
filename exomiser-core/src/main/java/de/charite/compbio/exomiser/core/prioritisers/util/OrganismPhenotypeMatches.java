@@ -108,7 +108,7 @@ public class OrganismPhenotypeMatches {
      * @param modelPhenotypes
      * @return
      */
-    public List<PhenotypeMatch> getBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
+    public List<PhenotypeMatch> calculateBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
         List<String> matchedModelPhenotypeIds = modelPhenotypes.stream()
                 .filter(matchedOrganismPhenotypeIds::contains)
                 .collect(toList());
@@ -139,6 +139,20 @@ public class OrganismPhenotypeMatches {
                 .collect(toList());
 
         return Stream.concat(forwardMatches.stream(), reciprocalMatches.stream()).collect(collectingAndThen(toList(), ImmutableList::copyOf));
+    }
+
+    /**
+     * Calculates the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches.     *
+     * @param bestForwardAndReciprocalMatches
+     * @return A map of the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches
+     */
+    public Map<PhenotypeTerm, PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
+        Map<PhenotypeTerm, Optional<PhenotypeMatch>> bestOptionalPhenotypeMatchForTerms = bestForwardAndReciprocalMatches.stream()
+                .collect(groupingBy(PhenotypeMatch::getQueryPhenotype, maxBy(comparingDouble(PhenotypeMatch::getScore))));
+
+        return bestOptionalPhenotypeMatchForTerms.entrySet().stream()
+                .filter(entry -> entry.getValue().isPresent())
+                .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
     }
 
     public TheoreticalModel getBestTheoreticalModel() {

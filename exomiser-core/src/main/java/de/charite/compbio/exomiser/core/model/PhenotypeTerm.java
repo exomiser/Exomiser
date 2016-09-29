@@ -33,7 +33,7 @@ import java.util.Objects;
  * Represents a phenotype term from a phenotype ontology - e.g. the HPO, MPO, ZPO... 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PhenotypeTerm {
+public class PhenotypeTerm implements Comparable<PhenotypeTerm> {
 
     private enum Status {
         PRESENT, NOT_PRESENT
@@ -86,7 +86,11 @@ public class PhenotypeTerm {
         return Objects.hash(id, label, status);
     }
 
-    @JsonIgnore
+    @Override
+    public int compareTo(PhenotypeTerm o) {
+        return this.id.compareTo(o.id);
+    }
+
     @Override
     public String toString() {
         return "PhenotypeTerm{" + "id=" + id + ", label=" + label + ", present=" + isPresent() +'}';
