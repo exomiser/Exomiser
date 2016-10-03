@@ -19,6 +19,7 @@
 
 package de.charite.compbio.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableSortedMap;
 
 import java.util.List;
@@ -44,34 +45,39 @@ public class ModelPhenotypeMatch implements Model {
         return score;
     }
 
-    public Map<PhenotypeTerm, PhenotypeMatch> getBestPhenotypeMatchForTerms() {
-        return bestPhenotypeMatchForTerms;
-    }
-
     public Model getModel() {
         return model;
     }
 
+    public Map<PhenotypeTerm, PhenotypeMatch> getBestPhenotypeMatchForTerms() {
+        return bestPhenotypeMatchForTerms;
+    }
+
+    @JsonIgnore
     @Override
     public String getModelId() {
         return model.getModelId();
     }
 
+    @JsonIgnore
     @Override
     public Organism getOrganism() {
         return model.getOrganism();
     }
 
+    @JsonIgnore
     @Override
     public int getEntrezGeneId() {
         return model.getEntrezGeneId();
     }
 
+    @JsonIgnore
     @Override
     public String getHumanGeneSymbol() {
         return model.getHumanGeneSymbol();
     }
 
+    @JsonIgnore
     @Override
     public List<String> getPhenotypeIds() {
         return model.getPhenotypeIds();
