@@ -38,9 +38,10 @@ navbar-links:
   About: "about"
   Resources:
     - Exomiser software: "http://www.sanger.ac.uk/science/tools/exomiser"
-    - Exomiser download: "ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser"
+    - Exomiser download: "https://goo.gl/fJd8Sw"
     - HPO-Browser: "http://compbio.charite.de/hpoweb/"
     - Jannovar: "http://charite.github.io/jannovar"
+    - ReMM score: "https://charite.github.io/software-remm-score.html"
     - Computational Biology Group: "https://compbio.charite.de"
 
 include: ['_pages']
