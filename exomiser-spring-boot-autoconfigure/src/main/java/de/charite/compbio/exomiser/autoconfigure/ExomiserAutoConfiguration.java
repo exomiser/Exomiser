@@ -40,6 +40,8 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
+import org.springframework.cache.interceptor.CacheResolver;
+import org.springframework.cache.interceptor.NamedCacheResolver;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -271,6 +273,15 @@ public class ExomiserAutoConfiguration {
     }
 
     @Bean
+    public CacheResolver modelCacheResolver() {
+        NamedCacheResolver modelCacheResolver = new NamedCacheResolver();
+        //these guys are relatively small, always accessed and never grow so were using a ConcurrentMap to store them.
+        modelCacheResolver.setCacheNames(Arrays.asList("diseaseModels", "mouseModels", "fishModels"));
+        modelCacheResolver.setCacheManager(new ConcurrentMapCacheManager());
+        return modelCacheResolver;
+    }
+
+    @Bean
     @ConditionalOnMissingBean
     public CacheManager cacheManager() {
         String cacheOption = properties.getCache();
@@ -303,7 +314,6 @@ public class ExomiserAutoConfiguration {
         return new NoOpCacheManager();
     }
 
-
     private EhCacheCacheManager ehCacheCacheManager() {
         return new EhCacheCacheManager(ehCacheManager().getObject());
     }
@@ -315,7 +325,7 @@ public class ExomiserAutoConfiguration {
     }
 
     @Lazy
-    @Bean//(destroyMethod = "shutdown")
+    @Bean
     public EhCacheManagerFactoryBean ehCacheManager() {
         Resource ehCacheConfig = ehCacheConfig();
         logger.info("Loading ehcache.xml from {}", ehCacheConfig.getDescription());

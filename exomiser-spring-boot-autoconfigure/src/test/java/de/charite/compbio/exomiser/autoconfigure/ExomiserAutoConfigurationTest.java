@@ -27,11 +27,14 @@ import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.tribble.readers.TabixReader;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.EnvironmentTestUtils;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.interceptor.CacheResolver;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +42,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -59,6 +63,15 @@ public class ExomiserAutoConfigurationTest {
         if (this.context != null) {
             this.context.close();
         }
+    }
+
+    private void load(Class<?> config, String... environment) {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+        EnvironmentTestUtils.addEnvironment(applicationContext, environment);
+        applicationContext.register(config);
+        applicationContext.register(ExomiserAutoConfiguration.class);
+        applicationContext.refresh();
+        this.context = applicationContext;
     }
 
     @Test
@@ -300,40 +313,40 @@ public class ExomiserAutoConfigurationTest {
     }
 
     @Test
-    public void cacheingDisabledByDefault() {
+    public void cachingDisabledByDefault() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
         CacheManager cache = context.getBean(CacheManager.class);
         assertThat(cache.getCacheNames().isEmpty(), is(true));
     }
 
     @Test(expected = RuntimeException.class)
-    public void cacheingThrowsExceptionWhenNameNotRecognised() {
+    public void cachingThrowsExceptionWhenNameNotRecognised() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=wibble");
     }
 
     @Test
-    public void cacheingCanBeDisabledExplicitly() {
+    public void cachingCanBeDisabledExplicitly() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=none");
         CacheManager cache = context.getBean(CacheManager.class);
         assertThat(cache.getCacheNames().isEmpty(), is(true));
     }
 
     @Test
-    public void cacheingInMemCanBeDefined() {
+    public void cachingInMemCanBeDefined() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=mem");
         CacheManager cache = context.getBean(CacheManager.class);
         assertThat(cache.getCacheNames(), hasItems("pathogenicity", "frequency", "diseaseHp", "diseases","hpo", "mpo", "zpo", "cadd", "remm"));
     }
 
     @Test
-    public void cacheingEhCacheCanBeDefined() {
+    public void cachingEhCacheCanBeDefined() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=ehcache");
         CacheManager cache = context.getBean(CacheManager.class);
         assertThat(cache.getCacheNames(), hasItems("pathogenicity", "frequency", "diseaseHp", "diseases","hpo", "mpo", "zpo", "cadd", "remm"));
     }
 
     @Test
-    public void cacheingCanBeOverridden() {
+    public void cachingCanBeOverridden() {
         load(BeanOverrideConfiguration.class, TEST_DATA_ENV, "exomiser.cache=ehcache");
         CacheManager cache = context.getBean(CacheManager.class);
         assertThat(cache.getCacheNames(), hasItems("wibble"));
@@ -395,12 +408,4 @@ public class ExomiserAutoConfigurationTest {
         }
     }
 
-    private void load(Class<?> config, String... environment) {
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-        EnvironmentTestUtils.addEnvironment(applicationContext, environment);
-        applicationContext.register(config);
-        applicationContext.register(ExomiserAutoConfiguration.class);
-        applicationContext.refresh();
-        this.context = applicationContext;
-    }
 }

@@ -31,6 +31,7 @@ import de.charite.compbio.exomiser.core.model.Organism;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +48,7 @@ import java.util.List;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@CacheConfig(cacheResolver = "modelCacheResolver")
 @Service
 public class ModelServiceImpl implements ModelService {
 
