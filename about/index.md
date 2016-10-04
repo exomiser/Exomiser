@@ -26,6 +26,11 @@ PMID: [24162188](http://europepmc.org/abstract/MED/24162188); PMC: [3912424](htt
 
 # Publications
 
+**A Whole-Genome Analysis Framework for Effective Identification of Pathogenic Regulatory Variants in Mendelian Disease.**
+Smedley D, Schubach M, Jacobsen JOB, Köhler S, Zemojtel T, Spielmann M, Jäger M, Hochheiser H, Washington NL, McMurry JA, Haendel MA, Mungall CJ, Lewis SE, Groza T, Valentini G, Robinson PN, _The American Journal of Human Genetics 2016;99;3;595-606_
+
+PMID: [27569544](http://europepmc.org/abstract/MED/27569544); DOI: [10.1016/j.ajhg.2016.07.005](http://doi.org/10.1016/j.ajhg.2016.07.005)
+
 **Next-generation diagnostics and disease-gene discovery with the Exomiser.**
 Smedley D, Jacobsen JO, Jäger M, Köhler S, Holtgrewe M et al.
 _Nature protocols 2015;10;12;2004-15_
