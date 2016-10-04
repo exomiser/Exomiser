@@ -16,7 +16,12 @@
   ~
   ~  You should have received a copy of the GNU Affero General Public License
   ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->contain a maximum in memory of N elements.
+  -->
+
+<ehcache>
+    <diskStore path="java.io.tmpdir"/>
+
+    <!-- Caches. These caches contain a maximum in memory of N elements.
     The cache will not expire. The cache will evict entries according to the 
     Least Frequently Used (LFU) policy once it reaches its limit.-->
 
