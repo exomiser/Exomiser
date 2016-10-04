@@ -89,9 +89,8 @@ public class VariantFactory {
         logger.info("Streaming variants from file {}", vcfPath);
         VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false); // false => do not require index
         Iterable<VariantContext> variantIterable = vcfReader::iterator;
-        vcfReader.close();
         boolean runParallel = false;
-        return StreamSupport.stream(variantIterable.spliterator(), runParallel);
+        return StreamSupport.stream(variantIterable.spliterator(), runParallel).onClose(vcfReader::close);
     }
 
     public List<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
