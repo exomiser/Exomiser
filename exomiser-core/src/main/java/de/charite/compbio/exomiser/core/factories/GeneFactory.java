@@ -81,32 +81,63 @@ public class GeneFactory {
         return new ArrayList<>(geneMap.values());
     }
 
+    /**
+     * Returns a list of genes from the JannovarData TranscriptModels.
+     * @param jannovarData
+     * @return
+     */
     public static List<Gene> createKnownGenes(JannovarData jannovarData ) {
         List<Gene> knownGenes = createKnownGeneIdentifiers(jannovarData).entrySet().stream()
-                .map(entry -> new Gene(entry.getValue(), Integer.parseInt(entry.getKey())))
+                .map(entry -> {
+                    String geneId = entry.getKey();
+                    String geneSymbol = entry.getValue();
+                    if (geneId.equals(geneSymbol)) {
+                        return new Gene(geneSymbol, -1);
+                    }
+                    //we're assuming Entrez ids here.
+                    return new Gene(geneSymbol, Integer.parseInt(geneId));
+                })
                 .collect(toList());
 
         logger.info("Created {} known genes.", knownGenes.size());
         return knownGenes;
     }
 
+    /**
+     * Creates a map of gene identifiers to gene symbols.
+     * @param jannovarData
+     * @return a map of gene identifiers to gene symbol. In cases where there is no valid geneId (i.e. the transcript is
+     * in a non-coding region) the symbol and identifier will be the same. As an example {BC038731=BC038731, Mir_378=Mir_378}.
+     * A valid gene id/symbol pair will depend in the underlying data used to create the JannovarData. Currently Exomiser
+     * uses Entrez gene ids which are plain integers.
+     *
+     */
     public static Map<String, String> createKnownGeneIdentifiers(JannovarData jannovarData) {
         ImmutableMap.Builder<String, String> geneIdentifiers = ImmutableMap.builder();
+        int identifiers = 0;
+        int noEntrezId = 0;
         for (String geneSymbol : jannovarData.getTmByGeneSymbol().keySet()) {
-            String geneId = "-1";
             Collection<TranscriptModel> transcriptModels = jannovarData.getTmByGeneSymbol().get(geneSymbol);
-            for (TranscriptModel transcriptModel : transcriptModels) {
-                if (transcriptModel != null && transcriptModel.getGeneID() != null && !transcriptModel.getGeneID().equals("null")) {
+            String geneId = transcriptModels.stream()
+                    .filter(Objects::nonNull)
+                    .filter(transcriptModel -> transcriptModel.getGeneID() != null)
+                    .filter(transcriptModel -> !transcriptModel.getGeneID().equals("null"))
                     // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
                     // for UCSC. At this point, there is a hard dependency on using the UCSC database.
-                    geneId = transcriptModel.getGeneID().substring("ENTREZ".length());
-                }
-            }
-            if (geneId.equals("-1")) {
+                    .map(transcriptModel -> transcriptModel.getGeneID().substring("ENTREZ".length()))
+                    .distinct()
+                    .findFirst()
+                    .orElse(geneSymbol);
+
+            if (geneId.equals(geneSymbol)) {
+                noEntrezId++;
                 logger.debug("No geneId associated with gene symbol {} geneId set to {}", geneSymbol, geneId);
             }
+            identifiers++;
             geneIdentifiers.put(geneId, geneSymbol);
         }
+        int geneIds = identifiers - noEntrezId;
+        logger.info("Created {} gene identifiers ({} genes, {} without EntrezId)", identifiers, geneIds, noEntrezId);
         return geneIdentifiers.build();
     }
 

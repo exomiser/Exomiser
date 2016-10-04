@@ -100,7 +100,7 @@ public class HiPhivePriority implements Prioritiser {
             ppiScorer = new HiPhiveProteinInteractionScorer(randomWalkMatrix, bestGeneModels, HIGH_QUALITY_SCORE_CUTOFF);
         }
 
-        logger.info("Prioritising genes...");
+        logger.info("Mapping results...");
         for (Gene gene : genes) {
             Integer entrezGeneId = gene.getEntrezGeneID();
 
@@ -116,6 +116,7 @@ public class HiPhivePriority implements Prioritiser {
             HiPhivePriorityResult priorityResult = new HiPhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore, matchesCandidateGeneSymbol(gene));
             gene.addPriorityResult(priorityResult);
         }
+        logger.info("Finished {}", PRIORITY_TYPE);
     }
 
     private void removeKnownGeneDiseaseAssociationModel(ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels) {

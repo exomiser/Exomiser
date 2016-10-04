@@ -229,7 +229,7 @@ public class GeneFactoryTest {
     }
 
     @Test
-    public void testCreateKnownGeneIdentifiers() {
+    public void testCreateKnownGeneIdentifiers() throws Exception {
 
         Map<String, String> expected = new LinkedHashMap<>();
         expected.put("2263", "FGFR2");
