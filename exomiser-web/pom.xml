@@ -36,8 +36,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--path to where the database and other resources are found in exomiser.properties-->
-        <data.dir>${project.build.testOutputDirectory}/data</data.dir>
-        <h2.dir>C:/Users/jj8/Documents/exomiser-cli-4.0.0/data</h2.dir>
+        <data.dir>C:/Users/jj8/Documents/exomiser-cli-4.0.0/data</data.dir>
+        <!--<data.dir>${project.build.testOutputDirectory}/data</data.dir>-->
+        <h2.dir>${data.dir}</h2.dir>
         <warName>exomiser</warName>
     </properties>
 
@@ -60,12 +61,12 @@
         </dependency>
         <!--Spring framework-->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -93,10 +94,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk7</artifactId>
         </dependency>
         <!--Templating engine for the views-->
         <dependency>

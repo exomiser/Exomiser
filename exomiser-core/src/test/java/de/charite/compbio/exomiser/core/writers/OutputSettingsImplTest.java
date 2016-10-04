@@ -8,13 +8,15 @@ package de.charite.compbio.exomiser.core.writers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
-import java.util.EnumSet;
-import java.util.Set;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -126,7 +128,7 @@ public class OutputSettingsImplTest {
         
         OutputSettings createdFromYaml = mapper.readValue("outputPassVariantsOnly: false\n"
                 + "numGenes: 0\n"
-                + "outputPrefix: \n"
+                + "outputPrefix: \"\"\n"
                 + "outputFormats: [HTML]",
                 OutputSettingsImp.class);
         

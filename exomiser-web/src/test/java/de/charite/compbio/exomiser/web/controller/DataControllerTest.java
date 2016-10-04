@@ -67,7 +67,7 @@ public class DataControllerTest {
     private void assertOneGruffaloDiseaseOptionIsReturned(String inputTerm) throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/disease?term=%s", inputTerm)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(content().string("[{\"text\":\"Gruffalo syndrome\",\"value\":\"OMIM:101600\"}]"))
                 .andExpect(jsonPath("$[0].text").value("Gruffalo syndrome"))
@@ -98,7 +98,7 @@ public class DataControllerTest {
         String inputTerm = "syndrome";
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/disease?term=%s", inputTerm)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].text").value("Gruffalo syndrome"))
                 .andExpect(jsonPath("$[0].value").value("OMIM:101600"))
@@ -113,7 +113,7 @@ public class DataControllerTest {
 //        hpoTerms.put("HP:5678000", "Knobbly knees");
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/hpo?term=%s", inputTerm)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].text").value("Knobbly knees"))
                 .andExpect(jsonPath("$[0].value").value("HP:5678000"))
@@ -129,7 +129,7 @@ public class DataControllerTest {
 //        hpoTerms.put("HP:5678000", "Knobbly knees");
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/hpo?term=%s", inputTerm)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].text").value("Purple prickles"))
                 .andExpect(jsonPath("$[0].value").value("HP:0001234"));    
@@ -139,7 +139,7 @@ public class DataControllerTest {
     public void getGeneIsValidEndPoint() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/data/gene?term="))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(3)));
     }
     
@@ -148,7 +148,7 @@ public class DataControllerTest {
         String inputTerm = "fgf";
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/gene?term=%s", inputTerm)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].text").value("FGFR1"))
                 .andExpect(jsonPath("$[0].value").value("2260"))
@@ -161,7 +161,7 @@ public class DataControllerTest {
         String inputTerm = "ADH1A";
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/data/gene?term=%s", inputTerm)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.valueOf("application/json;charset=UTF-8")))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].text").value("ADH1A"))
                 .andExpect(jsonPath("$[0].value").value("124"));

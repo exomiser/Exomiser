@@ -76,19 +76,19 @@ public class DataController {
         return selectOptions;
     }
         
-    @RequestMapping(value = "disease", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(value = "disease", produces = "application/json;charset=UTF-8")
     public @ResponseBody List<SelectOption> getDiseaseOptionsContainingTerm(@RequestParam(value="term") String term) {
         logger.info("Searching for disease term '{}'", term);
         return findSelectOptionContainingTerm(term, diseaseSelectOptions);
     }
     
-    @RequestMapping(value = "hpo", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(value = "hpo", produces = "application/json;charset=UTF-8")
     public @ResponseBody List<SelectOption> getHpoTermOptionsContainingTerm(@RequestParam(value="term") String term) {
         logger.info("Searching for HPO term '{}'", term);
         return findSelectOptionContainingTerm(term, hpoSelectOptions);
     }
 
-    @RequestMapping(value = "gene", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(value = "gene", produces = "application/json;charset=UTF-8")
     public @ResponseBody List<SelectOption> getGeneOptionsContainingTerm(@RequestParam(value="term") String term) {
         logger.info("Searching for gene name '{}'", term);
         return findSelectOptionContainingTerm(term, geneSelectOptions);
