@@ -37,8 +37,8 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
@@ -104,7 +104,7 @@ public class HiPhivePriorityTest {
                         .stream())
                 .map(result -> (HiPhivePriorityResult) result)
                 .sorted(Comparator.comparingDouble(PriorityResult::getScore).reversed())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private Consumer<HiPhivePriorityResult> checkScores(Map<String, List<Double>> geneScores) {
@@ -150,6 +150,24 @@ public class HiPhivePriorityTest {
 
         results.forEach(checkScores(geneScores));
         //TODO: need to also check the
+    }
+
+    @Test
+    public void testPrioritizeGenesRestrictedGeneList() {
+        List<Gene> genes = getGenes().stream().filter(gene -> gene.getGeneSymbol().equals("FGFR2")).collect(toList());
+
+        instance = new HiPhivePriority(hpoIds, new HiPhiveOptions("", "", "human,mouse,fish"), null, priorityService);
+        instance.prioritizeGenes(genes);
+//        List<PriorityResult> results = instance.prioritizeGenes(genes);
+
+        List<HiPhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
+        assertThat(results.size(), equalTo(genes.size()));
+
+        //human, mouse, fish, walker, candidateGene (this is really a boolean)
+        Map<String, List<Double>> geneScores = new LinkedHashMap<>();
+        geneScores.put("FGFR2", Lists.newArrayList(0.8762904736638727, 0.8039423769154914, 0.0, 0.0, 0.0));
+
+        results.forEach(checkScores(geneScores));
     }
 
     @Test

@@ -88,7 +88,9 @@ public class HiPhivePriority implements Prioritiser {
         }
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
-        ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels = makeBestGeneModelsForOrganisms(hpoPhenotypeTerms, Organism.HUMAN, options.getOrganismsToRun());
+        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(toSet());
+
+        ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels = makeBestGeneModelsForOrganisms(hpoPhenotypeTerms, Organism.HUMAN, options.getOrganismsToRun(), wantedGeneIds);
 
         // catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
         if (options.isBenchmarkingEnabled()) {
@@ -128,14 +130,6 @@ public class HiPhivePriority implements Prioritiser {
                 logger.info("Found benchmarking hit {}-{} - removing model {}", options.getDiseaseId(), options.getCandidateGeneSymbol(), model);
             }
         }
-//      There are issues here with removing the model from the list - doing this in a serial stream always causes a ConcurrentModificationException.
-//      The parallelStream works OK, but is this just luck????
-//        bestGeneModels.values().parallelStream()
-//                .filter(options::isBenchmarkHit)
-//                .forEach(model -> {
-//                    bestGeneModels.remove(model.getEntrezGeneId(), model);
-//                    logger.info("Found benchmarking hit {}-{} - removing model {}", options.getDiseaseId(), options.getCandidateGeneSymbol(), model);
-//                });
     }
 
     private boolean matchesCandidateGeneSymbol(Gene gene) {
@@ -143,7 +137,7 @@ public class HiPhivePriority implements Prioritiser {
         return options.getCandidateGeneSymbol().equals(gene.getGeneSymbol()) || gene.getGeneSymbol().startsWith(options.getCandidateGeneSymbol() + ",");
     }
 
-    private ListMultimap<Integer, ModelPhenotypeMatch> makeBestGeneModelsForOrganisms(List<PhenotypeTerm> hpoPhenotypeTerms, Organism referenceOrganism, Set<Organism> organismsToCompare) {
+    private ListMultimap<Integer, ModelPhenotypeMatch> makeBestGeneModelsForOrganisms(List<PhenotypeTerm> hpoPhenotypeTerms, Organism referenceOrganism, Set<Organism> organismsToCompare, Set<Integer> wantedGeneIds) {
 
         //CAUTION!! this must always run in order that the best score is set - HUMAN runs first as we are comparing HP to other phenotype ontology terms.
         OrganismPhenotypeMatches referenceOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, referenceOrganism);
@@ -155,7 +149,10 @@ public class HiPhivePriority implements Prioritiser {
 
         ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
         for (OrganismPhenotypeMatches organismPhenotypeMatches : bestOrganismPhenotypeMatches) {
-            List<ModelPhenotypeMatch> modelPhenotypeMatches = getAndScoreModels(bestTheoreticalModel, organismPhenotypeMatches);
+            Set<Model> modelsToScore = priorityService.getModelsForOrganism(organismPhenotypeMatches.getOrganism()).stream()
+                    .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
+                    .collect(toSet());
+            List<ModelPhenotypeMatch> modelPhenotypeMatches = scoreModels(bestTheoreticalModel, organismPhenotypeMatches, modelsToScore);
             Map<Integer, ModelPhenotypeMatch> bestGeneModelsForOrganism = mapBestModelByGene(modelPhenotypeMatches);
             bestGeneModelsForOrganism.entrySet().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
         }
@@ -201,10 +198,10 @@ public class HiPhivePriority implements Prioritiser {
                 .collect(toMap(ModelPhenotypeMatch::getEntrezGeneId, Function.identity()));
     }
 
-    //n.b. this is *almost* identical to PhivePriority.getAndScoreModels()
-    private List<ModelPhenotypeMatch> getAndScoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches) {
+    //n.b. this is *almost* identical to PhivePriority.scoreModels()
+    private List<ModelPhenotypeMatch> scoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, Collection<Model> models) {
         Organism organism = organismPhenotypeMatches.getOrganism();
-        List<Model> models = priorityService.getModelsForOrganism(organism);
+
         logger.info("organismPhenotypeMatches {}={}", organism, organismPhenotypeMatches.getTermPhenotypeMatches().size());
 
         logger.info("Scoring {} models", organism);

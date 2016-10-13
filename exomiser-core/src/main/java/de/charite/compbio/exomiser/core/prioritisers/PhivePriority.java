@@ -19,6 +19,7 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.util.OrganismPhenotypeMatches;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
@@ -28,16 +29,12 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingDouble;
-import static java.util.stream.Collectors.groupingByConcurrent;
-import static java.util.stream.Collectors.maxBy;
+import static java.util.stream.Collectors.*;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified
@@ -86,8 +83,14 @@ public class PhivePriority implements Prioritiser {
         OrganismPhenotypeMatches humanMousePhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
         TheoreticalModel bestTheoreticalModel = humanMousePhenotypeMatches.getBestTheoreticalModel();
         logTheoreticalModel(bestTheoreticalModel);
-        
-        List<ModelPhenotypeMatch> scoredModels = getAndScoreModels(bestTheoreticalModel, humanMousePhenotypeMatches);
+
+        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
+
+        Set<Model> modelsToScore = priorityService.getModelsForOrganism(Organism.MOUSE).stream()
+                .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
+                .collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
+
+        List<ModelPhenotypeMatch> scoredModels = scoreModels(bestTheoreticalModel, humanMousePhenotypeMatches, modelsToScore);
 
         //n.b. this will contain models but with a phenotype score of zero
         Map<Integer, Optional<ModelPhenotypeMatch>> geneModelPhenotypeMatches = scoredModels.parallelStream()
@@ -120,9 +123,8 @@ public class PhivePriority implements Prioritiser {
         return modelPhenotypeMatch -> new PhivePriorityResult(modelPhenotypeMatch.getEntrezGeneId(), modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), modelPhenotypeMatch);
     }
 
-    private List<ModelPhenotypeMatch> getAndScoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches) {
+    private List<ModelPhenotypeMatch> scoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, Collection<Model> models) {
         Organism organism = organismPhenotypeMatches.getOrganism();
-        List<Model> models = priorityService.getModelsForOrganism(organism);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();
