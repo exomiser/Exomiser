@@ -31,8 +31,6 @@ import de.charite.compbio.exomiser.core.model.Organism;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -48,7 +46,6 @@ import java.util.List;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@CacheConfig(cacheResolver = "modelCacheResolver")
 @Service
 public class ModelServiceImpl implements ModelService {
 
@@ -57,7 +54,6 @@ public class ModelServiceImpl implements ModelService {
     @Autowired
     private DataSource dataSource;
 
-    @Cacheable("diseaseModels")
     @Override
     public List<Model> getHumanDiseaseModels() {
         // We only connect to human2mouse_orthologs to get the human_gene_symbol but if there is no orthology mapping we get 0 results and no disease hit at all - this is daft!
@@ -67,14 +63,12 @@ public class ModelServiceImpl implements ModelService {
         return runDiseaseModelQuery(modelQuery);
     }
 
-    @Cacheable("mouseModels")
     @Override
     public List<Model> getMouseGeneModels() {
         String modelQuery = "SELECT 'MOUSE' as organism, entrez_id, human_gene_symbol, mouse_model_id as model_id, M.mgi_gene_id as model_gene_id, M.mgi_gene_symbol as model_gene_symbol, mp_id as pheno_ids FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
         return runGeneModelQuery(modelQuery);
     }
 
-    @Cacheable("fishModels")
     @Override
     public List<Model> getFishGeneModels() {
         String modelQuery = "SELECT 'FISH' as organism, entrez_id, human_gene_symbol, zfin_model_id as model_id, M.zfin_gene_id as model_gene_id, M.zfin_gene_symbol as model_gene_symbol, zp_id as pheno_ids FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";

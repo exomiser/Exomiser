@@ -33,6 +33,7 @@ import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -107,6 +108,7 @@ public class PriorityService {
         }
     }
 
+    @Cacheable(value = "models", key = "#species", cacheResolver = "modelCacheResolver")
     public List<Model> getModelsForOrganism(Organism species) {
         logger.info("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
         switch (species) {

@@ -276,7 +276,7 @@ public class ExomiserAutoConfiguration {
     public CacheResolver modelCacheResolver() {
         NamedCacheResolver modelCacheResolver = new NamedCacheResolver();
         //these guys are relatively small, always accessed and never grow so were using a ConcurrentMap to store them.
-        modelCacheResolver.setCacheNames(Arrays.asList("diseaseModels", "mouseModels", "fishModels"));
+        modelCacheResolver.setCacheNames(Arrays.asList("models"));
         modelCacheResolver.setCacheManager(new ConcurrentMapCacheManager());
         return modelCacheResolver;
     }
