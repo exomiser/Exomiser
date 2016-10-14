@@ -81,7 +81,7 @@ public class SubmitJobController {
     private ResultsWriterFactory resultsWriterFactory;
 
     @GetMapping(value = "submit")
-    public String configureExomiserJob(Model model) {
+    public String submit() {
         return "submit";
     }
 
@@ -103,7 +103,8 @@ public class SubmitJobController {
             HttpSession session,
             Model model) {
 
-        logger.info("Session id: {}", session.getId());
+        UUID analysisId = UUID.randomUUID();
+        logger.info("Analysis id: {}", analysisId);
         Path vcfPath = createVcfPathFromMultipartFile(vcfFile);
         Path pedPath = createPedPathFromMultipartFile(pedFile);
         //require a mimimum input of a VCF file and a set of HPO terms - these can come from the diseaseId
@@ -137,7 +138,7 @@ public class SubmitJobController {
         Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         SampleData sampleData = exomiser.run(analysis);
 
-        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), session.getId());
+        Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
         try {
             Files.createDirectory(outputDir);
         } catch (IOException e) {
@@ -148,7 +149,8 @@ public class SubmitJobController {
         OutputSettings outputSettings = new OutputSettingsImp.OutputSettingsBuilder()
                 .numberOfGenesToShow(20)
                 .outputPrefix(outFileName)
-                .outputFormats(EnumSet.of(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
+                //OutputFormat.HTML, causes issues due to thymeleaf templating
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF))
                 .build();
 
         for (OutputFormat outFormat : outputSettings.getOutputFormats()) {

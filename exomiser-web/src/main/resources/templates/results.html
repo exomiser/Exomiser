@@ -30,8 +30,8 @@ and open the template in the editor.
         <title>The Exomiser - A Tool to Annotate and Prioritise Whole-Exome Sequencing Data</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <link rel="stylesheet" type="text/css" media="all" href="../bootstrap-3.2.0/css/bootstrap.min.css" th:href="@{/resources/bootstrap-3.2.0/css/bootstrap.min.css}"/>
-        <link rel="stylesheet" type="text/css" media="all" href="../css/sanger-pagesmith-shim.css" th:href="@{resources/css/sanger-pagesmith-shim.css}"/>
+        <link rel='icon' type='image/x-icon' href="favicon.ico" th:href="@{/favicon.ico}"/>
+        <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
     </head>
     <body>
         <div id="content" class="container">
@@ -247,13 +247,13 @@ and open the template in the editor.
                     </p>
 
 
-                    <p>Problems, suggestions, or comments? Please <a href="mailto:peter.robinson@charite.de">let us know</a></p>
+                    <p>Problems, suggestions, or comments? Please <a href="mailto:peter.robinson@jax.org">let us know</a></p>
                 </div>
             </div>
         </div>
 
-        <script type="text/javascript" src="resources/bootstrap-3.2.0/js/jquery-2.1.1.min.js" th:href="@{/resources/bootstrap-3.2.0/js/jquery-2.1.1.min}"/>
-        <script type="text/javascript" src="resources/bootstrap-3.2.0/js/bootstrap.min.js" th:href="@{/resources/bootstrap-3.2.0/js/bootstrap.min.js}"/>
+        <script type="text/javascript" src="http://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+        <script type="text/javascript" src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
 
         <script type ="text/javascript">
             $(document).ready(function () {

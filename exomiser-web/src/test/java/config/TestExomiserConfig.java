@@ -24,7 +24,6 @@ import de.charite.compbio.exomiser.core.analysis.AnalysisFactory;
 import de.charite.compbio.exomiser.core.analysis.SettingsParser;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,7 @@ public class TestExomiserConfig {
 
     @Bean
     public JannovarData jannovarData() {
-        return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.<TranscriptModel>of());
+        return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.of());
     }
 
 }

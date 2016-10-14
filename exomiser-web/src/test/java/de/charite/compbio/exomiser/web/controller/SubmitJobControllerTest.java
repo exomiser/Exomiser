@@ -19,25 +19,17 @@
 package de.charite.compbio.exomiser.web.controller;
 
 import config.TestExomiserConfig;
-import de.charite.compbio.exomiser.web.config.ControllerConfig;
+import de.charite.compbio.exomiser.web.ExomiserWebApp;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -46,9 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author jj8
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration
-@ContextConfiguration(classes = {ControllerConfig.class, TestExomiserConfig.class})
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {ExomiserWebApp.class, TestExomiserConfig.class})
 public class SubmitJobControllerTest {
     
     private MockMvc mockMvc;
@@ -60,23 +51,12 @@ public class SubmitJobControllerTest {
     public void setUp() {
             mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
-    
+
     @Test
     public void submitJobControllerGetReturnsOkStatusAndSubmitPage() throws Exception {      
         mockMvc.perform(MockMvcRequestBuilders.get("/submit"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("submit"));
     }
-    
-    @Ignore
-    @Test
-    public void submitJobControllerPostRequestBuildsSettings() throws Exception {
-        MultipartFile vcfFile = new MockMultipartFile("testVcf", Files.newInputStream(Paths.get("src/test/resources/Pfeiffer.vcf")));
-        
-        mockMvc.perform(MockMvcRequestBuilders.post("/submit")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .param("vcf", vcfFile.toString()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("submit"));
-    }
+
 }
