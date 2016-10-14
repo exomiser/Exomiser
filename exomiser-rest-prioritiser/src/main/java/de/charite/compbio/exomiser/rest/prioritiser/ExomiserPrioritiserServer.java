@@ -17,19 +17,23 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.charite.compbio.exomiser.rest.analysis;
+package de.charite.compbio.exomiser.rest.prioritiser;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import de.charite.compbio.exomiser.autoconfigure.EnableExomiser;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ExomiserRestAnalysisApplication.class)
-public class ExomiserRestAnalysisApplicationTests {
+/**
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ */
+@SpringBootApplication
+@EnableExomiser
+@ComponentScan(basePackages = {"de.charite.compbio.exomiser.core", "de.charite.compbio.exomiser.rest.prioritiser"})
+public class ExomiserPrioritiserServer {
 
-	@Test
-	public void contextLoads() {
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ExomiserPrioritiserServer.class, args);
+    }
 
 }
