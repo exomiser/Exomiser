@@ -19,10 +19,10 @@
 
 package de.charite.compbio.exomiser.rest.prioritiser.api;
 
+import de.charite.compbio.exomiser.core.factories.GeneFactory;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.prioritisers.*;
-import de.charite.compbio.exomiser.rest.prioritiser.model.GeneIdentifier;
-import de.charite.compbio.exomiser.rest.prioritiser.parsers.HgncParser;
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,18 +31,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -53,20 +50,17 @@ public class PrioritiserController {
     private static final Logger logger = LoggerFactory.getLogger(PrioritiserController.class);
 
     private final PriorityFactory priorityFactory;
-    private final Map<String, GeneIdentifier> geneIdentifiers;
+    private final Map<String, String> geneIdentifiers;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory, Path exomiserDataDirectory) {
+    public PrioritiserController(PriorityFactory priorityFactory, JannovarData jannovarData) {
         this.priorityFactory = priorityFactory;
-        HgncParser hgncParser = new HgncParser(exomiserDataDirectory.resolve("hgnc_complete_set.txt"));
-        this.geneIdentifiers = hgncParser.parseGeneIdentifiers()
-                .filter(geneIdentifier -> !geneIdentifier.getEntrezId().equals(GeneIdentifier.EMPTY_FIELD))
-                .collect(toMap(GeneIdentifier::getEntrezId, Function.identity()));
+        this.geneIdentifiers = GeneFactory.createKnownGeneIdentifiers(jannovarData);
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 
-    @GetMapping(value = "index")
-    public String index() {
+    @GetMapping(value = "info")
+    public String info() {
         return "This service will return a collection of prioritiser results for any given set of:" +
                 "\n\t - HPO identifiers e.g. HPO:00001" +
                 "\n\t - Entrez gene identifiers e.g. 23364" +
@@ -75,10 +69,10 @@ public class PrioritiserController {
 
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public PrioritiserResultSet prioritise(@RequestParam(value = "phenotypes") List<String> phenotypes,
-                                                 @RequestParam(value = "genes", required = false, defaultValue = "") List<Integer> genesIds,
-                                                 @RequestParam(value = "prioritiser") String prioritiserName,
-                                                 @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams,
-                                                 @RequestParam(value = "limit", required = false, defaultValue = "0") Integer limit
+                                           @RequestParam(value = "genes", required = false, defaultValue = "") List<Integer> genesIds,
+                                           @RequestParam(value = "prioritiser") String prioritiserName,
+                                           @RequestParam(value = "prioritiser-params", required = false, defaultValue = "") String prioritiserParams,
+                                           @RequestParam(value = "limit", required = false, defaultValue = "0") Integer limit
     ) {
 
         logger.info("phenotypes: {}({}) genes: {} prioritiser: {} prioritiser-params: {}", phenotypes, phenotypes.size(), genesIds, prioritiserName, prioritiserParams);
@@ -124,29 +118,27 @@ public class PrioritiserController {
         }
     }
 
-    private final GeneIdentifier UNKNOWN = GeneIdentifier.builder().geneSymbol("GENE:UNKNOWN").withdrawn().build();
-
     private List<Gene> parseGeneIdentifiers(List<Integer> genesIds) {
         if (genesIds.isEmpty()) {
             logger.info("Gene identifiers not specified - will compare against all known genes.");
             //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
             //n.b. Gene is mutable so these can't be cached and returned.
-            return geneIdentifiers.values().parallelStream()
-                    .map(geneIdentifier -> {
-                        Integer geneId = geneIdentifier.getEntrezIdAsInteger();
-                        String geneSymbol = geneIdentifier.getGeneSymbol();
+            return geneIdentifiers.entrySet().parallelStream()
+                    //geneId and geneSymbol are the same in cases where
+                    .map(entry -> {
+                        String geneId = entry.getKey();
+                        String geneSymbol = entry.getValue();
+                        if (geneId.equals(geneSymbol)) {
+                            return new Gene(geneSymbol, -1);
+                        }
                         //we're assuming Entrez ids here.
-                        return new Gene(geneSymbol, geneId);
+                        return new Gene(geneSymbol, Integer.parseInt(geneId));
                     })
                     .collect(toList());
         }
-        //this is a hack - really the Prioritiser should only work on GeneIdentifiers, but currently this isn't possible as OmimPrioritiser uses some properties of Gene
+        //this is a hack - really the Prioritiser should only work on GeneIds, but currently this isn't possible as OmimPrioritiser uses some properties of Gene
         return genesIds.stream()
-                .map(id -> Integer.toString(id))
-                //todo: return a fake gene or just ignore it?
-                .map(idString -> geneIdentifiers.getOrDefault(idString, UNKNOWN))
-                .filter(geneIdentifier -> !geneIdentifier.equals(UNKNOWN))
-                .map(geneIdentifier -> new Gene(geneIdentifier.getGeneSymbol(), geneIdentifier.getEntrezIdAsInteger()))
+                .map(id -> new Gene(geneIdentifiers.getOrDefault(Integer.toString(id), "GENE:" + id), id))
                 .collect(toList());
     }
 
