@@ -102,7 +102,8 @@ public class PrioritiserController {
     }
 
     Prioritiser setUpPrioritiser(List<String> phenotypes, String prioritiserParams, PriorityType priorityType) {
-        PrioritiserSettings prioritiserSettings = new PrioritiserSettingsImpl.PrioritiserSettingsBuilder().hpoIdList(phenotypes).exomiser2Params(prioritiserParams).build();
+        List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toList());
+        PrioritiserSettings prioritiserSettings = new PrioritiserSettingsImpl.PrioritiserSettingsBuilder().hpoIdList(uniquePhenotypes).exomiser2Params(prioritiserParams).build();
         return priorityFactory.makePrioritiser(priorityType, prioritiserSettings);
     }
 
