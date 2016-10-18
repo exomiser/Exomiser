@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Filter genes according to the random walk proximity in the protein-protein
@@ -86,7 +88,6 @@ public class ExomeWalkerPriority implements Prioritiser {
      * @param randomWalkMatrixFileZip The zipped(!) RandomWalk matrix file.
      * @param randomWalkGeneId2IndexFileZip The zipped(!) file with the mapping
      * between Entrez-Ids and Matrix-Indices.
-     * @throws ExomizerInitializationException
      * @see <a
      * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">Uberpheno
      * Hudson page</a>
@@ -185,6 +186,21 @@ public class ExomeWalkerPriority implements Prioritiser {
 //        this.combinedProximityVector = combinedProximityVector;
     }
 
+    @Override
+    public Stream<ExomeWalkerPriorityResult> prioritise(List<Gene> genes) {
+        if (seedGenes == null || seedGenes.isEmpty()) {
+            throw new RuntimeException("Please specify a valid list of known genes!");
+        }
+        return genes.stream().map(prioritiseGene());
+    }
+
+    private Function<Gene, ExomeWalkerPriorityResult> prioritiseGene() {
+        return gene -> {
+            double score = calculateGeneScore(gene.getEntrezGeneID());
+            return new ExomeWalkerPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
+        };
+    }
+
     /**
      * Prioritize a list of candidate {@link Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
@@ -202,16 +218,17 @@ public class ExomeWalkerPriority implements Prioritiser {
         double max = Double.MIN_VALUE;
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
-            double score = calculateGeneScore(gene);
+            ExomeWalkerPriorityResult relScore = prioritiseGene().apply(gene);
+            double score = relScore.getScore();
             if (score > max) {
                 max = score;
             }
             if (score < min) {
                 min = score;
             }
-            ExomeWalkerPriorityResult relScore = new ExomeWalkerPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
             gene.addPriorityResult(relScore);
         }
+
 
 //        float factor = 1f / (float) max;
 //        float factorMaxPossible = 1f / (float) combinedProximityVector.max();
@@ -236,9 +253,9 @@ public class ExomeWalkerPriority implements Prioritiser {
 //        this.messages.add(sb.toString());
     }
 
-    private double calculateGeneScore(Gene gene) {
-        if (randomWalkMatrix.containsGene(gene.getEntrezGeneID())) {
-            return computeSimStartNodesToNode(gene);
+    private double calculateGeneScore(int entrezId) {
+        if (randomWalkMatrix.containsGene(entrezId)) {
+            return computeSimStartNodesToNode(entrezId);
         } else {
             return 0;
         }
@@ -255,12 +272,11 @@ public class ExomeWalkerPriority implements Prioritiser {
     /**
      * This function retrieves the random walk similarity score for the gene
      *
-     * @param nodeToCompute Gene for which the RW score is to bee retrieved
+     * @param nodeToCompute Gene Id for which the RW score is to bee retrieved
      */
-    private double computeSimStartNodesToNode(Gene nodeToCompute) {
-        int idx = randomWalkMatrix.getRowIndexForGene(nodeToCompute.getEntrezGeneID());
-        double val = combinedProximityVector.get(idx, 0);
-        return val;
+    private double computeSimStartNodesToNode(int nodeToCompute) {
+        int idx = randomWalkMatrix.getRowIndexForGene(nodeToCompute);
+        return combinedProximityVector.get(idx, 0);
     }
 
     @Override

@@ -26,7 +26,6 @@ import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -91,7 +90,7 @@ public class OMIMPriorityTest {
         Gene znf738 = new Gene("ZNF738", 148203);
         List<Gene> genes = Lists.newArrayList(znf738);
 
-        instance.prioritizeGenes(Collections.emptyList(), genes).forEach(result -> {
+        instance.prioritise(genes).forEach(result -> {
             System.out.println(result);
             assertThat(result.getScore(), equalTo(1d));
             assertThat(result.getAssociatedDiseases().isEmpty(), is(true));

@@ -23,6 +23,8 @@ import de.charite.compbio.exomiser.core.model.Gene;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Class for mocking a Prioritiser of the given PriorityType. Will score genes with scores specified for the geneIds
@@ -42,12 +44,31 @@ public class MockPrioritiser implements Prioritiser {
 
     @Override
     public void prioritizeGenes(List<Gene> genes) {
-        for (Gene gene : genes) {
+//        for (Gene gene : genes) {
+//            String geneSymbol = gene.getGeneSymbol();
+//            Float score = expectedScores.getOrDefault(geneSymbol, 0f);
+//            int geneId = gene.getEntrezGeneID();
+//            gene.addPriorityResult(new MockPriorityResult(priorityType, geneId, geneSymbol, score));
+//        }
+        genes.forEach( gene -> {
+                    PriorityResult result = prioritiseGene().apply(gene);
+                    gene.addPriorityResult(result);
+                }
+        );
+    }
+
+    @Override
+    public Stream<PriorityResult> prioritise(List<Gene> genes) {
+        return genes.stream().map(prioritiseGene());
+    }
+
+    private Function<Gene, PriorityResult> prioritiseGene() {
+        return gene -> {
             String geneSymbol = gene.getGeneSymbol();
             Float score = expectedScores.getOrDefault(geneSymbol, 0f);
             int geneId = gene.getEntrezGeneID();
-            gene.addPriorityResult(new MockPriorityResult(priorityType, geneId, geneSymbol, score));
-        }
+            return new MockPriorityResult(priorityType, geneId, geneSymbol, score);
+        };
     }
 
     @Override

@@ -6,7 +6,9 @@
 package de.charite.compbio.exomiser.core.prioritisers;
 
 import de.charite.compbio.exomiser.core.model.Gene;
+
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * A non-functional prioritiser to be used as a default stand-in for a real one.
@@ -18,6 +20,11 @@ public class NoneTypePrioritiser implements Prioritiser {
     @Override
     public void prioritizeGenes(List<Gene> geneList) {
         //Deliberately empty - this prioritiser does nothing.
+    }
+
+    @Override
+    public Stream<PriorityResult> prioritise(List<Gene> genes) {
+        return Stream.empty();
     }
 
     @Override

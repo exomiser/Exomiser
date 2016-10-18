@@ -59,8 +59,8 @@ public class PrioritiserController {
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 
-    @GetMapping(value = "info")
-    public String info() {
+    @GetMapping(value = "about")
+    public String about() {
         return "This service will return a collection of prioritiser results for any given set of:" +
                 "\n\t - HPO identifiers e.g. HPO:00001" +
                 "\n\t - Entrez gene identifiers e.g. 23364" +
@@ -83,10 +83,8 @@ public class PrioritiserController {
         Instant start = Instant.now();
         List<Gene> genes = parseGeneIdentifiers(genesIds);
 
-        prioritiser.prioritizeGenes(genes);
         //in an ideal world this would return Stream<PriorityResult> results = prioritiser.prioritise(hpoIds, geneIds)
-        //and the next section would be mostly superfluous
-        List<PriorityResult> results = getPrioritiserResults(limit, priorityType, genes);
+        List<PriorityResult> results = runLimitAndCollectResults(prioritiser, genes, limit);
 
         Instant end = Instant.now();
         Duration duration = Duration.between(start, end);
@@ -101,7 +99,7 @@ public class PrioritiserController {
         return new PrioritiserResultSet(params, duration.toMillis(), results);
     }
 
-    Prioritiser setUpPrioritiser(List<String> phenotypes, String prioritiserParams, PriorityType priorityType) {
+    private Prioritiser setUpPrioritiser(List<String> phenotypes, String prioritiserParams, PriorityType priorityType) {
         List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toList());
         PrioritiserSettings prioritiserSettings = new PrioritiserSettingsImpl.PrioritiserSettingsBuilder().hpoIdList(uniquePhenotypes).exomiser2Params(prioritiserParams).build();
         return priorityFactory.makePrioritiser(priorityType, prioritiserSettings);
@@ -143,14 +141,12 @@ public class PrioritiserController {
                 .collect(toList());
     }
 
-    List<PriorityResult> getPrioritiserResults(int limit, PriorityType priorityType, List<Gene> genes) {
-        Stream<PriorityResult> sortedPriorityResultsStream = genes.stream()
-                .map(gene -> gene.getPriorityResult(priorityType))
-                .sorted(Comparator.naturalOrder());
-
+    private List<PriorityResult> runLimitAndCollectResults(Prioritiser prioritiser, List<Gene> genes, int limit) {
+        Stream<? extends PriorityResult> resultsStream =  prioritiser.prioritise(genes).sorted(Comparator.naturalOrder());
+        logger.info("Finished {}", prioritiser.getPriorityType());
         if (limit == 0) {
-            return sortedPriorityResultsStream.collect(toList());
+            return resultsStream.collect(toList());
         }
-        return sortedPriorityResultsStream.limit(limit).collect(toList());
+        return resultsStream.limit(limit).collect(toList());
     }
 }

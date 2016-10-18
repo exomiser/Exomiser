@@ -32,6 +32,7 @@ import sonumina.math.graph.SlimDirectedGraphView;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Filter variants according to the phenotypic similarity of the specified
@@ -112,7 +113,6 @@ public class UberphenoPriority implements Prioritiser {
      * @param uberphenoAnnotationFile The annotation file obtained from
      * {@code http://purl.obolibrary.org/obo/hp/uberpheno/}
      * @param disease The disease ID. At the moment only OMIM-IDs allowed.
-     * @throws ExomizerInitializationException
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      * Hudson page</a>
      */
@@ -207,6 +207,11 @@ public class UberphenoPriority implements Prioritiser {
 
         String s = String.format("Data investigated in Uberpheno for %d genes (%.1f%%)", analysedGenes);
         messages.add(s);
+    }
+
+    @Override
+    public Stream<UberphenoPriorityResult> prioritise(List<Gene> genes) {
+        return genes.stream().map(this::scoreVariantUberpheno);
     }
 
     /**

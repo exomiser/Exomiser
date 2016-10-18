@@ -21,6 +21,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.charite.compbio.exomiser.core.model.*;
 import de.charite.compbio.exomiser.core.prioritisers.util.*;
@@ -31,6 +32,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
@@ -83,12 +85,24 @@ public class HiPhivePriority implements Prioritiser {
      */
     @Override
     public void prioritizeGenes(List<Gene> genes) {
+        logger.info("Starting {}", PRIORITY_TYPE);
+        Map<Integer, PriorityResult> results = prioritise(genes).collect(toMap(PriorityResult::getGeneId, Function.identity()));
+
+        genes.forEach(gene -> {
+            PriorityResult result = results.get(gene.getEntrezGeneID());
+            gene.addPriorityResult(result);
+        });
+        logger.info("Finished {}", PRIORITY_TYPE);
+    }
+
+    @Override
+    public Stream<HiPhivePriorityResult> prioritise(List<Gene> genes) {
         if (options.isBenchmarkingEnabled()) {
             logger.info("Running in benchmarking mode for disease: {} and candidateGene: {}", options.getDiseaseId(), options.getCandidateGeneSymbol());
         }
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
-        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(toSet());
+        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
 
         ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels = makeBestGeneModelsForOrganisms(hpoPhenotypeTerms, Organism.HUMAN, options.getOrganismsToRun(), wantedGeneIds);
 
@@ -97,14 +111,17 @@ public class HiPhivePriority implements Prioritiser {
             removeKnownGeneDiseaseAssociationModel(bestGeneModels);
         }
 
-        HiPhiveProteinInteractionScorer ppiScorer = HiPhiveProteinInteractionScorer.EMPTY;
-        if (options.runPpi()) {
-            ppiScorer = new HiPhiveProteinInteractionScorer(randomWalkMatrix, bestGeneModels, HIGH_QUALITY_SCORE_CUTOFF);
-        }
+        HiPhiveProteinInteractionScorer ppiScorer = makeHiPhiveProteinInteractionScorer(bestGeneModels, options.runPpi());
 
         logger.info("Mapping results...");
-        for (Gene gene : genes) {
+        return genes.stream().map(makeHiPhivePriorityResult(hpoPhenotypeTerms, bestGeneModels, ppiScorer));
+    }
+
+    private Function<Gene, HiPhivePriorityResult> makeHiPhivePriorityResult(List<PhenotypeTerm> hpoPhenotypeTerms, ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels, HiPhiveProteinInteractionScorer ppiScorer) {
+        return gene -> {
             Integer entrezGeneId = gene.getEntrezGeneID();
+
+            String geneSymbol = gene.getGeneSymbol();
 
             List<ModelPhenotypeMatch> bestPhenotypeMatchModels = bestGeneModels.get(entrezGeneId);
             double phenoScore = bestPhenotypeMatchModels.stream().mapToDouble(ModelPhenotypeMatch::getScore).max().orElse(0);
@@ -114,11 +131,10 @@ public class HiPhivePriority implements Prioritiser {
             double walkerScore = closestPhenoMatchInNetwork.getScore();
 
             double score = Double.max(phenoScore, walkerScore);
-            logger.debug("Making result for {} {} score={} phenoScore={} walkerScore={}", gene.getGeneSymbol(), entrezGeneId, score, phenoScore, walkerScore);
-            HiPhivePriorityResult priorityResult = new HiPhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore, matchesCandidateGeneSymbol(gene));
-            gene.addPriorityResult(priorityResult);
-        }
-        logger.info("Finished {}", PRIORITY_TYPE);
+
+            logger.debug("Making result for {} {} score={} phenoScore={} walkerScore={}", geneSymbol, entrezGeneId, score, phenoScore, walkerScore);
+            return new HiPhivePriorityResult(entrezGeneId, geneSymbol, score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore, matchesCandidateGeneSymbol(geneSymbol));
+        };
     }
 
     private void removeKnownGeneDiseaseAssociationModel(ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels) {
@@ -132,9 +148,16 @@ public class HiPhivePriority implements Prioritiser {
         }
     }
 
-    private boolean matchesCandidateGeneSymbol(Gene gene) {
+    private boolean matchesCandidateGeneSymbol(String geneSymbol) {
         //new Jannovar labelling can have multiple genes per var but first one is most pathogenic- we'll take this one.
-        return options.getCandidateGeneSymbol().equals(gene.getGeneSymbol()) || gene.getGeneSymbol().startsWith(options.getCandidateGeneSymbol() + ",");
+        return options.getCandidateGeneSymbol().equals(geneSymbol) || geneSymbol.startsWith(options.getCandidateGeneSymbol() + ",");
+    }
+
+    private HiPhiveProteinInteractionScorer makeHiPhiveProteinInteractionScorer(ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels, boolean runPpi) {
+        if (runPpi) {
+            return new HiPhiveProteinInteractionScorer(randomWalkMatrix, bestGeneModels, HIGH_QUALITY_SCORE_CUTOFF);
+        }
+        return HiPhiveProteinInteractionScorer.EMPTY;
     }
 
     private ListMultimap<Integer, ModelPhenotypeMatch> makeBestGeneModelsForOrganisms(List<PhenotypeTerm> hpoPhenotypeTerms, Organism referenceOrganism, Set<Organism> organismsToCompare, Set<Integer> wantedGeneIds) {

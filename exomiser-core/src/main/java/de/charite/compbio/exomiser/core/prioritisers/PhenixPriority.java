@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -58,6 +59,7 @@ public class PhenixPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenixPriority.class);
 
+    private static final PriorityType PRIORITY_TYPE = PriorityType.PHENIX_PRIORITY;
     /**
      * The HPO as Ontologizer-Ontology object
      */
@@ -283,7 +285,7 @@ public class PhenixPriority implements Prioritiser {
      */
     @Override
     public PriorityType getPriorityType() {
-        return PriorityType.PHENIX_PRIORITY;
+        return PRIORITY_TYPE;
     }
 
     /**
@@ -294,7 +296,20 @@ public class PhenixPriority implements Prioritiser {
      */
     @Override
     public void prioritizeGenes(List<Gene> genes) {
+        logger.info("Starting {}", PRIORITY_TYPE);
+        Map<Integer, PriorityResult> results = prioritise(genes).collect(toMap(PriorityResult::getGeneId, Function.identity()));
 
+        genes.forEach(gene -> {
+            PriorityResult result = results.get(gene.getEntrezGeneID());
+            gene.addPriorityResult(result);
+        });
+        logger.info("Finished {}", PRIORITY_TYPE);
+
+        logger.info("Data investigated in HPO for {} genes. No data for {} genes", genes.size(), geneId2annotations.keySet().size());
+    }
+
+    @Override
+    public Stream<PhenixPriorityResult> prioritise(List<Gene> genes) {
         ScoreDistributionContainer scoredistributionContainer = new ScoreDistributionContainer(scoredistributionFolder, symmetric, hpoQueryTerms.size());
 
         Map<Gene, PhenixScore> geneScores = genes.stream().collect(toMap(Function.identity(), scoreGene(hpoQueryTerms, scoredistributionContainer)));
@@ -303,15 +318,13 @@ public class PhenixPriority implements Prioritiser {
         double maxNegLogP = geneScores.values().stream().mapToDouble(PhenixScore::getNegativeLogP).max().orElse(DEFAULT_SCORE);
         double normalisationFactor = calculateNormalisationFactor(maxSemSimScore);
 
-        for (Map.Entry<Gene, PhenixScore> entry : geneScores.entrySet()) {
-            Gene gene = entry.getKey();
-            PhenixScore phenixScore = entry.getValue();
-            double score = phenixScore.getSemanticSimilarityScore() * normalisationFactor;
-            PriorityResult result = new PhenixPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, phenixScore.getSemanticSimilarityScore(), phenixScore.getNegativeLogP());
-            gene.addPriorityResult(result);
-        }
-
-        logger.info("Data investigated in HPO for {} genes. No data for {} genes", genes.size(), geneId2annotations.keySet().size());
+        return geneScores.entrySet().stream()
+                .map(entry -> {
+                    Gene gene = entry.getKey();
+                    PhenixScore phenixScore = entry.getValue();
+                    double score = phenixScore.getSemanticSimilarityScore() * normalisationFactor;
+                    return new PhenixPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, phenixScore.getSemanticSimilarityScore(), phenixScore.getNegativeLogP());
+                });
     }
 
     private Function<Gene, PhenixScore> scoreGene(List<Term> queryTerms, ScoreDistributionContainer scoredistributionContainer) {

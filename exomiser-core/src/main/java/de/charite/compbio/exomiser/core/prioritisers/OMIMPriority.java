@@ -24,11 +24,10 @@ import de.charite.compbio.exomiser.core.model.InheritanceMode;
 import de.charite.compbio.exomiser.core.prioritisers.util.Disease;
 import de.charite.compbio.exomiser.core.prioritisers.util.PriorityService;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
-
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Stream;
 
 /**
  * This class is designed to do two things. First, it will add annotations to
@@ -73,19 +72,20 @@ public class OMIMPriority implements Prioritiser {
      * point.
      *
      * @param genes A list of the {@link Gene} objects that
-     * have suvived the filtering (i.e., have rare, potentially pathogenic
+     * have survived the filtering (i.e., have rare, potentially pathogenic
      * variants).
      */
     @Override
     public void prioritizeGenes(List<Gene> genes) {
         for (Gene gene : genes) {
-            OMIMPriorityResult result = prioritiseGene(gene);
+            OMIMPriorityResult result = prioritiseGene().apply(gene);
             gene.addPriorityResult(result);
         }
     }
 
-    public List<OMIMPriorityResult> prioritizeGenes(Collection<String> hpoIds, List<Gene> genes) {
-        return genes.stream().map(gene -> prioritiseGene(gene)).collect(toList());
+    @Override
+    public Stream<OMIMPriorityResult> prioritise(List<Gene> genes) {
+        return genes.stream().map(prioritiseGene());
     }
 
     /**
@@ -93,13 +93,14 @@ public class OMIMPriority implements Prioritiser {
      * but initialized RelevanceScore object. Otherwise, we retrieve a list of
      * all OMIM and Orphanet diseases associated with the entrez Gene.
      *
-     * @param gene The gene which is being evaluated.
-     */
-    private OMIMPriorityResult prioritiseGene(Gene gene) {
-        List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.getEntrezGeneID());
-        //this is a pretty non-punitive prioritiser. We're relying on the other prioritisers to do the main ranking
-        double score = diseases.stream().map(Disease::getInheritanceMode).mapToDouble(scoreInheritanceMode(gene)).max().orElse(DEFAULT_SCORE);
-        return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, diseases);
+     **/
+    private Function<Gene, OMIMPriorityResult> prioritiseGene() {
+        return gene -> {
+            List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.getEntrezGeneID());
+            //this is a pretty non-punitive prioritiser. We're relying on the other prioritisers to do the main ranking
+            double score = diseases.stream().map(Disease::getInheritanceMode).mapToDouble(scoreInheritanceMode(gene)).max().orElse(DEFAULT_SCORE);
+            return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, diseases);
+        };
     }
 
     /**

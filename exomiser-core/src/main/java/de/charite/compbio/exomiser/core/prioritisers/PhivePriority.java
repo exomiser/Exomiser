@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Comparator.comparingDouble;
 import static java.util.stream.Collectors.*;
@@ -78,6 +79,18 @@ public class PhivePriority implements Prioritiser {
     @Override
     public void prioritizeGenes(List<Gene> genes) {
         logger.info("Starting {}", PRIORITY_TYPE);
+        Map<Integer, PriorityResult> results = prioritise(genes).collect(toMap(PriorityResult::getGeneId, Function.identity()));
+
+        genes.forEach(gene -> {
+            PriorityResult result = results.get(gene.getEntrezGeneID());
+            gene.addPriorityResult(result);
+        });
+        logger.info("Finished {}", PRIORITY_TYPE);
+    }
+
+    @Override
+    public Stream<PhivePriorityResult> prioritise(List<Gene> genes) {
+        logger.info("Starting {}", PRIORITY_TYPE);
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
         OrganismPhenotypeMatches humanMousePhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
@@ -97,18 +110,16 @@ public class PhivePriority implements Prioritiser {
 //                .filter(model -> model.getScore() > 0)
                 .collect(groupingByConcurrent(ModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(ModelPhenotypeMatch::getScore))));
 
-        for (Gene gene : genes) {
+        return genes.stream().map(getPhivePriorityResult(geneModelPhenotypeMatches));
+    }
 
-            PhivePriorityResult phiveScore = geneModelPhenotypeMatches.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
+    private Function<Gene, PhivePriorityResult> getPhivePriorityResult(Map<Integer, Optional<ModelPhenotypeMatch>> geneModelPhenotypeMatches) {
+        return gene -> geneModelPhenotypeMatches.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
                     .map(makeModelPhivePriorityResult())
                     //This is set to 0.6 otherwsie the performance is poor for genes with no mouse models.
                     //The rankings are quite different to hiPhive because of this - HiPhive uses 0 if there are no models.
                     //n.b. this ranks genes with no model higher than those with a model with a score of zero.
                     .orElse(new PhivePriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), NO_MOUSE_MODEL_SCORE, null));
-
-            gene.addPriorityResult(phiveScore);
-        }
-        logger.info("Finished {}", PRIORITY_TYPE);
     }
 
     private void logTheoreticalModel(TheoreticalModel theoreticalModel) {
