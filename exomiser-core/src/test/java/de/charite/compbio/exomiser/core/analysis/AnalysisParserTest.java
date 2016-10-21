@@ -35,7 +35,6 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.*;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import org.junit.Before;
@@ -252,14 +251,15 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisStep_HiPhivePrioritiserWithDefaultOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
     public void testParseAnalysisStep_HiPhivePrioritiserWithUserDefinedOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}"));
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions("OMIM:101600", "FGFR2", "human,mouse,fish,ppi")));
+        HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder().diseaseId("OMIM:101600").candidateGeneSymbol("FGFR2").runParams("human,mouse,fish,ppi").build();
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -306,8 +306,8 @@ public class AnalysisParserTest {
         analysisSteps.add(new PathogenicityFilter(false));
         analysisSteps.add(new InheritanceFilter(modeOfInheritance));
         analysisSteps.add(priorityFactory.makeOmimPrioritiser());
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions("OMIM:101600", "FGFR2", "mouse,fish,human,ppi")));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.builder().diseaseId("OMIM:101600").candidateGeneSymbol("FGFR2").build()));
         analysisSteps.add(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.7f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
@@ -377,7 +377,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseOutputSettings() {
         OutputSettings outputSettings = instance.parseOutputSettings(Paths.get("src/test/resources/analysisExample.yml"));
-        OutputSettings expected = new OutputSettingsImp.OutputSettingsBuilder()
+        OutputSettings expected = OutputSettings.builder()
                 .outputPassVariantsOnly(false)
                 .numberOfGenesToShow(0)
                 .outputPrefix("results/Pfeiffer-hiphive")

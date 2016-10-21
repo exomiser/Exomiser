@@ -85,7 +85,7 @@ public class TsvVariantResultsWriterTest {
     @Before
     public void before() {
         instance = new TsvVariantResultsWriter();
-        settingsBuilder = new OutputSettingsBuilder().outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
+        settingsBuilder = OutputSettings.builder().outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
         
         TestVariantFactory varFactory = new TestVariantFactory();
         makePassVariant(varFactory);

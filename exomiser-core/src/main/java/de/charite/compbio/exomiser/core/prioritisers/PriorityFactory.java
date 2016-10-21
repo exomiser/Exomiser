@@ -18,19 +18,18 @@ public interface PriorityFactory {
      * settings provided. Will return a non-functional prioritiser in cases
      * where the type is not recognised.
      *
-     * @param priorityType
      * @param settings
      * @return
      */
-    public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings);
+    Prioritiser makePrioritiser(PrioritiserSettings settings);
 
-    public OMIMPriority makeOmimPrioritiser();
+    OMIMPriority makeOmimPrioritiser();
 
-    public PhenixPriority makePhenixPrioritiser(List<String> hpoIds);
+    PhenixPriority makePhenixPrioritiser(List<String> hpoIds);
 
-    public PhivePriority makePhivePrioritiser(List<String> hpoIds);
+    PhivePriority makePhivePrioritiser(List<String> hpoIds);
 
-    public ExomeWalkerPriority makeExomeWalkerPrioritiser(List<Integer> entrezSeedGenes);
+    ExomeWalkerPriority makeExomeWalkerPrioritiser(List<Integer> entrezSeedGenes);
 
-    public HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions);
+    HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions);
 }

@@ -20,7 +20,6 @@
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
@@ -114,19 +113,17 @@ public class OrganismPhenotypeMatchesTest {
 
     @Test
     public void testCanCalculateBestPhenotypeMatchesByTerm() {
-        Map<PhenotypeTerm, PhenotypeMatch> expected = Maps.newHashMap();
-        expected.put(bigNose, perfectNoseMatch);
-        expected.put(bigToe, bestToeMatch);
+        List<PhenotypeMatch> expected = Lists.newArrayList(bestToeMatch, perfectNoseMatch);
 
         List<PhenotypeMatch> bestForwardAndReciprocalMatches = Lists.newArrayList(noseMatch, bestToeMatch, perfectNoseMatch, bestToeMatch);
-        Map<PhenotypeTerm, PhenotypeMatch> result = instance.calculateBestPhenotypeMatchesByTerm(bestForwardAndReciprocalMatches);
-        result.entrySet().forEach(System.out::println);
+        List<PhenotypeMatch> result = instance.calculateBestPhenotypeMatchesByTerm(bestForwardAndReciprocalMatches);
+        result.forEach(System.out::println);
         assertThat(result, equalTo(expected));
     }
 
     @Test
     public void testCalculateBestPhenotypeMatchesByTermReturnsEmptyMapForEmptyInputList() {
-        assertThat(instance.calculateBestPhenotypeMatchesByTerm(Collections.emptyList()), equalTo(Collections.emptyMap()));
+        assertThat(instance.calculateBestPhenotypeMatchesByTerm(Collections.emptyList()), equalTo(Collections.emptyList()));
     }
 
     @Test

@@ -36,7 +36,7 @@ import static org.junit.Assert.assertThat;
 public class PhivePriorityResultTest {
 
     private final GeneModel mouseModel = new GeneModel("mouse-model_1", Organism.MOUSE, 2263, "FGFR2", "MGI:95523", "Fgfr2", Collections.emptyList());
-    private final ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0.827862024307251, mouseModel, Collections.emptyMap());
+    private final ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0.827862024307251, mouseModel, Collections.emptyList());
 
     @Test
     public void testIsEquals() throws Exception {

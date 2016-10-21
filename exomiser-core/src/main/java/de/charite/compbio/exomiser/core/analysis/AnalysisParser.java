@@ -27,7 +27,6 @@ import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.*;
 import de.charite.compbio.exomiser.core.writers.OutputFormat;
 import de.charite.compbio.exomiser.core.writers.OutputSettings;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
@@ -119,12 +118,12 @@ public class AnalysisParser {
     private class OutputSettingsConstructor {
 
         public OutputSettings construct(Map analysisMap) {
-            OutputSettingsBuilder builder = new OutputSettingsBuilder();
-            builder.outputPassVariantsOnly(parseOutputPassVariantsOnly(analysisMap));
-            builder.numberOfGenesToShow(parseNumberOfGenesToShow(analysisMap));
-            builder.outputPrefix(parseOutputPrefix(analysisMap));
-            builder.outputFormats(parseOutputFormats(analysisMap));
-            return builder.build();
+            return OutputSettings.builder()
+                    .outputPassVariantsOnly(parseOutputPassVariantsOnly(analysisMap))
+                    .numberOfGenesToShow(parseNumberOfGenesToShow(analysisMap))
+                    .outputPrefix(parseOutputPrefix(analysisMap))
+                    .outputFormats(parseOutputFormats(analysisMap))
+                    .build();
         }
 
         private Boolean parseOutputPassVariantsOnly(Map<String, Boolean> analysisMap) {
@@ -476,7 +475,12 @@ public class AnalysisParser {
         }
 
         private HiPhivePriority makeHiPhivePrioritiser(Map<String, String> options, List<String> hpoIds) {
-            HiPhiveOptions hiPhiveOptions = new HiPhiveOptions();
+            HiPhiveOptions hiPhiveOptions = makeHiPhiveOptions(options);
+            logger.info("Made {}", hiPhiveOptions);
+            return prioritiserFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions);
+        }
+
+        private HiPhiveOptions makeHiPhiveOptions(Map<String, String> options) {
             if (!options.isEmpty()) {
                 String diseaseId = options.get("diseaseId");
                 if (diseaseId == null) {
@@ -490,10 +494,13 @@ public class AnalysisParser {
                 if (runParams == null) {
                     runParams = "";
                 }
-                hiPhiveOptions = new HiPhiveOptions(diseaseId, candidateGeneSymbol, runParams);
-                logger.info("Made {}", hiPhiveOptions);
+                return HiPhiveOptions.builder()
+                        .diseaseId(diseaseId)
+                        .candidateGeneSymbol(candidateGeneSymbol)
+                        .runParams(runParams)
+                        .build();
             }
-            return prioritiserFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions);
+            return HiPhiveOptions.DEFAULT;
         }
 
         private ExomeWalkerPriority makeWalkerPrioritiser(Map<String, List> options) {

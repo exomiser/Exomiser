@@ -27,11 +27,12 @@ package de.charite.compbio.exomiser.cli.options;
 import de.charite.compbio.exomiser.cli.CommandLineParseError;
 import de.charite.compbio.exomiser.core.analysis.Settings.SettingsBuilder;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
+import org.apache.commons.cli.Option;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.cli.OptionBuilder;
 
 /**
  *
@@ -56,13 +57,13 @@ public class PrioritiserOptionMarshaller extends AbstractOptionMarshaller {
 
         List<String> commandLineValues = new ArrayList<>(prioritiserCliValues.keySet());
 
-        option = OptionBuilder
+        option = Option.builder()
                 .hasArg()
-                .withArgName("name")
-                .withValueSeparator()
-                .withDescription(buildPrioritiserDescription(PRIORITISER_OPTION, commandLineValues))
-                .withLongOpt(PRIORITISER_OPTION)
-                .create();
+                .argName("name")
+                .valueSeparator()
+                .desc(buildPrioritiserDescription(PRIORITISER_OPTION, commandLineValues))
+                .longOpt(PRIORITISER_OPTION)
+                .build();
     }
 
     @Override

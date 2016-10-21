@@ -12,13 +12,17 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface OutputSettings {
+
+    static OutputSettingsImp.OutputSettingsBuilder builder() {
+        return OutputSettingsImp.builder();
+    }
     
-    public boolean outputPassVariantsOnly();
+    boolean outputPassVariantsOnly();
 
-    public int getNumberOfGenesToShow();
+    int getNumberOfGenesToShow();
 
-    public Set<OutputFormat> getOutputFormats();
+    Set<OutputFormat> getOutputFormats();
 
-    public String getOutputPrefix();
+    String getOutputPrefix();
 
 }

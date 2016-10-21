@@ -112,7 +112,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 humanPhenScore = phenoScore.getHumanScore();
                 mousePhenScore = phenoScore.getMouseScore();
                 fishPhenScore = phenoScore.getFishScore();
-                walkerScore = phenoScore.getWalkerScore();
+                walkerScore = phenoScore.getPpiScore();
                 phenoEvidence = phenoScore.getPhenotypeEvidenceText();
                 if (phenoScore.isCandidateGeneMatch()) {
                     matchesCandidateGene = 1;

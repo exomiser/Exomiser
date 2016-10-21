@@ -8,7 +8,7 @@ package de.charite.compbio.exomiser.core.prioritisers;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrioritiserSettingsImpl implements PrioritiserSettings {
+class PrioritiserSettingsImpl implements PrioritiserSettings {
 
     private final PriorityType priorityType;
     private final String diseaseId;
@@ -16,6 +16,10 @@ public class PrioritiserSettingsImpl implements PrioritiserSettings {
     private final String exomiser2Params;
     private final List<String> hpoIds;
     private final List<Integer> seedGenes;
+
+    public static PrioritiserSettingsBuilder builder() {
+        return new PrioritiserSettingsBuilder();
+    }
 
     public static class PrioritiserSettingsBuilder {
 
@@ -25,6 +29,8 @@ public class PrioritiserSettingsImpl implements PrioritiserSettings {
         private String exomiser2Params = "";
         private List<String> hpoIds = new ArrayList<>();
         private List<Integer> seedGenes = new ArrayList<>();
+
+        private PrioritiserSettingsBuilder() {}
 
         public PrioritiserSettingsBuilder usePrioritiser(PriorityType priorityType) {
             this.priorityType = priorityType;

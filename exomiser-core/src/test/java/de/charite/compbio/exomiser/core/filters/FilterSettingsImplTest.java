@@ -27,14 +27,14 @@ package de.charite.compbio.exomiser.core.filters;
 import de.charite.compbio.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
@@ -56,7 +56,7 @@ public class FilterSettingsImplTest {
     
     @Before
     public void setUp() {
-        builder = new FilterSettingsBuilder();
+        builder = FilterSettingsImpl.builder();
     }
 
     @Test
@@ -133,21 +133,21 @@ public class FilterSettingsImplTest {
     
     @Test
     public void testHashCode() {
-        FilterSettings other = new FilterSettingsBuilder().build();
+        FilterSettings other = FilterSettingsImpl.builder().build();
         instance = builder.build();
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
     
     @Test
     public void testEquals() {
-        FilterSettings other = new FilterSettingsBuilder().build();
+        FilterSettings other = FilterSettingsImpl.builder().build();
         instance = builder.build();
         assertThat(instance, equalTo(other));
     }
     
     @Test
     public void testNotEquals() {
-        FilterSettings other = new FilterSettingsBuilder().minimumQuality(Float.MAX_VALUE).build();
+        FilterSettings other = FilterSettingsImpl.builder().minimumQuality(Float.MAX_VALUE).build();
         instance = builder.build();
         assertThat(instance.equals(other), is(false));
     }

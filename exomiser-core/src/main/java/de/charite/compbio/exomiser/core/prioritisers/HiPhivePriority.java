@@ -77,24 +77,6 @@ public class HiPhivePriority implements Prioritiser {
         return PRIORITY_TYPE;
     }
 
-    /**
-     * Prioritize a list of candidate genes. These candidate genes may have rare, potentially pathogenic variants.
-     * <P>
-     *
-     * @param genes List of candidate genes.
-     */
-    @Override
-    public void prioritizeGenes(List<Gene> genes) {
-        logger.info("Starting {}", PRIORITY_TYPE);
-        Map<Integer, PriorityResult> results = prioritise(genes).collect(toMap(PriorityResult::getGeneId, Function.identity()));
-
-        genes.forEach(gene -> {
-            PriorityResult result = results.get(gene.getEntrezGeneID());
-            gene.addPriorityResult(result);
-        });
-        logger.info("Finished {}", PRIORITY_TYPE);
-    }
-
     @Override
     public Stream<HiPhivePriorityResult> prioritise(List<Gene> genes) {
         if (options.isBenchmarkingEnabled()) {
@@ -128,12 +110,12 @@ public class HiPhivePriority implements Prioritiser {
 
             GeneMatch closestPhenoMatchInNetwork = ppiScorer.getClosestPhenoMatchInNetwork(entrezGeneId);
             List<ModelPhenotypeMatch> closestPhysicallyInteractingGeneModels = closestPhenoMatchInNetwork.getBestMatchModels();
-            double walkerScore = closestPhenoMatchInNetwork.getScore();
+            double ppiScore = closestPhenoMatchInNetwork.getScore();
 
-            double score = Double.max(phenoScore, walkerScore);
+            double score = Double.max(phenoScore, ppiScore);
 
-            logger.debug("Making result for {} {} score={} phenoScore={} walkerScore={}", geneSymbol, entrezGeneId, score, phenoScore, walkerScore);
-            return new HiPhivePriorityResult(entrezGeneId, geneSymbol, score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, walkerScore, matchesCandidateGeneSymbol(geneSymbol));
+            logger.debug("Making result for {} {} score={} phenoScore={} walkerScore={}", geneSymbol, entrezGeneId, score, phenoScore, ppiScore);
+            return new HiPhivePriorityResult(entrezGeneId, geneSymbol, score, hpoPhenotypeTerms, bestPhenotypeMatchModels, closestPhysicallyInteractingGeneModels, ppiScore, matchesCandidateGeneSymbol(geneSymbol));
         };
     }
 
@@ -244,10 +226,10 @@ public class HiPhivePriority implements Prioritiser {
         return model -> {
             List<PhenotypeMatch> bestForwardAndBackwardMatches = organismPhenotypeMatches.calculateBestForwardAndReciprocalMatches(model.getPhenotypeIds());
 
-            Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchesByTerm = organismPhenotypeMatches.calculateBestPhenotypeMatchesByTerm(bestForwardAndBackwardMatches);
+            List<PhenotypeMatch> bestPhenotypeMatchesByTerm = organismPhenotypeMatches.calculateBestPhenotypeMatchesByTerm(bestForwardAndBackwardMatches);
 
             //Remember the model needs to collect its best matches from the forward and backward best matches otherwise the modelMaxMatchScore will be zero.
-            double modelMaxMatchScore = bestPhenotypeMatchesByTerm.values().stream()
+            double modelMaxMatchScore = bestPhenotypeMatchesByTerm.stream()
                     .mapToDouble(PhenotypeMatch::getScore)
                     .max()
                     .orElse(0);
@@ -295,10 +277,7 @@ public class HiPhivePriority implements Prioritiser {
         if (!Objects.equals(this.hpoIds, other.hpoIds)) {
             return false;
         }
-        if (!Objects.equals(this.options, other.options)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.options, other.options);
     }
 
     @Override

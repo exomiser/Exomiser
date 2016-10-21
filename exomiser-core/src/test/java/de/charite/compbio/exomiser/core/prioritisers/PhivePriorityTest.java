@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -86,21 +87,48 @@ public class PhivePriorityTest {
         GeneModel topRor2Model = new GeneModel("MGI:1347521_1478", Organism.MOUSE, 4920, "ROR2", "MGI:1347521", "Ror2", Arrays.asList("MP:0000081", "MP:0000157", "MP:0000435", "MP:0000566", "MP:0001219", "MP:0001222", "MP:0001231", "MP:0001240", "MP:0001725", "MP:0001732", "MP:0001874", "MP:0002060", "MP:0003743", "MP:0009545", "MP:0009601", "MP:0009611", "MP:0011085", "MP:0011495"));
         GeneModel topFrem2Model = new GeneModel("MGI:2444465_18183", Organism.MOUSE, 341640, "FREM2", "MGI:2444465", "Frem2", Arrays.asList("MP:0000081", "MP:0000157", "MP:0000435", "MP:0000566", "MP:0001219", "MP:0001222", "MP:0001231", "MP:0001240", "MP:0001725", "MP:0001732", "MP:0001874", "MP:0002060", "MP:0003743", "MP:0009545", "MP:0009601", "MP:0009611", "MP:0011085", "MP:0011495"));
 
-        PriorityResult fgfr2Result = new PhivePriorityResult(2263, "FGFR2", 0.8278620340423056, new ModelPhenotypeMatch(0.8278620340423056, topFgfr2Model, Collections.emptyMap()));//);
-        PriorityResult ror2Result = new PhivePriorityResult(4920, "ROR2", 0.6999088391144015, new ModelPhenotypeMatch(0.6999088391144015, topRor2Model, Collections.emptyMap()));
-        PriorityResult frem2Result = new PhivePriorityResult(341640, "FREM2", 0.6208762175615226, new ModelPhenotypeMatch(0.6208762175615226, topFrem2Model, Collections.emptyMap()));
+        PriorityResult fgfr2Result = new PhivePriorityResult(2263, "FGFR2", 0.8278620340423056, new ModelPhenotypeMatch(0.8278620340423056, topFgfr2Model, Collections.emptyList()));//);
+        PriorityResult ror2Result = new PhivePriorityResult(4920, "ROR2", 0.6999088391144015, new ModelPhenotypeMatch(0.6999088391144015, topRor2Model, Collections.emptyList()));
+        PriorityResult frem2Result = new PhivePriorityResult(341640, "FREM2", 0.6208762175615226, new ModelPhenotypeMatch(0.6208762175615226, topFrem2Model, Collections.emptyList()));
         PriorityResult znf738Result = new PhivePriorityResult(148203, "ZNF738", 0.6000000238418579, null);
 
 //      Scores from flatfile (these will have suffered slight rounding errors compared to the database)
+        Map<String, Double> expectedScores = expectedMouseScores();
+
+        Map<String, Double> actualScores = results.stream().collect(toMap(PhivePriorityResult::getGeneSymbol, PhivePriorityResult::getScore));
+
+        assertThat(actualScores, equalTo(expectedScores));
+    }
+
+    @Test
+    public void testPrioritise() {
+        List<Gene> genes = getGenes();
+
+        List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
+        PhivePriority phivePriority = new PhivePriority(hpoIds, TestPriorityServiceFactory.TEST_SERVICE);
+
+        List<PhivePriorityResult> results = phivePriority.prioritise(genes)
+                .sorted(Comparator.naturalOrder())
+                .collect(toList());
+
+        assertThat(results.size(), equalTo(genes.size()));
+
+        results.forEach(System.out::println);
+
+        Map<String, Double> expectedScores = expectedMouseScores();
+
+        Map<String, Double> actualScores = results.stream().collect(toMap(PhivePriorityResult::getGeneSymbol, PhivePriorityResult::getScore));
+
+        assertThat(actualScores, equalTo(expectedScores));
+    }
+
+    private Map<String, Double> expectedMouseScores() {
         Map<String, Double> expectedScores = new HashMap<>();
         expectedScores.put("FGFR2", 0.8278620340423056);
         expectedScores.put("ROR2", 0.6999088391144015);
         expectedScores.put("FREM2", 0.6208762175615226);
         expectedScores.put("ZNF738", 0.6000000238418579);
-
-        Map<String, Double> actualScores = results.stream().collect(toMap(PhivePriorityResult::getGeneSymbol, PhivePriorityResult::getScore));
-
-        assertThat(actualScores, equalTo(expectedScores));
+        return expectedScores;
     }
 
 }

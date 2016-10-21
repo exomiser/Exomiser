@@ -58,7 +58,7 @@ public class GeneMatchTest {
 
     @Test
     public void bestMatchModels() throws Exception {
-        ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0, new GeneModel("Model:500", Organism.HUMAN, 4321, "GENE1", "HGNC:4321", "GENE1", Lists.newArrayList()), Collections.emptyMap());
+        ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0, new GeneModel("Model:500", Organism.HUMAN, 4321, "GENE1", "HGNC:4321", "GENE1", Collections.emptyList()), Collections.emptyList());
         List<ModelPhenotypeMatch> models = Lists.newArrayList(modelPhenotypeMatch);
         instance = GeneMatch.builder().bestMatchModels(models).build();
         assertThat(instance.getBestMatchModels(), equalTo(models));

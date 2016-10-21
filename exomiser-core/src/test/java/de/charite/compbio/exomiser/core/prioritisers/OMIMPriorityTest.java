@@ -108,10 +108,7 @@ public class OMIMPriorityTest {
         instance.prioritizeGenes(genes);
 
         genes.forEach(gene -> {
-            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
-            assertThat(result.getScore(), equalTo(1d));
-            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+            checkOmimScoreAndHasAssociatedDiseases(gene, 1d, false);
         });
     }
 
@@ -126,10 +123,7 @@ public class OMIMPriorityTest {
         instance.prioritizeGenes(genes);
 
         genes.forEach(gene -> {
-            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
-            assertThat(result.getScore(), equalTo(1d));
-            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+            checkOmimScoreAndHasAssociatedDiseases(gene, 1d, false);
         });
     }
 
@@ -143,11 +137,15 @@ public class OMIMPriorityTest {
         instance.prioritizeGenes(genes);
 
         genes.forEach(gene -> {
-            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
-            assertThat(result.getScore(), equalTo(1d));
-            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+            checkOmimScoreAndHasAssociatedDiseases(gene, 1d, false);
         });
+    }
+
+    private void checkOmimScoreAndHasAssociatedDiseases(Gene gene, double score, boolean associatedDiseasesIsEmpty) {
+        OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
+        System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
+        assertThat(result.getScore(), equalTo(score));
+        assertThat(result.getAssociatedDiseases().isEmpty(), is(associatedDiseasesIsEmpty));
     }
 
     @Test
@@ -160,10 +158,7 @@ public class OMIMPriorityTest {
         instance.prioritizeGenes(genes);
 
         genes.forEach(gene -> {
-            OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
-            System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
-            assertThat(result.getScore(), equalTo(0.5d));
-            assertThat(result.getAssociatedDiseases().isEmpty(), is(false));
+            checkOmimScoreAndHasAssociatedDiseases(gene, 0.5d, false);
         });
 
 

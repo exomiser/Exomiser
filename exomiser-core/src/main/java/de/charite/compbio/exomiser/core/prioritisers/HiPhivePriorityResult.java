@@ -27,6 +27,9 @@ import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  *
@@ -38,7 +41,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
     private double mouseScore = 0;
     private double fishScore = 0;
 
-    private final double walkerScore;
+    private final double ppiScore;
 
     private final boolean candidateGeneMatch;
 
@@ -50,14 +53,14 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
     /**
      * @param score The similarity score assigned by the random walk.
      */
-    public HiPhivePriorityResult(int geneId, String geneSymbol, double score, List<PhenotypeTerm> queryPhenotypeTerms, List<ModelPhenotypeMatch> phenotypeEvidence, List<ModelPhenotypeMatch> ppiEvidence, double walkerScore, boolean candidateGeneMatch) {
+    public HiPhivePriorityResult(int geneId, String geneSymbol, double score, List<PhenotypeTerm> queryPhenotypeTerms, List<ModelPhenotypeMatch> phenotypeEvidence, List<ModelPhenotypeMatch> ppiEvidence, double ppiScore, boolean candidateGeneMatch) {
         super(PriorityType.HIPHIVE_PRIORITY, geneId, geneSymbol, score);
         this.queryPhenotypeTerms = queryPhenotypeTerms;
         setPhenotypeEvidenceScores(phenotypeEvidence);
 
         this.phenotypeEvidence = phenotypeEvidence;
         this.ppiEvidence = ppiEvidence;
-        this.walkerScore = walkerScore;
+        this.ppiScore = ppiScore;
         
         this.candidateGeneMatch = candidateGeneMatch;
     }
@@ -115,8 +118,8 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         return fishScore;
     }
 
-    public double getWalkerScore() {
-        return walkerScore;
+    public double getPpiScore() {
+        return ppiScore;
     }
 
     public boolean isCandidateGeneMatch() {
@@ -136,7 +139,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         StringBuilder fishPPIBuilder = new StringBuilder();
 
         for (ModelPhenotypeMatch modelPhenotypeMatch : phenotypeEvidence) {
-            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = modelPhenotypeMatch.getBestPhenotypeMatchForTerms();
+            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(modelPhenotypeMatch);
             switch (modelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
                     DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
@@ -151,7 +154,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
             }
         }
         for (ModelPhenotypeMatch modelPhenotypeMatch : ppiEvidence) {
-            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = modelPhenotypeMatch.getBestPhenotypeMatchForTerms();
+            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(modelPhenotypeMatch);
             switch (modelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
                     DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
@@ -176,6 +179,13 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         return String.format("%s\t%s\t%s\t%s\t%s\t%s", human, mouse, fish, humanPPI, mousePPI, fishPPI);
     }
 
+    private Map<PhenotypeTerm, PhenotypeMatch> getPhenotypeTermPhenotypeMatchMap(ModelPhenotypeMatch modelPhenotypeMatch) {
+        return modelPhenotypeMatch
+                .getBestPhenotypeMatchForTerms()
+                .stream()
+                .collect(toMap(PhenotypeMatch::getQueryPhenotype, Function.identity()));
+    }
+
     /**
      */
     @JsonIgnore
@@ -197,7 +207,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                     stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to zebrafish mutant involving <a href=\"http://zfin.org/action/quicksearch/query?query=%s\">%s</a>.</dt>", modelPhenotypeMatch.getScore(), modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
             }
-            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = modelPhenotypeMatch.getBestPhenotypeMatchForTerms();
+            Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(modelPhenotypeMatch);
             makeBestPhenotypeMatchHtml(stringBuilder, bestMatchesForModel);
             stringBuilder.append("</dl>");
         }
@@ -218,7 +228,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                     stringBuilder.append(String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.</dt>", stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
             }
-            Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = modelPhenotypeMatch.getBestPhenotypeMatchForTerms();
+            Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = getPhenotypeTermPhenotypeMatchMap(modelPhenotypeMatch);
             makeBestPhenotypeMatchHtml(stringBuilder, bestModelPhenotypeMatches);
             stringBuilder.append("</dl>");
         }
@@ -272,7 +282,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                 ", humanScore=" + humanScore +
                 ", mouseScore=" + mouseScore +
                 ", fishScore=" + fishScore +
-                ", walkerScore=" + walkerScore +
+                ", ppiScore=" + ppiScore +
                 ", candidateGeneMatch=" + candidateGeneMatch +
                 ", queryPhenotypeTerms=" + queryPhenotypeTerms +
                 ", phenotypeEvidence=" + phenotypeEvidence +

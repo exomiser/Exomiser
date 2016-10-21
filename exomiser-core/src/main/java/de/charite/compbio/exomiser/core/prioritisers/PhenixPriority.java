@@ -288,26 +288,6 @@ public class PhenixPriority implements Prioritiser {
         return PRIORITY_TYPE;
     }
 
-    /**
-     * Prioritize a list of candidate {@link Gene Gene} objects
-     * (the candidate genes have rare, potentially pathogenic variants).
-     *
-     * @param genes List of candidate genes.
-     */
-    @Override
-    public void prioritizeGenes(List<Gene> genes) {
-        logger.info("Starting {}", PRIORITY_TYPE);
-        Map<Integer, PriorityResult> results = prioritise(genes).collect(toMap(PriorityResult::getGeneId, Function.identity()));
-
-        genes.forEach(gene -> {
-            PriorityResult result = results.get(gene.getEntrezGeneID());
-            gene.addPriorityResult(result);
-        });
-        logger.info("Finished {}", PRIORITY_TYPE);
-
-        logger.info("Data investigated in HPO for {} genes. No data for {} genes", genes.size(), geneId2annotations.keySet().size());
-    }
-
     @Override
     public Stream<PhenixPriorityResult> prioritise(List<Gene> genes) {
         ScoreDistributionContainer scoredistributionContainer = new ScoreDistributionContainer(scoredistributionFolder, symmetric, hpoQueryTerms.size());
@@ -318,6 +298,7 @@ public class PhenixPriority implements Prioritiser {
         double maxNegLogP = geneScores.values().stream().mapToDouble(PhenixScore::getNegativeLogP).max().orElse(DEFAULT_SCORE);
         double normalisationFactor = calculateNormalisationFactor(maxSemSimScore);
 
+        logger.info("Data investigated in HPO for {} genes. No data for {} genes", genes.size(), geneId2annotations.keySet().size());
         return geneScores.entrySet().stream()
                 .map(entry -> {
                     Gene gene = entry.getKey();
@@ -421,10 +402,7 @@ public class PhenixPriority implements Prioritiser {
         if (!Objects.equals(this.hpoQueryTerms, other.hpoQueryTerms)) {
             return false;
         }
-        if (this.symmetric != other.symmetric) {
-            return false;
-        }
-        return true;
+        return this.symmetric == other.symmetric;
     }
 
     @Override

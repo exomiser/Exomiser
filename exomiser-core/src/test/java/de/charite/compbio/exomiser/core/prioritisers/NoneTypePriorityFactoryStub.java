@@ -39,7 +39,7 @@ import java.util.Map;
 public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
     @Override
-    public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings) {
+    public Prioritiser makePrioritiser(PrioritiserSettings settings) {
         return new NoneTypePrioritiser();
     }
 

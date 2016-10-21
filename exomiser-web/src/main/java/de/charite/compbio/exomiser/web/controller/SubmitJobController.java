@@ -146,7 +146,7 @@ public class SubmitJobController {
         }
         logger.info("Output dir: {}", outputDir);
         String outFileName = outputDir.toString() + "/results";
-        OutputSettings outputSettings = new OutputSettingsImp.OutputSettingsBuilder()
+        OutputSettings outputSettings = OutputSettings.builder()
                 .numberOfGenesToShow(20)
                 .outputPrefix(outFileName)
                 //OutputFormat.HTML, causes issues due to thymeleaf templating

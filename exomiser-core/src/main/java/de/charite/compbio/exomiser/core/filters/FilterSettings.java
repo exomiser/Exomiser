@@ -24,6 +24,7 @@
  */
 package de.charite.compbio.exomiser.core.filters;
 
+import de.charite.compbio.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import de.charite.compbio.exomiser.core.model.GeneticInterval;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 
@@ -36,19 +37,23 @@ import java.util.Set;
  */
 public interface FilterSettings {
 
-    public float getMaximumFrequency();
+    static FilterSettingsBuilder builder() {
+        return FilterSettingsImpl.builder();
+    }
 
-    public float getMinimumQuality();
+    float getMaximumFrequency();
 
-    public GeneticInterval getGeneticInterval();
+    float getMinimumQuality();
 
-    public boolean keepOffTargetVariants();
+    GeneticInterval getGeneticInterval();
 
-    public boolean removeKnownVariants();
+    boolean keepOffTargetVariants();
 
-    public boolean keepNonPathogenicVariants();
+    boolean removeKnownVariants();
 
-    public ModeOfInheritance getModeOfInheritance();
+    boolean keepNonPathogenicVariants();
 
-    public Set<Integer> getGenesToKeep();
+    ModeOfInheritance getModeOfInheritance();
+
+    Set<Integer> getGenesToKeep();
 }

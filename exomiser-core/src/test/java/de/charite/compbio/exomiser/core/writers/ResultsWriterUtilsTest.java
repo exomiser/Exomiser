@@ -30,7 +30,6 @@ import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,8 +52,6 @@ import static org.junit.Assert.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class ResultsWriterUtilsTest {
 
-    OutputSettingsBuilder settingsBuilder;
-
     private static final String DEFAULT_OUTPUT_DIR = "results";
     private final Path vcfPath = Paths.get("wibble");
     
@@ -67,8 +64,6 @@ public class ResultsWriterUtilsTest {
     
     @Before
     public void before() {
-        settingsBuilder = new OutputSettingsBuilder();
-        
         Mockito.when(passedGeneOne.passedFilters()).thenReturn(Boolean.TRUE);
         Mockito.when(passedGeneTwo.passedFilters()).thenReturn(Boolean.TRUE);
         Mockito.when(failedGene.passedFilters()).thenReturn(Boolean.FALSE);
@@ -85,7 +80,7 @@ public class ResultsWriterUtilsTest {
     @Test
     public void testThatSpecifiedTsvFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.TSV_GENE;
-        OutputSettings settings = settingsBuilder.build();
+        OutputSettings settings = OutputSettings.builder().build();
         String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -94,7 +89,7 @@ public class ResultsWriterUtilsTest {
     @Test
     public void testThatSpecifiedVcfFileExtensionIsPresent() {
         OutputFormat testedFormat = OutputFormat.VCF;
-        OutputSettings settings = settingsBuilder.build();
+        OutputSettings settings = OutputSettings.builder().build();
         String expResult = String.format("%s/wibble-exomiser-results.%s", DEFAULT_OUTPUT_DIR, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -104,8 +99,7 @@ public class ResultsWriterUtilsTest {
     public void testThatSpecifiedOutputFormatDoesNotOverwriteGivenOutputPrefixFileExtension() {
         OutputFormat testedFormat = OutputFormat.VCF;
         String outputPrefix = "/user/jules/exomes/analysis/slartibartfast.xml";
-        settingsBuilder.outputPrefix(outputPrefix);
-        OutputSettings settings = settingsBuilder.build();        
+        OutputSettings settings = OutputSettings.builder().outputPrefix(outputPrefix).build();
         String expResult = String.format("%s.%s", outputPrefix, testedFormat.getFileExtension());
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -114,7 +108,7 @@ public class ResultsWriterUtilsTest {
     @Test
     public void testDefaultOutputFormatIsNotDestroyedByIncorrectFileExtensionDetection() {
         OutputFormat testedFormat = OutputFormat.HTML;
-        OutputSettings settings = settingsBuilder.build();
+        OutputSettings settings = OutputSettings.builder().build();
         String expResult = DEFAULT_OUTPUT_DIR + "/wibble-exomiser-results.html";
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), testedFormat);
         assertThat(result, equalTo(expResult));
@@ -124,8 +118,7 @@ public class ResultsWriterUtilsTest {
     public void testOutFileNameIsCombinationOfOutPrefixAndOutFormat() {
         OutputFormat outFormat = OutputFormat.TSV_GENE;
         String outFilePrefix = "user/subdir/geno/vcf/F0000009/F0000009.vcf";
-        settingsBuilder.outputPrefix(outFilePrefix);
-        OutputSettings settings = settingsBuilder.build();
+        OutputSettings settings = OutputSettings.builder().outputPrefix(outFilePrefix).build();
         assertThat(ResultsWriterUtils.makeOutputFilename(vcfPath, settings.getOutputPrefix(), outFormat), equalTo(outFilePrefix + "." + outFormat.getFileExtension()));
     }
     

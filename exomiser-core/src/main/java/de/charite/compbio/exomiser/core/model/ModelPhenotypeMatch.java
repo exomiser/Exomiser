@@ -20,25 +20,24 @@
 package de.charite.compbio.exomiser.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class ModelPhenotypeMatch implements Model {
-    //TODO: should this be a GeneModelPhenotypeMatch? - this is referenced in Phive
+
     private final double score;
     private final Model model;
-    private final Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms;
+    private final List<PhenotypeMatch> bestPhenotypeMatchForTerms;
 
-    public ModelPhenotypeMatch(double score, Model model, Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms) {
+    public ModelPhenotypeMatch(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatchForTerms) {
         this.score = score;
         this.model = model;
-        this.bestPhenotypeMatchForTerms = ImmutableSortedMap.copyOf(bestPhenotypeMatchForTerms);
+        this.bestPhenotypeMatchForTerms = ImmutableList.copyOf(bestPhenotypeMatchForTerms);
     }
 
     public double getScore() {
@@ -49,7 +48,7 @@ public class ModelPhenotypeMatch implements Model {
         return model;
     }
 
-    public Map<PhenotypeTerm, PhenotypeMatch> getBestPhenotypeMatchForTerms() {
+    public List<PhenotypeMatch> getBestPhenotypeMatchForTerms() {
         return bestPhenotypeMatchForTerms;
     }
 

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
+
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
@@ -19,7 +20,7 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = OutputSettingsBuilder.class)
-public class OutputSettingsImp implements OutputSettings {
+class OutputSettingsImp implements OutputSettings {
 
     @JsonProperty
     private final boolean outputPassVariantsOnly;
@@ -34,13 +35,19 @@ public class OutputSettingsImp implements OutputSettings {
         this.outputPrefix = builder.outputPrefix;
         this.outputFormats = builder.outputFormats;
     }
-    
+
+    public static OutputSettingsBuilder builder() {
+        return new OutputSettingsBuilder();
+    }
+
     public static class OutputSettingsBuilder {
 
         private boolean outputPassVariantsOnly = false;
         private int numberOfGenesToShow = 0;
         private String outputPrefix = "";
         private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML);
+
+        private OutputSettingsBuilder() {}
 
         public OutputSettingsImp build() {
             return new OutputSettingsImp(this);
@@ -119,10 +126,7 @@ public class OutputSettingsImp implements OutputSettings {
         if (!Objects.equals(this.outputPrefix, other.outputPrefix)) {
             return false;
         }
-        if (!Objects.equals(this.outputFormats, other.outputFormats)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.outputFormats, other.outputFormats);
     }
 
     @Override

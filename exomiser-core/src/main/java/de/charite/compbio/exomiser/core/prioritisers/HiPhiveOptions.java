@@ -19,105 +19,53 @@
 
 package de.charite.compbio.exomiser.core.prioritisers;
 
+import com.google.common.collect.Sets;
 import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.Organism;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
+ * Class for specifying HiPhive options. These can trigger benchmarking mode or allow specification of
+ * which organism to run against and whether or not to run against the PPI matrix.
+ *
+ * Valid run parameters are 'human', 'mouse', 'fish', 'ppi'. Combinations must be comma separated, for example
+ * 'human,fish,ppi' will only run the genes against human and fish phenotypes and the ppi matrix.
+ *
+ * Both the diseaseId and the candidate gene symbol must be valid in order to trigger benchmarking mode. When these are
+ * specified the relevant models will be removed from the result set.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class HiPhiveOptions {
     private static final Logger logger = LoggerFactory.getLogger(HiPhiveOptions.class);
+
+    public static final HiPhiveOptions DEFAULT = HiPhiveOptions.builder().build();
+
     private final String diseaseId;
     private final String candidateGeneSymbol;
 
     private final boolean benchmarkingEnabled;
 
-    private boolean runPpi = true;
-    private boolean runHuman = true;
-    private boolean runMouse = true;
-    private boolean runFish = true;
+    private final boolean runPpi;
+    private final boolean runHuman;
+    private final boolean runMouse;
+    private final boolean runFish;
 
-
-    /**
-     * Default constructor with safe empty return values. Use this if you don't want to run HiPhive in benchmarking mode.
-     */
-    public HiPhiveOptions() {
-        diseaseId = "";
-        candidateGeneSymbol = "";
-        benchmarkingEnabled = false;
+    private HiPhiveOptions(Builder builder) {
+        diseaseId = builder.diseaseId;
+        candidateGeneSymbol = builder.candidateGeneSymbol;
+        benchmarkingEnabled = builder.benchmarkingEnabled;
+        runPpi = builder.runPpi;
+        runHuman = builder.runHuman;
+        runMouse = builder.runMouse;
+        runFish = builder.runFish;
     }
-
-    /**
-     * Constructor for use when running HiPhive in benchmarking mode. Both the diseaseId and the candidate gene symbol
-     * must be valid in order to trigger benchmarking mode.
-     *
-     * @param diseaseId
-     * @param candidateGeneSymbol
-     */
-    public HiPhiveOptions(String diseaseId, String candidateGeneSymbol) {
-        this.diseaseId = diseaseId;
-        this.candidateGeneSymbol = candidateGeneSymbol;
-        if (nullOrEmpty(diseaseId) || nullOrEmpty(candidateGeneSymbol)) {
-            benchmarkingEnabled = false;
-        } else {
-            benchmarkingEnabled = true;
-        }
-    }
-
-    private boolean nullOrEmpty(String string) {
-        return string == null || string.isEmpty();
-    }
-
-    /**
-     * Constructor for use when running HiPhive in benchmarking mode with optional parameters to allow specification of
-     * which organism to run against and wether or not to run against the PPI matrix.
-     *
-     * Valid parameters are 'human', 'mouse', 'fish', 'ppi'. Combinations must be comma separated, for example
-     * 'human,fish,ppi' will only run the genes against human and fish phenotypes and the ppi matrix.
-     *
-     * Both the diseaseId and the candidate gene symbol must be valid in order to trigger benchmarking mode.
-     *
-     * @param diseaseId
-     * @param candidateGeneSymbol
-     */
-    public HiPhiveOptions(String diseaseId, String candidateGeneSymbol, String runParameters) {
-        this(diseaseId, candidateGeneSymbol);
-
-        if (!runParameters.isEmpty()) {
-            setAllRunParametersFalse();
-            for (String input : runParameters.split(",")) {
-                String param = input.trim();
-                switch (param) {
-                    case "ppi":
-                        runPpi = true;
-                        break;
-                    case "human":
-                        runHuman = true;
-                        break;
-                    case "mouse":
-                        runMouse = true;
-                        break;
-                    case "fish":
-                        runFish = true;
-                        break;
-                    default:
-                        throw new InvalidRunParameterException(String.format("'%s' is not a valid parameter.", param));
-                }
-            }
-        }
-    }
-
-    private void setAllRunParametersFalse() {
-        runPpi = false;
-        runHuman = false;
-        runMouse = false;
-        runFish = false;
-    }
-
 
     public String getDiseaseId() {
         return diseaseId;
@@ -176,11 +124,11 @@ public class HiPhiveOptions {
         if(organismsToRun.isEmpty()) {
             return Collections.emptySet();
         }
-        return EnumSet.copyOf(organismsToRun);
+        return Sets.immutableEnumSet(organismsToRun);
     }
 
-    public class InvalidRunParameterException extends RuntimeException {
-        public InvalidRunParameterException(String message) {
+    static class InvalidRunParameterException extends RuntimeException {
+        InvalidRunParameterException(String message) {
             super(message);
         }
     }
@@ -241,5 +189,91 @@ public class HiPhiveOptions {
                 ", runMouse=" + runMouse +
                 ", runFish=" + runFish +
                 '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private String diseaseId = "";
+        private String candidateGeneSymbol = "";
+
+        private boolean benchmarkingEnabled = false;
+
+        private boolean runPpi = true;
+        private boolean runHuman = true;
+        private boolean runMouse = true;
+        private boolean runFish = true;
+
+
+        private Builder() {}
+
+        /**
+         * Parses the runParams to determine what needs running. By default all options are enabled. Expects a comma-separated list of parameters. For example
+         * 'human,mouse,fish,ppi' is equivalent to the default, 'human,mouse' will only run HiPhive against human and mouse models.
+         * @param runParams
+         * @return
+         */
+        public Builder runParams(String runParams) {
+            parseRunParams(runParams);
+            return this;
+        }
+
+        private void parseRunParams(String runParameters) {
+            if (runParameters != null && !runParameters.isEmpty()) {
+                setAllRunParametersFalse();
+                for (String input : runParameters.split(",")) {
+                    String param = input.trim();
+                    switch (param) {
+                        case "ppi":
+                            this.runPpi = true;
+                            break;
+                        case "human":
+                            this.runHuman = true;
+                            break;
+                        case "mouse":
+                            this.runMouse = true;
+                            break;
+                        case "fish":
+                            this.runFish = true;
+                            break;
+                        default:
+                            throw new InvalidRunParameterException(String.format("'%s' is not a valid parameter.", param));
+                    }
+                }
+            }
+        }
+
+        private void setAllRunParametersFalse() {
+            this.runPpi = false;
+            this.runHuman = false;
+            this.runMouse = false;
+            this.runFish = false;
+        }
+
+        public Builder candidateGeneSymbol(String candidateGeneSymbol) {
+            this.candidateGeneSymbol = candidateGeneSymbol;
+            return this;
+        }
+
+        public Builder diseaseId(String diseaseId) {
+            this.diseaseId = diseaseId;
+            return this;
+        }
+
+        public HiPhiveOptions build() {
+            this.benchmarkingEnabled = assertBenchmarkingStatus(diseaseId, candidateGeneSymbol);
+            return new HiPhiveOptions(this);
+        }
+
+        private boolean assertBenchmarkingStatus(String diseaseId, String candidateGeneSymbol) {
+            return !(nullOrEmpty(diseaseId) || nullOrEmpty(candidateGeneSymbol));
+        }
+
+        private boolean nullOrEmpty(String string) {
+            return string == null || string.isEmpty();
+        }
     }
 }

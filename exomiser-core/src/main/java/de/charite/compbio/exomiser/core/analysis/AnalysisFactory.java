@@ -140,7 +140,7 @@ public class AnalysisFactory {
         }
 
         public AnalysisBuilder addHiPhivePrioritiser(List<String> hpoIds) {
-            analysisBuilder.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
+            analysisBuilder.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
             return this;
         }
 

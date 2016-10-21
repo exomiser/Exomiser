@@ -31,7 +31,6 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicityData;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PolyPhenScore;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -123,9 +122,10 @@ public class VcfResultsWriterTest {
     @Before
     public void setUp() throws IOException {
         outPath = tmpFolder.newFile().toPath();
-        settings = new OutputSettingsBuilder()
+        settings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
-                .outputPrefix(outPath + "testWrite").build();
+                .outputPrefix(outPath + "testWrite")
+                .build();
 
         instance = new VcfResultsWriter();
 
@@ -221,10 +221,11 @@ public class VcfResultsWriterTest {
         indelVariantEvaluation.addFilterResult(failTargetResult);
         sampleData.setGenes(Arrays.asList(gene1, gene2));
         
-        OutputSettings outputPassVariantsOnlySettings = new OutputSettingsBuilder()
+        OutputSettings outputPassVariantsOnlySettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputPassVariantsOnly(true)
-                .outputPrefix(outPath + "testWrite").build();
+                .outputPrefix(outPath + "testWrite")
+                .build();
         
         String output = instance.writeString(analysis, sampleData, outputPassVariantsOnlySettings);
         String expected = EXPECTED_HEADER
@@ -238,10 +239,11 @@ public class VcfResultsWriterTest {
         indelVariantEvaluation.addFilterResult(failTargetResult);
         sampleData.setGenes(Arrays.asList(gene1, gene2));
 
-        OutputSettings outputPassVariantsOnlySettings = new OutputSettingsBuilder()
+        OutputSettings outputPassVariantsOnlySettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
                 .outputPassVariantsOnly(true)
-                .outputPrefix(outPath + "testWrite").build();
+                .outputPrefix(outPath + "testWrite")
+                .build();
 
         String output = instance.writeString(analysis, sampleData, outputPassVariantsOnlySettings);
         assertThat(output, equalTo(EXPECTED_HEADER));

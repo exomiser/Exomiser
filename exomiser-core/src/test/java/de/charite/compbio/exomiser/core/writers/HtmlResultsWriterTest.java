@@ -38,7 +38,6 @@ import de.charite.compbio.exomiser.core.model.frequency.RsId;
 import de.charite.compbio.exomiser.core.model.pathogenicity.*;
 import de.charite.compbio.exomiser.core.prioritisers.OMIMPriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PhivePriority;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.After;
 import org.junit.Before;
@@ -141,7 +140,7 @@ public class HtmlResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
         SampleData sampleData = makeSampleData(Collections.emptyList(), Collections.emptyList());
        
-        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
         instance.writeFile(analysis, sampleData, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
@@ -157,7 +156,7 @@ public class HtmlResultsWriterTest {
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
         SampleData sampleData = makeSampleData(Collections.emptyList(), variants);
 
-        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
         instance.writeFile(analysis, sampleData, settings);
 
@@ -174,7 +173,7 @@ public class HtmlResultsWriterTest {
         List<Gene> genes = Lists.newArrayList(gene1, gene2);
         SampleData sampleData = makeSampleData(genes, variants);
 
-        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
         instance.writeFile(analysis, sampleData, settings);
         Path testOutFile = Paths.get(testOutFilePrefix);
@@ -197,7 +196,7 @@ public class HtmlResultsWriterTest {
                 .addStep(new PhivePriority(Collections.emptyList(), null))
                 .build();
 
-        OutputSettings settings = new OutputSettingsBuilder().outputPrefix(testOutFilePrefix).build();
+        OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
 
         String output = instance.writeString(analysis, sampleData, settings);
 

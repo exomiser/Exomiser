@@ -183,7 +183,7 @@ public class SettingsParser {
         prioritisers.add(omimPrioritiser);
         //don't add OMIM prioritiser twice to the list
         if (prioritiserType != PriorityType.OMIM_PRIORITY) {
-            Prioritiser prioritiser = prioritiserFactory.makePrioritiser(prioritiserType, settings);
+            Prioritiser prioritiser = prioritiserFactory.makePrioritiser(settings);
             prioritisers.add(prioritiser);
         }
         return prioritisers;

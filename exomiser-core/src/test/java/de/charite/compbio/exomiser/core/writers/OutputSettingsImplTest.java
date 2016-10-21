@@ -7,8 +7,6 @@ package de.charite.compbio.exomiser.core.writers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.EnumSet;
@@ -23,29 +21,18 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class OutputSettingsImplTest {
-    
-    private OutputSettingsImp instance;
-    private OutputSettingsBuilder builder;
-    
-    @Before
-    public void setUp() {
-        builder = new OutputSettingsBuilder();
-    }
 
-    private void buildInstance() {
-        instance = builder.build();
-    }
-    
     @Test
     public void testThatDefaultOutputPassVariantsOptionIsFalse() {
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder().build();
         assertThat(instance.outputPassVariantsOnly(), equalTo(false));
     }
-    
+
     @Test
     public void testThatBuilderProducesOutputPassVariantsOptionWhenSet() {
-        builder.outputPassVariantsOnly(true);
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder()
+                .outputPassVariantsOnly(true)
+                .build();
         assertThat(instance.outputPassVariantsOnly(), equalTo(true));
     }
 
@@ -54,15 +41,16 @@ public class OutputSettingsImplTest {
      */
     @Test
     public void testThatDefaultNumberOfGenesToShowIsZero() {
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder().build();
         assertThat(instance.getNumberOfGenesToShow(), equalTo(0));
     }
     
     @Test
     public void testThatBuilderCanSetNumberOfGenesToShow() {
         int numGenes = 200;
-        builder.numberOfGenesToShow(numGenes);
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder()
+                .numberOfGenesToShow(numGenes)
+                .build();
         assertThat(instance.getNumberOfGenesToShow(), equalTo(numGenes));
     }
 
@@ -71,15 +59,16 @@ public class OutputSettingsImplTest {
      */
     @Test
     public void testThatBuilderProducesDefaultOutFileName() {
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder().build();
         assertThat(instance.getOutputPrefix(), equalTo(""));
     }
     
     @Test
     public void testThatBuilderProducesSetOutFileName() {
         String outputPrefix = "wibble";
-        builder.outputPrefix(outputPrefix);
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder()
+                .outputPrefix(outputPrefix)
+                .build();
         assertThat(instance.getOutputPrefix(), equalTo(outputPrefix));
     }
 
@@ -88,42 +77,43 @@ public class OutputSettingsImplTest {
      */
     @Test
     public void testThatDefaultOutputFormatIsHtml() {
-        buildInstance();
-        assertThat(instance.getOutputFormats(), equalTo((Set<OutputFormat>) EnumSet.of(OutputFormat.HTML)));
+        OutputSettings instance = OutputSettings.builder().build();
+        assertThat(instance.getOutputFormats(), equalTo(EnumSet.of(OutputFormat.HTML)));
     }
 
     @Test
     public void testThatBuilderProducesSetOutputFormat() {
         Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.TSV_GENE);
-        builder.outputFormats(outputFormats);
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder()
+                .outputFormats(outputFormats)
+                .build();
         assertThat(instance.getOutputFormats(), equalTo(outputFormats));
     }
     
     @Test
     public void testHashCode() {
-        buildInstance();
-        OutputSettingsImp other = new OutputSettingsBuilder().build();
+        OutputSettings instance = OutputSettings.builder().build();
+        OutputSettings other = OutputSettings.builder().build();
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
     
     @Test
     public void testEquals() {
-        buildInstance();
-        OutputSettingsImp other = new OutputSettingsBuilder().build();
+        OutputSettings instance = OutputSettings.builder().build();
+        OutputSettings other = OutputSettings.builder().build();
         assertThat(instance, equalTo(other));
     }
     
     @Test
     public void testToString() {
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder().build();
         System.out.println(instance);
         assertThat(instance.toString().isEmpty(), is(false));
     }
     
     @Test
     public void testCanBuildFromYaml() throws Exception {
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder().build();
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         
         OutputSettings createdFromYaml = mapper.readValue("outputPassVariantsOnly: false\n"
@@ -137,7 +127,7 @@ public class OutputSettingsImplTest {
     
     @Test
     public void testCanOutputAsYaml() throws Exception {
-        buildInstance();
+        OutputSettings instance = OutputSettings.builder().build();
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         String output = mapper.writeValueAsString(instance);
         System.out.println(output);        

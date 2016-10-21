@@ -24,7 +24,6 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettingsImpl.PrioritiserSettingsBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +50,7 @@ public class PriorityFactoryImplTest {
     private PriorityFactoryImpl instance;
 
     private PrioritiserSettings buildValidSettingsWithPrioritiser(PriorityType priorityType) {
-        PrioritiserSettingsBuilder settingsBuilder = new PrioritiserSettingsBuilder();
-        settingsBuilder.usePrioritiser(priorityType);
-        return settingsBuilder.build();
+        return PrioritiserSettings.builder().usePrioritiser(priorityType).build();
     }
 
     @Test
@@ -61,7 +58,7 @@ public class PriorityFactoryImplTest {
         PriorityType type = PriorityType.OMIM_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
@@ -70,7 +67,7 @@ public class PriorityFactoryImplTest {
         PriorityType type = PriorityType.EXOMEWALKER_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
@@ -79,7 +76,7 @@ public class PriorityFactoryImplTest {
         PriorityType type = PriorityType.HIPHIVE_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
@@ -87,13 +84,13 @@ public class PriorityFactoryImplTest {
     public void testmakeHiPhivePrioritiserWithDiseaseIdAndEmptyHpoList() {
         PriorityType type = PriorityType.HIPHIVE_PRIORITY;
         List<String> emptyStringList = Collections.emptyList();
-        PrioritiserSettings settings = new PrioritiserSettingsBuilder()
+        PrioritiserSettings settings = PrioritiserSettings.builder()
                 .usePrioritiser(type)
                 .diseaseId("OMIM:101600")
                 .hpoIdList(emptyStringList)
                 .build();
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
@@ -102,7 +99,7 @@ public class PriorityFactoryImplTest {
         PriorityType type = PriorityType.PHIVE_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
@@ -111,7 +108,7 @@ public class PriorityFactoryImplTest {
         PriorityType type = PriorityType.PHENIX_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
@@ -120,7 +117,7 @@ public class PriorityFactoryImplTest {
         PriorityType type = PriorityType.UBERPHENO_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
     }
 
@@ -129,7 +126,7 @@ public class PriorityFactoryImplTest {
         PriorityType type = PriorityType.NONE;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
-        Prioritiser prioritiser = instance.makePrioritiser(type, settings);
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
         assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
     }
 

@@ -35,7 +35,7 @@ import java.util.Set;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FilterSettingsImpl implements FilterSettings {
+class FilterSettingsImpl implements FilterSettings {
 
     //FILTER variables
     private final float maximumFrequency;
@@ -58,6 +58,10 @@ public class FilterSettingsImpl implements FilterSettings {
         modeOfInheritance = builder.modeOfInheritance;
     }
 
+    public static FilterSettingsBuilder builder() {
+        return new FilterSettingsBuilder();
+    }
+
     public static class FilterSettingsBuilder {
 
         private float maximumFrequency = 100.00f;
@@ -68,7 +72,9 @@ public class FilterSettingsImpl implements FilterSettings {
         private boolean keepOffTargetVariants = false;
         private Set<Integer> geneIdsToKeep = Collections.emptySet();
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
-        
+
+        private FilterSettingsBuilder() {}
+
         public FilterSettings build() {
             return new FilterSettingsImpl(this);
         }
@@ -198,10 +204,7 @@ public class FilterSettingsImpl implements FilterSettings {
         if (!Objects.equals(this.genesToKeep, other.genesToKeep)) {
             return false;
         }
-        if (this.modeOfInheritance != other.modeOfInheritance) {
-            return false;
-        }
-        return true;
+        return this.modeOfInheritance == other.modeOfInheritance;
     }
 
     @Override

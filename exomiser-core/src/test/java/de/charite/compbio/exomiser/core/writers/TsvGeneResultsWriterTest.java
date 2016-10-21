@@ -27,7 +27,6 @@ package de.charite.compbio.exomiser.core.writers;
 import de.charite.compbio.exomiser.core.analysis.Analysis;
 import de.charite.compbio.exomiser.core.model.Gene;
 import de.charite.compbio.exomiser.core.model.SampleData;
-import de.charite.compbio.exomiser.core.writers.OutputSettingsImp.OutputSettingsBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,8 +70,10 @@ public class TsvGeneResultsWriterTest {
 
     @Test
     public void testWrite() {
-        OutputSettings settings = new OutputSettingsBuilder().outputPrefix("testWrite")
-                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE)).build();
+        OutputSettings settings = OutputSettings.builder()
+                .outputPrefix("testWrite")
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
+                .build();
         instance.writeFile(analysis, sampleData, settings);
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().delete());
@@ -80,16 +81,18 @@ public class TsvGeneResultsWriterTest {
 
     @Test
     public void testWriteString() {
-        OutputSettings settings = new OutputSettingsBuilder().outputFormats(
-                EnumSet.of(OutputFormat.TSV_GENE)).build();
+        OutputSettings settings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
+                .build();
         String outString = instance.writeString(analysis, sampleData, settings);
         assertThat(outString, equalTo(HEADER + GENE_STRING));
     }
 
     @Test
     public void testWriteStringStartsWithAHeaderLine() {
-        OutputSettings settings = new OutputSettingsBuilder().outputFormats(
-                EnumSet.of(OutputFormat.TSV_GENE)).build();
+        OutputSettings settings = OutputSettings.builder()
+                .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
+                .build();
         String outString = instance.writeString(analysis, sampleData, settings);
         String[] lines = outString.split("\n");
         assertThat(lines[0] + "\n", equalTo(HEADER));

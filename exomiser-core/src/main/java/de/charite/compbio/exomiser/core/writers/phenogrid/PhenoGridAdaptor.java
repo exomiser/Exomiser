@@ -113,7 +113,7 @@ public class PhenoGridAdaptor {
         for (ModelPhenotypeMatch modelPhenotypeMatch : diseaseGeneModels) {
             PhenoGridMatchScore score = new PhenoGridMatchScore("hiPhive", (int) (modelPhenotypeMatch.getScore() * 100f), modelCount++);
             logger.debug("Made new {} score modelScore:{} gridScore:{} rank:{}", modelPhenotypeMatch.getOrganism(), modelPhenotypeMatch.getScore(), score.getScore(), score.getRank());
-            List<PhenotypeMatch> phenotypeMatches = new ArrayList<>(modelPhenotypeMatch.getBestPhenotypeMatchForTerms().values());
+            List<PhenotypeMatch> phenotypeMatches = modelPhenotypeMatch.getBestPhenotypeMatchForTerms();
             if (modelPhenotypeMatch.getOrganism() == Organism.HUMAN) {
                 PhenoGridMatch match = makeDiseasePhenoGridMatch(modelPhenotypeMatch, phenotypeMatches, score, taxon);
                 phenoGridMatches.add(match);            

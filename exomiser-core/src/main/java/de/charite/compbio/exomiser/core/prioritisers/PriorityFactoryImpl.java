@@ -59,14 +59,12 @@ public class PriorityFactoryImpl implements PriorityFactory {
      * settings provided. Will return a non-functional prioritiser in cases
      * where the type is not recognised.
      *
-     * @param priorityType
      * @param settings
      * @return
      */
     @Override
-    //TODO: this should probably move into the Exomiser class now - it's only used there.
-    public Prioritiser makePrioritiser(PriorityType priorityType, PrioritiserSettings settings) {
-        //These should form the PrioritySettings interface
+    public Prioritiser makePrioritiser(PrioritiserSettings settings) {
+        PriorityType priorityType = settings.getPrioritiserType();
         List<String> hpoIds = settings.getHpoIds();
         List<Integer> entrezSeedGenes = settings.getSeedGeneList();
         String diseaseId = settings.getDiseaseId();
@@ -84,7 +82,12 @@ public class PriorityFactoryImpl implements PriorityFactory {
             case PHENIX_PRIORITY:
                 return makePhenixPrioritiser(hpoIds);
             case HIPHIVE_PRIORITY:
-                return makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions(diseaseId, candidateGene, hiPhiveParams));
+                HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
+                        .diseaseId(diseaseId)
+                        .candidateGeneSymbol(candidateGene)
+                        .runParams(hiPhiveParams)
+                        .build();
+                return makeHiPhivePrioritiser(hpoIds, hiPhiveOptions);
             case PHIVE_PRIORITY:
                 return makePhivePrioritiser(hpoIds);
             case EXOMEWALKER_PRIORITY:

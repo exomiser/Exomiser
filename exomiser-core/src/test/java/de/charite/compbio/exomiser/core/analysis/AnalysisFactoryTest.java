@@ -27,6 +27,9 @@ import de.charite.compbio.exomiser.core.filters.PassAllVariantEffectsFilter;
 import de.charite.compbio.exomiser.core.model.frequency.FrequencySource;
 import de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource;
 import de.charite.compbio.exomiser.core.prioritisers.*;
+import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,10 +37,6 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -216,7 +215,7 @@ public class AnalysisFactoryTest {
 
     @Test
     public void testCanSpecifyHiPhivePrioritiser_noOptions() {
-        steps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, new HiPhiveOptions()));
+        steps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
 
         analysisBuilder.addHiPhivePrioritiser(hpoIds);
 
@@ -225,7 +224,11 @@ public class AnalysisFactoryTest {
 
     @Test
     public void testCanSpecifyHiPhivePrioritiser_withOptions() {
-        HiPhiveOptions options = new HiPhiveOptions("DISEASE:123", "GENE1", "human,mouse,fish,ppi");
+        HiPhiveOptions options = HiPhiveOptions.builder()
+                .diseaseId("DISEASE:123")
+                .candidateGeneSymbol("GENE1")
+                .runParams("human,mouse,fish,ppi")
+                .build();
 
         steps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, options));
 

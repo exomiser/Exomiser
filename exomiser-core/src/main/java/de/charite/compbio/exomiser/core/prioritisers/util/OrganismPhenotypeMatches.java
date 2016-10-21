@@ -144,15 +144,16 @@ public class OrganismPhenotypeMatches {
     /**
      * Calculates the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches.     *
      * @param bestForwardAndReciprocalMatches
-     * @return A map of the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches
+     * @return A list of the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches
      */
-    public Map<PhenotypeTerm, PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
+    public List<PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
         Map<PhenotypeTerm, Optional<PhenotypeMatch>> bestOptionalPhenotypeMatchForTerms = bestForwardAndReciprocalMatches.stream()
                 .collect(groupingBy(PhenotypeMatch::getQueryPhenotype, maxBy(comparingDouble(PhenotypeMatch::getScore))));
 
-        return bestOptionalPhenotypeMatchForTerms.entrySet().stream()
-                .filter(entry -> entry.getValue().isPresent())
-                .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
+        return bestOptionalPhenotypeMatchForTerms.values().stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
     }
 
     public TheoreticalModel getBestTheoreticalModel() {

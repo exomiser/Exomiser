@@ -7,6 +7,8 @@ package de.charite.compbio.exomiser.core.prioritisers;
 
 import java.util.List;
 
+import static de.charite.compbio.exomiser.core.prioritisers.PrioritiserSettingsImpl.PrioritiserSettingsBuilder;
+
 /**
  * Settings parameters required by the prioritisers.
  * 
@@ -14,15 +16,19 @@ import java.util.List;
  */
 public interface PrioritiserSettings {
 
-    public PriorityType getPrioritiserType();
+    static PrioritiserSettingsBuilder builder() {
+        return PrioritiserSettingsImpl.builder();
+    }
+
+    PriorityType getPrioritiserType();
     
-    public String getDiseaseId();
+    String getDiseaseId();
 
-    public String getCandidateGene();
+    String getCandidateGene();
 
-    public List<String> getHpoIds();
+    List<String> getHpoIds();
 
-    public List<Integer> getSeedGeneList();
+    List<Integer> getSeedGeneList();
 
-    public String getExomiser2Params();
+    String getExomiser2Params();
 }
