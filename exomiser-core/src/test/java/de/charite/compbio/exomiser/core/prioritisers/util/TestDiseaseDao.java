@@ -19,7 +19,7 @@
 
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
-import de.charite.compbio.exomiser.core.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.prioritisers.dao.DiseaseDao;
 
 import java.util.*;
 

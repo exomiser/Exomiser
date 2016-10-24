@@ -25,11 +25,11 @@
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ImmutableMap;
-import de.charite.compbio.exomiser.core.dao.DiseaseDao;
 import de.charite.compbio.exomiser.core.model.Model;
 import de.charite.compbio.exomiser.core.model.Organism;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
+import de.charite.compbio.exomiser.core.prioritisers.dao.DiseaseDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

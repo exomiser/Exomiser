@@ -19,9 +19,12 @@
 
 package de.charite.compbio.exomiser.core.model.pathogenicity;
 
+import com.google.common.collect.Sets;
+
 import java.util.*;
 
 import static de.charite.compbio.exomiser.core.model.pathogenicity.PathogenicitySource.*;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Container for PathogenicityScore data about a variant.
@@ -35,7 +38,7 @@ public class PathogenicityData {
     public static final PathogenicityData EMPTY_DATA = new PathogenicityData();
 
     public PathogenicityData(PathogenicityScore... pathScore) {
-        this(new HashSet<>(Arrays.asList(pathScore)));
+        this(Sets.newHashSet(pathScore));
     }
 
     public PathogenicityData(Collection<PathogenicityScore> pathScores) {
@@ -68,7 +71,7 @@ public class PathogenicityData {
     }
     
     public List<PathogenicityScore> getPredictedPathogenicityScores() {
-        return new ArrayList(pathogenicityScores.values());
+        return pathogenicityScores.values().stream().collect(toList());
     }
 
     public boolean hasPredictedScore() {
@@ -95,7 +98,7 @@ public class PathogenicityData {
     public PathogenicityScore getMostPathogenicScore() {
         if (pathogenicityScores.isEmpty()) {
             return null;
-            //TODO: return a new NonPathogenicPathogenicityScore?
+            //TODO: return a new NonPathogenicPathogenicityScore? Optional<PathogenicityScore>?
 //            return new AbstractPathogenicityScore(VariantTypePathogenicityScores.NON_PATHOGENIC_SCORE, VARIANT_TYPE);
         }
         List<PathogenicityScore> knownPathScores = this.getPredictedPathogenicityScores();
@@ -138,10 +141,7 @@ public class PathogenicityData {
             return false;
         }
         final PathogenicityData other = (PathogenicityData) obj;
-        if (!Objects.equals(this.pathogenicityScores, other.pathogenicityScores)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.pathogenicityScores, other.pathogenicityScores);
     }
 
     @Override

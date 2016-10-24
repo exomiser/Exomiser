@@ -20,10 +20,7 @@
 package de.charite.compbio.exomiser.core.dao;
 
 import de.charite.compbio.exomiser.core.model.RegulatoryFeature;
-
-import static de.charite.compbio.exomiser.core.model.RegulatoryFeature.FeatureType.*;
-
-import org.junit.Ignore;
+import de.charite.compbio.exomiser.core.prioritisers.dao.DaoTestConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +31,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static de.charite.compbio.exomiser.core.model.RegulatoryFeature.FeatureType.ENHANCER;
+import static de.charite.compbio.exomiser.core.model.RegulatoryFeature.FeatureType.FANTOM_PERMISSIVE;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>

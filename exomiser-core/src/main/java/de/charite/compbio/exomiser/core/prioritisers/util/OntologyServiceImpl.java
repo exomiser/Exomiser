@@ -5,18 +5,19 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
-import de.charite.compbio.exomiser.core.dao.DiseaseDao;
-import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.model.PhenotypeMatch;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import de.charite.compbio.exomiser.core.prioritisers.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.prioritisers.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.prioritisers.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.prioritisers.dao.ZebraFishPhenotypeOntologyDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Service for retrieving phenotype data from the database for use by the

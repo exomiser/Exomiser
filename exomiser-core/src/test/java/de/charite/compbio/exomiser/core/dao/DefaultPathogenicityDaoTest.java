@@ -27,6 +27,7 @@ package de.charite.compbio.exomiser.core.dao;
 import de.charite.compbio.exomiser.core.model.Variant;
 import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.model.pathogenicity.*;
+import de.charite.compbio.exomiser.core.prioritisers.dao.DaoTestConfig;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.Test;
 import org.junit.runner.RunWith;

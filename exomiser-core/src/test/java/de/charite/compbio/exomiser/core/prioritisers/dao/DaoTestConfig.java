@@ -22,13 +22,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.charite.compbio.exomiser.core.dao;
+package de.charite.compbio.exomiser.core.prioritisers.dao;
 
-import javax.sql.DataSource;
+import de.charite.compbio.exomiser.core.dao.DefaultFrequencyDao;
+import de.charite.compbio.exomiser.core.dao.DefaultPathogenicityDao;
+import de.charite.compbio.exomiser.core.dao.RegulatoryFeatureDao;
+import de.charite.compbio.exomiser.core.dao.TadDao;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
 
 /**
  *

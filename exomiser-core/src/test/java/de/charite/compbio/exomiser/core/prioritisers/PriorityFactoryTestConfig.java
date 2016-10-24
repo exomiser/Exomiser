@@ -24,7 +24,7 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers;
 
-import de.charite.compbio.exomiser.core.dao.*;
+import de.charite.compbio.exomiser.core.prioritisers.dao.*;
 import de.charite.compbio.exomiser.core.prioritisers.util.*;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jblas.FloatMatrix;

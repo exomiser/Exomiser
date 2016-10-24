@@ -24,11 +24,11 @@
  */
 package de.charite.compbio.exomiser.core.prioritisers.util;
 
-import de.charite.compbio.exomiser.core.dao.DiseaseDao;
-import de.charite.compbio.exomiser.core.dao.HumanPhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.MousePhenotypeOntologyDao;
-import de.charite.compbio.exomiser.core.dao.ZebraFishPhenotypeOntologyDao;
 import de.charite.compbio.exomiser.core.model.PhenotypeTerm;
+import de.charite.compbio.exomiser.core.prioritisers.dao.DiseaseDao;
+import de.charite.compbio.exomiser.core.prioritisers.dao.HumanPhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.prioritisers.dao.MousePhenotypeOntologyDao;
+import de.charite.compbio.exomiser.core.prioritisers.dao.ZebraFishPhenotypeOntologyDao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,13 +96,13 @@ public class OntologyServiceImplTest {
     private void setUpDaoMocks() {
         setUpDiseaseDaoMock();
         Mockito.when(mockHpoDao.getAllTerms()).thenReturn(hpoTerms);
-        Mockito.when(mockHpoDao.getPhenotypeMatchesForHpoTerm((PhenotypeTerm) Mockito.any())).thenReturn(Collections.EMPTY_SET);
+        Mockito.when(mockHpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.EMPTY_SET);
 
         Mockito.when(mockMpoDao.getAllTerms()).thenReturn(mpoTerms);
-        Mockito.when(mockMpoDao.getPhenotypeMatchesForHpoTerm((PhenotypeTerm) Mockito.any())).thenReturn(Collections.EMPTY_SET);
+        Mockito.when(mockMpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.EMPTY_SET);
 
         Mockito.when(mockZpoDao.getAllTerms()).thenReturn(zpoTerms);
-        Mockito.when(mockZpoDao.getPhenotypeMatchesForHpoTerm((PhenotypeTerm) Mockito.any())).thenReturn(Collections.EMPTY_SET);
+        Mockito.when(mockZpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.EMPTY_SET);
     }
 
     private void setUpDiseaseDaoMock() {
