@@ -88,7 +88,7 @@ public class PhivePriority implements Prioritiser {
         Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
 
         Set<Model> modelsToScore = priorityService.getModelsForOrganism(Organism.MOUSE).stream()
-//                .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
+                .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
                 .collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
 
         List<ModelPhenotypeMatch> scoredModels = scoreModels(bestTheoreticalModel, humanMousePhenotypeMatches, modelsToScore);
