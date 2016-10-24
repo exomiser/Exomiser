@@ -46,7 +46,7 @@ public class AnalysisConfig {
     Path analysisPath() {
         Path analysisPath = Paths.get(environment.getProperty("exomiser.working-directory"));
         try {
-            if (!Files.exists(analysisPath)) {
+            if (!analysisPath.toFile().exists()) {
                 logger.info("Setting up analysis path at {}", analysisPath);
                 Files.createDirectory(analysisPath);
             }

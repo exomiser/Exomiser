@@ -76,7 +76,7 @@ public class MainConfig {
         //TODO: get this from env i.e. exomiser.properties? Will help with server too
         Path defaultOutputDir = jarFilePath().resolve("results");
         try {
-            if (!Files.exists(defaultOutputDir)) {
+            if (!defaultOutputDir.toFile().exists()) {
                 Files.createDirectory(defaultOutputDir);
             }
         } catch (IOException ex) {
