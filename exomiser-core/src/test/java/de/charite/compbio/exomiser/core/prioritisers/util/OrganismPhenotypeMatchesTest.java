@@ -31,6 +31,7 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -113,12 +114,9 @@ public class OrganismPhenotypeMatchesTest {
 
     @Test
     public void testCanCalculateBestPhenotypeMatchesByTerm() {
-        List<PhenotypeMatch> expected = Lists.newArrayList(bestToeMatch, perfectNoseMatch);
-
         List<PhenotypeMatch> bestForwardAndReciprocalMatches = Lists.newArrayList(noseMatch, bestToeMatch, perfectNoseMatch, bestToeMatch);
         List<PhenotypeMatch> result = instance.calculateBestPhenotypeMatchesByTerm(bestForwardAndReciprocalMatches);
-        result.forEach(System.out::println);
-        assertThat(result, equalTo(expected));
+        assertThat(result, containsInAnyOrder(bestToeMatch, perfectNoseMatch));
     }
 
     @Test
