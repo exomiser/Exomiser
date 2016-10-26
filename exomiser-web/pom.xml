@@ -28,8 +28,8 @@
     <name>exomiser-web</name>
 
     <parent>
-        <artifactId>Exomiser</artifactId>
-        <groupId>de.charite.compbio</groupId>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
         <version>7.3.0-SNAPSHOT</version>
     </parent>
 
@@ -54,7 +54,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.charite.compbio</groupId>
+            <groupId>org.monarchinitiative</groupId>
             <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

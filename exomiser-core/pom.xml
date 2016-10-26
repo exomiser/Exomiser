@@ -26,8 +26,8 @@
     <name>exomiser-core</name>
 
     <parent>    
-        <groupId>de.charite.compbio</groupId>
-        <artifactId>Exomiser</artifactId>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
         <version>7.3.0-SNAPSHOT</version>
     </parent>
 

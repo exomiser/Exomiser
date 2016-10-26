@@ -1,0 +1,56 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.monarchinitiative.exomiser.core.writers;
+
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+/**
+ *
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ */
+public class VariantEffectCountTest {
+    
+    private VariantEffectCount instance;
+    
+    private VariantEffect effect;
+    private List<Integer> counts;
+    
+    @Before
+    public void setUp() {
+        
+        effect = VariantEffect.MISSENSE_VARIANT;
+        
+        counts = new ArrayList<>();
+        counts.addAll(Arrays.asList(1, 2, 3));
+        
+        instance = new VariantEffectCount(effect, counts);
+    }
+
+    @Test
+    public void testGetVariantType() {
+        assertThat(instance.getVariantType(), equalTo(effect));
+    }
+
+    @Test
+    public void testGetSampleVariantTypeCounts() {
+        assertThat(instance.getSampleVariantTypeCounts(), equalTo(counts));
+    }
+
+    @Test
+    public void testToString() {
+        assertThat(instance.toString(), equalTo("MISSENSE_VARIANT=[1, 2, 3]"));
+    }
+    
+}
