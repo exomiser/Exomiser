@@ -25,15 +25,15 @@ Running the application from App.main requires that the files in src/main/resour
 are correctly configured. These files and other configurations are injected into 
 the application by the classes in the exomiser.config package:
 
-* de.charite.compbio.exomiser.config.AppConfig
+* org.monarchinitiative.exomiser.config.AppConfig
     
 Injects the data from the app.properties 
 
-* de.charite.compbio.exomiser.config.DataSourceConfig
+* org.monarchinitiative.exomiser.config.DataSourceConfig
     
 Injects the DataSources for the database connections
 
-* de.charite.compbio.exomiser.config.ResourceConfig
+* org.monarchinitiative.exomiser.config.ResourceConfig
     
 Injects the Resources - these specify where the data should be downloaded 
 from, how it should be handled in order that the parser can parse it, what parser 
