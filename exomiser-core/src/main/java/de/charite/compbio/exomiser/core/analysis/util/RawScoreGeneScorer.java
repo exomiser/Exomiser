@@ -29,13 +29,10 @@ import de.charite.compbio.exomiser.core.model.VariantEvaluation;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityResult;
 import de.charite.compbio.exomiser.core.prioritisers.PriorityType;
 import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  *
@@ -193,8 +190,14 @@ public class RawScoreGeneScorer implements GeneScorer {
         sortFilterScoresInDecendingOrder(homFilterScores);
         sortFilterScoresInDecendingOrder(hetFilterScores);
 
+        if (hetFilterScores.size() < 2 && homFilterScores.isEmpty()) {
+            //not really AR are we?
+            return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
+        }
+
         float bestCmpHetScore = 0f;
         float bestHomScore = 0f;
+
         if (hetFilterScores.size() >= 2) {
             bestCmpHetScore = calculateAverageOfFirstTwoScores(hetFilterScores);
         }
