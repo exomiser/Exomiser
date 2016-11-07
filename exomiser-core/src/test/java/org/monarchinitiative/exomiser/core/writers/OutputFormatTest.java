@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * Tests for {@link de.charite.compbio.exomiser.util.OutputFormat}
+ * Tests for {@link org.monarchinitiative.exomiser.core.writers.OutputFormat}
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */

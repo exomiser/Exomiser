@@ -21,9 +21,9 @@ import java.util.Map;
  * For example the OMIM resources mordbidmap and mim2gene have related
  * information which needs to be drawn together in order to produce the final
  * dump file for the omim table. The
- * {@code de.charite.compbio.exomiser.resources.ResourceGroup} provides a means
+ * {@code org.monarchinitiative.exomiser.resources.ResourceGroup} provides a means
  * of grouping these together so that they can be parsed in the correct order by
- * a {@code de.charite.compbio.exomiser.parsers.ResourceGroupParser}.
+ * a {@code org.monarchinitiative.exomiser.parsers.ResourceGroupParser}.
  *
  * @see ResourceGroupParser
  *
@@ -74,9 +74,9 @@ public class ResourceGroup {
     }
 
     /**
-     * Returns the {@code de.charite.compbio.exomiser.resources.Resource} which
+     * Returns the {@code org.monarchinitiative.exomiser.resources.Resource} which
      * is parsed by the specified
-     * {@code de.charite.compbio.exomiser.parsers.ResourceParser} class or a
+     * {@code org.monarchinitiative.exomiser.parsers.ResourceParser} class or a
      * null.
      *
      * <p>
@@ -84,13 +84,13 @@ public class ResourceGroup {
      * ResourceGroup as opposed to the getResource(String resourceName).
      * Although there is a potential for configuring things incorrectly to start
      * with, there is better type-safety using the full class groupName of the
-     * {@code de.charite.compbio.exomiser.parsers.ResourceParser}
+     * {@code org.monarchinitiative.exomiser.parsers.ResourceParser}
      *
      * @param clazz the class of the
-     * {@code de.charite.compbio.exomiser.parsers.ResourceParser} used to parse
-     * a {@code de.charite.compbio.exomiser.resources.Resource}
+     * {@code org.monarchinitiative.exomiser.parsers.ResourceParser} used to parse
+     * a {@code org.monarchinitiative.exomiser.resources.Resource}
      * @return The matching
-     * {@code de.charite.compbio.exomiser.resources.Resource} or null if no
+     * {@code org.monarchinitiative.exomiser.resources.Resource} or null if no
      * match is found.
      */
     public Resource getResource(Class<? extends ResourceParser> clazz) {
@@ -98,7 +98,7 @@ public class ResourceGroup {
     }
 
     /**
-     * Returns the {@code de.charite.compbio.exomiser.resources.Resource} with
+     * Returns the {@code org.monarchinitiative.exomiser.resources.Resource} with
      * the same groupName as the provided resourceName or a null.
      *
      * <p>
@@ -109,9 +109,9 @@ public class ResourceGroup {
      *
      *
      * @param resourceName the groupName of the required
-     * {@code de.charite.compbio.exomiser.resources.Resource}
+     * {@code org.monarchinitiative.exomiser.resources.Resource}
      * @return The matching
-     * {@code de.charite.compbio.exomiser.resources.Resource} or null if no
+     * {@code org.monarchinitiative.exomiser.resources.Resource} or null if no
      * match is found.
      */
     public Resource getResource(String resourceName) {

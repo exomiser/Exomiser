@@ -72,9 +72,9 @@ public class MainConfig {
     }
 
     @Bean
-    public Path resultsDir() {
+    public Path resultsDir(Path jarFilePath) {
         //TODO: get this from env i.e. exomiser.properties? Will help with server too
-        Path defaultOutputDir = jarFilePath().resolve("results");
+        Path defaultOutputDir = jarFilePath.resolve("results");
         try {
             if (!defaultOutputDir.toFile().exists()) {
                 Files.createDirectory(defaultOutputDir);
@@ -87,17 +87,17 @@ public class MainConfig {
     }
 
     @Bean
-    public Path exomiserDataDirectory() {
+    public Path exomiserDataDirectory(Path jarFilePath) {
         String dataDirValue = env.getProperty("dataDir");
         logger.info("Data source directory defined in properties as: {}", dataDirValue);
-        Path dataPath = jarFilePath().resolve(dataDirValue);
+        Path dataPath = jarFilePath.resolve(dataDirValue);
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
         return dataPath;
     }
 
     @Bean
-    public Resource ehCacheConfig() {
-      return new PathResource(jarFilePath().resolve("ehcache.xml"));
+    public Resource ehCacheConfig(Path jarFilePath) {
+      return new PathResource(jarFilePath.resolve("ehcache.xml"));
     }
 
     @Bean

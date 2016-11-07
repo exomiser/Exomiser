@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Main class for building the exomiser database. This will attempt to download
  * and process the resources specified in the app.properties file.
- * {@code  de.charite.compbio.exomiser.config.ResourceConfig}.
+ * {@code  org.monarchinitiative.exomiser.config.ResourceConfig}.
  *
  */
 public class Main {

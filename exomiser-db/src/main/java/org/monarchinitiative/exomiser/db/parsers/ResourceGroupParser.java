@@ -20,8 +20,8 @@ import java.nio.file.Path;
 public interface ResourceGroupParser {
    
     /**
-     * Parses the {@code de.charite.compbio.exomiser.resources.Resource} contained in the 
-     * {@code de.charite.compbio.exomiser.resources.ResourceGroup} according to 
+     * Parses the {@code org.monarchinitiative.exomiser.resources.Resource} contained in the
+     * {@code org.monarchinitiative.exomiser.resources.ResourceGroup} according to
      * the internal rules of the {@cadede.charite.compbio.exomiser.parsers.ResourceGroupParser}
      * implementation.
      * 

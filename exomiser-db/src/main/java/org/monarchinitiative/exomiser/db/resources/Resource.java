@@ -18,10 +18,10 @@ import java.util.Objects;
  * locally. How it should be downloaded and extracted, which class is required to
  * parse the resource and whether this is also required by other resources in 
  * order to parse them as part of a 
- * {@code de.charite.compbio.exomiser.resources.ResourceGroup}.
+ * {@code org.monarchinitiative.exomiser.resources.ResourceGroup}.
  * 
  * It also tracks the download, extract and parse steps as 
- * {@code de.charite.compbio.exomiser.resources.ResourceOperationStatus}s 
+ * {@code org.monarchinitiative.exomiser.resources.ResourceOperationStatus}s
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */

@@ -33,8 +33,8 @@ import static java.util.stream.Collectors.maxBy;
 
 /**
  * This interface is implemented by classes that perform prioritisation of genes
- * (i.e., {@link de.charite.compbio.exomiser.exome.Gene Gene} objects). In contrast to the classes
- * that implement {@code de.charite.compbio.exomiser.filter.Filter}, which remove variants from
+ * (i.e., {@link org.monarchinitiative.exomiser.core.model.Gene Gene} objects). In contrast to the classes
+ * that implement {@code org.monarchinitiative.exomiser.filter.Filter}, which remove variants from
  * further consideration (e.g., because they are not predicted to be at all
  * pathogenic), FilterType is intended to work on genes (predict the relevance of
  * the gene to the disease, without taking the nature or pathogenicity of any
@@ -46,17 +46,14 @@ import static java.util.stream.Collectors.maxBy;
  *
  * @author Peter N Robinson
  * @version 0.13 (13 May, 2013).
- * @see de.charite.compbio.exomiser.filter.Filter
+ * @see org.monarchinitiative.exomiser.core.filters.Filter
  */
 public interface Prioritiser extends AnalysisStep {
 
     /**
      * Apply a prioritization algorithm to a list of
      * {@link Gene Gene} objects. This will have the side effect
-     * of setting the Class variable {@link Gene#priorityScore}
-     * correspondingly. This, together with the filter scores of the {@link jannovar.exome.Variant Variant}
-     * {@link Gene Gene} objects can then be used to sort the
-     * {@link Gene Gene} objects.
+     * of adding the PriorityResult to the Gene object.
      * <p>
      *
      * @param genes

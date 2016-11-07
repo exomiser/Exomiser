@@ -39,10 +39,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class JdbcExomiserDao implements ExomiserDao {
 
-    Logger logger = LoggerFactory.getLogger(JdbcExomiserDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcExomiserDao.class);
+
+    private final DataSource dataSource;
 
     @Autowired
-    private DataSource dataSource;
+    public JdbcExomiserDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @Override
     public Map<String, String> getDiseases() {

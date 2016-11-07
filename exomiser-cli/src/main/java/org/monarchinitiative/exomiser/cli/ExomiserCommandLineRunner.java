@@ -68,11 +68,18 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        runAnalyses(strings);
+        if (strings.length == 0) {
+            printHelp();
+            logger.error("Please supply some command line arguments - none found");
+        }
+        CommandLine commandLine = parseCommandLineOptions(strings);
+        if (commandLine == null || commandLine.hasOption("help")) {
+            printHelp();
+        }
+        runAnalyses(commandLine);
     }
 
-    private void runAnalyses(String[] args) {
-        CommandLine commandLine = parseCommandLineOptions(args);
+    private void runAnalyses(CommandLine commandLine) {
         if (commandLine.hasOption("analysis")) {
             Path analysisScript = Paths.get(commandLine.getOptionValue("analysis"));
             runAnalysisFromScript(analysisScript);
@@ -104,23 +111,11 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     }
 
     private CommandLine parseCommandLineOptions(String[] args) {
-        Parser parser = new GnuParser();
+        CommandLineParser parser = new DefaultParser();
         try {
-            CommandLine commandLine = parser.parse(options, args);
-            if (commandLine.hasOption("help")) {
-                printHelp();
-                System.exit(0);
-            }
-            if (args.length == 0) {
-                printHelp();
-                logger.error("Please supply some command line arguments - none found");
-                System.exit(0);
-            }
-            return commandLine;
+            return parser.parse(options, args);
         } catch (ParseException ex) {
-            printHelp();
             logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);
-            System.exit(0);
             return null;
         }
     }

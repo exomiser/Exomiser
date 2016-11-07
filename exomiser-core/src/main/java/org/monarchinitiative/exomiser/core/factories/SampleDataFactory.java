@@ -40,7 +40,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Handles creating the {@code de.charite.compbio.exomiser.common.SampleData}
+ * Handles creating the {@code org.monarchinitiative.exomiser.common.SampleData}
  * from a VCF file and an optional pedigree file. This will annotate the
  * variants and produce a fully functional {@code SampleData} object for
  * analysis.

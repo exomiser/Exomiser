@@ -102,7 +102,7 @@ found in src/main/java/db/migration/postgres.
 
 # Adding a Resource
 
-* Add a new Bean to de.charite.compbio.exomiser.config.ResourceConfig and ensure 
+* Add a new Bean to org.monarchinitiative.exomiser.config.ResourceConfig and ensure 
 this is loaded in the ResourceConfig.resources() method.
 
 * Add a new Parser and or ParserGroup if there are several parsers which need to 

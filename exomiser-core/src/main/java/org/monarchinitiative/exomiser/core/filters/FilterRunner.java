@@ -11,8 +11,8 @@ import java.util.List;
 
 /**
  * Generic interface for classes which handle running
- * {@code de.charite.compbio.exomiser.core.model.Filter} over
- * {@code de.charite.compbio.exomiser.core.model.Filterable} objects.
+ * {@code org.monarchinitiative.exomiser.core.model.Filter} over
+ * {@code org.monarchinitiative.exomiser.core.model.Filterable} objects.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @param <T>
@@ -21,9 +21,9 @@ import java.util.List;
 public interface FilterRunner<T extends Filter, U extends Filterable> {
 
     /**
-     * Runs the {@code de.charite.compbio.exomiser.core.model.Filterable}
+     * Runs the {@code org.monarchinitiative.exomiser.core.model.Filterable}
      * objects through the specified List of
-     * {@code de.charite.compbio.exomiser.core.model.Filter}
+     * {@code org.monarchinitiative.exomiser.core.model.Filter}
      *
      * @param filters
      * @param filterables

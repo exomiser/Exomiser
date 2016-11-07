@@ -56,7 +56,7 @@ public class ResultsWriterUtils {
 
     /**
      * Determines the correct file extension for a file given what was specified
-     * in the {@link de.charite.compbio.exomiser.core.ExomiserSettings}.
+     * in the {@link org.monarchinitiative.exomiser.core.ExomiserSettings}.
      *
      * @param vcfPath
      * @param outputPrefix
