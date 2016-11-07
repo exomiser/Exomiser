@@ -31,7 +31,7 @@ public class FrequencyKnownVariantOptionMarshallerTest {
     public void setUp() {
         instance = new FrequencyKnownVariantOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new Settings.SettingsBuilder();
+        settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
         settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
     }

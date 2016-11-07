@@ -107,13 +107,13 @@ public class SettingsTest {
 
     @Before
     public void setUp() {
-        instance = new SettingsBuilder();
+        instance = Settings.builder();
         instance.vcfFilePath(VCF_PATH);
     }
 
     @Test
     public void testThatTheBuilderProducesDefaultExomiserSettingsObject() {
-        Settings settings = new SettingsBuilder().build();
+        Settings settings = Settings.builder().build();
         assertThat(settings, instanceOf(Settings.class));
         System.out.println(settings);
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH_NOT_SET));
@@ -180,19 +180,19 @@ public class SettingsTest {
      */
     @Test
     public void testThatTheDefaultVcfPathIsNull() {
-        Settings settings = new SettingsBuilder().build();
+        Settings settings = Settings.builder().build();
         assertThat(settings.getVcfPath(), nullValue());
     }
 
     @Test
     public void testThatTheDefaultSettingsIsNotValid() {
-        Settings settings = new SettingsBuilder().build();
+        Settings settings = Settings.builder().build();
         assertThat(settings.isValid(), is(false));
     }
 
     @Test
     public void testThatJustSettingAFcvFileIsValid() {
-        SettingsBuilder settingsBuilder = new SettingsBuilder();
+        SettingsBuilder settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(VCF_PATH);
         Settings settings = settingsBuilder.build();
         assertThat(settings.isValid(), is(true));
@@ -200,7 +200,7 @@ public class SettingsTest {
 
     @Test
     public void testThatTheMinimumRequiredValidSettingsIsAFcvFileAndPrioritiser() {
-        SettingsBuilder settingsBuilder = new SettingsBuilder();
+        SettingsBuilder settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(VCF_PATH);
         settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
         Settings settings = settingsBuilder.build();
@@ -224,7 +224,7 @@ public class SettingsTest {
      */
     @Test
     public void testThatBuilderProducesPriorityTypeNoneAsDefault() {
-        Settings settings = new SettingsBuilder().build();
+        Settings settings = Settings.builder().build();
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.NONE));
     }
 
@@ -448,7 +448,7 @@ public class SettingsTest {
      */
     @Test
     public void testThatBuilderProducesDefaultOutFileName() {
-        Settings settings = new SettingsBuilder().build();
+        Settings settings = Settings.builder().build();
         assertThat(settings.getOutputPrefix(), equalTo(OUTPUT_PREFIX_DEFAULT));
     }
 

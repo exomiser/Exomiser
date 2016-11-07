@@ -112,6 +112,10 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     private boolean isValid = true;
 
+    public static SettingsBuilder builder() {
+        return new SettingsBuilder();
+    }
+
     public static class SettingsBuilder {
 
         //BUILD METADATA
@@ -152,6 +156,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML);
 
         private String diseaseGeneFamilyName = "";
+
+        private SettingsBuilder() {}
 
         @JsonIgnore
         public SettingsBuilder buildVersion(String buildVersion) {

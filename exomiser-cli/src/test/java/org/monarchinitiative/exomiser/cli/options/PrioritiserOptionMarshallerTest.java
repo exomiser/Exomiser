@@ -47,7 +47,7 @@ public class PrioritiserOptionMarshallerTest {
     @Before
     public void setUp() {
         instance = new PrioritiserOptionMarshaller();
-        settingsBuilder = new SettingsBuilder();
+        settingsBuilder = Settings.builder();
     }
 
     private Settings applyValueAndBuildSettings(String arg) {

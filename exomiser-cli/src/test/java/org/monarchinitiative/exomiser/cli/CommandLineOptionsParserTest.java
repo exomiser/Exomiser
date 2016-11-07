@@ -78,7 +78,7 @@ public class CommandLineOptionsParserTest {
         } catch (ParseException ex) {
             Logger.getLogger(CommandLineOptionsParserTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return instance.parseCommandLine(commandLine).build();
+        return instance.parseCommandLine(commandLine);
     }
     
     @Test
@@ -127,7 +127,7 @@ public class CommandLineOptionsParserTest {
     @Test
     public void shouldProduceValidSettingsWhenValidSettingsFileIsProvided() {
         String input = "--settings-file src/test/resources/testValidSettings.properties";
-        SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
+        SettingsBuilder settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(Paths.get("sampleData.vcf"));
         settingsBuilder.pedFilePath(Paths.get(""));
         settingsBuilder.usePrioritiser(PriorityType.PHIVE_PRIORITY);

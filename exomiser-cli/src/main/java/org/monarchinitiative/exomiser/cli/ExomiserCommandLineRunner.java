@@ -100,13 +100,13 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             logger.info("Running {} analyses from settings batch file.", settingsFiles.size());
             for (Path settingsFile : settingsFiles) {
                 logger.info("Running settings: {}", settingsFile);
-                Settings.SettingsBuilder settingsBuilder = commandLineOptionsParser.parseSettingsFile(settingsFile);
-                runAnalysisFromSettings(settingsBuilder);
+                Settings settings = commandLineOptionsParser.parseSettingsFile(settingsFile);
+                runAnalysisFromSettings(settings);
             }
         } else {
             //make a single SettingsBuilder
-            Settings.SettingsBuilder settingsBuilder = commandLineOptionsParser.parseCommandLine(commandLine);
-            runAnalysisFromSettings(settingsBuilder);
+            Settings settings = commandLineOptionsParser.parseCommandLine(commandLine);
+            runAnalysisFromSettings(settings);
         }
     }
 
@@ -132,8 +132,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         runAnalysisAndWriteResults(analysis, outputSettings);
     }
 
-    private void runAnalysisFromSettings(Settings.SettingsBuilder settingsBuilder) {
-        Settings settings = settingsBuilder.build();
+    private void runAnalysisFromSettings(Settings settings) {
         if (settings.isValid()) {
             Analysis analysis = settingsParser.parse(settings);
             runAnalysisAndWriteResults(analysis, settings);

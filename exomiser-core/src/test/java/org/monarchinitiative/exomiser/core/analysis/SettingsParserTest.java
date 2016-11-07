@@ -71,7 +71,7 @@ public class SettingsParserTest {
     public void setUp() {
         instance = new SettingsParser(stubPriorityFactory, new VariantDataServiceStub());
         
-        settingsBuilder = new SettingsBuilder()
+        settingsBuilder = Settings.builder()
                 .vcfFilePath(Paths.get("vcf"));
 
         analysisBuilder = Analysis.builder()

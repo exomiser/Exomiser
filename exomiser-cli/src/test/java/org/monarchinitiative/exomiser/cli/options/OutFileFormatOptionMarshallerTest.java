@@ -37,7 +37,7 @@ public class OutFileFormatOptionMarshallerTest {
     public void setUp() {
         instance = new OutFileFormatOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new Settings.SettingsBuilder();
+        settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(Paths.get("user/analysis/vcf/test.vcf"));
     }
 

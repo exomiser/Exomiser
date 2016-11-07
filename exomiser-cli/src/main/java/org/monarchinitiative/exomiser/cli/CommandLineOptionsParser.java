@@ -9,6 +9,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.monarchinitiative.exomiser.cli.options.OptionMarshaller;
 import org.monarchinitiative.exomiser.cli.options.SettingsFileOptionMarshaller;
+import org.monarchinitiative.exomiser.core.analysis.Settings;
 import org.monarchinitiative.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,15 +39,14 @@ public class CommandLineOptionsParser {
     @Resource
     private Map<String, OptionMarshaller> optionMarshallers;
 
-    public SettingsBuilder parseCommandLine(CommandLine commandLine) {
-
+    public Settings parseCommandLine(CommandLine commandLine) {
         logger.info("Parsing {} command line options:", commandLine.getOptions().length);
 
-        SettingsBuilder settingsBuilder = new SettingsBuilder();
+        SettingsBuilder settingsBuilder = Settings.builder();
 
         if (commandLine.hasOption(SettingsFileOptionMarshaller.SETTINGS_FILE_OPTION)) {
             Path settingsFile = Paths.get(commandLine.getOptionValue(SettingsFileOptionMarshaller.SETTINGS_FILE_OPTION));
-            settingsBuilder = parseSettingsFile(settingsFile);
+            settingsBuilder = parseSettings(settingsFile);
             logger.warn("Settings file parameters will be overridden by command-line parameters!");
         }
         for (Option option : commandLine.getOptions()) {
@@ -57,8 +57,7 @@ public class CommandLineOptionsParser {
         }
 
         //return a Map<Analysis, OutputSettings>
-        return settingsBuilder;
-
+        return settingsBuilder.build();
     }
 
     /**
@@ -68,9 +67,13 @@ public class CommandLineOptionsParser {
      * @param settingsFile
      * @return
      */
-    public SettingsBuilder parseSettingsFile(Path settingsFile) {
+    public Settings parseSettingsFile(Path settingsFile) {
+        SettingsBuilder settingsBuilder = parseSettings(settingsFile);
+        return settingsBuilder.build();
+    }
 
-        SettingsBuilder settingsBuilder = new SettingsBuilder();
+    private SettingsBuilder parseSettings(Path settingsFile) {
+        SettingsBuilder settingsBuilder = Settings.builder();
 
         try (Reader reader = Files.newBufferedReader(settingsFile, Charset.defaultCharset())) {
             Properties settingsProperties = new Properties();
@@ -87,7 +90,7 @@ public class CommandLineOptionsParser {
         }
         return settingsBuilder;
     }
-    
+
     private void setBuilderValue(String key, String[] values, SettingsBuilder settingsBuilder) {
 
         if (optionMarshallers.containsKey(key)) {
