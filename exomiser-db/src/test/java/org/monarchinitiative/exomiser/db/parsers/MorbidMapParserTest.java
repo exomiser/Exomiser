@@ -6,7 +6,9 @@
 
 package org.monarchinitiative.exomiser.db.parsers;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.monarchinitiative.exomiser.db.resources.Resource;
 import org.monarchinitiative.exomiser.db.resources.ResourceOperationStatus;
 
@@ -24,15 +26,18 @@ import static org.junit.Assert.assertEquals;
  * @author jj8
  */
 public class MorbidMapParserTest {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
     
     /**
      * Test of parseResource method, of class MorbidMapParser.
      */
     @Test
-    public void testParse() {
+    public void testParse() throws Exception {
         System.out.println("parse");
         Path testResourceDir = Paths.get("src/test/resources/data");
-        Path testOutDir = Paths.get("target/test-data");
+        Path testOutDir = temporaryFolder.newFolder().toPath();
         
         Resource testResource = new Resource("OMIM_morbidmap");
         testResource.setExtractedFileName("morbidmap");
@@ -50,10 +55,8 @@ public class MorbidMapParserTest {
         geneIds.add(2260);
         mim2geneMap.put(176943, geneIds);
         MorbidMapParser instance = new MorbidMapParser(cache, mim2geneMap);
-        ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
         instance.parseResource(testResource, testResourceDir, testOutDir);
-        assertEquals(expResult, testResource.getParseStatus());  
-        
+        assertEquals(ResourceOperationStatus.SUCCESS, testResource.getParseStatus());
     }
     
 }
