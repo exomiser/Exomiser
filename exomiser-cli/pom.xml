@@ -28,8 +28,8 @@
     <url>http://maven.apache.org</url>
 
     <parent>
-        <groupId>de.charite.compbio</groupId>
-        <artifactId>Exomiser</artifactId>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
         <version>7.3.0-SNAPSHOT</version>
     </parent>
   
@@ -39,7 +39,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>de.charite.compbio</groupId>
+            <groupId>org.monarchinitiative</groupId>
             <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>7.3.0-SNAPSHOT</version>
         </dependency>
@@ -80,7 +80,7 @@
                             <!-- set useUniqueVersions=false in order that the 
                             classpath has the SNAPSHOT instead of the build number prefixed to the dependency -->
                             <useUniqueVersions>false</useUniqueVersions>
-                            <mainClass>de.charite.compbio.exomiser.cli.Main</mainClass>
+                            <mainClass>org.monarchinitiative.exomiser.cli.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

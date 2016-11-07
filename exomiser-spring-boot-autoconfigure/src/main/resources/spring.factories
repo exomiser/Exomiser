@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=de.charite.compbio.exomiser.autoconfigure.ExomiserAutoConfiguration

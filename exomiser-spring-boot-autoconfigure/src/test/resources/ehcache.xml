@@ -21,7 +21,7 @@
 <ehcache>
     <diskStore path="java.io.tmpdir"/>
 
-    <!-- Caches. These caches contain a maximum in memory of N elements. 
+    <!-- Caches. These caches contain a maximum in memory of N elements.
     The cache will not expire. The cache will evict entries according to the 
     Least Frequently Used (LFU) policy once it reaches its limit.-->
 
@@ -52,5 +52,10 @@
 
     <!--ZP terms -->
     <cache name="zpo" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
+    <!--Model caches-->
+    <cache name="diseaseModels" eternal="true" maxEntriesLocalHeap="100000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+    <cache name="mouseModels" eternal="true" maxEntriesLocalHeap="100000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+    <cache name="fishModels" eternal="true" maxEntriesLocalHeap="100000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
 </ehcache>

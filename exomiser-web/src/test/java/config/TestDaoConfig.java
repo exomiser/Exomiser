@@ -16,16 +16,18 @@
  */
 package config;
 
-import de.charite.compbio.exomiser.web.dao.ExomiserDao;
-import java.util.HashMap;
-import java.util.Map;
-import javax.sql.DataSource;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.when;
+import org.monarchinitiative.exomiser.web.dao.ExomiserDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -37,12 +39,12 @@ public class TestDaoConfig {
     Logger logger = LoggerFactory.getLogger(TestDaoConfig.class);
 
     @Bean
-    public DataSource mockDataSource() {
+    public DataSource dataSource() {
         return Mockito.mock(DataSource.class);
     }
     
     @Bean 
-    public ExomiserDao mockExomiserDao() {
+    public ExomiserDao exomiserDao() {
         ExomiserDao mockExomiserDao = Mockito.mock(ExomiserDao.class);
         Map<String, String> diseases = new HashMap<>();
         diseases.put("OMIM:101200", "Mouse syndrome");

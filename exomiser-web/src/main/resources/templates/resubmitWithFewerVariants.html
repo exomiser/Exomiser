@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~
+  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Affero General Public License as
+  ~  published by the Free Software Foundation, either version 3 of the
+  ~  License, or (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Affero General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Affero General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="en" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Analysis Settings</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel='icon' type='image/x-icon' href="favicon.ico" th:href="@{/favicon.ico}"/>
+        <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen" />
+    </head>
+
+    <body>
+        <div class="alert alert-danger" role="alert">
+            For performance reasons we are unable to process VCF files containing more than <span th:text="${@maxVariants}">100000</span> variants - your file contains 
+            <span th:text="${numVariants}">99999</span> variants. Please <a href="submit" class="alert-link">go back</a> and reduce the number of variants you submit.
+
+            Alternatively, if you want to run the original file, please try the offline version which you can 
+            <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/" class="alert-link">download from the FTP site</a>. 
+        </div>
+    </body>
+</html>
