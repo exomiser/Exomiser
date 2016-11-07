@@ -35,7 +35,7 @@ public class OutFilePrefixOptionMarshallerTest {
     public void setUp() {
         instance = new OutFilePrefixOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new Settings.SettingsBuilder();
+        settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(Paths.get("user/analysis/vcf/test.vcf"));
     }
 

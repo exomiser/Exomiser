@@ -51,7 +51,7 @@ public class PathogenicityFilterCutOffOptionMarshallerTest {
     public void setUp() {
         instance = new PathogenicityFilterCutOffOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new Settings.SettingsBuilder();
+        settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
         settingsBuilder.usePrioritiser(PriorityType.OMIM_PRIORITY);
     }

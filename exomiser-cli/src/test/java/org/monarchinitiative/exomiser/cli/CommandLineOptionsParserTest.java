@@ -71,7 +71,7 @@ public class CommandLineOptionsParserTest {
      */
     private Settings parseSettingsFromInput(String input) {
         String[] args = input.split(" ");
-        Parser parser = new GnuParser();
+        CommandLineParser parser = new DefaultParser();
         CommandLine commandLine = null;
         try {
             commandLine = parser.parse(options, args);

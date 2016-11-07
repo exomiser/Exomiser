@@ -30,7 +30,7 @@ public class OutputPassOnlyVariantsOptionMarshallerTest {
     public void setUp() {
         instance = new OutputPassOnlyVariantsOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new Settings.SettingsBuilder();
+        settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
     }
 

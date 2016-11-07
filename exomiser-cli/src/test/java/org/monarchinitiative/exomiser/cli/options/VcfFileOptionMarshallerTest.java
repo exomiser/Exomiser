@@ -48,7 +48,7 @@ public class VcfFileOptionMarshallerTest {
         String vcfFileName = "123.vcf";
         String[] values = {vcfFileName};
         
-        Settings.SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
+        Settings.SettingsBuilder settingsBuilder = Settings.builder();
         instance.applyValuesToSettingsBuilder(values, settingsBuilder);
         Settings settings = settingsBuilder.build();
         

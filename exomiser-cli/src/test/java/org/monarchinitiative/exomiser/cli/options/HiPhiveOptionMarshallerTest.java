@@ -43,7 +43,7 @@ public class HiPhiveOptionMarshallerTest {
     public void testApplyValuesToSettingsBuilder() {
         String[] values = {"human","mouse","ppi"};
         
-        Settings.SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
+        Settings.SettingsBuilder settingsBuilder = Settings.builder();
         instance.applyValuesToSettingsBuilder(values, settingsBuilder);
         Settings settings = settingsBuilder.build();
         
@@ -54,7 +54,7 @@ public class HiPhiveOptionMarshallerTest {
     public void testApplyValuesToSettingsBuilderWithNoInput() {
         String[] values = {};
         
-        Settings.SettingsBuilder settingsBuilder = new Settings.SettingsBuilder();
+        Settings.SettingsBuilder settingsBuilder = Settings.builder();
         instance.applyValuesToSettingsBuilder(values, settingsBuilder);
         Settings settings = settingsBuilder.build();
         

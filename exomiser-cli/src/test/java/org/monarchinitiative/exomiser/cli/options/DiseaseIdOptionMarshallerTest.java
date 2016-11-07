@@ -31,7 +31,7 @@ public class DiseaseIdOptionMarshallerTest {
     public void setUp() {
         instance = new DiseaseIdOptionMarshaller();
         option = instance.getOption();
-        settingsBuilder = new Settings.SettingsBuilder();
+        settingsBuilder = Settings.builder();
         settingsBuilder.vcfFilePath(Paths.get("test.vcf"));
     }
 
