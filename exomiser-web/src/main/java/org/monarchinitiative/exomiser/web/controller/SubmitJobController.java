@@ -193,7 +193,7 @@ public class SubmitJobController {
 
     private Analysis buildAnalysis(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
 
-        Settings settings = new Settings.SettingsBuilder()
+        Settings settings = Settings.builder()
                 .vcfFilePath(vcfPath)
                 .pedFilePath(pedPath)
                 .hpoIdList(phenotypes)

@@ -19,6 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -112,6 +113,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     private boolean isValid = true;
 
+    @JsonCreator
     public static SettingsBuilder builder() {
         return new SettingsBuilder();
     }
