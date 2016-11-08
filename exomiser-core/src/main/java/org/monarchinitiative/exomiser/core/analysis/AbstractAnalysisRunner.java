@@ -33,7 +33,6 @@ import org.monarchinitiative.exomiser.core.filters.VariantFilterRunner;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
-import org.monarchinitiative.exomiser.core.prioritisers.ScoringMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +115,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
 
         final List<Gene> genes = getGenesWithVariants(allGenes);
-        scoreGenes(genes, analysis.getScoringMode(), analysis.getModeOfInheritance());
+        scoreGenes(genes, analysis.getModeOfInheritance());
         sampleData.setGenes(genes);
 
         final List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
@@ -327,17 +326,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
 
-    private void scoreGenes(List<Gene> genes, ScoringMode scoreMode, ModeOfInheritance modeOfInheritance) {
+    private void scoreGenes(List<Gene> genes, ModeOfInheritance modeOfInheritance) {
         logger.info("Scoring genes");
-        GeneScorer geneScorer = getGeneScorer(scoreMode);
+        GeneScorer geneScorer = new RawScoreGeneScorer();
         geneScorer.scoreGenes(genes, modeOfInheritance);
-    }
-
-    private GeneScorer getGeneScorer(ScoringMode scoreMode) {
-        if (scoreMode == ScoringMode.RANK_BASED) {
-            return new RankBasedGeneScorer();
-        }
-        return new RawScoreGeneScorer();
     }
 
     private void logTopNumScoringGenes(int numToLog, List<Gene> genes, Analysis analysis) {

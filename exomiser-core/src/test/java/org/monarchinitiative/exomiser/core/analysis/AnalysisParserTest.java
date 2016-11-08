@@ -36,7 +36,10 @@ import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.prioritisers.*;
+import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
+import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 
@@ -100,7 +103,6 @@ public class AnalysisParserTest {
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
@@ -294,7 +296,6 @@ public class AnalysisParserTest {
         assertThat(analysis.getPedPath(), nullValue());
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getModeOfInheritance(), equalTo(modeOfInheritance));
-        assertThat(analysis.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 123256200, 123256300)));

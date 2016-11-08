@@ -40,7 +40,7 @@ import static java.util.stream.Collectors.maxBy;
  * the gene to the disease, without taking the nature or pathogenicity of any
  * variant into account).
  * <P>
- * It is expected that the Exomizer will combine the evaluations of the Filter
+ * It is expected that the Exomiser will combine the evaluations of the Filter
  * and the FilterType evaluations in order to reach a final ranking of the genes
  * and variants into candidate disease-causing mutations.
  *

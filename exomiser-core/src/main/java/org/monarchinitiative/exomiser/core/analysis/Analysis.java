@@ -35,7 +35,6 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
-import org.monarchinitiative.exomiser.core.prioritisers.ScoringMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +48,7 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = Analysis.Builder.class)
-@JsonPropertyOrder({"vcfPath", "pedPath", "hpoIds", "modeOfInheritance", "scoringMode", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
+@JsonPropertyOrder({"vcfPath", "pedPath", "hpoIds", "modeOfInheritance", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
 public class Analysis {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
@@ -61,7 +60,7 @@ public class Analysis {
     //these are more optional variables
     private final List<String> hpoIds;
     private final ModeOfInheritance modeOfInheritance;
-    private final ScoringMode scoringMode;
+
     private final AnalysisMode analysisMode;
     private final Set<FrequencySource> frequencySources;
     private final Set<PathogenicitySource> pathogenicitySources;
@@ -72,7 +71,7 @@ public class Analysis {
         this.pedPath = builder.pedPath;
         this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
         this.modeOfInheritance = builder.modeOfInheritance;
-        this.scoringMode = builder.scoringMode;
+
         this.analysisMode = builder.analysisMode;
         this.frequencySources = Sets.immutableEnumSet(builder.frequencySources);
         this.pathogenicitySources = Sets.immutableEnumSet(builder.pathogenicitySources);
@@ -89,10 +88,6 @@ public class Analysis {
 
     public ModeOfInheritance getModeOfInheritance() {
         return modeOfInheritance;
-    }
-
-    public ScoringMode getScoringMode() {
-        return scoringMode;
     }
 
     public List<String> getHpoIds() {
@@ -175,7 +170,7 @@ public class Analysis {
                 .pedPath(pedPath)
                 .hpoIds(hpoIds)
                 .modeOfInheritance(modeOfInheritance)
-                .scoringMode(scoringMode)
+
                 .analysisMode(analysisMode)
                 .frequencySources(frequencySources)
                 .pathogenicitySources(pathogenicitySources)
@@ -190,7 +185,7 @@ public class Analysis {
         //these are more optional variables
         private List<String> hpoIds = new ArrayList<>();
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
-        private ScoringMode scoringMode = ScoringMode.RAW_SCORE;
+
         private AnalysisMode analysisMode = AnalysisMode.PASS_ONLY;
         private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
         private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
@@ -220,11 +215,6 @@ public class Analysis {
             return this;
         }
 
-        public Builder scoringMode(ScoringMode scoringMode) {
-            this.scoringMode = scoringMode;
-            return this;
-        }
-
         public Builder analysisMode(AnalysisMode analysisMode) {
             this.analysisMode = analysisMode;
             return this;
@@ -251,7 +241,6 @@ public class Analysis {
         }
     }
 
-
     @Override
     public int hashCode() {
         int hash = 7;
@@ -259,7 +248,6 @@ public class Analysis {
         hash = 73 * hash + Objects.hashCode(this.pedPath);
         hash = 73 * hash + Objects.hashCode(this.hpoIds);
         hash = 73 * hash + Objects.hashCode(this.modeOfInheritance);
-        hash = 73 * hash + Objects.hashCode(this.scoringMode);
         hash = 73 * hash + Objects.hashCode(this.analysisMode);
         hash = 73 * hash + Objects.hashCode(this.frequencySources);
         hash = 73 * hash + Objects.hashCode(this.pathogenicitySources);
@@ -284,9 +272,7 @@ public class Analysis {
         if (this.modeOfInheritance != other.modeOfInheritance) {
             return false;
         }
-        if (this.scoringMode != other.scoringMode) {
-            return false;
-        }
+
         if (this.analysisMode != other.analysisMode) {
             return false;
         }
@@ -298,6 +284,6 @@ public class Analysis {
 
     @Override
     public String toString() {
-        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", scoringMode=" + scoringMode + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
+        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
 }

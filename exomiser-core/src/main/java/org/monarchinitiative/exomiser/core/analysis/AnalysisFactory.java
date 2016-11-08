@@ -27,7 +27,6 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
-import org.monarchinitiative.exomiser.core.prioritisers.ScoringMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -106,11 +105,6 @@ public class AnalysisFactory {
 
         public AnalysisBuilder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
             analysisBuilder.modeOfInheritance(modeOfInheritance);
-            return this;
-        }
-
-        public AnalysisBuilder scoringMode(ScoringMode scoreMode) {
-            analysisBuilder.scoringMode(scoreMode);
             return this;
         }
 

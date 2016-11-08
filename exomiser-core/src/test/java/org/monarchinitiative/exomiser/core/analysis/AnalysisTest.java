@@ -28,7 +28,6 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
-import org.monarchinitiative.exomiser.core.prioritisers.ScoringMode;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,20 +87,6 @@ public class AnalysisTest {
                 .modeOfInheritance(modeOfInheritance)
                 .build();
         assertThat(instance.getModeOfInheritance(), equalTo(modeOfInheritance));
-    }
-
-    @Test
-    public void testGeneScoringModeDefaultsToRawScore() {
-        assertThat(DEFAULT_ANALYSIS.getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
-    }
-
-    @Test
-    public void testGeneScoringModeCanBeSpecified() {
-        ScoringMode scoringMode = ScoringMode.RANK_BASED;
-        Analysis instance = newBuilder()
-                .scoringMode(scoringMode)
-                .build();
-        assertThat(instance.getScoringMode(), equalTo(scoringMode));
     }
 
     @Test

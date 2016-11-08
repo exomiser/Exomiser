@@ -196,12 +196,13 @@ public class AnalysisParser {
                     .pedPath(parsePed(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
                     .modeOfInheritance(parseModeOfInheritance(analysisMap))
-                    .scoringMode(parseScoringMode(analysisMap))
                     .analysisMode(parseAnalysisMode(analysisMap))
                     .frequencySources(parseFrequencySources(analysisMap))
                     .pathogenicitySources(parsePathogenicitySources(analysisMap))
                     .steps(makeAnalysisSteps(analysisMap))
                     .build();
+            //this method is only here to provide a warning to users that their script is out of date.
+            parseScoringMode(analysisMap);
 
             logger.debug("Made analysis: {}", analysis);
             return analysis;
@@ -262,12 +263,13 @@ public class AnalysisParser {
             return AnalysisMode.valueOf(value);
         }
 
-        private ScoringMode parseScoringMode(Map<String, String> analysisMap) {
+        @Deprecated
+        private void parseScoringMode(Map<String, String> analysisMap) {
             String value = analysisMap.get("geneScoreMode");
-            if (value == null) {
-                return ScoringMode.RAW_SCORE;
+            if (value != null) {
+                logger.info("geneScoreMode is deprecated and {} will have no effect. " +
+                        "Please consider removing this from your analysis script to prevent this message from showing again.", value);
             }
-            return ScoringMode.valueOf(value);
         }
 
         private List<String> parseHpoIds(Map<String, List> analysisMap) {

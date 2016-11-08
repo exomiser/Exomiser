@@ -95,7 +95,6 @@ public class SettingsParser {
             .hpoIds(settings.getHpoIds())
             .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
             .pathogenicitySources(MISSENSE_VARIANT_PATH_SOURCES)
-            .scoringMode(prioritiserType.getScoringMode())
             .analysisMode(makeAnalysisMode(settings.runFullAnalysis()))
             .steps(makeAnalysisSteps(settings, settings))
             .build();

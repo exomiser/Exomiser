@@ -8,9 +8,7 @@ analysis:
     # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE or UNDEFINED
     modeOfInheritance: UNDEFINED
     #FULL, SPARSE or PASS_ONLY
-    analysisMode: SPARSE 
-    #RAW_SCORE or RANK_BASED
-    geneScoreMode: RAW_SCORE
+    analysisMode: SPARSE
     hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
     #Possible frequencySources:
     #Thousand Genomes project http://www.1000genomes.org/

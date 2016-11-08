@@ -123,17 +123,6 @@ public class AnalysisFactoryTest {
     }
 
     @Test
-    public void testAnalysisBuilderScoringMode_default() {
-        assertThat(analysisBuilder.build().getScoringMode(), equalTo(ScoringMode.RAW_SCORE));
-    }
-
-    @Test
-    public void testAnalysisBuilderScoringMode() {
-        analysisBuilder.scoringMode(ScoringMode.RANK_BASED);
-        assertThat(analysisBuilder.build().getScoringMode(), equalTo(ScoringMode.RANK_BASED));
-    }
-
-    @Test
     public void testAnalysisBuilderAnalysisMode_default() {
         assertThat(analysisBuilder.build().getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
     }
