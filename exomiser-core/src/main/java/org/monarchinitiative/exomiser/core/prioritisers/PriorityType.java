@@ -16,8 +16,6 @@ public enum PriorityType {
     PHIVE_PRIORITY,
     //Prioritises against OMIM data
     OMIM_PRIORITY,
-    //Prioritises  against phenotype data (Uberpheno) A.K.A. "Uberpheno semantic similarity filter"
-    UBERPHENO_PRIORITY,
     //None - for when you don't want to run any prioritisation
     NONE
 

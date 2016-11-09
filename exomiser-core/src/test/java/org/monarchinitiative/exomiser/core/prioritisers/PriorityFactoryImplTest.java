@@ -113,15 +113,6 @@ public class PriorityFactoryImplTest {
     }
 
     @Test
-    public void testmakePrioritiserForUberPhenoPriorityReturnsNoneTypePrioritiser() {
-        PriorityType type = PriorityType.UBERPHENO_PRIORITY;
-        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
-
-        Prioritiser prioritiser = instance.makePrioritiser(settings);
-        assertThat(prioritiser.getPriorityType(), equalTo(PriorityType.NONE));
-    }
-
-    @Test
     public void testmakePrioritiserNonePriorityReturnsNoneTypePrioritiser() {
         PriorityType type = PriorityType.NONE;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);

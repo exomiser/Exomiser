@@ -104,13 +104,7 @@ public class PrioritiserOptionMarshallerTest {
         Settings settings = applyValueAndBuildSettings("omim");
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
-    
-    @Test
-    public void testApplyValuesToSettingsBuilder_uberPheno() {
-        Settings settings = applyValueAndBuildSettings("uber-pheno");
-        assertThat(settings.getPrioritiserType(), equalTo(PriorityType.UBERPHENO_PRIORITY));
-    }
-    
+
     @Test
     public void testApplyValuesToSettingsBuilder_none() {
         Settings settings = applyValueAndBuildSettings("none");
@@ -126,7 +120,6 @@ public class PrioritiserOptionMarshallerTest {
         assertThat(description, containsString("phive"));
         assertThat(description, containsString("exomewalker"));
         assertThat(description, containsString("omim"));
-        assertThat(description, containsString("uber-pheno"));
         assertThat(description, containsString("none"));
     }
     
