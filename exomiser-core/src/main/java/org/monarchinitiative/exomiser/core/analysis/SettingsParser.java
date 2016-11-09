@@ -86,7 +86,6 @@ public class SettingsParser {
      */
     public Analysis parse(Settings settings) {
         logger.info("SETTING-UP ANALYSIS");
-        PriorityType prioritiserType = settings.getPrioritiserType();
 
         return Analysis.builder()
             .vcfPath(settings.getVcfPath())
