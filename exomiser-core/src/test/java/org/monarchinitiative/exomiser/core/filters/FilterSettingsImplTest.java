@@ -24,7 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
@@ -52,7 +52,7 @@ public class FilterSettingsImplTest {
     private static final boolean REMOVE_KNOWN_VARIANTS_DEFAULT = false;
     private static final boolean KEEP_OFF_TARGET_VARIANTS_DEFAULT = false;
     private static final Set<Integer> GENE_IDS_TO_KEEP_DEFAULT = new LinkedHashSet();
-    private static final ModeOfInheritance MODE_OF_INHERITANCE_DEFAULT = ModeOfInheritance.UNINITIALIZED;
+    private static final ModeOfInheritance MODE_OF_INHERITANCE_DEFAULT = ModeOfInheritance.ANY;
     
     @Before
     public void setUp() {

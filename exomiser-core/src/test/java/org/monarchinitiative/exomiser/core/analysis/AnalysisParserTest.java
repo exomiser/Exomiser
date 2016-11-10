@@ -25,7 +25,7 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
@@ -87,7 +87,6 @@ public class AnalysisParserTest {
                 + "    modeOfInheritance: AUTOSOMAL_DOMINANT\n"
                 + "    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']\n"
                 + "    analysisMode: PASS_ONLY \n"
-                + "    geneScoreMode: RAW_SCORE\n"
                 + "    frequencySources: [THOUSAND_GENOMES, ESP_AFRICAN_AMERICAN, EXAC_AFRICAN_INC_AFRICAN_AMERICAN]\n"
                 + "    pathogenicitySources: [SIFT, POLYPHEN, MUTATION_TASTER]\n"
                 + "    steps: ["
@@ -125,6 +124,21 @@ public class AnalysisParserTest {
                 + "    analysisMode: FULL \n"
                 + "    ");
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
+    }
+
+    /**
+     * geneScoreMode was removed in commit 2055ac3b36c401569d9b201f43cf23d1f8c6aed2. We're checking that old analysis
+     * scripts will still function.
+     */
+    @Test
+    public void testParseAnalysis_DeprecatedGeneScoreModeHasNoEffect() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    geneScoreMode: RAW_SCORE\n"
+                        + "    ");
+        Analysis expected = Analysis.builder().vcfPath(Paths.get("test.vcf")).build();
+        assertThat(analysis, equalTo(expected));
     }
 
     @Test
@@ -223,17 +237,25 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                 + "    vcf: test.vcf\n"
-                + "    ped:\n"
                 + "    modeOfInheritance: UNINITIALIZED\n"
                 + "    hpoIds: []\n"
                 + "    analysisMode: PASS_ONLY \n"
-                + "    geneScoreMode: RAW_SCORE\n"
                 + "    pathogenicitySources: []\n"
                 + "    frequencySources: []\n"
                 + "    steps: ["
                 + "        inheritanceFilter: {}\n"
-                + "]");
+                + "]"
+        );
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test(expected = AnalysisParserException.class)
+    public void testParseAnalysisStep_InheritanceFilterUnrecognisedValue() {
+        instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    modeOfInheritance: WIBBLE!"
+        );
     }
 
     @Test

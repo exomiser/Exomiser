@@ -5,7 +5,7 @@
  */
 package org.monarchinitiative.exomiser.cli.options;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.apache.commons.cli.Option;
 import org.monarchinitiative.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class InheritanceModeOptionMarshaller extends AbstractOptionMarshaller {
                 return ModeOfInheritance.X_RECESSIVE;
             default:
                 logger.info("value {} is not one of AR, AD or X - inheritance mode has not been set", value);
-                return ModeOfInheritance.UNINITIALIZED;
+                return ModeOfInheritance.ANY;
         }
     }
 

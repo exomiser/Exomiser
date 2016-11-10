@@ -24,7 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -68,7 +68,7 @@ public class InheritanceFilterTest {
     @Test
     public void testGeneNotPassedOrFailedInheritanceFilterWhenInheritanceModeIsUnInitialised() {
 
-        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.UNINITIALIZED;
+        ModeOfInheritance desiredInheritanceMode = ModeOfInheritance.ANY;
         InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
         
         FilterResult filterResult = instance.runFilter(compatibleWithAutosomalRecessive);

@@ -24,7 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 
 import java.util.Collections;
@@ -71,7 +71,7 @@ class FilterSettingsImpl implements FilterSettings {
         private boolean removeKnownVariants = false;
         private boolean keepOffTargetVariants = false;
         private Set<Integer> geneIdsToKeep = Collections.emptySet();
-        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
+        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
 
         private FilterSettingsBuilder() {}
 

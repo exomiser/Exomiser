@@ -20,7 +20,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.Lists;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;

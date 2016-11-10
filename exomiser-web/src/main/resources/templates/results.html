@@ -187,16 +187,18 @@ and open the template in the editor.
                                                    th:href="@{|http://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
                                                 </a>
                                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
-                                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)</a>
+                                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)
+                                                </a>
                                             </th:block>
                                         </div>
                                         <div class="col-sm-6" > 
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
-                                                <dd th:each="annotation: ${variantEvaluation.annotations}" 
-                                                    th:with="ucscData=${#strings.listSplit(annotation.symbolAndAnnotation,':')}, ucscId=${ucscData[0]}, text=${annotation.symbolAndAnnotation.replace(ucscId + ':', '')}">
-                                                    <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}" 
-                                                       th:text="${ucscId}">uc001lfg.4</a> <th:block th:text="${text}">exon6:c.518A> C:p.E173A</th:block>
+                                                <dd th:each="annotation: ${variantEvaluation.annotations}"
+                                                    th:with="ucscData=${#strings.listSplit(annotation.transcript.accession,':')}, ucscId=${ucscData[0]}">
+                                                        <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}"
+                                                           th:text="${gene.getGeneSymbol() + ':' + annotation.getTranscript().getAccession() + ':' + annotation.getCDSNTChangeStr() + ':' + annotation.getProteinChangeStr()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A
+                                                        </a>
                                                 </dd>
                                             </dl>
                                         </div>

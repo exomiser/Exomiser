@@ -65,10 +65,13 @@ public interface Variant extends VariantCoordinates {
             VariantEffect.REGULATORY_REGION_VARIANT,
             VariantEffect.FIVE_PRIME_UTR_PREMATURE_START_CODON_GAIN_VARIANT,
             VariantEffect.FIVE_PRIME_UTR_TRUNCATION,
-            VariantEffect.FIVE_PRIME_UTR_VARIANT,
+            VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT,
+            VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT,
             VariantEffect.TF_BINDING_SITE_VARIANT,
             VariantEffect.THREE_PRIME_UTR_TRUNCATION,
-            VariantEffect.THREE_PRIME_UTR_VARIANT
+            VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT,
+            VariantEffect.THREE_PRIME_UTR_EXON_VARIANT
+
     );
 
     default boolean isNonCodingVariant() {

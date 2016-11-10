@@ -25,6 +25,7 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ImmutableList;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.*;
 import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.variantcontext.Genotype;
@@ -130,9 +131,9 @@ public class InheritanceModeAnalyserTest {
         Gene gene = newGene();
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.UNINITIALIZED);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.ANY);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
     }
@@ -144,9 +145,9 @@ public class InheritanceModeAnalyserTest {
 
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Adam");
 
-        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.UNINITIALIZED);
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.ANY);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
     }
@@ -169,7 +170,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
     }
@@ -192,7 +193,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
     }
@@ -215,7 +216,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
@@ -240,7 +241,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
@@ -275,7 +276,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
@@ -310,7 +311,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
@@ -345,7 +346,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
@@ -381,7 +382,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
@@ -428,7 +429,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
@@ -474,7 +475,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
@@ -508,7 +509,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
@@ -537,7 +538,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_DOMINANT);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(false));
 
@@ -566,7 +567,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 
@@ -595,7 +596,7 @@ public class InheritanceModeAnalyserTest {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.analyseInheritanceModes(gene);
-        assertThat(gene.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(gene.isCompatibleWith(ModeOfInheritance.ANY), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(false));
         assertThat(gene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
 

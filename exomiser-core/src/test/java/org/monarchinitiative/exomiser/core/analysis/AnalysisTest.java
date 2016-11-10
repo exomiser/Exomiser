@@ -21,7 +21,7 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import com.google.common.collect.Lists;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -51,7 +51,7 @@ public class AnalysisTest {
     private List<AnalysisStep> getAnalysisSteps() {
         VariantFilter geneIdFilter = new EntrezGeneIdFilter(new HashSet<>());
         Prioritiser noneTypePrioritiser = new NoneTypePrioritiser();
-        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
+        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.ANY);
         VariantFilter targetFilter = new PassAllVariantEffectsFilter();
 
         return Lists.newArrayList(geneIdFilter, noneTypePrioritiser, inheritanceFilter, targetFilter);
@@ -77,7 +77,7 @@ public class AnalysisTest {
 
     @Test
     public void modeOfInheritanceDefaultsToUnspecified() {
-        assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
+        assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class AnalysisTest {
 
     @Test
     public void testCanAddGeneFilterAsAnAnalysisStep() {
-        GeneFilter geneFilter = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
+        GeneFilter geneFilter = new InheritanceFilter(ModeOfInheritance.ANY);
         Analysis instance = newBuilder()
                 .addStep(geneFilter)
                 .build();

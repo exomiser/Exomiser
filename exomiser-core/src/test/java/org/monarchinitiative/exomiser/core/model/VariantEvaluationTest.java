@@ -26,8 +26,8 @@ package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.Maps;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -585,7 +585,7 @@ public class VariantEvaluationTest {
         
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(instance.isCompatibleWith(ModeOfInheritance.UNINITIALIZED), is(false));
+        assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(false));
     }
     
     @Test

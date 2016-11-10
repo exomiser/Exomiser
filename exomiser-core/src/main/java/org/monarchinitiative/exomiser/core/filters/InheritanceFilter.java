@@ -24,7 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
@@ -54,8 +54,8 @@ public class InheritanceFilter implements GeneFilter {
     
     @Override
     public FilterResult runFilter(Gene gene) {
-        if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
-            //if ModeOfInheritance.UNINITIALIZED pass the runFilter - ideally it shouldn't be applied in the first place.
+        if (modeOfInheritance == ModeOfInheritance.ANY) {
+            //if ModeOfInheritance.ANY pass the runFilter - ideally it shouldn't be applied in the first place.
             return FilterResult.notRun(filterType);
         }
         if (gene.isCompatibleWith(modeOfInheritance)) {

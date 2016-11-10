@@ -20,7 +20,7 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.filters.*;
@@ -247,12 +247,16 @@ public class AnalysisParser {
         private ModeOfInheritance parseModeOfInheritance(Map<String, String> analysisMap) {
             String value = analysisMap.get("modeOfInheritance");
             if (value == null) {
-                return ModeOfInheritance.UNINITIALIZED;
+                return ModeOfInheritance.ANY;
             }
-            if (value.equals("UNDEFINED")) {
-                return ModeOfInheritance.UNINITIALIZED;
+            if (value.equals("UNDEFINED") || value.equals("UNINITIALIZED")) {
+                return ModeOfInheritance.ANY;
             }
-            return ModeOfInheritance.valueOf(value);
+            try {
+                return ModeOfInheritance.valueOf(value);
+            } catch (IllegalArgumentException e) {
+                throw new AnalysisParserException(String.format("'%s' is not a valid mode of inheritance. Use one of: %s", value, Arrays.toString(ModeOfInheritance.values())));
+            }
         }
 
         private AnalysisMode parseAnalysisMode(Map<String, String> analysisMap) {
@@ -469,7 +473,7 @@ public class AnalysisParser {
         }
 
         private InheritanceFilter makeInheritanceFilter(ModeOfInheritance modeOfInheritance) {
-            if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
+            if (modeOfInheritance == ModeOfInheritance.ANY) {
                 logger.info("Not making an inheritance filter for {} mode of inheritance", modeOfInheritance);
                 return null;
             }
@@ -516,6 +520,10 @@ public class AnalysisParser {
     }
 
     protected static class AnalysisParserException extends RuntimeException {
+
+        AnalysisParserException(String message) {
+            super(message);
+        }
 
         AnalysisParserException(String message, Map options) {
             super(message + " was " + new Yaml().dump(options));

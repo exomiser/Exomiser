@@ -5,7 +5,7 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.List;

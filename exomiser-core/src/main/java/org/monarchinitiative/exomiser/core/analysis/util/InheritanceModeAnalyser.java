@@ -26,8 +26,8 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
@@ -83,7 +83,7 @@ public class InheritanceModeAnalyser {
     }
 
     private void checkInheritanceCompatibilityOfPassedVariants(Gene gene) {
-        if (modeOfInheritance == ModeOfInheritance.UNINITIALIZED) {
+        if (modeOfInheritance == ModeOfInheritance.ANY) {
             return;
         }
         //it is *CRITICAL* that only the PASSED variantEvaluations are taken into account here.

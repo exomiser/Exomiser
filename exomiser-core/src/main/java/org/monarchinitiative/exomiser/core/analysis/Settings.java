@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.monarchinitiative.exomiser.core.filters.FilterSettings;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
@@ -145,7 +145,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
         //PRIORITISER options
         private String candidateGene = "";
-        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.UNINITIALIZED;
+        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
         private String diseaseId = "";
         private List<String> hpoIds = new ArrayList();
         private List<Integer> seedGeneList = new ArrayList();

@@ -21,7 +21,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.filters.*;
@@ -162,7 +162,7 @@ public class SettingsParser {
     private List<GeneFilter> makeGeneFilters(FilterSettings settings) {
         List<GeneFilter> geneFilters = new ArrayList<>();
         //INHERITANCE
-        if (settings.getModeOfInheritance() != ModeOfInheritance.UNINITIALIZED) {
+        if (settings.getModeOfInheritance() != ModeOfInheritance.ANY) {
             geneFilters.add(new InheritanceFilter(settings.getModeOfInheritance()));
         }
         return geneFilters;

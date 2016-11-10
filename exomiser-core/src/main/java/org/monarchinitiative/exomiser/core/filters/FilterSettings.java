@@ -24,7 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.filters;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 

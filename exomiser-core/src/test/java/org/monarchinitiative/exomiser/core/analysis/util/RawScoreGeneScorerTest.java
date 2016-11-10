@@ -26,7 +26,7 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
@@ -104,7 +104,7 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithoutPriorityResultsOrVariants_UNINITIALIZED() {
         Gene gene = newGene();
-        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        instance.scoreGene(gene, ModeOfInheritance.ANY);
         assertThat(gene.getFilterScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
@@ -131,7 +131,7 @@ public class RawScoreGeneScorerTest {
     @Test
     public void testScoreGeneWithSingleFailedVariant_UNINITIALIZED() {
         Gene gene = newGene(failFreq());
-        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        instance.scoreGene(gene, ModeOfInheritance.ANY);
         assertThat(gene.getFilterScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
@@ -159,7 +159,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithSinglePassedVariant_UNINITIALIZED() {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
         Gene gene = newGene(passAllFrameshift);
-        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        instance.scoreGene(gene, ModeOfInheritance.ANY);
 
         float variantScore = passAllFrameshift.getVariantScore();
 
@@ -201,7 +201,7 @@ public class RawScoreGeneScorerTest {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
 
         Gene gene = newGene(passAllFrameshift, failFreq());
-        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        instance.scoreGene(gene, ModeOfInheritance.ANY);
 
         float variantScore = passAllFrameshift.getVariantScore();
 
@@ -218,7 +218,7 @@ public class RawScoreGeneScorerTest {
         VariantEvaluation passAllFrameshift = passAllFrameShift();
 
         Gene gene = newGene(passAllFrameshift, passAllMissense);
-        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        instance.scoreGene(gene, ModeOfInheritance.ANY);
 
         float variantScore = passAllFrameshift.getVariantScore();
 
@@ -311,7 +311,7 @@ public class RawScoreGeneScorerTest {
         List<Gene> genes = Lists.newArrayList(last, first, middle);
         Collections.shuffle(genes);
 
-        instance.scoreGenes(genes, ModeOfInheritance.UNINITIALIZED);
+        instance.scoreGenes(genes, ModeOfInheritance.ANY);
 
         genes.forEach(System.out::println);
 
@@ -326,7 +326,7 @@ public class RawScoreGeneScorerTest {
         Gene gene = newGene();
         gene.addPriorityResult(new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), 1d));
 
-        instance.scoreGene(gene, ModeOfInheritance.UNINITIALIZED);
+        instance.scoreGene(gene, ModeOfInheritance.ANY);
 
         assertThat(gene.getFilterScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(1f));

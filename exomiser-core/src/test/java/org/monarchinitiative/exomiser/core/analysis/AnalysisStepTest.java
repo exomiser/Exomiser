@@ -19,7 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.InheritanceFilter;
 import org.monarchinitiative.exomiser.core.filters.KnownVariantFilter;
@@ -43,7 +43,7 @@ public class AnalysisStepTest {
     private static final AnalysisStep PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.6f);
     private static final AnalysisStep KNOWN_VARIANT_FILTER = new KnownVariantFilter();
     private static final AnalysisStep OMIM_PRIORITY = new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);
-    private static final AnalysisStep INHERITANCE_FILTER = new InheritanceFilter(ModeOfInheritance.UNINITIALIZED);
+    private static final AnalysisStep INHERITANCE_FILTER = new InheritanceFilter(ModeOfInheritance.ANY);
     
     @Test
     public void testIsInheritanceModeDependent_OMIMPriority() {

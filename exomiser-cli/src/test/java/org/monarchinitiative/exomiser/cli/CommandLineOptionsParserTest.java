@@ -24,7 +24,7 @@
  */
 package org.monarchinitiative.exomiser.cli;
 
-import de.charite.compbio.jannovar.pedigree.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.apache.commons.cli.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -529,7 +529,7 @@ public class CommandLineOptionsParserTest {
 
         Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
+        assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
     }
 
     @Test
@@ -540,7 +540,7 @@ public class CommandLineOptionsParserTest {
 
         Settings exomiserSettings = parseSettingsFromInput(input);
 
-        assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.UNINITIALIZED));
+        assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
     }
 
     @Test
