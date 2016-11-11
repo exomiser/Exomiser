@@ -22,38 +22,33 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.monarchinitiative.exomiser.core;
+package org.monarchinitiative.exomiser.core.factories;
 
-import org.monarchinitiative.exomiser.core.analysis.*;
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * This is the main entry point for analysing data using the Exomiser. An {@link analysis.Analysis} 
- * should be build using either a {@link analysis.Settings} and the 
- * {@link analysis.SettingsParser} or with an {@link analysis.AnalysisParser}
- * 
+ * Provides a wrapper around the variant annotations in JannovarData.
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
-public class Exomiser {
+public class VariantAnnotationData {
 
-    private static final Logger logger = LoggerFactory.getLogger(Exomiser.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantAnnotationData.class);
 
-    private final AnalysisFactory analysisFactory;
+    private final JannovarData jannovarData;
 
     @Autowired
-    public Exomiser(AnalysisFactory analysisFactory) {
-        this.analysisFactory = analysisFactory;
+    public VariantAnnotationData(JannovarData jannovarData) {
+        this.jannovarData = jannovarData;
     }
 
-    public AnalysisResults run(Analysis analysis) {
-        AnalysisMode analysisMode = analysis.getAnalysisMode();
-        logger.info("Running analysis with mode: {}", analysisMode);
-        AnalysisRunner analysisRunner = analysisFactory.getAnalysisRunnerForMode(analysisMode);
-        return analysisRunner.run(analysis);
+    public JannovarData getJannovarData() {
+        return jannovarData;
     }
 
 }

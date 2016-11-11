@@ -25,9 +25,9 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Filterable;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.slf4j.Logger;
@@ -57,11 +57,11 @@ public class FilterReportFactory {
      * @param analysis
      * @return a List of {@code FilterReport}
      */
-    public List<FilterReport> makeFilterReports(Analysis analysis, SampleData sampleData) {
+    public List<FilterReport> makeFilterReports(Analysis analysis, AnalysisResults analysisResults) {
 
         List<Filter> filters = getFiltersFromAnalysis(analysis);
 
-        return filters.stream().map(filter -> makeFilterReport(filter, sampleData)).collect(Collectors.toList());
+        return filters.stream().map(filter -> makeFilterReport(filter, analysisResults)).collect(Collectors.toList());
     }
 
     private List<Filter> getFiltersFromAnalysis(Analysis analysis) {
@@ -69,36 +69,36 @@ public class FilterReportFactory {
     }
 
     /**
-     * Returns a FilterReport for the SampleData and the specified FilterType.
+     * Returns a FilterReport for the AnalysisResults and the specified FilterType.
      * If the FilterType is not recognised or supported then this method will
      * return a default report with no messages.
      *
      * @param filter
-     * @param sampleData
+     * @param analysisResults
      * @return
      */
-    protected FilterReport makeFilterReport(Filter filter, SampleData sampleData) {
+    protected FilterReport makeFilterReport(Filter filter, AnalysisResults analysisResults) {
         FilterType filterType = filter.getFilterType();
         Filter baseFilter = unWrapVariantFilterDataProvider(filter);
         switch (filterType) {
             case VARIANT_EFFECT_FILTER:
-                return makeTargetFilterReport((VariantEffectFilter) baseFilter, sampleData.getVariantEvaluations());
+                return makeTargetFilterReport((VariantEffectFilter) baseFilter, analysisResults.getVariantEvaluations());
             case KNOWN_VARIANT_FILTER:
-                return makeKnownVariantFilterReport((KnownVariantFilter) baseFilter, sampleData.getVariantEvaluations());
+                return makeKnownVariantFilterReport((KnownVariantFilter) baseFilter, analysisResults.getVariantEvaluations());
             case FREQUENCY_FILTER:
-                return makeFrequencyFilterReport((FrequencyFilter) baseFilter, sampleData.getVariantEvaluations());
+                return makeFrequencyFilterReport((FrequencyFilter) baseFilter, analysisResults.getVariantEvaluations());
             case QUALITY_FILTER:
-                return makeQualityFilterReport((QualityFilter) baseFilter, sampleData.getVariantEvaluations());
+                return makeQualityFilterReport((QualityFilter) baseFilter, analysisResults.getVariantEvaluations());
             case PATHOGENICITY_FILTER:
-                return makePathogenicityFilterReport((PathogenicityFilter) baseFilter, sampleData.getVariantEvaluations());
+                return makePathogenicityFilterReport((PathogenicityFilter) baseFilter, analysisResults.getVariantEvaluations());
             case INTERVAL_FILTER:
-                return makeIntervalFilterReport((IntervalFilter) baseFilter, sampleData.getVariantEvaluations());
+                return makeIntervalFilterReport((IntervalFilter) baseFilter, analysisResults.getVariantEvaluations());
             case INHERITANCE_FILTER:
-                return makeInheritanceFilterReport((InheritanceFilter) baseFilter, sampleData.getGenes());
+                return makeInheritanceFilterReport((InheritanceFilter) baseFilter, analysisResults.getGenes());
             case PRIORITY_SCORE_FILTER:
-                return makePriorityScoreFilterReport((PriorityScoreFilter) baseFilter, sampleData.getGenes());
+                return makePriorityScoreFilterReport((PriorityScoreFilter) baseFilter, analysisResults.getGenes());
             default:
-                return makeDefaultVariantFilterReport(filterType, sampleData.getVariantEvaluations());
+                return makeDefaultVariantFilterReport(filterType, analysisResults.getVariantEvaluations());
         }
     }
     

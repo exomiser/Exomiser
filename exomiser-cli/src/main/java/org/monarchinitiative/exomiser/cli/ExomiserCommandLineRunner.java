@@ -21,11 +21,7 @@ package org.monarchinitiative.exomiser.cli;
 
 import org.apache.commons.cli.*;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisParser;
-import org.monarchinitiative.exomiser.core.analysis.Settings;
-import org.monarchinitiative.exomiser.core.analysis.SettingsParser;
-import org.monarchinitiative.exomiser.core.model.SampleData;
+import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 import org.monarchinitiative.exomiser.core.writers.ResultsWriter;
@@ -91,7 +87,10 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             //like this:
             //analysisScripts.parallelStream().forEach(this::runAnalysisFromScript);
             //HOWEVER there may be threading issues so this needs investigation.
-            analysisScripts.forEach(analysis ->{logger.info("Running analysis: {}", analysis); runAnalysisFromScript(analysis);});
+            analysisScripts.forEach(analysis ->{
+                logger.info("Running analysis: {}", analysis);
+                runAnalysisFromScript(analysis);
+            });
         }
         //check the args for a batch file first as this option is otherwise ignored
         else if (commandLine.hasOption("batch-file")) {
@@ -140,15 +139,15 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     }
 
     private void runAnalysisAndWriteResults(Analysis analysis, OutputSettings outputSettings) {
-        SampleData sampleData = exomiser.run(analysis);
-        writeResults(analysis, sampleData, outputSettings);
+        AnalysisResults analysisResults = exomiser.run(analysis);
+        writeResults(analysis, analysisResults, outputSettings);
     }
 
-    private void writeResults(Analysis analysis, SampleData sampleData, OutputSettings outputSettings) {
+    private void writeResults(Analysis analysis, AnalysisResults analysisResults, OutputSettings outputSettings) {
         logger.info("Writing results");
         for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
             ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, sampleData, outputSettings);
+            resultsWriter.writeFile(analysis, analysisResults, outputSettings);
         }
     }
 

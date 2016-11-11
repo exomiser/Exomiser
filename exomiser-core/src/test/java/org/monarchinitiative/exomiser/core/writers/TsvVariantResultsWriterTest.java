@@ -28,11 +28,11 @@ import de.charite.compbio.jannovar.pedigree.Genotype;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.factories.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
@@ -77,7 +77,7 @@ public class TsvVariantResultsWriterTest {
 
     private OutputSettingsBuilder settingsBuilder;
     private Analysis analysis;
-    private SampleData sampleData;
+    private AnalysisResults analysisResults;
     private Gene gene;
     private VariantEvaluation passVariant;
     private VariantEvaluation failVariant;
@@ -95,9 +95,10 @@ public class TsvVariantResultsWriterTest {
         gene.addVariant(passVariant);
         gene.addVariant(failVariant);
 
-        sampleData = new SampleData();
-        sampleData.setGenes(Arrays.asList(gene));
-        
+        analysisResults = AnalysisResults.builder()
+                .genes(Arrays.asList(gene))
+                .build();
+
         analysis = Analysis.builder().build();
     }
 
@@ -115,7 +116,7 @@ public class TsvVariantResultsWriterTest {
     @Test
     public void testWrite() {
         OutputSettings settings = settingsBuilder.outputPrefix("testWrite").build();
-        instance.writeFile(analysis, sampleData, settings);
+        instance.writeFile(analysis, analysisResults, settings);
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.variants.tsv").toFile().delete());
     }
@@ -123,7 +124,7 @@ public class TsvVariantResultsWriterTest {
     @Test
     public void testWriteStringContainsAllVariants() {
         OutputSettings settings = settingsBuilder.build();
-        String outString = instance.writeString(analysis, sampleData, settings);
+        String outString = instance.writeString(analysis, analysisResults, settings);
         String expected = HEADER
                 + PASS_VARIANT_LINE
                 + FAIL_VARIANT_LINE;
@@ -133,7 +134,7 @@ public class TsvVariantResultsWriterTest {
     @Test
     public void testWritePassVariantsOnlyStringContainsOnlyPassedVariants() {
         OutputSettings settings = settingsBuilder.outputPassVariantsOnly(true).build();
-        String outString = instance.writeString(analysis, sampleData, settings);
+        String outString = instance.writeString(analysis, analysisResults, settings);
         String expected = HEADER +
                 PASS_VARIANT_LINE;
         assertThat(outString, equalTo(expected));

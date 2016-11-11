@@ -26,7 +26,7 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.model.SampleData;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 
 /**
  * 
@@ -40,7 +40,7 @@ public interface ResultsWriter {
      * @param analysis
      * @param settings
      */
-    void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings);
+    void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings);
        
     /**
      * Writes the result data out to a String.
@@ -49,5 +49,5 @@ public interface ResultsWriter {
      * @param settings
      * @return  
      */
-    String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings);
+    String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings);
 }

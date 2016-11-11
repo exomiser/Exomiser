@@ -26,9 +26,9 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -76,11 +76,11 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
-            writeData(analysis, sampleData, settings.outputPassVariantsOnly(), printer);
+            writeData(analysis, analysisResults, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -89,24 +89,24 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder output = new StringBuilder();
         try (CSVPrinter printer = new CSVPrinter(output, format)) {
-            writeData(analysis, sampleData, settings.outputPassVariantsOnly(), printer);
+            writeData(analysis, analysisResults, settings.outputPassVariantsOnly(), printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to string {}.", output, ex);
         }
         return output.toString();
     }
 
-    private void writeData(Analysis analysis, SampleData sampleData, boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
+    private void writeData(Analysis analysis, AnalysisResults analysisResults, boolean writeOnlyPassVariants, CSVPrinter printer) throws IOException {
         if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
-            for (Gene gene : sampleData.getGenes()) {
+            for (Gene gene : analysisResults.getGenes()) {
                 writeOnlyPassVariantsOfGene(gene, printer);
             }
         } else {
-            for (Gene gene : sampleData.getGenes()) {
+            for (Gene gene : analysisResults.getGenes()) {
                 writeAllVariantsOfGene(gene, printer);
             }
         }

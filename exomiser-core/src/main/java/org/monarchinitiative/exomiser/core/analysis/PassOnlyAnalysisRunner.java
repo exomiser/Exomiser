@@ -19,7 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.monarchinitiative.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.filters.SimpleGeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.SparseVariantFilterRunner;
@@ -44,8 +44,8 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
     
-    PassOnlyAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService) {
-        super(sampleDataFactory, variantDataService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
+    PassOnlyAnalysisRunner(JannovarData jannovarData, VariantDataService variantDataService) {
+        super(jannovarData, variantDataService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override

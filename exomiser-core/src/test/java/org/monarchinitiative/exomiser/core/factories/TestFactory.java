@@ -26,7 +26,7 @@ import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 
 /**
- * Allows the easy creation of {@link JannovarData} {@link VariantFactory} and {@link SampleDataFactory} objects for testing.
+ * Allows the easy creation of {@link JannovarData} {@link VariantFactory} and {@link VariantAnnotationData} objects for testing.
  *
  * The default data contains one transcript each for the genes FGFR2, GNRHR2A, RBM8A (overlaps with GNRHR2A), and SHH based on the HG19/GRCh37 build.
  *
@@ -43,7 +43,7 @@ public class TestFactory {
 
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
     private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(DEFAULT_JANNOVAR_DATA);
-    private static final SampleDataFactory DEFAULT_SAMPLE_DATA_FACTORY = new SampleDataFactory(buildDefaultVariantFactory(), DEFAULT_JANNOVAR_DATA);
+    private static final VariantAnnotationData DEFAULT_VARIANT_ANNOTATION_DATA = new VariantAnnotationData(DEFAULT_JANNOVAR_DATA);
 
     private TestFactory() {
         //this class should be used in a static context.
@@ -60,8 +60,8 @@ public class TestFactory {
         return DEFAULT_VARIANT_FACTORY;
     }
 
-    public static SampleDataFactory buildDefaultSampleDataFactory() {
-        return DEFAULT_SAMPLE_DATA_FACTORY;
+    public static VariantAnnotationData buildDefaultVariantAnnotationData() {
+        return DEFAULT_VARIANT_ANNOTATION_DATA;
     }
 
     public static JannovarData buildJannovarData(TranscriptModel... transcriptModels) {
@@ -77,13 +77,13 @@ public class TestFactory {
         return new VariantFactory(jannovarData);
     }
 
-    public static SampleDataFactory buildSampleDataFactory(TranscriptModel... transcriptModels) {
+    public static VariantAnnotationData buildVariantAnnotationData(TranscriptModel... transcriptModels) {
         final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return new SampleDataFactory(buildVariantFactory(jannovarData), jannovarData);
+        return buildVariantAnnotationData(jannovarData);
     }
 
-    public static SampleDataFactory buildSampleDataFactory(JannovarData jannovarData) {
-        return new SampleDataFactory(buildVariantFactory(jannovarData), jannovarData);
+    public static VariantAnnotationData buildVariantAnnotationData(JannovarData jannovarData) {
+        return new VariantAnnotationData(jannovarData);
     }
 
 }

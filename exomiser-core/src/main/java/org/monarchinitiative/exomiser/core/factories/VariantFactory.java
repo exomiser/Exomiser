@@ -52,8 +52,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * Produces Variants from VCF files.
  *
@@ -75,27 +73,11 @@ public class VariantFactory {
         this.variantAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes());
     }
 
-    public List<VariantContext> createVariantContexts(Path vcfPath) {
-        logger.info("Loading variants...");
-        try (Stream<VariantContext> variantContextStream = streamVariantContexts(vcfPath)) {
-            List<VariantContext> records = variantContextStream.collect(toList());
-            logger.info("Created {} variant records from file {}", records.size(), vcfPath);
-            return records;
-        }
-    }
-
     public Stream<VariantContext> streamVariantContexts(Path vcfPath) {
         logger.info("Streaming variants from file {}", vcfPath);
-        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) { // false => do not require index
+        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) {
             return vcfReader.iterator().stream();
         }
-    }
-
-    public List<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
-        Stream<VariantEvaluation> variantEvaluationStream = streamVariantEvaluations(vcfPath);
-        List<VariantEvaluation> variantEvaluations = variantEvaluationStream.collect(toList());
-        variantEvaluationStream.close();
-        return variantEvaluations;
     }
 
     public Stream<VariantEvaluation> streamVariantEvaluations(Path vcfPath) {
@@ -244,7 +226,7 @@ public class VariantFactory {
      * @param variantAnnotations
      * @return
      */
-    protected VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
+     VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
         int chr = variantAnnotations.getChr();
         int pos = buildPos(variantAnnotations);
         String ref = buildRef(variantAnnotations);

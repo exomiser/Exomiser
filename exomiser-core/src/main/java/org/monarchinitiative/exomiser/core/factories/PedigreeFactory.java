@@ -23,7 +23,6 @@ package org.monarchinitiative.exomiser.core.factories;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.pedigree.*;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,15 +60,16 @@ public class PedigreeFactory {
      * constructed, and we assume that the sample is from an affected person.
      *
      * @param pedigreeFilePath
-     * @param sampleData
+     * @param sampleNames
      * @return
      */
-    public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, SampleData sampleData) {
-        List<String> sampleNames = sampleData.getSampleNames();
-        int numberOfSamples = sampleData.getNumberOfSamples();
+    public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, List<String> sampleNames, String probandIdentifier) {
+        int numberOfSamples = sampleNames.size();
         switch (numberOfSamples) {
             case 0:
-                throw new PedigreeCreationException("No data present in sampleData");
+                if (pedigreeFilePath != null) {
+                    throw new PedigreeCreationException("No data present in sampleData");
+                }
             case 1:
                 return createSingleSamplePedigree(sampleNames);
             default:
@@ -77,15 +77,26 @@ public class PedigreeFactory {
         }
     }
 
-    private Pedigree createSingleSamplePedigree(List<String> sampleNames) {
-        String sampleName = DEFAULT_SAMPLE_NAME;
-        if (!sampleNames.isEmpty()) {
-            sampleName = sampleNames.get(0);
-        }
+    //TODO: this might be overly convoluted- Jannovar does this:
+//    final PedFileReader pedReader = new PedFileReader(new File(options.pathPedFile));
+//    final PedFileContents pedContents = pedReader.read();
+//    final Pedigree pedigree = new Pedigree(pedContents, pedContents.getIndividuals().get(0).getPedigree());
+//    checkPedigreeCompatibility(pedigree, writer.getVCFHeader());
 
+
+    private Pedigree createSingleSamplePedigree(List<String> sampleNames) {
+        String sampleName = getSingleSampleName(sampleNames);
         logger.info("Creating single-sample pedigree for {}", sampleName);
         final Person person = new Person(sampleName, null, null, Sex.UNKNOWN, Disease.AFFECTED);
         return new Pedigree("family", ImmutableList.of(person));
+    }
+
+    private String getSingleSampleName(List<String> sampleNames) {
+        if (sampleNames.isEmpty()) {
+            logger.info("No sample names present. Using default '{}'", DEFAULT_SAMPLE_NAME);
+            return DEFAULT_SAMPLE_NAME;
+        }
+        return sampleNames.get(0);
     }
 
     private Pedigree createMultiSamplePedigree(Path pedigreeFilePath, List<String> sampleNames) {
@@ -148,56 +159,25 @@ public class PedigreeFactory {
         logger.debug("Sample names from VCF: {}", sampleNames);
         logger.debug("Individuals from PED:  {}", pedFileContents.getNameToPerson().keySet());
         logger.debug("Matching VCF sample names with PED individuals...");
-        //yes, we could just do a set comparison here, but we want to throw an exception once we've logged all the unrepresented individuals for the user.
-        boolean namesMismatch = false;
-        if(sampleNamesMisMatchPedigreeMembers(pedFileContents, sampleNames)) {
-            namesMismatch = true;
-        }
-        //need to to an all vs all comparison because there could be unrepresented elements in both PED and VCF e.g. [Eva, {Adam, Seth], Marge, Homer}
-        if (pedigreeMembersMisMatchSampleNames(pedFileContents, sampleNames)){
-            namesMismatch = true;
-        }
+        //A pedigree could contain unsequenced individuals (dead/unwilling/unable to be part of study) we just need to be sure the sample names from the vcf are all present in the ped file.
+        List<String> unrepresentedSamples = sampleNamesNotRepresentedInPedigree(pedFileContents, sampleNames);
 
-        if(namesMismatch) {
-            throw new PedigreeCreationException("VCF - PED mismatch. There are mismatched individuals in the PED and/or VCF file. Please ensure names in both VCF and PED files are identical.");
+        if (!unrepresentedSamples.isEmpty()) {
+            unrepresentedSamples.forEach(name -> logger.error("Individual {} present in VCF but not in PED file. Please ensure names in VCF are present in PED.", name));
+            throw new PedigreeCreationException("VCF - PED mismatch. There are mismatched individuals in the PED and/or VCF file. Please ensure all VCF samples are represented in the PED file.");
         }
     }
 
-    private boolean pedigreeMembersMisMatchSampleNames(PedFileContents pedFileContents, List<String> sampleNames) {
-        Map<Boolean, List<PedPerson>> people = pedFileContents.getIndividuals().stream().collect(partitioningBy(pedPerson -> sampleNames.contains(pedPerson.getName())));
-
-        List<PedPerson> representedPeople = people.get(true);
-        if (representedPeople.isEmpty()) {
-            throw new PedigreeCreationException("VCF - PED mismatch. None of the individuals in the PED match any of the sample names in the VCF");
-        }
-
-        boolean namesMismatch = false;
-        List<PedPerson> unrepresentedPeople = people.get(false);
-        if (unrepresentedPeople.size() > 0) {
-            namesMismatch = true;
-            unrepresentedPeople.forEach(
-                    person -> logger.error("Individual {} from family {} present in PED but not in VCF. Please ensure names in VCF match those in PED.", person.getName(), person.getPedigree())
-            );
-        }
-        return namesMismatch;
-    }
-
-    private boolean sampleNamesMisMatchPedigreeMembers(PedFileContents pedFileContents, List<String> sampleNames) {
+    private List<String> sampleNamesNotRepresentedInPedigree(PedFileContents pedFileContents, List<String> sampleNames) {
         Map<String, PedPerson> pedPeople = pedFileContents.getNameToPerson();
-        Map<Boolean, List<String>> samples = sampleNames.stream().collect(partitioningBy(name -> pedPeople.containsKey(name)));
+        Map<Boolean, List<String>> samples = sampleNames.stream().collect(partitioningBy(pedPeople::containsKey));
 
         List<String> representedSamples = samples.get(true);
         if (representedSamples.isEmpty()) {
             throw new PedigreeCreationException("VCF - PED mismatch. None of the sample names in the VCF match any of the individuals in the PED");
         }
 
-        boolean namesMismatch = false;
-        List<String> unrepresentedSamples = samples.get(false);
-        if (unrepresentedSamples.size() > 0) {
-            namesMismatch = true;
-            unrepresentedSamples.forEach(name -> logger.error("Individual {} present in VCF but not in PED file. Please ensure names in VCF match those in PED.", name));
-        }
-        return namesMismatch;
+        return samples.get(false);
     }
 
     private Pedigree buildPedigree(PedFileContents pedFileContents) {

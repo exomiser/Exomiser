@@ -19,9 +19,9 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.factories.SampleDataFactory;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -47,13 +47,13 @@ import java.util.Set;
 @Component
 public class AnalysisFactory {
 
-    private final SampleDataFactory sampleDataFactory;
+    private final JannovarData jannovarData;
     private final PriorityFactory priorityFactory;
     private final VariantDataService variantDataService;
 
     @Autowired
-    public AnalysisFactory(SampleDataFactory sampleDataFactory, PriorityFactory priorityFactory, VariantDataService variantDataService) {
-        this.sampleDataFactory = sampleDataFactory;
+    public AnalysisFactory(JannovarData jannovarData, PriorityFactory priorityFactory, VariantDataService variantDataService) {
+        this.jannovarData = jannovarData;
         this.variantDataService = variantDataService;
         this.priorityFactory = priorityFactory;
     }
@@ -61,9 +61,9 @@ public class AnalysisFactory {
     public AnalysisRunner getAnalysisRunnerForMode(AnalysisMode analysisMode) {
         switch (analysisMode) {
             case FULL:
-                return new SimpleAnalysisRunner(sampleDataFactory, variantDataService);
+                return new SimpleAnalysisRunner(jannovarData, variantDataService);
             case SPARSE:
-                return new SparseAnalysisRunner(sampleDataFactory, variantDataService);
+                return new SparseAnalysisRunner(jannovarData, variantDataService);
             case PASS_ONLY:
             default:
                 //this guy takes up the least RAM
@@ -72,7 +72,7 @@ public class AnalysisFactory {
     }
     
     private AnalysisRunner passOnlyAnalysisRunner() {
-        return new PassOnlyAnalysisRunner(sampleDataFactory, variantDataService);
+        return new PassOnlyAnalysisRunner(jannovarData, variantDataService);
     }
 
     public AnalysisBuilder getAnalysisBuilder(Path vcfPath) {

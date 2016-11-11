@@ -27,10 +27,10 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.filters.FilterReportFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,8 +145,8 @@ public class ResultsWriterUtils {
         return effectCounter;
     }
 
-    public static List<FilterReport> makeFilterReports(Analysis analysis, SampleData sampleData) {
-        return filterReportFactory.makeFilterReports(analysis, sampleData);
+    public static List<FilterReport> makeFilterReports(Analysis analysis, AnalysisResults analysisResults) {
+        return filterReportFactory.makeFilterReports(analysis, analysisResults);
     }
 
     public static List<Gene> getMaxPassedGenes(List<Gene> genes, int maxGenes) {

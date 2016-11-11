@@ -24,12 +24,12 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.monarchinitiative.exomiser.core.factories.SampleDataFactory;
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.monarchinitiative.exomiser.core.factories.TestFactory;
+import org.monarchinitiative.exomiser.core.factories.VariantAnnotationData;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,12 +53,13 @@ public abstract class AnalysisRunnerTestBase {
  
     protected final Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
 
-    protected final Path twoAffectedPedPath = Paths.get("src/test/resources/inheritance/twoAffected.ped");
-    protected final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
-    protected final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
+    final Path twoAffectedPedPath = Paths.get("src/test/resources/inheritance/twoAffected.ped");
+    final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
+    final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
 
-    protected final SampleDataFactory sampleDataFactory = TestFactory.buildDefaultSampleDataFactory();
-    protected final VariantDataService stubDataService = new VariantDataServiceStub();
+    final VariantAnnotationData variantAnnotationData = TestFactory.buildDefaultVariantAnnotationData();
+    final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
+    final VariantDataService stubDataService = new VariantDataServiceStub();
     
     
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
@@ -72,8 +73,8 @@ public abstract class AnalysisRunnerTestBase {
         return genes.stream().collect(toMap(Gene::getGeneSymbol, gene -> gene));
     }
 
-    void printResults(SampleData sampleData) {
-        for (Gene gene : sampleData.getGenes()) {
+    void printResults(AnalysisResults analysisResults) {
+        for (Gene gene : analysisResults.getGenes()) {
             logger.info("{}", gene);
             for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
                 logger.info("{}", variantEvaluation);

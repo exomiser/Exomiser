@@ -30,9 +30,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,14 +66,14 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
 
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
 
-            writer.write(writeString(analysis, sampleData, settings));
+            writer.write(writeString(analysis, analysisResults, settings));
 
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
@@ -83,7 +83,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         Context context = new Context();
         //write the settings
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -101,15 +101,15 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("settings", jsonSettings);
         
         //make the user aware of any unanalysed variants
-        List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
+        List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
         
         //write out the analysis reports section
-        List<FilterReport> analysisStepReports = makeAnalysisStepReports(analysis, sampleData);
+        List<FilterReport> analysisStepReports = makeAnalysisStepReports(analysis, analysisResults);
         context.setVariable("filterReports", analysisStepReports);
         //write out the variant type counters
-        List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(sampleData.getVariantEvaluations());
-        List<String> sampleNames= sampleData.getSampleNames();
+        List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(analysisResults.getVariantEvaluations());
+        List<String> sampleNames= analysisResults.getSampleNames();
         String sampleName = "Anonymous";
         if(!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
@@ -118,7 +118,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
                  
-        List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleData.getGenes(), settings.getNumberOfGenesToShow());
+        List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(analysisResults.getGenes(), settings.getNumberOfGenesToShow());
         context.setVariable("genes", passedGenes);
         
         return templateEngine.process("results", context);
@@ -128,8 +128,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
     }
     
-    protected List<FilterReport> makeAnalysisStepReports(Analysis analysis, SampleData sampleData) {
-        return ResultsWriterUtils.makeFilterReports(analysis, sampleData);
+    protected List<FilterReport> makeAnalysisStepReports(Analysis analysis, AnalysisResults analysisResults) {
+        return ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
     }
 
     //TODO:

@@ -26,7 +26,7 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.model.SampleData;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
@@ -72,12 +72,12 @@ public class ResultsWriterFactory implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
 
     }
 
     @Override
-    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         return null;
     }
 }

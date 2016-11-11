@@ -31,10 +31,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.filters.PassAllVariantEffectsFilter;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.nio.file.Path;
@@ -136,8 +136,8 @@ public class ResultsWriterUtilsTest {
     @Test
     public void canMakeFilterReportsFromAnalysis_returnsEmptyListWhenNoFiltersAdded(){
         Analysis analysis = Analysis.builder().build();
-        SampleData sampleData = new SampleData();
-        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, sampleData);
+        AnalysisResults analysisResults = AnalysisResults.builder().build();
+        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         
         assertThat(results.isEmpty(), is(true));
     }
@@ -147,8 +147,8 @@ public class ResultsWriterUtilsTest {
         Analysis analysis = Analysis.builder()
                 .addStep(new PassAllVariantEffectsFilter())
                 .build();
-        SampleData sampleData = new SampleData();
-        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, sampleData);
+        AnalysisResults analysisResults = AnalysisResults.builder().build();
+        List<FilterReport> results = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         
         for (FilterReport result : results) {
             System.out.println(result);

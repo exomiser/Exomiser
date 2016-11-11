@@ -25,8 +25,8 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -59,12 +59,12 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-            writer.write(writeString(analysis, sampleData, settings));
+            writer.write(writeString(analysis, analysisResults, settings));
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -73,11 +73,11 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(HEADER_LINE);
 
-        for (Gene gene : sampleData.getGenes()) {
+        for (Gene gene : analysisResults.getGenes()) {
             if (gene.passedFilters()) {
                 stringBuilder.append(makeGeneLine(gene));
             }

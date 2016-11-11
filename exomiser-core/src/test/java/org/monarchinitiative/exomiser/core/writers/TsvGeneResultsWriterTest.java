@@ -27,8 +27,8 @@ package org.monarchinitiative.exomiser.core.writers;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class TsvGeneResultsWriterTest {
     
     private static final String GENE_STRING = "FGFR2	2263	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0	\n";
     
-    private SampleData sampleData;
+    private AnalysisResults analysisResults;
     private Analysis analysis;
     
     @Before
@@ -63,8 +63,7 @@ public class TsvGeneResultsWriterTest {
         instance = new TsvGeneResultsWriter();
 
         gene = new Gene(GENE_SYMBOL, GENE_ID);        
-        sampleData = new SampleData();
-        sampleData.setGenes(Arrays.asList(gene));
+        analysisResults = AnalysisResults.builder().genes(Arrays.asList(gene)).build();
         analysis = Analysis.builder().build();
     }
 
@@ -74,7 +73,7 @@ public class TsvGeneResultsWriterTest {
                 .outputPrefix("testWrite")
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
-        instance.writeFile(analysis, sampleData, settings);
+        instance.writeFile(analysis, analysisResults, settings);
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().exists());
         assertTrue(Paths.get("testWrite.genes.tsv").toFile().delete());
     }
@@ -84,7 +83,7 @@ public class TsvGeneResultsWriterTest {
         OutputSettings settings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
-        String outString = instance.writeString(analysis, sampleData, settings);
+        String outString = instance.writeString(analysis, analysisResults, settings);
         assertThat(outString, equalTo(HEADER + GENE_STRING));
     }
 
@@ -93,7 +92,7 @@ public class TsvGeneResultsWriterTest {
         OutputSettings settings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
-        String outString = instance.writeString(analysis, sampleData, settings);
+        String outString = instance.writeString(analysis, analysisResults, settings);
         String[] lines = outString.split("\n");
         assertThat(lines[0] + "\n", equalTo(HEADER));
     }

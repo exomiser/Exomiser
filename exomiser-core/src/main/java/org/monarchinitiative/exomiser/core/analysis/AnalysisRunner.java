@@ -19,13 +19,11 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.monarchinitiative.exomiser.core.model.SampleData;
-
 /**
  *
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface AnalysisRunner {
-    SampleData run(Analysis analysis);
+    AnalysisResults run(Analysis analysis);
 }

@@ -66,6 +66,6 @@ public class VariantContextBuilder {
     }
 
     public List<VariantContext> build(String... vcfLines) {
-       return Arrays.stream(vcfLines).map(vcfLine -> build(vcfLine)).collect(toList());
+       return Arrays.stream(vcfLines).map(this::build).collect(toList());
     }
 }

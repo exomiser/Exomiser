@@ -23,12 +23,6 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
-import htsjdk.variant.variantcontext.VariantContext;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -40,14 +34,5 @@ public class VariantFactoryStub extends VariantFactory {
         super(new JannovarData(HG19RefDictBuilder.build(), new ImmutableList.Builder<TranscriptModel>().build()));
     }
 
-    @Override
-    public List<VariantContext> createVariantContexts(Path vcfPath) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<VariantEvaluation> createVariantEvaluations(Path vcfPath) {
-        return Collections.emptyList();
-    }
 }
 

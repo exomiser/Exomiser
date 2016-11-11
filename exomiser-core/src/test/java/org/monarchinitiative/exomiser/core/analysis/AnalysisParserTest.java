@@ -33,7 +33,6 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParse
 import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -58,7 +57,6 @@ public class AnalysisParserTest {
     private AnalysisParser instance;
     private PriorityFactory priorityFactory;
 
-    private SampleData sampleData;
     private List<AnalysisStep> analysisSteps;
 
     private List<String> hpoIds;
@@ -69,10 +67,6 @@ public class AnalysisParserTest {
     public void setUp() {
         priorityFactory = new NoneTypePriorityFactoryStub();
         instance = new AnalysisParser(priorityFactory, new VariantDataServiceStub());
-
-        sampleData = new SampleData();
-        sampleData.setVcfPath(Paths.get("test.vcf"));
-        sampleData.setPedPath(null);
 
         analysisSteps = new ArrayList<>();
         hpoIds = new ArrayList<>(Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055"));

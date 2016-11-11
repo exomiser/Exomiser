@@ -29,10 +29,10 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.vcf.*;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,68 +73,68 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     @Override
-    public void writeFile(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         // create a VariantContextWriter writing to the output file path
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
-        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
+        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults.getVcfHeader(),
                 outFile.toString(),
                 InfoFields.BOTH,
                 getAdditionalHeaderLines())) {
-            writeData(sampleData, settings.outputPassVariantsOnly(), writer);
+            writeData(analysisResults, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
     }
 
     @Override
-    public String writeString(Analysis analysis, SampleData sampleData, OutputSettings settings) {
+    public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         // create a VariantContextWriter writing to a buffer
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(sampleData.getVcfHeader(),
+        try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults.getVcfHeader(),
                 baos,
                 InfoFields.BOTH,
                 getAdditionalHeaderLines())) {
-            writeData(sampleData, settings.outputPassVariantsOnly(), writer);
+            writeData(analysisResults, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to string buffer", OUTPUT_FORMAT);
         return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
 
-    private void writeData(SampleData sampleData, boolean writeOnlyPassVariants, VariantContextWriter writer) {
-        writeUnannotatedVariants(sampleData, writer);
+    private void writeData(AnalysisResults analysisResults, boolean writeOnlyPassVariants, VariantContextWriter writer) {
+        writeUnannotatedVariants(analysisResults, writer);
         // actually write the data and close writer again
         if (writeOnlyPassVariants) {
             logger.info("Writing out only PASS variants");
-            writeOnlyPassSampleData(sampleData, writer);
+            writeOnlyPassSampleData(analysisResults, writer);
         } else {
-            writeAllSampleData(sampleData, writer);
+            writeAllSampleData(analysisResults, writer);
         }
     }
 
-    private void writeUnannotatedVariants(SampleData sampleData, VariantContextWriter writer) {
-        List<VariantContext> updatedRecords = updateGeneVariantRecords(null, sampleData.getUnAnnotatedVariantEvaluations());
+    private void writeUnannotatedVariants(AnalysisResults analysisResults, VariantContextWriter writer) {
+        List<VariantContext> updatedRecords = updateGeneVariantRecords(null, analysisResults.getUnAnnotatedVariantEvaluations());
         updatedRecords.forEach(record-> writer.add(record));
     }
 
-    private void writeOnlyPassSampleData(SampleData sampleData, VariantContextWriter writer) {
-        for (Gene gene : sampleData.getGenes()) {
+    private void writeOnlyPassSampleData(AnalysisResults analysisResults, VariantContextWriter writer) {
+        for (Gene gene : analysisResults.getGenes()) {
             List<VariantContext> updatedRecords = updateGeneVariantRecords(gene, gene.getPassedVariantEvaluations());
             updatedRecords.forEach(record-> writer.add(record));
         }
     }
 
     /**
-     * Write the <code>sampleData</code> as VCF to <code>writer</code>.
+     * Write the <code>analysisResults</code> as VCF to <code>writer</code>.
      *
      * <code>writer</code> is already completely initialized, including all
      * headers, so data is written out directly for each
-     * {@link VariantEvalution} in <code>sampleData</code>.
+     * {@link VariantEvalution} in <code>analysisResults</code>.
      *
-     * @param sampleData data set to write out
+     * @param analysisResults data set to write out
      * @param writer writer to write to
      */
-    private void writeAllSampleData(SampleData sampleData, VariantContextWriter writer) {
-        for (Gene gene : sampleData.getGenes()) {
+    private void writeAllSampleData(AnalysisResults analysisResults, VariantContextWriter writer) {
+        for (Gene gene : analysisResults.getGenes()) {
             logger.debug("updating variant records for gene {}", gene);
             List<VariantContext> updatedRecords = updateGeneVariantRecords(gene, gene.getVariantEvaluations());
             updatedRecords.forEach(record-> writer.add(record));

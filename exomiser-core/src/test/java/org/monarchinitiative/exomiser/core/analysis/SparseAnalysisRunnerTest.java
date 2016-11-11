@@ -23,7 +23,10 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.FilterStatus;
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -45,17 +48,17 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         
     @Before
     public void setUp() {
-        instance = new SparseAnalysisRunner(sampleDataFactory, stubDataService);
+        instance = new SparseAnalysisRunner(jannovarData, stubDataService);
     }
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {
         Analysis analysis = makeAnalysis(vcfPath);
 
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
-        for (Gene gene : sampleData.getGenes()) {
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        for (Gene gene : analysisResults.getGenes()) {
             assertThat(gene.passedFilters(), is(true));
             for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
                 assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
@@ -68,11 +71,11 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
@@ -95,11 +98,11 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
@@ -140,11 +143,11 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(inheritanceFilter)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
@@ -185,11 +188,11 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(inheritanceFilter)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
@@ -223,11 +226,11 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
@@ -266,13 +269,13 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter, intervalFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
         // fails with my new code as it reassigns 1:g.145510000G>A from GNRHR2 to RBM8A as both are annotated and RBM8A scores better due to above code
         // note that the GNRH2 is actually a missense variant and RBM8A is a 3UTR variant so prob not that sensible!
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));
@@ -320,11 +323,11 @@ public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(inheritanceFilter)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene gnrh2 = results.get("GNRHR2");
         assertThat(gnrh2.passedFilters(), is(false));

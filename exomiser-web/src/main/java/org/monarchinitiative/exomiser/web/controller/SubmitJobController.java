@@ -26,14 +26,10 @@ import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
-import org.monarchinitiative.exomiser.core.analysis.Settings;
-import org.monarchinitiative.exomiser.core.analysis.SettingsParser;
+import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
@@ -136,7 +132,7 @@ public class SubmitJobController {
         }
 
         Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
-        SampleData sampleData = exomiser.run(analysis);
+        AnalysisResults analysisResults = exomiser.run(analysis);
 
         Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
         try {
@@ -155,10 +151,10 @@ public class SubmitJobController {
 
         for (OutputFormat outFormat : outputSettings.getOutputFormats()) {
             ResultsWriter resultsWriter = resultsWriterFactory.getResultsWriter(outFormat);
-            resultsWriter.writeFile(analysis, sampleData, outputSettings);
+            resultsWriter.writeFile(analysis, analysisResults, outputSettings);
         }
 
-        buildResultsModel(model, analysis, sampleData);
+        buildResultsModel(model, analysis, analysisResults);
         logger.info("Returning {} results to user", vcfPath.getFileName());
         cleanUpSampleFiles(vcfPath, pedPath);
         return "results";
@@ -217,7 +213,7 @@ public class SubmitJobController {
                 .build();
     }
 
-    private void buildResultsModel(Model model, Analysis analysis, SampleData sampleData) {
+    private void buildResultsModel(Model model, Analysis analysis, AnalysisResults analysisResults) {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
@@ -232,19 +228,19 @@ public class SubmitJobController {
         model.addAttribute("settings", jsonSettings);
 
         //make the user aware of any unanalysed variants
-        List<VariantEvaluation> unAnalysedVarEvals = sampleData.getUnAnnotatedVariantEvaluations();
+        List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
         model.addAttribute("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the filter reports section
-        List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis, sampleData);
+        List<FilterReport> filterReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         model.addAttribute("filterReports", filterReports);
 
-        List<VariantEvaluation> variantEvaluations = sampleData.getVariantEvaluations();
+        List<VariantEvaluation> variantEvaluations = analysisResults.getVariantEvaluations();
         List<VariantEffectCount> variantEffectCounters = ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
         model.addAttribute("variantTypeCounters", variantEffectCounters);
 
         //write out the variant type counters
-        List<String> sampleNames = sampleData.getSampleNames();
+        List<String> sampleNames = analysisResults.getSampleNames();
         String sampleName = "Anonymous";
         if (!sampleNames.isEmpty()) {
             sampleName = sampleNames.get(0);
@@ -252,7 +248,7 @@ public class SubmitJobController {
         model.addAttribute("sampleName", sampleName);
         model.addAttribute("sampleNames", sampleNames);
 
-        List<Gene> sampleGenes = sampleData.getGenes();
+        List<Gene> sampleGenes = analysisResults.getGenes();
         model.addAttribute("geneResultsTruncated", false);
         int numCandidateGenes = numGenesPassedFilters(sampleGenes);
         if (numCandidateGenes > maxGenes) {

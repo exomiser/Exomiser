@@ -20,17 +20,24 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
-import org.monarchinitiative.exomiser.core.factories.SampleDataFactory;
+import org.monarchinitiative.exomiser.core.factories.GeneFactory;
+import org.monarchinitiative.exomiser.core.factories.PedigreeFactory;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantFactory;
 import org.monarchinitiative.exomiser.core.filters.GeneFilter;
 import org.monarchinitiative.exomiser.core.filters.GeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
 import org.monarchinitiative.exomiser.core.filters.VariantFilterRunner;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
+import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -57,28 +64,37 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
-    private final SampleDataFactory sampleDataFactory;
+    private final JannovarData jannovarData;
     private final VariantDataService variantDataService;
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 
-    public AbstractAnalysisRunner(SampleDataFactory sampleDataFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
-        this.sampleDataFactory = sampleDataFactory;
+    public AbstractAnalysisRunner(JannovarData jannovarData, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+        this.jannovarData = jannovarData;
         this.variantDataService = variantDataService;
         this.variantFilterRunner = variantFilterRunner;
         this.geneFilterRunner = geneFilterRunner;
     }
 
     @Override
-    public SampleData run(Analysis analysis) {
+    public AnalysisResults run(Analysis analysis) {
 
-        final SampleData sampleData = makeSampleDataWithoutGenesOrVariants(analysis);
+        Path vcfPath = analysis.getVcfPath();
+        Path pedigreeFilePath = analysis.getPedPath();
 
-        logger.info("Running analysis on sample: {}", sampleData.getSampleNames());
+        logger.info("Setting up analysis for VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
+        VCFHeader vcfHeader = readVcfHeader(vcfPath);
+        List<String> sampleNames = vcfHeader.getGenotypeSamples();
+        //TODO: add probandSampleName to Analysis
+        String probandIdentifier = "probandId";
+        //TODO:
+//        assert(sampleNames.contains(probandIdentifier));
+
+        //BUILDER! PedigreeFactory.builder().pedigreeFilePath().sampleNames().probandIdentifier().build();
+        Pedigree pedigree = new PedigreeFactory().createPedigreeForSampleData(pedigreeFilePath, sampleNames, probandIdentifier);
+
+        logger.info("Running analysis on sample: {}", sampleNames);
         Instant timeStart = Instant.now();
-
-        final Pedigree pedigree = sampleData.getPedigree();
-        final Path vcfPath = analysis.getVcfPath();
 
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
@@ -113,13 +129,20 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             }
             assignVariantsToGenes(variantEvaluations, allGenes);
         }
-
-        final List<Gene> genes = getGenesWithVariants(allGenes);
+        List<Gene> genes = getGenesWithVariants(allGenes);
         scoreGenes(genes, analysis.getModeOfInheritance());
-        sampleData.setGenes(genes);
+        List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
 
-        final List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
-        sampleData.setVariantEvaluations(variants);
+        logger.info("Creating analysis results from VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
+        AnalysisResults analysisResults = AnalysisResults.builder()
+                .vcfPath(vcfPath)
+                .pedPath(pedigreeFilePath)
+                .vcfHeader(vcfHeader)
+                .sampleNames(vcfHeader.getGenotypeSamples())
+                .pedigree(pedigree)
+                .genes(genes)
+                .variantEvaluations(variants)
+                .build();
 
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 //        logTopNumScoringGenes(5, genes, analysis);
@@ -127,7 +150,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         Duration duration = Duration.between(timeStart, Instant.now());
         long ms = duration.toMillis();
         logger.info("Finished analysis in {}m {}s {}ms ({} ms)", (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
-        return sampleData;
+        return analysisResults;
     }
 
     private List<VariantEvaluation> loadAndFilterVariants(Path vcfPath, Map<String, Gene> allGenes, List<AnalysisStep> analysisGroup, Analysis analysis) {
@@ -227,10 +250,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
-        VariantFactory variantFactory = sampleDataFactory.getVariantFactory();
         List<RegulatoryFeature> regulatoryFeatures = variantDataService.getRegulatoryFeatures();
         ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
         logger.info("Loaded {} regulatory regions", regulatoryFeatures.size());
+        VariantFactory variantFactory = new VariantFactory(jannovarData);
         //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
         return variantFactory.streamVariantEvaluations(vcfPath).map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
     }
@@ -251,8 +274,10 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         };
     }
 
-    private SampleData makeSampleDataWithoutGenesOrVariants(Analysis analysis) {
-        return sampleDataFactory.createSampleDataWithoutVariantsOrGenes(analysis.getVcfPath(), analysis.getPedPath());
+    private VCFHeader readVcfHeader(Path vcfFilePath) {
+        try (VCFFileReader vcfReader = new VCFFileReader(vcfFilePath.toFile(), false)) {
+            return vcfReader.getFileHeader();
+        }
     }
 
     private void assignVariantsToGenes(List<VariantEvaluation> variantEvaluations, Map<String, Gene> allGenes) {
@@ -279,7 +304,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return a map of genes indexed by gene symbol.
      */
     private Map<String, Gene> makeKnownGenes() {
-        return sampleDataFactory.createKnownGenes()
+        return GeneFactory.createKnownGenes(jannovarData)
                 .parallelStream()
                 .collect(toConcurrentMap(Gene::getGeneSymbol, gene -> gene));
     }

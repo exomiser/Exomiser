@@ -23,7 +23,10 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.model.FilterStatus;
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneticInterval;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
@@ -43,18 +46,18 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     
     @Before
     public void setUp() {
-        instance = new PassOnlyAnalysisRunner(sampleDataFactory, stubDataService);
+        instance = new PassOnlyAnalysisRunner(jannovarData, stubDataService);
     }
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {
         Analysis analysis = makeAnalysis(vcfPath);
 
-        SampleData sampleData = instance.run(analysis);
+        AnalysisResults analysisResults = instance.run(analysis);
 
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
-        for (Gene gene : sampleData.getGenes()) {
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        for (Gene gene : analysisResults.getGenes()) {
             assertThat(gene.passedFilters(), is(true));
             for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
                 assertThat(variantEvaluation.getFilterStatus(), equalTo(FilterStatus.UNFILTERED));
@@ -67,11 +70,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
 
-        Gene passedGene = sampleData.getGenes().get(0);
+        Gene passedGene = analysisResults.getGenes().get(0);
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
     }
@@ -82,10 +85,10 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter qualityFilter = new QualityFilter(9999999f);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().isEmpty(), is(true));
-        assertThat(sampleData.getVariantEvaluations().isEmpty(), is(true));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().isEmpty(), is(true));
+        assertThat(analysisResults.getVariantEvaluations().isEmpty(), is(true));
     }
 
     @Test
@@ -98,11 +101,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
 
         Analysis analysis = makeAnalysis(vcfPath, intervalFilter, qualityFilter, mockHiPhivePrioritiser);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
@@ -133,11 +136,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(inheritanceFilter)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
@@ -162,11 +165,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1f);
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
@@ -186,11 +189,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
 
         Analysis analysis = makeAnalysis(vcfPath, prioritiser, priorityScoreFilter, intervalFilter);
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
@@ -228,11 +231,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .addStep(inheritanceFilter)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
@@ -262,11 +265,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .pedPath(childAffectedPedPath)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
         
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
         Gene passedGene = results.get("GNRHR2");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -289,11 +292,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .pedPath(twoAffectedPedPath)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(1));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
         
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
@@ -316,11 +319,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .pedPath(childAffectedPedPath)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
-        SampleData sampleData = instance.run(analysis);
-        printResults(sampleData);
-        assertThat(sampleData.getGenes().size(), equalTo(2));
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
         
-        Map<String, Gene> results = makeResults(sampleData.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.getGenes());
         //CompoundHeterozygous
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));

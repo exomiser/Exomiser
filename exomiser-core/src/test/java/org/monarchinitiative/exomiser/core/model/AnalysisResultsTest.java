@@ -14,10 +14,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -28,78 +30,86 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SampleDataTest {
+public class AnalysisResultsTest {
 
-    private SampleData instance;
 
     @Mock
     List<Annotation> mockNotEmptyListOfAnnotations;
    
     @Before
     public void setUp() {
-        instance = new SampleData();
         Mockito.when(mockNotEmptyListOfAnnotations.isEmpty()).thenReturn(Boolean.FALSE);
     }
 
     @Test
     public void noArgsConstructorInitialisesGenesVariantEvalations() {
+        AnalysisResults instance = AnalysisResults.builder().build();
         assertThat(instance.getGenes(), notNullValue());
         assertThat(instance.getVariantEvaluations(), notNullValue());
     }
 
     @Test
     public void testCanSetAndGetSampleNames() {
-        List<String> sampleNames = new ArrayList<>();
-        instance.setSampleNames(sampleNames);
-        assertThat(instance.getSampleNames(), equalTo(sampleNames));
-    }
+        List<String> sampleNames = Arrays.asList("David");
 
-    @Test
-    public void testCanSetAndGetNumberOfSamples() {
-        int numSamples = 1;
-        instance.setNumberOfSamples(numSamples);
-        assertThat(instance.getNumberOfSamples(), equalTo(numSamples));
+        AnalysisResults instance = AnalysisResults.builder()
+                .sampleNames(sampleNames)
+                .build();
+
+        assertThat(instance.getSampleNames(), equalTo(sampleNames));
     }
 
     @Test
     public void testCanSetAndGetVcfFilePath() {
         Path vcfPath = Paths.get("vcf");
-        instance.setVcfPath(vcfPath);
+        AnalysisResults instance = AnalysisResults.builder()
+                .vcfPath(vcfPath)
+                .build();
         assertThat(instance.getVcfPath(), equalTo(vcfPath));
     }
     
     @Test
     public void testCanSetAndGetPedFilePath() {
         Path pedPath = Paths.get("ped");
-        instance.setPedPath(pedPath);
+        AnalysisResults instance = AnalysisResults.builder()
+                .pedPath(pedPath)
+                .build();
         assertThat(instance.getPedPath(), equalTo(pedPath));
     }
 
     @Test
     public void testCanSetAndGetVcfHeader() {
         VCFHeader vcfHeader = new VCFHeader();
-        instance.setVcfHeader(vcfHeader);
+        AnalysisResults instance = AnalysisResults.builder()
+                .vcfHeader(vcfHeader)
+                .build();
         assertThat(instance.getVcfHeader(), equalTo(vcfHeader));
     }
 
     @Test
     public void testCanSetAndGetVariantEvaluations() {
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
-        instance.setVariantEvaluations(variantEvaluations);
+        AnalysisResults instance = AnalysisResults.builder()
+                .variantEvaluations(variantEvaluations)
+                .build();
         assertThat(instance.getVariantEvaluations(), equalTo(variantEvaluations));
     }
 
     @Test
     public void testCanSetAndGetPedigree() {
         Pedigree pedigree = Pedigree.constructSingleSamplePedigree("Individual");
-        instance.setPedigree(pedigree);
+        AnalysisResults instance = AnalysisResults.builder()
+                .pedigree(pedigree)
+                .build();
         assertThat(instance.getPedigree(), equalTo(pedigree));
     }
 
     @Test
     public void testCanSetAndGetGenes() {
         List<Gene> genes = new ArrayList<>();
-        instance.setGenes(genes);
+        AnalysisResults instance = AnalysisResults.builder()
+                .genes(genes)
+                .build();
         assertThat(instance.getGenes(), equalTo(genes));
     }
 
@@ -110,41 +120,43 @@ public class SampleDataTest {
         
         VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation.VariantBuilder(7, 155604800, "C", "CTT").build();
 
-        List<VariantEvaluation> allVariantEvaluations = new ArrayList<>();
-        allVariantEvaluations.add(annotatedVariantEvaluation);
-        allVariantEvaluations.add(unAnnotatedVariantEvaluation);
-        instance.setVariantEvaluations(allVariantEvaluations);
+        List<VariantEvaluation> allVariantEvaluations = Arrays.asList(annotatedVariantEvaluation, unAnnotatedVariantEvaluation);
 
-        List<VariantEvaluation> unAnnotatedVariantEvaluations = new ArrayList<>();
-        unAnnotatedVariantEvaluations.add(unAnnotatedVariantEvaluation);
+        AnalysisResults instance = AnalysisResults.builder()
+                .variantEvaluations(allVariantEvaluations)
+                .build();
+
+        List<VariantEvaluation> unAnnotatedVariantEvaluations = Arrays.asList(unAnnotatedVariantEvaluation);
 
         assertThat(instance.getUnAnnotatedVariantEvaluations(), equalTo(unAnnotatedVariantEvaluations));
     }
     
     @Test 
     public void testHashCode() {
-        SampleData other = new SampleData();
+        AnalysisResults instance = AnalysisResults.builder().build();
+        AnalysisResults other = AnalysisResults.builder().build();
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
     
     @Test 
     public void testEquals() {
         Path vcf = Paths.get("test.vcf");
-        instance.setVcfPath(vcf);
-        
-        SampleData other = new SampleData();
-        other.setVcfPath(vcf);
-        
+        AnalysisResults instance = AnalysisResults.builder().vcfPath(vcf).build();
+        AnalysisResults other = AnalysisResults.builder().vcfPath(vcf).build();
         assertThat(instance, equalTo(other));
     }
     
     @Test 
     public void testNotEquals() {
-        instance.setVcfPath(Paths.get("test.vcf"));
-        
-        SampleData other = new SampleData();
-        other.setPedPath(Paths.get("other.ped"));
-        
+        AnalysisResults instance = AnalysisResults.builder().vcfPath(Paths.get("test.vcf")).build();
+        AnalysisResults other = AnalysisResults.builder().pedPath(Paths.get("other.ped")).build();
         assertThat(instance, not(equalTo(other)));
+    }
+
+    @Test
+    public void testString() {
+        AnalysisResults instance = AnalysisResults.builder().vcfPath(Paths.get("test.vcf")).pedPath(Paths.get("test.ped")).build();
+
+        System.out.println(instance);
     }
 }

@@ -24,16 +24,16 @@
  */
 package org.monarchinitiative.exomiser.core;
 
+import de.charite.compbio.jannovar.data.JannovarData;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
-import org.monarchinitiative.exomiser.core.factories.SampleDataFactory;
+import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.factories.TestFactory;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
-import org.monarchinitiative.exomiser.core.model.SampleData;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactoryImpl;
 
 import java.nio.file.Paths;
@@ -46,10 +46,10 @@ public class ExomiserTest {
  
     private Exomiser instance;
         
-    private final SampleDataFactory sampleDataFactory = TestFactory.buildDefaultSampleDataFactory();
+    private final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
     private final VariantDataService stubDataService = new VariantDataServiceStub();
     
-    private final AnalysisFactory analysisFactory = new AnalysisFactory(sampleDataFactory, new PriorityFactoryImpl(), stubDataService);
+    private final AnalysisFactory analysisFactory = new AnalysisFactory(jannovarData, new PriorityFactoryImpl(), stubDataService);
     
     @Before
     public void setUp() {
@@ -66,19 +66,19 @@ public class ExomiserTest {
     @Test
     public void canRunAnalysis_Full() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.FULL);
-        SampleData sampleData = instance.run(analysis);
+        AnalysisResults analysisResults = instance.run(analysis);
     }
     
     @Test
     public void canRunAnalysis_Sparse() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.SPARSE);
-        SampleData sampleData = instance.run(analysis);
+        AnalysisResults analysisResults = instance.run(analysis);
     }
     
     @Test
     public void canRunAnalysis_PassOnly() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.PASS_ONLY);
-        SampleData sampleData = instance.run(analysis);
+        AnalysisResults analysisResults = instance.run(analysis);
     }
     
  }
