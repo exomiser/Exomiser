@@ -10,6 +10,7 @@ vcf=
 
 #SAMPLE DATA OPTIONS
 ped=
+proband=
 
 #ANALYSIS MODE OPTIONS
 full-analysis=false

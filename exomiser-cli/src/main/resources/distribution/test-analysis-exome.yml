@@ -5,6 +5,7 @@
 analysis:
     vcf: data/Pfeiffer.vcf
     ped:
+    proband:
     # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE or UNDEFINED
     modeOfInheritance: UNDEFINED
     #FULL, SPARSE or PASS_ONLY

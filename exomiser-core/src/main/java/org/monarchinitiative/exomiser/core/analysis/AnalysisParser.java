@@ -194,6 +194,7 @@ public class AnalysisParser {
             Analysis analysis = Analysis.builder()
                     .vcfPath(parseVcf(analysisMap))
                     .pedPath(parsePed(analysisMap))
+                    .probandSampleName(parseProbandSampleName(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
                     .modeOfInheritance(parseModeOfInheritance(analysisMap))
                     .analysisMode(parseAnalysisMode(analysisMap))
@@ -242,6 +243,15 @@ public class AnalysisParser {
                 return null;
             }
             return Paths.get(pedValue);
+        }
+
+        private String parseProbandSampleName(Map<String, String> analysisMap) {
+            String probandSampleName = analysisMap.get("proband");
+            //probandSampleName is allowed to be null, but may throw exceptions when the VCF/PED file is checked
+            if (probandSampleName == null) {
+                return "";
+            }
+            return probandSampleName;
         }
 
         private ModeOfInheritance parseModeOfInheritance(Map<String, String> analysisMap) {

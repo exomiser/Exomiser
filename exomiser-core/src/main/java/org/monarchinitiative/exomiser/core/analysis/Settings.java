@@ -60,7 +60,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     //REQUIRED INPUT variables 
     private final Path vcfFilePath; //required, no default
-    private final Path pedFilePath; //might be required if vcf if a multi-sample family vcf
+    private final Path pedFilePath; //required if vcf if a multi-sample family vcf
+    private final String probandSampleName; //required if vcf if a multi-sample family vcf
 
     //ANALYSIS OPTIONS
     private final boolean runFullAnalysis;
@@ -126,7 +127,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
         //INPUT file options
         private Path vcfFilePath; //required, no default
-        private Path pedFilePath = null;
+        private Path pedFilePath = null; //required if vcf if a multi-sample family vcf
+        private String probandSampleName = ""; //required if vcf if a multi-sample family vcf
 
         //ANALYSIS options
         private boolean runFullAnalysis = false;
@@ -182,6 +184,11 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         @JsonSetter("ped")
         public SettingsBuilder pedFilePath(Path pedFilePath) {
             this.pedFilePath = pedFilePath;
+            return this;
+        }
+
+        public SettingsBuilder probandSampleName(String probandSampleName) {
+            this.probandSampleName = probandSampleName;
             return this;
         }
 
@@ -257,7 +264,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
             return this;
         }
 
-        @JsonSetter
+        @JsonSetter("hpoIds")
         public SettingsBuilder hpoIdList(List<String> value) {
             hpoIds = value;
             return this;
@@ -323,6 +330,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
             isValid = false;
         }
         pedFilePath = builder.pedFilePath;
+        probandSampleName = builder.probandSampleName;
 
         //analysis
         runFullAnalysis = builder.runFullAnalysis;
@@ -379,6 +387,10 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
     @JsonProperty
     public Path getPedFileName() {
         return pedFilePath == null ? null : pedFilePath.getFileName();
+    }
+
+    public String getProbandSampleName() {
+        return probandSampleName;
     }
 
     @JsonProperty
@@ -511,6 +523,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         hash = 11 * hash + Objects.hashCode(this.buildTimestamp);
         hash = 11 * hash + Objects.hashCode(this.vcfFilePath);
         hash = 11 * hash + Objects.hashCode(this.pedFilePath);
+        hash = 11 * hash + Objects.hashCode(this.probandSampleName);
         hash = 11 * hash + (this.runFullAnalysis ? 1 : 0);
         hash = 11 * hash + Float.floatToIntBits(this.maximumFrequency);
         hash = 11 * hash + Float.floatToIntBits(this.minimumQuality);
@@ -554,6 +567,9 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
             return false;
         }
         if (!Objects.equals(this.pedFilePath, other.pedFilePath)) {
+            return false;
+        }
+        if (!Objects.equals(this.probandSampleName, other.probandSampleName)) {
             return false;
         }
         if (this.runFullAnalysis != other.runFullAnalysis) {
@@ -621,7 +637,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
 
     @Override
     public String toString() {
-        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", keepNonPathogenicVariants=" + keepNonPathogenicVariants + ", removeDbSnp=" + removeKnownVariants + ", removeOffTargetVariants=" + keepOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outputPrefix + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
+        return "ExomiserSettings{" + "vcfFilePath=" + vcfFilePath + ", pedFilePath=" + pedFilePath + ", probandSampleName=" + probandSampleName + ", prioritiser=" + prioritiserType + ", maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", keepNonPathogenicVariants=" + keepNonPathogenicVariants + ", removeDbSnp=" + removeKnownVariants + ", removeOffTargetVariants=" + keepOffTargetVariants + ", candidateGene=" + candidateGene + ", modeOfInheritance=" + modeOfInheritance + ", diseaseId=" + diseaseId + ", hpoIds=" + hpoIds + ", seedGeneList=" + seedGeneList + ", numberOfGenesToShow=" + numberOfGenesToShow + ", outFileName=" + outputPrefix + ", outputFormat=" + outputFormats + ", diseaseGeneFamilyName=" + diseaseGeneFamilyName + ", buildVersion=" + buildVersion + ", buildTimestamp=" + buildTimestamp + '}';
     }
 
 }

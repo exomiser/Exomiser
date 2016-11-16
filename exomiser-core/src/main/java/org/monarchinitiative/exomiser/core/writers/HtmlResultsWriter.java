@@ -111,8 +111,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(analysisResults.getVariantEvaluations());
         List<String> sampleNames= analysisResults.getSampleNames();
         String sampleName = "Anonymous";
-        if(!sampleNames.isEmpty()) {
-            sampleName = sampleNames.get(0);
+        if(!analysisResults.getProbandSampleName().isEmpty()) {
+            sampleName = analysisResults.getProbandSampleName();
         }
         context.setVariable("sampleName", sampleName);
         context.setVariable("sampleNames", sampleNames);

@@ -76,6 +76,15 @@ public class AnalysisTest {
     }
 
     @Test
+    public void canSetProbandSampleName() {
+        String probandSampleName = "Slartibartfast";
+        Analysis instance = Analysis.builder()
+                .probandSampleName(probandSampleName)
+                .build();
+        assertThat(instance.getProbandSampleName(), equalTo(probandSampleName));
+    }
+
+    @Test
     public void modeOfInheritanceDefaultsToUnspecified() {
         assertThat(DEFAULT_ANALYSIS.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
     }
@@ -202,9 +211,9 @@ public class AnalysisTest {
         assertThat(copy.getFrequencySources(), equalTo(EnumSet.of(FrequencySource.ESP_ALL)));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testCopyBuilderCannotAddNewAnalysisStep() {
-        // this is likely a nonsense thing to do anyway - the order of the steps is important so copying and adding a new
+    @Test
+    public void testCopyBuilderCanAddNewAnalysisStep() {
+        // this is likely a nonsense thing to do - the order of the steps is important so copying and adding a new
         // one is probably a silly thing to do.
         Analysis copy = DEFAULT_ANALYSIS.copy()
                 .addStep(new NoneTypePrioritiser())

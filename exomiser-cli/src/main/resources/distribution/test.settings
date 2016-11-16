@@ -10,6 +10,7 @@ vcf=data/Pfeiffer.vcf
 
 #SAMPLE DATA OPTIONS
 ped=
+proband=
 
 #FILTER OPTIONS
 max-freq=1.0

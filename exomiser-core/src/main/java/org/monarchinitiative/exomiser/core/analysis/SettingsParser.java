@@ -90,6 +90,7 @@ public class SettingsParser {
         return Analysis.builder()
             .vcfPath(settings.getVcfPath())
             .pedPath(settings.getPedPath())
+            .probandSampleName(settings.getProbandSampleName())
             .modeOfInheritance(settings.getModeOfInheritance())
             .hpoIds(settings.getHpoIds())
             .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)

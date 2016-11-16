@@ -20,7 +20,9 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +37,8 @@ import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryS
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,78 +53,88 @@ import static org.monarchinitiative.exomiser.core.analysis.SettingsParser.NON_EX
 */
 public class SettingsParserTest {
 
-    private static final EnumSet<PathogenicitySource> DEFAULT_PATH_SCORES = EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT);
-    private static final List<AnalysisStep> DEFAULT_ANALYSIS_STEPS = Lists.newArrayList(
-            new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS),
-            new FrequencyFilter(100f),
-            new PathogenicityFilter(false));
+    private static final Set<PathogenicitySource> DEFAULT_PATH_SCORES = Sets.immutableEnumSet(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT);
 
     private SettingsParser instance;
-            
-    private SettingsBuilder settingsBuilder;
-    private Analysis.Builder analysisBuilder;
-
-    private final ModeOfInheritance autosomal_dominant = ModeOfInheritance.AUTOSOMAL_DOMINANT;
-    private final GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
 
     private final PriorityFactory stubPriorityFactory = new NoneTypePriorityFactoryStub();
 
     @Before
     public void setUp() {
         instance = new SettingsParser(stubPriorityFactory, new VariantDataServiceStub());
-        
-        settingsBuilder = Settings.builder()
-                .vcfFilePath(Paths.get("vcf"));
+    }
 
-        analysisBuilder = Analysis.builder()
+    private Analysis.Builder analysisBuilder() {
+        return Analysis.builder()
                 .analysisMode(AnalysisMode.SPARSE)
                 .vcfPath(Paths.get("vcf"))
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
                 .pathogenicitySources(DEFAULT_PATH_SCORES);
     }
 
-//    private List<AnalysisStep> addDefaultVariantFilters(Analysis analysis) {
-//        return ImmutableList.of(
-//                new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS),
-//                new FrequencyFilter(100f),
-//                new PathogenicityFilter(false));
-//    }
+    private SettingsBuilder settingsBuilder() {
+        return Settings.builder()
+                .vcfFilePath(Paths.get("vcf"));
+    }
+
+    private List<AnalysisStep> defaultAnalysisSteps() {
+        return ImmutableList.of(
+                new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS),
+                new FrequencyFilter(100f),
+                new PathogenicityFilter(false));
+    }
+
+    @Test
+    public void testCanSpecifyPedFilePath() {
+        Path pedpath = Paths.get("testPed.ped");
+        Settings settings = settingsBuilder().pedFilePath(pedpath).build();
+        Analysis result = instance.parse(settings);
+        assertThat(result.getPedPath(), equalTo(pedpath));
+    }
+
+    @Test
+    public void testCanSpecifyProbandSampleName() {
+        String probandSampleName = "Nemo";
+        Settings settings = settingsBuilder().probandSampleName(probandSampleName).build();
+        Analysis result = instance.parse(settings);
+        assertThat(result.getProbandSampleName(), equalTo(probandSampleName));
+    }
 
     @Test
     public void testDefaultAnalysisModeIsSparse() {
-        Analysis result = instance.parse(settingsBuilder.build());
+        Analysis result = instance.parse(settingsBuilder().build());
         assertThat(result.getAnalysisMode(), equalTo(AnalysisMode.SPARSE));
     }
 
     @Test
     public void testCanSpecifyNotFullAnalysisMode() {
-        Analysis result = instance.parse(settingsBuilder.runFullAnalysis(false).build());
+        Analysis result = instance.parse(settingsBuilder().runFullAnalysis(false).build());
         assertThat(result.getAnalysisMode(), equalTo(AnalysisMode.SPARSE));
     }
 
     @Test
     public void testCanSpecifyFullAnalysisMode() {
-        Analysis result = instance.parse(settingsBuilder.runFullAnalysis(true).build());
+        Analysis result = instance.parse(settingsBuilder().runFullAnalysis(true).build());
         assertThat(result.getAnalysisMode(), equalTo(AnalysisMode.FULL));
     }
 
     @Test
     public void testDefaultFrequencyDataSources() {
-        Analysis result = instance.parse(settingsBuilder.build());
+        Analysis result = instance.parse(settingsBuilder().build());
         assertThat(result.getFrequencySources(), equalTo(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES));
     }
-    
+
     @Test
     public void testDefaultPathogenicityDataSources() {
-        Analysis result = instance.parse(settingsBuilder.build());
+        Analysis result = instance.parse(settingsBuilder().build());
         assertThat(result.getPathogenicitySources(), equalTo(DEFAULT_PATH_SCORES));
     }
     
     @Test
     public void testDefaultAnalysisIsTargetFrequencyAndPathogenicityFilters() {
-        Settings settings = settingsBuilder.build();
+        Settings settings = settingsBuilder().build();
         
-        Analysis analysis = analysisBuilder.steps(DEFAULT_ANALYSIS_STEPS).build();
+        Analysis analysis = analysisBuilder().steps(defaultAnalysisSteps()).build();
         
         Analysis result = instance.parse(settings);
         assertThat(result, equalTo(analysis));
@@ -131,14 +143,14 @@ public class SettingsParserTest {
     @Test
     public void testSpecifyingInheritanceModeAddsAnInheritanceFilter() {
         
-        Settings settings = settingsBuilder
-                .modeOfInheritance(autosomal_dominant)
+        Settings settings = settingsBuilder()
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         
-        Analysis analysis = analysisBuilder
-                .steps(DEFAULT_ANALYSIS_STEPS)
-                .modeOfInheritance(autosomal_dominant)
-                .addStep(new InheritanceFilter(autosomal_dominant))
+        Analysis analysis = analysisBuilder()
+                .steps(defaultAnalysisSteps())
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .addStep(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT))
                 .build();
         
         Analysis result = instance.parse(settings);
@@ -151,9 +163,10 @@ public class SettingsParserTest {
         //make a new Settings object specifying a Pathogenicity, Frequency, Quality and Interval filters
         Set<Integer> geneIdsToKeep = new HashSet<>();
         geneIdsToKeep.add(1);
-        
-        Settings settings = settingsBuilder
-                .modeOfInheritance(autosomal_dominant)
+        GeneticInterval interval = new GeneticInterval(2, 12345, 67890);
+
+        Settings settings = settingsBuilder()
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .genesToKeep(geneIdsToKeep)
                 .keepNonPathogenic(true)
                 .removeKnownVariants(true)
@@ -162,7 +175,7 @@ public class SettingsParserTest {
                 .geneticInterval(interval)
                 .build();
 
-        Analysis analysis = analysisBuilder
+        Analysis analysis = analysisBuilder()
                 .addStep(new EntrezGeneIdFilter(geneIdsToKeep))
                 .addStep(new IntervalFilter(interval))
                 .addStep(new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS))
@@ -170,8 +183,8 @@ public class SettingsParserTest {
                 .addStep(new KnownVariantFilter())
                 .addStep(new FrequencyFilter(0.25f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new InheritanceFilter(autosomal_dominant))
-                .modeOfInheritance(autosomal_dominant)
+                .addStep(new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE))
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
         
         Analysis result = instance.parse(settings);
@@ -181,12 +194,12 @@ public class SettingsParserTest {
     @Test
     public void testSpecifyingOmimPrioritiserOnlyAddsOmimPrioritiser() {
 
-        Settings settings = settingsBuilder
+        Settings settings = settingsBuilder()
                 .usePrioritiser(PriorityType.OMIM_PRIORITY)
                 .build();
 
-        Analysis analysis = analysisBuilder
-                .steps(DEFAULT_ANALYSIS_STEPS)
+        Analysis analysis = analysisBuilder()
+                .steps(defaultAnalysisSteps())
                 .addStep(stubPriorityFactory.makeOmimPrioritiser())
                 .build();
         
@@ -200,14 +213,14 @@ public class SettingsParserTest {
 
         List<String> hpoIds = Lists.newArrayList("HP:000001", "HP:000002", "HP:000003");
         
-        Settings settings = settingsBuilder
+        Settings settings = settingsBuilder()
                 .usePrioritiser(PriorityType.PHIVE_PRIORITY)
                 .hpoIdList(hpoIds)
                 .build();
         
-        Analysis analysis = analysisBuilder
+        Analysis analysis = analysisBuilder()
                 .hpoIds(hpoIds)
-                .steps(DEFAULT_ANALYSIS_STEPS)
+                .steps(defaultAnalysisSteps())
                 .addStep(stubPriorityFactory.makeOmimPrioritiser())
                 .addStep(new NoneTypePrioritiser())
                 .build();

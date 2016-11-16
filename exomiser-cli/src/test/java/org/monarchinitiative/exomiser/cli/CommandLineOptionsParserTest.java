@@ -214,6 +214,16 @@ public class CommandLineOptionsParserTest {
     }
 
     @Test
+    public void parsesProbandSampleName() {
+        String probandSampleName = "AGENT-47";
+        String input = String.format("-v 123.vcf --proband %s", probandSampleName);
+
+        Settings exomiserSettings = parseSettingsFromInput(input);
+
+        assertThat(exomiserSettings.getProbandSampleName(), equalTo(probandSampleName));
+    }
+
+    @Test
     public void should_produce_settings_with_a_priority_class() {
         String input = "-v 123.vcf --prioritiser=phive";
 

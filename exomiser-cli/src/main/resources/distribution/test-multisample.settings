@@ -10,6 +10,7 @@ vcf=data/Pfeiffer-quartet.vcf
 
 #SAMPLE DATA OPTIONS
 ped=data/Pfeiffer-quartet.ped
+proband=ISDBM322017
 
 #FILTER OPTIONS
 max-freq=1.0
@@ -38,6 +39,6 @@ num-genes=0
 # according to the out-format option. If unspecified this will default to the following: 
 # {exomiserDir}/results/input-vcf-name-exomiser-results.html
 # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
-out-prefixe=
+out-prefix=results/Pfeiffer-multisample-hiphive
 #out-format options: HTML, VCF, TSV-VARIANT, TSV-GENE (default: HTML)
 out-format=HTML, VCF, TSV-VARIANT, TSV-GENE

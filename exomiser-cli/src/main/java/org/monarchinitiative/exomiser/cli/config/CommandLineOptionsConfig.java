@@ -69,6 +69,7 @@ public class CommandLineOptionsConfig {
         //sample data files 
         desiredOptionMarshallers.add(new VcfFileOptionMarshaller());
         desiredOptionMarshallers.add(new PedFileOptionMarshaller());
+        desiredOptionMarshallers.add(new ProbandSampleNameOptionMarshaller());
 
         //analysis options
         desiredOptionMarshallers.add(new HpoIdsOptionMarshaller());
@@ -127,7 +128,7 @@ public class CommandLineOptionsConfig {
         options.addOption(Option.builder()
                 .argName("file")
                 .hasArg()
-                .desc("Path to analysis batch file. This should be in plain text file with the path to a single analys script file in yaml format on each line.")
+                .desc("Path to analysis batch file. This should be in plain text file with the path to a single analysis script file in yaml format on each line.")
                 .longOpt("analysis-batch")
                 .build());
         

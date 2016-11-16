@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -74,17 +75,12 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     }
 
     @Override
-    protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
+    protected Stream<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
                 .filter(geneHasVariants())
                 .filter(Gene::passedFilters)
-                .map(removeFailedVariants())
-                .collect(toList());
-    }
-
-    private Predicate<Gene> geneHasVariants() {
-        return gene -> !gene.getVariantEvaluations().isEmpty();
+                .map(removeFailedVariants());
     }
 
     private Function<Gene, Gene> removeFailedVariants() {

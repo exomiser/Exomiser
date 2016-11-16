@@ -94,6 +94,7 @@ public class AnalysisParserTest {
         System.out.println(analysis);
         assertThat(analysis.getVcfPath(), equalTo(Paths.get("test.vcf")));
         assertThat(analysis.getPedPath(), nullValue());
+        assertThat(analysis.getProbandSampleName(), equalTo(""));
         assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
@@ -108,6 +109,16 @@ public class AnalysisParserTest {
                 "analysis:\n"
                 + "    vcf: \n"
         );
+    }
+
+    @Test
+    public void testParseAnalysisProbandSampleNameSpecified() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    proband: Bod \n"
+                        + "    ");
+        assertThat(analysis.getProbandSampleName(), equalTo("Bod"));
     }
 
     @Test

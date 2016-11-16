@@ -63,7 +63,7 @@ public class PedigreeFactory {
      * @param sampleNames
      * @return
      */
-    public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, List<String> sampleNames, String probandIdentifier) {
+    public Pedigree createPedigreeForSampleData(Path pedigreeFilePath, List<String> sampleNames) {
         int numberOfSamples = sampleNames.size();
         switch (numberOfSamples) {
             case 0:
@@ -81,7 +81,9 @@ public class PedigreeFactory {
 //    final PedFileReader pedReader = new PedFileReader(new File(options.pathPedFile));
 //    final PedFileContents pedContents = pedReader.read();
 //    final Pedigree pedigree = new Pedigree(pedContents, pedContents.getIndividuals().get(0).getPedigree());
-//    checkPedigreeCompatibility(pedigree, writer.getVCFHeader());
+//    if (!pedigree.getNames().containsAll(vcfHeader.getGenotypeSamples())) {
+//	      throw new IncompatiblePedigreeException("The VCF file is not compatible with the pedigree!");
+//    }
 
 
     private Pedigree createSingleSamplePedigree(List<String> sampleNames) {

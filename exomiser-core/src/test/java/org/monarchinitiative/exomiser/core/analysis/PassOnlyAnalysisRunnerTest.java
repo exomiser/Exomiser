@@ -118,6 +118,32 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         assertThat(rbm8Variant1.passedFilter(FilterType.QUALITY_FILTER), is(true));
     }
 
+    @Test(expected = SampleMismatchException.class)
+    public void testRunAnalysisWhenProbandSampleNameIsNotInSingleSampleVcf() {
+        Analysis analysis = Analysis.builder()
+                .vcfPath(vcfPath)
+                .probandSampleName("mickyMouse")
+                .build();
+        instance.run(analysis);
+    }
+
+    @Test
+    public void testRunAnalysisWhenProbandSampleNameIsNotSpecifiedAndHaveSingleSampleVcf() {
+        Analysis analysis = Analysis.builder()
+                .vcfPath(vcfPath)
+                .build();
+        instance.run(analysis);
+    }
+
+    @Test(expected = SampleMismatchException.class)
+    public void testRunAnalysisWhenProbandSampleNameIsNotInMultiSampleVcf() {
+        Analysis analysis = Analysis.builder()
+                .vcfPath(inheritanceFilterVCFPath)
+                .probandSampleName("mickyMouse")
+                .build();
+        instance.run(analysis);
+    }
+
     @Test
     public void testRunAnalysis_TwoVariantFiltersOnePrioritiserRecessiveInheritanceFilter() {
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
@@ -260,10 +286,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     	Analysis analysis = Analysis.builder()
                 .vcfPath(inheritanceFilterVCFPath)
+                .pedPath(childAffectedPedPath)
+                .probandSampleName("Seth")
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .pedPath(childAffectedPedPath)
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);
@@ -287,10 +314,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         Analysis analysis = Analysis.builder()
                 .vcfPath(inheritanceFilterVCFPath)
+                .pedPath(twoAffectedPedPath)
+                .probandSampleName("Seth")
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
-                .pedPath(twoAffectedPedPath)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);
@@ -314,10 +342,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     	InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     	Analysis analysis = Analysis.builder()
                 .vcfPath(inheritanceFilterVCFPath)
+                .pedPath(childAffectedPedPath)
+                .probandSampleName("Seth")
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .addStep(qualityFilter)
                 .addStep(inheritanceFilter)
-                .pedPath(childAffectedPedPath)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .build();
         AnalysisResults analysisResults = instance.run(analysis);
         printResults(analysisResults);

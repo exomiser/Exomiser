@@ -65,42 +65,42 @@ public class PedigreeFactoryTest {
 
     @Test
     public void createsSingleSamplePedigreeWithDefaultNameWhenSampleHasNoNameOrPedFile() {
-        Pedigree result = instance.createPedigreeForSampleData(null, Collections.emptyList(), "");
+        Pedigree result = instance.createPedigreeForSampleData(null, Collections.emptyList());
         Person person = result.getMembers().get(0);
         assertThat(person.getName(), equalTo(PedigreeFactory.DEFAULT_SAMPLE_NAME));
     }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void pedigreePresentAndSampleHasNoName() {
-        instance.createPedigreeForSampleData(validPedFilePath, Collections.emptyList(), "");
+        instance.createPedigreeForSampleData(validPedFilePath, Collections.emptyList());
     }
 
     @Test
     public void createsSingleSamplePedigreeWhenSampleHasOnlyOneNamedMemberAndNoPedFile() {
-        Pedigree result = instance.createPedigreeForSampleData(null, Arrays.asList("Adam"), "");
+        Pedigree result = instance.createPedigreeForSampleData(null, Arrays.asList("Adam"));
         Person person = result.getMembers().get(0);
         assertThat(person.getName(), equalTo("Adam"));
     }
 
     @Test
     public void createsSingleSamplePedigreeWithSampleName() {
-        Pedigree result = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Seth"), "");
+        Pedigree result = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Seth"));
         Person person = result.getMembers().get(0);
         assertThat(person.getName(), equalTo("Seth"));    }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void throwsErrorWhenMultiSampleDataHasNoPedFile() {
-        instance.createPedigreeForSampleData(null, Arrays.asList("Adam", "Eve", "Cain", "Abel"), "");
+        instance.createPedigreeForSampleData(null, Arrays.asList("Adam", "Eve", "Cain", "Abel"));
     }
     
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void throwsErrorForNamedMultiSampleWithInvalidPedFile() {
-        instance.createPedigreeForSampleData(inValidPedFilePath, Arrays.asList("Adam", "Eva", "Seth"), "Seth");
+        instance.createPedigreeForSampleData(inValidPedFilePath, Arrays.asList("Adam", "Eva", "Seth"));
     }
     
     @Test
     public void createsPedigreeForNamedMultiSampleWithPedFile() {
-        Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Eva", "Seth"), "Seth");
+        Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Eva", "Seth"));
         System.out.println(pedigree);
         assertThat(pedigree.getMembers().size(), equalTo(3));
         assertContainsPerson(ADAM, pedigree);
@@ -110,7 +110,7 @@ public class PedigreeFactoryTest {
 
     @Test
     public void createsPedigreeForNamedMultiSampleWithPedFileWithDisorderedNames() {
-        Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Seth", "Eva"), "Seth");
+        Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Seth", "Eva"));
         assertThat(pedigree.getMembers().size(), equalTo(3));
         assertContainsPerson(ADAM, pedigree);
         assertContainsPerson(EVA, pedigree);
@@ -119,7 +119,7 @@ public class PedigreeFactoryTest {
 
     @Test
     public void createsPedigreeForPedFileWithHeader() {
-        Pedigree pedigree = instance.createPedigreeForSampleData(Paths.get("src/test/resources/pedWithHeader.ped"), Arrays.asList("Adam", "Seth", "Eva"), "Seth");
+        Pedigree pedigree = instance.createPedigreeForSampleData(Paths.get("src/test/resources/pedWithHeader.ped"), Arrays.asList("Adam", "Seth", "Eva"));
         assertThat(pedigree.getMembers().size(), equalTo(3));
         assertContainsPerson(ADAM, pedigree);
         assertContainsPerson(SETH, pedigree);
@@ -128,7 +128,7 @@ public class PedigreeFactoryTest {
 
     @Test
     public void testCreatePedigreeWithMorePedigreeMembersThanSampleNames() {
-        Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Eva", "Seth"), "Seth");
+        Pedigree pedigree = instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Eva", "Seth"));
         assertThat(pedigree.getMembers().size(), equalTo(3));
         assertContainsPerson(SETH, pedigree);
         assertContainsPerson(EVA, pedigree);
@@ -136,32 +136,32 @@ public class PedigreeFactoryTest {
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithMoreSampleNamesThanPedigreeMembers() {
-        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Eva", "Cain", "Abel", "Seth"), "Seth");
+        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Eva", "Cain", "Abel", "Seth"));
     }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithMoreSampleNamesThanPedigreeMembersAndMismatchedSample() {
-        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Marge", "Abel", "Seth"), "Seth");
+        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Marge", "Abel", "Seth"));
     }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithMismatchedSampleNameAndPedigreeMember() {
-        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Marge", "Seth"), "Seth");
+        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Adam", "Marge", "Seth"));
     }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithCompletelyMismatchedSampleNames() {
-        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Homer", "Marge", "Bart", "Lisa", "Maggie"), "Seth");
+        instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Homer", "Marge", "Bart", "Lisa", "Maggie"));
     }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithSpacesInsteadOfTabs() {
-        instance.createPedigreeForSampleData(Paths.get("src/test/resources/malformedPedTestFileWithSpaces.ped"), Arrays.asList("Adam", "Eva", "Seth"), "Seth");
+        instance.createPedigreeForSampleData(Paths.get("src/test/resources/malformedPedTestFileWithSpaces.ped"), Arrays.asList("Adam", "Eva", "Seth"));
     }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithMoreThanOneFamilyInFile() {
-        instance.createPedigreeForSampleData(Paths.get("src/test/resources/multiFamilyTest.ped"), Arrays.asList("Adam", "Eva", "Seth"), "Seth");
+        instance.createPedigreeForSampleData(Paths.get("src/test/resources/multiFamilyTest.ped"), Arrays.asList("Adam", "Eva", "Seth"));
     }
 
 }

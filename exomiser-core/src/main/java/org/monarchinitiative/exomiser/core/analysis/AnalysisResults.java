@@ -46,6 +46,7 @@ public class AnalysisResults {
 
     private final Path vcfPath;
     private final Path pedPath;
+    private final String probandSampleName;
 
     private final VCFHeader vcfHeader;
     private final List<String> sampleNames;
@@ -57,6 +58,7 @@ public class AnalysisResults {
     public AnalysisResults(Builder builder) {
         this.vcfPath = builder.vcfPath;
         this.pedPath = builder.pedPath;
+        this.probandSampleName = builder.probandSampleName;
 
         this.vcfHeader = builder.vcfHeader;
         this.sampleNames = builder.sampleNames;
@@ -72,6 +74,10 @@ public class AnalysisResults {
 
     public Path getPedPath() {
         return pedPath;
+    }
+
+    public String getProbandSampleName() {
+        return probandSampleName;
     }
 
     public VCFHeader getVcfHeader() {
@@ -103,7 +109,7 @@ public class AnalysisResults {
 
     @Override
     public int hashCode() {
-        return Objects.hash(vcfPath, pedPath, sampleNames, variantEvaluations, genes);
+        return Objects.hash(vcfPath, pedPath, probandSampleName, sampleNames, variantEvaluations, genes);
     }
 
     @Override
@@ -113,6 +119,7 @@ public class AnalysisResults {
         AnalysisResults that = (AnalysisResults) o;
         return Objects.equals(vcfPath, that.vcfPath) &&
                 Objects.equals(pedPath, that.pedPath) &&
+                Objects.equals(probandSampleName, that.probandSampleName) &&
                 Objects.equals(sampleNames, that.sampleNames) &&
                 Objects.equals(variantEvaluations, that.variantEvaluations) &&
                 Objects.equals(genes, that.genes);
@@ -131,6 +138,7 @@ public class AnalysisResults {
 
         private Path vcfPath;
         private Path pedPath = null;
+        private String probandSampleName = "";
 
         private VCFHeader vcfHeader = new VCFHeader();
         private List<String> sampleNames = Collections.emptyList();
@@ -138,6 +146,11 @@ public class AnalysisResults {
 
         private List<VariantEvaluation> variantEvaluations = Collections.emptyList();
         private List<Gene> genes = Collections.emptyList();
+
+        public Builder probandSampleName(String probandSampleName) {
+            this.probandSampleName = probandSampleName;
+            return this;
+        }
 
         public Builder sampleNames(List<String> sampleNames) {
             this.sampleNames = sampleNames;

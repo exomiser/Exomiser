@@ -60,7 +60,9 @@ public class SettingsTest {
     private static final Path VCF_PATH = Paths.get("data/test.vcf");
     private static final Path PED_PATH_NOT_SET = null;
     private static final Path PED_PATH = Paths.get("data/test.ped");
-    
+    private static final String PROBAND_SAMPLE_NAME_NOT_SET = "";
+    private static final String PROBAND_SAMPLE_NAME = "Nemo";
+
     //filter settings
     private static final boolean RUN_FULL_ANALYSIS_DEFAULT = false;
     private static final boolean RUN_FULL_ANALYSIS = true;
@@ -118,6 +120,7 @@ public class SettingsTest {
         System.out.println(settings);
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH_NOT_SET));
         assertThat(settings.getPedPath(), equalTo(PED_PATH_NOT_SET));
+        assertThat(settings.getProbandSampleName(), equalTo(PROBAND_SAMPLE_NAME_NOT_SET));
         assertThat(settings.getPrioritiserType(), equalTo(PRIORITISER_DEFAULT));
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY_DEFAULT));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY_DEFAULT));
@@ -217,6 +220,13 @@ public class SettingsTest {
         Settings settings = instance.build();
 
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
+    }
+
+    @Test
+    public void  testCanSetProbandSampleName() {
+        instance.probandSampleName("Wibble");
+        Settings settings = instance.build();
+        assertThat(settings.getProbandSampleName(), equalTo("Wibble"));
     }
 
     /**
@@ -493,6 +503,7 @@ public class SettingsTest {
 
         instance.vcfFilePath(VCF_PATH)
                 .pedFilePath(PED_PATH)
+                .probandSampleName(PROBAND_SAMPLE_NAME)
                 .usePrioritiser(PriorityType.OMIM_PRIORITY)
                 .maximumFrequency(MAXIMUM_FREQUENCY)
                 .minimumQuality(MIMIMUM_QUALITY)
@@ -515,6 +526,7 @@ public class SettingsTest {
 
         assertThat(settings.getVcfPath(), equalTo(VCF_PATH));
         assertThat(settings.getPedPath(), equalTo(PED_PATH));
+        assertThat(settings.getProbandSampleName(), equalTo(PROBAND_SAMPLE_NAME));
         assertThat(settings.getPrioritiserType(), equalTo(PriorityType.OMIM_PRIORITY));
         assertThat(settings.getMaximumFrequency(), equalTo(MAXIMUM_FREQUENCY));
         assertThat(settings.getMinimumQuality(), equalTo(MIMIMUM_QUALITY));
@@ -590,7 +602,7 @@ public class SettingsTest {
     public void testJsonRead() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
-        String jsonString = "{\"prioritiser\":\"phive\",\"maxFrequency\":0.1,\"minQuality\":0.0,\"keepNonPathogenic\":false,\"removeKnownVariants\":false,\"keep-off-target\":false,\"candidate-gene\":\"FGFR2\",\"inheritance-mode\":\"AUTOSOMAL_DOMINANT\",\"disease-id\":\"\",\"hpo-ids\":[\"HP:0987654\",\"HP:1234567\"],\"seed-genes\":[123,4567],\"num-genes\":0,\"out-prefix\":\"wibble\",\"out-format\":[\"HTML\"],\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
+        String jsonString = "{\"prioritiser\":\"PHIVE_PRIORITY\",\"maxFrequency\":0.1,\"minQuality\":0.0,\"keepNonPathogenic\":false,\"removeKnownVariants\":false,\"keepOffTarget\":false,\"candidateGene\":\"FGFR2\",\"modeOfInheritance\":\"AUTOSOMAL_DOMINANT\",\"diseaseId\":\"\",\"hpoIds\":[\"HP:0987654\",\"HP:1234567\"],\"seedGeneList\":[123,4567],\"numberOfGenesToShow\":0,\"outputPrefix\":\"wibble\",\"outputFormats\":[\"HTML\"],\"vcf\":\"/src/test/resources/Pfeiffer.vcf\",\"ped\":null}";
         try {
             Settings defaultSettings = mapper.readValue(jsonString, Settings.class);
             System.out.println(defaultSettings);

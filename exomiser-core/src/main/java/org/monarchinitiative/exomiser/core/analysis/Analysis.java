@@ -26,6 +26,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
@@ -48,15 +49,20 @@ import java.util.*;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @JsonDeserialize(builder = Analysis.Builder.class)
-@JsonPropertyOrder({"vcfPath", "pedPath", "hpoIds", "modeOfInheritance", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
+@JsonPropertyOrder({"vcf", "ped", "proband", "hpoIds", "modeOfInheritance", "analysisMode", "frequencySources", "pathogenicitySources", "analysisSteps"})
 public class Analysis {
 
     private static final Logger logger = LoggerFactory.getLogger(Analysis.class);
 
     //Store the path of the file used to create this data.
+    @JsonProperty("vcf")
     private final Path vcfPath;
     //there is often no pedigree. 
+    @JsonProperty("ped")
     private final Path pedPath;
+    @JsonProperty("proband")
+    private final String probandSampleName;
+
     //these are more optional variables
     private final List<String> hpoIds;
     private final ModeOfInheritance modeOfInheritance;
@@ -69,6 +75,7 @@ public class Analysis {
     private Analysis(Builder builder) {
         this.vcfPath = builder.vcfPath;
         this.pedPath = builder.pedPath;
+        this.probandSampleName = builder.probandSampleName;
         this.hpoIds = ImmutableList.copyOf(builder.hpoIds);
         this.modeOfInheritance = builder.modeOfInheritance;
 
@@ -84,6 +91,10 @@ public class Analysis {
 
     public Path getPedPath() {
         return pedPath;
+    }
+
+    public String getProbandSampleName() {
+        return probandSampleName;
     }
 
     public ModeOfInheritance getModeOfInheritance() {
@@ -168,6 +179,7 @@ public class Analysis {
         return builder()
                 .vcfPath(vcfPath)
                 .pedPath(pedPath)
+                .probandSampleName(probandSampleName)
                 .hpoIds(hpoIds)
                 .modeOfInheritance(modeOfInheritance)
 
@@ -182,6 +194,7 @@ public class Analysis {
         private Path vcfPath = null;
         //there is often no pedigree.
         private Path pedPath = null;
+        private String probandSampleName = "";
         //these are more optional variables
         private List<String> hpoIds = new ArrayList<>();
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
@@ -202,6 +215,11 @@ public class Analysis {
 
         public Builder pedPath(Path pedPath) {
             this.pedPath = pedPath;
+            return this;
+        }
+
+        public Builder probandSampleName(String probandSampleName) {
+            this.probandSampleName = probandSampleName;
             return this;
         }
 
@@ -236,54 +254,34 @@ public class Analysis {
         }
 
         public Builder steps(List<AnalysisStep> analysisSteps) {
-            this.analysisSteps = analysisSteps;
+            this.analysisSteps = new ArrayList<>(analysisSteps);
             return this;
         }
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Objects.hashCode(this.vcfPath);
-        hash = 73 * hash + Objects.hashCode(this.pedPath);
-        hash = 73 * hash + Objects.hashCode(this.hpoIds);
-        hash = 73 * hash + Objects.hashCode(this.modeOfInheritance);
-        hash = 73 * hash + Objects.hashCode(this.analysisMode);
-        hash = 73 * hash + Objects.hashCode(this.frequencySources);
-        hash = 73 * hash + Objects.hashCode(this.pathogenicitySources);
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Analysis analysis = (Analysis) o;
+        return Objects.equals(vcfPath, analysis.vcfPath) &&
+                Objects.equals(pedPath, analysis.pedPath) &&
+                Objects.equals(probandSampleName, analysis.probandSampleName) &&
+                Objects.equals(hpoIds, analysis.hpoIds) &&
+                modeOfInheritance == analysis.modeOfInheritance &&
+                analysisMode == analysis.analysisMode &&
+                Objects.equals(frequencySources, analysis.frequencySources) &&
+                Objects.equals(pathogenicitySources, analysis.pathogenicitySources) &&
+                Objects.equals(analysisSteps, analysis.analysisSteps);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Analysis other = (Analysis) obj;
-        if (!Objects.equals(this.vcfPath, other.vcfPath)) {
-            return false;
-        }
-        if (!Objects.equals(this.hpoIds, other.hpoIds)) {
-            return false;
-        }
-        if (this.modeOfInheritance != other.modeOfInheritance) {
-            return false;
-        }
-
-        if (this.analysisMode != other.analysisMode) {
-            return false;
-        }
-        if (!Objects.equals(this.frequencySources, other.frequencySources)) {
-            return false;
-        }
-        return Objects.equals(this.pathogenicitySources, other.pathogenicitySources);
+    public int hashCode() {
+        return Objects.hash(vcfPath, pedPath, probandSampleName, hpoIds, modeOfInheritance, analysisMode, frequencySources, pathogenicitySources, analysisSteps);
     }
 
     @Override
     public String toString() {
-        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
+        return "Analysis{" + "vcfPath=" + vcfPath + ", pedPath=" + pedPath + ", probandSampleName=" + probandSampleName + ", hpoIds=" + hpoIds + ", modeOfInheritance=" + modeOfInheritance + ", analysisMode=" + analysisMode + ", frequencySources=" + frequencySources + ", pathogenicitySources=" + pathogenicitySources + ", analysisSteps=" + analysisSteps + '}';
     }
 }

@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
@@ -45,7 +46,7 @@ import static java.util.stream.Collectors.toList;
 public class RawScoreGeneScorer implements GeneScorer {
 
     private static final Logger logger = LoggerFactory.getLogger(RawScoreGeneScorer.class);
-    
+
     /**
      * Calculates the final ranks of all genes that have survived the filtering
      * and prioritising steps. The strategy is that for autosomal dominant
@@ -54,39 +55,29 @@ public class RawScoreGeneScorer implements GeneScorer {
      * the two most pathogenic variants. X-linked diseases are filtered such
      * that only X-chromosomal genes are left over, and the single worst variant
      * is taken.
-     * <P>
-     * Once the scores have been calculated, we sort the array list of
-     * {@link exomizer.exome.Gene Gene} objects according to the combined
-     * filter/priority score.
      *
-     * @param genes
      * @param modeOfInheritance
+     * @param probandSampleId
      */
     @Override
-    public void scoreGenes(List<Gene> genes, ModeOfInheritance modeOfInheritance) {
-        for (Gene gene : genes) {
-            scoreGene(gene, modeOfInheritance);
-        }
-        Collections.sort(genes);
-    }
+    public Consumer<Gene> scoreGene(ModeOfInheritance modeOfInheritance, int probandSampleId) {
+        return gene -> {
+            //It is critical only the PASS variants are used in the scoring
+            float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance, probandSampleId);
+            gene.setFilterScore(filterScore);
 
-    protected void scoreGene(Gene gene, ModeOfInheritance modeOfInheritance) {
-        //It is critical only the PASS variants are used in the scoring
-        float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance);
-        gene.setFilterScore(filterScore);
-        
-        float priorityScore = calculateGenePriorityScore(gene);
-        gene.setPriorityScore(priorityScore);
+            float priorityScore = calculateGenePriorityScore(gene);
+            gene.setPriorityScore(priorityScore);
 
-        float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityResults().keySet());
-        gene.setCombinedScore(combinedScore);
+            float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityResults().keySet());
+            gene.setCombinedScore(combinedScore);
+        };
     }
 
 
     /**
      * Calculates the total priority score for the {@code VariantEvaluation} of
-     * the gene based on data stored in its associated
-     * {@link jannovar.exome.Variant Variant} objects. Note that for assumed
+     * the gene. Note that for assumed
      * autosomal recessive variants, the mean of the worst two variants is
      * taken, and for other modes of inheritance,the since worst value is taken.
      * <P>
@@ -102,12 +93,12 @@ public class RawScoreGeneScorer implements GeneScorer {
      * recessive.
      * @return
      */
-    private float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance) {
+    private float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, int sampleId) {
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }
         if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            return calculateAutosomalRecessiveFilterScore(variantEvaluations);
+            return calculateAutosomalRecessiveFilterScore(variantEvaluations, sampleId);
         }
         return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
     }
@@ -139,9 +130,7 @@ public class RawScoreGeneScorer implements GeneScorer {
      * gene (priorityScore) and the predicted effects of the variants
      * (filterScore).
      * <P>
-     * Note that this method assumes we have calculate the scores, which is
-     * depending on the function {@link #calculateGeneAndVariantScores} having
-     * been called.
+     * Note that this method assumes we have already calculated the filter and variant scores.
      *
      */
     private float calculateCombinedScore(float filterScore, float priorityScore, Set<PriorityType> prioritiesRun) {
@@ -165,21 +154,19 @@ public class RawScoreGeneScorer implements GeneScorer {
 
     /**
      * For assumed autosomal recessive variants, this method calculates the mean
-     * of the worst(highest numerical) two variants.
-     *
-     * @param variantEvaluations
-     * @return
+     * of the worst(highest numerical) two variants. Requires the sampleId so that the correct inheritance pattern is
+     * calculated for the proband alleles.
      */
-    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
+    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, int sampleId) {
 
         List<VariantEvaluation> heterozygous = variantEvaluations.stream()
-                .filter(variantIsHeterozygous())
+                .filter(variantIsHeterozygous(sampleId))
                 .sorted(Comparator.comparing(VariantEvaluation::getVariantScore).reversed())
                 .limit(2)
                 .collect(toList());
-//
+
         Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
-                .filter(variantIsHomozygousAlt())
+                .filter(variantIsHomozygousAlt(sampleId))
                 .max(Comparator.comparing(VariantEvaluation::getVariantScore));
 
         // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
@@ -204,12 +191,12 @@ public class RawScoreGeneScorer implements GeneScorer {
         return (float) bestScore;
     }
     
-    private Predicate<VariantEvaluation> variantIsHomozygousAlt() {
-        return ve -> ve.getVariantContext().getGenotype(0).isHomVar();
+    private Predicate<VariantEvaluation> variantIsHomozygousAlt(int sampleId) {
+        return ve -> ve.getVariantContext().getGenotype(sampleId).isHomVar();
     }
 
-    private Predicate<VariantEvaluation> variantIsHeterozygous() {
-        return ve -> ve.getVariantContext().getGenotype(0).isHet();
+    private Predicate<VariantEvaluation> variantIsHeterozygous(int sampleId) {
+        return ve -> ve.getVariantContext().getGenotype(sampleId).isHet();
     }
 
     /**

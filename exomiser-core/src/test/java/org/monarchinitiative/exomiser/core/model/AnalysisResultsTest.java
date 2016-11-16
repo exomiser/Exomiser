@@ -49,6 +49,17 @@ public class AnalysisResultsTest {
     }
 
     @Test
+    public void testCanSetAndGetProbandSampleName() {
+        String probandSampleName = "Slartibartfast";
+
+        AnalysisResults instance = AnalysisResults.builder()
+                .probandSampleName(probandSampleName)
+                .build();
+
+        assertThat(instance.getProbandSampleName(), equalTo(probandSampleName));
+    }
+
+    @Test
     public void testCanSetAndGetSampleNames() {
         List<String> sampleNames = Arrays.asList("David");
 

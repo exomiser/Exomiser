@@ -85,15 +85,13 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Setting up analysis for VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
         VCFHeader vcfHeader = readVcfHeader(vcfPath);
         List<String> sampleNames = vcfHeader.getGenotypeSamples();
-        //TODO: add probandSampleName to Analysis
-        String probandIdentifier = "probandId";
-        //TODO:
-//        assert(sampleNames.contains(probandIdentifier));
 
-        //BUILDER! PedigreeFactory.builder().pedigreeFilePath().sampleNames().probandIdentifier().build();
-        Pedigree pedigree = new PedigreeFactory().createPedigreeForSampleData(pedigreeFilePath, sampleNames, probandIdentifier);
+        String probandSampleName = SampleNameChecker.getProbandSampleName(analysis.getProbandSampleName(), sampleNames);
+        int probandSampleId = SampleNameChecker.getProbandSampleId(probandSampleName, sampleNames);
 
-        logger.info("Running analysis on sample: {}", sampleNames);
+        Pedigree pedigree = new PedigreeFactory().createPedigreeForSampleData(pedigreeFilePath, sampleNames);
+
+        logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandSampleName, probandSampleId + 1, sampleNames);
         Instant timeStart = Instant.now();
 
         //soo many comments - this is a bad sign that this is too complicated.
@@ -129,23 +127,24 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
             }
             assignVariantsToGenes(variantEvaluations, allGenes);
         }
-        List<Gene> genes = getGenesWithVariants(allGenes);
-        scoreGenes(genes, analysis.getModeOfInheritance());
+
+        logger.info("Scoring genes");
+        GeneScorer geneScorer = new RawScoreGeneScorer();
+        List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()), analysis.getModeOfInheritance(), probandSampleId);
         List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
+        logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 
         logger.info("Creating analysis results from VCF and PED files: {}, {}", vcfPath, pedigreeFilePath);
         AnalysisResults analysisResults = AnalysisResults.builder()
                 .vcfPath(vcfPath)
                 .pedPath(pedigreeFilePath)
                 .vcfHeader(vcfHeader)
+                .probandSampleName(probandSampleName)
                 .sampleNames(vcfHeader.getGenotypeSamples())
                 .pedigree(pedigree)
                 .genes(genes)
                 .variantEvaluations(variants)
                 .build();
-
-        logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
-//        logTopNumScoringGenes(5, genes, analysis);
 
         Duration duration = Duration.between(timeStart, Instant.now());
         long ms = duration.toMillis();
@@ -291,11 +290,14 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @param allGenes
      * @return
      */
-    protected List<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
+    protected Stream<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
-                .filter(gene -> !gene.getVariantEvaluations().isEmpty())
-                .collect(toList());
+                .filter(geneHasVariants());
+    }
+
+    protected Predicate<Gene> geneHasVariants() {
+        return gene -> !gene.getVariantEvaluations().isEmpty();
     }
 
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
@@ -349,30 +351,6 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(pedigree, modeOfInheritance);
         logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
-    }
-
-    private void scoreGenes(List<Gene> genes, ModeOfInheritance modeOfInheritance) {
-        logger.info("Scoring genes");
-        GeneScorer geneScorer = new RawScoreGeneScorer();
-        geneScorer.scoreGenes(genes, modeOfInheritance);
-    }
-
-    private void logTopNumScoringGenes(int numToLog, List<Gene> genes, Analysis analysis) {
-        if (!genes.isEmpty()) {
-            List<Gene> topScoringGenes = genes.stream().filter(Gene::passedFilters).limit(numToLog).collect(toList());
-            if (topScoringGenes.isEmpty()) {
-                logger.info("No genes passed analysis :(");
-                return;
-            }
-            logger.info("Top {} scoring genes compatible with phenotypes {} were:", numToLog, analysis.getHpoIds());
-            topScoringGenes.forEach(topScoringGene -> {
-                logger.info("{}", topScoringGene);
-                topScoringGene.getPassedVariantEvaluations().forEach(variant ->
-                        logger.info("{} {}", variant.getGeneSymbol(), variant)
-                );
-            });
-
-        }
     }
 
 }
