@@ -23,21 +23,9 @@ public class FantomEnhancerParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(FantomEnhancerParser.class);
 
-    /**
-     * @param conn COnnection to the Exomiser database.
-     */
     public FantomEnhancerParser() {
     }
 
-    /**
-     * This function does the actual work of parsing the HPO file.
-     *
-     * @param resource
-     * @param inDir Complete path to directory containing the
-     * human-phenotype-ontology.obo or hp.obo file.
-     * @param outDir Directory where output file is to be written
-     * @return
-     */
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
 
@@ -105,4 +93,3 @@ public class FantomEnhancerParser implements ResourceParser {
     }
 
 }
-/* eof */
