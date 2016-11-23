@@ -78,7 +78,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     protected Stream<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
-                .filter(geneHasVariants())
+                .filter(Gene::hasVariants)
                 .filter(Gene::passedFilters)
                 .map(removeFailedVariants());
     }
@@ -96,8 +96,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
     
     @Override
     protected List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants) {
-        return variants
-                .stream()
+        return variants.stream()
                 .filter(VariantEvaluation::passedFilters)
                 .collect(toList());
     }

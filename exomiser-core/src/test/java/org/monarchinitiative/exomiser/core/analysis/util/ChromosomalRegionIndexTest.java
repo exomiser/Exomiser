@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -50,6 +51,7 @@ public class ChromosomalRegionIndexTest {
         createInstance(tad);
 
         assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad)));
+        assertThat(instance.hasRegionContainingVariant(variant), is(true));
     }
 
     @Test
@@ -57,7 +59,8 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Collections.<TopologicalDomain>emptyList()));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Collections.emptyList()));
+        assertThat(instance.hasRegionContainingVariant(variant), is(false));
     }
 
     @Test
@@ -65,7 +68,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsContainingVariant(new SimpleVariantCoordinates(100, 50, "A", "T")), equalTo(Collections.<TopologicalDomain>emptyList()));
+        assertThat(instance.getRegionsContainingVariant(new SimpleVariantCoordinates(100, 50, "A", "T")), equalTo(Collections.emptyList()));
     }
 
     @Test
@@ -73,7 +76,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsOverlappingPosition(1, 9), equalTo(Collections.<TopologicalDomain>emptyList()));
+        assertThat(instance.getRegionsOverlappingPosition(1, 9), equalTo(Collections.emptyList()));
     }
 
     @Test
@@ -105,7 +108,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsOverlappingPosition(1, 13), equalTo(Collections.<TopologicalDomain>emptyList()));
+        assertThat(instance.getRegionsOverlappingPosition(1, 13), equalTo(Collections.emptyList()));
     }
 
     @Test

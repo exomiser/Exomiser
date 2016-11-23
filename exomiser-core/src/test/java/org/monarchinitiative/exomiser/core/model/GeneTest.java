@@ -93,6 +93,7 @@ public class GeneTest {
         assertThat(instance.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
         assertThat(instance.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
         assertThat(instance.getNumberOfVariants(), equalTo(1));
+        assertThat(instance.hasVariants(), is(true));
 
         assertThat(instance.passedFilters(), is(true));
         assertThat(instance.getPriorityResults().isEmpty(), is(true));
@@ -100,6 +101,25 @@ public class GeneTest {
         assertThat(instance.getFilterScore(), equalTo(0f));
         assertThat(instance.getPriorityScore(), equalTo(0f));
         assertThat(instance.getCombinedScore(), equalTo(0f));
+    }
+
+    @Test
+    public void testConstructorSetsInstanceVariablesNoVariant() {
+        Gene emptyGene = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        List<VariantEvaluation> expectedVariantEvaluations = new ArrayList<>();
+
+        assertThat(emptyGene.getGeneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(emptyGene.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(emptyGene.getVariantEvaluations(), equalTo(expectedVariantEvaluations));
+        assertThat(emptyGene.getNumberOfVariants(), equalTo(0));
+        assertThat(emptyGene.hasVariants(), is(false));
+
+        assertThat(emptyGene.passedFilters(), is(true));
+        assertThat(emptyGene.getPriorityResults().isEmpty(), is(true));
+
+        assertThat(emptyGene.getFilterScore(), equalTo(0f));
+        assertThat(emptyGene.getPriorityScore(), equalTo(0f));
+        assertThat(emptyGene.getCombinedScore(), equalTo(0f));
     }
 
     @Test

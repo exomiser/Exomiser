@@ -204,11 +204,11 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
         //todo: this won't function correctly if run before a prioritiser has been run
         return variantEvaluation -> {
-            geneReassigner.reassignVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
+            geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
             return variantEvaluation;
         };
     }
-    
+
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(GeneReassigner geneReassigner) {
         return variantEvaluation -> {
             if (variantEvaluation.isNonCodingVariant()){
@@ -258,14 +258,14 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.
+    //This ought to move into the variantFactory/variantDataService
     private Function<VariantEvaluation, VariantEvaluation> setRegulatoryRegionVariantEffect(ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex) {
         return variantEvaluation -> {
             VariantEffect variantEffect = variantEvaluation.getVariantEffect();
             //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
             if (variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT) {
-                List<RegulatoryFeature> overlappingFeatures = regulatoryRegionIndex.getRegionsContainingVariant(variantEvaluation);
-                if (!overlappingFeatures.isEmpty()) {
-                    //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up form the list
+                if (regulatoryRegionIndex.hasRegionContainingVariant(variantEvaluation)) {
+                    //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list
                     variantEvaluation.setVariantEffect(VariantEffect.REGULATORY_REGION_VARIANT);
                 }
             }
@@ -293,11 +293,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     protected Stream<Gene> getGenesWithVariants(Map<String, Gene> allGenes) {
         return allGenes.values()
                 .stream()
-                .filter(geneHasVariants());
-    }
-
-    protected Predicate<Gene> geneHasVariants() {
-        return gene -> !gene.getVariantEvaluations().isEmpty();
+                .filter(Gene::hasVariants);
     }
 
     abstract List<VariantEvaluation> getFinalVariantList(List<VariantEvaluation> variants);
@@ -308,7 +304,7 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private Map<String, Gene> makeKnownGenes() {
         return GeneFactory.createKnownGenes(jannovarData)
                 .parallelStream()
-                .collect(toConcurrentMap(Gene::getGeneSymbol, gene -> gene));
+                .collect(toConcurrentMap(Gene::getGeneSymbol, Function.identity()));
     }
 
     //might this be a nascent class waiting to get out here?

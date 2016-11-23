@@ -142,7 +142,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene1);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }
@@ -156,7 +156,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }
@@ -168,7 +168,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.NONE, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene1);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }
@@ -183,7 +183,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = variant(2, 999999, "A", "G", VariantEffect.REGULATORY_REGION_VARIANT, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene2));
     }
@@ -200,7 +200,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad1, tad2);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad2, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene2));
     }
@@ -214,7 +214,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = variantInTadWithEffect(tad, VariantEffect.MISSENSE_VARIANT, gene2);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene2));
     }
@@ -228,7 +228,7 @@ public class GeneReassignerTest {
         instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
 
         VariantEvaluation variant = regulatoryVariantInTad(tad, gene1);
-        instance.reassignVariantToMostPhenotypicallySimilarGeneInTad(variant);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
     }

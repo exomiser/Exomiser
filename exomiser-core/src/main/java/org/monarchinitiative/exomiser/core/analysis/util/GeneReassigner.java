@@ -67,7 +67,7 @@ public class GeneReassigner {
         logger.info("Made new GeneReassigner for {}", priorityType);
     }
 
-    public void reassignVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation) {
+    public void reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(VariantEvaluation variantEvaluation) {
         if (variantEvaluation.getVariantEffect() == VariantEffect.REGULATORY_REGION_VARIANT) {
             logger.debug("Checking gene assignment for {} chr={} pos={}", variantEvaluation.getVariantEffect(), variantEvaluation.getChromosome(), variantEvaluation.getPosition());
             assignVariantToGeneWithHighestPhenotypeScore(variantEvaluation);

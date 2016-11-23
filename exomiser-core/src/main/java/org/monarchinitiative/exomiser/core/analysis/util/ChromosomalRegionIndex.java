@@ -76,6 +76,10 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
         return index;
     }
 
+    public boolean hasRegionContainingVariant(VariantCoordinates variant) {
+        return !getRegionsContainingVariant(variant).isEmpty();
+    }
+
     public List<T> getRegionsContainingVariant(VariantCoordinates variantCoordinates) {
         int chromosome = variantCoordinates.getChromosome();
         int position = variantCoordinates.getPosition();
@@ -90,11 +94,11 @@ public class ChromosomalRegionIndex<T extends ChromosomalRegion> {
      */
     public List<T> getRegionsOverlappingPosition(int chromosome, int position) {
         IntervalArray<T> intervalTree = index.get(chromosome);
-            if (intervalTree == null) {
-                return Collections.emptyList();
-            }
-            IntervalArray.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
-            return queryResult.getEntries();
+        if (intervalTree == null) {
+            return Collections.emptyList();
+        }
+        IntervalArray.QueryResult queryResult = intervalTree.findOverlappingWithPoint(position - 1);
+        return queryResult.getEntries();
     }
 
     private class ChromosomalRegionEndExtractor implements IntervalEndExtractor<T> {

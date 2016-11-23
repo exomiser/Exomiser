@@ -150,6 +150,10 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 //
 //    }
 
+    public boolean hasVariants() {
+        return !variantEvaluations.isEmpty();
+    }
+
     /**
      * This function adds additional variants to the current gene. The variants
      * have been identified by parsing the VCF file.
