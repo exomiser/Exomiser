@@ -263,14 +263,16 @@ public abstract class AbstractAnalysisRunner implements AnalysisRunner {
         return variantEvaluation -> {
             VariantEffect variantEffect = variantEvaluation.getVariantEffect();
             //n.b this check here is important as ENSEMBLE can have regulatory regions overlapping with missense variants.
-            if (variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT) {
-                if (regulatoryRegionIndex.hasRegionContainingVariant(variantEvaluation)) {
-                    //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list
-                    variantEvaluation.setVariantEffect(VariantEffect.REGULATORY_REGION_VARIANT);
-                }
+            if (isIntergenicOrUpstreamOfGene(variantEffect) && regulatoryRegionIndex.hasRegionContainingVariant(variantEvaluation)) {
+                //the effect is the same for all regulatory regions, so for the sake of speed, just assign it here rather than look it up from the list
+                variantEvaluation.setVariantEffect(VariantEffect.REGULATORY_REGION_VARIANT);
             }
             return variantEvaluation;
         };
+    }
+
+    private boolean isIntergenicOrUpstreamOfGene(VariantEffect variantEffect) {
+        return variantEffect == VariantEffect.INTERGENIC_VARIANT || variantEffect == VariantEffect.UPSTREAM_GENE_VARIANT;
     }
 
     private VCFHeader readVcfHeader(Path vcfFilePath) {
