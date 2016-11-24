@@ -65,7 +65,7 @@ public class PhenoGridMatch {
 
     @JsonIgnore
     public Set<String> getQueryTermIds() {
-        Set<String> queryTermIds = new TreeSet();
+        Set<String> queryTermIds = new TreeSet<>();
         for (PhenotypeMatch phenotypeMatch : matches) {
             PhenotypeTerm queryPhenotype = phenotypeMatch.getQueryPhenotype();
             queryTermIds.add(queryPhenotype.getId());

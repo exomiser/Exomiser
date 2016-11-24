@@ -125,7 +125,7 @@ public class FrequencyData {
      * @return a List of Frequency data
      */
     public List<Frequency> getKnownFrequencies() {
-        return new ArrayList(knownFrequencies.values());
+        return new ArrayList<>(knownFrequencies.values());
     }
 
     /**
