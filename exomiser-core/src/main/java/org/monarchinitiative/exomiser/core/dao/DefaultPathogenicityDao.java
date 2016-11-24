@@ -76,7 +76,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
-        String query = String.format("SELECT "
+        String query = "SELECT "
                 + "sift,"
                 + "polyphen,"
                 + "mut_taster "
@@ -87,7 +87,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
                 + "WHERE chromosome = ? "
                 + "AND position = ? "
                 + "AND ref = ? "
-                + "AND alt = ? ");
+                + "AND alt = ? ";
         PreparedStatement ps = connection.prepareStatement(query);
 
         // FIXME(holtgrewe): See my comment in {@link DefaultFrequencyDao.createPreparedStatement}.

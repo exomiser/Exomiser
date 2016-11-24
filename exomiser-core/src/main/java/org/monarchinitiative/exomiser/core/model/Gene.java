@@ -68,11 +68,11 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     /**
      * A list of all of the variants that affect this gene.
      */
-    private final List<VariantEvaluation> variantEvaluations = new ArrayList();
+    private final List<VariantEvaluation> variantEvaluations = new ArrayList<>();
 
     private final Set<FilterType> failedFilterTypes = new LinkedHashSet<>();
     private final Set<FilterType> passedFilterTypes = new LinkedHashSet<>();
-    private final Map<FilterType, FilterResult> filterResults = new LinkedHashMap<>();
+    private final Map<FilterType, FilterResult> filterResults = new EnumMap<>(FilterType.class);
 
     /**
      * A priority score between 0 (irrelevant) and an arbitrary number (highest
@@ -91,7 +91,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     private float combinedScore = 0f;
 
-    private final Map<PriorityType, PriorityResult> priorityResultsMap = new LinkedHashMap();
+    private final Map<PriorityType, PriorityResult> priorityResultsMap = new EnumMap<>(PriorityType.class);
     private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
     private final String geneSymbol;
     private final int entrezGeneId;

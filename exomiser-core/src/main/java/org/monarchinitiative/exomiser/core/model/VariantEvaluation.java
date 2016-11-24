@@ -639,7 +639,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private PathogenicityData pathogenicityData = PathogenicityData.EMPTY_DATA;
         private FrequencyData frequencyData = FrequencyData.EMPTY_DATA;
 
-        private final Map<FilterType, FilterResult> passedFilterResultsMap = new LinkedHashMap<>();
+        private final Map<FilterType, FilterResult> passedFilterResultsMap = new EnumMap<>(FilterType.class);
         private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
 
         /**
