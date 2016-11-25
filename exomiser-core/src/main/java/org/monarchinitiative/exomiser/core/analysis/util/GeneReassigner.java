@@ -127,7 +127,6 @@ public class GeneReassigner {
     }
 
     public void reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(VariantEvaluation variantEvaluation) {
-        List<Annotation> annotations = variantEvaluation.getAnnotations();
         Gene geneWithHighestPhenotypeScore = null;
         VariantEffect variantEffectForTopHit = null;
         Gene currentlyAssignedGene = allGenes.get(variantEvaluation.getGeneSymbol());
@@ -136,12 +135,13 @@ public class GeneReassigner {
             // very rarely a variant just has a single annotation with no gene i.e. geneSymbol is .
             return;
         }
-        else {    
+        else {
             bestScore = prioritiserScore(currentlyAssignedGene);
         }
         List<String> geneSymbols = new ArrayList<>();
         List<VariantEffect> variantEffects = new ArrayList<>();
         List<Annotation> newAnnotations = new ArrayList<>();
+        List<Annotation> annotations = variantEvaluation.getAnnotations();
         for (Annotation a : annotations) {
             String geneSymbol = a.getGeneSymbol();
             geneSymbols.add(geneSymbol);

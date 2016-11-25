@@ -92,19 +92,19 @@ public interface Variant extends VariantCoordinates {
     
     List<Annotation> getAnnotations();
 
+    void setAnnotations(List<Annotation> alist);
+
     String getGeneSymbol();
 
-    int getEntrezGeneId();
-    
-    void setEntrezGeneId(int id);
-    
     void setGeneSymbol(String symbol);
-    
-    void setAnnotations(List<Annotation> alist);
-    
+
+    int getEntrezGeneId();
+
+    void setEntrezGeneId(int id);
+
     /**
      * @return a String such as chr6:g.29911092G>T
      */
-    String getChromosomalVariant();
+    String getHgvsGenome();
 
 }

@@ -62,8 +62,8 @@ public class SimpleGeneFilterRunnerTest {
         //Add some variants. For the purposes of this test these are required to
         //have the same inheritance mode as the gene to satisfy the unique bahaviour of the Inheritance filter. 
         //TODO: change this - mock filter required? We're not trying to test the functionality of the InheritanceFilter here.
-        gene.addVariant(new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build());
-        gene.addVariant(new VariantEvaluation.VariantBuilder(1, 2, "G", "T").build());
+        gene.addVariant(new VariantEvaluation.Builder(1, 1, "A", "T").build());
+        gene.addVariant(new VariantEvaluation.Builder(1, 2, "G", "T").build());
         for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
             variantEvaluation.setInheritanceModes(inheritanceModes);
         }

@@ -70,9 +70,9 @@ public class DefaultFrequencyDaoTest {
 
     @Before
     public void setUp() {
-        variantNotInDatabase = new VariantEvaluation.VariantBuilder(1, 124, "T", "G").build();
+        variantNotInDatabase = new VariantEvaluation.Builder(1, 124, "T", "G").build();
         //Exomiser currently uses ONE_BASED numbering - be wary....
-        variantInDatabaseWithRsId = new VariantEvaluation.VariantBuilder(10, 123256215, "T", "G").build();
+        variantInDatabaseWithRsId = new VariantEvaluation.Builder(10, 123256215, "T", "G").build();
     }
 
     @Test

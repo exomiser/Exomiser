@@ -95,15 +95,15 @@ public class VariantEvaluationTest {
 
     @Before
     public void setUp() {
-        instance = new VariantEvaluation.VariantBuilder(CHROMOSOME, POSITION, REF, ALT)
+        instance = new VariantEvaluation.Builder(CHROMOSOME, POSITION, REF, ALT)
                 .quality(QUALITY)
                 .geneSymbol(GENE1_GENE_SYMBOL)
                 .geneId(GENE1_ENTREZ_GENE_ID)
                 .build();
     }
 
-    private static VariantEvaluation.VariantBuilder testVariantBuilder() {
-        return new VariantEvaluation.VariantBuilder(CHROMOSOME, POSITION, REF, ALT);
+    private static VariantEvaluation.Builder testVariantBuilder() {
+        return new VariantEvaluation.Builder(CHROMOSOME, POSITION, REF, ALT);
     }
     
     @Test
@@ -424,24 +424,6 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testGetFilterResultOfFailedFilterIsNull() {
-        FilterType filterType = FAIL_FREQUENCY_RESULT.getFilterType();
-
-        instance.addFilterResult(FAIL_FREQUENCY_RESULT);
-
-        assertThat(instance.getFilterResult(filterType), nullValue());
-    }
-
-    @Test
-    public void testGetFilterResultOfPassedFilter() {
-        FilterType filterType = PASS_FREQUENCY_RESULT.getFilterType();
-
-        instance.addFilterResult(PASS_FREQUENCY_RESULT);
-
-        assertThat(instance.getFilterResult(filterType), equalTo(PASS_FREQUENCY_RESULT));
-    }
-
-    @Test
     public void testHasAnnotationsIsFalseByDefault() {
         assertThat(instance.hasAnnotations(), is(false));
     }
@@ -454,7 +436,7 @@ public class VariantEvaluationTest {
     @Test
     public void testIsXChromosomal_isXchromosomal() {
         int chrX = 23;
-        instance = new VariantEvaluation.VariantBuilder(chrX, 1, "A", "T").build();
+        instance = new VariantEvaluation.Builder(chrX, 1, "A", "T").build();
         assertThat(instance.isXChromosomal(), is(true));
     }
 
@@ -466,7 +448,7 @@ public class VariantEvaluationTest {
     @Test
     public void testIsYChromosomal_isYchromosomal() {
         int chrY = 24;
-        instance = new VariantEvaluation.VariantBuilder(chrY, 1, "A", "T").build();
+        instance = new VariantEvaluation.Builder(chrY, 1, "A", "T").build();
         assertThat(instance.isYChromosomal(), is(true));
     }
 
@@ -483,26 +465,26 @@ public class VariantEvaluationTest {
     
     @Test
     public void testGetChromosomeName_23isX() {
-        instance = new VariantEvaluation.VariantBuilder(23, 1, "A", "T").build();
+        instance = new VariantEvaluation.Builder(23, 1, "A", "T").build();
         assertThat(instance.getChromosomeName(), equalTo("X"));
     }
 
     @Test
     public void testGetChromosomeName_24isY() {
-        instance = new VariantEvaluation.VariantBuilder(24, 1, "A", "T").build();
+        instance = new VariantEvaluation.Builder(24, 1, "A", "T").build();
         assertThat(instance.getChromosomeName(), equalTo("Y"));
     }
 
     @Test
     public void testGetChromosomeName_25isM() {
-        instance = new VariantEvaluation.VariantBuilder(25, 1, "A", "T").build();
+        instance = new VariantEvaluation.Builder(25, 1, "A", "T").build();
         assertThat(instance.getChromosomeName(), equalTo("M"));
     }
 
     @Test
     public void testGetGenotype_Het() {
-        instance = new VariantEvaluation.VariantBuilder(25, 1, "A", "T").build();
-        assertThat(instance.getGenotypeAsString(), equalTo("0/1"));
+        instance = new VariantEvaluation.Builder(25, 1, "A", "T").build();
+        assertThat(instance.getGenotypeString(), equalTo("0/1"));
     }
 
     @Test
@@ -570,19 +552,10 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testSetAndGetCompatibleInheritanceModes() {
-        Set<ModeOfInheritance> compatibleModes = new HashSet<>();
-        compatibleModes.add(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        compatibleModes.add(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-        
+    public void testCompatibleInheritanceModes() {
+        Set<ModeOfInheritance> compatibleModes = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
         instance.setInheritanceModes(compatibleModes);
-        assertThat(instance.getInheritanceModes(), equalTo(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE)));
-    }
-    
-    @Test
-    public void testIsCompatibleWith() {    
-        instance.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE));
-        
+        assertThat(instance.getInheritanceModes(), equalTo(compatibleModes));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
         assertThat(instance.isCompatibleWith(ModeOfInheritance.ANY), is(false));
@@ -591,11 +564,11 @@ public class VariantEvaluationTest {
     @Test
     public void testCompareTo() {
         //variants are sorted according to chromosome, position  ref and alt.
-        VariantEvaluation zero = new VariantEvaluation.VariantBuilder(1, 1, "A", "C").build();
-        VariantEvaluation one = new VariantEvaluation.VariantBuilder(1, 2, "A", "G").build();
-        VariantEvaluation two = new VariantEvaluation.VariantBuilder(1, 2, "AC", "G").build();
-        VariantEvaluation three = new VariantEvaluation.VariantBuilder(2, 1, "C", "T").build();
-        VariantEvaluation four = new VariantEvaluation.VariantBuilder(2, 1, "C", "TT").build();
+        VariantEvaluation zero = new VariantEvaluation.Builder(1, 1, "A", "C").build();
+        VariantEvaluation one = new VariantEvaluation.Builder(1, 2, "A", "G").build();
+        VariantEvaluation two = new VariantEvaluation.Builder(1, 2, "AC", "G").build();
+        VariantEvaluation three = new VariantEvaluation.Builder(2, 1, "C", "T").build();
+        VariantEvaluation four = new VariantEvaluation.Builder(2, 1, "C", "TT").build();
 
         List<VariantEvaluation> variants = new ArrayList<>();
         variants.add(zero);

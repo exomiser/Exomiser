@@ -56,7 +56,7 @@ public class VariantFactoryTest {
     private void printVariant(VariantEvaluation variant) {
         GenotypesContext genotypes = variant.getVariantContext().getGenotypes();
         List<GenotypeType> genotypeTypes = genotypes.stream().map(Genotype::getType).collect(toList());
-        System.out.printf("%s %s %s %s %s %s %s offExome=%s gene=%s %s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt(), variant.getGenotypeAsString(), genotypes, genotypeTypes, variant.isOffExome(), variant.getGeneSymbol(), variant.getVariantContext());
+        System.out.printf("%s %s %s %s %s %s %s offExome=%s gene=%s %s%n", variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt(), variant.getGenotypeString(), genotypes, genotypeTypes, variant.isOffExome(), variant.getGeneSymbol(), variant.getVariantContext());
     }
 
     @Test

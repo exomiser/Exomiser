@@ -154,8 +154,8 @@ public class VcfResultsWriterTest {
         gene1.addPriorityResult(new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, Collections.emptyList()));
         gene2.addPriorityResult(new OMIMPriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 1f, Collections.emptyList()));
 
-        unAnnotatedVariantEvaluation1 = new VariantEvaluation.VariantBuilder(5, 11, "AC", "AT").quality(1).build();
-        unAnnotatedVariantEvaluation2 = new VariantEvaluation.VariantBuilder(5, 14, "T", "TG").quality(1).build();
+        unAnnotatedVariantEvaluation1 = new VariantEvaluation.Builder(5, 11, "AC", "AT").quality(1).build();
+        unAnnotatedVariantEvaluation2 = new VariantEvaluation.Builder(5, 14, "T", "TG").quality(1).build();
     }
 
     private AnalysisResults buildAnalysisResults(Gene... genes) {

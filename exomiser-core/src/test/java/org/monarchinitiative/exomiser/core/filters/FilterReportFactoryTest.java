@@ -74,13 +74,13 @@ public class FilterReportFactoryTest {
     }
 
     private VariantEvaluation makeFailedVariant(FilterType filterType) {
-        VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
+        VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation.Builder(6, 1000000, "C", "T").build();
         failedFilterVariantEvaluation.addFilterResult(new FailFilterResult(filterType));
         return failedFilterVariantEvaluation;
     }
 
     private VariantEvaluation makePassedVariant(FilterType filterType) {
-        VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation.VariantBuilder(6, 1000000, "C", "T").build();
+        VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation.Builder(6, 1000000, "C", "T").build();
         passedFilterVariantEvaluation.addFilterResult(new PassFilterResult(filterType));
         return passedFilterVariantEvaluation;
     }

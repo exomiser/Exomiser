@@ -58,7 +58,7 @@ public class PathogenicityDataProviderTest {
     @Before
     public void setUp() {
         variantDataService = new VariantDataServiceMock();
-        variant = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").pathogenicityData(EMPTY_PATH_DATA).build();
+        variant = new VariantEvaluation.Builder(1, 1, "A", "T").pathogenicityData(EMPTY_PATH_DATA).build();
         variantDataService.put(variant, EXPECTED_PATH_DATA);
     }
 

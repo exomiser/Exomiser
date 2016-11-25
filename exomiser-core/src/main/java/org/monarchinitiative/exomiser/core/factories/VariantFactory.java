@@ -25,6 +25,7 @@
 package org.monarchinitiative.exomiser.core.factories;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
+import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
@@ -36,6 +37,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -44,9 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -207,7 +207,7 @@ public class VariantFactory {
         final int pos = variantContext.getStart();
 
         logger.trace("Building unannotated variant for {} {} {} {} - assigning to chromosome {}", chromosomeName, pos, ref, alt, UNKNOWN_CHROMOSOME);
-        return new VariantEvaluation.VariantBuilder(UNKNOWN_CHROMOSOME, pos, ref, alt)
+        return new VariantEvaluation.Builder(UNKNOWN_CHROMOSOME, pos, ref, alt)
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
@@ -237,7 +237,7 @@ public class VariantFactory {
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
 
-        return new VariantEvaluation.VariantBuilder(chr, pos, ref, alt)
+        return new VariantEvaluation.Builder(chr, pos, ref, alt)
                 //HTSJDK derived data are only used for writing out the
                 //VCF/TSV-VARIANT formatted files
                 //TODO: remove this direct dependency
@@ -252,10 +252,83 @@ public class VariantFactory {
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
                 .geneId(buildGeneId(highestImpactAnnotation))
                 .variantEffect(variantEffect)
-                //TODO: remove this direct dependency - store the transcript ids as a list<String> e.g. Annotation.getTranscript().getAccession().
-                //These can then be rehydrated into Annotation objects when required
                 .annotations(variantAnnotations.getAnnotations())
+//                .annotations(buildTranscriptAnnotations(variantAnnotations.getAnnotations()))
                 .build();
+    }
+
+    private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {
+        List<TranscriptAnnotation> transcriptAnnotations = new ArrayList<>(annotations.size());
+        for (Annotation annotation : annotations) {
+            transcriptAnnotations.add(toTranscriptAnnotation(annotation));
+        }
+        return transcriptAnnotations;
+    }
+
+    private TranscriptAnnotation toTranscriptAnnotation(Annotation annotation) {
+        //TODO: could be optimised by returning TranscriptAnnotation.EMPTY in empty cases
+         return TranscriptAnnotation.builder()
+                .variantEffect(annotation.getMostPathogenicVarType())
+                .accession(getTranscriptAccession(annotation))
+                .geneSymbol(buildGeneSymbol(annotation))
+                .hgvsCdna(annotation.getCDSNTChangeStr())
+                .hgvsProtein(annotation.getProteinChangeStr())
+                .distanceFromNearestGene(getDistFromNearestGene(annotation))
+                .build();
+    }
+
+    private String getTranscriptAccession(Annotation annotation) {
+        TranscriptModel transcriptModel = annotation.getTranscript();
+         if (transcriptModel == null) {
+             return "";
+         }
+        return transcriptModel.getAccession();
+    }
+
+    private int getDistFromNearestGene(Annotation annotation) {
+
+        TranscriptModel tm = annotation.getTranscript();
+        if (tm == null) {
+            return Integer.MIN_VALUE;
+        }
+        GenomeVariant change = annotation.getGenomeVariant();
+        Set<VariantEffect> effects = annotation.getEffects();
+        if (effects.contains(VariantEffect.INTERGENIC_VARIANT) || effects.contains(VariantEffect.UPSTREAM_GENE_VARIANT) || effects.contains(VariantEffect.DOWNSTREAM_GENE_VARIANT)) {
+            if (change.getGenomeInterval().isLeftOf(tm.getTXRegion().getGenomeBeginPos()))
+                return tm.getTXRegion().getGenomeBeginPos().differenceTo(change.getGenomeInterval().getGenomeEndPos());
+            else
+                return change.getGenomeInterval().getGenomeBeginPos().differenceTo(tm.getTXRegion().getGenomeEndPos());
+        }
+
+        return Integer.MIN_VALUE;
+//
+//        if (alt.equals("-")) {
+//            return 0;
+//        }
+//        String annotationString = annotation.toVCFAnnoString(alt);
+//        String[] tokens = annotationString.split("\\|");
+//        if (tokens.length <= 14) {
+//            return 0;
+//        }
+//        String distance = tokens[14];
+//        if (distance.isEmpty()) {
+//            return 0;
+//        }
+//        return Integer.parseInt(distance);
+    }
+
+    private String exonIntronNumber(Annotation annotation) {
+        StringJoiner stringJoiner = new StringJoiner("");
+        AnnotationLocation annotationLocation = annotation.getAnnoLoc();
+        if (annotationLocation != null) {
+            AnnotationLocation.RankType rankType = annotationLocation.getRankType();
+            if (rankType == AnnotationLocation.RankType.EXON) {
+                return stringJoiner.add("exon").add(Integer.toString(annotationLocation.getRank() + 1)).toString();
+            } else if (rankType == AnnotationLocation.RankType.INTRON) {
+                return stringJoiner.add("intron").add(Integer.toString(annotationLocation.getRank() + 1)).toString();
+            }
+        }
+        return "";
     }
 
     /**

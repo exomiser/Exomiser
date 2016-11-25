@@ -57,7 +57,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     private VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult) {
-        VariantEvaluation variant = new VariantEvaluation.VariantBuilder(chr, pos, ref, alt).build();
+        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt).build();
         variant.addFilterResult(filterResult);
         return variant;
     }
@@ -71,7 +71,7 @@ public class InheritanceModeAnalyserTest {
             }
         }
 
-        VariantEvaluation variant = new VariantEvaluation.VariantBuilder(chr, pos, ref, alt)
+        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
                 .variantContext(variantContext)
                 .build();
@@ -394,7 +394,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     private String variantString(VariantEvaluation variant) {
-        return String.format("%s\t%s\t%s\t%s\t%s",variant.getChromosome(), variant.getRef(), variant.getAlt(), variant.getAltAlleleId(), variant.getGenotypeAsString());
+        return String.format("%s\t%s\t%s\t%s\t%s",variant.getChromosome(), variant.getRef(), variant.getAlt(), variant.getAltAlleleId(), variant.getGenotypeString());
     }
 
     /**

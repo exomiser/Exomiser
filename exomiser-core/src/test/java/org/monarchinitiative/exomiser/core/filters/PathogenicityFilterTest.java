@@ -98,8 +98,8 @@ public class PathogenicityFilterTest {
                 .build();
     }
 
-    private VariantEvaluation.VariantBuilder testVariantBuilder() {
-        return new VariantEvaluation.VariantBuilder(1, 1, "A", "T");
+    private VariantEvaluation.Builder testVariantBuilder() {
+        return new VariantEvaluation.Builder(1, 1, "A", "T");
     }
     
     @Test

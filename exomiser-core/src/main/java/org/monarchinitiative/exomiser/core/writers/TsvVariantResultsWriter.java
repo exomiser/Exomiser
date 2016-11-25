@@ -21,7 +21,6 @@ package org.monarchinitiative.exomiser.core.writers;
 
 import com.google.common.base.Joiner;
 import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -36,7 +35,6 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -142,7 +140,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // FILTER
         record.add(makeFiltersField(ve));
         // GENOTYPE
-        record.add(ve.getGenotypeAsString());
+        record.add(ve.getGenotypeString());
         // COVERAGE
         record.add(variantContext.getCommonInfo().getAttributeAsString("DP", "0"));
         // FUNCTIONAL_CLASS
@@ -176,9 +174,6 @@ public class TsvVariantResultsWriter implements ResultsWriter {
     }
 
     private void addFrequencyData(FrequencyData frequencyData, List<Object> record) {
-        if (frequencyData == null) {
-            frequencyData = FrequencyData.EMPTY_DATA;
-        }
         // DBSNP_ID
         record.add(dotIfNull(frequencyData.getRsId()));
         // MAX_FREQUENCY
@@ -220,21 +215,20 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         }
     }
 
-    protected String makeFiltersField(VariantEvaluation variantEvaluation) {
+    private String makeFiltersField(VariantEvaluation variantEvaluation) {
         switch (variantEvaluation.getFilterStatus()) {
             case FAILED:
                 return formatFailedFilters(variantEvaluation.getFailedFilterTypes());
             case PASSED:
                 return "PASS";
             case UNFILTERED:
-                return ".";
             default:
                 return ".";
         }
 
     }
 
-    protected String formatFailedFilters(Set<FilterType> failedFilters) {
+    private String formatFailedFilters(Set<FilterType> failedFilters) {
         StringBuilder stringBuilder = new StringBuilder();
         for (FilterType filterType : failedFilters) {
             stringBuilder.append(filterType.toString()).append(";");
@@ -255,19 +249,22 @@ public class TsvVariantResultsWriter implements ResultsWriter {
 
         Annotation anno = annotations.get(0);
 
-        String exonIntron = null;
-        AnnotationLocation annotationLocation = anno.getAnnoLoc();
-        if (annotationLocation != null) {
-            AnnotationLocation.RankType rankType = annotationLocation.getRankType();
-            if (rankType == AnnotationLocation.RankType.EXON) {
-                exonIntron = StringUtils.concat("exon", annotationLocation.getRank() + 1);
-            } else if (rankType == AnnotationLocation.RankType.INTRON) {
-                exonIntron = StringUtils.concat("intron", annotationLocation.getRank() + 1);
-            }
-        }
+//        String exonIntron = null;
+//        AnnotationLocation annotationLocation = anno.getAnnoLoc();
+//        if (annotationLocation != null) {
+//            AnnotationLocation.RankType rankType = annotationLocation.getRankType();
+//            if (rankType == AnnotationLocation.RankType.EXON) {
+//                exonIntron = StringUtils.concat("exon", annotationLocation.getRank() + 1);
+//            } else if (rankType == AnnotationLocation.RankType.INTRON) {
+//                exonIntron = StringUtils.concat("intron", annotationLocation.getRank() + 1);
+//            }
+//        }
 
         final Joiner joiner = Joiner.on(":").skipNulls();
-        return joiner.join(anno.getGeneSymbol(), anno.getTranscript().getAccession(), exonIntron, anno.getCDSNTChangeStr(),
+        return joiner.join(anno.getGeneSymbol(),
+                anno.getTranscript().getAccession(),
+//                exonIntron,
+                anno.getCDSNTChangeStr(),
                 anno.getProteinChangeStr());
     }
 

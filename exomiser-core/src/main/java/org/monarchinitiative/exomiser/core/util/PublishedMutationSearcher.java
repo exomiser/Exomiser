@@ -171,7 +171,7 @@ public class PublishedMutationSearcher {
 	    for (VariantEvaluation ve : varEvalList) {
 		int chr = ve.getChromosome();
 		int pos = ve.getPosition();
-		String gt = ve.getGenotypeAsString();
+		String gt = ve.getGenotypeString();
 		qps.setInt(1,chr);
 		qps.setInt(2,pos);
 		ResultSet rs = qps.executeQuery();

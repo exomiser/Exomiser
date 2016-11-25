@@ -27,7 +27,7 @@ package org.monarchinitiative.exomiser.core.filters;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation.VariantBuilder;
+import org.monarchinitiative.exomiser.core.model.VariantEvaluation.Builder;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -57,8 +57,8 @@ public class QualityFilterTest {
         instance = new QualityFilter(MIN_QUAL_THRESHOLD);
     }
 
-    private VariantBuilder testVariantBuilder() {
-        return new VariantEvaluation.VariantBuilder(1, 1, "A", "T");
+    private Builder testVariantBuilder() {
+        return new Builder(1, 1, "A", "T");
     }
 
     @Test

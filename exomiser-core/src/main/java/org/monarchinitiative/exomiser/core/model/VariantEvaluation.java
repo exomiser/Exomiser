@@ -72,7 +72,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private List<Annotation> annotations;
     private String geneSymbol;
     private int entrezGeneId;
-    private final String chromosomalVariant;
+    private final String hgvsGenome;
 
     //results from filters
     private final Map<FilterType, FilterResult> passedFilterResultsMap;
@@ -82,11 +82,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private FrequencyData frequencyData;
     private PathogenicityData pathogenicityData;
     private boolean contributesToGeneScore = false;
+    private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
     //bit of an orphan variable - look into refactoring this
     private List<String> mutationRefList = null;
 
-    private VariantEvaluation(VariantBuilder builder) {
+    private VariantEvaluation(Builder builder) {
         chr = builder.chr;
         chromosomeName = builder.chromosomeName;
         pos = builder.pos;
@@ -100,7 +101,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         annotations = builder.annotations;
         geneSymbol = builder.geneSymbol;
         entrezGeneId = builder.entrezGeneId;
-        chromosomalVariant = builder.chromosomalVariant;
+        hgvsGenome = builder.hgvsGenome;
 
         variantContext = builder.variantContext;
         altAlleleId = builder.altAlleleId;
@@ -235,64 +236,30 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * <li>LTF(uc010hjh.3:exon2:c.69_70insAAG:p.R23delinsRR)
      * </ul>
      * <p>
-     * If client code wants instead to display just a single string that
-     * summarizes all of the annotations, it should call the function
-     * {@link #getRepresentativeAnnotation}.
      */
     @Override
     public List<Annotation> getAnnotations() {
         return annotations;
     }
     
-    @Override 
-    public void setAnnotations(List<Annotation> alist) {
-        annotations = alist;
+    @Override
+    public void setAnnotations(List<Annotation> annotations) {
+        this.annotations = annotations;
     }
 
     public boolean hasAnnotations() {
         return !getAnnotations().isEmpty();
     }
 
-//    /**
-//     * This function returns a list of all of the
-//     * {@link jannovar.annotation.Annotation Annotation} objects that have been
-//     * associated with the current variant. This function can be called if
-//     * client code wants to display one line for each affected transcript, e.g.,
-//     * <ul>
-//     * <li>LTF(uc003cpr.3:exon5:c.30_31insAAG:p.R10delinsRR)
-//     * <li>LTF(uc003cpq.3:exon2:c.69_70insAAG:p.R23delinsRR)
-//     * <li>LTF(uc010hjh.3:exon2:c.69_70insAAG:p.R23delinsRR)
-//     * </ul>
-//     * <P>
-//     * If client code wants instead to display just a single string that
-//     * summarizes all of the annotations, it should call the function
-//     * {@link #getRepresentativeAnnotation}.
-//     */
-//    public List<String> getAnnotationsWithoutGeneSymbols() {
-//        List<String> lst = variant.getAnnotations();
-//        for (String s : lst) {
-//            int i = s.indexOf("(");
-//            if (i < 0) {
-//                continue;
-//            }
-//            int j = s.indexOf(")", i);
-//            if (j < 0) {
-//                continue;
-//            }
-//            s = s.substring(i + 1, j);
-//        }
-//        return lst;
-//    }
-
     /**
      * @return a String such as chr6:g.29911092G>T
      */
     @Override
-    public String getChromosomalVariant() {
-        return chromosomalVariant;
+    public String getHgvsGenome() {
+        return hgvsGenome;
     }
 
-    public String getGenotypeAsString() {
+    public String getGenotypeString() {
         // collect genotype string list
         List<String> gtStrings = new ArrayList<>();
         for (Genotype gt : variantContext.getGenotypes()) {
@@ -421,7 +388,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     private boolean isUnFiltered() {
-        return (failedFilterTypes.isEmpty() && passedFilterResultsMap.isEmpty());
+        return failedFilterTypes.isEmpty() && passedFilterResultsMap.isEmpty();
     }
 
     public FilterStatus getFilterStatus() {
@@ -433,11 +400,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
         return FilterStatus.FAILED;
     }
-
-    public FilterResult getFilterResult(FilterType filterType) {
-        return passedFilterResultsMap.get(filterType);
-    }
-
 
     /**
      * Returns the variant score (prediction of the pathogenicity
@@ -530,8 +492,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
     }
 
-    Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
-    
     @Override
     public void setInheritanceModes(Set<ModeOfInheritance> compatibleModes) {
         if (compatibleModes.isEmpty()) {
@@ -615,7 +575,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     /**
      * Builder class for producing a valid VariantEvaluation.
      */
-    public static class VariantBuilder {
+    public static class Builder {
 
         private int chr;
         private String chromosomeName;
@@ -631,7 +591,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private List<Annotation> annotations = Collections.emptyList();
         private String geneSymbol = ".";
         private int entrezGeneId = -1;
-        private String chromosomalVariant;
+        private String hgvsGenome;
 
         private VariantContext variantContext;
         private int altAlleleId;
@@ -650,14 +610,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
          * @param ref
          * @param alt
          */
-        public VariantBuilder(int chr, int pos, String ref, String alt) {
+        public Builder(int chr, int pos, String ref, String alt) {
             this.chr = chr;
             this.pos = pos;
             this.ref = ref;
             this.alt = alt;
         }
 
-        public VariantBuilder chromosomeName(String chromosomeName) {
+        public Builder chromosomeName(String chromosomeName) {
             this.chromosomeName = chromosomeName;
             return this;
         }
@@ -686,11 +646,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
 
         // Change can be null for unknown references, or may not be set. Just in case, we'll hack something together.
-        private String buildChromosomalVariant(int chr, int pos, String ref, String alt) {
+        private String buildHgvsGenome(int chr, int pos, String ref, String alt) {
             return chr + ":g." + pos + ref + ">" + alt;
         }
 
-        public VariantBuilder variantContext(VariantContext variantContext) {
+        public Builder variantContext(VariantContext variantContext) {
             this.variantContext = variantContext;
             return this;
         }
@@ -721,37 +681,38 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return vcBuilder.make();
         }
 
-        public VariantBuilder altAlleleId(int altAlleleId) {
+        public Builder altAlleleId(int altAlleleId) {
             this.altAlleleId = altAlleleId;
             return this;
         }
 
-        public VariantBuilder quality(double phredScore) {
+        public Builder quality(double phredScore) {
             this.phredScore = phredScore;
             return this;
         }
 
-        public VariantBuilder numIndividuals(int numIndividuals) {
+        public Builder numIndividuals(int numIndividuals) {
             this.numIndividuals = numIndividuals;
             return this;
         }
 
-        public VariantBuilder isOffExome(boolean isOffExome) {
+        public Builder isOffExome(boolean isOffExome) {
             this.isOffExome = isOffExome;
             return this;
         }
 
-        public VariantBuilder variantEffect(VariantEffect variantEffect) {
+        public Builder variantEffect(VariantEffect variantEffect) {
             this.variantEffect = variantEffect;
             return this;
         }
 
-        public VariantBuilder annotations(List<Annotation> annotations) {
+        public Builder annotations(List<Annotation> annotations) {
+            //TODO: can this be an ImmutableList.copyOf() ?
             this.annotations = annotations;
             return this;
         }
 
-        public VariantBuilder geneSymbol(String geneSymbol) {
+        public Builder geneSymbol(String geneSymbol) {
             if (geneSymbol.equals(".")) {
                 this.geneSymbol = geneSymbol;
             } else {
@@ -761,26 +722,26 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
-        public VariantBuilder geneId(int geneId) {
+        public Builder geneId(int geneId) {
             this.entrezGeneId = geneId;
             return this;
         }
 
-        public VariantBuilder pathogenicityData(PathogenicityData pathogenicityData) {
+        public Builder pathogenicityData(PathogenicityData pathogenicityData) {
             this.pathogenicityData = pathogenicityData;
             return this;
         }
 
-        public VariantBuilder frequencyData(FrequencyData frequencyData) {
+        public Builder frequencyData(FrequencyData frequencyData) {
             this.frequencyData = frequencyData;
             return this;
         }
 
-        public VariantBuilder filterResults(FilterResult... filterResults) {
+        public Builder filterResults(FilterResult... filterResults) {
             return filterResults(Arrays.asList(filterResults));
         }
 
-        public VariantBuilder filterResults(Collection<FilterResult> filterResults) {
+        public Builder filterResults(Collection<FilterResult> filterResults) {
             for (FilterResult filterResult : filterResults) {
                 if (filterResult.passed()) {
                     this.passedFilterResultsMap.put(filterResult.getFilterType(), filterResult);
@@ -796,8 +757,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
                 chromosomeName = buildChromosomeName(chr);
             }
 
-            if (chromosomalVariant == null) {
-                chromosomalVariant = buildChromosomalVariant(chr, pos, ref, alt);
+            if (hgvsGenome == null) {
+                hgvsGenome = buildHgvsGenome(chr, pos, ref, alt);
             }
 
             if (variantContext == null) {

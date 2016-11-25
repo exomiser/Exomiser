@@ -54,7 +54,7 @@ public class FrequencyDataProviderTest {
     @Before
     public void setUp() {
         variantDataService = new VariantDataServiceMock();
-        variant = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").frequencyData(defaultFrequencyData).build();
+        variant = new VariantEvaluation.Builder(1, 1, "A", "T").frequencyData(defaultFrequencyData).build();
     }
         
     @Test

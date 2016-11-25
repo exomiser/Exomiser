@@ -88,7 +88,7 @@ public class FrequencyFilterTest {
     }
     
     private VariantEvaluation makeTestVariantEvaluation() {
-        return new VariantEvaluation.VariantBuilder(1, 1, "A", "T").build();
+        return new VariantEvaluation.Builder(1, 1, "A", "T").build();
     }
 
     @Test

@@ -76,10 +76,10 @@ public class SimpleVariantFilterRunnerTest {
     @Before
     public void setUp() {
 
-        passesAllFilters = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").quality(PASS_QUALITY).variantEffect(PASS_VARIANT_EFFECT).build();
-        failsAllFilters = new VariantEvaluation.VariantBuilder(2, 2, "A", "T").quality(FAIL_QUALITY).variantEffect(FAIL_VARIANT_EFFECT).build();
-        passesQualityFrequencyFilter = new VariantEvaluation.VariantBuilder(3, 3, "A", "T").quality(PASS_QUALITY).variantEffect(FAIL_VARIANT_EFFECT).build();
-        passesTargetQualityFilter = new VariantEvaluation.VariantBuilder(4, 4, "A", "T").quality(PASS_QUALITY).variantEffect(PASS_VARIANT_EFFECT).build();
+        passesAllFilters = new VariantEvaluation.Builder(1, 1, "A", "T").quality(PASS_QUALITY).variantEffect(PASS_VARIANT_EFFECT).build();
+        failsAllFilters = new VariantEvaluation.Builder(2, 2, "A", "T").quality(FAIL_QUALITY).variantEffect(FAIL_VARIANT_EFFECT).build();
+        passesQualityFrequencyFilter = new VariantEvaluation.Builder(3, 3, "A", "T").quality(PASS_QUALITY).variantEffect(FAIL_VARIANT_EFFECT).build();
+        passesTargetQualityFilter = new VariantEvaluation.Builder(4, 4, "A", "T").quality(PASS_QUALITY).variantEffect(PASS_VARIANT_EFFECT).build();
 
         variantEvaluations = Arrays.asList(passesAllFilters, 
                                            failsAllFilters, 

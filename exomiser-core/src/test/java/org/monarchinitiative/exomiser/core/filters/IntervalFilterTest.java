@@ -66,10 +66,10 @@ public class IntervalFilterTest {
     }
 
     private void setUpVariants() {
-        rightChromosomeRightPosition = new VariantEvaluation.VariantBuilder(RIGHT_CHR, INSIDE_REGION, "A", "T").build();
-        rightChromosomeWrongPosition = new VariantEvaluation.VariantBuilder(RIGHT_CHR, BEFORE_REGION, "A", "T").build();
-        wrongChromosomeRightPosition = new VariantEvaluation.VariantBuilder(WRONG_CHR, INSIDE_REGION, "A", "T").build();
-        wrongChromosomeWrongPosition = new VariantEvaluation.VariantBuilder(RIGHT_CHR, AFTER_REGION, "A", "T").build();
+        rightChromosomeRightPosition = new VariantEvaluation.Builder(RIGHT_CHR, INSIDE_REGION, "A", "T").build();
+        rightChromosomeWrongPosition = new VariantEvaluation.Builder(RIGHT_CHR, BEFORE_REGION, "A", "T").build();
+        wrongChromosomeRightPosition = new VariantEvaluation.Builder(WRONG_CHR, INSIDE_REGION, "A", "T").build();
+        wrongChromosomeWrongPosition = new VariantEvaluation.Builder(RIGHT_CHR, AFTER_REGION, "A", "T").build();
     }
 
     @Before

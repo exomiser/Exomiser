@@ -60,8 +60,8 @@ public class EntrezGeneIdFilterTest {
     }
 
     private void initVariants() {
-        wantedPassesFilter = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").geneId(WANTED_GENE_ID).build();
-        unwantedFailsFilter = new VariantEvaluation.VariantBuilder(1, 1, "A", "T").geneId(UNWANTED_GENE_ID).build();
+        wantedPassesFilter = new VariantEvaluation.Builder(1, 1, "A", "T").geneId(WANTED_GENE_ID).build();
+        unwantedFailsFilter = new VariantEvaluation.Builder(1, 1, "A", "T").geneId(UNWANTED_GENE_ID).build();
     }
 
     @Test
