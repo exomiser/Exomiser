@@ -41,8 +41,8 @@ public class VariantEffectFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.VARIANT_EFFECT_FILTER;
 
-    private final FilterResult passesFilter = new PassFilterResult(filterType);
-    private final FilterResult failsFilter = new FailFilterResult(filterType);
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
 
     private final Set<VariantEffect> offTargetVariantTypes;
     
@@ -63,9 +63,9 @@ public class VariantEffectFilter implements VariantFilter {
     public FilterResult runFilter(VariantEvaluation filterable) {
         VariantEffect effect = filterable.getVariantEffect();
         if (offTargetVariantTypes.contains(effect)) {
-            return failsFilter;
+            return FAIL;
         }
-        return passesFilter;
+        return PASS;
     }
 
     @Override

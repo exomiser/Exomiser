@@ -38,9 +38,8 @@ public class RegulatoryFeatureFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.REGULATORY_FEATURE_FILTER;
 
-    //add a token pass/failed score - this is essentially a boolean pass/fail, where 1 = pass and 0 = fail
-    private final FilterResult passedFilterResult = new PassFilterResult(filterType);
-    private final FilterResult failedFilterResult = new FailFilterResult(filterType);
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
 
     @Override
     public FilterType getFilterType() {
@@ -55,15 +54,15 @@ public class RegulatoryFeatureFilter implements VariantFilter {
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
             // GeneReassigner can assign a new empty list
             if (variantEvaluation.getAnnotations().isEmpty()){
-                return failedFilterResult;
+                return FAIL;
             }
             int dist = getDistFromNearestGene(variantEvaluation);
             if (dist >= 0 && dist < 20000){
-                return passedFilterResult;
+                return PASS;
             }
-            return failedFilterResult;
+            return FAIL;
         }
-        return passedFilterResult;
+        return PASS;
     }
 
     private int getDistFromNearestGene(VariantEvaluation variantEvaluation) {

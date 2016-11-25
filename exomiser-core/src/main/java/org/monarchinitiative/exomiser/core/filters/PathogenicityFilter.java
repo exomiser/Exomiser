@@ -38,8 +38,8 @@ public class PathogenicityFilter implements VariantFilter {
     private static final Logger logger = LoggerFactory.getLogger(PathogenicityFilter.class);
     private static final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
-    private final FilterResult passesFilter = new PassFilterResult(filterType);
-    private final FilterResult failsFilter = new FailFilterResult(filterType);
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
 
     private final boolean keepNonPathogenic;
 
@@ -77,14 +77,13 @@ public class PathogenicityFilter implements VariantFilter {
 */
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-
         if (keepNonPathogenic) {
-            return passesFilter;
+            return PASS;
         }
         if (variantEvaluation.isPredictedPathogenic()) {
-            return passesFilter;
+            return PASS;
         }
-        return failsFilter;
+        return FAIL;
     }
 
     @Override

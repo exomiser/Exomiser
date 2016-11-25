@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core.filters;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class PassFilterResult extends AbstractFilterResult {
+final class PassFilterResult extends AbstractFilterResult {
 
     PassFilterResult(FilterType filterType) {
         super(filterType, Status.PASS);

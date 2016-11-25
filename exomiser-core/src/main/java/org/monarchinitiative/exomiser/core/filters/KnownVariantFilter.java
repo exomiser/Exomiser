@@ -19,15 +19,15 @@ public class KnownVariantFilter implements VariantFilter {
 
     private static final FilterType KNOWN_VARIANT_FILTER_TYPE = FilterType.KNOWN_VARIANT_FILTER;
 
-    private final FilterResult passesFilter = new PassFilterResult(KNOWN_VARIANT_FILTER_TYPE);
-    private final FilterResult failsFilter = new FailFilterResult(KNOWN_VARIANT_FILTER_TYPE);
+    private static final FilterResult PASS = FilterResult.pass(KNOWN_VARIANT_FILTER_TYPE);
+    private static final FilterResult FAIL = FilterResult.fail(KNOWN_VARIANT_FILTER_TYPE);
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         if (notRepresentedInDatabase(variantEvaluation)) {
-            return passesFilter;
+            return PASS;
         }
-        return failsFilter;
+        return FAIL;
     }
 
     private boolean notRepresentedInDatabase(VariantEvaluation variantEvaluation) {

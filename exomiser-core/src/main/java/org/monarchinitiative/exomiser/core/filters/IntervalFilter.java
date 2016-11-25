@@ -26,8 +26,8 @@ public class IntervalFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.INTERVAL_FILTER;
 
-    private final FilterResult passesFilter = new PassFilterResult(filterType);
-    private final FilterResult failsFilter = new FailFilterResult(filterType);
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
 
     private final GeneticInterval interval;
 
@@ -58,9 +58,9 @@ public class IntervalFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         if (variantIsNotWithinInterval(variantEvaluation)) {
-            return failsFilter;
+            return FAIL;
         }
-        return passesFilter;
+        return PASS;
     }
 
     private boolean variantIsNotWithinInterval(Variant variant) {

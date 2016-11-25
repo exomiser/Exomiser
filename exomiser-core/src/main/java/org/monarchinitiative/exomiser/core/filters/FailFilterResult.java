@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core.filters;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class FailFilterResult extends AbstractFilterResult {
+final class FailFilterResult extends AbstractFilterResult {
 
     FailFilterResult(FilterType filterType) {
         super(filterType, Status.FAIL);

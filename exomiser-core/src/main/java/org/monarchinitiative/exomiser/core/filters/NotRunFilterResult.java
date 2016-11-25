@@ -28,7 +28,7 @@ package org.monarchinitiative.exomiser.core.filters;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class NotRunFilterResult extends AbstractFilterResult {
+final class NotRunFilterResult extends AbstractFilterResult {
 
     NotRunFilterResult(FilterType filterType) {
         super(filterType, Status.NOT_RUN);

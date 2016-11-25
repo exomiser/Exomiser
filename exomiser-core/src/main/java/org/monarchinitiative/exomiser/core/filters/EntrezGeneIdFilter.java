@@ -23,8 +23,8 @@ public class EntrezGeneIdFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.ENTREZ_GENE_ID_FILTER;
 
-    private final FilterResult passesFilter = new PassFilterResult(filterType);
-    private final FilterResult failsFilter = new FailFilterResult(filterType);
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
 
     private final Set<Integer> genesToKeep;
 
@@ -44,9 +44,9 @@ public class EntrezGeneIdFilter implements VariantFilter {
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         if (genesToKeep.contains(variantEvaluation.getEntrezGeneId())) {
-            return passesFilter;
+            return PASS;
         }
-        return failsFilter;
+        return FAIL;
     }
 
     @Override

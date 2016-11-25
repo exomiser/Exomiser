@@ -18,8 +18,8 @@ public class QualityFilter implements VariantFilter {
 
     private static final FilterType filterType = FilterType.QUALITY_FILTER;
 
-    private final FilterResult passesFilter = new PassFilterResult(filterType);
-    private final FilterResult failsFilter = new FailFilterResult(filterType);
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
 
     /**
      * Threshold for filtering. Retain only those variants whose PHRED variant
@@ -61,10 +61,10 @@ public class QualityFilter implements VariantFilter {
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
         double phredScore = variantEvaluation.getPhredScore();
         if (overQualityThreshold(phredScore)) {
-            return passesFilter;
+            return PASS;
         }
         // Variant is not of good quality
-        return failsFilter;
+        return FAIL;
     }
 
     protected boolean overQualityThreshold(double qualityScore) {

@@ -39,8 +39,9 @@ public class InheritanceFilter implements GeneFilter {
 
     private static final FilterType filterType = FilterType.INHERITANCE_FILTER;
 
-    private final FilterResult passesFilter = new PassFilterResult(filterType);
-    private final FilterResult failsFilter = new FailFilterResult(filterType);
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
+    private static final FilterResult NOT_RUN = FilterResult.notRun(filterType);
 
     private final ModeOfInheritance modeOfInheritance;
     
@@ -56,20 +57,20 @@ public class InheritanceFilter implements GeneFilter {
     public FilterResult runFilter(Gene gene) {
         if (modeOfInheritance == ModeOfInheritance.ANY) {
             //if ModeOfInheritance.ANY pass the runFilter - ideally it shouldn't be applied in the first place.
-            return FilterResult.notRun(filterType);
+            return NOT_RUN;
         }
         if (gene.isCompatibleWith(modeOfInheritance)) {
-            return addFilterResultToVariants(passesFilter, gene);
+            return addFilterResultToVariants(PASS, gene);
         }
-        return addFilterResultToVariants(failsFilter, gene);
+        return addFilterResultToVariants(FAIL, gene);
     }
 
     private FilterResult addFilterResultToVariants(FilterResult filterResult, Gene gene) {
         for (VariantEvaluation variant : gene.getVariantEvaluations()) {
             if (variant.isCompatibleWith(modeOfInheritance)) {
-                variant.addFilterResult(passesFilter);
+                variant.addFilterResult(PASS);
             } else {
-                variant.addFilterResult(failsFilter);
+                variant.addFilterResult(FAIL);
             }
         }
         return filterResult;

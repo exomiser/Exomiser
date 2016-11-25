@@ -17,19 +17,19 @@ import java.util.Objects;
  */
 public class FrequencyFilter implements VariantFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
+
+    private static final FilterType filterType = FilterType.FREQUENCY_FILTER;
+
+    private static final FilterResult PASS = FilterResult.pass(filterType);
+    private static final FilterResult FAIL = FilterResult.fail(filterType);
+
     /**
      * Threshold for filtering. Retain only those variants whose frequency
      * (expressed as a percentage) is below this threshold. The default value is
      * 100%, i.e., no filtering out.
      */
     private final float maxFreq;
-
-    private static final Logger logger = LoggerFactory.getLogger(FrequencyFilter.class);
-
-    private static final FilterType filterType = FilterType.FREQUENCY_FILTER;
-
-    private final FilterResult passesFilter = new PassFilterResult(filterType);
-    private final FilterResult failsFilter = new FailFilterResult(filterType);
 
     /**
      * Creates a runFilter with a maximum frequency threshold for variants.
@@ -76,9 +76,9 @@ public class FrequencyFilter implements VariantFilter {
         float variantFrequencyScore = frequencyData.getScore();
 
         if (passesFilter(frequencyData)) {
-            return passesFilter;
+            return PASS;
         }
-        return failsFilter;
+        return FAIL;
     }
 
     /**
