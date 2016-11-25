@@ -20,8 +20,8 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,9 +66,8 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     }
 
     private int getDistFromNearestGene(VariantEvaluation variantEvaluation) {
-        Annotation annotation = variantEvaluation.getAnnotations().get(0);//.getHighestImpactAnnotation();
-        String intergenicAnnotation = annotation.toVCFAnnoString(variantEvaluation.getAlt());
-        return Math.abs(Integer.parseInt(intergenicAnnotation.split("\\|")[14]));
+        TranscriptAnnotation annotation = variantEvaluation.getAnnotations().get(0);
+        return Math.abs(annotation.getDistanceFromNearestGene());
     }
 
     @Override

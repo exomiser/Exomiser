@@ -54,7 +54,7 @@ public class CaddDao {
         this.snvTabixReader = snvTabixReader;
     }
  
-    @Cacheable(value = "cadd", key = "#variant.chromosomalVariant")
+    @Cacheable(value = "cadd", key = "#variant.hgvsGenome")
     public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }

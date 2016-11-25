@@ -20,7 +20,6 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.base.Joiner;
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import htsjdk.variant.variantcontext.*;
@@ -69,7 +68,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     //Jannovar annotations
     private final boolean isOffExome;
     private VariantEffect variantEffect;
-    private List<Annotation> annotations;
+    private List<TranscriptAnnotation> annotations;
     private String geneSymbol;
     private int entrezGeneId;
     private final String hgvsGenome;
@@ -238,12 +237,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * <p>
      */
     @Override
-    public List<Annotation> getAnnotations() {
+    public List<TranscriptAnnotation> getAnnotations() {
         return annotations;
     }
     
     @Override
-    public void setAnnotations(List<Annotation> annotations) {
+    public void setAnnotations(List<TranscriptAnnotation> annotations) {
         this.annotations = annotations;
     }
 
@@ -588,7 +587,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         private boolean isOffExome;
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
-        private List<Annotation> annotations = Collections.emptyList();
+        private List<TranscriptAnnotation> annotations = Collections.emptyList();
         private String geneSymbol = ".";
         private int entrezGeneId = -1;
         private String hgvsGenome;
@@ -706,7 +705,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
-        public Builder annotations(List<Annotation> annotations) {
+        public Builder annotations(List<TranscriptAnnotation> annotations) {
             //TODO: can this be an ImmutableList.copyOf() ?
             this.annotations = annotations;
             return this;

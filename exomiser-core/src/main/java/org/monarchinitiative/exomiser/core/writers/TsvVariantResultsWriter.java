@@ -20,7 +20,6 @@
 package org.monarchinitiative.exomiser.core.writers;
 
 import com.google.common.base.Joiner;
-import de.charite.compbio.jannovar.annotation.Annotation;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -28,6 +27,7 @@ import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -242,30 +242,18 @@ public class TsvVariantResultsWriter implements ResultsWriter {
      * @return An annotation for a single transcript, representing one of the
      * annotations with the most pathogenic annotation.
      */
-    private String getRepresentativeAnnotation(List<Annotation> annotations) {
+    private String getRepresentativeAnnotation(List<TranscriptAnnotation> annotations) {
         if (annotations.isEmpty()) {
             return "?";
         }
 
-        Annotation anno = annotations.get(0);
-
-//        String exonIntron = null;
-//        AnnotationLocation annotationLocation = anno.getAnnoLoc();
-//        if (annotationLocation != null) {
-//            AnnotationLocation.RankType rankType = annotationLocation.getRankType();
-//            if (rankType == AnnotationLocation.RankType.EXON) {
-//                exonIntron = StringUtils.concat("exon", annotationLocation.getRank() + 1);
-//            } else if (rankType == AnnotationLocation.RankType.INTRON) {
-//                exonIntron = StringUtils.concat("intron", annotationLocation.getRank() + 1);
-//            }
-//        }
+        TranscriptAnnotation anno = annotations.get(0);
 
         final Joiner joiner = Joiner.on(":").skipNulls();
         return joiner.join(anno.getGeneSymbol(),
-                anno.getTranscript().getAccession(),
-//                exonIntron,
-                anno.getCDSNTChangeStr(),
-                anno.getProteinChangeStr());
+                anno.getAccession(),
+                anno.getHgvsCdna(),
+                anno.getHgvsProtein());
     }
 
 }

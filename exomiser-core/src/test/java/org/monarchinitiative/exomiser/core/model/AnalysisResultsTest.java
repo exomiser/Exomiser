@@ -5,21 +5,16 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.vcf.VCFHeader;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -29,17 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class AnalysisResultsTest {
-
-
-    @Mock
-    List<Annotation> mockNotEmptyListOfAnnotations;
-   
-    @Before
-    public void setUp() {
-        Mockito.when(mockNotEmptyListOfAnnotations.isEmpty()).thenReturn(Boolean.FALSE);
-    }
 
     @Test
     public void noArgsConstructorInitialisesGenesVariantEvalations() {
@@ -127,7 +112,8 @@ public class AnalysisResultsTest {
     @Test
     public void testCanReturnUnannotatedVariantEvaluations() {
         VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation.Builder(10, 123353297, "G", "C")
-                .annotations(mockNotEmptyListOfAnnotations).build();
+                .annotations(Collections.singletonList(TranscriptAnnotation.EMPTY))
+                .build();
         
         VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation.Builder(7, 155604800, "C", "CTT").build();
 
@@ -137,7 +123,7 @@ public class AnalysisResultsTest {
                 .variantEvaluations(allVariantEvaluations)
                 .build();
 
-        List<VariantEvaluation> unAnnotatedVariantEvaluations = Arrays.asList(unAnnotatedVariantEvaluation);
+        List<VariantEvaluation> unAnnotatedVariantEvaluations = Collections.singletonList(unAnnotatedVariantEvaluation);
 
         assertThat(instance.getUnAnnotatedVariantEvaluations(), equalTo(unAnnotatedVariantEvaluations));
     }

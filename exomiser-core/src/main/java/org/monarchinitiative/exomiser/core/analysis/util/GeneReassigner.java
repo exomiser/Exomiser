@@ -24,10 +24,10 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
@@ -140,12 +140,12 @@ public class GeneReassigner {
         }
         List<String> geneSymbols = new ArrayList<>();
         List<VariantEffect> variantEffects = new ArrayList<>();
-        List<Annotation> newAnnotations = new ArrayList<>();
-        List<Annotation> annotations = variantEvaluation.getAnnotations();
-        for (Annotation a : annotations) {
+        List<TranscriptAnnotation> newAnnotations = new ArrayList<>();
+        List<TranscriptAnnotation> annotations = variantEvaluation.getAnnotations();
+        for (TranscriptAnnotation a : annotations) {
             String geneSymbol = a.getGeneSymbol();
             geneSymbols.add(geneSymbol);
-            variantEffects.add(a.getMostPathogenicVarType());
+            variantEffects.add(a.getVariantEffect());
             newAnnotations.add(a);
             // hack to deal with fusion protein Jannovar nonsense - ? should the separate genes not be part of the annotation anyway - don't seem to be, should maybe not do this split
             if (geneSymbol.contains("-")) {
@@ -158,7 +158,7 @@ public class GeneReassigner {
             }
         }
 
-        Annotation bestAnnotation = null;
+        TranscriptAnnotation bestAnnotation = null;
         int i = 0;
         for (String geneSymbol : geneSymbols) {
             Gene gene = allGenes.get(geneSymbol);
@@ -180,7 +180,7 @@ public class GeneReassigner {
             i++;
         }
         // Keep original annotation if possible - used in RegFilter later on and for display
-        List<Annotation> finalAnnotations = new ArrayList<>();
+        List<TranscriptAnnotation> finalAnnotations = new ArrayList<>();
         if (bestAnnotation != null){
             finalAnnotations.add(bestAnnotation);
         }

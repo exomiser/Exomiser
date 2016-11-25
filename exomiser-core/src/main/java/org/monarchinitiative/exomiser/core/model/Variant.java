@@ -25,7 +25,6 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import com.google.common.collect.Sets;
-import de.charite.compbio.jannovar.annotation.Annotation;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 
 import java.util.List;
@@ -90,9 +89,9 @@ public interface Variant extends VariantCoordinates {
     
     void setVariantEffect(VariantEffect ve);
     
-    List<Annotation> getAnnotations();
+    List<TranscriptAnnotation> getAnnotations();
 
-    void setAnnotations(List<Annotation> alist);
+    void setAnnotations(List<TranscriptAnnotation> transcriptAnnotations);
 
     String getGeneSymbol();
 

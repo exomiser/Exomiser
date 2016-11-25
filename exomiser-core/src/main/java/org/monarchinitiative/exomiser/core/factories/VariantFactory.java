@@ -252,8 +252,8 @@ public class VariantFactory {
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
                 .geneId(buildGeneId(highestImpactAnnotation))
                 .variantEffect(variantEffect)
-                .annotations(variantAnnotations.getAnnotations())
-//                .annotations(buildTranscriptAnnotations(variantAnnotations.getAnnotations()))
+//                .annotations(variantAnnotations.getAnnotations())
+                .annotations(buildTranscriptAnnotations(variantAnnotations.getAnnotations()))
                 .build();
     }
 

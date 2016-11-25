@@ -81,7 +81,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
 
     
     
-    @Cacheable(value = "frequency", key = "#variant.chromosomalVariant")
+    @Cacheable(value = "frequency", key = "#variant.hgvsGenome")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
 

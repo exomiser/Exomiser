@@ -53,7 +53,7 @@ public class RemmDao {
         this.remmTabixReader = remmTabixReader;
     }
 
-    @Cacheable(value = "remm", key = "#variant.chromosomalVariant")
+    @Cacheable(value = "remm", key = "#variant.hgvsGenome")
     public PathogenicityData getPathogenicityData(Variant variant) {
         // MNCDS has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
