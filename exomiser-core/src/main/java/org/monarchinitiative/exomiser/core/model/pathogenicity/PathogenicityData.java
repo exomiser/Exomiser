@@ -32,9 +32,9 @@ import static java.util.stream.Collectors.toList;
  */
 public class PathogenicityData {
 
-    private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
-
     public static final PathogenicityData EMPTY_DATA = new PathogenicityData();
+
+    private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
 
     public PathogenicityData(PathogenicityScore... pathScore) {
         this(Sets.newHashSet(pathScore));

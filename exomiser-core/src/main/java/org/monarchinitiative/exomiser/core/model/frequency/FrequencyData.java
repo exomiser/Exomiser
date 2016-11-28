@@ -19,9 +19,6 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 /**
@@ -34,13 +31,10 @@ import java.util.*;
  */
 public class FrequencyData {
 
-    private static final Logger logger = LoggerFactory.getLogger(FrequencyData.class);
+    public static final FrequencyData EMPTY_DATA = new FrequencyData();
 
     private final RsId rsId;
-
     private final Map<FrequencySource, Frequency> knownFrequencies;
-
-    public static final FrequencyData EMPTY_DATA = new FrequencyData();
 
     private FrequencyData() {
         this.rsId = null;
