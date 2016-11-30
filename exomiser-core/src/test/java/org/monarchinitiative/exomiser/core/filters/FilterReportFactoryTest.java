@@ -137,19 +137,6 @@ public class FilterReportFactoryTest {
     }
 
     @Test
-    public void testMakeDefaultVariantFilterReportContainsCorrectNumberOfPassedAndFailedVariants() {
-        FilterType filterType = FilterType.BED_FILTER;
-
-        variantEvaluations.add(makePassedVariant(filterType));
-        variantEvaluations.add(makeFailedVariant(filterType));
-
-        FilterReport report = instance.makeFilterReport(new BedFilter(null), analysisResults);
-
-        assertThat(report.getPassed(), equalTo(1));
-        assertThat(report.getFailed(), equalTo(1));
-    }
-
-    @Test
     public void testMakeDefaultGeneFilterReportContainsCorrectNumberOfPassedAndFailedGenes() {
         Filter filter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);    
         FilterType filterType = filter.getFilterType();
