@@ -41,9 +41,7 @@ public class KnownVariantFilter implements VariantFilter {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + Objects.hashCode(KNOWN_VARIANT_FILTER_TYPE);
-        return hash;
+        return Objects.hashCode(KNOWN_VARIANT_FILTER_TYPE);
     }
 
     @Override
@@ -51,11 +49,7 @@ public class KnownVariantFilter implements VariantFilter {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final KnownVariantFilter other = (KnownVariantFilter) obj;
-        return KNOWN_VARIANT_FILTER_TYPE == KNOWN_VARIANT_FILTER_TYPE;
+        return getClass() == obj.getClass();
     }
 
     @Override
