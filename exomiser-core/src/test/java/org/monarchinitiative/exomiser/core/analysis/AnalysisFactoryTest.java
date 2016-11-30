@@ -19,14 +19,16 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.Sets;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory.AnalysisBuilder;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
-import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
-import org.monarchinitiative.exomiser.core.filters.PassAllVariantEffectsFilter;
+import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
@@ -35,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -44,26 +47,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class AnalysisFactoryTest {
 
     private AnalysisFactory instance;
-    private PriorityFactory priorityFactory;
+    private final PriorityFactory priorityFactory = new NoneTypePriorityFactoryStub();
+    private final VariantDataService variantDataService = new VariantDataServiceStub();
 
     private AnalysisBuilder analysisBuilder;
-    private List<AnalysisStep> steps;
 
     private List<String> hpoIds;
 
-
     @Before
     public void setUp() {
-        VariantDataService stubVariantDataService = new VariantDataServiceStub();
-        priorityFactory = new NoneTypePriorityFactoryStub();
-
-        instance = new AnalysisFactory(null, priorityFactory, stubVariantDataService);
+        instance = new AnalysisFactory(null, priorityFactory, variantDataService);
 
         hpoIds = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055");
-        steps = new ArrayList<>();
 
-        Path vcfPath = Paths.get("test.vcf");
-        analysisBuilder = instance.getAnalysisBuilder(vcfPath);
+        analysisBuilder = instance.getAnalysisBuilder();
     }
 
     private List<AnalysisStep> analysisSteps() {
@@ -94,10 +91,46 @@ public class AnalysisFactoryTest {
     }
 
     @Test
+    public void analysisStepsAreCheckedAndCorrectedOnBuild() {
+        List<AnalysisStep> correct = Arrays.asList(
+                priorityFactory.makePhivePrioritiser(hpoIds),
+                new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.501f),
+                new QualityFilter(500.0),
+                new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT),
+                priorityFactory.makeOmimPrioritiser()
+                );
+
+        //These are specified in a non-functional order.
+        analysisBuilder.hpoIds(hpoIds)
+                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
+                .addPriorityScoreFilterStep(PriorityType.PHIVE_PRIORITY, 0.501f)
+                .addPhivePrioritiser()
+                .addOmimPrioritiser()
+                .addInheritanceFilter()
+                .addQualityFilterStep(500.0);
+
+        assertThat(buildAndGetSteps(), equalTo(correct));
+    }
+
+    @Test
+    public void testAnalysisBuilderVcfPath() {
+        Path vcfPath = Paths.get("test.vcf");
+        analysisBuilder.vcfPath(vcfPath);
+        assertThat(analysisBuilder.build().getVcfPath(), equalTo(vcfPath));
+    }
+
+    @Test
     public void testAnalysisBuilderPedPath() {
         Path pedPath = Paths.get("ped.ped");
         analysisBuilder.pedPath(pedPath);
         assertThat(analysisBuilder.build().getPedPath(), equalTo(pedPath));
+    }
+
+    @Test
+    public void testProbandSampleName() {
+        String sampleName = "Zaphod Beeblebrox";
+        analysisBuilder.probandSampleName(sampleName);
+        assertThat(analysisBuilder.build().getProbandSampleName(), equalTo(sampleName));
     }
 
     @Test
@@ -157,20 +190,129 @@ public class AnalysisFactoryTest {
         assertThat(analysisBuilder.build().getPathogenicitySources(), equalTo(pathogenicitySources));
     }
 
+    private List<AnalysisStep> buildAndGetSteps() {
+        return analysisBuilder.build().getAnalysisSteps();
+    }
+
+    @Test
+    public void testAddIntervalFilter() {
+        GeneticInterval geneticInterval = new GeneticInterval(1, 1234, 6789);
+        analysisBuilder.addIntervalFilterStep(geneticInterval);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new IntervalFilter(geneticInterval))));
+    }
+
+    @Test
+    public void testAddEntrezGeneIdFilter() {
+        Set<Integer> entrezIds = Sets.newHashSet(123345, 67890);
+        analysisBuilder.addGeneIdFilterStep(entrezIds);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new EntrezGeneIdFilter(entrezIds))));
+    }
+
+    @Test
+    public void testAddVariantEffectFilter() {
+        Set<VariantEffect> variantEffects = EnumSet.of(VariantEffect.MISSENSE_VARIANT, VariantEffect.REGULATORY_REGION_VARIANT);
+        analysisBuilder.addVariantEffectFilterStep(variantEffects);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new VariantEffectFilter(variantEffects))));
+    }
+
+    @Test
+    public void testAddQualityFilterStep() {
+        double cutoff = 500.0;
+        analysisBuilder.addQualityFilterStep(cutoff);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new QualityFilter(cutoff))));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAddKnownVariantFilterStepThrowsExceptionWhenFrequencySourcesAreNotDefined() {
+        analysisBuilder.addKnownVariantFilterFilterStep();
+    }
+
+    @Test
+    public void testAddKnownVariantFilterStep() {
+        analysisBuilder.frequencySources(EnumSet.allOf(FrequencySource.class));
+        analysisBuilder.addKnownVariantFilterFilterStep();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new KnownVariantFilter())));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAddFrequencyFilterStepThrowsExceptionWhenFrequencySourcesAreNotDefined() {
+        analysisBuilder.addFrequencyFilterStep(0.01f);
+    }
+
+    @Test
+    public void testAddFrequencyFilterStep() {
+        Set<FrequencySource> sources = EnumSet.of(FrequencySource.ESP_ALL, FrequencySource.THOUSAND_GENOMES);
+        analysisBuilder.frequencySources(sources);
+        float cutOff = 0.01f;
+        analysisBuilder.addFrequencyFilterStep(cutOff);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAddPathogenicityFilterStepThrowsExceptionWhenPathogenicitySourcesAreNotDefined() {
+        analysisBuilder.addPathogenicityFilterStep(true);
+    }
+
+    @Test
+    public void testAddPathogenicityFilterStep() {
+        Set<PathogenicitySource> sources = EnumSet.allOf(PathogenicitySource.class);
+        analysisBuilder.pathogenicitySources(sources);
+        boolean keepNonPathogenic = true;
+        analysisBuilder.addPathogenicityFilterStep(keepNonPathogenic);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new PathogenicityFilter(keepNonPathogenic))));
+    }
+
+    @Test
+    public void testAddPriorityScoreFilterStep() {
+        PriorityType priorityType = PriorityType.HIPHIVE_PRIORITY;
+        float minPriorityScore = 0.501f;
+        analysisBuilder.addPriorityScoreFilterStep(priorityType, minPriorityScore);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new PriorityScoreFilter(priorityType, minPriorityScore))));
+    }
+
+    @Test
+    public void testAddRegulatoryFeatureFilterStep() {
+        analysisBuilder.addRegulatoryFeatureFilterStep();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new RegulatoryFeatureFilter())));
+    }
+
+    @Test
+    public void testAddInheritanceModeFilterStepNotAddedWhenModeUndefined() {
+        analysisBuilder.addInheritanceFilter();
+        assertThat(buildAndGetSteps(), equalTo(Collections.emptyList()));
+    }
+
+    @Test
+    public void testAddInheritanceModeFilterStep() {
+        ModeOfInheritance autosomalDominant = ModeOfInheritance.AUTOSOMAL_DOMINANT;
+        analysisBuilder.modeOfInheritance(autosomalDominant);
+        analysisBuilder.addInheritanceFilter();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new InheritanceFilter(autosomalDominant))));
+    }
+
     @Test
     public void testAnalysisBuilderCanBuildCompleteAnalysis() {
         EnumSet<PathogenicitySource> pathogenicitySources = EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.SIFT);
         EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_EAST_ASIAN);
-        FrequencyFilter frequencyFilter = new FrequencyFilter(1f);
+        float frequencyCutOff = 1f;
+        FrequencyFilter frequencyFilter = new FrequencyFilter(frequencyCutOff);
+
         PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser(hpoIds);
+
+        PriorityType priorityType = phivePrioritiser.getPriorityType();
+        float minPriorityScore = 0.501f;
+        PriorityScoreFilter priorityScoreFilter = new PriorityScoreFilter(priorityType, minPriorityScore);
+        RegulatoryFeatureFilter regulatoryFeatureFilter = new RegulatoryFeatureFilter();
 
         analysisBuilder.hpoIds(hpoIds)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .analysisMode(AnalysisMode.FULL)
                 .frequencySources(frequencySources)
                 .pathogenicitySources(pathogenicitySources)
-                .addAnalysisStep(frequencyFilter)
-                .addPhivePrioritiser(hpoIds);
+                .addPhivePrioritiser()
+                .addPriorityScoreFilterStep(priorityType, minPriorityScore)
+                .addRegulatoryFeatureFilterStep()
+                .addFrequencyFilterStep(frequencyCutOff);
 
         Analysis analysis = analysisBuilder.build();
         assertThat(analysis.getHpoIds(), equalTo(hpoIds));
@@ -178,10 +320,12 @@ public class AnalysisFactoryTest {
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
+        assertThat(analysis.getAnalysisSteps(), hasItem(priorityScoreFilter));
         assertThat(analysis.getAnalysisSteps(), hasItem(frequencyFilter));
         assertThat(analysis.getAnalysisSteps(), hasItem(phivePrioritiser));
+        assertThat(analysis.getAnalysisSteps(), hasItem(regulatoryFeatureFilter));
         //check that the order of analysis steps is preserved
-        assertThat(analysis.getAnalysisSteps(), equalTo(Arrays.asList(frequencyFilter, phivePrioritiser)));
+        assertThat(analysis.getAnalysisSteps(), equalTo(Arrays.asList(phivePrioritiser, priorityScoreFilter, regulatoryFeatureFilter, frequencyFilter)));
     }
 
     @Test
@@ -190,25 +334,41 @@ public class AnalysisFactoryTest {
 
         analysisBuilder.addOmimPrioritiser();
 
-        assertThat(analysisSteps(), hasItem(prioritiser));
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAddPhivePrioritiserThrowsExcptionWhenHpoIdsNotDefined() {
+        analysisBuilder.addPhivePrioritiser();
+        assertThat(analysisSteps(), equalTo(singletonList(priorityFactory.makePhivePrioritiser(hpoIds))));
     }
 
     @Test
     public void testCanSpecifyPhivePrioritiser() {
-        steps.add(priorityFactory.makePhivePrioritiser(hpoIds));
+        Prioritiser prioritiser = priorityFactory.makePhivePrioritiser(hpoIds);
 
-        analysisBuilder.addPhivePrioritiser(hpoIds);
+        analysisBuilder.hpoIds(hpoIds);
+        analysisBuilder.addPhivePrioritiser();
 
-        assertThat(analysisSteps(), equalTo(steps));
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testAddHiPhivePrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT);
+
+        analysisBuilder.addHiPhivePrioritiser();
+
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
+    }
     @Test
     public void testCanSpecifyHiPhivePrioritiser_noOptions() {
-        steps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT);
 
-        analysisBuilder.addHiPhivePrioritiser(hpoIds);
+        analysisBuilder.hpoIds(hpoIds)
+                .addHiPhivePrioritiser();
 
-        assertThat(analysisSteps(), equalTo(steps));
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
     @Test
@@ -219,39 +379,52 @@ public class AnalysisFactoryTest {
                 .runParams("human,mouse,fish,ppi")
                 .build();
 
-        steps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, options));
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(hpoIds, options);
 
-        analysisBuilder.addHiPhivePrioritiser(hpoIds, options);
+        analysisBuilder.hpoIds(hpoIds)
+                .addHiPhivePrioritiser(options);
 
-        assertThat(analysisSteps(), equalTo(steps));
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAddPhenixPrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
+        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser(hpoIds);
+
+        analysisBuilder.addPhenixPrioritiser();
+
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
     @Test
     public void testCanSpecifyPhenixPrioritiser() {
-        steps.add(priorityFactory.makePhenixPrioritiser(hpoIds));
+        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser(hpoIds);
 
-        analysisBuilder.addPhenixPrioritiser(hpoIds);
+        analysisBuilder.hpoIds(hpoIds)
+                .addPhenixPrioritiser();
 
-        assertThat(analysisSteps(), equalTo(steps));
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
     @Test
     public void testCanSpecifyExomeWalkerPrioritiser() {
         List<Integer> seedGenes = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
-        steps.add(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
+        Prioritiser prioritiser = priorityFactory.makeExomeWalkerPrioritiser(seedGenes);
 
         analysisBuilder.addExomeWalkerPrioritiser(seedGenes);
 
-        assertThat(analysisSteps(), equalTo(steps));
+        assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
     @Test
     public void testCanSpecifyTwoPrioritisers() {
-        steps.add(priorityFactory.makeOmimPrioritiser());
-        steps.add(priorityFactory.makePhivePrioritiser(hpoIds));
+        Prioritiser omimPrioritiser = priorityFactory.makeOmimPrioritiser();
+        Prioritiser phivePrioritiser = priorityFactory.makePhivePrioritiser(hpoIds);
+        List<AnalysisStep> steps = Arrays.asList(omimPrioritiser, phivePrioritiser);
 
-        analysisBuilder.addOmimPrioritiser();
-        analysisBuilder.addPhivePrioritiser(hpoIds);
+        analysisBuilder.hpoIds(hpoIds)
+                .addOmimPrioritiser()
+                .addPhivePrioritiser();
 
         assertThat(analysisSteps(), equalTo(steps));
     }
@@ -259,10 +432,9 @@ public class AnalysisFactoryTest {
     @Test
     public void testCanAddFilterStep() {
         AnalysisStep filter = new PassAllVariantEffectsFilter();
-        steps.add(filter);
 
         analysisBuilder.addAnalysisStep(filter);
 
-        assertThat(analysisSteps(), equalTo(steps));
+        assertThat(analysisSteps(), equalTo(singletonList(filter)));
     }
 }
