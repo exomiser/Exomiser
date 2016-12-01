@@ -25,40 +25,40 @@
 package org.monarchinitiative.exomiser.core;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.analysis.Analysis;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.factories.TestFactory;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactoryImpl;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class ExomiserTest {
- 
-    private Exomiser instance;
-        
+
+    private static final Path VCF_PATH = Paths.get("src/test/resources/smallTest.vcf");
+
     private final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
     private final VariantDataService stubDataService = new VariantDataServiceStub();
-    
-    private final AnalysisFactory analysisFactory = new AnalysisFactory(jannovarData, new PriorityFactoryImpl(), stubDataService);
-    
-    @Before
-    public void setUp() {
-        instance = new Exomiser(analysisFactory);
-    }
-    
+    private final PriorityFactory priorityFactory = new PriorityFactoryImpl();
+
+    private final AnalysisFactory analysisFactory = new AnalysisFactory(jannovarData, priorityFactory, stubDataService);
+    //AnalysisFactory is only ever used here, but it provides a clean interface to the Analysis module
+    private Exomiser instance = new Exomiser(analysisFactory);
+
     private Analysis makeAnalysisWithMode(AnalysisMode analysisMode) {
-        return Analysis.builder()
-                .vcfPath(Paths.get("src/test/resources/smallTest.vcf"))
+        return instance.getAnalysisBuilder()
+                .vcfPath(VCF_PATH)
                 .analysisMode(analysisMode)
                 .build();
     }
@@ -67,18 +67,27 @@ public class ExomiserTest {
     public void canRunAnalysis_Full() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.FULL);
         AnalysisResults analysisResults = instance.run(analysis);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
     }
     
     @Test
     public void canRunAnalysis_Sparse() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.SPARSE);
         AnalysisResults analysisResults = instance.run(analysis);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
     }
     
     @Test
     public void canRunAnalysis_PassOnly() {
         Analysis analysis = makeAnalysisWithMode(AnalysisMode.PASS_ONLY);
         AnalysisResults analysisResults = instance.run(analysis);
+        assertThat(analysisResults.getGenes().size(), equalTo(2));
     }
-    
+
+    @Test
+    public void canGetAnalysisBuilder() {
+        AnalysisBuilder analysisBuilder = instance.getAnalysisBuilder();
+        assertThat(analysisBuilder, notNullValue());
+    }
+
  }

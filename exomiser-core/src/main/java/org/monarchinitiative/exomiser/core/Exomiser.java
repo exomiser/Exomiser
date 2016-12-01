@@ -31,10 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * This is the main entry point for analysing data using the Exomiser. An {@link analysis.Analysis} 
- * should be build using either a {@link analysis.Settings} and the 
- * {@link analysis.SettingsParser} or with an {@link analysis.AnalysisParser}
- * 
+ * This is the main entry point for analysing data using the Exomiser. An {@link Analysis}
+ * should be build using either a {@link Settings} and the {@link SettingsParser} or with an {@link AnalysisParser}
+ * or programmtically using the {@link AnalysisBuilder}
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
@@ -47,6 +47,10 @@ public class Exomiser {
     @Autowired
     public Exomiser(AnalysisFactory analysisFactory) {
         this.analysisFactory = analysisFactory;
+    }
+
+    public AnalysisBuilder getAnalysisBuilder() {
+        return analysisFactory.getAnalysisBuilder();
     }
 
     public AnalysisResults run(Analysis analysis) {

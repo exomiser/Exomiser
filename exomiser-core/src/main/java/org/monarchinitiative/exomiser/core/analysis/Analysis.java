@@ -43,7 +43,11 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * This class is analogous to the {@link Settings} class, although the key difference is that here the {@see #addStep}
+ * This class is analogous to the {@link Settings} class, although the key difference is that an Analysis allows an the
+ * excecution of an arbitrary number of {@link AnalysisStep} in almost any order.
+ *
+ * Creation of an Analysis is *strongly* recommended to be done via an {@link AnalysisBuilder} obtained from an {@link AnalysisFactory}.
+ * Not doing so will likely result in incorrect/meaningless results.
  * 
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -165,6 +169,16 @@ public class Analysis {
         return groups;
     }
 
+    /**
+     * Returns a new builder instance for creating Analysis objects. *CAUTION* It is strongly advisable to create Analysis
+     * objects using the {@link AnalysisBuilder} objects created with the {@link AnalysisFactory}. This will ensure the
+     * analysis is in a fit state to run.
+     *
+     * This method should only be used for simple unit tests. More complete ones should use the {@link AnalysisBuilder}
+     * as stated above.
+     *
+     * @return a new Builder instance.
+     */
     @JsonCreator
     public static Builder builder() {
         return new Builder();

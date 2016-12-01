@@ -19,23 +19,15 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory.AnalysisBuilder;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
-import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
-import org.monarchinitiative.exomiser.core.filters.PassAllVariantEffectsFilter;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.prioritisers.*;
+import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -44,30 +36,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class AnalysisFactoryTest {
 
     private AnalysisFactory instance;
-    private PriorityFactory priorityFactory;
-
-    private AnalysisBuilder analysisBuilder;
-    private List<AnalysisStep> steps;
-
-    private List<String> hpoIds;
-
+    private final PriorityFactory priorityFactory = new NoneTypePriorityFactoryStub();
+    private final VariantDataService variantDataService = new VariantDataServiceStub();
 
     @Before
     public void setUp() {
-        VariantDataService stubVariantDataService = new VariantDataServiceStub();
-        priorityFactory = new NoneTypePriorityFactoryStub();
-
-        instance = new AnalysisFactory(null, priorityFactory, stubVariantDataService);
-
-        hpoIds = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055");
-        steps = new ArrayList<>();
-
-        Path vcfPath = Paths.get("test.vcf");
-        analysisBuilder = instance.getAnalysisBuilder(vcfPath);
-    }
-
-    private List<AnalysisStep> analysisSteps() {
-        return analysisBuilder.build().getAnalysisSteps();
+        instance = new AnalysisFactory(null, priorityFactory, variantDataService);
     }
 
     @Test
@@ -89,180 +63,8 @@ public class AnalysisFactoryTest {
     }
 
     @Test
-    public void testAnalysisBuilderPedPath_default() {
-        assertThat(analysisBuilder.build().getPedPath(), nullValue());
+    public void testCanMakeAnalysisBuilder() {
+        assertThat(instance.getAnalysisBuilder(), notNullValue());
     }
 
-    @Test
-    public void testAnalysisBuilderPedPath() {
-        Path pedPath = Paths.get("ped.ped");
-        analysisBuilder.pedPath(pedPath);
-        assertThat(analysisBuilder.build().getPedPath(), equalTo(pedPath));
-    }
-
-    @Test
-    public void testAnalysisBuilderHpoIds_default() {
-        assertThat(analysisBuilder.build().getHpoIds(), equalTo(Collections.<String>emptyList()));
-    }
-
-    @Test
-    public void testAnalysisBuilderHpoIds() {
-        analysisBuilder.hpoIds(hpoIds);
-        assertThat(analysisBuilder.build().getHpoIds(), equalTo(hpoIds));
-    }
-
-    @Test
-    public void testAnalysisBuilderModeOfInheritance_default() {
-        assertThat(analysisBuilder.build().getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
-    }
-
-    @Test
-    public void testAnalysisBuilderModeOfInheritance() {
-        analysisBuilder.modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(analysisBuilder.build().getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-    }
-
-    @Test
-    public void testAnalysisBuilderAnalysisMode_default() {
-        assertThat(analysisBuilder.build().getAnalysisMode(), equalTo(AnalysisMode.PASS_ONLY));
-    }
-
-    @Test
-    public void testAnalysisBuilderAnalysisMode() {
-        analysisBuilder.analysisMode(AnalysisMode.FULL);
-        assertThat(analysisBuilder.build().getAnalysisMode(), equalTo(AnalysisMode.FULL));
-    }
-
-    @Test
-    public void testAnalysisBuilderFrequencySources_default() {
-        assertThat(analysisBuilder.build().getFrequencySources(), equalTo(Collections.<FrequencySource>emptySet()));
-    }
-
-    @Test
-    public void testAnalysisBuilderFrequencySources() {
-        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_EAST_ASIAN);
-        analysisBuilder.frequencySources(frequencySources);
-        assertThat(analysisBuilder.build().getFrequencySources(), equalTo(frequencySources));
-    }
-
-    @Test
-    public void testAnalysisBuilderPathogenicitySources_default() {
-        assertThat(analysisBuilder.build().getPathogenicitySources(), equalTo(Collections.<PathogenicitySource>emptySet()));
-    }
-
-    @Test
-    public void testAnalysisBuilderPathogenicitySources() {
-        EnumSet<PathogenicitySource> pathogenicitySources = EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.SIFT);
-        analysisBuilder.pathogenicitySources(pathogenicitySources);
-        assertThat(analysisBuilder.build().getPathogenicitySources(), equalTo(pathogenicitySources));
-    }
-
-    @Test
-    public void testAnalysisBuilderCanBuildCompleteAnalysis() {
-        EnumSet<PathogenicitySource> pathogenicitySources = EnumSet.of(PathogenicitySource.REMM, PathogenicitySource.SIFT);
-        EnumSet<FrequencySource> frequencySources = EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.EXAC_EAST_ASIAN);
-        FrequencyFilter frequencyFilter = new FrequencyFilter(1f);
-        PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser(hpoIds);
-
-        analysisBuilder.hpoIds(hpoIds)
-                .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
-                .analysisMode(AnalysisMode.FULL)
-                .frequencySources(frequencySources)
-                .pathogenicitySources(pathogenicitySources)
-                .addAnalysisStep(frequencyFilter)
-                .addPhivePrioritiser(hpoIds);
-
-        Analysis analysis = analysisBuilder.build();
-        assertThat(analysis.getHpoIds(), equalTo(hpoIds));
-        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
-        assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
-        assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
-        assertThat(analysis.getAnalysisSteps(), hasItem(frequencyFilter));
-        assertThat(analysis.getAnalysisSteps(), hasItem(phivePrioritiser));
-        //check that the order of analysis steps is preserved
-        assertThat(analysis.getAnalysisSteps(), equalTo(Arrays.asList(frequencyFilter, phivePrioritiser)));
-    }
-
-    @Test
-    public void testCanSpecifyOmimPrioritiser() {
-        Prioritiser prioritiser = priorityFactory.makeOmimPrioritiser();
-
-        analysisBuilder.addOmimPrioritiser();
-
-        assertThat(analysisSteps(), hasItem(prioritiser));
-    }
-
-    @Test
-    public void testCanSpecifyPhivePrioritiser() {
-        steps.add(priorityFactory.makePhivePrioritiser(hpoIds));
-
-        analysisBuilder.addPhivePrioritiser(hpoIds);
-
-        assertThat(analysisSteps(), equalTo(steps));
-    }
-
-    @Test
-    public void testCanSpecifyHiPhivePrioritiser_noOptions() {
-        steps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
-
-        analysisBuilder.addHiPhivePrioritiser(hpoIds);
-
-        assertThat(analysisSteps(), equalTo(steps));
-    }
-
-    @Test
-    public void testCanSpecifyHiPhivePrioritiser_withOptions() {
-        HiPhiveOptions options = HiPhiveOptions.builder()
-                .diseaseId("DISEASE:123")
-                .candidateGeneSymbol("GENE1")
-                .runParams("human,mouse,fish,ppi")
-                .build();
-
-        steps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, options));
-
-        analysisBuilder.addHiPhivePrioritiser(hpoIds, options);
-
-        assertThat(analysisSteps(), equalTo(steps));
-    }
-
-    @Test
-    public void testCanSpecifyPhenixPrioritiser() {
-        steps.add(priorityFactory.makePhenixPrioritiser(hpoIds));
-
-        analysisBuilder.addPhenixPrioritiser(hpoIds);
-
-        assertThat(analysisSteps(), equalTo(steps));
-    }
-
-    @Test
-    public void testCanSpecifyExomeWalkerPrioritiser() {
-        List<Integer> seedGenes = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
-        steps.add(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
-
-        analysisBuilder.addExomeWalkerPrioritiser(seedGenes);
-
-        assertThat(analysisSteps(), equalTo(steps));
-    }
-
-    @Test
-    public void testCanSpecifyTwoPrioritisers() {
-        steps.add(priorityFactory.makeOmimPrioritiser());
-        steps.add(priorityFactory.makePhivePrioritiser(hpoIds));
-
-        analysisBuilder.addOmimPrioritiser();
-        analysisBuilder.addPhivePrioritiser(hpoIds);
-
-        assertThat(analysisSteps(), equalTo(steps));
-    }
-
-    @Test
-    public void testCanAddFilterStep() {
-        AnalysisStep filter = new PassAllVariantEffectsFilter();
-        steps.add(filter);
-
-        analysisBuilder.addAnalysisStep(filter);
-
-        assertThat(analysisSteps(), equalTo(steps));
-    }
 }

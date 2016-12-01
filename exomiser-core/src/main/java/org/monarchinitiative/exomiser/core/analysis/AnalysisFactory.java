@@ -20,19 +20,13 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
 
 /**
  * High-level factory for creating an {@link Analysis} and {@link AnalysisRunner}. This is
@@ -47,6 +41,8 @@ import java.util.Set;
 @Component
 public class AnalysisFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(AnalysisFactory.class);
+
     private final JannovarData jannovarData;
     private final PriorityFactory priorityFactory;
     private final VariantDataService variantDataService;
@@ -59,6 +55,9 @@ public class AnalysisFactory {
     }
 
     public AnalysisRunner getAnalysisRunnerForMode(AnalysisMode analysisMode) {
+        //This class primarily exists as an external interface for the Exomiser class to be able to create and run analyses
+        //without having to expose too much of the Analysis package implementation. e.g. the AnalysisRunner implementations
+        // below are package-private.
         switch (analysisMode) {
             case FULL:
                 return new SimpleAnalysisRunner(jannovarData, variantDataService);
@@ -67,96 +66,12 @@ public class AnalysisFactory {
             case PASS_ONLY:
             default:
                 //this guy takes up the least RAM
-                return passOnlyAnalysisRunner();
+                return new PassOnlyAnalysisRunner(jannovarData, variantDataService);
         }
     }
-    
-    private AnalysisRunner passOnlyAnalysisRunner() {
-        return new PassOnlyAnalysisRunner(jannovarData, variantDataService);
-    }
 
-    public AnalysisBuilder getAnalysisBuilder(Path vcfPath) {
-        return new AnalysisBuilder(priorityFactory, vcfPath);
-    }
-
-    public static class AnalysisBuilder {
-
-        private final PriorityFactory priorityFactory;
-        private final Analysis.Builder analysisBuilder;
-
-        private AnalysisBuilder(PriorityFactory priorityFactory, Path vcfPath) {
-            this.priorityFactory = priorityFactory;
-            analysisBuilder = Analysis.builder().vcfPath(vcfPath);
-        }
-
-        public Analysis build() {
-            return analysisBuilder.build();
-        }
-
-        public AnalysisBuilder pedPath(Path pedPath) {
-            analysisBuilder.pedPath(pedPath);
-            return this;
-        }
-
-        public AnalysisBuilder hpoIds(List<String> hpoIds) {
-            analysisBuilder.hpoIds(hpoIds);
-            return this;
-        }
-
-        public AnalysisBuilder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
-            analysisBuilder.modeOfInheritance(modeOfInheritance);
-            return this;
-        }
-
-        public AnalysisBuilder analysisMode(AnalysisMode analysisMode) {
-            analysisBuilder.analysisMode(analysisMode);
-            return this;
-        }
-
-        public AnalysisBuilder frequencySources(Set<FrequencySource> frequencySources) {
-            analysisBuilder.frequencySources(frequencySources);
-            return this;
-        }
-
-        public AnalysisBuilder pathogenicitySources(Set<PathogenicitySource> pathogenicitySources) {
-            analysisBuilder.pathogenicitySources(pathogenicitySources);
-            return this;
-        }
-
-        public AnalysisBuilder addOmimPrioritiser() {
-            analysisBuilder.addStep(priorityFactory.makeOmimPrioritiser());
-            return this;
-        }
-
-        public AnalysisBuilder addPhivePrioritiser(List<String> hpoIds) {
-            analysisBuilder.addStep(priorityFactory.makePhivePrioritiser(hpoIds));
-            return this;
-        }
-
-        public AnalysisBuilder addHiPhivePrioritiser(List<String> hpoIds) {
-            analysisBuilder.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
-            return this;
-        }
-
-        public AnalysisBuilder addHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
-            analysisBuilder.addStep(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
-            return this;
-        }
-
-        public AnalysisBuilder addPhenixPrioritiser(List<String> hpoIds) {
-            analysisBuilder.addStep(priorityFactory.makePhenixPrioritiser(hpoIds));
-            return this;
-        }
-
-        public AnalysisBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes) {
-            analysisBuilder.addStep(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
-            return this;
-        }
-
-        public AnalysisBuilder addAnalysisStep(AnalysisStep analysisStep) {
-            analysisBuilder.addStep(analysisStep);
-            return this;
-        }
+    public AnalysisBuilder getAnalysisBuilder() {
+        return new AnalysisBuilder(priorityFactory, variantDataService);
     }
 
 }
