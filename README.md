@@ -37,32 +37,32 @@ public class Application {
 }
 ```
 
-In your application use the AnalysisFactory to configure your analysis. Run the Analysis using the Exomiser class.
-Creation of the AnalysisFactory is a complicated process so defer this to Spring and the exomiser-spring-boot-starter.
+In your application use the AnalysisBuilder obtained from the Exomiser instance to configure your analysis. Then run the Analysis using the Exomiser class.
+Creation of the Exomiser is a complicated process so defer this to Spring and the exomiser-spring-boot-starter. Calling the ```add``` prefixed methods 
+will add that analysis step to the analysis in the order that they have been defined in your code.
 
 Example usage:
 ```
 @Autowired
 private final Exomiser exomiser;
-@Autowired
-private final AnalysisFactory analysisFactory;
 
 ...
            
-    Analysis analysis = analysisFactory.getAnalysisBuilder()
+    Analysis analysis = exomiser.getAnalysisBuilder()
                 .vcfPath(vcfPath)
                 .pedPath(pedPath)
+                .probandSampleName(probandSampleId)
                 .hpoIds(phenotypes)
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.MUTATION_TASTER, PathogenicitySource.SIFT))
                 .addPhivePrioritiser()
-                .addPriorityScoreFilterStep(PriorityType.PHIVE_PRIORITY, 0.501f)
-                .addQualityFilterStep(500.0)
-                .addRegulatoryFeatureFilterStep()
-                .addFrequencyFilterStep(0.01f)
-                .addPathogenicityFilterStep(true)
+                .addPriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.501f)
+                .addQualityFilter(500.0)
+                .addRegulatoryFeatureFilter()
+                .addFrequencyFilter(0.01f)
+                .addPathogenicityFilter(true)
                 .addInheritanceFilter()
                 .addOmimPrioritiser()
                 .build();
