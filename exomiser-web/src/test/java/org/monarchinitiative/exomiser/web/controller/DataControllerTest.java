@@ -22,7 +22,7 @@ import config.TestDaoConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.monarchinitiative.exomiser.autoconfigure.ExomiserStubDataConfig;
+import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
 import org.monarchinitiative.exomiser.web.ExomiserWebApp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

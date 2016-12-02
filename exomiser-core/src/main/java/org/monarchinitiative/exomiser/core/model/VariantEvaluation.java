@@ -19,6 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -49,6 +50,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;
 
     // HTSJDK {@link VariantContext} instance of this allele
+    @JsonIgnore
     private final VariantContext variantContext;
 
     // numeric index of the alternative allele in {@link #vc}.
@@ -84,6 +86,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
 
     //bit of an orphan variable - look into refactoring this
+    @JsonIgnore
     private List<String> mutationRefList = null;
 
     private VariantEvaluation(Builder builder) {

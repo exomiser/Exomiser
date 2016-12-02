@@ -58,6 +58,12 @@
             <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative</groupId>
+            <artifactId>exomiser-spring-boot-test</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!--Spring framework-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -30,6 +30,7 @@
         <module>exomiser-core</module>
         <module>exomiser-spring-boot-autoconfigure</module>
         <module>exomiser-spring-boot-starter</module>
+        <module>exomiser-spring-boot-test</module>
         <module>exomiser-cli</module>
         <module>exomiser-db</module>
         <module>exomiser-rest-prioritiser</module>

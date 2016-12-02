@@ -2,7 +2,7 @@ package org.monarchinitiative.exomiser.web;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.monarchinitiative.exomiser.autoconfigure.ExomiserStubDataConfig;
+import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 

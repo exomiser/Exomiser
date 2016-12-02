@@ -19,13 +19,9 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser;
 
-import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.autoconfigure.EnableExomiser;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -38,8 +34,4 @@ public class ExomiserPrioritiserServer {
         SpringApplication.run(ExomiserPrioritiserServer.class, args);
     }
 
-    @Bean
-    public JannovarData stubJannovarData() {
-        return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.of());
-    }
 }

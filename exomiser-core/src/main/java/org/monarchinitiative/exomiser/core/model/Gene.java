@@ -19,6 +19,8 @@
 
 package org.monarchinitiative.exomiser.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
@@ -63,6 +65,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
+@JsonPropertyOrder({"geneSymbol", "entrezGeneId", "combinedScore", "filterScore", "priorityScore", "inheritanceModes", "variantEvaluations"})
 public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     /**
@@ -182,6 +185,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return variantEvaluations;
     }
 
+    @JsonIgnore
     public List<VariantEvaluation> getPassedVariantEvaluations() {
         return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).collect(toList());
     }
@@ -231,6 +235,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return true if the variants for this gene are compatible with autosomal
      * recessive inheritance, otherwise false.
      */
+    @JsonIgnore
     public boolean isCompatibleWithRecessive() {
         return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
     }
@@ -239,6 +244,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return true if the variants for this gene are compatible with autosomal
      * dominant inheritance, otherwise false.
      */
+    @JsonIgnore
     public boolean isCompatibleWithDominant() {
         return inheritanceModes.contains(ModeOfInheritance.AUTOSOMAL_DOMINANT);
     }
@@ -247,6 +253,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return true if the variants for this gene are consistent with X
      * chromosomal inheritance, otherwise false.
      */
+    @JsonIgnore
     public boolean isConsistentWithX() {
         return inheritanceModes.contains(ModeOfInheritance.X_RECESSIVE);
     }
@@ -254,6 +261,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     /**
      * @return true if the gene is X chromosomal, otherwise false.
      */
+    @JsonIgnore
     public boolean isXChromosomal() {
         if (variantEvaluations.isEmpty()) {
             return false;
@@ -262,6 +270,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return ve.isXChromosomal();
     }
 
+    @JsonIgnore
     public boolean isYChromosomal() {
         if (variantEvaluations.isEmpty()) {
             return false;

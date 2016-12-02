@@ -25,6 +25,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -48,11 +49,15 @@ public class AnalysisResults {
     private final Path pedPath;
     private final String probandSampleName;
 
+    @JsonIgnore
     private final VCFHeader vcfHeader;
+    @JsonIgnore
     private final List<String> sampleNames;
+    @JsonIgnore
     private final Pedigree pedigree;
 
     private final List<Gene> genes;
+    @JsonIgnore
     private final List<VariantEvaluation> variantEvaluations;
 
     public AnalysisResults(Builder builder) {
@@ -103,6 +108,7 @@ public class AnalysisResults {
         return variantEvaluations;
     }
 
+    @JsonIgnore
     public List<VariantEvaluation> getUnAnnotatedVariantEvaluations() {
         return variantEvaluations.stream().filter(varEval -> !varEval.hasAnnotations()).collect(toList());
     }

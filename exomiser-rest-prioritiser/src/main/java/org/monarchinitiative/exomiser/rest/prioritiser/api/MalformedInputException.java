@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@ResponseStatus(HttpStatus.NOT_FOUND)
+@ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
 public class MalformedInputException extends RuntimeException {
 
     public MalformedInputException() {
