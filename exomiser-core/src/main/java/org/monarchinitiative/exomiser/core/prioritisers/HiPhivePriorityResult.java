@@ -219,13 +219,13 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
                 case HUMAN:
                     DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
                     String diseaseLink = makeDiseaseLink(diseaseModel.getDiseaseId(), diseaseModel.getDiseaseTerm());
-                    stringBuilder.append(String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to %s associated with %s.</dt>", stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), diseaseLink, modelPhenotypeMatch.getHumanGeneSymbol()));
+                    stringBuilder.append(String.format("<dl><dt>Proximity score %.3f in <a href=\"%s\">interactome to %s</a> and phenotypic similarity %.3f to %s associated with %s.</dt>", ppiScore, stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), diseaseLink, modelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
                 case MOUSE:
-                    stringBuilder.append(String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to mouse mutant of %s.</dt>", stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getHumanGeneSymbol()));
+                    stringBuilder.append(String.format("<dl><dt>Proximity score %.3f in <a href=\"%s\">interactome to %s</a> and phenotypic similarity %.3f to mouse mutant of %s.</dt>", ppiScore, stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), modelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
                 case FISH:
-                    stringBuilder.append(String.format("<dl><dt>Proximity in <a href=\"%s\">interactome to %s</a> and phenotypic similarity to fish mutant of %s.</dt>", stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getHumanGeneSymbol()));
+                    stringBuilder.append(String.format("<dl><dt>Proximity score %.3f in <a href=\"%s\">interactome to %s</a> and phenotypic similarity %.3f to fish mutant of %s.</dt>", ppiScore, stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), modelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
             }
             Map<PhenotypeTerm, PhenotypeMatch> bestModelPhenotypeMatches = getPhenotypeTermPhenotypeMatchMap(modelPhenotypeMatch);
