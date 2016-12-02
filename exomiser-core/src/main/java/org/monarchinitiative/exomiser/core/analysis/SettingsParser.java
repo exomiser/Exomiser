@@ -104,7 +104,7 @@ public class SettingsParser {
         return runFullAnalysis ? AnalysisMode.FULL : AnalysisMode.SPARSE;
     }
 
-    public List<AnalysisStep> makeAnalysisSteps(FilterSettings filterSettings, PrioritiserSettings prioritiserSettings) {
+    private List<AnalysisStep> makeAnalysisSteps(FilterSettings filterSettings, PrioritiserSettings prioritiserSettings) {
         List<AnalysisStep> steps = new ArrayList<>();
         steps.addAll(makeFilters(filterSettings));
         //Prioritisers should ALWAYS run last.

@@ -101,7 +101,8 @@ public class IntervalFilter implements VariantFilter {
 
     @Override
     public String toString() {
-        return filterType + " filter chromosome=" + interval.getChromosome() + ", from=" + interval.getStart() + ", to=" + interval.getEnd() + ", interval=" + interval;
+        return "IntervalFilter{" +
+                "interval=" + interval +
+                '}';
     }
-
 }

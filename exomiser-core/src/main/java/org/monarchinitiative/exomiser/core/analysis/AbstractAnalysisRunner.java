@@ -60,13 +60,13 @@ import static java.util.stream.Collectors.toList;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public abstract class AbstractAnalysisRunner implements AnalysisRunner {
+abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
     private final JannovarData jannovarData;
     private final VariantDataService variantDataService;
-    protected final VariantFilterRunner variantFilterRunner;
+    final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 
     public AbstractAnalysisRunner(JannovarData jannovarData, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {

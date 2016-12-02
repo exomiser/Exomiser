@@ -176,7 +176,7 @@ public class SubmitJobController {
                 if (line.startsWith("#CHROM")) {
                     readingVariants = true;
                 }
-                while (readingVariants == true) {
+                while (readingVariants) {
                     variantCount++;
                 }
             }
@@ -187,7 +187,7 @@ public class SubmitJobController {
         return variantCount;
     }
 
-    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) throws NumberFormatException {
+    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) {
 
         Settings settings = Settings.builder()
                 .vcfFilePath(vcfPath)

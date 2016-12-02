@@ -44,7 +44,7 @@ import static java.util.stream.Collectors.toSet;
  * @since 7.0.0
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class AnalysisStepChecker {
+class AnalysisStepChecker {
 
     Logger logger = LoggerFactory.getLogger(AnalysisStepChecker.class);
 
