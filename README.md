@@ -70,5 +70,8 @@ private final Exomiser exomiser;
     AnalysisResults analysisResults = exomiser.run(analysis);
 ```
  
+####Memory usage
 
-
+Analysing whole genomes using the ``AnalysisMode.FULL`` or ``AnalysisMode.SPARSE`` will use a lot of RAM (~16GB for 4.5 million variants without any extra variant data being loaded) the standard Java GC will fail to cope well with these.
+Using the G1GC should solve this issue. e.g. add ``-XX:+UseG1GC`` to your ``java -jar -Xmx...`` incantation. 
+ 
