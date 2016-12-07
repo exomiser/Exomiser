@@ -25,12 +25,14 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.bridge.CannotAnnotateMendelianInheritance;
+import de.charite.compbio.jannovar.mendel.bridge.VariantContextMendelianAnnotator;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
-import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -54,11 +56,11 @@ public class InheritanceModeAnalyser {
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
     private final ModeOfInheritance modeOfInheritance;
-    private final InheritanceCompatibilityChecker inheritanceCompatibilityChecker;
+    private final VariantContextMendelianAnnotator inheritanceAnnotator;
 
     public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
         this.modeOfInheritance = modeOfInheritance;
-        inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
+        inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree);
     }
 
     /**
@@ -94,7 +96,9 @@ public class InheritanceModeAnalyser {
 
         if (!compatibleVariants.isEmpty()) {
             logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
-            gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
+            Set<ModeOfInheritance> modes = new HashSet<>();
+            modes.add(modeOfInheritance);
+            gene.setInheritanceModes(modes);
             setVariantEvaluationInheritanceModes(geneVariants, compatibleVariants);
         }
     }
@@ -109,7 +113,7 @@ public class InheritanceModeAnalyser {
 
     /**
      * A {@link VariantContext} cannot be used directly as a key in a Map or put into a Set as it does not override equals or hashCode.
-     * Also simply using toString isn't an option as the compatible variants returned from the {@link #inheritanceCompatibilityChecker}
+     * Also simply using toString isn't an option as the compatible variants returned from the {@link #inheritanceAnnotator}
      * are different instances and have had their genotype strings changed. This method solves these problems.
      */
     private String toKeyValue(VariantContext variantContext) {
@@ -123,11 +127,16 @@ public class InheritanceModeAnalyser {
         try {
             //Make sure only ONE variantContext is added if there are multiple alleles as there will be one VariantEvaluation per allele.
             //Having multiple copies of a VariantContext might cause problems with the comp het calculations 
-            Set<VariantContext> geneVariants = passedVariantEvaluations.stream().map(VariantEvaluation::getVariantContext).collect(toSet());
-            compatibleVariants = inheritanceCompatibilityChecker.getCompatibleWith(new ArrayList<>(geneVariants));
-        } catch (InheritanceCompatibilityCheckerException ex) {
-            logger.error(null, ex);
-        }
+			Set<VariantContext> geneVariants = passedVariantEvaluations.stream()
+					.map(VariantEvaluation::getVariantContext).collect(toSet());
+			ImmutableMap<ModeOfInheritance, ImmutableList<VariantContext>> compatibleMap = inheritanceAnnotator
+					.computeCompatibleInheritanceModes(new ArrayList<>(geneVariants));
+			
+			compatibleVariants.addAll(compatibleMap.get(modeOfInheritance));
+
+		} catch (CannotAnnotateMendelianInheritance ex) {
+			logger.error(null, ex);
+		}
         return compatibleVariants;
     }
 

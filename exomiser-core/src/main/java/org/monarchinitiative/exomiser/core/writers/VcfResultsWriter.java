@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.htsjdk.InfoFields;
 import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
@@ -79,8 +78,8 @@ public class VcfResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults.getVcfHeader(),
                 outFile.toString(),
-                InfoFields.BOTH,
-                getAdditionalHeaderLines())) {
+                getAdditionalHeaderLines(), 
+                false)) {
             writeData(analysisResults, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
@@ -92,7 +91,6 @@ public class VcfResultsWriter implements ResultsWriter {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults.getVcfHeader(),
                 baos,
-                InfoFields.BOTH,
                 getAdditionalHeaderLines())) {
             writeData(analysisResults, settings.outputPassVariantsOnly(), writer);
         }

@@ -44,11 +44,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
+<!--         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-inheritance-checker</artifactId>
             <version>${jannovar.version}</version>
-        </dependency>
+        </dependency> -->
         <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
