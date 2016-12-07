@@ -49,7 +49,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.organization>Genome Research Limited and Charité - Universitäsmedizin Berlin</project.organization>
+        <project.organization>The Monarch Initiative</project.organization>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.18</jannovar.version>
         <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
@@ -167,10 +167,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.17</version>
                 <configuration>
-                    <skipTests>false</skipTests>
-                    <forkCount>3</forkCount> 
+                    <forkCount>3</forkCount>
                     <reuseForks>true</reuseForks>
-                    <!--<argLine>-Xms512m -Xmx1024m ${argLine}</argLine>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -179,9 +177,9 @@
                 <version>0.7.2.201409121644</version>
                 <configuration>
                     <excludes>
-                        <!--		 Application starter 
+                        <!--		 Application starter
                         <exclude>ac/simons/biking2/Application.class</exclude>
-                         Configuration 
+                         Configuration
                         <exclude>ac/simons/biking2/config/*</exclude>			-->
                     </excludes>
                 </configuration>
@@ -212,7 +210,7 @@
                                         <limit>
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <!--                                                <minimum>0.60</minimum>-->
+                                            <!--<minimum>0.60</minimum>-->
                                         </limit>
                                     </limits>
                                 </rule>

@@ -177,28 +177,32 @@ and open the template in the editor.
                                         </div>
                                     </div>
                                     <div class="row"
-                                         th:each="variantEvaluation: ${gene.variantEvaluations}" 
+                                         th:each="variantEvaluation: ${gene.variantEvaluations}"
                                          th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
                                         <div class="col-sm-12">
                                             <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
-                                            <b th:text=" |${variantEvaluation.chromosomalVariant} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
+                                            <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|"> chr10:g.123256215T>G [0/1]</b>
                                             <th:block th:each="frequencyData: ${variantEvaluation.frequencyData}">
                                                 <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
+                                                   th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
                                                 </a>
-                                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
-                                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)
+                                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
+                                                   th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)
                                                 </a>
                                             </th:block>
                                         </div>
-                                        <div class="col-sm-6" > 
+                                        <!--<div class="col-sm-12">-->
+                                        <!--</div>-->
+                                        <div class="col-sm-6" >
+                                            <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant score: 0.600</b>
+                                            <span class="label label-info" th:if="${variantEvaluation.contributesToGeneScore()}" th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
                                                 <dd th:each="annotation: ${variantEvaluation.annotations}"
-                                                    th:with="ucscData=${#strings.listSplit(annotation.transcript.accession,':')}, ucscId=${ucscData[0]}">
-                                                        <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}"
-                                                           th:text="${gene.getGeneSymbol() + ':' + annotation.getTranscript().getAccession() + ':' + annotation.getCDSNTChangeStr() + ':' + annotation.getProteinChangeStr()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A
-                                                        </a>
+                                                    th:with="ucscData=${#strings.listSplit(annotation.accession,':')}, ucscId=${ucscData[0]}">
+                                                    <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A
+                                                    </a>
                                                 </dd>
                                             </dl>
                                         </div>
