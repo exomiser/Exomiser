@@ -120,11 +120,11 @@ public class GeneFactory {
             Collection<TranscriptModel> transcriptModels = jannovarData.getTmByGeneSymbol().get(geneSymbol);
             String geneId = transcriptModels.stream()
                     .filter(Objects::nonNull)
-                    .filter(transcriptModel -> transcriptModel.getGeneID() != null)
-                    .filter(transcriptModel -> !transcriptModel.getGeneID().equals("null"))
+                    .filter(transcriptModel -> transcriptModel.getAltGeneIDs().containsKey("ENTREZ_ID"))
+//                    .filter(transcriptModel -> !transcriptModel.getGeneID().equals("null"))
                     // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
                     // for UCSC. At this point, there is a hard dependency on using the UCSC database.
-                    .map(transcriptModel -> transcriptModel.getGeneID().substring("ENTREZ".length()))
+                    .map(transcriptModel -> transcriptModel.getAltGeneIDs().get("ENTREZ_ID"))
                     .distinct()
                     .findFirst()
                     .orElse(geneSymbol);
