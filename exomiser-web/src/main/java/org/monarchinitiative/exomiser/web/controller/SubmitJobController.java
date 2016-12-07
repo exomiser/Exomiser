@@ -85,6 +85,7 @@ public class SubmitJobController {
     public String submit(
             @RequestParam(value = "vcf") MultipartFile vcfFile,
             @RequestParam(value = "ped", required = false) MultipartFile pedFile,
+            @RequestParam(value = "proband", required = false) String proband,
             @RequestParam(value = "disease", required = false) String diseaseId,
             @RequestParam(value = "phenotypes", required = false) List<String> phenotypes,
             @RequestParam(value = "min-call-quality", required = false) Float minimumQuality,
@@ -131,7 +132,7 @@ public class SubmitJobController {
             return "resubmitWithFewerVariants";
         }
 
-        Analysis analysis = buildAnalysis(vcfPath, pedPath, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
+        Analysis analysis = buildAnalysis(vcfPath, pedPath, proband, diseaseId, phenotypes, geneticInterval, minimumQuality, removeDbSnp, keepOffTarget, keepNonPathogenic, modeOfInheritance, frequency, makeGenesToKeep(genesToFilter), prioritiser);
         AnalysisResults analysisResults = exomiser.run(analysis);
 
         Path outputDir = Paths.get(System.getProperty("java.io.tmpdir"), analysisId.toString());
@@ -187,11 +188,12 @@ public class SubmitJobController {
         return variantCount;
     }
 
-    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) {
+    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) {
 
         Settings settings = Settings.builder()
                 .vcfFilePath(vcfPath)
                 .pedFilePath(pedPath)
+                .probandSampleName(proband)
                 .hpoIdList(phenotypes)
                 .modeOfInheritance(ModeOfInheritance.valueOf(modeOfInheritance))
                 .minimumQuality(minimumQuality == null ? 0 : minimumQuality)
