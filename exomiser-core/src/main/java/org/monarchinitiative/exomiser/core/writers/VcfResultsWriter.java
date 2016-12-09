@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.htsjdk.InfoFields;
 import de.charite.compbio.jannovar.htsjdk.VariantContextWriterConstructionHelper;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
@@ -79,8 +78,8 @@ public class VcfResultsWriter implements ResultsWriter {
         Path outFile = Paths.get(outFileName);
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults.getVcfHeader(),
                 outFile.toString(),
-                InfoFields.BOTH,
-                getAdditionalHeaderLines())) {
+                getAdditionalHeaderLines(),
+                false)) {
             writeData(analysisResults, settings.outputPassVariantsOnly(), writer);
         }
         logger.info("{} results written to file {}.", OUTPUT_FORMAT, outFileName);
@@ -92,7 +91,6 @@ public class VcfResultsWriter implements ResultsWriter {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (VariantContextWriter writer = VariantContextWriterConstructionHelper.openVariantContextWriter(analysisResults.getVcfHeader(),
                 baos,
-                InfoFields.BOTH,
                 getAdditionalHeaderLines())) {
             writeData(analysisResults, settings.outputPassVariantsOnly(), writer);
         }
@@ -128,7 +126,7 @@ public class VcfResultsWriter implements ResultsWriter {
      *
      * <code>writer</code> is already completely initialized, including all
      * headers, so data is written out directly for each
-     * {@link VariantEvalution} in <code>analysisResults</code>.
+     * {@link VariantEvaluation} in <code>analysisResults</code>.
      *
      * @param analysisResults data set to write out
      * @param writer writer to write to
@@ -156,7 +154,7 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     private Multimap<String, VariantEvaluation> mapVariantEvaluationsToVariantContextString(List<VariantEvaluation> variantEvaluations) {
-        //using ArrayListMultimap is important as the order of the values (alleles) must be preserved so that they match the order listed in the ALT fildl
+        //using ArrayListMultimap is important as the order of the values (alleles) must be preserved so that they match the order listed in the ALT field
         ArrayListMultimap<String, VariantEvaluation> geneVariants = ArrayListMultimap.create();
         for (VariantEvaluation variantEvaluation : variantEvaluations) {
             geneVariants.put(variantContextKeyValue(variantEvaluation.getVariantContext()), variantEvaluation);
@@ -167,7 +165,7 @@ public class VcfResultsWriter implements ResultsWriter {
     /**
      * A {@link VariantContext} cannot be used directly as a key in a Map or put into a Set as it does not override equals or hashCode.
      * Also simply using toString isn't an option as the compatible variants returned from the
-     * {@link InheritanceModeAnalyser#inheritanceCompatibilityChecker}
+     * {@link InheritanceModeAnalyser#checkInheritanceCompatibilityOfPassedVariants(Gene)}
      * are different instances and have had their genotype strings changed. This method solves these problems.
      */
     private String variantContextKeyValue(VariantContext variantContext) {
@@ -235,7 +233,8 @@ public class VcfResultsWriter implements ResultsWriter {
             builder.attribute("EXOMISER_GENE_PHENO_SCORE", gene.getPriorityScore());
             builder.attribute("EXOMISER_GENE_VARIANT_SCORE", gene.getFilterScore());
             builder.attribute("EXOMISER_VARIANT_SCORE", buildVariantScore(variantEvaluations)); //this needs a list of VariantEvaluations to concatenate the fields from in Allele order
-//            builder.attribute("EXOMISER_VARIANT_EFFECT", ve.getVariantEffect());
+//            builder.attribute("EFFECT", buildVariantEffects(variantEvaluations));
+//            builder.attribute("HGVS", buildHgvs(variantEvaluations));
         } else {
             builder.attribute("EXOMISER_WARNING", "VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS");
         }
@@ -251,6 +250,30 @@ public class VcfResultsWriter implements ResultsWriter {
             variantScoreBuilder.append(',').append(variantEvaluations.get(i).getVariantScore());
         }
         return variantScoreBuilder.toString();
+    }
+
+    private String buildVariantEffects(List<VariantEvaluation> variantEvaluations) {
+        if (variantEvaluations.size() == 1) {
+            return String.valueOf(variantEvaluations.get(0).getVariantEffect());
+        }
+        StringBuilder variantEfectBuilder = new StringBuilder();
+        variantEfectBuilder.append(variantEvaluations.get(0).getVariantEffect());
+        for (int i = 1; i < variantEvaluations.size(); i++) {
+            variantEfectBuilder.append(',').append(variantEvaluations.get(i).getVariantEffect());
+        }
+        return variantEfectBuilder.toString();
+    }
+
+    private String buildHgvs(List<VariantEvaluation> variantEvaluations) {
+        if (variantEvaluations.size() == 1) {
+            return String.valueOf(variantEvaluations.get(0).getHgvsGenome());
+        }
+        StringBuilder variantHgvsBuilder = new StringBuilder();
+        variantHgvsBuilder.append(variantEvaluations.get(0).getHgvsGenome());
+        for (int i = 1; i < variantEvaluations.size(); i++) {
+            variantHgvsBuilder.append(',').append(variantEvaluations.get(i).getHgvsGenome());
+        }
+        return variantHgvsBuilder.toString();
     }
 
     /**

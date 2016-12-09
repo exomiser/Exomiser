@@ -44,10 +44,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Until Jannovar issue #285 https://github.com/charite/jannovar/issues/285 is fixed we'll still use the old version-->
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-inheritance-checker</artifactId>
             <version>${jannovar.version}</version>
+        </dependency>
+        <!--Guava 0.19 is required by Jannovar-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
         </dependency>
         <dependency>
             <groupId>org.jblas</groupId>
@@ -137,11 +144,11 @@
             <artifactId>mapdb</artifactId>
             <version>1.0.8</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>1.3.1.RELEASE</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.boot</groupId>-->
+            <!--<artifactId>spring-boot-autoconfigure</artifactId>-->
+            <!--<version>1.3.1.RELEASE</version>-->
+        <!--</dependency>-->
     </dependencies>
     
     <build>

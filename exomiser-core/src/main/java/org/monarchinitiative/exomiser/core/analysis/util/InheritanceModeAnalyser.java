@@ -24,9 +24,10 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.bridge.CannotAnnotateMendelianInheritance;
+import de.charite.compbio.jannovar.mendel.bridge.VariantContextMendelianAnnotator;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
@@ -38,9 +39,12 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
 /**
  * This class allows us to do segregation analysis for the variants supplied to
@@ -53,12 +57,22 @@ public class InheritanceModeAnalyser {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
+    private static final boolean USE_NEW_JANNOVAR_INHERITANCE_CHECKER = false;
+    private final VariantContextMendelianAnnotator inheritanceAnnotator;
+
     private final ModeOfInheritance modeOfInheritance;
+
     private final InheritanceCompatibilityChecker inheritanceCompatibilityChecker;
+
+    private final Set<ModeOfInheritance> compatibleModes;
 
     public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
         this.modeOfInheritance = modeOfInheritance;
+        inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree);
+
         inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
+
+        compatibleModes = Sets.immutableEnumSet(modeOfInheritance);
     }
 
     /**
@@ -93,8 +107,8 @@ public class InheritanceModeAnalyser {
         List<VariantContext> compatibleVariants = getCompatibleVariantContexts(passedVariantEvaluations);
 
         if (!compatibleVariants.isEmpty()) {
-            logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
-            gene.setInheritanceModes(inheritanceCompatibilityChecker.getInheritanceModes());
+            logger.info("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
+            gene.setInheritanceModes(compatibleModes);
             setVariantEvaluationInheritanceModes(geneVariants, compatibleVariants);
         }
     }
@@ -109,7 +123,7 @@ public class InheritanceModeAnalyser {
 
     /**
      * A {@link VariantContext} cannot be used directly as a key in a Map or put into a Set as it does not override equals or hashCode.
-     * Also simply using toString isn't an option as the compatible variants returned from the {@link #inheritanceCompatibilityChecker}
+     * Also simply using toString isn't an option as the compatible variants returned from the {@link #inheritanceAnnotator}
      * are different instances and have had their genotype strings changed. This method solves these problems.
      */
     private String toKeyValue(VariantContext variantContext) {
@@ -117,27 +131,30 @@ public class InheritanceModeAnalyser {
     }
 
     private List<VariantContext> getCompatibleVariantContexts(List<VariantEvaluation> passedVariantEvaluations) {
-        List<VariantContext> compatibleVariants = new ArrayList<>();
         //This needs to be done using all the variants in the gene in order to be able to check for compound heterozygous variations
         //otherwise it would be simpler to just call this on each variant in turn
         try {
             //Make sure only ONE variantContext is added if there are multiple alleles as there will be one VariantEvaluation per allele.
             //Having multiple copies of a VariantContext might cause problems with the comp het calculations 
-            Set<VariantContext> geneVariants = passedVariantEvaluations.stream().map(VariantEvaluation::getVariantContext).collect(toSet());
-            compatibleVariants = inheritanceCompatibilityChecker.getCompatibleWith(new ArrayList<>(geneVariants));
-        } catch (InheritanceCompatibilityCheckerException ex) {
+            List<VariantContext> geneVariants = passedVariantEvaluations.stream().map(VariantEvaluation::getVariantContext).distinct().collect(toList());
+            if (USE_NEW_JANNOVAR_INHERITANCE_CHECKER) {
+                ImmutableMap<ModeOfInheritance, ImmutableList<VariantContext>> compatibleMap = inheritanceAnnotator.computeCompatibleInheritanceModes(geneVariants);
+                return compatibleMap.getOrDefault(modeOfInheritance, ImmutableList.of());
+            } else {
+                return inheritanceCompatibilityChecker.getCompatibleWith(geneVariants);
+            }
+        } catch (CannotAnnotateMendelianInheritance | InheritanceCompatibilityCheckerException ex) {
             logger.error(null, ex);
         }
-        return compatibleVariants;
+        return Collections.emptyList();
     }
 
     private void setVariantEvaluationInheritanceModes(Multimap<String, VariantEvaluation> geneVariants, List<VariantContext> compatibleVariants) {
-        compatibleVariants.stream()
-                .forEach(variantContext -> {
+        compatibleVariants.forEach(variantContext -> {
                     //using toStringWithoutGenotypes as the genotype string gets changed and VariantContext does not override equals or hashcode so this cannot be used as a key
                     Collection<VariantEvaluation> variants = geneVariants.get(toKeyValue(variantContext));
                     variants.forEach(variant -> {
-                        variant.setInheritanceModes(EnumSet.of(modeOfInheritance));
+                        variant.setInheritanceModes(compatibleModes);
                         logger.debug("{}: {}", variant.getInheritanceModes(), variant);
                     });
                 });

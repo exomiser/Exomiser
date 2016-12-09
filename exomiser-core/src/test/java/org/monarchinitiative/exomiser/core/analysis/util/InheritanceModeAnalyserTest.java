@@ -394,7 +394,7 @@ public class InheritanceModeAnalyserTest {
     }
 
     private String variantString(VariantEvaluation variant) {
-        return String.format("%s\t%s\t%s\t%s\t%s",variant.getChromosome(), variant.getRef(), variant.getAlt(), variant.getAltAlleleId(), variant.getGenotypeString());
+        return String.format("%s\t%s\t%s\t%s\t%s\tcompatibleWith=%s",variant.getChromosome(), variant.getRef(), variant.getAlt(), variant.getAltAlleleId(), variant.getGenotypeString(), variant.getInheritanceModes());
     }
 
     /**
