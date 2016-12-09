@@ -3,34 +3,42 @@ The Exomiser - Web Code
 
 ##Setup
 
-This is designed so that the database connection is provided to the application 
-by the container using JNDI. Here we're using Tomcat so you need to configure 
-Tomcat to connect to the database. In this case we're using the embedded version
+This is a Spring Boot jar application meaning it runs using its own embedded Tomcat server. In this case we're using the embedded version
 of the H2 database as this performs well, in particular because the data is local
 to the machine.
 
-To do this you will need to:
+Once built, to run the application will need to:
 
-1. Add H2.jar to the tomcat /lib directory   
-2. Add the following snippet to tomcat server.xml under the GlobalNamingResources section:
-
-    \<Resource name="jdbc/exomiserDataSource" auth="Container" type="javax.sql.DataSource"
-        maxActive="100" 
-        maxIdle="3" 
-        minIdle="3" 
-        maxWait="10000" 
-        factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
-        username="sa" 
-        password="" 
-        driverClassName="org.h2.Driver"
-        validationQuery="select 1" 
-        testOnBorrow="true" 
-        logAbandoned="true"
-        url="jdbc:h2:file:{$path_to_h2_database};MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_ON_EXIT=TRUE;AUTO_SERVER=TRUE;"/>
+  1. Have the exomiser-cli data directory somewhere visible to the machine you're running the server from.
+  1. Copy the ${project.name}-${project.version}.jar to the machine you want to run it from.
+  1. Make sure you have the ``application.properties`` file alongside the jar file. The defaults can be found in /src/main/resources/application.properties:
+  
+  ```properties
+     
+    #due to hardware and page timeout constraints
+    #we need to limit the maximum number of variants which will be analysed
+    maxVariants=100000
+    #max genes especially hits the RAM usage for rendering a page so this is limited
+    maxGenes=200
     
-3. Add this snippet to the context.xml of the WAR file (this is already done, but if you change the name, you'll need to change this):
-        
-    \<ResourceLink global="jdbc/exomiserDataSource" name="jdbc/exomiserDataSource" type="javax.sql.DataSource"/>
-
-4. If you're using a pre-built war file change the path of dataDir in WEB-INF/classes/exomiser.properties to point to the location of these files on your webserver.
-
+    exomiser.data-directory=/full/system/path/to/exomiser/data
+  ```
+##Running
+Launch the application by intoning the incantation thus:
+ ```shell
+   java -XX:+useG1GC -Xms8G -Xmx8G ${project.name}-${project.version}.jar
+ ```
+ The port will default to 8080, but it can be changed by specifying it either on the command line:
+ ```shell
+   java -XX:+useG1GC -Xms8G -Xmx8G ${project.name}-${project.version}.jar --server.port=8090
+ ```
+ or by adding it to the ``application.properties``
+ ```properties
+   server.port=8090
+ ```
+ Further details can be found on the [Spring Boot Deployment](http://docs.spring.io/spring-boot/docs/current/reference/html/deployment.html) reference.
+ 
+ Check all is well by visiting the submission page:
+ ```
+   http://localhost:8080/exomiser/submit
+ ```
