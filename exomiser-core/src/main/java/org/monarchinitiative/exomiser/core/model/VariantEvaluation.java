@@ -658,7 +658,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         }
 
         /**
-         * @return a generic one-based position variant context with a heterozygous genotype with no attributes.
+         * @return a generic one-based position variant context with a heterozygous genotype having no attributes.
          */
         private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual) {
             Allele refAllele = Allele.create(ref, true);
@@ -671,13 +671,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             GenotypeBuilder gtBuilder = new GenotypeBuilder("sample").noAttributes();
             //default to HETEROZYGOUS
             gtBuilder.alleles(alleles);
-//            gtBuilder.attribute("RD", readDepth);
 
             // build VariantContext
             vcBuilder.loc("chr" + chr, pos, (pos - 1) + ref.length());
             vcBuilder.alleles(alleles);
             vcBuilder.genotypes(gtBuilder.make());
-//            vcBuilder.attribute("RD", readDepth);
             vcBuilder.log10PError(-0.1 * qual);
 
             return vcBuilder.make();

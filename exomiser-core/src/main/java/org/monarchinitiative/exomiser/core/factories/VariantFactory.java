@@ -25,7 +25,6 @@
 package org.monarchinitiative.exomiser.core.factories;
 
 import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.AnnotationLocation;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
@@ -239,8 +238,10 @@ public class VariantFactory {
 
         return new VariantEvaluation.Builder(chr, pos, ref, alt)
                 //HTSJDK derived data are only used for writing out the
-                //VCF/TSV-VARIANT formatted files
-                //TODO: remove this direct dependency
+                //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
+                //can be removed from InheritaceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
+                //need most/all of the info in order to write it all out again.
+                //TODO: remove this direct dependency without it the RAM usage can be halved such that a SPARSE analysis of the POMP sample can be held comfortably in 8GB RAM
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
@@ -252,7 +253,6 @@ public class VariantFactory {
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
                 .geneId(buildGeneId(highestImpactAnnotation))
                 .variantEffect(variantEffect)
-//                .annotations(variantAnnotations.getAnnotations())
                 .annotations(buildTranscriptAnnotations(variantAnnotations.getAnnotations()))
                 .build();
     }
@@ -266,7 +266,6 @@ public class VariantFactory {
     }
 
     private TranscriptAnnotation toTranscriptAnnotation(Annotation annotation) {
-        //TODO: could be optimised by returning TranscriptAnnotation.EMPTY in empty cases
          return TranscriptAnnotation.builder()
                 .variantEffect(annotation.getMostPathogenicVarType())
                 .accession(getTranscriptAccession(annotation))
@@ -301,34 +300,6 @@ public class VariantFactory {
         }
 
         return Integer.MIN_VALUE;
-//
-//        if (alt.equals("-")) {
-//            return 0;
-//        }
-//        String annotationString = annotation.toVCFAnnoString(alt);
-//        String[] tokens = annotationString.split("\\|");
-//        if (tokens.length <= 14) {
-//            return 0;
-//        }
-//        String distance = tokens[14];
-//        if (distance.isEmpty()) {
-//            return 0;
-//        }
-//        return Integer.parseInt(distance);
-    }
-
-    private String exonIntronNumber(Annotation annotation) {
-        StringJoiner stringJoiner = new StringJoiner("");
-        AnnotationLocation annotationLocation = annotation.getAnnoLoc();
-        if (annotationLocation != null) {
-            AnnotationLocation.RankType rankType = annotationLocation.getRankType();
-            if (rankType == AnnotationLocation.RankType.EXON) {
-                return stringJoiner.add("exon").add(Integer.toString(annotationLocation.getRank() + 1)).toString();
-            } else if (rankType == AnnotationLocation.RankType.INTRON) {
-                return stringJoiner.add("intron").add(Integer.toString(annotationLocation.getRank() + 1)).toString();
-            }
-        }
-        return "";
     }
 
     /**
