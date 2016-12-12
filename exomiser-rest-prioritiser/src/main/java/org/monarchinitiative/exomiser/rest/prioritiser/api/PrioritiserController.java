@@ -56,7 +56,7 @@ public class PrioritiserController {
     public PrioritiserController(PriorityFactory priorityFactory, JannovarData jannovarData) {
         this.priorityFactory = priorityFactory;
         this.geneIdentifiers = GeneFactory.createKnownGeneIdentifiers(jannovarData);
-        logger.info("Created HumanGeneIdentifier cache with {} entries", geneIdentifiers.size());
+        logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 
     @GetMapping(value = "about")

@@ -1,6 +1,6 @@
 package org.monarchinitiative.exomiser.rest.prioritiser.parsers;
 
-import org.monarchinitiative.exomiser.core.model.HumanGeneIdentifier;
+import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public class HgncParser {
         columnIndex = makeColumnIndex(hgncTxt);
     }
 
-    public Stream<HumanGeneIdentifier> parseGeneIdentifiers() {
+    public Stream<GeneIdentifier> parseGeneIdentifiers() {
         return parseGeneIdentifiers(hgncTxt);
     }
 
@@ -63,30 +63,28 @@ public class HgncParser {
         return Stream.empty();
     }
 
-    private Stream<HumanGeneIdentifier> parseGeneIdentifiers(Path hgncCompleteSetTxtPath) {
+    private Stream<GeneIdentifier> parseGeneIdentifiers(Path hgncCompleteSetTxtPath) {
         return streamFile(hgncCompleteSetTxtPath).skip(1).map(parseGeneIdentifier());
     }
 
-    private Function<String, HumanGeneIdentifier> parseGeneIdentifier() {
+    private Function<String, GeneIdentifier> parseGeneIdentifier() {
         return line -> {
 //            System.out.println(line);
             String[] tokens = line.split("\t");
 
             if ("Entry Withdrawn".equals(getField(tokens, "status"))) {
-                return HumanGeneIdentifier.builder()
+                return GeneIdentifier.builder()
                         .hgncId(getField(tokens, "hgnc_id"))
                         .geneSymbol(getField(tokens, "symbol"))
-                        .withdrawn(true)
+//                        .withdrawn(true)
                         .build();
             }
 
-            return HumanGeneIdentifier.builder()
-                    .hgncId(getField(tokens, "hgnc_id"))
+            return GeneIdentifier.builder()
+                    .geneId(getField(tokens, "entrez_id"))
                     .geneSymbol(getField(tokens, "symbol"))
-                    .geneName(getField(tokens, "name"))
-                    .locusGroup(getField(tokens, "locus_group"))
-                    .locusType(getField(tokens, "locus_type"))
-                    .location(getField(tokens, "location"))
+                    .hgncId(getField(tokens, "hgnc_id"))
+                    .hgncSymbol(getField(tokens, "name"))
                     .entrezId(getField(tokens, "entrez_id"))
                     .ensemblId(getField(tokens, "ensembl_gene_id"))
                     .ucscId(getField(tokens, "ucsc_id"))
@@ -97,7 +95,7 @@ public class HgncParser {
     private String getField(String[] tokens, String fieldName) {
         int index = columnIndex.getOrDefault(fieldName, Integer.MAX_VALUE - 1);
         if (tokens.length < index + 1) {
-            return HumanGeneIdentifier.EMPTY_FIELD;
+            return GeneIdentifier.EMPTY_FIELD;
         }
         return tokens[index];
     }
