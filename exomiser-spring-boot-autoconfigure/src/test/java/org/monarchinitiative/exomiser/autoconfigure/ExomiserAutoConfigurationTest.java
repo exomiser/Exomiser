@@ -93,9 +93,9 @@ public class ExomiserAutoConfigurationTest {
     }
 
     @Test
-    public void ucscFilePathIsDefinedRelativeToDataPath() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.ucsc-file-name=ucsc.ser");
-        Path ucscFilePath = (Path) this.context.getBean("ucscFilePath");
+    public void transcriptFilePathIsDefinedRelativeToDataPath() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.transcript-data-file-name=ucsc.ser");
+        Path ucscFilePath = (Path) this.context.getBean("transcriptFilePath");
         assertThat(ucscFilePath.getFileName(), equalTo(Paths.get("ucsc.ser")));
         assertThat(ucscFilePath.getParent(), equalTo(TEST_DATA));
     }
@@ -105,13 +105,13 @@ public class ExomiserAutoConfigurationTest {
      */
     @Test(expected = RuntimeException.class)
     public void testJannovarData() {
-        load(NoJannovarOverrideConfiguration.class, TEST_DATA_ENV, "exomiser.ucsc-file-name=ucsc.ser");
+        load(NoJannovarOverrideConfiguration.class, TEST_DATA_ENV, "exomiser.transcript-data-file-name=ucsc.ser");
         JannovarData jannovarData = (JannovarData) this.context.getBean("jannovarData");
     }
 
     @Test
     public void testJannovarDataCanBeOverridden() {
-        load(BeanOverrideConfiguration.class, TEST_DATA_ENV, "exomiser.ucscFileName=ucsc.ser");
+        load(BeanOverrideConfiguration.class, TEST_DATA_ENV, "exomiser.transcriptDataFileName=hg19_ucsc.ser");
         JannovarData jannovarData = (JannovarData) this.context.getBean("jannovarData");
         assertThat(jannovarData, not(nullValue()));
     }

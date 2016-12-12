@@ -49,9 +49,9 @@ public class ExomiserProperties {
     private String cache = "none";
 
     /**
-     * name of ucsc.ser file created from Jannovar for defining known exon locations
+     * name of transcript data .ser file created from Jannovar for defining known exon locations
      */
-    private String ucscFileName = "ucsc_hg19.ser";
+    private String transcriptDataFileName = "hg19_ucsc.ser";
 
     //Random walk matrix for hiPhive and exomeWalker
     private String randomWalkFileName = "rw_string_9_05.gz";
@@ -118,12 +118,12 @@ public class ExomiserProperties {
         this.cache = cache;
     }
 
-    public String getUcscFileName() {
-        return ucscFileName;
+    public String getTranscriptDataFileName() {
+        return transcriptDataFileName;
     }
 
-    public void setUcscFileName(String ucscFileName) {
-        this.ucscFileName = ucscFileName;
+    public void setTranscriptDataFileName(String transcriptDataFileName) {
+        this.transcriptDataFileName = transcriptDataFileName;
     }
 
     public String getRandomWalkFileName() {

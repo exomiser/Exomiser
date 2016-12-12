@@ -109,11 +109,11 @@ public class ExomiserAutoConfiguration {
 
     //Variant analysis configuration
     @Bean
-    public Path ucscFilePath() {
-        String ucscFileNameValue = properties.getUcscFileName();
-        Path ucscFilePath = resolveRelativeToDataDir(ucscFileNameValue);
-        logger.debug("UCSC data file: {}", ucscFilePath.toAbsolutePath());
-        return ucscFilePath;
+    public Path transcriptFilePath() {
+        String transcriptFileNameValue = properties.getTranscriptDataFileName();
+        Path transcriptFilePath = resolveRelativeToDataDir(transcriptFileNameValue);
+        logger.debug("Transcript data file: {}", transcriptFilePath.toAbsolutePath());
+        return transcriptFilePath;
     }
 
     /**
@@ -122,11 +122,11 @@ public class ExomiserAutoConfiguration {
     @Lazy
     @Bean
     @ConditionalOnMissingBean
-    public JannovarData jannovarData() {
+    public JannovarData jannovarData(Path transcriptFilePath) {
         try {
-            return new JannovarDataSerializer(ucscFilePath().toString()).load();
+            return new JannovarDataSerializer(transcriptFilePath.toString()).load();
         } catch (SerializationException e) {
-            throw new ExomiserAutoConfigurationException("Could not load Jannovar data from " + ucscFilePath(), e);
+            throw new ExomiserAutoConfigurationException("Could not load Jannovar data from " + transcriptFilePath, e);
         }
     }
 
