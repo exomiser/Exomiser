@@ -24,6 +24,8 @@ import de.charite.compbio.jannovar.reference.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -62,6 +64,11 @@ public class GeneTranscriptModelBuilder {
     public GeneTranscriptModelBuilder addExon(int start, int end) {
         GenomeInterval exonRegion = getZeroBasedFwdStrandInterval(chr, start, end);
         builder.addExonRegion(exonRegion);
+        return this;
+    }
+
+    public GeneTranscriptModelBuilder addAltGeneIds(Map<String, String> altGeneIds) {
+        builder.getAltGeneIDs().putAll(altGeneIds);
         return this;
     }
 

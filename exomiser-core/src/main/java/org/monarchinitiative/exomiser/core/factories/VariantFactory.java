@@ -340,12 +340,17 @@ public class VariantFactory {
         }
 
         final TranscriptModel transcriptModel = annotation.getTranscript();
-        if (transcriptModel == null || transcriptModel.getGeneID() == null || transcriptModel.getGeneID().equals("null")) {
+        if (transcriptModel == null) {
+            return -1;
+        }
+        Map<String, String> altGeneIds = transcriptModel.getAltGeneIDs();
+        String entrezId = altGeneIds.getOrDefault("ENTREZ_ID", "");
+        if (entrezId.isEmpty()) {
             return -1;
         }
         // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
         // for UCSC. At this point, there is a hard dependency on using the UCSC database.
-        return Integer.parseInt(transcriptModel.getGeneID().substring("ENTREZ".length()));
+        return Integer.parseInt(entrezId);
     }
 
     private String buildGeneSymbol(Annotation annotation) {
