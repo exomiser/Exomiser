@@ -56,8 +56,6 @@ public class ResultsWriterFactory implements ResultsWriter {
      */
     public ResultsWriter getResultsWriter(OutputFormat outputFormat) {
         switch (outputFormat){
-            case HTML:
-                return new HtmlResultsWriter(coreTemplateEngine);
             case TSV_GENE:
                 return new TsvGeneResultsWriter();
             case TSV_VARIANT:
@@ -66,6 +64,7 @@ public class ResultsWriterFactory implements ResultsWriter {
                 return new VcfResultsWriter();
             case PHENOGRID:
                 return new PhenogridWriter();
+            case HTML:
             default:
                 return new HtmlResultsWriter(coreTemplateEngine);
         }
