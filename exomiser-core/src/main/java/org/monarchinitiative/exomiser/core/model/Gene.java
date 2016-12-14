@@ -96,6 +96,9 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     private final Map<PriorityType, PriorityResult> priorityResultsMap = new EnumMap<>(PriorityType.class);
     private Set<ModeOfInheritance> inheritanceModes = EnumSet.noneOf(ModeOfInheritance.class);
+
+    private final GeneIdentifier geneIdentifier;
+
     private final String geneSymbol;
     private final int entrezGeneId;
 
@@ -108,7 +111,44 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     public Gene(String geneSymbol, int geneId) {
         this.geneSymbol = geneSymbol;
         this.entrezGeneId = geneId;
+        this.geneIdentifier = GeneIdentifier.builder().geneId(String.valueOf(geneId)).geneSymbol(geneSymbol).entrezId(String.valueOf(geneId)).build();
     }
+
+    public Gene(GeneIdentifier geneIdentifier) {
+        this.geneIdentifier = geneIdentifier;
+        this.geneSymbol = geneIdentifier.getGeneSymbol();
+        this.entrezGeneId = geneIdentifier.getEntrezIdAsInteger();
+    }
+
+    /**
+     * Note that currently, the gene symbols are associated with the Variants.
+     * Probably it would be more natural to associate that with a field of this
+     * Gene object. For now, leave it as be, and return "-" if this gene has no
+     * {@link Variant} objects.
+     *
+     * @return the symbol associated with this gene (extracted from one of the
+     * Variant objects)
+     */
+    public String getGeneSymbol() {
+        return geneIdentifier.getGeneSymbol();
+    }
+
+    public String getGeneId() {
+        return geneIdentifier.getGeneId();
+    }
+
+    public GeneIdentifier getGeneIdentifier() {
+        return geneIdentifier;
+    }
+
+    /**
+     * @return the NCBI Entrez Gene ID associated with this gene (extracted from
+     * one of the Variant objects)
+     */
+    public int getEntrezGeneID() {
+        return geneIdentifier.getEntrezIdAsInteger();
+    }
+
 
     /**
      * @return the number of {@link Variant} associated with this gene.
@@ -188,27 +228,6 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     @JsonIgnore
     public List<VariantEvaluation> getPassedVariantEvaluations() {
         return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).collect(toList());
-    }
-
-    /**
-     * @return the NCBI Entrez Gene ID associated with this gene (extracted from
-     * one of the Variant objects)
-     */
-    public int getEntrezGeneID() {
-        return entrezGeneId;
-    }
-
-    /**
-     * Note that currently, the gene symbols are associated with the Variants.
-     * Probably it would be more natural to associate that with a field of this
-     * Gene object. For now, leave it as be, and return "-" if this gene has no
-     * {@link Variant} objects.
-     *
-     * @return the symbol associated with this gene (extracted from one of the
-     * Variant objects)
-     */
-    public String getGeneSymbol() {
-        return geneSymbol;
     }
 
     @Override

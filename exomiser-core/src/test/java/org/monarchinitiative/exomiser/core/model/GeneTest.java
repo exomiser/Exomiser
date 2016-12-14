@@ -50,9 +50,11 @@ public class GeneTest {
 
     private static final String GENE1_SYMBOL = "GENE1";
     private static final int GENE1_ENTREZ_GENE_ID = 1234567;
-
-    private static final String GENE2_SYMBOL = "GENE2";
-    private static final int GENE2_ENTREZ_GENE_ID = 654321;
+    private static final GeneIdentifier GENE1_GENE_IDENTIFIER = GeneIdentifier.builder()
+            .geneSymbol(GENE1_SYMBOL)
+            .geneId(String.valueOf(GENE1_ENTREZ_GENE_ID))
+            .entrezId(String.valueOf(GENE1_ENTREZ_GENE_ID))
+            .build();
 
     private VariantEvaluation variantEvaluation1;
     private VariantEvaluation variantEvaluation2;
@@ -75,11 +77,26 @@ public class GeneTest {
     }
 
     private Gene newGeneOne() {
-        return new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        return new Gene(GENE1_GENE_IDENTIFIER);
     }
 
     private Gene newGeneTwo() {
-        return new Gene(GENE2_SYMBOL, GENE2_ENTREZ_GENE_ID);
+        GeneIdentifier geneIdentifier = GeneIdentifier.builder()
+                .geneSymbol("GENE2")
+                .geneId(String.valueOf(654321))
+                .entrezId(String.valueOf(654321))
+                .build();
+        return new Gene(geneIdentifier);
+    }
+
+    @Test
+    public void canGetGeneIdentifier() {
+        assertThat(instance.getGeneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
+    }
+
+    @Test
+    public void canGetGeneId() {
+        assertThat(instance.getGeneId(), equalTo(String.valueOf(GENE1_ENTREZ_GENE_ID)));
     }
 
     @Test
@@ -486,5 +503,10 @@ public class GeneTest {
         float secondScore = 1.0f;
         instance.setFilterScore(secondScore);
         assertThat(instance.getFilterScore(), equalTo(secondScore));
+    }
+
+    @Test
+    public void testToString() {
+        System.out.println(instance);
     }
 }

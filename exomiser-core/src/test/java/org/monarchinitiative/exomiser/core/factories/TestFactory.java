@@ -24,6 +24,10 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
+
+import java.util.List;
 
 /**
  * Allows the easy creation of {@link JannovarData} {@link VariantFactory} and {@link VariantAnnotationData} objects for testing.
@@ -56,6 +60,7 @@ public class TestFactory {
     public static JannovarData buildDefaultJannovarData() {
         return DEFAULT_JANNOVAR_DATA;
     }
+
     public static VariantFactory buildDefaultVariantFactory() {
         return DEFAULT_VARIANT_FACTORY;
     }
@@ -84,6 +89,14 @@ public class TestFactory {
 
     public static VariantAnnotationData buildVariantAnnotationData(JannovarData jannovarData) {
         return new VariantAnnotationData(jannovarData);
+    }
+
+    public static List<GeneIdentifier> buildGeneIdentifiers() {
+        return TestGeneFactory.buildGeneIdentifiers();
+    }
+
+    public static List<Gene> buildGenes() {
+        return TestGeneFactory.buildGenes();
     }
 
 }
