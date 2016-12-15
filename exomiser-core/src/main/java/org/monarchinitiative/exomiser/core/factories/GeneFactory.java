@@ -24,13 +24,12 @@
  */
 package org.monarchinitiative.exomiser.core.factories;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,40 +49,6 @@ public class GeneFactory {
     private static final Logger logger = LoggerFactory.getLogger(GeneFactory.class);
 
     private GeneFactory (){}
-
-    /**
-     * Returns a list of {@code Gene} objects created from the supplied list of
-     * {@code VariantEvaluation}. This list will be complete and contain all
-     * genes regardless of whether the {@code VariantEvaluation} has passed any
-     * filters or not.
-     *
-     * @param variantEvaluations
-     * @return
-     */
-    //TODO: Looks like this is only used in GeneFactoryTest...
-    static List<Gene> createGenes(List<VariantEvaluation> variantEvaluations) {
-        //Record the genes we have seen before.
-        Map<String, Gene> geneMap = new HashMap<>();
-
-        for (VariantEvaluation variantEvaluation : variantEvaluations) {
-            String geneSymbol = variantEvaluation.getGeneSymbol();
-            int geneId = variantEvaluation.getEntrezGeneId();
-            if (geneSymbol != null && !".".equals(geneSymbol)) {
-                // Off target variants do not have gene-symbols.
-                // This if avoids null pointers
-                if (geneMap.containsKey(geneSymbol)) {
-                    Gene gene = geneMap.get(geneSymbol);
-                    gene.addVariant(variantEvaluation);
-                } else {
-                    Gene gene = new Gene(geneSymbol, geneId);
-                    gene.addVariant(variantEvaluation);
-                    geneMap.put(geneSymbol, gene);
-                }
-            }
-        }
-        logger.info("Made {} genes from {} variants", geneMap.values().size(), variantEvaluations.size());
-        return new ArrayList<>(geneMap.values());
-    }
 
     /**
      * Returns a list of genes from the JannovarData TranscriptModels.
@@ -109,7 +74,7 @@ public class GeneFactory {
      * uses Entrez gene ids which are plain integers.
      *
      */
-    //TODO: remove from here - this is only used by the PrioritiserController
+    //TODO: remove from here - this is only used by the PrioritiserController (and GeneFactoryTest)
     public static Map<String, String> createKnownGeneIdentifiers(JannovarData jannovarData) {
         ImmutableMap.Builder<String, String> geneIdentifiers = ImmutableMap.builder();
         int identifiers = 0;
@@ -150,8 +115,8 @@ public class GeneFactory {
         return geneIdentifiers.build();
     }
 
-    public static Collection<GeneIdentifier> createKnownGeneIds(JannovarData jannovarData) {
-        ImmutableList.Builder<GeneIdentifier> geneIdentifiers = ImmutableList.builder();
+    public static Set<GeneIdentifier> createKnownGeneIds(JannovarData jannovarData) {
+        ImmutableSet.Builder<GeneIdentifier> geneIdentifiers = ImmutableSet.builder();
         int identifiers = 0;
         int noEntrezId = 0;
         for (String geneSymbol : jannovarData.getTmByGeneSymbol().keySet()) {

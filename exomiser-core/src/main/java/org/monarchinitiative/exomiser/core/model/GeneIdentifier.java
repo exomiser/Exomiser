@@ -14,6 +14,7 @@ public class GeneIdentifier {
     //TODO - Should this be where the Organism should sit instead of in Model? Does it make any difference?
 
     public static final String EMPTY_FIELD = "";
+    public static final Integer NULL_ENTREZ_ID = -1;
 
     private final String geneId;
     private final String geneSymbol;
@@ -26,15 +27,30 @@ public class GeneIdentifier {
     private final String ucscId;
 
     private GeneIdentifier(Builder builder) {
-        this.geneId = builder.geneId;
-        this.geneSymbol = builder.geneSymbol;
+        this.geneId = Objects.requireNonNull(builder.geneId, "GeneIdentifier geneId cannot be null");
+        this.geneSymbol = Objects.requireNonNull(builder.geneSymbol, "GeneIdentifier geneSymbol cannot be null");
 
         this.hgncId = builder.hgncId;
         this.hgncSymbol = builder.hgncSymbol;
 
-        this.entrezId = builder.entrezId;
+        //the entrezId is used by the Prioritisers as a primary key for the gene so this is important!
+        this.entrezId = validateEntrezId(builder.entrezId);
         this.ensemblId = builder.ensemblId;
         this.ucscId = builder.ucscId;
+    }
+
+    private String validateEntrezId(String entrezId) {
+        Objects.requireNonNull(entrezId, "GeneIdentifier entrezId cannot be null");
+        if (entrezId.isEmpty()) {
+            //This is permissible - will default to returning a NULL_ENTREZ_ID
+            return entrezId;
+        }
+        try {
+            Integer.valueOf(entrezId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("entrezId '" + entrezId + "' is invalid. GeneIdentifier entrezId must be a positive integer");
+        }
+        return entrezId;
     }
 
     public String getGeneId() {
@@ -58,7 +74,7 @@ public class GeneIdentifier {
     }
 
     public Integer getEntrezIdAsInteger() {
-        return (entrezId.equals(EMPTY_FIELD)) ? -1 : Integer.valueOf(entrezId);
+        return entrezId.equals(EMPTY_FIELD) ? NULL_ENTREZ_ID : Integer.valueOf(entrezId);
     }
 
     public String getEnsemblId() {

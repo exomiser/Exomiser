@@ -10,11 +10,31 @@ import static org.junit.Assert.assertThat;
  */
 public class GeneIdentifierTest {
 
-    private final GeneIdentifier defaultIdentifier = GeneIdentifier.builder().build();
+    private static final GeneIdentifier EMPTY_GENE_IDENTIFIER = GeneIdentifier.builder().build();
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorChecksForNullGeneSymbol() {
+        GeneIdentifier.builder().geneSymbol(null).build();
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorChecksGeneIdIsNotNull() {
+        new Gene(GeneIdentifier.builder().geneId(null).build());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorChecksEntrezIdIsNotNull() {
+        new Gene(GeneIdentifier.builder().entrezId(null).build());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorChecksEntrezIdIsValidInteger() {
+        new Gene(GeneIdentifier.builder().entrezId("wibble").build());
+    }
 
     @Test
     public void getGeneId() {
-        assertThat(defaultIdentifier.getGeneId(), equalTo(GeneIdentifier.EMPTY_FIELD));
+        assertThat(EMPTY_GENE_IDENTIFIER.getGeneId(), equalTo(GeneIdentifier.EMPTY_FIELD));
         GeneIdentifier instance = GeneIdentifier.builder()
                 .geneId("12345")
                 .build();
@@ -23,7 +43,7 @@ public class GeneIdentifierTest {
 
     @Test
     public void getGeneSymbol() {
-        assertThat(defaultIdentifier.getGeneSymbol(), equalTo(GeneIdentifier.EMPTY_FIELD));
+        assertThat(EMPTY_GENE_IDENTIFIER.getGeneSymbol(), equalTo(GeneIdentifier.EMPTY_FIELD));
         GeneIdentifier instance = GeneIdentifier.builder()
                 .geneSymbol("ABC1")
                 .build();
@@ -32,7 +52,7 @@ public class GeneIdentifierTest {
 
     @Test
     public void getHgncId() {
-        assertThat(defaultIdentifier.getHgncId(), equalTo(GeneIdentifier.EMPTY_FIELD));
+        assertThat(EMPTY_GENE_IDENTIFIER.getHgncId(), equalTo(GeneIdentifier.EMPTY_FIELD));
         GeneIdentifier instance = GeneIdentifier.builder()
                 .hgncId("hgnc")
                 .build();
@@ -40,7 +60,7 @@ public class GeneIdentifierTest {
     }
     @Test
     public void getHgncSymbol() {
-        assertThat(defaultIdentifier.getHgncSymbol(), equalTo(GeneIdentifier.EMPTY_FIELD));
+        assertThat(EMPTY_GENE_IDENTIFIER.getHgncSymbol(), equalTo(GeneIdentifier.EMPTY_FIELD));
         GeneIdentifier instance = GeneIdentifier.builder()
                 .hgncSymbol("name")
                 .build();
@@ -49,8 +69,8 @@ public class GeneIdentifierTest {
 
     @Test
     public void testEntrezIdentifier() {
-        assertThat(defaultIdentifier.getEntrezId(), equalTo(GeneIdentifier.EMPTY_FIELD));
-        assertThat(defaultIdentifier.getEntrezIdAsInteger(), equalTo(-1));
+        assertThat(EMPTY_GENE_IDENTIFIER.getEntrezId(), equalTo(GeneIdentifier.EMPTY_FIELD));
+        assertThat(EMPTY_GENE_IDENTIFIER.getEntrezIdAsInteger(), equalTo(-1));
 
         GeneIdentifier instance = GeneIdentifier.builder()
                 .entrezId("2263")
@@ -61,7 +81,7 @@ public class GeneIdentifierTest {
 
     @Test
     public void getEnsemblId() {
-        assertThat(defaultIdentifier.getEnsemblId(), equalTo(GeneIdentifier.EMPTY_FIELD));
+        assertThat(EMPTY_GENE_IDENTIFIER.getEnsemblId(), equalTo(GeneIdentifier.EMPTY_FIELD));
         GeneIdentifier instance = GeneIdentifier.builder()
                 .ensemblId("ensemble")
                 .build();
@@ -70,7 +90,7 @@ public class GeneIdentifierTest {
 
     @Test
     public void getUcscId() {
-        assertThat(defaultIdentifier.getUcscId(), equalTo(GeneIdentifier.EMPTY_FIELD));
+        assertThat(EMPTY_GENE_IDENTIFIER.getUcscId(), equalTo(GeneIdentifier.EMPTY_FIELD));
         GeneIdentifier instance = GeneIdentifier.builder()
                 .ucscId("ucscId")
                 .build();

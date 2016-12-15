@@ -103,21 +103,32 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     private final int entrezGeneId;
 
     /**
-     * Construct the gene by providing a gene symbol and Entrez id.
+     * Preferred constructor. Given the {@link GeneIdentifier} contains all the data it can
+     *
+     * @param geneIdentifier
+     */
+    public Gene(GeneIdentifier geneIdentifier) {
+        this.geneIdentifier = Objects.requireNonNull(geneIdentifier, "GeneIdentifier for a Gene cannot be null");
+        if (geneIdentifier.getGeneSymbol().isEmpty()) {
+            //we can tolerate empty gene identifiers as sometimes there is none - GeneIdentifier will supply a -1 code
+            throw new IllegalArgumentException("GeneIdentifier geneSymbol cannot be empty for a Gene");
+        }
+
+        this.geneSymbol = geneIdentifier.getGeneSymbol();
+        this.entrezGeneId = geneIdentifier.getEntrezIdAsInteger();
+    }
+
+    /**
+     * Alternate constructor. Construct the gene by providing a gene symbol and Entrez id. Internally this will create a
+     * new {@link GeneIdentifier}, but this will not contain the alternate database identifiers (ENSEMBL, HGNC, UCSC) so
+     * may result in odd behaviour in the reports. For this reason this constructor should be regarded as a convenient
+     * 'hack' for testing purposes.
      *
      * @param geneSymbol
      * @param geneId
      */
     public Gene(String geneSymbol, int geneId) {
-        this.geneSymbol = geneSymbol;
-        this.entrezGeneId = geneId;
-        this.geneIdentifier = GeneIdentifier.builder().geneId(String.valueOf(geneId)).geneSymbol(geneSymbol).entrezId(String.valueOf(geneId)).build();
-    }
-
-    public Gene(GeneIdentifier geneIdentifier) {
-        this.geneIdentifier = geneIdentifier;
-        this.geneSymbol = geneIdentifier.getGeneSymbol();
-        this.entrezGeneId = geneIdentifier.getEntrezIdAsInteger();
+        this(GeneIdentifier.builder().geneId(String.valueOf(geneId)).geneSymbol(geneSymbol).entrezId(String.valueOf(geneId)).build());
     }
 
     /**

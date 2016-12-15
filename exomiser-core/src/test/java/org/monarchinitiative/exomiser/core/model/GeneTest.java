@@ -49,11 +49,12 @@ public class GeneTest {
     private Gene instance;
 
     private static final String GENE1_SYMBOL = "GENE1";
+    private static final String GENE1_GENE_ID = "1234567";
     private static final int GENE1_ENTREZ_GENE_ID = 1234567;
     private static final GeneIdentifier GENE1_GENE_IDENTIFIER = GeneIdentifier.builder()
             .geneSymbol(GENE1_SYMBOL)
-            .geneId(String.valueOf(GENE1_ENTREZ_GENE_ID))
-            .entrezId(String.valueOf(GENE1_ENTREZ_GENE_ID))
+            .geneId(GENE1_GENE_ID)
+            .entrezId(GENE1_GENE_ID)
             .build();
 
     private VariantEvaluation variantEvaluation1;
@@ -83,10 +84,51 @@ public class GeneTest {
     private Gene newGeneTwo() {
         GeneIdentifier geneIdentifier = GeneIdentifier.builder()
                 .geneSymbol("GENE2")
-                .geneId(String.valueOf(654321))
-                .entrezId(String.valueOf(654321))
+                .geneId("654321")
+                .entrezId("654321")
                 .build();
         return new Gene(geneIdentifier);
+    }
+
+    @Test
+    public void testConstructorWithGeneIdentifier() {
+        Gene gene = new Gene(GENE1_GENE_IDENTIFIER);
+        assertThat(gene.getGeneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(gene.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(gene.getGeneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
+    }
+
+    @Test
+    public void testAlternateConstructor() {
+        Gene gene = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        assertThat(gene.getGeneSymbol(), equalTo(GENE1_SYMBOL));
+        assertThat(gene.getEntrezGeneID(), equalTo(GENE1_ENTREZ_GENE_ID));
+        assertThat(gene.getGeneIdentifier(), equalTo(GENE1_GENE_IDENTIFIER));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorChecksForNull() {
+        new Gene(null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorChecksForNullGeneIdentifierGeneSymbol() {
+        new Gene(GeneIdentifier.builder().geneSymbol(null).entrezId(GENE1_GENE_ID).geneId(GENE1_GENE_ID).build());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorChecksForNullGeneIdentifierGeneId() {
+        new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(null).entrezId(GENE1_GENE_ID).build());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorChecksForNullGeneIdentifierEntrezId() {
+        new Gene(GeneIdentifier.builder().geneSymbol(GENE1_SYMBOL).geneId(GENE1_GENE_ID).entrezId(null).build());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorChecksForEmptyGeneIdentifierGeneSymbol() {
+        new Gene(GeneIdentifier.builder().geneSymbol("").geneId(GENE1_GENE_ID).entrezId(GENE1_GENE_ID).build());
     }
 
     @Test
@@ -122,7 +164,7 @@ public class GeneTest {
 
     @Test
     public void testConstructorSetsInstanceVariablesNoVariant() {
-        Gene emptyGene = new Gene(GENE1_SYMBOL, GENE1_ENTREZ_GENE_ID);
+        Gene emptyGene = new Gene(GENE1_GENE_IDENTIFIER);
         List<VariantEvaluation> expectedVariantEvaluations = new ArrayList<>();
 
         assertThat(emptyGene.getGeneSymbol(), equalTo(GENE1_SYMBOL));
