@@ -153,8 +153,16 @@ and open the template in the editor.
                                 <td>
                                     <div class="row">
                                         <div class="col-sm-12">
-                                            <h4>
-                                                <a th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${gene.entrezGeneID}|}" th:text="${gene.geneSymbol}">FGFR2</a>
+                                            <h4 th:switch="${transcriptDb}" th:with="geneIdentifier=${gene.getGeneIdentifier()}">
+                                                <a th:case="'UCSC'"
+                                                       th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
+                                                       th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>
+                                                <a th:case="'ENSEMBL'"
+                                                       th:href="@{|http://grch37.ensembl.org/Homo_sapiens/Gene/Summary?g=${geneIdentifier.getEnsemblId()}|}"
+                                                       th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>
+                                                <a th:case="*"
+                                                       th:href="@{|http://www.ncbi.nlm.nih.gov/gene/${geneIdentifier.getEntrezId()}|}"
+                                                       th:text="${geneIdentifier.getGeneSymbol()}">FGFR2</a>
                                             </h4>
                                         </div>
                                     </div>
@@ -197,10 +205,16 @@ and open the template in the editor.
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
                                                 <dd th:each="annotation: ${variantEvaluation.annotations}"
-                                                    th:with="ucscData=${#strings.listSplit(annotation.accession,':')}, ucscId=${ucscData[0]}">
-                                                    <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}"
-                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A
-                                                    </a>
+                                                    th:switch="${transcriptDb}">
+                                                    <a th:case="'UCSC'"
+                                                       th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                                                    <a th:case="'ENSEMBL'"
+                                                       th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary/(t=${annotation.accession})}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                                                    <a th:case="'REFSEQ'"
+                                                       th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
                                                 </dd>
                                             </dl>
                                         </div>

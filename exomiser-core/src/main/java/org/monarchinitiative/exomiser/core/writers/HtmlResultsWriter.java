@@ -120,7 +120,13 @@ public class HtmlResultsWriter implements ResultsWriter {
                  
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(analysisResults.getGenes(), settings.getNumberOfGenesToShow());
         context.setVariable("genes", passedGenes);
-        
+
+        //this will change the links to the relevant resource.
+        // For the time being we're going to maintain the original behaviour (UCSC)
+        // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
+        // One of UCSC, ENSEMBL or REFSEQ
+        context.setVariable("transcriptDb", "UCSC");
+
         return templateEngine.process("results", context);
     }
 
