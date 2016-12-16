@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.factories.TestFactory;
 import org.monarchinitiative.exomiser.core.factories.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
@@ -53,7 +54,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class TsvVariantResultsWriterTest {
 
-    private TsvVariantResultsWriter instance;
+    private final TestVariantFactory varFactory = new TestVariantFactory();
+
+    private final TsvVariantResultsWriter instance = new TsvVariantResultsWriter();
     
     private static final String VARIANT_DETAILS_HEADER = "#CHROM\tPOS\tREF\tALT\tQUAL\tFILTER\tGENOTYPE\tCOVERAGE\tFUNCTIONAL_CLASS\tHGVS\tEXOMISER_GENE\t";
     private static final String PATHOGENICITY_SCORES_HEADER = "CADD(>0.483)\tPOLYPHEN(>0.956|>0.446)\tMUTATIONTASTER(>0.94)\tSIFT(<0.06)\tREMM\t";
@@ -75,42 +78,34 @@ public class TsvVariantResultsWriterTest {
     private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES;
     private static final String FAIL_VARIANT_LINE = FAIL_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + FAIL_VARIANT_EXOMISER_SCORES;
 
-    private OutputSettingsBuilder settingsBuilder;
-    private Analysis analysis;
+    private final OutputSettingsBuilder settingsBuilder = OutputSettings.builder().outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
+    private final Analysis analysis = Analysis.builder().build();
     private AnalysisResults analysisResults;
-    private Gene gene;
-    private VariantEvaluation passVariant;
-    private VariantEvaluation failVariant;
-    
+
     @Before
     public void before() {
-        instance = new TsvVariantResultsWriter();
-        settingsBuilder = OutputSettings.builder().outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
-        
-        TestVariantFactory varFactory = new TestVariantFactory();
-        makePassVariant(varFactory);
-        makeFailVariant(varFactory);
-        
-        gene = new Gene(passVariant.getGeneSymbol(), passVariant.getEntrezGeneId());
-        gene.addVariant(passVariant);
-        gene.addVariant(failVariant);
+        Gene fgfr2 = TestFactory.newGeneFGFR2();
+        fgfr2.addVariant(makePassVariant());
+
+        Gene shh = TestFactory.newGeneSHH();
+        shh.addVariant(makeFailVariant());
 
         analysisResults = AnalysisResults.builder()
-                .genes(Arrays.asList(gene))
+                .genes(Arrays.asList(fgfr2, shh))
                 .build();
-
-        analysis = Analysis.builder().build();
     }
 
-    private void makePassVariant(TestVariantFactory varFactory) {
-        passVariant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        passVariant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
-        passVariant.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)));
+    private VariantEvaluation makePassVariant() {
+        VariantEvaluation variant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        variant.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)));
+        return variant;
     }
     
-    private void makeFailVariant(TestVariantFactory varFactory) {
-        failVariant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
-        failVariant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
+    private VariantEvaluation makeFailVariant() {
+        VariantEvaluation variant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        variant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
+        return variant;
     }
 
     @Test

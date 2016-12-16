@@ -28,11 +28,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.factories.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.StringJoiner;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -44,27 +46,40 @@ import static org.junit.Assert.assertTrue;
  */
 public class TsvGeneResultsWriterTest {
 
-    private Gene gene;
-    private static final String GENE_SYMBOL = "FGFR2";
-    private static final int GENE_ID = 2263;
-    private TsvGeneResultsWriter instance;
-    private static final String HEADER = "#GENE_SYMBOL	ENTREZ_GENE_ID	"
-            + "EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE	"
-            + "HUMAN_PHENO_SCORE	MOUSE_PHENO_SCORE	FISH_PHENO_SCORE	WALKER_SCORE	"
-            + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE	HUMAN_PHENO_EVIDENCE	MOUSE_PHENO_EVIDENCE	FISH_PHENO_EVIDENCE	HUMAN_PPI_EVIDENCE	MOUSE_PPI_EVIDENCE	FISH_PPI_EVIDENCE\n";
+    private static final String HEADER = new StringJoiner("\t")
+            .add("#GENE_SYMBOL")
+            .add("ENTREZ_GENE_ID")
+            .add("EXOMISER_GENE_PHENO_SCORE")
+            .add("EXOMISER_GENE_VARIANT_SCORE")
+            .add("EXOMISER_GENE_COMBINED_SCORE")
+            .add("HUMAN_PHENO_SCORE")
+            .add("MOUSE_PHENO_SCORE")
+            .add("FISH_PHENO_SCORE")
+            .add("WALKER_SCORE")
+            .add("PHIVE_ALL_SPECIES_SCORE")
+            .add("OMIM_SCORE")
+            .add("MATCHES_CANDIDATE_GENE")
+            .add("HUMAN_PHENO_EVIDENCE")
+            .add("MOUSE_PHENO_EVIDENCE")
+            .add("FISH_PHENO_EVIDENCE")
+            .add("HUMAN_PPI_EVIDENCE")
+            .add("MOUSE_PPI_EVIDENCE")
+            .add("FISH_PPI_EVIDENCE\n")
+            .toString();
     
-    private static final String GENE_STRING = "FGFR2	2263	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0	\n";
-    
+    private static final String FGFR2_GENE_STRING = "FGFR2	2263	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0	\n";
+    private static final String RBM8A_GENE_STRING = "RBM8A	9939	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0.0000	0	\n";
+
+    private final TsvGeneResultsWriter instance = new TsvGeneResultsWriter();
+
     private AnalysisResults analysisResults;
-    private Analysis analysis;
+    private Analysis analysis = Analysis.builder().build();
     
     @Before
     public void setUp() {
-        instance = new TsvGeneResultsWriter();
-
-        gene = new Gene(GENE_SYMBOL, GENE_ID);        
-        analysisResults = AnalysisResults.builder().genes(Arrays.asList(gene)).build();
-        analysis = Analysis.builder().build();
+        Gene fgfr2 = TestFactory.newGeneFGFR2();
+        Gene rbm8a = TestFactory.newGeneRBM8A();
+        analysisResults = AnalysisResults.builder().genes(Arrays.asList(fgfr2, rbm8a)).build();
     }
 
     @Test
@@ -84,7 +99,7 @@ public class TsvGeneResultsWriterTest {
                 .outputFormats(EnumSet.of(OutputFormat.TSV_GENE))
                 .build();
         String outString = instance.writeString(analysis, analysisResults, settings);
-        assertThat(outString, equalTo(HEADER + GENE_STRING));
+        assertThat(outString, equalTo(HEADER + FGFR2_GENE_STRING + RBM8A_GENE_STRING));
     }
 
     @Test
@@ -99,8 +114,8 @@ public class TsvGeneResultsWriterTest {
     
     @Test
     public void testMakeGeneLine() {
-        String result = instance.makeGeneLine(gene);
-        assertThat(result, equalTo(GENE_STRING));
+        String result = instance.makeGeneLine(TestFactory.newGeneFGFR2());
+        assertThat(result, equalTo(FGFR2_GENE_STRING));
     }
 
 }

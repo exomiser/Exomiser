@@ -23,10 +23,11 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.factories.TestFactory;
@@ -63,10 +64,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
-@RunWith(MockitoJUnitRunner.class)
 public class VcfResultsWriterTest {
 
-    final static String EXPECTED_HEADER = "##fileformat=VCFv4.2\n"
+    private final static String EXPECTED_HEADER = "##fileformat=VCFv4.2\n"
             + "##FILTER=<ID=BED_FILTER,Description=\"Gene panel target region (Bed filter)\">\n"
             + "##FILTER=<ID=ENTREZ_GENE_ID_FILTER,Description=\"Genes to keep\">\n"
             + "##FILTER=<ID=FREQUENCY_FILTER,Description=\"Frequency\">\n"
@@ -88,7 +88,13 @@ public class VcfResultsWriterTest {
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
     private static final String CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT = "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
 
-    private VcfResultsWriter instance;
+    private static final FilterResult PASS_TARGET_RESULT = FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER);
+    private static final FilterResult FAIL_TARGET_RESULT = FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER);
+    private static final FilterResult FAIL_FREQUENCY_RESULT = FilterResult.fail(FilterType.FREQUENCY_FILTER);
+
+    private final TestVariantFactory varFactory = new TestVariantFactory();
+
+    private final VcfResultsWriter instance = new VcfResultsWriter();
 
     private static VCFFileReader reader;
     private VCFHeader vcfHeader;
@@ -108,8 +114,8 @@ public class VcfResultsWriterTest {
     private VariantEvaluation unAnnotatedVariantEvaluation1;
     private VariantEvaluation unAnnotatedVariantEvaluation2;
 
-    private Gene gene1, gene2;
-    private FilterResult passTargetResult, failTargetResult, failFrequencyResult;
+    private Gene Fgfr2Gene;
+    private Gene ShhGene;
 
     @BeforeClass
     public static void loadVCFHeader() throws URISyntaxException {
@@ -125,35 +131,33 @@ public class VcfResultsWriterTest {
                 .outputPrefix(outPath + "testWrite")
                 .build();
 
-        instance = new VcfResultsWriter();
+        vcfHeader = reader.getFileHeader();
 
         setUpModel();
     }
 
     private void setUpModel() {
-        vcfHeader = reader.getFileHeader();
-
-        TestVariantFactory varFactory = new TestVariantFactory();
-
-        passTargetResult = FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER);
-        failTargetResult = FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER);
-        failFrequencyResult = FilterResult.fail(FilterType.FREQUENCY_FILTER);
-
-        missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)));
-        indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
-
-        gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneId());
-        gene1.addVariant(missenseVariantEvaluation);
-        
-        gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
-        gene2.addVariant(indelVariantEvaluation);
-
-        gene1.addPriorityResult(new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, Collections.emptyList()));
-        gene2.addPriorityResult(new OMIMPriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 1f, Collections.emptyList()));
-
+        setUpFgfr2Gene();
+        setUpShhGene();
         unAnnotatedVariantEvaluation1 = new VariantEvaluation.Builder(5, 11, "AC", "AT").quality(1).build();
         unAnnotatedVariantEvaluation2 = new VariantEvaluation.Builder(5, 14, "T", "TG").quality(1).build();
+    }
+
+    private void setUpShhGene() {
+        indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+
+        ShhGene = TestFactory.newGeneSHH();
+        ShhGene.addVariant(indelVariantEvaluation);
+        ShhGene.addPriorityResult(new OMIMPriorityResult(ShhGene.getEntrezGeneID(), ShhGene.getGeneSymbol(), 1f, Collections.emptyList()));
+    }
+
+    private void setUpFgfr2Gene() {
+        missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)));
+
+        Fgfr2Gene = TestFactory.newGeneFGFR2();
+        Fgfr2Gene.addVariant(missenseVariantEvaluation);
+        Fgfr2Gene.addPriorityResult(new OMIMPriorityResult(Fgfr2Gene.getEntrezGeneID(), Fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList()));
     }
 
     private AnalysisResults buildAnalysisResults(Gene... genes) {
@@ -167,7 +171,7 @@ public class VcfResultsWriterTest {
     @Test
     public void testWriteHeaderFile() {
         AnalysisResults analysisResults = AnalysisResults.builder().vcfHeader(vcfHeader).build();
-        Assert.assertEquals(EXPECTED_HEADER, instance.writeString(analysis, analysisResults, settings));
+        assertThat(instance.writeString(analysis, analysisResults, settings), equalTo(EXPECTED_HEADER));
     }
 
     /* test writing out unannotated variants */
@@ -179,56 +183,55 @@ public class VcfResultsWriterTest {
                 .build();
         
         String vcf = instance.writeString(analysis, analysisResults, settings);
-        final String EXPECTED = EXPECTED_HEADER
+        final String expected = EXPECTED_HEADER
                 + "chr5\t11\t.\tAC\tAT\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n"
                 + "chr5\t14\t.\tT\tTG\t1\t.\tEXOMISER_WARNING=VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS\tGT\t0/1\n";
-        Assert.assertEquals(EXPECTED, vcf);
+        assertThat(vcf, equalTo(expected));
     }
 
     /* test writing out annotated variants in two genes */
     @Test
     public void testWriteAnnotatedVariantsNoFiltersApplied() {
-        AnalysisResults analysisResults = buildAnalysisResults(gene1, gene2);
+        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene, ShhGene);
 
         String vcf = instance.writeString(analysis, analysisResults, settings);
-        final String EXPECTED = EXPECTED_HEADER
+        final String expected = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\t.\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n"
                 + "chr7\t155604801\t.\tC\tCTT\t1\t.\tEXOMISER_GENE=SHH;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=0.95;RD=30\tGT:RD\t0/1:30\n";
-        Assert.assertEquals(EXPECTED, vcf);
+        assertThat(vcf, equalTo(expected));
     }
 
     /* test writing out a variant PASSing all filters */
     @Test
     public void testWritePassVariant() {
-        missenseVariantEvaluation.addFilterResult(passTargetResult);
+        missenseVariantEvaluation.addFilterResult(PASS_TARGET_RESULT);
 
-        AnalysisResults analysisResults = buildAnalysisResults(gene1);
+        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene);
 
         String vcf = instance.writeString(analysis, analysisResults, settings);
-        final String EXPECTED = EXPECTED_HEADER
-                + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
-        Assert.assertEquals(EXPECTED, vcf);
+        final String expected = EXPECTED_HEADER + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
+        assertThat(vcf, equalTo(expected));
     }
 
     /* test writing out a variant failing the target filter */
     @Test
     public void testWriteFailTargetVariant() {
-        missenseVariantEvaluation.addFilterResult(failTargetResult);
+        missenseVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
 
-        AnalysisResults analysisResults = buildAnalysisResults(gene1);
+        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene);
 
         String vcf = instance.writeString(analysis, analysisResults, settings);
-        final String EXPECTED = EXPECTED_HEADER
+        final String expected = EXPECTED_HEADER
                 + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
-        Assert.assertEquals(EXPECTED, vcf);
+        assertThat(vcf, equalTo(expected));
     }
 
     @Test
     public void testWritePassVariantsOnlyContainsOnlyPassedVariantLine() {
-        missenseVariantEvaluation.addFilterResult(passTargetResult);
-        indelVariantEvaluation.addFilterResult(failTargetResult);
+        missenseVariantEvaluation.addFilterResult(PASS_TARGET_RESULT);
+        indelVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
 
-        AnalysisResults analysisResults = buildAnalysisResults(gene1, gene2);
+        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene, ShhGene);
 
         OutputSettings outputPassVariantsOnlySettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))
@@ -237,17 +240,16 @@ public class VcfResultsWriterTest {
                 .build();
         
         String output = instance.writeString(analysis, analysisResults, outputPassVariantsOnlySettings);
-        String expected = EXPECTED_HEADER
-                + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
+        String expected = EXPECTED_HEADER + CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT;
         assertThat(output, equalTo(expected));
     }
 
     @Test
     public void testWritePassVariantsWithNoPassingVariants() {
-        missenseVariantEvaluation.addFilterResult(failTargetResult);
-        indelVariantEvaluation.addFilterResult(failTargetResult);
+        missenseVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
+        indelVariantEvaluation.addFilterResult(FAIL_TARGET_RESULT);
 
-        AnalysisResults analysisResults = buildAnalysisResults(gene1, gene2);
+        AnalysisResults analysisResults = buildAnalysisResults(Fgfr2Gene, ShhGene);
 
         OutputSettings outputPassVariantsOnlySettings = OutputSettings.builder()
                 .outputFormats(EnumSet.of(OutputFormat.VCF))

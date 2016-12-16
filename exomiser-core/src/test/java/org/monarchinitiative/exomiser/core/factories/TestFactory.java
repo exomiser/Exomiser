@@ -99,4 +99,12 @@ public class TestFactory {
         return TestGeneFactory.buildGenes();
     }
 
+    public static Gene newGeneFGFR2() { return new Gene(TestGeneFactory.FGFR2_IDENTIFIER);}
+
+    public static Gene newGeneGNRHR2() { return new Gene(TestGeneFactory.GNRHR2_IDENTIFIER);}
+
+    public static Gene newGeneRBM8A() { return new Gene(TestGeneFactory.RBM8A_IDENTIFIER);}
+
+    public static Gene newGeneSHH() { return new Gene(TestGeneFactory.SHH_IDENTIFIER);}
+
 }
