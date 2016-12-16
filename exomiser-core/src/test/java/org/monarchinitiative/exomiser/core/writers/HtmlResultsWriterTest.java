@@ -34,6 +34,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
+import org.monarchinitiative.exomiser.core.factories.TestFactory;
 import org.monarchinitiative.exomiser.core.factories.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -53,7 +54,6 @@ import org.thymeleaf.TemplateEngine;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -82,14 +82,11 @@ public class HtmlResultsWriterTest {
 
     private String testOutFilePrefix;
 
-    private VariantEvaluation missenseVariantEvaluation;
-    private VariantEvaluation indelVariantEvaluation;
-
     private VariantEvaluation unAnnotatedVariantEvaluation1;
     private VariantEvaluation unAnnotatedVariantEvaluation2;
 
-    private Gene gene1;
-    private Gene gene2;
+    private Gene fgfr2Gene;
+    private Gene shhGene;
 
     @Before
     public void setUp() {
@@ -97,22 +94,22 @@ public class HtmlResultsWriterTest {
         
         TestVariantFactory varFactory = new TestVariantFactory();
 
-        missenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
-        missenseVariantEvaluation.setFrequencyData(new FrequencyData(RsId.valueOf(123456), Frequency.valueOf(0.01f, FrequencySource.THOUSAND_GENOMES)));
-        missenseVariantEvaluation.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f), MutationTasterScore.valueOf(1f), SiftScore.valueOf(0f), CaddScore.valueOf(1f)));
-        missenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));
-        missenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
+        VariantEvaluation fgfr2MissenseVariantEvaluation = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        fgfr2MissenseVariantEvaluation.setFrequencyData(new FrequencyData(RsId.valueOf(123456), Frequency.valueOf(0.01f, FrequencySource.THOUSAND_GENOMES)));
+        fgfr2MissenseVariantEvaluation.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f), MutationTasterScore.valueOf(1f), SiftScore.valueOf(0f), CaddScore.valueOf(1f)));
+        fgfr2MissenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.FREQUENCY_FILTER));
+        fgfr2MissenseVariantEvaluation.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
 
-        indelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        //TODO: make a few canned variants from the smallTest.vcf and Pfeiffer.vcf these can then be used to run the full system without the vcf if required.
+        fgfr2Gene = TestFactory.newGeneFGFR2();
+        fgfr2Gene.addVariant(fgfr2MissenseVariantEvaluation);
 
-        gene1 = new Gene(missenseVariantEvaluation.getGeneSymbol(), missenseVariantEvaluation.getEntrezGeneId());
-        gene1.addVariant(missenseVariantEvaluation);
+        VariantEvaluation shhIndelVariantEvaluation = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        shhGene = TestFactory.newGeneSHH();
+        shhGene.addVariant(shhIndelVariantEvaluation);
 
-        gene2 = new Gene(indelVariantEvaluation.getGeneSymbol(), indelVariantEvaluation.getEntrezGeneId());
-        gene2.addVariant(indelVariantEvaluation);
-
-        gene1.addPriorityResult(new OMIMPriorityResult(gene1.getEntrezGeneID(), gene1.getGeneSymbol(), 1f, new ArrayList()));
-        gene2.addPriorityResult(new OMIMPriorityResult(gene2.getEntrezGeneID(), gene2.getGeneSymbol(), 1f, Collections.emptyList()));
+        fgfr2Gene.addPriorityResult(new OMIMPriorityResult(fgfr2Gene.getEntrezGeneID(), fgfr2Gene.getGeneSymbol(), 1f, Collections.emptyList()));
+        shhGene.addPriorityResult(new OMIMPriorityResult(shhGene.getEntrezGeneID(), shhGene.getGeneSymbol(), 1f, Collections.emptyList()));
 
         unAnnotatedVariantEvaluation1 = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
         unAnnotatedVariantEvaluation2 = varFactory.constructVariant(5, 10, "C", "T", Genotype.HETEROZYGOUS, 30, 0, 1.0);
@@ -168,7 +165,7 @@ public class HtmlResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
 
         List<VariantEvaluation> variants = Lists.newArrayList(unAnnotatedVariantEvaluation1, unAnnotatedVariantEvaluation2);
-        List<Gene> genes = Lists.newArrayList(gene1, gene2);
+        List<Gene> genes = Lists.newArrayList(fgfr2Gene, shhGene);
         AnalysisResults analysisResults = buildAnalysisResults(genes, variants);
 
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();
