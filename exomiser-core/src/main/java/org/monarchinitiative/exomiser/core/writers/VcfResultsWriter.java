@@ -56,6 +56,45 @@ import static java.util.stream.Collectors.toSet;
  */
 public class VcfResultsWriter implements ResultsWriter {
 
+    private enum ExomiserVcfInfoField {
+
+        GENE_SYMBOL("ExGeneSymbol", VCFHeaderLineType.String, "Exomiser gene symbol"),
+        GENE_ID("ExGeneSymbId", VCFHeaderLineType.String, "Exomiser gene id"),
+        GENE_COMBINED_SCORE("ExGeneSCombi", VCFHeaderLineType.Float, "Exomiser gene combined score"),
+        GENE_PHENO_SCORE("ExGeneSPheno", VCFHeaderLineType.Float, "Exomiser gene phenotype score"),
+        GENE_VARIANT_SCORE("ExGeneSVar", VCFHeaderLineType.Float, "Exomiser gene variant score"),
+        VARIANT_SCORE("ExVarSCombi", VCFHeaderLineType.Float, "Exomiser variant combined score"),
+        VARIANT_EFFECT("ExVarEff", VCFHeaderLineType.String, "Exomiser variant effect"),
+        VARIANT_HGVS("ExVarHgvs", VCFHeaderLineType.String, "Exomiser variant hgvs"),
+        WARNING("ExWarn", VCFHeaderLineType.String, "Exomiser warning");
+
+        private final String id;
+        private final VCFHeaderLineType vcfHeaderLineType;
+        private final String description;
+
+        ExomiserVcfInfoField(String id, VCFHeaderLineType vcfHeaderLineType, String description) {
+            this.id = id;
+            this.vcfHeaderLineType = vcfHeaderLineType;
+            this.description = description;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public VCFHeaderLineType getVcfHeaderLineType() {
+            return vcfHeaderLineType;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        VCFHeaderLine getVcfHeaderLine() {
+            return new VCFInfoHeaderLine(id, VCFHeaderLineCount.A, vcfHeaderLineType, description);
+        }
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(VcfResultsWriter.class);
 
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.VCF;
@@ -63,9 +102,6 @@ public class VcfResultsWriter implements ResultsWriter {
     /**
      * Initialize the object, given the original {@link VCFFileReader} from the
      * input.
-     *
-     * @param vcfHeader original {@link VCFHeader} from the input, used for
-     * generating the output header
      */
     public VcfResultsWriter() {
         Locale.setDefault(Locale.UK);
@@ -111,13 +147,13 @@ public class VcfResultsWriter implements ResultsWriter {
 
     private void writeUnannotatedVariants(AnalysisResults analysisResults, VariantContextWriter writer) {
         List<VariantContext> updatedRecords = updateGeneVariantRecords(null, analysisResults.getUnAnnotatedVariantEvaluations());
-        updatedRecords.forEach(record-> writer.add(record));
+        updatedRecords.forEach(writer::add);
     }
 
     private void writeOnlyPassSampleData(AnalysisResults analysisResults, VariantContextWriter writer) {
         for (Gene gene : analysisResults.getGenes()) {
             List<VariantContext> updatedRecords = updateGeneVariantRecords(gene, gene.getPassedVariantEvaluations());
-            updatedRecords.forEach(record-> writer.add(record));
+            updatedRecords.forEach(writer::add);
         }
     }
 
@@ -135,7 +171,7 @@ public class VcfResultsWriter implements ResultsWriter {
         for (Gene gene : analysisResults.getGenes()) {
             logger.debug("updating variant records for gene {}", gene);
             List<VariantContext> updatedRecords = updateGeneVariantRecords(gene, gene.getVariantEvaluations());
-            updatedRecords.forEach(record-> writer.add(record));
+            updatedRecords.forEach(writer::add);
         }
     }
 
@@ -172,12 +208,10 @@ public class VcfResultsWriter implements ResultsWriter {
         //using StringBuilder instead of String.format as the performance is better and we're going to be doing this for every variant in the VCF
         // chr10-123256215-T*-[G, A]
         // chr5-11-AC*-[AT]
-        StringBuilder keyValueBuilder = new StringBuilder();
-        keyValueBuilder.append(variantContext.getContig()).append('-');
-        keyValueBuilder.append(variantContext.getStart()).append('-');
-        keyValueBuilder.append(variantContext.getReference()).append('-');
-        keyValueBuilder.append(variantContext.getAlternateAlleles());
-        return keyValueBuilder.toString();
+        return variantContext.getContig() + '-' +
+                variantContext.getStart() + '-' +
+                variantContext.getReference() + '-' +
+                variantContext.getAlternateAlleles();
     }
 
     private VariantContext updateRecord(List<VariantEvaluation> variantEvaluations, Gene gene) {
@@ -223,20 +257,41 @@ public class VcfResultsWriter implements ResultsWriter {
     }
 
     /**
+     * @return list of additional {@link VCFHeaderLine}s to write out,
+     * explaining the Jannovar and Exomiser INFO and FILTER fields
+     */
+    private List<VCFHeaderLine> getAdditionalHeaderLines() {
+        List<VCFHeaderLine> lines = new ArrayList<>();
+
+        // add INFO descriptions
+        for (ExomiserVcfInfoField infoField : ExomiserVcfInfoField.values()) {
+            lines.add(infoField.getVcfHeaderLine());
+        }
+
+        // add FILTER descriptions
+        for (FilterType ft : FilterType.values()) {
+            lines.add(new VCFFilterHeaderLine(ft.name(), ft.toString()));
+        }
+
+        return lines;
+    }
+    
+    /**
      * Update the INFO field of <code>builder</code> given the
      * {@link VariantEvaluation} and <code>gene</code>.
      */
     private void updateInfoField(VariantContextBuilder builder, List<VariantEvaluation> variantEvaluations, Gene gene) {
         if (!variantEvaluations.isEmpty() && gene != null) {
-            builder.attribute("EXOMISER_GENE", gene.getGeneSymbol());
-            builder.attribute("EXOMISER_GENE_COMBINED_SCORE", gene.getCombinedScore());
-            builder.attribute("EXOMISER_GENE_PHENO_SCORE", gene.getPriorityScore());
-            builder.attribute("EXOMISER_GENE_VARIANT_SCORE", gene.getFilterScore());
-            builder.attribute("EXOMISER_VARIANT_SCORE", buildVariantScore(variantEvaluations)); //this needs a list of VariantEvaluations to concatenate the fields from in Allele order
-//            builder.attribute("EFFECT", buildVariantEffects(variantEvaluations));
-//            builder.attribute("HGVS", buildHgvs(variantEvaluations));
+            builder.attribute(ExomiserVcfInfoField.GENE_SYMBOL.getId(), gene.getGeneSymbol());
+            builder.attribute(ExomiserVcfInfoField.GENE_ID.getId(), gene.getGeneId());
+            builder.attribute(ExomiserVcfInfoField.GENE_COMBINED_SCORE.getId(), gene.getCombinedScore());
+            builder.attribute(ExomiserVcfInfoField.GENE_PHENO_SCORE.getId(), gene.getPriorityScore());
+            builder.attribute(ExomiserVcfInfoField.GENE_VARIANT_SCORE.getId(), gene.getVariantScore());
+            builder.attribute(ExomiserVcfInfoField.VARIANT_SCORE.getId(), buildVariantScore(variantEvaluations)); //this needs a list of VariantEvaluations to concatenate the fields from in Allele order
+            builder.attribute(ExomiserVcfInfoField.VARIANT_EFFECT.getId(), buildVariantEffects(variantEvaluations));
+            builder.attribute(ExomiserVcfInfoField.VARIANT_HGVS.getId(), buildHgvs(variantEvaluations));
         } else {
-            builder.attribute("EXOMISER_WARNING", "VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS");
+            builder.attribute(ExomiserVcfInfoField.WARNING.getId(), "VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS");
         }
     }
 
@@ -274,29 +329,6 @@ public class VcfResultsWriter implements ResultsWriter {
             variantHgvsBuilder.append(',').append(variantEvaluations.get(i).getHgvsGenome());
         }
         return variantHgvsBuilder.toString();
-    }
-
-    /**
-     * @return list of additional {@link VCFHeaderLine}s to write out,
-     * explaining the Jannovar and Exomiser INFO and FILTER fields
-     */
-    private List<VCFHeaderLine> getAdditionalHeaderLines() {
-        List<VCFHeaderLine> lines = new ArrayList<>();
-
-        // add INFO descriptions
-        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE", 1, VCFHeaderLineType.String, "Exomiser gene"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_VARIANT_SCORE", 1, VCFHeaderLineType.Float, "Exomiser variant score"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_PHENO_SCORE", 1, VCFHeaderLineType.Float, "Exomiser gene phenotype score"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_VARIANT_SCORE", 1, VCFHeaderLineType.Float, "Exomiser gene variant score"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_GENE_COMBINED_SCORE", 1, VCFHeaderLineType.Float, "Exomiser gene combined"));
-        lines.add(new VCFInfoHeaderLine("EXOMISER_WARNING", 1, VCFHeaderLineType.String, "Exomiser gene"));
-
-        // add FILTER descriptions
-        for (FilterType ft : FilterType.values()) {
-            lines.add(new VCFFilterHeaderLine(ft.name(), ft.toString()));
-        }
-
-        return lines;
     }
 
 }

@@ -73,10 +73,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private List<TranscriptAnnotation> annotations;
     private String geneSymbol;
     private int entrezGeneId;
-    private final String hgvsGenome;
 
     //results from filters
-    private final Map<FilterType, FilterResult> passedFilterResultsMap;
+    private final Set<FilterType> passedFilterTypes;
     private final Set<FilterType> failedFilterTypes;
 
     //score-related stuff
@@ -103,13 +102,12 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         annotations = builder.annotations;
         geneSymbol = builder.geneSymbol;
         entrezGeneId = builder.entrezGeneId;
-        hgvsGenome = builder.hgvsGenome;
 
         variantContext = builder.variantContext;
         altAlleleId = builder.altAlleleId;
 
-        passedFilterResultsMap = builder.passedFilterResultsMap;
-        failedFilterTypes = builder.failedFilterTypes;
+        passedFilterTypes = EnumSet.copyOf(builder.passedFilterTypes);
+        failedFilterTypes = EnumSet.copyOf(builder.failedFilterTypes);
 
         frequencyData = builder.frequencyData;
         pathogenicityData = builder.pathogenicityData;
@@ -258,7 +256,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     @Override
     public String getHgvsGenome() {
-        return hgvsGenome;
+        return chr + ":g." + pos + ref + ">" + alt;
     }
 
     public String getGenotypeString() {
@@ -327,17 +325,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     /**
-     * @return the map of FilterResult objects that represent the result of
-     * filtering
-     */
-    public Map<FilterType, FilterResult> getFilterResults() {
-        return passedFilterResultsMap;
-    }
-
-    /**
      * This method is used to add a {@code FilterResult} object to this variant.
-     * Such objects represent the results of running the variant through a
-     * {@code Filter}.
+     * Such objects represent the results of running the variant through a {@code Filter}.
      *
      * @param filterResult
      * @return
@@ -351,13 +340,21 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     }
 
     private boolean addPassedFilterResult(FilterResult filterResult) {
-        passedFilterResultsMap.put(filterResult.getFilterType(), filterResult);
+        passedFilterTypes.add(filterResult.getFilterType());
         return true;
     }
 
     private boolean addFailedFilterResult(FilterResult filterResult) {
         failedFilterTypes.add(filterResult.getFilterType());
         return false;
+    }
+
+    /**
+     * @return the set of FilterResult objects that represent the result of
+     * filtering
+     */
+    public Set<FilterType> getPassedFilterTypes() {
+        return passedFilterTypes;
     }
 
     /**
@@ -386,11 +383,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
     @Override
     public boolean passedFilter(FilterType filterType) {
-        return !failedFilterTypes.contains(filterType) && passedFilterResultsMap.containsKey(filterType);
+        return !failedFilterTypes.contains(filterType) && passedFilterTypes.contains(filterType);
     }
 
     private boolean isUnFiltered() {
-        return failedFilterTypes.isEmpty() && passedFilterResultsMap.isEmpty();
+        return failedFilterTypes.isEmpty() && passedFilterTypes.isEmpty();
     }
 
     public FilterStatus getFilterStatus() {
@@ -569,9 +566,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         //TODO: expose frequency and pathogenicity scores?
         if(contributesToGeneScore) {
             //Add a star to the output string between the variantEffect and the score
-            return "VariantEvaluation{chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet() + " compatibleWith=" + inheritanceModes + "}";
+            return "VariantEvaluation{chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+                    + " compatibleWith=" + inheritanceModes + "}";
         }
-        return "VariantEvaluation{chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterResultsMap.keySet() + " compatibleWith=" + inheritanceModes + "}";
+        return "VariantEvaluation{chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
+                + " compatibleWith=" + inheritanceModes + "}";
     }
 
     /**
@@ -592,8 +591,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
         private List<TranscriptAnnotation> annotations = Collections.emptyList();
         private String geneSymbol = ".";
-        private int entrezGeneId = -1;
-        private String hgvsGenome;
+        private int entrezGeneId = GeneIdentifier.NULL_ENTREZ_ID;
 
         private VariantContext variantContext;
         private int altAlleleId;
@@ -601,7 +599,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private PathogenicityData pathogenicityData = PathogenicityData.EMPTY_DATA;
         private FrequencyData frequencyData = FrequencyData.EMPTY_DATA;
 
-        private final Map<FilterType, FilterResult> passedFilterResultsMap = new EnumMap<>(FilterType.class);
+        private final Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
         private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);
 
         /**
@@ -645,11 +643,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
                 default:
                     return String.valueOf(chr);
             }
-        }
-
-        // Change can be null for unknown references, or may not be set. Just in case, we'll hack something together.
-        private String buildHgvsGenome(int chr, int pos, String ref, String alt) {
-            return chr + ":g." + pos + ref + ">" + alt;
         }
 
         public Builder variantContext(VariantContext variantContext) {
@@ -744,7 +737,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         public Builder filterResults(Collection<FilterResult> filterResults) {
             for (FilterResult filterResult : filterResults) {
                 if (filterResult.passed()) {
-                    this.passedFilterResultsMap.put(filterResult.getFilterType(), filterResult);
+                    this.passedFilterTypes.add(filterResult.getFilterType());
                 } else {
                     this.failedFilterTypes.add(filterResult.getFilterType());
                 }
@@ -755,10 +748,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         public VariantEvaluation build() {
             if (chromosomeName == null) {
                 chromosomeName = buildChromosomeName(chr);
-            }
-
-            if (hgvsGenome == null) {
-                hgvsGenome = buildHgvsGenome(chr, pos, ref, alt);
             }
 
             if (variantContext == null) {

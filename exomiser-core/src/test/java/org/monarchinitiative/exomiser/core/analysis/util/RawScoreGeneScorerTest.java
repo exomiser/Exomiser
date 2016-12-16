@@ -105,7 +105,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithoutPriorityResultsOrVariants_UNINITIALIZED() {
         Gene gene = newGene();
         scoreGene(gene, ModeOfInheritance.ANY, 0);
-        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getVariantScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
     }
@@ -114,7 +114,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithoutPriorityResultsOrVariants_AUTOSOMAL_DOMINANT() {
         Gene gene = newGene();
         scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT, 0);
-        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getVariantScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
     }
@@ -123,7 +123,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithoutPriorityResultsOrVariants_AUTOSOMAL_RECESSIVE() {
         Gene gene = newGene();
         scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
-        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getVariantScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
     }
@@ -132,7 +132,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithSingleFailedVariant_UNINITIALIZED() {
         Gene gene = newGene(failFreq());
         scoreGene(gene, ModeOfInheritance.ANY, 0);
-        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getVariantScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
     }
@@ -141,7 +141,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithSingleFailedVariant_AUTOSOMAL_DOMINANT() {
         Gene gene = newGene(failFreq());
         scoreGene(gene, ModeOfInheritance.AUTOSOMAL_DOMINANT, 0);
-        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getVariantScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
     }
@@ -150,7 +150,7 @@ public class RawScoreGeneScorerTest {
     public void testScoreGeneWithSingleFailedVariant_AUTOSOMAL_RECESSIVE() {
         Gene gene = newGene(failFreq());
         scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
-        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getVariantScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(0f));
     }
@@ -163,7 +163,7 @@ public class RawScoreGeneScorerTest {
 
         float variantScore = passAllFrameshift.getVariantScore();
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -176,7 +176,7 @@ public class RawScoreGeneScorerTest {
 
         float variantScore = passAllFrameshift.getVariantScore();
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -191,7 +191,7 @@ public class RawScoreGeneScorerTest {
 
         assertThat(passAllFrameShift.contributesToGeneScore(), is(true));
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -207,7 +207,7 @@ public class RawScoreGeneScorerTest {
 
         assertThat(passAllFrameshift.contributesToGeneScore(), is(true));
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -224,7 +224,7 @@ public class RawScoreGeneScorerTest {
 
         assertThat(passAllFrameshift.contributesToGeneScore(), is(true));
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -241,7 +241,7 @@ public class RawScoreGeneScorerTest {
 
         assertThat(passAllFrameshift.contributesToGeneScore(), is(true));
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -256,7 +256,7 @@ public class RawScoreGeneScorerTest {
 
         float variantScore = passAllFrameshift.getVariantScore();
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -270,7 +270,7 @@ public class RawScoreGeneScorerTest {
         scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
 
         float variantScore = (passAllFrameshift.getVariantScore() + passAllMissense.getVariantScore()) / 2f;
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -289,7 +289,7 @@ public class RawScoreGeneScorerTest {
         assertThat(passAllMissense.contributesToGeneScore(), is(true));
         assertThat(passAllSynonymous.contributesToGeneScore(), is(false));
 
-        assertThat(gene.getFilterScore(), equalTo(variantScore));
+        assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
     }
@@ -328,7 +328,7 @@ public class RawScoreGeneScorerTest {
 
         scoreGene(gene, ModeOfInheritance.ANY, 0);
 
-        assertThat(gene.getFilterScore(), equalTo(0f));
+        assertThat(gene.getVariantScore(), equalTo(0f));
         assertThat(gene.getPriorityScore(), equalTo(1f));
         assertThat(gene.getCombinedScore(), equalTo(0.5f));
     }

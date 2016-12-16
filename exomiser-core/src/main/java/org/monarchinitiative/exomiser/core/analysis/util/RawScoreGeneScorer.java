@@ -63,13 +63,13 @@ public class RawScoreGeneScorer implements GeneScorer {
     public Consumer<Gene> scoreGene(ModeOfInheritance modeOfInheritance, int probandSampleId) {
         return gene -> {
             //It is critical only the PASS variants are used in the scoring
-            float filterScore = calculateFilterScore(gene.getPassedVariantEvaluations(), modeOfInheritance, probandSampleId);
-            gene.setFilterScore(filterScore);
+            float variantScore = calculateVariantScore(gene.getPassedVariantEvaluations(), modeOfInheritance, probandSampleId);
+            gene.setVariantScore(variantScore);
 
             float priorityScore = calculateGenePriorityScore(gene);
             gene.setPriorityScore(priorityScore);
 
-            float combinedScore = calculateCombinedScore(filterScore, priorityScore, gene.getPriorityResults().keySet());
+            float combinedScore = calculateCombinedScore(variantScore, priorityScore, gene.getPriorityResults().keySet());
             gene.setCombinedScore(combinedScore);
         };
     }
@@ -93,7 +93,7 @@ public class RawScoreGeneScorer implements GeneScorer {
      * recessive.
      * @return
      */
-    private float calculateFilterScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, int sampleId) {
+    private float calculateVariantScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, int sampleId) {
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }

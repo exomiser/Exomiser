@@ -49,10 +49,10 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvGeneResultsWriter.class);
 
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;
-    private static final String HEADER_LINE = "#GENE_SYMBOL	ENTREZ_GENE_ID	"
-            + "EXOMISER_GENE_PHENO_SCORE	EXOMISER_GENE_VARIANT_SCORE	EXOMISER_GENE_COMBINED_SCORE	"
-            + "HUMAN_PHENO_SCORE	MOUSE_PHENO_SCORE	FISH_PHENO_SCORE	WALKER_SCORE	"
-            + "PHIVE_ALL_SPECIES_SCORE	OMIM_SCORE	MATCHES_CANDIDATE_GENE	HUMAN_PHENO_EVIDENCE	MOUSE_PHENO_EVIDENCE	FISH_PHENO_EVIDENCE	HUMAN_PPI_EVIDENCE	MOUSE_PPI_EVIDENCE	FISH_PPI_EVIDENCE\n";
+    private static final String HEADER_LINE = "#GENE_SYMBOL	ENTREZ_GENE_ID\t"
+            + "EXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\t"
+            + "HUMAN_PHENO_SCORE\tMOUSE_PHENO_SCORE\tFISH_PHENO_SCORE\tWALKER_SCORE\t"
+            + "PHIVE_ALL_SPECIES_SCORE\tOMIM_SCORE\tMATCHES_CANDIDATE_GENE\tHUMAN_PHENO_EVIDENCE\tMOUSE_PHENO_EVIDENCE\tFISH_PHENO_EVIDENCE\tHUMAN_PPI_EVIDENCE\tMOUSE_PPI_EVIDENCE\tFISH_PPI_EVIDENCE\n";
 
     public TsvGeneResultsWriter() {
         Locale.setDefault(Locale.UK);
@@ -128,7 +128,7 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 gene.getGeneSymbol(),
                 gene.getEntrezGeneID(),
                 gene.getPriorityScore(),
-                gene.getFilterScore(),
+                gene.getVariantScore(),
                 gene.getCombinedScore(),
                 humanPhenScore,
                 mousePhenScore,

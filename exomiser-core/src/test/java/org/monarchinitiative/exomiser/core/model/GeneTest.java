@@ -157,7 +157,7 @@ public class GeneTest {
         assertThat(instance.passedFilters(), is(true));
         assertThat(instance.getPriorityResults().isEmpty(), is(true));
 
-        assertThat(instance.getFilterScore(), equalTo(0f));
+        assertThat(instance.getVariantScore(), equalTo(0f));
         assertThat(instance.getPriorityScore(), equalTo(0f));
         assertThat(instance.getCombinedScore(), equalTo(0f));
     }
@@ -176,7 +176,7 @@ public class GeneTest {
         assertThat(emptyGene.passedFilters(), is(true));
         assertThat(emptyGene.getPriorityResults().isEmpty(), is(true));
 
-        assertThat(emptyGene.getFilterScore(), equalTo(0f));
+        assertThat(emptyGene.getVariantScore(), equalTo(0f));
         assertThat(emptyGene.getPriorityScore(), equalTo(0f));
         assertThat(emptyGene.getCombinedScore(), equalTo(0f));
     }
@@ -537,14 +537,14 @@ public class GeneTest {
     }
 
     @Test
-    public void testCanSetAndChangeFilterScore() {
+    public void testCanSetAndChangeVariantScore() {
         float firstScore = 0f;
-        instance.setFilterScore(firstScore);
-        assertThat(instance.getFilterScore(), equalTo(firstScore));
+        instance.setVariantScore(firstScore);
+        assertThat(instance.getVariantScore(), equalTo(firstScore));
 
         float secondScore = 1.0f;
-        instance.setFilterScore(secondScore);
-        assertThat(instance.getFilterScore(), equalTo(secondScore));
+        instance.setVariantScore(secondScore);
+        assertThat(instance.getVariantScore(), equalTo(secondScore));
     }
 
     @Test

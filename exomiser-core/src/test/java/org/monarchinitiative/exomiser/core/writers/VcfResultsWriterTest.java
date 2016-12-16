@@ -79,12 +79,15 @@ public class VcfResultsWriterTest {
             + "##FILTER=<ID=REGULATORY_FEATURE_FILTER,Description=\"Regulatory Feature\">\n"
             + "##FILTER=<ID=VARIANT_EFFECT_FILTER,Description=\"Target\">\n"
             + "##INFO=<ID=ANN,Number=1,Type=String,Description=\"Functional annotations:'Allele|Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|Rank|HGVS.c|HGVS.p|cDNA.pos / cDNA.length|CDS.pos / CDS.length|AA.pos / AA.length|Distance|ERRORS / WARNINGS / INFO'\">\n"
-            + "##INFO=<ID=EXOMISER_GENE,Number=1,Type=String,Description=\"Exomiser gene\">\n"
-            + "##INFO=<ID=EXOMISER_GENE_COMBINED_SCORE,Number=1,Type=Float,Description=\"Exomiser gene combined\">\n"
-            + "##INFO=<ID=EXOMISER_GENE_PHENO_SCORE,Number=1,Type=Float,Description=\"Exomiser gene phenotype score\">\n"
-            + "##INFO=<ID=EXOMISER_GENE_VARIANT_SCORE,Number=1,Type=Float,Description=\"Exomiser gene variant score\">\n"
-            + "##INFO=<ID=EXOMISER_VARIANT_SCORE,Number=1,Type=Float,Description=\"Exomiser variant score\">\n"
-            + "##INFO=<ID=EXOMISER_WARNING,Number=1,Type=String,Description=\"Exomiser gene\">\n"
+            + "##INFO=<ID=ExGeneSCombi,Number=A,Type=Float,Description=\"Exomiser gene combined score\">\n"
+            + "##INFO=<ID=ExGeneSPheno,Number=A,Type=Float,Description=\"Exomiser gene phenotype score\">\n"
+            + "##INFO=<ID=ExGeneSVar,Number=A,Type=Float,Description=\"Exomiser gene variant score\">\n"
+            + "##INFO=<ID=ExGeneSymbId,Number=A,Type=String,Description=\"Exomiser gene id\">\n"
+            + "##INFO=<ID=ExGeneSymbol,Number=A,Type=String,Description=\"Exomiser gene symbol\">\n"
+            + "##INFO=<ID=ExVarEff,Number=A,Type=String,Description=\"Exomiser variant effect\">\n"
+            + "##INFO=<ID=ExVarHgvs,Number=A,Type=String,Description=\"Exomiser variant hgvs\">\n"
+            + "##INFO=<ID=ExVarSCombi,Number=A,Type=Float,Description=\"Exomiser variant combined score\">\n"
+            + "##INFO=<ID=ExWarn,Number=A,Type=String,Description=\"Exomiser warning\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
     private static final String CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT = "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tEXOMISER_GENE=FGFR2;EXOMISER_GENE_COMBINED_SCORE=0.0;EXOMISER_GENE_PHENO_SCORE=0.0;EXOMISER_GENE_VARIANT_SCORE=0.0;EXOMISER_VARIANT_SCORE=1.0;RD=30\tGT:RD\t0/1:30\n";
 

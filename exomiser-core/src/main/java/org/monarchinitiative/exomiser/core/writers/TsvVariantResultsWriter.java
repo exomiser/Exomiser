@@ -167,7 +167,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // EXOMISER_GENE_PHENO_SCORE
         record.add(dotIfNull(gene.getPriorityScore()));
         // EXOMISER_GENE_VARIANT_SCORE
-        record.add(dotIfNull(gene.getFilterScore()));
+        record.add(dotIfNull(gene.getVariantScore()));
         // EXOMISER_GENE_COMBINED_SCORE
         record.add(dotIfNull(gene.getCombinedScore()));
         return record;

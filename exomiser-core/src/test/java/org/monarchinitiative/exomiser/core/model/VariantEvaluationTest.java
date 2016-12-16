@@ -24,7 +24,6 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
-import com.google.common.collect.Maps;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
@@ -312,15 +311,14 @@ public class VariantEvaluationTest {
     @Test
     public void testBuilderFilterResults_AddPassAndFailedFilters() {
         Set<FilterType> expectedFilters = EnumSet.of(FAIL_FREQUENCY_RESULT.getFilterType());
-        Map<FilterType, FilterResult> passedFilters = Maps.newLinkedHashMap();
-        passedFilters.put(PASS_QUALITY_RESULT.getFilterType(), PASS_QUALITY_RESULT);
+        Set<FilterType> passedFilters = EnumSet.of(PASS_QUALITY_RESULT.getFilterType());
 
         VariantEvaluation variantEvaluation = testVariantBuilder()
                 .filterResults(FAIL_FREQUENCY_RESULT, PASS_QUALITY_RESULT)
                 .build();
 
         assertThat(variantEvaluation.getFailedFilterTypes(), equalTo(expectedFilters));
-        assertThat(variantEvaluation.getFilterResults(), equalTo(passedFilters));
+        assertThat(variantEvaluation.getPassedFilterTypes(), equalTo(passedFilters));
     }
 
     @Test
@@ -352,7 +350,7 @@ public class VariantEvaluationTest {
     @Test
     public void testPassesFiltersWhenNoFiltersHaveBeenApplied() {
         assertThat(instance.getFailedFilterTypes().isEmpty(), is(true));
-        assertThat(instance.getFilterResults().isEmpty(), is(true));
+        assertThat(instance.getPassedFilterTypes().isEmpty(), is(true));
         assertThat(instance.passedFilters(), is(true));
     }
 
@@ -367,7 +365,7 @@ public class VariantEvaluationTest {
         instance.addFilterResult(PASS_QUALITY_RESULT);
         instance.addFilterResult(PASS_FREQUENCY_RESULT);
         assertThat(instance.getFailedFilterTypes().isEmpty(), is(true));
-        assertThat(instance.getFilterResults().isEmpty(), is(false));
+        assertThat(instance.getPassedFilterTypes().isEmpty(), is(false));
         assertThat(instance.passedFilters(), is(true));
     }
 
@@ -376,7 +374,7 @@ public class VariantEvaluationTest {
         instance.addFilterResult(PASS_QUALITY_RESULT);
         instance.addFilterResult(FAIL_FREQUENCY_RESULT);
         assertThat(instance.getFailedFilterTypes().isEmpty(), is(false));
-        assertThat(instance.getFilterResults().isEmpty(), is(false));
+        assertThat(instance.getPassedFilterTypes().isEmpty(), is(false));
         assertThat(instance.passedFilters(), is(false));
     }
 

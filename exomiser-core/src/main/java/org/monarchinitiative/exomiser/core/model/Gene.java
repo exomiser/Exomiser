@@ -65,7 +65,7 @@ import static java.util.stream.Collectors.toList;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.21 (16 January, 2013)
  */
-@JsonPropertyOrder({"geneSymbol", "entrezGeneId", "combinedScore", "filterScore", "priorityScore", "inheritanceModes", "variantEvaluations"})
+@JsonPropertyOrder({"geneSymbol", "entrezGeneId", "combinedScore", "variantScore", "priorityScore", "inheritanceModes", "variantEvaluations"})
 public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     /**
@@ -88,7 +88,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * A score representing the combined pathogenicity predictions for the
      * {@link Variant} objects associated with this gene.
      */
-    private float filterScore = 0f;
+    private float variantScore = 0f;
     /**
      * A score representing the combined filter and priority scores.
      */
@@ -173,7 +173,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * assumption that such genes are unlikely to be be true disease genes,
      * rather, by chance say 2 of 20 variants are score as highly pathogenic by
      * polyphen, leading to a false positive call. This method downweights the
-     * {@link #filterScore} of this gene, which is the aggregate score for the
+     * {@link #variantScore} of this gene, which is the aggregate score for the
      * variants.
      *
      * @param threshold Downweighting occurs for variants that have this number
@@ -197,7 +197,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 //        if (downweight > 1f) {
 //            downweight = 1f;
 //        }
-//        this.filterScore = this.filterScore * (1f - downweight);
+//        this.variantScore = this.variantScore * (1f - downweight);
 //        /*
 //         * filterscore is now at least zero
 //         */
@@ -352,24 +352,24 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     /**
-     * @return a filter score that will be used to rank the gene.
+     * @return a variant score that will be used to rank the gene.
      */
-    public float getFilterScore() {
-        return this.filterScore;
+    public float getVariantScore() {
+        return this.variantScore;
     }
 
     /**
-     * Set the filtering score for the gene.
+     * Set the variant score for the gene.
      *
-     * @param filterScore
+     * @param variantScore
      */
-    public void setFilterScore(float filterScore) {
-        this.filterScore = filterScore;
+    public void setVariantScore(float variantScore) {
+        this.variantScore = variantScore;
     }
 
     /**
      * Return the combined score of this gene based on the relevance of the gene
-     * (priorityScore) and the predicted effects of the variants (filterScore).
+     * (priorityScore) and the predicted effects of the variants (variantScore).
      *
      * @return a combined score that will be used to rank the gene.
      */
@@ -499,7 +499,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     @Override
     public String toString() {
-        return String.format("%s entrezId=%d compatibleWith=%s filterScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, filterScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterTypes);
+        return String.format("%s entrezId=%d compatibleWith=%s variantScore=%.3f priorityScore=%.3f combinedScore=%.3f variants=%d filterStatus=%s failedFilters=%s passedFilters=%s", geneSymbol, entrezGeneId, inheritanceModes, variantScore, priorityScore, combinedScore, variantEvaluations.size(), getFilterStatus(), failedFilterTypes, passedFilterTypes);
     }
 
 }
