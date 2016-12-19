@@ -63,7 +63,7 @@ public class VcfResultsWriter implements ResultsWriter {
         GENE_COMBINED_SCORE("ExGeneSCombi", VCFHeaderLineType.Float, "Exomiser gene combined score"),
         GENE_PHENO_SCORE("ExGeneSPheno", VCFHeaderLineType.Float, "Exomiser gene phenotype score"),
         GENE_VARIANT_SCORE("ExGeneSVar", VCFHeaderLineType.Float, "Exomiser gene variant score"),
-        VARIANT_SCORE("ExVarSCombi", VCFHeaderLineType.Float, "Exomiser variant combined score"),
+        VARIANT_SCORE("ExVarScore", VCFHeaderLineType.Float, "Exomiser variant score"),
         VARIANT_EFFECT("ExVarEff", VCFHeaderLineType.String, "Exomiser variant effect"),
         VARIANT_HGVS("ExVarHgvs", VCFHeaderLineType.String, "Exomiser variant hgvs"),
         WARNING("ExWarn", VCFHeaderLineType.String, "Exomiser warning");
