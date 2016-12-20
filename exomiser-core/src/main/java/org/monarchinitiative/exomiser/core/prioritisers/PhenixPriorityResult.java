@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 /**
  * Semantic Similarity in HPO
  *
- * @author Sebastian Koehler
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @author Jules Jacobsen
  * @version 0.05 (6 January, 2014).
  */

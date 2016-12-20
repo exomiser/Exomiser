@@ -47,7 +47,7 @@ import java.util.stream.Stream;
  * @see <a
  * href="http://compbio.charite.de/hudson/job/randomWalkMatrix/">RandomWalk
  * Hudson page</a>
- * @author Sebastian Koehler
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.09 (3 November, 2013)
  */
 public class ExomeWalkerPriority implements Prioritiser {

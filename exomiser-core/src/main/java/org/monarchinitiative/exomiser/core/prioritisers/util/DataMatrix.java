@@ -30,7 +30,7 @@ import java.util.Objects;
 /**
  * Contains the random walk relationships and the entrez-id to index relations.
  *
- * @author sebastiankohler
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class DataMatrix {

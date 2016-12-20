@@ -52,7 +52,7 @@ import static java.util.stream.Collectors.toMap;
  * from: {@code http://purl.obolibrary.org/obo/hp/uberpheno/}
  * (HSgenes_crossSpeciesPhenoAnnotation.txt, crossSpeciesPheno.obo)
  *
- * @author Sebastian Koehler
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.06 (6 December, 2013)
  */
 public class PhenixPriority implements Prioritiser {
