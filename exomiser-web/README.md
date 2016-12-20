@@ -26,11 +26,11 @@ Once built, to run the application will need to:
 ##Running
 Launch the application by intoning the incantation thus:
  ```shell
-   java -XX:+useG1GC -Xms8G -Xmx8G ${project.name}-${project.version}.jar
+   java -jar -XX:+UseG1GC -Xms8G -Xmx8G ${project.name}-${project.version}.jar
  ```
  The port will default to 8080, but it can be changed by specifying it either on the command line:
  ```shell
-   java -XX:+useG1GC -Xms8G -Xmx8G ${project.name}-${project.version}.jar --server.port=8090
+   java -jar -XX:+UseG1GC -Xms8G -Xmx8G ${project.name}-${project.version}.jar --server.port=8090
  ```
  or by adding it to the ``application.properties``
  ```properties
