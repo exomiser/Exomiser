@@ -311,6 +311,9 @@ public class SubmitJobController {
     }
 
     private Path createVcfPathFromMultipartFile(MultipartFile multipartVcfFile) {
+        if (multipartVcfFile.getOriginalFilename().endsWith(".vcf.gz")) {
+            return createPathFromMultipartFile(multipartVcfFile, ".vcf.gz");
+        }
         return createPathFromMultipartFile(multipartVcfFile, ".vcf");
     }
 
