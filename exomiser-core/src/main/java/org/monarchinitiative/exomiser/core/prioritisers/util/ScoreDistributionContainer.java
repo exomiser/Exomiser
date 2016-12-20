@@ -30,6 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
+ *
+ */
 public class ScoreDistributionContainer {
 
     private final Logger logger = LoggerFactory.getLogger(ScoreDistributionContainer.class);

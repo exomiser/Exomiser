@@ -21,7 +21,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 /**
  *
- * @author Sebastian Koehler
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.06 (6 January, 2014).
  */
 public class ExomeWalkerPriorityResult extends AbstractPriorityResult {

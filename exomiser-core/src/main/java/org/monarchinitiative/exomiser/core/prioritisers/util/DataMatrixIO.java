@@ -30,6 +30,7 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  */
 public class DataMatrixIO {
 

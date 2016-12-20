@@ -2,6 +2,10 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import java.util.List;
 
+/**
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
+ *
+ */
 public class ScoreDistribution {
 
 	private double[] scores;
