@@ -107,7 +107,7 @@ public class InheritanceModeAnalyser {
         List<VariantContext> compatibleVariants = getCompatibleVariantContexts(passedVariantEvaluations);
 
         if (!compatibleVariants.isEmpty()) {
-            logger.info("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
+            logger.debug("Gene {} has {} variants compatible with {}:", gene.getGeneSymbol(), compatibleVariants.size(), modeOfInheritance);
             gene.setInheritanceModes(compatibleModes);
             setVariantEvaluationInheritanceModes(geneVariants, compatibleVariants);
         }
