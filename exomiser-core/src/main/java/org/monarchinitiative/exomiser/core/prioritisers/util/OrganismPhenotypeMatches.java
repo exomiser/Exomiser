@@ -94,7 +94,7 @@ public class OrganismPhenotypeMatches {
         return termPhenotypeMatches.values().stream()
                 .flatMap(Collection::stream)
                 .collect(collectingAndThen(
-                        toMap(match -> String.join("", match.getQueryPhenotypeId() + match.getMatchPhenotypeId()), Function.identity()),
+                        toMap(PhenotypeMatch::getCompoundKey, Function.identity()),
                         Collections::unmodifiableMap));
     }
 
