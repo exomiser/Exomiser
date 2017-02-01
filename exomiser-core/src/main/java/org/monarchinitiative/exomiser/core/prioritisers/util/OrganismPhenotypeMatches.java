@@ -156,6 +156,10 @@ public class OrganismPhenotypeMatches {
                 .collect(toList());
     }
 
+    public Set<PhenotypeMatch> getBestPhenotypeMatches() {
+        return bestTheoreticalModel.getBestPhenotypeMatches();
+    }
+
     public TheoreticalModel getBestTheoreticalModel() {
         return bestTheoreticalModel;
     }
