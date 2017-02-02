@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.toSet;
 public class TheoreticalModel {
 
     private final Organism organism;
-    //These could be pulled out into a BestTheoreticalModel and then other Models can be compared to this.
+
     private final Set<PhenotypeMatch> bestPhenotypeMatches;
     private final double theoreticalMaxMatchScore;
     private final double theoreticalBestAvgScore;
@@ -44,7 +44,16 @@ public class TheoreticalModel {
         this.organism = organism;
         this.bestPhenotypeMatches = makeBestPhenotypeMatches(termPhenotypeMatches);
         this.theoreticalMaxMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
-        this.theoreticalBestAvgScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).average().orElse(0d);
+        this.theoreticalBestAvgScore = calculateBestAverageScore(termPhenotypeMatches, termPhenotypeMatches.keySet().size());
+    }
+
+    //calculates the average score of all the best phenotype matches over all of query phenotypes, not just those with matches.
+    private double calculateBestAverageScore(Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches, int numQueryPhenotypes) {
+        if (termPhenotypeMatches.isEmpty()) {
+            // otherwise get a NaN value that escalates to other scores and eventually throws an exception
+            return 0;
+        }
+        return bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).sum() / numQueryPhenotypes;
     }
 
     private Set<PhenotypeMatch> makeBestPhenotypeMatches(Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
@@ -83,7 +92,7 @@ public class TheoreticalModel {
 
     public double compare(double modelMaxMatchScore, double modelBestAvgScore) {
         // calculate combined score
-        if (modelMaxMatchScore != 0) {
+        if (modelMaxMatchScore > 0) {
             double combinedScore = 50 * (modelMaxMatchScore / theoreticalMaxMatchScore + modelBestAvgScore / theoreticalBestAvgScore);
             if (combinedScore > 100) {
                 combinedScore = 100;

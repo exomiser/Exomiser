@@ -97,7 +97,7 @@ public class TheoreticalModelTest {
 
         assertThat(matchModel.getBestPhenotypeMatches(), equalTo(Sets.newHashSet(perfectNoseMatch)));
         assertThat(matchModel.getOrganism(), equalTo(Organism.HUMAN));
-        assertThat(matchModel.getBestAvgScore(), equalTo(4d));
+        assertThat(matchModel.getBestAvgScore(), equalTo(2d));
         assertThat(matchModel.getMaxMatchScore(), equalTo(4d));
 
         assertThat(matchModel.compare(4d, 4d), equalTo(1d));
