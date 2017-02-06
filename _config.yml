@@ -7,7 +7,7 @@
 url: "https://exomiser.github.io/Exomiser"
 baseurl: "/Exomiser"
 
-latest_7_version: 7.2.1
+latest_7_version: 7.2.3
 
 # If you are building a GitHub project page then use these settings:
 #url: "http://username.github.io/projectname"
@@ -42,7 +42,8 @@ navbar-links:
     - HPO-Browser: "http://compbio.charite.de/hpoweb/"
     - Jannovar: "http://charite.github.io/jannovar"
     - ReMM score: "https://charite.github.io/software-remm-score.html"
-    - Computational Biology Group: "https://compbio.charite.de"
+    - Robinson Lab: "https://robinsongroup.github.io"
+    - Monarch Initiative: "https://monarchinitiative.org"
 
 include: ['_pages']
 
