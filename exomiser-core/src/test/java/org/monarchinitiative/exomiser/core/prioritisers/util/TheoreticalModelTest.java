@@ -26,10 +26,7 @@ import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -82,10 +79,6 @@ public class TheoreticalModelTest {
         assertThat(noMatchModel.getOrganism(), equalTo(Organism.HUMAN));
         assertThat(noMatchModel.getBestAvgScore(), equalTo(0.0));
         assertThat(noMatchModel.getMaxMatchScore(), equalTo(0.0));
-
-        assertThat(noMatchModel.compare(4.0, 3.0), equalTo(1d));
-        assertThat(noMatchModel.compare(0.0, 3.0), equalTo(0d));
-
     }
 
     @Test
@@ -97,15 +90,18 @@ public class TheoreticalModelTest {
 
         assertThat(matchModel.getBestPhenotypeMatches(), equalTo(Sets.newHashSet(perfectNoseMatch)));
         assertThat(matchModel.getOrganism(), equalTo(Organism.HUMAN));
-        assertThat(matchModel.getBestAvgScore(), equalTo(4d));
+        assertThat(matchModel.getBestAvgScore(), equalTo(2d));
         assertThat(matchModel.getMaxMatchScore(), equalTo(4d));
-
-        assertThat(matchModel.compare(4d, 4d), equalTo(1d));
     }
 
     @Test
     public void testGetOrganism() throws Exception {
         assertThat(instance.getOrganism(), equalTo(Organism.HUMAN));
+    }
+
+    @Test
+    public void testGetQueryTerms() {
+        assertThat(instance.getQueryTerms(), equalTo(Arrays.asList(bigNose, bigToe)));
     }
 
     @Test
@@ -134,21 +130,6 @@ public class TheoreticalModelTest {
     public void testGetBestAverageScoreNoMatches() {
         TheoreticalModel noMatchesInstance = new TheoreticalModel(Organism.HUMAN, Collections.emptyMap());
         assertThat(noMatchesInstance.getBestAvgScore(), equalTo(0d));
-    }
-
-
-    @Test
-    public void compare() throws Exception {
-        // maxMatchScore = 4.0
-        // bestAvgScore = 3.0
-
-        assertThat(instance.compare(0d, 0d), equalTo(0d));
-        assertThat(instance.compare(2.0, 0.0), equalTo(0.25));
-        assertThat(instance.compare(2.0, 1.5), equalTo(0.5));
-        assertThat(instance.compare(4.0, 1.5), equalTo(0.75));
-        assertThat(instance.compare(4.0, 3.0), equalTo(1d));
-
-        assertThat(instance.compare(4.0, 4.0), equalTo(1d));
     }
 
 }

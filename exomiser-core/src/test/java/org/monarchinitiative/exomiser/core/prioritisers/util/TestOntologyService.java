@@ -19,6 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
@@ -50,7 +51,7 @@ public class TestOntologyService implements OntologyService {
 
     @Override
     public Set<PhenotypeTerm> getHpoTerms() {
-        return Collections.emptySet();
+        return ImmutableSet.copyOf(hpIdPhenotypeTerms.values());
     }
 
     @Override
@@ -88,7 +89,7 @@ public class TestOntologyService implements OntologyService {
 
     @Override
     public PhenotypeTerm getPhenotypeTermForHpoId(String hpoId) {
-        return hpIdPhenotypeTerms.get(hpoId);
+        return hpIdPhenotypeTerms.getOrDefault(hpoId, PhenotypeTerm.of(hpoId, "Not set"));
     }
 
     public static Builder builder() {

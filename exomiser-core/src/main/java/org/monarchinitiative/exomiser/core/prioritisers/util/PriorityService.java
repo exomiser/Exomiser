@@ -65,7 +65,7 @@ public class PriorityService {
     public List<PhenotypeTerm> makePhenotypeTermsFromHpoIds(List<String> hpoIds) {
         return hpoIds.stream()
                 .map(ontologyService::getPhenotypeTermForHpoId)
-                .filter(hpoTerm -> hpoTerm != null)
+                .filter(Objects::nonNull)
                 .collect(toList());
     }
 
