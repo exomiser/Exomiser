@@ -35,12 +35,14 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.number.BigDecimalCloseTo.closeTo;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -109,14 +111,36 @@ public class HiPhivePriorityTest {
         };
     }
 
+//    private Map<String, List<Double>> expectedHumanMouseFishScores() {
+//        Map<String, List<Double>> geneScores = new LinkedHashMap<>();
+//        geneScores.put("FGFR2", Lists.newArrayList(0.8762904736638727, 0.8039423769154914, 0.0, 0.0, 0.0));
+//        geneScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
+//        geneScores.put("FREM2", Lists.newArrayList(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
+//        geneScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
+//        return geneScores;
+//    }
+
+    private Map<String, List<Double>> expectedHumanMouseFishScores() {
+        Map<String, List<Double>> expectedScores = new LinkedHashMap<>();
+        expectedScores.put("FGFR2", Lists.newArrayList(0.8762904736638727, 0.8039423769154914, 0.0, 0.0, 0.0));
+        expectedScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932035210647655, 0.0, 0.0, 0.0));
+        expectedScores.put("FREM2", Lists.newArrayList(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
+        expectedScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
+        return expectedScores;
+    }
+
+    private static final BigDecimal ERROR = new BigDecimal("1e-15");
+
     private void checkResultScores(HiPhivePriorityResult result, List<Double> scores) {
-        assertThat(result.getScore(), equalTo(scores.subList(0, 3).stream().sorted(Comparator.reverseOrder()).findFirst().get()));
-        assertThat(result.getHumanScore(), equalTo(scores.get(0)));
-        assertThat(result.getMouseScore(), equalTo(scores.get(1)));
-        assertThat(result.getFishScore(), equalTo(scores.get(2)));
-        assertThat(result.getPpiScore(), equalTo(scores.get(3)));
+        System.out.printf("geneId=%s, geneSymbol='%s', score=%.25f, humanScore=%.25f, mouseScore=%.25f, fishScore=%.25f, ppiScore=%.25f%n", result.geneId, result.getGeneSymbol(), result.getScore(), new BigDecimal(result.getHumanScore()), new BigDecimal(result.getMouseScore()), result.getFishScore(), result.getPpiScore());
+        assertThat(result.getGeneSymbol() + " Top score", result.getScore(), equalTo(scores.subList(0, 3).stream().sorted(Comparator.reverseOrder()).findFirst().get()));
+        assertThat(result.getGeneSymbol() + " Human score", new BigDecimal(result.getHumanScore()), closeTo(new BigDecimal(scores.get(0)), ERROR));
+//        assertThat(result.getGeneSymbol() + " Mouse score", new BigDecimal(result.getMouseScore()), equalTo(new BigDecimal(scores.get(1))));
+        assertThat(result.getGeneSymbol() + " Mouse score", new BigDecimal(result.getMouseScore()), closeTo(new BigDecimal(scores.get(1)), ERROR));
+        assertThat(result.getGeneSymbol() + " Fish score", result.getFishScore(), equalTo(scores.get(2)));
+        assertThat(result.getGeneSymbol() + " PPI score", result.getPpiScore(), equalTo(scores.get(3)));
         boolean isCandidateGeneMatch = (scores.get(4) == 1.0);
-        assertThat(result.isCandidateGeneMatch(), equalTo(isCandidateGeneMatch));
+        assertThat(result.getGeneSymbol() + " Candidate gene", result.isCandidateGeneMatch(), equalTo(isCandidateGeneMatch));
     }
 
     @Test
@@ -141,15 +165,6 @@ public class HiPhivePriorityTest {
         results.forEach(checkScores(geneScores));
     }
 
-    private Map<String, List<Double>> expectedHumanMouseFishScores() {
-        Map<String, List<Double>> geneScores = new LinkedHashMap<>();
-        geneScores.put("FGFR2", Lists.newArrayList(0.8762904736638727, 0.8039423769154914, 0.0, 0.0, 0.0));
-        geneScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
-        geneScores.put("FREM2", Lists.newArrayList(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
-        geneScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
-        return geneScores;
-    }
-
     @Test
     public void testPrioritise() {
 
@@ -169,6 +184,32 @@ public class HiPhivePriorityTest {
     }
 
     @Test
+    public void testPrioritiseWithUnMappedQueryPhenotype() {
+
+        List<String> hpoIds = getHpoIds();
+        //This phenotype (HP:0000707) is not represented in the HP-HP mappings as it is a very low scoring self-hit.
+        //Consequently it increases the overall average score of the hits.
+        hpoIds.add("HP:0000707");
+
+        HiPhivePriority instance = new HiPhivePriority(hpoIds, HiPhiveOptions.builder().runParams("human,mouse,fish").build(), DataMatrix.EMPTY, priorityService);
+        List<Gene> genes = getGenes();
+
+        List<HiPhivePriorityResult> results = instance.prioritise(genes)
+                .sorted(Comparator.naturalOrder())
+                .collect(toList());
+
+        assertThat(results.size(), equalTo(genes.size()));
+
+        Map<String, List<Double>> expectedScores = new LinkedHashMap<>();
+        expectedScores.put("FGFR2", Lists.newArrayList(0.9442318091865164, 0.8394768488788327, 0.0, 0.0, 0.0));
+        expectedScores.put("ROR2", Lists.newArrayList(0.9091215195222582, 0.73554842149647, 0.0, 0.0, 0.0));
+        expectedScores.put("FREM2", Lists.newArrayList(0.6248281688059083016639761, 0.6436054831824984390209465, 0.0, 0.0, 0.0));
+        expectedScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
+
+        results.forEach(checkScores(expectedScores));
+    }
+
+    @Test
     public void testPrioritizeGenesRestrictedGeneList() {
         List<Gene> genes = getGenes().stream().filter(gene -> gene.getGeneSymbol().equals("FGFR2")).collect(toList());
 
@@ -180,10 +221,10 @@ public class HiPhivePriorityTest {
         assertThat(results.size(), equalTo(genes.size()));
 
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
-        Map<String, List<Double>> geneScores = new LinkedHashMap<>();
-        geneScores.put("FGFR2", Lists.newArrayList(0.8762904736638727, 0.8039423769154914, 0.0, 0.0, 0.0));
+        Map<String, List<Double>> expectedScores = new LinkedHashMap<>();
+        expectedScores.put("FGFR2", Lists.newArrayList(0.8762904736638727, 0.8039423769154914, 0.0, 0.0, 0.0));
 
-        results.forEach(checkScores(geneScores));
+        results.forEach(checkScores(expectedScores));
     }
 
     @Test
@@ -198,13 +239,13 @@ public class HiPhivePriorityTest {
         assertThat(results.size(), equalTo(genes.size()));
 
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
-        Map<String, List<Double>> geneScores = new LinkedHashMap<>();
-        geneScores.put("FGFR2", Lists.newArrayList(0.0, 0.8039423769154914, 0.0, 0.0, 0.0));
-        geneScores.put("ROR2", Lists.newArrayList(0.0, 0.6796978490932033, 0.0, 0.0, 0.0));
-        geneScores.put("FREM2", Lists.newArrayList(0.0, 0.6033446654591643, 0.0, 0.0, 0.0));
-        geneScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
+        Map<String, List<Double>> expectedScores = new LinkedHashMap<>();
+        expectedScores.put("FGFR2", Lists.newArrayList(0.0, 0.8039423769154914, 0.0, 0.0, 0.0));
+        expectedScores.put("ROR2", Lists.newArrayList(0.0, 0.67969784909320351, 0.0, 0.0, 0.0));
+        expectedScores.put("FREM2", Lists.newArrayList(0.0, 0.6033446654591643, 0.0, 0.0, 0.0));
+        expectedScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
 
-        results.forEach(checkScores(geneScores));
+        results.forEach(checkScores(expectedScores));
     }
 
     @Test
@@ -230,13 +271,14 @@ public class HiPhivePriorityTest {
         assertThat(topResult.getGeneSymbol(), not(equalTo(candidateGeneSymbol)));
 
         //human, mouse, fish, walker, candidateGene (this is really a boolean)
-        Map<String, List<Double>> geneScores = new LinkedHashMap<>();
-        geneScores.put("FGFR2", Lists.newArrayList(0.0, 0.8039423769154914, 0.0, 0.0, 1.0));
-        geneScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
-        geneScores.put("FREM2", Lists.newArrayList(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
-        geneScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
+        Map<String, List<Double>> expectedScores = new LinkedHashMap<>();
+        expectedScores.put("FGFR2", Lists.newArrayList(0.8322044875087917, 0.8039423769154914, 0.0, 0.0, 1.0));
+//        expectedScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.6796978490932033, 0.0, 0.0, 0.0));
+        expectedScores.put("ROR2", Lists.newArrayList(0.8400025551155774, 0.67969784909320351, 0.0, 0.0, 0.0));
+        expectedScores.put("FREM2", Lists.newArrayList(0.5929438966299952, 0.6033446654591643, 0.0, 0.0, 0.0));
+        expectedScores.put("ZNF738", Lists.newArrayList(0.0, 0.0, 0.0, 0.0, 0.0));
 
-        results.forEach(checkScores(geneScores));
+        results.forEach(checkScores(expectedScores));
 
     }
 

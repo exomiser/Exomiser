@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 /**
- * Created by jules on 03/06/2016.
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class OrganismPhenotypeMatchesTest {
 

@@ -19,6 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
+import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
@@ -36,20 +37,22 @@ public class TheoreticalModel {
 
     private final Organism organism;
 
+    private final List<PhenotypeTerm> queryTerms;
     private final Set<PhenotypeMatch> bestPhenotypeMatches;
     private final double theoreticalMaxMatchScore;
     private final double theoreticalBestAvgScore;
 
     TheoreticalModel(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
         this.organism = organism;
+        this.queryTerms = ImmutableList.copyOf(termPhenotypeMatches.keySet());
         this.bestPhenotypeMatches = makeBestPhenotypeMatches(termPhenotypeMatches);
         this.theoreticalMaxMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
-        this.theoreticalBestAvgScore = calculateBestAverageScore(termPhenotypeMatches, termPhenotypeMatches.keySet().size());
+        this.theoreticalBestAvgScore = calculateBestAverageScore(bestPhenotypeMatches, termPhenotypeMatches.keySet().size());
     }
 
-    //calculates the average score of all the best phenotype matches over all of query phenotypes, not just those with matches.
-    private double calculateBestAverageScore(Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches, int numQueryPhenotypes) {
-        if (termPhenotypeMatches.isEmpty()) {
+    //calculates the average score of the best phenotype matches over all of query phenotypes, not just those with matches.
+    private double calculateBestAverageScore(Set<PhenotypeMatch> bestPhenotypeMatches, int numQueryPhenotypes) {
+        if (bestPhenotypeMatches.isEmpty()) {
             // otherwise get a NaN value that escalates to other scores and eventually throws an exception
             return 0;
         }
@@ -78,6 +81,10 @@ public class TheoreticalModel {
         return organism;
     }
 
+    public List<PhenotypeTerm> getQueryTerms() {
+        return queryTerms;
+    }
+
     public Set<PhenotypeMatch> getBestPhenotypeMatches() {
         return bestPhenotypeMatches;
     }
@@ -88,18 +95,6 @@ public class TheoreticalModel {
 
     public double getBestAvgScore() {
         return theoreticalBestAvgScore;
-    }
-
-    public double compare(double modelMaxMatchScore, double modelBestAvgScore) {
-        // calculate combined score
-        if (modelMaxMatchScore > 0) {
-            double combinedScore = 50 * (modelMaxMatchScore / theoreticalMaxMatchScore + modelBestAvgScore / theoreticalBestAvgScore);
-            if (combinedScore > 100) {
-                combinedScore = 100;
-            }
-            return combinedScore / 100;
-        }
-        return 0;
     }
 
     @Override

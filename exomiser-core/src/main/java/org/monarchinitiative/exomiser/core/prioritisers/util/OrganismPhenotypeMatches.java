@@ -36,7 +36,8 @@ import static java.util.stream.Collectors.*;
 
 
 /**
- * Stores the PhenotypeMatches for a set of query PhenotypeTerms for an Organism.
+ * Stores the PhenotypeMatches for a set of query PhenotypeTerms for an Organism. These represent the best possible matches
+ * a {@link org.monarchinitiative.exomiser.core.model.Model} could
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
@@ -94,8 +95,12 @@ public class OrganismPhenotypeMatches {
         return termPhenotypeMatches.values().stream()
                 .flatMap(Collection::stream)
                 .collect(collectingAndThen(
-                        toMap(match -> String.join("", match.getQueryPhenotypeId() + match.getMatchPhenotypeId()), Function.identity()),
+                        toMap(makeKey(), Function.identity()),
                         Collections::unmodifiableMap));
+    }
+
+    private Function<PhenotypeMatch, String> makeKey() {
+        return match -> String.join("", match.getQueryPhenotypeId() + match.getMatchPhenotypeId());
     }
 
     public Set<String> getMatchedHpIds() {
@@ -105,6 +110,84 @@ public class OrganismPhenotypeMatches {
     /**
      * Calculates the best forward and reverse matches for a given set of model phenotypes against the sub-graph of matches
      * for the query phenotypes against this organism. The best forward and reverse matches are not necessarily the same.
+     * @param modelPhenotypes
+     * @return
+     */
+    public OrganismPhenotypeMatchScore calculateModelPhenotypeScores(List<String> modelPhenotypes) {
+        List<String> matchedModelPhenotypeIds = getMatchingPhenotypes(modelPhenotypes);
+
+        //hpId
+        Set<String> hpIdsWithPhenotypeMatch = new TreeSet<>();
+        for (PhenotypeMatch match : getBestPhenotypeMatches()) {
+            hpIdsWithPhenotypeMatch.add(match.getQueryPhenotypeId());
+        }
+
+        double maxModelMatchScore = 0;
+        double sumModelBestMatchScores = 0;
+
+        final Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms = new LinkedHashMap<>();
+        for (String hpId : hpIdsWithPhenotypeMatch) {
+            double bestMatchScore = 0;
+            for (String mpId : matchedModelPhenotypeIds) {
+                String matchIds = hpId + mpId;
+                if (mappedTerms.containsKey(matchIds)) {
+                    PhenotypeMatch match = mappedTerms.get(matchIds);
+                    double matchScore = match.getScore();
+                    // identify best match
+                    bestMatchScore = Math.max(matchScore, bestMatchScore);
+                    if (matchScore > 0) {
+                        addMatchIfAbsentOrBetterThanCurrent(match, bestPhenotypeMatchForTerms);
+                    }
+                }
+            }
+            if (bestMatchScore > 0) {
+                sumModelBestMatchScores += bestMatchScore;
+                maxModelMatchScore = Math.max(bestMatchScore, maxModelMatchScore);
+            }
+        }
+        // Reciprocal hits
+        for (String mpId : matchedModelPhenotypeIds) {
+            double bestMatchScore = 0;
+            for (String hpId : hpIdsWithPhenotypeMatch) {
+                String matchIds = hpId + mpId;
+                if (mappedTerms.containsKey(matchIds)) {
+                    PhenotypeMatch match = mappedTerms.get(matchIds);
+                    double matchScore = match.getScore();
+                    // identify best match
+                    bestMatchScore = Math.max(matchScore, bestMatchScore);
+                    if (matchScore > 0) {
+                        addMatchIfAbsentOrBetterThanCurrent(match, bestPhenotypeMatchForTerms);
+                    }
+                }
+            }
+            if (bestMatchScore > 0) {
+                sumModelBestMatchScores += bestMatchScore;
+                maxModelMatchScore = Math.max(bestMatchScore, maxModelMatchScore);
+            }
+        }
+
+        return new OrganismPhenotypeMatchScore(maxModelMatchScore, sumModelBestMatchScores, matchedModelPhenotypeIds, ImmutableList.copyOf(bestPhenotypeMatchForTerms.values()));
+    }
+
+    private void addMatchIfAbsentOrBetterThanCurrent(PhenotypeMatch match, Map<PhenotypeTerm, PhenotypeMatch> bestPhenotypeMatchForTerms) {
+        PhenotypeTerm matchQueryTerm = match.getQueryPhenotype();
+        if (!bestPhenotypeMatchForTerms.containsKey(matchQueryTerm) || bestPhenotypeMatchForTerms.get(matchQueryTerm).getScore() < match.getScore()) {
+            bestPhenotypeMatchForTerms.put(matchQueryTerm, match);
+        }
+    }
+
+    private List<String> getMatchingPhenotypes(List<String> phenotypeIds) {
+        ImmutableList.Builder<String> matchedPhenotypes = ImmutableList.builder();
+        for (String phenotypeId : phenotypeIds) {
+            if (matchedOrganismPhenotypeIds.contains(phenotypeId)) {
+                matchedPhenotypes.add(phenotypeId);
+            }
+        }
+        return matchedPhenotypes.build();
+    }
+
+    /**
+     *
      * @param modelPhenotypes
      * @return
      */
@@ -186,4 +269,5 @@ public class OrganismPhenotypeMatches {
                 ", termPhenotypeMatches=" + termPhenotypeMatches +
                 '}';
     }
+
 }

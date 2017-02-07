@@ -22,15 +22,14 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
-import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -54,13 +53,22 @@ public class PhivePriorityTest {
         );
     }
 
-    //TODO: this should be the output of a Prioritiser: Genes + HPO -> PrioritiserResults
-    private List<PhivePriorityResult> getPriorityResultsOrderedByScore(List<Gene> genes) {
-        return genes.stream()
-                .flatMap(gene -> gene.getPriorityResults().values().stream())
-                .map(priorityResult -> (PhivePriorityResult) priorityResult)
-                .sorted()
-                .collect(Collectors.toList());
+    private void checkScores(Map<String, Double> actualScores, Map<String, Double> expectedScores) {
+        assertThat(actualScores.size(), equalTo(expectedScores.size()));
+        expectedScores.entrySet().forEach(entry -> {
+            String expectedGeneSymbol = entry.getKey();
+            Double expectedScore = entry.getValue();
+            assertThat(expectedGeneSymbol + " score not as expected", actualScores.get(expectedGeneSymbol), equalTo(expectedScore));
+        });
+    }
+
+    private Map<String, Double> expectedMouseScores() {
+        Map<String, Double> expectedScores = new HashMap<>();
+        expectedScores.put("FGFR2", 0.8278620340423056);
+        expectedScores.put("ROR2", 0.6999088391144016);
+        expectedScores.put("FREM2", 0.6208762175615226);
+        expectedScores.put("ZNF738", 0.6000000238418579);
+        return expectedScores;
     }
 
     @Test
@@ -76,28 +84,18 @@ public class PhivePriorityTest {
         List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
         PhivePriority phivePriority = new PhivePriority(hpoIds, TestPriorityServiceFactory.TEST_SERVICE);
         phivePriority.prioritizeGenes(genes);
-//        List<PriorityResult> results = instance.prioritise(hpoIds, geneIdentifiers);
 
-        List<PhivePriorityResult> results = getPriorityResultsOrderedByScore(genes);
-        assertThat(results.size(), equalTo(genes.size()));
+        List<PhivePriorityResult> results = genes.stream()
+                .flatMap(gene -> gene.getPriorityResults().values().stream())
+                .map(priorityResult -> (PhivePriorityResult) priorityResult)
+                .sorted()
+                .collect(toList());
 
         results.forEach(System.out::println);
-
-        GeneModel topFgfr2Model = new GeneModel("MGI:95523_25785", Organism.MOUSE, 2263, "FGFR2", "MGI:95523", "Fgfr2", Arrays.asList("MP:0000081", "MP:0000157", "MP:0000435", "MP:0000566", "MP:0001219", "MP:0001222", "MP:0001231", "MP:0001240", "MP:0001725", "MP:0001732", "MP:0001874", "MP:0002060", "MP:0003743", "MP:0009545", "MP:0009601", "MP:0009611", "MP:0011085", "MP:0011495"));
-        GeneModel topRor2Model = new GeneModel("MGI:1347521_1478", Organism.MOUSE, 4920, "ROR2", "MGI:1347521", "Ror2", Arrays.asList("MP:0000081", "MP:0000157", "MP:0000435", "MP:0000566", "MP:0001219", "MP:0001222", "MP:0001231", "MP:0001240", "MP:0001725", "MP:0001732", "MP:0001874", "MP:0002060", "MP:0003743", "MP:0009545", "MP:0009601", "MP:0009611", "MP:0011085", "MP:0011495"));
-        GeneModel topFrem2Model = new GeneModel("MGI:2444465_18183", Organism.MOUSE, 341640, "FREM2", "MGI:2444465", "Frem2", Arrays.asList("MP:0000081", "MP:0000157", "MP:0000435", "MP:0000566", "MP:0001219", "MP:0001222", "MP:0001231", "MP:0001240", "MP:0001725", "MP:0001732", "MP:0001874", "MP:0002060", "MP:0003743", "MP:0009545", "MP:0009601", "MP:0009611", "MP:0011085", "MP:0011495"));
-
-        PriorityResult fgfr2Result = new PhivePriorityResult(2263, "FGFR2", 0.8278620340423056, new ModelPhenotypeMatch(0.8278620340423056, topFgfr2Model, Collections.emptyList()));//);
-        PriorityResult ror2Result = new PhivePriorityResult(4920, "ROR2", 0.6999088391144015, new ModelPhenotypeMatch(0.6999088391144015, topRor2Model, Collections.emptyList()));
-        PriorityResult frem2Result = new PhivePriorityResult(341640, "FREM2", 0.6208762175615226, new ModelPhenotypeMatch(0.6208762175615226, topFrem2Model, Collections.emptyList()));
-        PriorityResult znf738Result = new PhivePriorityResult(148203, "ZNF738", 0.6000000238418579, null);
-
-//      Scores from flatfile (these will have suffered slight rounding errors compared to the database)
-        Map<String, Double> expectedScores = expectedMouseScores();
+        assertThat(results.size(), equalTo(genes.size()));
 
         Map<String, Double> actualScores = results.stream().collect(toMap(PhivePriorityResult::getGeneSymbol, PhivePriorityResult::getScore));
-
-        assertThat(actualScores, equalTo(expectedScores));
+        checkScores(actualScores, expectedMouseScores());
     }
 
     @Test
@@ -108,27 +106,14 @@ public class PhivePriorityTest {
         PhivePriority phivePriority = new PhivePriority(hpoIds, TestPriorityServiceFactory.TEST_SERVICE);
 
         List<PhivePriorityResult> results = phivePriority.prioritise(genes)
-                .sorted(Comparator.naturalOrder())
+                .sorted()
                 .collect(toList());
 
+        results.forEach(System.out::println);
         assertThat(results.size(), equalTo(genes.size()));
 
-        results.forEach(System.out::println);
-
-        Map<String, Double> expectedScores = expectedMouseScores();
-
         Map<String, Double> actualScores = results.stream().collect(toMap(PhivePriorityResult::getGeneSymbol, PhivePriorityResult::getScore));
-
-        assertThat(actualScores, equalTo(expectedScores));
-    }
-
-    private Map<String, Double> expectedMouseScores() {
-        Map<String, Double> expectedScores = new HashMap<>();
-        expectedScores.put("FGFR2", 0.8278620340423056);
-        expectedScores.put("ROR2", 0.6999088391144015);
-        expectedScores.put("FREM2", 0.6208762175615226);
-        expectedScores.put("ZNF738", 0.6000000238418579);
-        return expectedScores;
+        checkScores(actualScores, expectedMouseScores());
     }
 
 }
