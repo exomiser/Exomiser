@@ -30,7 +30,7 @@ Please refer to the [manual](http://exomiser.github.io/Exomiser/) for details on
 
 ####Using The Exomiser in your code
 
-The exomiser can also be used as a library in Spring Java applications. Add exomiser-spring-boot-starter to your pom/gradle build script.
+The exomiser can also be used as a library in Spring Java applications. Add the ```exomiser-spring-boot-starter``` library to your pom/gradle build script.
 
 In your configuration class add the ```@EnableExomiser``` annotation
  
