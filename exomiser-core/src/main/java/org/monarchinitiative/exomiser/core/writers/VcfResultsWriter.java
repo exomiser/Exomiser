@@ -315,14 +315,18 @@ public class VcfResultsWriter implements ResultsWriter {
 
     private String buildVariantEffects(List<VariantEvaluation> variantEvaluations) {
         if (variantEvaluations.size() == 1) {
-            return String.valueOf(variantEvaluations.get(0).getVariantEffect());
+            return String.valueOf(getSequenceOntologyTerm(variantEvaluations.get(0)));
         }
         StringBuilder variantEfectBuilder = new StringBuilder();
-        variantEfectBuilder.append(variantEvaluations.get(0).getVariantEffect());
+        variantEfectBuilder.append(getSequenceOntologyTerm(variantEvaluations.get(0)));
         for (int i = 1; i < variantEvaluations.size(); i++) {
-            variantEfectBuilder.append(',').append(variantEvaluations.get(i).getVariantEffect());
+            variantEfectBuilder.append(',').append(getSequenceOntologyTerm(variantEvaluations.get(i)));
         }
         return variantEfectBuilder.toString();
+    }
+
+    private String getSequenceOntologyTerm(VariantEvaluation variantEvaluation) {
+        return variantEvaluation.getVariantEffect().getSequenceOntologyTerm();
     }
 
     private String buildHgvs(List<VariantEvaluation> variantEvaluations) {

@@ -90,7 +90,7 @@ public class VcfResultsWriterTest {
             + "##INFO=<ID=ExVarScore,Number=A,Type=Float,Description=\"Exomiser variant score\">\n"
             + "##INFO=<ID=ExWarn,Number=A,Type=String,Description=\"Exomiser warning\">\n"
             + "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\n";
-    private static final String CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT = "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=MISSENSE_VARIANT;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
+    private static final String CHR10_FGFR2_PATHOGENIC_MISSENSE_VARIANT = "chr10\t123353298\t.\tG\tC\t2.20\tPASS\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
 
     private static final FilterResult PASS_TARGET_RESULT = FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER);
     private static final FilterResult FAIL_TARGET_RESULT = FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER);
@@ -200,8 +200,8 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "chr10\t123353298\t.\tG\tC\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=MISSENSE_VARIANT;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr7\t155604801\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=FRAMESHIFT_VARIANT;ExVarHgvs=7:g.155604801->TT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
+                + "chr10\t123353298\t.\tG\tC\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
+                + "chr7\t155604801\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604801->TT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -226,7 +226,7 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=MISSENSE_VARIANT;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
+                + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -279,8 +279,8 @@ public class VcfResultsWriterTest {
         String output = instance.writeString(analysis, analysisResults, settings);
         System.out.println(output);
         String expected = EXPECTED_HEADER
-                + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=INTERGENIC_VARIANT;ExVarHgvs=1:g.120612041->CCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr1\t120612041\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=INTERGENIC_VARIANT;ExVarHgvs=1:g.120612041->CCTCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t1/1:30\n";
+                + "chr1\t120612041\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612041->CCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
+                + "chr1\t120612041\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612041->CCTCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t1/1:30\n";
         assertThat(output, equalTo(expected));
     }
 
@@ -294,8 +294,8 @@ public class VcfResultsWriterTest {
         //TODO: Check that all alleles are analysed - i.e. 0/1, 1/1, 1/2, 0/2 and 2/2 are always represented
         VariantEvaluation altAlleleOne = variants.get(3);
         //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
-        //variant score is 0.85 - contributes to score
-        altAlleleOne.setVariantEffect(VariantEffect.COMPLEX_SUBSTITUTION);
+        //variant score is 0.95 - contributes to score
+        altAlleleOne.setVariantEffect(VariantEffect.FRAMESHIFT_VARIANT);
         altAlleleOne.setAsContributingToGeneScore();
 
         //variant score is 0.6
@@ -311,7 +311,7 @@ public class VcfResultsWriterTest {
         System.out.println(output);
         //expected should have concatenated variant score for multi-allele line: ExVarSCombi=0.85,0.6
         String expected = EXPECTED_HEADER
-                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=COMPLEX_SUBSTITUTION,MISSENSE_VARIANT;ExVarHgvs=10:g.123256215T>G,10:g.123256215T>A;ExVarScore=0.85,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
+                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=frameshift_variant,missense_variant;ExVarHgvs=10:g.123256215T>G,10:g.123256215T>A;ExVarScore=0.95,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
         assertThat(output, equalTo(expected));
     }
 }
