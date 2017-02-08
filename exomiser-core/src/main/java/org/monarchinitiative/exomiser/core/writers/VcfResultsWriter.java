@@ -66,6 +66,7 @@ public class VcfResultsWriter implements ResultsWriter {
         VARIANT_SCORE("ExVarScore", VCFHeaderLineType.Float, "Exomiser variant score"),
         VARIANT_EFFECT("ExVarEff", VCFHeaderLineType.String, "Exomiser variant effect"),
         VARIANT_HGVS("ExVarHgvs", VCFHeaderLineType.String, "Exomiser variant hgvs"),
+        ALLELE_CONTRIBUTES("ExContribAltAllele", VCFHeaderLineType.Flag, "Exomiser alt allele id contributing to score"),
         WARNING("ExWarn", VCFHeaderLineType.String, "Exomiser warning");
 
         private final String id;
@@ -290,6 +291,11 @@ public class VcfResultsWriter implements ResultsWriter {
             builder.attribute(ExomiserVcfInfoField.VARIANT_SCORE.getId(), buildVariantScore(variantEvaluations)); //this needs a list of VariantEvaluations to concatenate the fields from in Allele order
             builder.attribute(ExomiserVcfInfoField.VARIANT_EFFECT.getId(), buildVariantEffects(variantEvaluations));
             builder.attribute(ExomiserVcfInfoField.VARIANT_HGVS.getId(), buildHgvs(variantEvaluations));
+            for (VariantEvaluation variantEvaluation : variantEvaluations) {
+                if (variantEvaluation.contributesToGeneScore()) {
+                    builder.attribute(ExomiserVcfInfoField.ALLELE_CONTRIBUTES.getId(), variantEvaluation.getAltAlleleId());
+                }
+            }
         } else {
             builder.attribute(ExomiserVcfInfoField.WARNING.getId(), "VARIANT_NOT_ANALYSED_NO_GENE_ANNOTATIONS");
         }
@@ -329,6 +335,22 @@ public class VcfResultsWriter implements ResultsWriter {
             variantHgvsBuilder.append(',').append(variantEvaluations.get(i).getHgvsGenome());
         }
         return variantHgvsBuilder.toString();
+    }
+
+    private String buildContributingAllele(List<VariantEvaluation> variantEvaluations) {
+        if (variantEvaluations.size() == 1) {
+            return getContributingVariantFlag(variantEvaluations.get(0));
+        }
+        StringBuilder variantHgvsBuilder = new StringBuilder();
+        variantHgvsBuilder.append(variantEvaluations.get(0).getHgvsGenome());
+        for (int i = 1; i < variantEvaluations.size(); i++) {
+            variantHgvsBuilder.append(',').append(getContributingVariantFlag(variantEvaluations.get(0)));
+        }
+        return variantHgvsBuilder.toString();
+    }
+
+    private String getContributingVariantFlag(VariantEvaluation variantEvaluation) {
+        return variantEvaluation.contributesToGeneScore() ? ExomiserVcfInfoField.ALLELE_CONTRIBUTES.getId() : ".";
     }
 
 }

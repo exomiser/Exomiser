@@ -79,6 +79,7 @@ public class VcfResultsWriterTest {
             + "##FILTER=<ID=REGULATORY_FEATURE_FILTER,Description=\"Regulatory Feature\">\n"
             + "##FILTER=<ID=VARIANT_EFFECT_FILTER,Description=\"Target\">\n"
             + "##INFO=<ID=ANN,Number=1,Type=String,Description=\"Functional annotations:'Allele|Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|Rank|HGVS.c|HGVS.p|cDNA.pos / cDNA.length|CDS.pos / CDS.length|AA.pos / AA.length|Distance|ERRORS / WARNINGS / INFO'\">\n"
+            + "##INFO=<ID=ExContribAltAllele,Number=A,Type=Flag,Description=\"Exomiser alt allele id contributing to score\">\n"
             + "##INFO=<ID=ExGeneSCombi,Number=A,Type=Float,Description=\"Exomiser gene combined score\">\n"
             + "##INFO=<ID=ExGeneSPheno,Number=A,Type=Float,Description=\"Exomiser gene phenotype score\">\n"
             + "##INFO=<ID=ExGeneSVar,Number=A,Type=Float,Description=\"Exomiser gene variant score\">\n"
@@ -293,8 +294,9 @@ public class VcfResultsWriterTest {
         //TODO: Check that all alleles are analysed - i.e. 0/1, 1/1, 1/2, 0/2 and 2/2 are always represented
         VariantEvaluation altAlleleOne = variants.get(3);
         //change the variant effect from MISSENSE so that the score is different and the order can be tested on the output line
-        //variant score is 0.85
+        //variant score is 0.85 - contributes to score
         altAlleleOne.setVariantEffect(VariantEffect.COMPLEX_SUBSTITUTION);
+        altAlleleOne.setAsContributingToGeneScore();
 
         //variant score is 0.6
         VariantEvaluation altAlleleTwo = variants.get(4);
@@ -309,7 +311,7 @@ public class VcfResultsWriterTest {
         System.out.println(output);
         //expected should have concatenated variant score for multi-allele line: ExVarSCombi=0.85,0.6
         String expected = EXPECTED_HEADER
-                + "10\t123256215\t.\tT\tG,A\t100\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=COMPLEX_SUBSTITUTION,MISSENSE_VARIANT;ExVarHgvs=10:g.123256215T>G,10:g.123256215T>A;ExVarScore=0.85,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
+                + "10\t123256215\t.\tT\tG,A\t100\t.\tExContribAltAllele=0;ExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=COMPLEX_SUBSTITUTION,MISSENSE_VARIANT;ExVarHgvs=10:g.123256215T>G,10:g.123256215T>A;ExVarScore=0.85,0.6;GENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1/2\n";
         assertThat(output, equalTo(expected));
     }
 }
