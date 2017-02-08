@@ -18,11 +18,9 @@ The Exomiser was developed by the Computational Biology and Bioinformatics group
 
 ####Download and Installation
 
-The prebuilt Exomiser binaries can be obtained from the [releases](https://github.com/exomiser/Exomiser/releases) page and supporting data files can be downloaded from the [Exomiser FTP site](ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/).
+The prebuilt Exomiser binaries can be obtained from the [releases](https://github.com/exomiser/Exomiser/releases) page and supporting data files can be downloaded from the [Exomiser FTP site](http://data.monarchinitiative.org/exomiser).
 
-For instructions on installing and running please refer to the [README.md](ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/README.md) file.
-
-An online demo version of the exomiser can be found [here](http://www.sanger.ac.uk/resources/software/exomiser/submit/).
+For instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
 
 ####Running it
 
