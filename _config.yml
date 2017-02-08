@@ -37,8 +37,8 @@ navbar-links:
   FAQ: "manual/faq"
   About: "about"
   Resources:
-    - Exomiser software: "http://www.sanger.ac.uk/science/tools/exomiser"
-    - Exomiser download: "https://goo.gl/fJd8Sw"
+    - Exomiser software: "https://github.com/exomiser/Exomiser/releases"
+    - Exomiser data: "http://data.monarchinitiative.org/exomiser"
     - HPO-Browser: "http://compbio.charite.de/hpoweb/"
     - Jannovar: "http://charite.github.io/jannovar"
     - ReMM score: "https://charite.github.io/software-remm-score.html"
