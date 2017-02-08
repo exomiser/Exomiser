@@ -65,7 +65,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
                     "CADD(>0.483)", "POLYPHEN(>0.956|>0.446)", "MUTATIONTASTER(>0.94)", "SIFT(<0.06)", "REMM",
                     "DBSNP_ID", "MAX_FREQUENCY", "DBSNP_FREQUENCY", "EVS_EA_FREQUENCY", "EVS_AA_FREQUENCY",
                     "EXAC_AFR_FREQ", "EXAC_AMR_FREQ", "EXAC_EAS_FREQ", "EXAC_FIN_FREQ", "EXAC_NFE_FREQ", "EXAC_SAS_FREQ", "EXAC_OTH_FREQ",
-                    "EXOMISER_VARIANT_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_GENE_COMBINED_SCORE");
+                    "EXOMISER_VARIANT_SCORE", "EXOMISER_GENE_PHENO_SCORE", "EXOMISER_GENE_VARIANT_SCORE", "EXOMISER_GENE_COMBINED_SCORE", "CONTRIBUTING_VARIANT");
 
     private final DecimalFormat formatter = new DecimalFormat(".##");
 
@@ -170,6 +170,8 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         record.add(dotIfNull(gene.getVariantScore()));
         // EXOMISER_GENE_COMBINED_SCORE
         record.add(dotIfNull(gene.getCombinedScore()));
+        // EXOMISER_CONTRIBUTES_TO_SCORE
+        record.add(ve.contributesToGeneScore() ? "CONTRIBUTING_VARIANT" : ".");
         return record;
     }
 

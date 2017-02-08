@@ -41,6 +41,7 @@ import org.monarchinitiative.exomiser.core.writers.OutputSettingsImp.OutputSetti
 
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -64,7 +65,7 @@ public class TsvVariantResultsWriterTest {
             + "EVS_EA_FREQUENCY\tEVS_AA_FREQUENCY\t"
             + "EXAC_AFR_FREQ\tEXAC_AMR_FREQ\tEXAC_EAS_FREQ\tEXAC_FIN_FREQ\tEXAC_NFE_FREQ\tEXAC_SAS_FREQ\tEXAC_OTH_FREQ\t";
     private static final String EXOMISER_SCORES_HEADER = 
-            "EXOMISER_VARIANT_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\n";
+            "EXOMISER_VARIANT_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\tCONTRIBUTING_VARIANT\n";
     
     private static final String HEADER = VARIANT_DETAILS_HEADER + PATHOGENICITY_SCORES_HEADER + FREQUENCY_DATA_HEADER + EXOMISER_SCORES_HEADER;
     
@@ -72,11 +73,14 @@ public class TsvVariantResultsWriterTest {
     private static final String FAIL_VARIANT_DETAILS = "chr7\t155604801\tC\tCTT\t1.0\tTarget\t0/1\t0\tframeshift_variant\tSHH:uc003wmk.1:c.16_17insAA:p.(Arg6Lysfs*6)\tSHH";
     private static final String NO_PATH_SCORES = "\t.\t.\t.\t.\t.";
     private static final String NO_FREQUENCY_DATA = "\t.\t0.0\t.\t.\t.\t.\t.\t.\t.\t.\t.\t.";
-    private static final String PASS_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0\n";
-    private static final String FAIL_VARIANT_EXOMISER_SCORES = "\t0.95\t0.0\t0.0\t0.0\n";
+    private static final String PASS_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0";
+    private static final String FAIL_VARIANT_EXOMISER_SCORES = "\t0.95\t0.0\t0.0\t0.0";
 
-    private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES;
-    private static final String FAIL_VARIANT_LINE = FAIL_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + FAIL_VARIANT_EXOMISER_SCORES;
+    private static final String CONTRIBUTING_VARIANT_FIELD = "\tCONTRIBUTING_VARIANT";
+    private static final String NON_CONTRIBUTING_VARIANT_FIELD = "\t.";
+
+    private static final String PASS_VARIANT_LINE = PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES + NON_CONTRIBUTING_VARIANT_FIELD +"\n";
+    private static final String FAIL_VARIANT_LINE = FAIL_VARIANT_DETAILS + NO_PATH_SCORES + NO_FREQUENCY_DATA + FAIL_VARIANT_EXOMISER_SCORES + NON_CONTRIBUTING_VARIANT_FIELD + "\n";
 
     private final OutputSettingsBuilder settingsBuilder = OutputSettings.builder().outputFormats(EnumSet.of(OutputFormat.TSV_VARIANT));
     private final Analysis analysis = Analysis.builder().build();
@@ -132,6 +136,25 @@ public class TsvVariantResultsWriterTest {
         String outString = instance.writeString(analysis, analysisResults, settings);
         String expected = HEADER +
                 PASS_VARIANT_LINE;
+        assertThat(outString, equalTo(expected));
+    }
+
+    @Test
+    public void testContributingVariantIsIndicated() {
+        OutputSettings settings = settingsBuilder.build();
+        Gene fgfr2 = TestFactory.newGeneFGFR2();
+
+        VariantEvaluation passVariant = makePassVariant();
+        passVariant.setAsContributingToGeneScore();
+        fgfr2.addVariant(passVariant);
+
+        AnalysisResults results = AnalysisResults.builder()
+                .genes(Collections.singletonList(fgfr2))
+                .build();
+
+        String outString = instance.writeString(analysis, results, settings);
+        String expected = HEADER +
+                PASS_VARIANT_DETAILS + "\t.\t1.0\t.\t.\t." + NO_FREQUENCY_DATA + PASS_VARIANT_EXOMISER_SCORES + CONTRIBUTING_VARIANT_FIELD + "\n";
         assertThat(outString, equalTo(expected));
     }
 
