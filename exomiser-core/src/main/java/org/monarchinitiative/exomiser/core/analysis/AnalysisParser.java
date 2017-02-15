@@ -311,6 +311,8 @@ public class AnalysisParser {
             String key = entry.getKey();
             Map analysisStepMap = entry.getValue();
             switch (key) {
+                case "failedVariantFilter":
+                    return makeFailedVariantFilter();
                 case "intervalFilter":
                     return makeIntervalFilter(analysisStepMap);
                 case "geneIdFilter":
@@ -346,6 +348,10 @@ public class AnalysisParser {
                     logger.error("Unsupported exomiser step: {}", key);
                     return null;
             }
+        }
+
+        private FailedVariantFilter makeFailedVariantFilter() {
+            return new FailedVariantFilter();
         }
 
         private IntervalFilter makeIntervalFilter(Map<String, String> options) {
