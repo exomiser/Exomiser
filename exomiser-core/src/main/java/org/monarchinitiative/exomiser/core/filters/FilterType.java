@@ -2,15 +2,14 @@ package org.monarchinitiative.exomiser.core.filters;
 
 /**
  * This is a simple class of enumerated constants that describe the type of
- * filtering that was applied to a Gene/Variant. This class is placed in the
- * jannovar hierarchy for now because it is intertwined with Variant.
- *
+ * filtering that was applied to a Gene/Variant.
+ * *
  * @author Peter Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
- * @version 0.05 (10 January, 2014)
  */
 public enum FilterType {
 
+    FAILED_VARIANT_FILTER,
     QUALITY_FILTER,
     INTERVAL_FILTER,
     ENTREZ_GENE_ID_FILTER,
@@ -26,6 +25,8 @@ public enum FilterType {
     @Override
     public String toString() {
         switch (this) {
+            case FAILED_VARIANT_FILTER:
+                return "Failed upstream analysis";
             case ENTREZ_GENE_ID_FILTER:
                 return "Genes to keep";
             case QUALITY_FILTER:

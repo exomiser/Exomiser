@@ -17,9 +17,6 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FilterTypeTest {
-    
-    public FilterTypeTest() {
-    }
 
     /**
      * Test of valueOf method, of class FilterType.
@@ -38,5 +35,13 @@ public class FilterTypeTest {
         String name = "PRIORITY_SCORE_FILTER";
         assertThat(FilterType.valueOf(name), equalTo(filterType));
         assertThat(filterType.toString(), equalTo("Gene priority score"));
+    }
+
+    @Test
+    public void testHasFailedVariantFilter() {
+        FilterType filterType = FilterType.FAILED_VARIANT_FILTER;
+        String name = "FAILED_VARIANT_FILTER";
+        assertThat(FilterType.valueOf(name), equalTo(filterType));
+        assertThat(filterType.toString(), equalTo("Failed upstream analysis"));
     }
 }
