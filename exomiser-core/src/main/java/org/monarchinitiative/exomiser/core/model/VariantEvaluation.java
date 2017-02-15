@@ -573,6 +573,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
                 + " compatibleWith=" + inheritanceModes + "}";
     }
 
+    public static Builder builder(int chr, int pos, String ref, String alt) {
+        return new Builder(chr, pos, ref, alt);
+    }
+
     /**
      * Builder class for producing a valid VariantEvaluation.
      */
