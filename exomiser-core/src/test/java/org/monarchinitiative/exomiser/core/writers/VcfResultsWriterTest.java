@@ -67,17 +67,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class VcfResultsWriterTest {
 
     private final static String EXPECTED_HEADER = "##fileformat=VCFv4.2\n"
-            + "##FILTER=<ID=BED_FILTER,Description=\"Gene panel target region (Bed filter)\">\n"
-            + "##FILTER=<ID=ENTREZ_GENE_ID_FILTER,Description=\"Genes to keep\">\n"
-            + "##FILTER=<ID=FREQUENCY_FILTER,Description=\"Frequency\">\n"
-            + "##FILTER=<ID=INHERITANCE_FILTER,Description=\"Inheritance\">\n"
-            + "##FILTER=<ID=INTERVAL_FILTER,Description=\"Interval\">\n"
-            + "##FILTER=<ID=KNOWN_VARIANT_FILTER,Description=\"Known variant\">\n"
-            + "##FILTER=<ID=PATHOGENICITY_FILTER,Description=\"Pathogenicity\">\n"
-            + "##FILTER=<ID=PRIORITY_SCORE_FILTER,Description=\"Gene priority score\">\n" 
-            + "##FILTER=<ID=QUALITY_FILTER,Description=\"Quality\">\n"
-            + "##FILTER=<ID=REGULATORY_FEATURE_FILTER,Description=\"Regulatory Feature\">\n"
-            + "##FILTER=<ID=VARIANT_EFFECT_FILTER,Description=\"Target\">\n"
+            + "##FILTER=<ID=bed,Description=\"Gene panel target region (Bed)\">\n"
+            + "##FILTER=<ID=filter,Description=\"Failed previous VCF filters\">\n"
+            + "##FILTER=<ID=freq,Description=\"Frequency\">\n"
+            + "##FILTER=<ID=gene-id,Description=\"Gene id\">\n"
+            + "##FILTER=<ID=gene-priority,Description=\"Gene priority score\">\n"
+            + "##FILTER=<ID=inheritance,Description=\"Inheritance\">\n"
+            + "##FILTER=<ID=interval,Description=\"Interval\">\n"
+            + "##FILTER=<ID=known-var,Description=\"Known variant\">\n"
+            + "##FILTER=<ID=path,Description=\"Pathogenicity\">\n"
+            + "##FILTER=<ID=quality,Description=\"Quality\">\n"
+            + "##FILTER=<ID=reg-feat,Description=\"Regulatory feature\">\n"
+            + "##FILTER=<ID=var-effect,Description=\"Variant effect\">\n"
             + "##INFO=<ID=ANN,Number=1,Type=String,Description=\"Functional annotations:'Allele|Annotation|Annotation_Impact|Gene_Name|Gene_ID|Feature_Type|Feature_ID|Transcript_BioType|Rank|HGVS.c|HGVS.p|cDNA.pos / cDNA.length|CDS.pos / CDS.length|AA.pos / AA.length|Distance|ERRORS / WARNINGS / INFO'\">\n"
             + "##INFO=<ID=ExContribAltAllele,Number=A,Type=Flag,Description=\"Exomiser alt allele id contributing to score\">\n"
             + "##INFO=<ID=ExGeneSCombi,Number=A,Type=Float,Description=\"Exomiser gene combined score\">\n"
@@ -226,7 +227,7 @@ public class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
-                + "chr10\t123353298\t.\tG\tC\t2.20\tTarget\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
+                + "chr10\t123353298\t.\tG\tC\t2.20\tvar-effect\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123353298G>C;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 

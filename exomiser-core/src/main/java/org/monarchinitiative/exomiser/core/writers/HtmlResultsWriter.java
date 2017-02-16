@@ -90,6 +90,8 @@ public class HtmlResultsWriter implements ResultsWriter {
         //required for correct output of Path types
         mapper.registerModule(new Jdk7Module());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        //avoids issues where there are oddities in the analysisSteps - none of these properly de/serialise at present
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 //        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
         String jsonSettings = "";
         try {

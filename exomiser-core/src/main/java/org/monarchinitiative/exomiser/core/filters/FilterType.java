@@ -9,48 +9,33 @@ package org.monarchinitiative.exomiser.core.filters;
  */
 public enum FilterType {
 
-    FAILED_VARIANT_FILTER,
-    QUALITY_FILTER,
-    INTERVAL_FILTER,
-    ENTREZ_GENE_ID_FILTER,
-    PATHOGENICITY_FILTER,
-    REGULATORY_FEATURE_FILTER,
-    FREQUENCY_FILTER,
-    KNOWN_VARIANT_FILTER,
-    VARIANT_EFFECT_FILTER,
-    INHERITANCE_FILTER,
-    BED_FILTER, 
-    PRIORITY_SCORE_FILTER;
+    FAILED_VARIANT_FILTER("filter", "Failed previous VCF filters"),
+    QUALITY_FILTER("quality", "Quality"),
+    INTERVAL_FILTER("interval", "Interval"),
+    ENTREZ_GENE_ID_FILTER("gene-id", "Gene id"),
+    PATHOGENICITY_FILTER("path", "Pathogenicity"),
+    REGULATORY_FEATURE_FILTER("reg-feat", "Regulatory feature"),
+    FREQUENCY_FILTER("freq", "Frequency"),
+    KNOWN_VARIANT_FILTER("known-var", "Known variant"),
+    VARIANT_EFFECT_FILTER("var-effect", "Variant effect"),
+    INHERITANCE_FILTER("inheritance", "Inheritance"),
+    BED_FILTER("bed", "Gene panel target region (Bed)"),
+    PRIORITY_SCORE_FILTER("gene-priority", "Gene priority score");
+
+    private final String vcfValue;
+    private final String stringValue;
+
+    FilterType(String vcfValue, String stringValue) {
+        this.vcfValue = vcfValue;
+        this.stringValue = stringValue;
+    }
+
+    public String toVcfValue() {
+        return vcfValue;
+    }
 
     @Override
     public String toString() {
-        switch (this) {
-            case FAILED_VARIANT_FILTER:
-                return "Failed upstream analysis";
-            case ENTREZ_GENE_ID_FILTER:
-                return "Genes to keep";
-            case QUALITY_FILTER:
-                return "Quality";
-            case INTERVAL_FILTER:
-                return "Interval";
-            case PATHOGENICITY_FILTER:
-                return "Pathogenicity";       
-            case KNOWN_VARIANT_FILTER:
-                return "Known variant";
-            case FREQUENCY_FILTER:
-                return "Frequency";
-            case VARIANT_EFFECT_FILTER:
-                return "Target"; //Exome target region
-            case REGULATORY_FEATURE_FILTER:
-                return "Regulatory Feature";    
-            case INHERITANCE_FILTER:
-                return "Inheritance";
-            case BED_FILTER:
-                return "Gene panel target region (Bed filter)";
-            case PRIORITY_SCORE_FILTER:
-                return "Gene priority score";
-            default:
-                return "Unidentified Filter";
-        }
+        return stringValue;
     }
 }

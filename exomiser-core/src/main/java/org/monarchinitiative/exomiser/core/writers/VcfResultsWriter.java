@@ -236,7 +236,7 @@ public class VcfResultsWriter implements ResultsWriter {
     private void updateFilterField(VariantContextBuilder builder, VariantEvaluation ve) {
         switch (ve.getFilterStatus()) {
             case FAILED:
-                updateFailedFilters(builder, ve.getFailedFilterTypes());
+                builder.filters(makeFailedFilters(ve.getFailedFilterTypes()));
                 break;
             case PASSED:
                 builder.filter("PASS");
@@ -252,9 +252,8 @@ public class VcfResultsWriter implements ResultsWriter {
      * Write all failed filter types from <code>failedFilterTypes</code> into
      * <code>builder</code>.
      */
-    private void updateFailedFilters(VariantContextBuilder builder, Set<FilterType> failedFilterTypes) {
-        Set<String> failedFilters = failedFilterTypes.stream().map(FilterType::toString).collect(toSet());
-        builder.filters(failedFilters);
+    private Set<String> makeFailedFilters(Set<FilterType> failedFilterTypes) {
+         return failedFilterTypes.stream().map(FilterType::toVcfValue).collect(toSet());
     }
 
     /**
@@ -271,7 +270,7 @@ public class VcfResultsWriter implements ResultsWriter {
 
         // add FILTER descriptions
         for (FilterType ft : FilterType.values()) {
-            lines.add(new VCFFilterHeaderLine(ft.name(), ft.toString()));
+            lines.add(new VCFFilterHeaderLine(ft.toVcfValue(), ft.toString()));
         }
 
         return lines;

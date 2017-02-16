@@ -77,7 +77,7 @@ and open the template in the editor.
                         </thead>
                         <tbody>
                             <tr th:each="report : ${filterReports}">
-                                <td><b th:text="${#strings.append(report.filterType,' Filter')}">Frequency Filter</b></td>
+                                <td><b th:text="${report.filterType}">Frequency</b></td>
                                 <td>
                                     <ul th:each="message : ${report.messages}" 
                                         th:if="${not #lists.isEmpty(report.messages)}" 
