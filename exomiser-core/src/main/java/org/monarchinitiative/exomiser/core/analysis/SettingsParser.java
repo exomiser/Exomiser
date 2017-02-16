@@ -129,6 +129,10 @@ public class SettingsParser {
         //IMPORTANT: These are ordered by increasing computational difficulty and
         //the number of variants they will remove.
         //Don't change them as this will negatively effect performance.
+        //FAILED VARIANTS
+        if (settings.removeFailedVariants()) {
+            variantFilters.add(new FailedVariantFilter());
+        }
         //GENE_ID
         if (!settings.getGenesToKeep().isEmpty()) {
             variantFilters.add(new EntrezGeneIdFilter(settings.getGenesToKeep()));

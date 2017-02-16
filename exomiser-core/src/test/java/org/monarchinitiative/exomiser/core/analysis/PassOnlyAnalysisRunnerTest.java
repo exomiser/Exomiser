@@ -31,6 +31,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,6 +78,29 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Gene passedGene = analysisResults.getGenes().get(0);
         assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+    }
+
+    @Test
+    public void testRunAnalysis_FailVariantFilterOnly_OneVariantPasses() {
+        VariantFilter failedVariantFilter = new FailedVariantFilter();
+
+        Analysis analysis = makeAnalysis(Paths.get("src/test/resources/failedVariant.vcf"), failedVariantFilter);
+        AnalysisResults analysisResults = instance.run(analysis);
+        printResults(analysisResults);
+        assertThat(analysisResults.getGenes().size(), equalTo(1));
+
+        Gene passedGene = analysisResults.getGenes().get(0);
+        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        //For the PassOnlyAnalysisRunner the resulting genes should only contain passed variants
+        assertThat(passedGene.getVariantEvaluations(), equalTo(passedGene.getPassedVariantEvaluations()));
+
+        VariantEvaluation passedVariant = passedGene.getPassedVariantEvaluations().get(0);
+        //1	145508800	rs12345678	T	C	123.15	PASS	GENE=RBM8A	GT:DP	1/1:33
+        assertThat(passedVariant.getChromosome(), equalTo(1));
+        assertThat(passedVariant.getPosition(), equalTo(145508800));
+        assertThat(passedVariant.getRef(), equalTo("T"));
+        assertThat(passedVariant.getAlt(), equalTo("C"));
     }
 
     @Test

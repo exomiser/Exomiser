@@ -42,6 +42,7 @@ class FilterSettingsImpl implements FilterSettings {
     private final float minimumQuality;
     private final GeneticInterval geneticInterval;
     private final boolean keepNonPathogenicVariants;
+    private final boolean removeFailedVariants;
     private final boolean removeKnownVariants;
     private final boolean keepOffTargetVariants;
     private final Set<Integer> genesToKeep;
@@ -52,6 +53,7 @@ class FilterSettingsImpl implements FilterSettings {
         minimumQuality = builder.minimumQuality;
         geneticInterval = builder.geneticInterval;
         keepNonPathogenicVariants = builder.keepNonPathogenicVariants;
+        removeFailedVariants = builder.removeFailedVariants;
         removeKnownVariants = builder.removeKnownVariants;
         keepOffTargetVariants = builder.keepOffTargetVariants;
         genesToKeep = builder.geneIdsToKeep;
@@ -68,6 +70,7 @@ class FilterSettingsImpl implements FilterSettings {
         private float minimumQuality = 0;
         private GeneticInterval geneticInterval = null;
         private boolean keepNonPathogenicVariants = false;
+        private boolean removeFailedVariants = false;
         private boolean removeKnownVariants = false;
         private boolean keepOffTargetVariants = false;
         private Set<Integer> geneIdsToKeep = Collections.emptySet();
@@ -96,6 +99,11 @@ class FilterSettingsImpl implements FilterSettings {
 
         public FilterSettingsBuilder keepNonPathogenic(boolean keepNonPathogenic) {
             this.keepNonPathogenicVariants = keepNonPathogenic;
+            return this;
+        }
+
+        public FilterSettingsBuilder removeFailedVariants(boolean removeFailedVariants) {
+            this.removeFailedVariants = removeFailedVariants;
             return this;
         }
 
@@ -138,6 +146,11 @@ class FilterSettingsImpl implements FilterSettings {
     @Override
     public boolean keepOffTargetVariants() {
         return keepOffTargetVariants;
+    }
+
+    @Override
+    public boolean removeFailedVariants() {
+        return removeFailedVariants;
     }
 
     @Override

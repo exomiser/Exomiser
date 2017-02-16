@@ -67,6 +67,8 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
     private final boolean runFullAnalysis;
 
     //FILTER variables
+    //remove-failed
+    private boolean removeFailedVariants;
     //max-freq (command-line was: freq_threshold, refered to variable: frequency_threshold)
     private final float maximumFrequency;
     //Quality threshold for variants. Corresponds to QUAL column in VCF file.
@@ -134,6 +136,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         private boolean runFullAnalysis = false;
 
         //FILTER options
+        private boolean removeFailedVariants = false;
         private float maximumFrequency = 100.00f;
         private float minimumQuality = 0;
         private GeneticInterval geneticInterval = null;
@@ -225,6 +228,12 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         @JsonSetter("keepNonPathogenic")
         public SettingsBuilder keepNonPathogenic(boolean value) {
             removePathFilterCutOff = value;
+            return this;
+        }
+
+        @JsonSetter("removeFailed")
+        public SettingsBuilder removeFailed(boolean value) {
+            removeFailedVariants = value;
             return this;
         }
 
@@ -339,6 +348,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         prioritiserType = builder.prioritiserType;
 
         //FILTER options
+        removeFailedVariants = builder.removeFailedVariants;
         maximumFrequency = builder.maximumFrequency;
         minimumQuality = builder.minimumQuality;
         geneticInterval = builder.geneticInterval;
@@ -404,6 +414,7 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
         return prioritiserType;
     }
 
+
     @JsonProperty
     @Override
     public float getMaximumFrequency() {
@@ -426,6 +437,12 @@ public class Settings implements FilterSettings, PrioritiserSettings, OutputSett
     @Override
     public boolean keepNonPathogenicVariants() {
         return keepNonPathogenicVariants;
+    }
+
+    @JsonProperty
+    @Override
+    public boolean removeFailedVariants() {
+        return removeFailedVariants;
     }
 
     @JsonProperty

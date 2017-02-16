@@ -49,6 +49,8 @@ public interface FilterSettings {
 
     boolean keepOffTargetVariants();
 
+    boolean removeFailedVariants();
+
     boolean removeKnownVariants();
 
     boolean keepNonPathogenicVariants();

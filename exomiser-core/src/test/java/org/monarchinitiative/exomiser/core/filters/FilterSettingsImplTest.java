@@ -49,6 +49,7 @@ public class FilterSettingsImplTest {
     private static final float MIN_QUAL_DEFAULT = 0;
     private static final GeneticInterval GENETIC_INTERVAL_DEFAULT = null;
     private static final boolean KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT = false;
+    private static final boolean REMOVE_FAILED_VARIANTS_DEFAULT = false;
     private static final boolean REMOVE_KNOWN_VARIANTS_DEFAULT = false;
     private static final boolean KEEP_OFF_TARGET_VARIANTS_DEFAULT = false;
     private static final Set<Integer> GENE_IDS_TO_KEEP_DEFAULT = new LinkedHashSet();
@@ -66,6 +67,7 @@ public class FilterSettingsImplTest {
         assertThat(instance.getMinimumQuality(), equalTo(MIN_QUAL_DEFAULT));
         assertThat(instance.getGeneticInterval(), equalTo(GENETIC_INTERVAL_DEFAULT));
         assertThat(instance.keepNonPathogenicVariants(), equalTo(KEEP_NON_PATHOGENIC_VARIANTS_DEFAULT));
+        assertThat(instance.removeFailedVariants(), equalTo(REMOVE_FAILED_VARIANTS_DEFAULT));
         assertThat(instance.removeKnownVariants(), equalTo(REMOVE_KNOWN_VARIANTS_DEFAULT));
         assertThat(instance.keepOffTargetVariants(), equalTo(KEEP_OFF_TARGET_VARIANTS_DEFAULT));
         assertThat(instance.getGenesToKeep(), equalTo(GENE_IDS_TO_KEEP_DEFAULT));
@@ -99,7 +101,14 @@ public class FilterSettingsImplTest {
         instance = builder.keepNonPathogenic(keepNonPathogenic).build();
         assertThat(instance.keepNonPathogenicVariants(), equalTo(keepNonPathogenic));
     }
-    
+
+    @Test
+    public void testRemoveFailedVariants() {
+        boolean expected = true;
+        instance = builder.removeFailedVariants(expected).build();
+        assertThat(instance.removeFailedVariants(), equalTo(expected));
+    }
+
     @Test
     public void testRemoveKnownVariants() {
         boolean removeKnownVariants = true;

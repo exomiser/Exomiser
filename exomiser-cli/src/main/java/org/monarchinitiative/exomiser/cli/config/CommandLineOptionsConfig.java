@@ -77,6 +77,7 @@ public class CommandLineOptionsConfig {
         desiredOptionMarshallers.add(new FullAnalysisOptionMarshaller());
 
         //filter options
+        desiredOptionMarshallers.add(new FailedVariantFilterOptionMarshaller());
         desiredOptionMarshallers.add(new FrequencyThresholdOptionMarshaller());
         desiredOptionMarshallers.add(new FrequencyKnownVariantOptionMarshaller());
         desiredOptionMarshallers.add(new GeneticIntervalOptionMarshaller());

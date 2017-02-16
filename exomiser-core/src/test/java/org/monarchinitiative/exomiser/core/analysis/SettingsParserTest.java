@@ -169,6 +169,7 @@ public class SettingsParserTest {
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_RECESSIVE)
                 .genesToKeep(geneIdsToKeep)
                 .keepNonPathogenic(true)
+                .removeFailed(true)
                 .removeKnownVariants(true)
                 .maximumFrequency(0.25f)
                 .minimumQuality(2f)
@@ -176,6 +177,7 @@ public class SettingsParserTest {
                 .build();
 
         Analysis analysis = analysisBuilder()
+                .addStep(new FailedVariantFilter())
                 .addStep(new EntrezGeneIdFilter(geneIdsToKeep))
                 .addStep(new IntervalFilter(interval))
                 .addStep(new VariantEffectFilter(NON_EXONIC_VARIANT_EFFECTS))
