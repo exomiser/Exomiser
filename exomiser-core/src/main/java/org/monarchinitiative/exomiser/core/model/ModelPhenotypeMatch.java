@@ -66,7 +66,7 @@ public class ModelPhenotypeMatch implements Model {
 
     @JsonIgnore
     @Override
-    public int getEntrezGeneId() {
+    public Integer getEntrezGeneId() {
         return model.getEntrezGeneId();
     }
 

@@ -25,7 +25,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.monarchinitiative.exomiser.core.model.DiseaseModel;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
+import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
 import org.monarchinitiative.exomiser.core.model.Model;
 import org.monarchinitiative.exomiser.core.model.Organism;
 import org.slf4j.Logger;
@@ -132,7 +132,7 @@ public class ModelServiceImpl implements ModelService {
                 String[] mpInitial = phenotypeIdString.split(",");
                 List<String> phenotypeIds = Arrays.asList(mpInitial);
                 
-                GeneModel model = new GeneModel(modelId, organism, entrezId, humanGeneSymbol, modelGeneId, modelGeneSymbol, phenotypeIds);
+                GeneOrthologModel model = new GeneOrthologModel(modelId, organism, entrezId, humanGeneSymbol, modelGeneId, modelGeneSymbol, phenotypeIds);
                 models.add(model);
             }
         } catch (SQLException e) {

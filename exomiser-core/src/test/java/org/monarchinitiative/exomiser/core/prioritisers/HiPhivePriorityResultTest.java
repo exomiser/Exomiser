@@ -26,7 +26,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
+import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
 import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
@@ -65,7 +65,7 @@ public class HiPhivePriorityResultTest {
     }
 
     private ModelPhenotypeMatch stubGeneModelPhenotypeMatch(Organism organism, double score) {
-        GeneModel model = new GeneModel("gene1_model1", organism, 12345, geneSymbol, "MGI:12345", "gene1", Collections.emptyList());
+        GeneOrthologModel model = new GeneOrthologModel("gene1_model1", organism, 12345, geneSymbol, "MGI:12345", "gene1", Collections.emptyList());
         return new ModelPhenotypeMatch(score, model, Collections.emptyList());
     }
         

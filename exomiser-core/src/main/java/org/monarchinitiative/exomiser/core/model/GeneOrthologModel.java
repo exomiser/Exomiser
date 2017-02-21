@@ -45,7 +45,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneModel implements Model {
+public class GeneOrthologModel implements Model {
     
     private final String modelId;
     private final Organism organism;
@@ -58,7 +58,7 @@ public class GeneModel implements Model {
     
     private final List<String> phenotypeIds;
     
-    public GeneModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String modelGeneId, String modelGeneSymbol, List<String> phenotypeIds) {
+    public GeneOrthologModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String modelGeneId, String modelGeneSymbol, List<String> phenotypeIds) {
         this.modelId = modelId;
         this.organism = organism;
         
@@ -85,7 +85,7 @@ public class GeneModel implements Model {
     }
 
     @Override
-    public int getEntrezGeneId() {
+    public Integer getEntrezGeneId() {
         return entrezGeneId;
     }
 
@@ -107,15 +107,15 @@ public class GeneModel implements Model {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof GeneModel)) return false;
-        GeneModel geneModel = (GeneModel) o;
-        return entrezGeneId == geneModel.entrezGeneId &&
-                Objects.equals(modelId, geneModel.modelId) &&
-                organism == geneModel.organism &&
-                Objects.equals(humanGeneSymbol, geneModel.humanGeneSymbol) &&
-                Objects.equals(modelGeneId, geneModel.modelGeneId) &&
-                Objects.equals(modelGeneSymbol, geneModel.modelGeneSymbol) &&
-                Objects.equals(phenotypeIds, geneModel.phenotypeIds);
+        if (!(o instanceof GeneOrthologModel)) return false;
+        GeneOrthologModel geneOrthologModel = (GeneOrthologModel) o;
+        return entrezGeneId == geneOrthologModel.entrezGeneId &&
+                Objects.equals(modelId, geneOrthologModel.modelId) &&
+                organism == geneOrthologModel.organism &&
+                Objects.equals(humanGeneSymbol, geneOrthologModel.humanGeneSymbol) &&
+                Objects.equals(modelGeneId, geneOrthologModel.modelGeneId) &&
+                Objects.equals(modelGeneSymbol, geneOrthologModel.modelGeneSymbol) &&
+                Objects.equals(phenotypeIds, geneOrthologModel.phenotypeIds);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class GeneModel implements Model {
 
     @Override
     public String toString() {
-        return "GeneModel{" +
+        return "GeneOrthologModel{" +
                 "modelId='" + modelId + '\'' +
                 ", organism=" + organism +
                 ", entrezGeneId=" + entrezGeneId +

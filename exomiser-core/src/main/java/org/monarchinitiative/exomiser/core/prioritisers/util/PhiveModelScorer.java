@@ -28,6 +28,7 @@ public class PhiveModelScorer implements ModelScorer {
     private final OrganismPhenotypeMatches organismPhenotypeMatches;
     private final int numQueryPhenotypes;
 
+    //TODO: should these be static methods on ModelScorer?
     /**
      * Produces a {@link PhiveModelScorer} which will score human models only, e.g. disease models or individuals where
      * their phenotypes are encoded using HPO terms.

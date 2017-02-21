@@ -20,7 +20,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
+import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
 import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.Organism;
 
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertThat;
  */
 public class PhivePriorityResultTest {
 
-    private final GeneModel mouseModel = new GeneModel("mouse-model_1", Organism.MOUSE, 2263, "FGFR2", "MGI:95523", "Fgfr2", Collections.emptyList());
+    private final GeneOrthologModel mouseModel = new GeneOrthologModel("mouse-model_1", Organism.MOUSE, 2263, "FGFR2", "MGI:95523", "Fgfr2", Collections.emptyList());
     private final ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0.827862024307251, mouseModel, Collections.emptyList());
 
     @Test

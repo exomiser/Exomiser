@@ -132,8 +132,8 @@ public class PhenoGridAdaptor {
     }
     
     private PhenoGridMatch makeGenePhenoGridMatch(ModelPhenotypeMatch modelPhenotypeMatch, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
-        GeneModel geneModel = (GeneModel) modelPhenotypeMatch.getModel();
-        return new PhenoGridMatch(geneModel.getModelGeneId(), geneModel.getModelGeneSymbol(), "gene", phenotypeMatches, score, taxon);
+        GeneOrthologModel geneOrthologModel = (GeneOrthologModel) modelPhenotypeMatch.getModel();
+        return new PhenoGridMatch(geneOrthologModel.getModelGeneId(), geneOrthologModel.getModelGeneSymbol(), "gene", phenotypeMatches, score, taxon);
     }
 
     private static class DescendingScoreBasedModelComparator implements Comparator<ModelPhenotypeMatch> {

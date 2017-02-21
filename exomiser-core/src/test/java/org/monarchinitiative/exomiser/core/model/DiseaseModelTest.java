@@ -30,7 +30,7 @@ public class DiseaseModelTest {
 
     @Test
     public void testToString() {
-        //TODO: consider GeneModel, DiseaseModel, PatientModel, AbstractModel, phenotypeIds, score, bestPhenotypeMatchForTerms
+        //TODO: consider GeneOrthologModel, DiseaseModel, PatientModel, AbstractModel, phenotypeIds, score, bestPhenotypeMatchForTerms
         //TODO: see https://github.com/exomiser/Exomiser/issues/138
         //Disease:
 //        private final String modelId;

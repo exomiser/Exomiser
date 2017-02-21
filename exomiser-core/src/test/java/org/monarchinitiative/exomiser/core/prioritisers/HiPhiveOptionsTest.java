@@ -26,7 +26,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.DiseaseModel;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
+import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
 import org.monarchinitiative.exomiser.core.model.Model;
 import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
@@ -180,7 +180,7 @@ public class HiPhiveOptionsTest {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
 
-        Model model = new GeneModel(diseaseId, Organism.HUMAN, 12345, candidateGeneSymbol, "DISEASE:1", "Test disease", Collections.emptyList());
+        Model model = new GeneOrthologModel(diseaseId, Organism.HUMAN, 12345, candidateGeneSymbol, "DISEASE:1", "Test disease", Collections.emptyList());
 
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol(candidateGeneSymbol)

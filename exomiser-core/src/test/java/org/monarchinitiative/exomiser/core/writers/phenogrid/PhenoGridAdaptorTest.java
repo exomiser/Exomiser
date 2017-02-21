@@ -146,12 +146,12 @@ public class PhenoGridAdaptorTest {
     }
 
     private ModelPhenotypeMatch getMouseModelPhenotypeMatch() {
-        GeneModel mouseModel = new GeneModel("1_12345", Organism.MOUSE, allModelEntrezGeneId, allModelGeneSymbol, "MGI:00000", "All1", Collections.emptyList());
+        GeneOrthologModel mouseModel = new GeneOrthologModel("1_12345", Organism.MOUSE, allModelEntrezGeneId, allModelGeneSymbol, "MGI:00000", "All1", Collections.emptyList());
         return new ModelPhenotypeMatch(0.88, mouseModel, Lists.newArrayList(mousePhenotypeMatch));
     }
 
     private ModelPhenotypeMatch getFishModelPhenotypeMatch() {
-        GeneModel fishModel = new GeneModel("2_12345", Organism.FISH, allModelEntrezGeneId, allModelGeneSymbol, "ZDB-GENE-000000-0", "all1", Collections.emptyList());
+        GeneOrthologModel fishModel = new GeneOrthologModel("2_12345", Organism.FISH, allModelEntrezGeneId, allModelGeneSymbol, "ZDB-GENE-000000-0", "all1", Collections.emptyList());
         return new ModelPhenotypeMatch(0.50, fishModel, Lists.newArrayList(fishPhenotypeMatch));
     }
 

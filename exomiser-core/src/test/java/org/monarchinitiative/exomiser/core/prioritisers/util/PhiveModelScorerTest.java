@@ -27,12 +27,12 @@ public class PhiveModelScorerTest {
 
     private Model makeBestMouseModel(OrganismPhenotypeMatches mouseOrganismPhenotypeMatches) {
         List<String> exactMousePhenotypes = getBestMatchedPhenotypes(mouseOrganismPhenotypeMatches);
-        return new GeneModel("MOUSE:1", Organism.MOUSE, 12345, "GENE1", "MGI:12345", "gene1", exactMousePhenotypes);
+        return new GeneOrthologModel("MOUSE:1", Organism.MOUSE, 12345, "GENE1", "MGI:12345", "gene1", exactMousePhenotypes);
     }
 
     private Model makeBestFishModel(OrganismPhenotypeMatches fishOrganismPhenotypeMatches) {
         List<String> exactFishPhenotypes = getBestMatchedPhenotypes(fishOrganismPhenotypeMatches);
-        return new GeneModel("FISH:1", Organism.FISH, 12345, "GENE1", "ZFIN:12345", "gene-1", exactFishPhenotypes);
+        return new GeneOrthologModel("FISH:1", Organism.FISH, 12345, "GENE1", "ZFIN:12345", "gene-1", exactFishPhenotypes);
     }
 
     private List<String> getBestMatchedPhenotypes(OrganismPhenotypeMatches organismPhenotypeMatches) {

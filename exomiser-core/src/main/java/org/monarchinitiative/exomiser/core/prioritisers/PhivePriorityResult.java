@@ -20,7 +20,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
+import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
 import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
 
 import java.util.Objects;
@@ -80,7 +80,7 @@ public class PhivePriorityResult extends AbstractPriorityResult {
         if (modelPhenotypeMatch == null) {
             return "<dl><dt>No mouse model for this gene</dt></dl>";
         } else {
-            String link = makeMgiGeneLink((GeneModel) modelPhenotypeMatch.getModel());
+            String link = makeMgiGeneLink((GeneOrthologModel) modelPhenotypeMatch.getModel());
             return String.format("<dl><dt>Mouse phenotype data for %s</dt></dl>", link);
         }
     }
@@ -90,9 +90,9 @@ public class PhivePriorityResult extends AbstractPriorityResult {
      * MGI:101757 it will create a link to
      * {@code http://www.informatics.jax.org/marker/MGI:101757}.
      */
-    private String makeMgiGeneLink(GeneModel geneModel) {
-        String url = String.format("http://www.informatics.jax.org/marker/%s", geneModel.getModelGeneId());
-        return String.format("<a href=\"%s\">%s</a>", url, geneModel.getModelGeneSymbol());
+    private String makeMgiGeneLink(GeneOrthologModel geneOrthologModel) {
+        String url = String.format("http://www.informatics.jax.org/marker/%s", geneOrthologModel.getModelGeneId());
+        return String.format("<a href=\"%s\">%s</a>", url, geneOrthologModel.getModelGeneSymbol());
     }
 
     @Override

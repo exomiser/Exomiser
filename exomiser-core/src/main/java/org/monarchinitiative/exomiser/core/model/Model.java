@@ -49,12 +49,13 @@ public interface Model {
 
     String getId();
     
+    List<String> getPhenotypeIds();
+
     Organism getOrganism();
-    
-    int getEntrezGeneId();
+
+    Integer getEntrezGeneId();
 
     String getHumanGeneSymbol();
 
-    List<String> getPhenotypeIds();
 
 }

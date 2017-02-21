@@ -71,7 +71,7 @@ public class DiseaseModel implements Model {
     }
 
     @Override
-    public int getEntrezGeneId() {
+    public Integer getEntrezGeneId() {
         return entrezGeneId;
     }
 

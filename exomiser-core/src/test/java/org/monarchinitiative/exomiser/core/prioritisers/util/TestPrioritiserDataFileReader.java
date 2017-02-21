@@ -50,12 +50,12 @@ public class TestPrioritiserDataFileReader {
                 .collect(toList());
     }
 
-    private static Function<String, GeneModel> lineToGeneModel() {
+    private static Function<String, GeneOrthologModel> lineToGeneModel() {
         //MOUSE	MGI:95523_118	2263	FGFR2	MGI:95523	Fgfr2	MP:0009522,MP:0009525
         //FISH	ZDB-GENE-081119-4_3835	341640	HGNC:25396	ZDB-GENE-081119-4	frem2b	ZP:0004670,ZP:0004671,ZP:0004669
         return line -> {
             String[] fields = line.split("\t");
-            return new GeneModel(fields[1], Organism.valueOf(fields[0]), Integer.valueOf(fields[2]), fields[3], fields[4], fields[5], getOntologyTerms(fields[6]));
+            return new GeneOrthologModel(fields[1], Organism.valueOf(fields[0]), Integer.valueOf(fields[2]), fields[3], fields[4], fields[5], getOntologyTerms(fields[6]));
         };
     }
 
