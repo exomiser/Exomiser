@@ -88,12 +88,12 @@ public class TestPrioritiserDataFileReader {
                 .collect(toList());
     }
 
-    private static Function<String, DiseaseModel> lineToDiseaseModel() {
+    private static Function<String, GeneDiseaseModel> lineToDiseaseModel() {
         //HUMAN	2263	FGFR2	OMIM:613659	Gastric cancer,somatic	D	S	HP:0012126
         return line -> {
             String[] fields = line.split("\t");
             String modelId = fields[3] + "_" + fields[1];
-            return new DiseaseModel(modelId, Organism.valueOf(fields[0]), Integer.valueOf(fields[1]), fields[2], fields[3], fields[4], getOntologyTerms(fields[7]));
+            return new GeneDiseaseModel(modelId, Organism.valueOf(fields[0]), Integer.valueOf(fields[1]), fields[2], fields[3], fields[4], getOntologyTerms(fields[7]));
         };
     }
 

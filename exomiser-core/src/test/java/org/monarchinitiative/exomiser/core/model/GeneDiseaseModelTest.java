@@ -26,11 +26,11 @@ import java.util.Collections;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class DiseaseModelTest {
+public class GeneDiseaseModelTest {
 
     @Test
     public void testToString() {
-        //TODO: consider GeneOrthologModel, DiseaseModel, PatientModel, AbstractModel, phenotypeIds, score, bestPhenotypeMatchForTerms
+        //TODO: consider GeneOrthologModel, GeneDiseaseModel, PatientModel, AbstractModel, phenotypeIds, score, bestPhenotypeMatchForTerms
         //TODO: see https://github.com/exomiser/Exomiser/issues/138
         //Disease:
 //        private final String modelId;
@@ -59,7 +59,7 @@ public class DiseaseModelTest {
 //
 //        private final List<String> phenotypeIds;
 
-        System.out.println(new DiseaseModel("modelId", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "Thing's disease", Collections.emptyList()));
+        System.out.println(new GeneDiseaseModel("modelId", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "Thing's disease", Collections.emptyList()));
     }
 
 }

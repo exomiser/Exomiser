@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class DiseaseModel implements Model {
+public class GeneDiseaseModel implements Model {
     
     private final String modelId;
     private final Organism organism;
@@ -44,7 +44,7 @@ public class DiseaseModel implements Model {
     
     private final List<String> phenotypeIds;
 
-    public DiseaseModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String diseaseId, String diseaseTerm, List<String> phenotypeIds) {
+    public GeneDiseaseModel(String modelId, Organism organism, int entrezGeneId, String humanGeneSymbol, String diseaseId, String diseaseTerm, List<String> phenotypeIds) {
         this.modelId = modelId;
         this.organism = organism;
         
@@ -93,8 +93,8 @@ public class DiseaseModel implements Model {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DiseaseModel)) return false;
-        DiseaseModel that = (DiseaseModel) o;
+        if (!(o instanceof GeneDiseaseModel)) return false;
+        GeneDiseaseModel that = (GeneDiseaseModel) o;
         return entrezGeneId == that.entrezGeneId &&
                 Objects.equals(modelId, that.modelId) &&
                 organism == that.organism &&
@@ -111,7 +111,7 @@ public class DiseaseModel implements Model {
 
     @Override
     public String toString() {
-        return "DiseaseModel{" +
+        return "GeneDiseaseModel{" +
                 "modelId='" + modelId + '\'' +
                 ", organism=" + organism +
                 ", entrezGeneId=" + entrezGeneId +

@@ -51,13 +51,13 @@ public class GeneOrthologModelTest {
     
     @Before
     public void setUp() {
-        //TODO: want it to work more like this I think - although a HUMAN modelOrganism would indicate a DiseaseModel
+        //TODO: want it to work more like this I think - although a HUMAN modelOrganism would indicate a GeneDiseaseModel
 //        humanGeneId = new HumanGeneIdentifier(humanGeneId, humanGeneSymbol);
 //        modelGeneId = new HumanGeneIdentifier(modelGeneId, modelGeneSymbol);
 //        diseaseId = new DiseaseIdentifier(diseaseId, diseaseTerm);
 //        modelOrganism = Organism.HUMAN
 //        instance = new GeneOrthologModel(modelOrganism, humanGeneId, modelGeneId, modelPhenotypeIds);
-//        instance = new DiseaseModel(modelOrganism, humanGeneId, diseaseId, modelPhenotypeIds);
+//        instance = new GeneDiseaseModel(modelOrganism, humanGeneId, diseaseId, modelPhenotypeIds);
         instance = new GeneOrthologModel(modelId, organism, entrezGeneId, humanGeneSymbol, modelGeneId, modelGeneSymbol, modelPhenotypeIds);
     }
     

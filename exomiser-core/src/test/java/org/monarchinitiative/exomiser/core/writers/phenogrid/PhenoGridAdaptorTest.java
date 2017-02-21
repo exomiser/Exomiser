@@ -141,8 +141,8 @@ public class PhenoGridAdaptorTest {
     }
 
     private ModelPhenotypeMatch getDiseaseModelPhenotypeMatch() {
-        DiseaseModel diseaseModel = new DiseaseModel("OMIM:00000", Organism.HUMAN, allModelEntrezGeneId, allModelGeneSymbol, "OMIM:00000", "Rare disease", Collections.emptyList());
-        return new ModelPhenotypeMatch(0.99, diseaseModel, Lists.newArrayList(diseasePhenotypeMatch));
+        GeneDiseaseModel geneDiseaseModel = new GeneDiseaseModel("OMIM:00000", Organism.HUMAN, allModelEntrezGeneId, allModelGeneSymbol, "OMIM:00000", "Rare disease", Collections.emptyList());
+        return new ModelPhenotypeMatch(0.99, geneDiseaseModel, Lists.newArrayList(diseasePhenotypeMatch));
     }
 
     private ModelPhenotypeMatch getMouseModelPhenotypeMatch() {

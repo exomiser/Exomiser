@@ -127,8 +127,8 @@ public class PhenoGridAdaptor {
     }
 
     private PhenoGridMatch makeDiseasePhenoGridMatch(ModelPhenotypeMatch modelPhenotypeMatch, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
-        DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
-        return new PhenoGridMatch(diseaseModel.getDiseaseId(), diseaseModel.getDiseaseTerm(), "disease", phenotypeMatches, score, taxon);
+        GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) modelPhenotypeMatch.getModel();
+        return new PhenoGridMatch(geneDiseaseModel.getDiseaseId(), geneDiseaseModel.getDiseaseTerm(), "disease", phenotypeMatches, score, taxon);
     }
     
     private PhenoGridMatch makeGenePhenoGridMatch(ModelPhenotypeMatch modelPhenotypeMatch, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {

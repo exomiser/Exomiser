@@ -20,7 +20,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.monarchinitiative.exomiser.core.model.DiseaseModel;
+import org.monarchinitiative.exomiser.core.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
@@ -142,8 +142,8 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(modelPhenotypeMatch);
             switch (modelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
-                    DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
-                    humanBuilder.append(diseaseModel.getDiseaseTerm() + " (" + diseaseModel.getDiseaseId() + "): ");
+                    GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) modelPhenotypeMatch.getModel();
+                    humanBuilder.append(geneDiseaseModel.getDiseaseTerm() + " (" + geneDiseaseModel.getDiseaseId() + "): ");
                     makeBestPhenotypeMatchText(humanBuilder, bestMatchesForModel);
                     break;
                 case MOUSE:
@@ -157,8 +157,9 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
             Map<PhenotypeTerm, PhenotypeMatch> bestMatchesForModel = getPhenotypeTermPhenotypeMatchMap(modelPhenotypeMatch);
             switch (modelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
-                    DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
-                    humanPPIBuilder.append("Proximity to " + modelPhenotypeMatch.getHumanGeneSymbol() + " associated with " + diseaseModel.getDiseaseTerm() + " (" + diseaseModel.getDiseaseId() + "): ");
+                    GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) modelPhenotypeMatch.getModel();
+                    humanPPIBuilder.append("Proximity to " + modelPhenotypeMatch.getHumanGeneSymbol() + " associated with " + geneDiseaseModel
+                            .getDiseaseTerm() + " (" + geneDiseaseModel.getDiseaseId() + "): ");
                     makeBestPhenotypeMatchText(humanPPIBuilder, bestMatchesForModel);
                     break;
                 case MOUSE:
@@ -196,8 +197,8 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
         for (ModelPhenotypeMatch modelPhenotypeMatch : phenotypeEvidence) {
             switch (modelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
-                    DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
-                    String diseaseLink = makeDiseaseLink(diseaseModel.getDiseaseId(), diseaseModel.getDiseaseTerm());
+                    GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) modelPhenotypeMatch.getModel();
+                    String diseaseLink = makeDiseaseLink(geneDiseaseModel.getDiseaseId(), geneDiseaseModel.getDiseaseTerm());
                     stringBuilder.append(String.format("<dl><dt>Phenotypic similarity %.3f to %s associated with %s.</dt>", modelPhenotypeMatch.getScore(), diseaseLink, modelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
                 case MOUSE:
@@ -217,8 +218,8 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
 
             switch (modelPhenotypeMatch.getOrganism()) {
                 case HUMAN:
-                    DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
-                    String diseaseLink = makeDiseaseLink(diseaseModel.getDiseaseId(), diseaseModel.getDiseaseTerm());
+                    GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) modelPhenotypeMatch.getModel();
+                    String diseaseLink = makeDiseaseLink(geneDiseaseModel.getDiseaseId(), geneDiseaseModel.getDiseaseTerm());
                     stringBuilder.append(String.format("<dl><dt>Proximity score %.3f in <a href=\"%s\">interactome to %s</a> and phenotypic similarity %.3f to %s associated with %s.</dt>", ppiScore, stringDbLink, modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), diseaseLink, modelPhenotypeMatch.getHumanGeneSymbol()));
                     break;
                 case MOUSE:

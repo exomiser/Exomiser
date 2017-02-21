@@ -22,7 +22,7 @@ public class PhiveModelScorerTest {
 
     private Model makeBestHumanModel(OrganismPhenotypeMatches referenceOrganismPhenotypeMatches) {
         List<String> exactHumanPhenotypes = getBestMatchedPhenotypes(referenceOrganismPhenotypeMatches);
-        return new DiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", exactHumanPhenotypes);
+        return new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", exactHumanPhenotypes);
     }
 
     private Model makeBestMouseModel(OrganismPhenotypeMatches mouseOrganismPhenotypeMatches) {
@@ -45,7 +45,7 @@ public class PhiveModelScorerTest {
 
         PhiveModelScorer instance = PhiveModelScorer.forSameSpecies(emptyMatches);
 
-        Model model = new DiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", Collections.emptyList());
+        Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", Collections.emptyList());
 
         ModelPhenotypeMatch result = instance.scoreModel(model);
 
@@ -63,7 +63,7 @@ public class PhiveModelScorerTest {
         PhenotypeTerm noMatchTerm = PhenotypeTerm.of("HP:000000", "No term");
         //The model should have no phenotypes in common with the query set.
         assertThat(queryTerms.contains(noMatchTerm), is(false));
-        Model model = new DiseaseModel("DISEASE:2", Organism.HUMAN, 12345, "GENE2", "DISEASE:2", "disease 2", Collections.singletonList(noMatchTerm.getId()));
+        Model model = new GeneDiseaseModel("DISEASE:2", Organism.HUMAN, 12345, "GENE2", "DISEASE:2", "disease 2", Collections.singletonList(noMatchTerm.getId()));
         ModelPhenotypeMatch result = instance.scoreModel(model);
 
         System.out.println(result);
@@ -94,7 +94,7 @@ public class PhiveModelScorerTest {
 
         List<String> twoExactPhenotypeMatches = queryTerms.stream().limit(2).map(PhenotypeTerm::getId).collect(toList());
 
-        Model model = new DiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", twoExactPhenotypeMatches);
+        Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", twoExactPhenotypeMatches);
         ModelPhenotypeMatch result = instance.scoreModel(model);
 
         System.out.println(result);

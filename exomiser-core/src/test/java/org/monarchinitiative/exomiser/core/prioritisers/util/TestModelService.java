@@ -39,17 +39,17 @@ public class TestModelService implements ModelService {
     }
 
     @Override
-    public List<Model> getHumanDiseaseModels() {
+    public List<Model> getHumanGeneDiseaseModels() {
         return diseaseModels;
     }
 
     @Override
-    public List<Model> getMouseGeneModels() {
+    public List<Model> getMouseGeneOrthologModels() {
         return mouseModels;
     }
 
     @Override
-    public List<Model> getFishGeneModels() {
+    public List<Model> getFishGeneOrthologModels() {
         return fishModels;
     }
 }

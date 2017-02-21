@@ -16,11 +16,11 @@ import java.util.List;
  */
 public interface ModelService {
 
-    List<Model> getHumanDiseaseModels();
+    List<Model> getHumanGeneDiseaseModels();
 
-    List<Model> getMouseGeneModels();
+    List<Model> getMouseGeneOrthologModels();
 
-    List<Model> getFishGeneModels();
+    List<Model> getFishGeneOrthologModels();
     
     
 }
