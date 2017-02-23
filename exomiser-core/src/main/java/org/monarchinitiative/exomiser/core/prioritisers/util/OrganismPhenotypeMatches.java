@@ -113,7 +113,7 @@ public class OrganismPhenotypeMatches {
      * @param modelPhenotypes
      * @return
      */
-    public OrganismPhenotypeMatchScore calculateModelPhenotypeScores(List<String> modelPhenotypes) {
+     OrganismPhenotypeMatchScore calculateModelPhenotypeScores(List<String> modelPhenotypes) {
         List<String> matchedModelPhenotypeIds = getMatchingPhenotypes(modelPhenotypes);
 
         //hpId
@@ -191,7 +191,7 @@ public class OrganismPhenotypeMatches {
      * @param modelPhenotypes
      * @return
      */
-    public List<PhenotypeMatch> calculateBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
+     List<PhenotypeMatch> calculateBestForwardAndReciprocalMatches(List<String> modelPhenotypes) {
         List<String> matchedModelPhenotypeIds = modelPhenotypes.stream()
                 .filter(matchedOrganismPhenotypeIds::contains)
                 .collect(toList());
@@ -229,7 +229,7 @@ public class OrganismPhenotypeMatches {
      * @param bestForwardAndReciprocalMatches
      * @return A list of the best PhenotypeMatches grouped by query PhenotypeTerm from the input list of PhenotypeMatches
      */
-    public List<PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
+     List<PhenotypeMatch> calculateBestPhenotypeMatchesByTerm(List<PhenotypeMatch> bestForwardAndReciprocalMatches) {
         Map<PhenotypeTerm, Optional<PhenotypeMatch>> bestOptionalPhenotypeMatchForTerms = bestForwardAndReciprocalMatches.stream()
                 .collect(groupingBy(PhenotypeMatch::getQueryPhenotype, maxBy(comparingDouble(PhenotypeMatch::getScore))));
 
