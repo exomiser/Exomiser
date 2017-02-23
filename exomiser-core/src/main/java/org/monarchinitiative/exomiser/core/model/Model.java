@@ -51,11 +51,4 @@ public interface Model {
     
     List<String> getPhenotypeIds();
 
-    Organism getOrganism();
-
-    Integer getEntrezGeneId();
-
-    String getHumanGeneSymbol();
-
-
 }

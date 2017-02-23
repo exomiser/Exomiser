@@ -28,34 +28,40 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ModelPhenotypeMatch implements Model {
+public class ModelPhenotypeMatch implements GeneModel {
 
     private final double score;
-    private final Model model;
-    private final List<PhenotypeMatch> bestPhenotypeMatchForTerms;
+    private final GeneModel model;
+    private final List<PhenotypeMatch> bestModelPhenotypeMatches;
 
-    public ModelPhenotypeMatch(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatchForTerms) {
+    public ModelPhenotypeMatch(double score, GeneModel model, List<PhenotypeMatch> bestModelPhenotypeMatches) {
         this.score = score;
         this.model = model;
-        this.bestPhenotypeMatchForTerms = ImmutableList.copyOf(bestPhenotypeMatchForTerms);
+        this.bestModelPhenotypeMatches = ImmutableList.copyOf(bestModelPhenotypeMatches);
     }
 
     public double getScore() {
         return score;
     }
 
-    public Model getModel() {
+    public GeneModel getModel() {
         return model;
     }
 
-    public List<PhenotypeMatch> getBestPhenotypeMatchForTerms() {
-        return bestPhenotypeMatchForTerms;
+    public List<PhenotypeMatch> getBestModelPhenotypeMatches() {
+        return bestModelPhenotypeMatches;
     }
 
     @JsonIgnore
     @Override
     public String getId() {
         return model.getId();
+    }
+
+    @JsonIgnore
+    @Override
+    public List<String> getPhenotypeIds() {
+        return model.getPhenotypeIds();
     }
 
     @JsonIgnore
@@ -76,12 +82,6 @@ public class ModelPhenotypeMatch implements Model {
         return model.getHumanGeneSymbol();
     }
 
-    @JsonIgnore
-    @Override
-    public List<String> getPhenotypeIds() {
-        return model.getPhenotypeIds();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -89,12 +89,12 @@ public class ModelPhenotypeMatch implements Model {
         ModelPhenotypeMatch that = (ModelPhenotypeMatch) o;
         return Double.compare(that.score, score) == 0 &&
                 Objects.equals(model, that.model) &&
-                Objects.equals(bestPhenotypeMatchForTerms, that.bestPhenotypeMatchForTerms);
+                Objects.equals(bestModelPhenotypeMatches, that.bestModelPhenotypeMatches);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(model, bestPhenotypeMatchForTerms, score);
+        return Objects.hash(model, bestModelPhenotypeMatches, score);
     }
 
 
@@ -103,7 +103,7 @@ public class ModelPhenotypeMatch implements Model {
         return "ModelPhenotypeMatch{" +
                 "score=" + score +
                 ", model=" + model +
-                ", bestPhenotypeMatchForTerms=" + bestPhenotypeMatchForTerms +
+                ", bestModelPhenotypeMatches=" + bestModelPhenotypeMatches +
                 '}';
     }
 }

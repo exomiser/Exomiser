@@ -25,8 +25,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.monarchinitiative.exomiser.core.model.GeneDiseaseModel;
+import org.monarchinitiative.exomiser.core.model.GeneModel;
 import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
-import org.monarchinitiative.exomiser.core.model.Model;
 import org.monarchinitiative.exomiser.core.model.Organism;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class ModelServiceImpl implements ModelService {
     private DataSource dataSource;
 
     @Override
-    public List<Model> getHumanGeneDiseaseModels() {
+    public List<GeneModel> getHumanGeneDiseaseModels() {
         // We only connect to human2mouse_orthologs to get the human_gene_symbol but if there is no orthology mapping we get 0 results and no disease hit at all - this is daft!
         // Tried to replace with the below - should be more successful
         String modelQuery = "SELECT distinct 'HUMAN' as organism, gene_id as entrez_id, symbol as human_gene_symbol, d.disease_id as disease_id, d.diseasename as disease_term, hp_id as pheno_ids FROM entrez2sym e, disease_hp M, disease d WHERE e.entrezid=d.gene_id and M.disease_id=d.disease_id"; 
@@ -64,19 +64,19 @@ public class ModelServiceImpl implements ModelService {
     }
 
     @Override
-    public List<Model> getMouseGeneOrthologModels() {
+    public List<GeneModel> getMouseGeneOrthologModels() {
         String modelQuery = "SELECT 'MOUSE' as organism, entrez_id, human_gene_symbol, mouse_model_id as model_id, M.mgi_gene_id as model_gene_id, M.mgi_gene_symbol as model_gene_symbol, mp_id as pheno_ids FROM mgi_mp M, human2mouse_orthologs H WHERE M.mgi_gene_id=H.mgi_gene_id and human_gene_symbol != 'null'";
         return runGeneOrthologModelQuery(modelQuery);
     }
 
     @Override
-    public List<Model> getFishGeneOrthologModels() {
+    public List<GeneModel> getFishGeneOrthologModels() {
         String modelQuery = "SELECT 'FISH' as organism, entrez_id, human_gene_symbol, zfin_model_id as model_id, M.zfin_gene_id as model_gene_id, M.zfin_gene_symbol as model_gene_symbol, zp_id as pheno_ids FROM zfin_zp M, human2fish_orthologs H WHERE M.zfin_gene_id=H.zfin_gene_id and human_gene_symbol != 'null'";
         return runGeneOrthologModelQuery(modelQuery);
     }
 
-    private List<Model> runGeneDiseaseModelQuery(String modelQuery) {
-        List<Model> models = new ArrayList<>();
+    private List<GeneModel> runGeneDiseaseModelQuery(String modelQuery) {
+        List<GeneModel> models = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement findAnnotationStatement = connection.prepareStatement(modelQuery);
                 ResultSet rs = findAnnotationStatement.executeQuery()) {
@@ -107,8 +107,8 @@ public class ModelServiceImpl implements ModelService {
         return models;
     }
         
-    private List<Model> runGeneOrthologModelQuery(String modelQuery) {
-        List<Model> models = new ArrayList<>();
+    private List<GeneModel> runGeneOrthologModelQuery(String modelQuery) {
+        List<GeneModel> models = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement findAnnotationStatement = connection.prepareStatement(modelQuery);
                 ResultSet rs = findAnnotationStatement.executeQuery()) {

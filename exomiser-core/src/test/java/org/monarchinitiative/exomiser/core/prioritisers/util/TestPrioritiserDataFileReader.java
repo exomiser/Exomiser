@@ -43,7 +43,7 @@ public class TestPrioritiserDataFileReader {
         //static utility class
     }
 
-    public static List<Model> readOrganismData(String organismModelTestDataFile) {
+    public static List<GeneModel> readOrganismData(String organismModelTestDataFile) {
         return readLines(organismModelTestDataFile)
                 .filter(line -> !line.startsWith(COMMENT_LINE_PREFIX))
                 .map(lineToGeneModel())
@@ -81,7 +81,7 @@ public class TestPrioritiserDataFileReader {
         };
     }
 
-    public static List<Model> readDiseaseModelData(String diseaseModelTestDataFile) {
+    public static List<GeneModel> readDiseaseModelData(String diseaseModelTestDataFile) {
         return readLines(diseaseModelTestDataFile)
                 .filter(line -> !line.startsWith(COMMENT_LINE_PREFIX))
                 .map(lineToDiseaseModel())

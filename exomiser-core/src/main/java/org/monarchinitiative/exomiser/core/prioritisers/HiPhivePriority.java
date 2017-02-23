@@ -140,7 +140,7 @@ public class HiPhivePriority implements Prioritiser {
 
         ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
         for (OrganismPhenotypeMatches organismPhenotypeMatches : bestOrganismPhenotypeMatches) {
-            Set<Model> modelsToScore = priorityService.getModelsForOrganism(organismPhenotypeMatches.getOrganism()).stream()
+            Set<GeneModel> modelsToScore = priorityService.getModelsForOrganism(organismPhenotypeMatches.getOrganism()).stream()
                     .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
                     .collect(toSet());
 
@@ -195,16 +195,19 @@ public class HiPhivePriority implements Prioritiser {
     // against all possible models (disease, mouse, fish), whereas in Phive we're only comparing against mouse.
     // For HiPhive the bestTheoreticalModel is going to be an HPO self-hit for every term in the query set so the
     // scoreModelPhenotypeMatch uses hpoIds.size() as the numMatchedQueryPhenotypes.
-    private List<ModelPhenotypeMatch> scoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, Collection<Model> models) {
+    private List<ModelPhenotypeMatch> scoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, Collection<GeneModel> models) {
         Organism organism = organismPhenotypeMatches.getOrganism();
 
-        ModelScorer modelScorer = PhiveModelScorer.forMultiCrossSpecies(bestTheoreticalModel, organismPhenotypeMatches);
+        ModelScorer modelScorer = ModelScorer.forMultiCrossSpecies(bestTheoreticalModel, organismPhenotypeMatches);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
         List<ModelPhenotypeMatch> modelPhenotypeMatches = models.parallelStream()
-                .map(modelScorer::scoreModel)
+                .map(model -> {
+                    ModelPhenotypeMatchScore score = modelScorer.scoreModel(model);
+                    return new ModelPhenotypeMatch(score.getScore(), model, score.getBestPhenotypeMatches());
+                })
                 .collect(toList());
 
         Duration duration = Duration.between(timeStart, Instant.now());

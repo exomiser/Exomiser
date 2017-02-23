@@ -19,7 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
-import org.monarchinitiative.exomiser.core.model.Model;
+import org.monarchinitiative.exomiser.core.model.GeneModel;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
 import org.slf4j.Logger;
@@ -38,27 +38,45 @@ public class TestPriorityServiceFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(TestPriorityServiceFactory.class);
 
+    public static final OntologyService TEST_ONTOLOGY_SERVICE = setUpOntologyService();
 
     public static final PriorityService TEST_SERVICE = setUpPriorityService();
-
     public static final PriorityService STUB_SERVICE = setUpStubPriorityService();
 
-    private static PriorityService setUpStubPriorityService() {
-        ModelService testModelService = new TestModelService(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
-        OntologyService testOntologyService = TestOntologyService.builder()
+    private static PriorityService setUpStubPriorityService() {
+        ModelService stubModelService = new TestModelService(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+
+        OntologyService stubOntologyService = TestOntologyService.builder()
                 .setHpIdPhenotypeTerms(Collections.emptyMap())
                 .setHumanHumanMappings(Collections.emptyMap())
                 .setHumanMouseMappings(Collections.emptyMap())
                 .setHumanFishMappings(Collections.emptyMap())
                 .build();
 
-        return new PriorityService(testOntologyService, testModelService, null);
+        return new PriorityService(stubOntologyService, stubModelService, null);
     }
 
     private static PriorityService setUpPriorityService() {
         logger.info("Creating test priority service - this is static test data");
 
+        OntologyService testOntologyService = setUpOntologyService();
+
+        logger.info("To the following models:");
+        ModelService testModelService = setUpModelService();
+
+        logger.info("Associated with genes:");
+        logger.info("    Entrez:2263 - FGFR2");
+        logger.info("    Entrez:4920 - ROR2");
+        logger.info("    Entrez:341640 - FREM2");
+
+        List<Disease> diseases = TestPrioritiserDataFileReader.readDiseaseData("src/test/resources/prioritisers/disease-models");
+        TestDiseaseDao testDiseaseDao = new TestDiseaseDao(diseases);
+
+        return new PriorityService(testOntologyService, testModelService, testDiseaseDao);
+    }
+
+    private static OntologyService setUpOntologyService() {
         Map<String, PhenotypeTerm> hpPhenotypesTerms = new HashMap<>();
         hpPhenotypesTerms.put("HP:0010055", PhenotypeTerm.of("HP:0010055", "Broad hallux"));
         hpPhenotypesTerms.put("HP:0001363", PhenotypeTerm.of("HP:0001363", "Craniosynostosis"));
@@ -78,37 +96,28 @@ public class TestPriorityServiceFactory {
         List<PhenotypeMatch> hpZpMappings = TestPrioritiserDataFileReader.readOntologyMatchData("src/test/resources/prioritisers/hp-zp-mappings");
         logger.info("    hp-zp: " + hpZpMappings.size());
 
-        logger.info("To the following models:");
-        List<Model> diseaseModels = TestPrioritiserDataFileReader.readDiseaseModelData("src/test/resources/prioritisers/disease-models");
-        logger.info("    Disease Models: " + diseaseModels.size());
-
-        List<Model> mouseModels = TestPrioritiserDataFileReader.readOrganismData("src/test/resources/prioritisers/mouse-models");
-        logger.info("    Mouse Models: " + mouseModels.size());
-
-        List<Model> fishModels = TestPrioritiserDataFileReader.readOrganismData("src/test/resources/prioritisers/fish-models");
-        logger.info("    Fish Models: {}", fishModels.size());
-
-        ModelService testModelService = new TestModelService(diseaseModels, mouseModels, fishModels);
-
-        logger.info("Associated with genes:");
-        logger.info("    Entrez:2263 - FGFR2");
-        logger.info("    Entrez:4920 - ROR2");
-        logger.info("    Entrez:341640 - FREM2");
-
-        OntologyService testOntologyService = TestOntologyService.builder()
+        return TestOntologyService.builder()
                 .setHpIdPhenotypeTerms(hpPhenotypesTerms)
                 .setHumanHumanMappings(createPhenotypeMap(hpHpMappings))
                 .setHumanMouseMappings(createPhenotypeMap(hpMpMappings))
                 .setHumanFishMappings(createPhenotypeMap(hpZpMappings))
                 .build();
-
-        List<Disease> diseases = TestPrioritiserDataFileReader.readDiseaseData("src/test/resources/prioritisers/disease-models");
-        TestDiseaseDao testDiseaseDao = new TestDiseaseDao(diseases);
-
-        return new PriorityService(testOntologyService, testModelService, testDiseaseDao);
     }
 
     private static Map<PhenotypeTerm, List<PhenotypeMatch>> createPhenotypeMap(List<PhenotypeMatch> crossOntologyMappings) {
         return crossOntologyMappings.parallelStream().collect(Collectors.groupingBy(PhenotypeMatch::getQueryPhenotype));
+    }
+
+    private static ModelService setUpModelService() {
+        List<GeneModel> diseaseModels = TestPrioritiserDataFileReader.readDiseaseModelData("src/test/resources/prioritisers/disease-models");
+        logger.info("    Disease Models: " + diseaseModels.size());
+
+        List<GeneModel> mouseModels = TestPrioritiserDataFileReader.readOrganismData("src/test/resources/prioritisers/mouse-models");
+        logger.info("    Mouse Models: " + mouseModels.size());
+
+        List<GeneModel> fishModels = TestPrioritiserDataFileReader.readOrganismData("src/test/resources/prioritisers/fish-models");
+        logger.info("    Fish Models: {}", fishModels.size());
+
+        return new TestModelService(diseaseModels, mouseModels, fishModels);
     }
 }

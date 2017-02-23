@@ -5,7 +5,7 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
-import org.monarchinitiative.exomiser.core.model.Model;
+import org.monarchinitiative.exomiser.core.model.GeneModel;
 
 import java.util.List;
 
@@ -16,11 +16,10 @@ import java.util.List;
  */
 public interface ModelService {
 
-    List<Model> getHumanGeneDiseaseModels();
+    List<GeneModel> getHumanGeneDiseaseModels();
 
-    List<Model> getMouseGeneOrthologModels();
+    List<GeneModel> getMouseGeneOrthologModels();
 
-    List<Model> getFishGeneOrthologModels();
-    
-    
+    List<GeneModel> getFishGeneOrthologModels();
+
 }

@@ -182,7 +182,7 @@ public class HiPhivePriorityResult extends AbstractPriorityResult {
 
     private Map<PhenotypeTerm, PhenotypeMatch> getPhenotypeTermPhenotypeMatchMap(ModelPhenotypeMatch modelPhenotypeMatch) {
         return modelPhenotypeMatch
-                .getBestPhenotypeMatchForTerms()
+                .getBestModelPhenotypeMatches()
                 .stream()
                 .collect(toMap(PhenotypeMatch::getQueryPhenotype, Function.identity()));
     }

@@ -21,7 +21,10 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.*;
-import org.monarchinitiative.exomiser.core.prioritisers.util.*;
+import org.monarchinitiative.exomiser.core.prioritisers.util.ModelPhenotypeMatchScore;
+import org.monarchinitiative.exomiser.core.prioritisers.util.ModelScorer;
+import org.monarchinitiative.exomiser.core.prioritisers.util.OrganismPhenotypeMatches;
+import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,18 +79,17 @@ public class PhivePriority implements Prioritiser {
     @Override
     public Stream<PhivePriorityResult> prioritise(List<Gene> genes) {
         logger.info("Starting {}", PRIORITY_TYPE);
-        List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
+        List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
         OrganismPhenotypeMatches humanMousePhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
-        TheoreticalModel bestTheoreticalModel = humanMousePhenotypeMatches.getBestTheoreticalModel();
 
         Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
 
-        Set<Model> modelsToScore = priorityService.getModelsForOrganism(Organism.MOUSE).stream()
+        Set<GeneModel> modelsToScore = priorityService.getModelsForOrganism(Organism.MOUSE).stream()
                 .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
                 .collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
 
-        List<ModelPhenotypeMatch> scoredModels = scoreModels(bestTheoreticalModel, humanMousePhenotypeMatches, modelsToScore);
+        List<ModelPhenotypeMatch> scoredModels = scoreModels(humanMousePhenotypeMatches, modelsToScore);
 
         //n.b. this will contain models but with a phenotype score of zero
         Map<Integer, Optional<ModelPhenotypeMatch>> geneModelPhenotypeMatches = scoredModels.parallelStream()
@@ -110,16 +112,19 @@ public class PhivePriority implements Prioritiser {
         return modelPhenotypeMatch -> new PhivePriorityResult(modelPhenotypeMatch.getEntrezGeneId(), modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), modelPhenotypeMatch);
     }
 
-    private List<ModelPhenotypeMatch> scoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, Collection<Model> models) {
+    private List<ModelPhenotypeMatch> scoreModels(OrganismPhenotypeMatches organismPhenotypeMatches, Collection<GeneModel> models) {
         Organism organism = organismPhenotypeMatches.getOrganism();
 
-        ModelScorer modelScorer = PhiveModelScorer.forSingleCrossSpecies(organismPhenotypeMatches);
+        ModelScorer modelScorer = ModelScorer.forSingleCrossSpecies(organismPhenotypeMatches);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
         List<ModelPhenotypeMatch> modelPhenotypeMatches = models.parallelStream()
-                .map(modelScorer::scoreModel)
+                .map(model -> {
+                    ModelPhenotypeMatchScore score = modelScorer.scoreModel(model);
+                    return new ModelPhenotypeMatch(score.getScore(), model, score.getBestPhenotypeMatches());
+                })
                 .collect(toList());
 
         Duration duration = Duration.between(timeStart, Instant.now());

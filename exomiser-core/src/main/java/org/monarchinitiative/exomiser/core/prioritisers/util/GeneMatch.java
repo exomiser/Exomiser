@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 public class GeneMatch {
 
-    public static final GeneMatch NO_HIT = new GeneMatch(0, 0, 0, Collections.emptyList());
+    static final GeneMatch NO_HIT = new GeneMatch(0, 0, 0, Collections.emptyList());
 
     private final Integer queryGeneId;
     private final Integer matchGeneId;

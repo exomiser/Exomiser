@@ -25,7 +25,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ImmutableMap;
-import org.monarchinitiative.exomiser.core.model.Model;
+import org.monarchinitiative.exomiser.core.model.GeneModel;
 import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
@@ -62,13 +62,6 @@ public class PriorityService {
         this.diseaseDao = diseaseDao;
     }
 
-    public List<PhenotypeTerm> makePhenotypeTermsFromHpoIds(List<String> hpoIds) {
-        return hpoIds.stream()
-                .map(ontologyService::getPhenotypeTermForHpoId)
-                .filter(Objects::nonNull)
-                .collect(toList());
-    }
-
     public Set<PhenotypeTerm> getHpoTerms() {
         return ontologyService.getHpoTerms();
     }
@@ -85,6 +78,13 @@ public class PriorityService {
         return ontologyService.getHpoIdsForDiseaseId(diseaseId);
     }
 
+    public List<PhenotypeTerm> makePhenotypeTermsFromHpoIds(List<String> hpoIds) {
+        return hpoIds.stream()
+                .map(ontologyService::getPhenotypeTermForHpoId)
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
     public OrganismPhenotypeMatches getMatchingPhenotypesForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
         logger.info("Fetching HUMAN-{} phenotype matches...", organism);
         Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
@@ -95,7 +95,7 @@ public class PriorityService {
         return new OrganismPhenotypeMatches(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
     }
 
-    public Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {
+    private Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {
         switch (species) {
             case HUMAN:
                 return ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
@@ -109,7 +109,7 @@ public class PriorityService {
     }
 
     @Cacheable(value = "models", key = "#species", cacheResolver = "modelCacheResolver")
-    public List<Model> getModelsForOrganism(Organism species) {
+    public List<GeneModel> getModelsForOrganism(Organism species) {
         logger.info("Fetching disease/gene model phenotype annotations and HUMAN-{} gene orthologs", species);
         switch (species) {
             case HUMAN:

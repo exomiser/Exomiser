@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneDiseaseModel implements Model {
+public class GeneDiseaseModel implements GeneModel {
     
     private final String modelId;
     private final Organism organism;

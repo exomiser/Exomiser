@@ -19,7 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
-import org.monarchinitiative.exomiser.core.model.Model;
+import org.monarchinitiative.exomiser.core.model.GeneModel;
 
 import java.util.List;
 
@@ -28,28 +28,28 @@ import java.util.List;
  */
 public class TestModelService implements ModelService {
 
-    private final List<Model> diseaseModels;
-    private final List<Model> mouseModels;
-    private final List<Model> fishModels;
+    private final List<GeneModel> diseaseModels;
+    private final List<GeneModel> mouseModels;
+    private final List<GeneModel> fishModels;
 
-    public TestModelService(List<Model> diseaseModels, List<Model> mouseModels, List<Model> fishModels) {
+    public TestModelService(List<GeneModel> diseaseModels, List<GeneModel> mouseModels, List<GeneModel> fishModels) {
         this.diseaseModels = diseaseModels;
         this.mouseModels = mouseModels;
         this.fishModels = fishModels;
     }
 
     @Override
-    public List<Model> getHumanGeneDiseaseModels() {
+    public List<GeneModel> getHumanGeneDiseaseModels() {
         return diseaseModels;
     }
 
     @Override
-    public List<Model> getMouseGeneOrthologModels() {
+    public List<GeneModel> getMouseGeneOrthologModels() {
         return mouseModels;
     }
 
     @Override
-    public List<Model> getFishGeneOrthologModels() {
+    public List<GeneModel> getFishGeneOrthologModels() {
         return fishModels;
     }
 }

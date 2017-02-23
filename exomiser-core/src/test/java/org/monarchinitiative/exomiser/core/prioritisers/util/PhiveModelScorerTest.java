@@ -43,11 +43,11 @@ public class PhiveModelScorerTest {
     public void testScoreModelNoPhenotypesNoMatches() {
         OrganismPhenotypeMatches emptyMatches = new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap());
 
-        PhiveModelScorer instance = PhiveModelScorer.forSameSpecies(emptyMatches);
+        ModelScorer instance = ModelScorer.forSameSpecies(emptyMatches);
 
         Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", Collections.emptyList());
 
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatchScore result = instance.scoreModel(model);
 
         System.out.println(result);
         assertThat(result.getScore(), equalTo(0.0));
@@ -58,16 +58,17 @@ public class PhiveModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(priorityService.getHpoTerms());
         OrganismPhenotypeMatches referenceOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(queryTerms, Organism.HUMAN);
 
-        PhiveModelScorer instance = PhiveModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
+        ModelScorer instance = ModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
 
         PhenotypeTerm noMatchTerm = PhenotypeTerm.of("HP:000000", "No term");
         //The model should have no phenotypes in common with the query set.
         assertThat(queryTerms.contains(noMatchTerm), is(false));
         Model model = new GeneDiseaseModel("DISEASE:2", Organism.HUMAN, 12345, "GENE2", "DISEASE:2", "disease 2", Collections.singletonList(noMatchTerm.getId()));
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatchScore result = instance.scoreModel(model);
 
         System.out.println(result);
         assertThat(result.getScore(), equalTo(0.0));
+        assertThat(result.getBestPhenotypeMatches().isEmpty(), is(true));
     }
 
     @Test
@@ -75,10 +76,10 @@ public class PhiveModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(priorityService.getHpoTerms());
         OrganismPhenotypeMatches referenceOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(queryTerms, Organism.HUMAN);
 
-        PhiveModelScorer instance = PhiveModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
+        ModelScorer instance = ModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
 
         Model model = makeBestHumanModel(referenceOrganismPhenotypeMatches);
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatchScore result = instance.scoreModel(model);
 
         System.out.println(result);
         assertThat(result.getScore(), equalTo(1.0));
@@ -90,12 +91,12 @@ public class PhiveModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(priorityService.getHpoTerms());
         OrganismPhenotypeMatches referenceOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(queryTerms, Organism.HUMAN);
 
-        PhiveModelScorer instance = PhiveModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
+        ModelScorer instance = ModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
 
         List<String> twoExactPhenotypeMatches = queryTerms.stream().limit(2).map(PhenotypeTerm::getId).collect(toList());
 
         Model model = new GeneDiseaseModel("DISEASE:1", Organism.HUMAN, 12345, "GENE1", "DISEASE:1", "disease", twoExactPhenotypeMatches);
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatchScore result = instance.scoreModel(model);
 
         System.out.println(result);
         assertThat(result.getScore(), equalTo(0.732228059966757));
@@ -103,14 +104,14 @@ public class PhiveModelScorerTest {
 
     @Test
     public void testScoreModelPerfectMatchModelAndUnmatchedQueryPhenotype() {
-
         List<PhenotypeTerm> queryTerms = new ArrayList<>(priorityService.getHpoTerms());
-        queryTerms.add(PhenotypeTerm.of("HP:000001", "No match"));
+        queryTerms.add(PhenotypeTerm.of("HP:000000", "No match"));
         OrganismPhenotypeMatches referenceOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(queryTerms, Organism.HUMAN);
 
+        ModelScorer instance = ModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
+
         Model model = makeBestHumanModel(referenceOrganismPhenotypeMatches);
-        PhiveModelScorer instance = PhiveModelScorer.forSameSpecies(referenceOrganismPhenotypeMatches);
-        ModelPhenotypeMatch result = instance.scoreModel(model);
+        ModelPhenotypeMatchScore result = instance.scoreModel(model);
 
         System.out.println(result);
         assertThat(result.getScore(), equalTo(1.0));
@@ -122,11 +123,11 @@ public class PhiveModelScorerTest {
         List<PhenotypeTerm> queryTerms = ImmutableList.copyOf(priorityService.getHpoTerms());
         OrganismPhenotypeMatches mouseOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(queryTerms, Organism.MOUSE);
 
-        PhiveModelScorer mousePhiveModelScorer = PhiveModelScorer.forSingleCrossSpecies(mouseOrganismPhenotypeMatches);
+        ModelScorer mousePhiveModelScorer = ModelScorer.forSingleCrossSpecies(mouseOrganismPhenotypeMatches);
 
         Model model = makeBestMouseModel(mouseOrganismPhenotypeMatches);
 
-        ModelPhenotypeMatch result = mousePhiveModelScorer.scoreModel(model);
+        ModelPhenotypeMatchScore result = mousePhiveModelScorer.scoreModel(model);
         System.out.println(result);
         assertThat(result.getScore(), equalTo(1.0));
     }
@@ -141,25 +142,25 @@ public class PhiveModelScorerTest {
         TheoreticalModel bestTheoreticalModel = referenceOrganismPhenotypeMatches.getBestTheoreticalModel();
 
 
-        PhiveModelScorer diseaseModelScorer = PhiveModelScorer.forMultiCrossSpecies(bestTheoreticalModel, referenceOrganismPhenotypeMatches);
+        ModelScorer diseaseModelScorer = ModelScorer.forMultiCrossSpecies(bestTheoreticalModel, referenceOrganismPhenotypeMatches);
         Model disease = makeBestHumanModel(referenceOrganismPhenotypeMatches);
-        ModelPhenotypeMatch diseaseResult = diseaseModelScorer.scoreModel(disease);
+        ModelPhenotypeMatchScore diseaseResult = diseaseModelScorer.scoreModel(disease);
         System.out.println(diseaseResult);
         assertThat(diseaseResult.getScore(), equalTo(1.0));
 
 
         OrganismPhenotypeMatches mouseOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(queryTerms, Organism.MOUSE);
-        PhiveModelScorer mouseModelScorer = PhiveModelScorer.forMultiCrossSpecies(bestTheoreticalModel, mouseOrganismPhenotypeMatches);
+        ModelScorer mouseModelScorer = ModelScorer.forMultiCrossSpecies(bestTheoreticalModel, mouseOrganismPhenotypeMatches);
         Model mouse = makeBestMouseModel(mouseOrganismPhenotypeMatches);
-        ModelPhenotypeMatch mouseResult = mouseModelScorer.scoreModel(mouse);
+        ModelPhenotypeMatchScore mouseResult = mouseModelScorer.scoreModel(mouse);
         System.out.println(mouseResult);
         assertThat(mouseResult.getScore(), equalTo(0.9718528996668048));
 
 
         OrganismPhenotypeMatches fishOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(queryTerms, Organism.FISH);
-        PhiveModelScorer fishModelScorer = PhiveModelScorer.forMultiCrossSpecies(bestTheoreticalModel, fishOrganismPhenotypeMatches);
+        ModelScorer fishModelScorer = ModelScorer.forMultiCrossSpecies(bestTheoreticalModel, fishOrganismPhenotypeMatches);
         Model fish = makeBestFishModel(fishOrganismPhenotypeMatches);
-        ModelPhenotypeMatch fishResult = fishModelScorer.scoreModel(fish);
+        ModelPhenotypeMatchScore fishResult = fishModelScorer.scoreModel(fish);
         System.out.println(fishResult);
         assertThat(fishResult.getScore(), equalTo(0.628922135363762));
     }

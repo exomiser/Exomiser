@@ -1,7 +1,6 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.monarchinitiative.exomiser.core.model.Model;
-import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
 import org.slf4j.Logger;
@@ -9,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -28,41 +28,6 @@ public class PhiveModelScorer implements ModelScorer {
     private final OrganismPhenotypeMatches organismPhenotypeMatches;
     private final int numQueryPhenotypes;
 
-    //TODO: should these be static methods on ModelScorer?
-    /**
-     * Produces a {@link PhiveModelScorer} which will score human models only, e.g. disease models or individuals where
-     * their phenotypes are encoded using HPO terms.
-     *
-     * @param organismPhenotypeMatches The HP to HP PhenotypeMatches for the query Phenotypes.
-     */
-    public static PhiveModelScorer forSameSpecies(OrganismPhenotypeMatches organismPhenotypeMatches) {
-       int numQueryPhenotypes = organismPhenotypeMatches.getQueryTerms().size();
-       return new PhiveModelScorer(organismPhenotypeMatches, numQueryPhenotypes);
-    }
-
-    /**
-     * Produces a {@link PhiveModelScorer} which will score models between human and a single other species. Requires an
-     * {@link OrganismPhenotypeMatches} for the relevant organism i.e. mouse or fish.
-     *
-     * @param organismPhenotypeMatches The HP to MP/ZP PhenotypeMatches for the query Phenotypes.
-     */
-    public static PhiveModelScorer forSingleCrossSpecies(OrganismPhenotypeMatches organismPhenotypeMatches) {
-        int numQueryPhenotypes = organismPhenotypeMatches.getBestPhenotypeMatches().size();
-        return new PhiveModelScorer(organismPhenotypeMatches, numQueryPhenotypes);
-    }
-
-    /**
-     * Produces a {@link PhiveModelScorer} which will score models across multiple species. This requires a reference
-     * species (human) so that the scores are scaled correctly across the species.
-     *
-     * @param theoreticalModel for the reference organism - this should be for the HP-HP hits.
-     * @param organismPhenotypeMatches the best phenotype matches for the organism i.e. HP-HP, HP-MP or HP-ZP matches.
-     */
-    public static PhiveModelScorer forMultiCrossSpecies(TheoreticalModel theoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches) {
-        int numQueryPhenotypes = theoreticalModel.getQueryTerms().size();
-        return new PhiveModelScorer(theoreticalModel, organismPhenotypeMatches, numQueryPhenotypes);
-    }
-
     /**
      * Use this constructor when running a single (HP-HP) or single cross-species (e.g. HP-MP) comparisons.
      * For multi cross-species comparisons use the constructor which requires the {@link TheoreticalModel} against which
@@ -71,7 +36,7 @@ public class PhiveModelScorer implements ModelScorer {
      * @param organismPhenotypeMatches the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
      * @param numQueryPhenotypes
      */
-    private PhiveModelScorer(OrganismPhenotypeMatches organismPhenotypeMatches, int numQueryPhenotypes) {
+    PhiveModelScorer(OrganismPhenotypeMatches organismPhenotypeMatches, int numQueryPhenotypes) {
         this(organismPhenotypeMatches.getBestTheoreticalModel(), organismPhenotypeMatches, numQueryPhenotypes);
     }
 
@@ -83,7 +48,7 @@ public class PhiveModelScorer implements ModelScorer {
      * @param organismPhenotypeMatches the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
      * @param numQueryPhenotypes
      */
-    private PhiveModelScorer(TheoreticalModel theoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, int numQueryPhenotypes) {
+    PhiveModelScorer(TheoreticalModel theoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, int numQueryPhenotypes) {
         this.theoreticalMaxMatchScore = theoreticalModel.getMaxMatchScore();
         this.theoreticalBestAvgScore = theoreticalModel.getBestAvgScore();
 
@@ -112,10 +77,10 @@ public class PhiveModelScorer implements ModelScorer {
     }
 
     @Override
-    public ModelPhenotypeMatch scoreModel(Model model) {
+    public ModelPhenotypeMatchScore scoreModel(Model model) {
         OrganismPhenotypeMatchScore rawModelScore = organismPhenotypeMatches.calculateModelPhenotypeScores(model.getPhenotypeIds());
         double score = calculateCombinedScore(rawModelScore);
-        return new ModelPhenotypeMatch(score, model, rawModelScore.getBestPhenotypeMatches());
+        return ModelPhenotypeMatchScore.of(score, model, rawModelScore.getBestPhenotypeMatches());
     }
 
     private double calculateCombinedScore(OrganismPhenotypeMatchScore rawModelScore) {
@@ -142,4 +107,29 @@ public class PhiveModelScorer implements ModelScorer {
         return 0;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PhiveModelScorer that = (PhiveModelScorer) o;
+        return Double.compare(that.theoreticalMaxMatchScore, theoreticalMaxMatchScore) == 0 &&
+                Double.compare(that.theoreticalBestAvgScore, theoreticalBestAvgScore) == 0 &&
+                numQueryPhenotypes == that.numQueryPhenotypes &&
+                Objects.equals(organismPhenotypeMatches, that.organismPhenotypeMatches);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(theoreticalMaxMatchScore, theoreticalBestAvgScore, organismPhenotypeMatches, numQueryPhenotypes);
+    }
+
+    @Override
+    public String toString() {
+        return "PhiveModelScorer{" +
+                "theoreticalMaxMatchScore=" + theoreticalMaxMatchScore +
+                ", theoreticalBestAvgScore=" + theoreticalBestAvgScore +
+                ", organismPhenotypeMatches=" + organismPhenotypeMatches +
+                ", numQueryPhenotypes=" + numQueryPhenotypes +
+                '}';
+    }
 }

@@ -45,7 +45,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class GeneOrthologModel implements Model {
+public class GeneOrthologModel implements GeneModel {
     
     private final String modelId;
     private final Organism organism;
