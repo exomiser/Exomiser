@@ -88,12 +88,20 @@ public class PhiveModelScorer implements ModelScorer {
         double sumModelBestMatchScores = rawModelScore.getSumModelBestMatchScores();
         int numMatchingPhenotypesForModel = rawModelScore.getMatchingPhenotypes().size();
 
-        /**
+        /*
          * hpIdsWithPhenotypeMatch.size() = no. of HPO disease annotations for human and the no. of annotations with an entry in hp_*_mappings table for other species
          * matchedPhenotypeIDsForModel.size() = no. of annotations for model with a match in hp_*_mappings table for at least one of the disease annotations
          * Aug 2015 - changed calculation to take into account all HPO terms for averaging after DDD benchmarking - keeps consistent across species then
          */
         //int rowColumnCount = hpIdsWithPhenotypeMatch.size() + matchedPhenotypeIdsForModel.size();
+
+        /*
+         * In order to have a strict symmetrical comparison all the query and model phenotypes in the HP-MP table should be taken into account (these are the significant matches)
+         * so we should be using something close to totalPhenotypes = numQueryPhenotypes + numModelPhenotypes, however in the benchmarking it became apparent that
+         * models with large numbers of phenotypes (e.g. 40+) performed badly compared to models with smaller number when matched against a small query. So we have
+         * implemented a sort of semi-symmetrical comparison which only takes into account the model terms matching those in the query HP-MP subsets.
+         */
+
         int totalPhenotypesWithMatch = numQueryPhenotypes + numMatchingPhenotypesForModel;
         if (sumModelBestMatchScores > 0) {
             double modelBestAvgScore = sumModelBestMatchScores / totalPhenotypesWithMatch;
