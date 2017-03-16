@@ -1,10 +1,10 @@
 The Exomiser - A Tool to Annotate and Prioritize Exome Variants
 ===============================================================
-####Branch build status:
+#### Branch build status:
 Master: [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/master.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/master)
 Development: [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/development.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/development)
 
-####Overview:
+#### Overview:
 
 The Exomiser is a Java program that finds potential disease-causing variants from whole-exome or whole-genome sequencing data.
 
@@ -16,17 +16,17 @@ Variants are prioritised according to user-defined criteria on variant frequency
 
 The Exomiser was developed by the Computational Biology and Bioinformatics group at the Institute for Medical Genetics and Human Genetics of the Charité - Universitätsmedizin Berlin, the Mouse Informatics Group at the Sanger Institute and other members of the [Monarch initiative](https://monarchinitiative.org).
 
-####Download and Installation
+#### Download and Installation
 
 The prebuilt Exomiser binaries can be obtained from the [releases](https://github.com/exomiser/Exomiser/releases) page and supporting data files can be downloaded from the [Exomiser FTP site](http://data.monarchinitiative.org/exomiser).
 
 For instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
 
-####Running it
+#### Running it
 
 Please refer to the [manual](http://exomiser.github.io/Exomiser/) for details on how to configure and run the Exomiser.
 
-####Using The Exomiser in your code
+#### Using The Exomiser in your code
 
 The exomiser can also be used as a library in Spring Java applications. Add the ```exomiser-spring-boot-starter``` library to your pom/gradle build script.
 
@@ -84,7 +84,7 @@ private final Exomiser exomiser;
     AnalysisResults analysisResults = exomiser.run(analysis);
 ```
  
-####Memory usage
+#### Memory usage
 
 Analysing whole genomes using the ``AnalysisMode.FULL`` or ``AnalysisMode.SPARSE`` will use a lot of RAM (~16GB for 4.5 million variants without any extra variant data being loaded) the standard Java GC will fail to cope well with these.
 Using the G1GC should solve this issue. e.g. add ``-XX:+UseG1GC`` to your ``java -jar -Xmx...`` incantation. 

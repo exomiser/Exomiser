@@ -157,7 +157,7 @@ public class AnalysisParser {
             }
             Set<OutputFormat> parsedOutputFormats = new LinkedHashSet<>();
             for (String name : givenOutputFormats) {
-                switch (name.trim()) {
+                switch (name.trim().toUpperCase()) {
                     case "HTML":
                         parsedOutputFormats.add(OutputFormat.HTML);
                         break;
@@ -256,7 +256,7 @@ public class AnalysisParser {
 
         private ModeOfInheritance parseModeOfInheritance(Map<String, String> analysisMap) {
             String value = analysisMap.get("modeOfInheritance");
-            if (value == null) {
+            if (value == null || value.isEmpty()) {
                 return ModeOfInheritance.ANY;
             }
             if (value.equals("UNDEFINED") || value.equals("UNINITIALIZED")) {
