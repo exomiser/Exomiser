@@ -542,15 +542,13 @@ public class CommandLineOptionsParserTest {
         assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
     }
 
-    @Test
-    public void should_produce_settings_with_UNINITIALIZED_inheritance_mode_when_value_not_recognised() {
+    @Test(expected = CommandLineParseError.class)
+    public void throwsExceptionWhenInheritanceModeValueNotRecognised() {
         String option = "--inheritance-mode";
         String value = "wibble";
         String input = String.format("-v 123.vcf %s %s --prioritiser=phive", option, value);
 
         Settings exomiserSettings = parseSettingsFromInput(input);
-
-        assertThat(exomiserSettings.getModeOfInheritance(), equalTo(ModeOfInheritance.ANY));
     }
 
     @Test
