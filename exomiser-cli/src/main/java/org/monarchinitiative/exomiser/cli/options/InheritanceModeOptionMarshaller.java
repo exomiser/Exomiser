@@ -7,6 +7,7 @@ package org.monarchinitiative.exomiser.cli.options;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.apache.commons.cli.Option;
+import org.monarchinitiative.exomiser.cli.CommandLineParseError;
 import org.monarchinitiative.exomiser.core.analysis.Settings.SettingsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class InheritanceModeOptionMarshaller extends AbstractOptionMarshaller {
     }
 
     private ModeOfInheritance parseInheritanceMode(String value) {
-        switch (value) {
+        switch (value.toUpperCase()) {
             case "AR":
             case "AUTOSOMAL_RECESSIVE":
                 return ModeOfInheritance.AUTOSOMAL_RECESSIVE;
@@ -42,8 +43,9 @@ public class InheritanceModeOptionMarshaller extends AbstractOptionMarshaller {
             case "X_RECESSIVE":
                 return ModeOfInheritance.X_RECESSIVE;
             default:
-                logger.info("value {} is not one of AR, AD or X - inheritance mode has not been set", value);
-                return ModeOfInheritance.ANY;
+                String message = "'" + value + "' is not a valid mode of inheritance. Use one of AUTOSOMAL_RECESSIVE (AR), AUTOSOMAL_DOMINANT (AD) or X_RECESSIVE (X).";
+                logger.error(message);
+                throw new CommandLineParseError(message);
         }
     }
 

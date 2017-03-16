@@ -131,6 +131,26 @@ public class AnalysisParserTest {
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
     }
 
+    @Test
+    public void testParseAnalysisModeOfInheritanceAutosomalDominant() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    modeOfInheritance: AUTOSOMAL_DOMINANT \n"
+                        + "    ");
+        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+    }
+
+    @Test(expected = AnalysisParserException.class)
+    public void testParseAnalysisModeOfInheritanceUserUsesWrongValue() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    modeOfInheritance: AD\n"
+                        + "    ");
+        assertThat(analysis.getModeOfInheritance(), equalTo(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+    }
+
     /**
      * geneScoreMode was removed in commit 2055ac3b36c401569d9b201f43cf23d1f8c6aed2. We're checking that old analysis
      * scripts will still function.
