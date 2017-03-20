@@ -62,6 +62,11 @@ public class PhenotypeMatch {
         return (queryPhenotype == null) ? "null" : queryPhenotype.getId();
     }
     
+    @JsonIgnore
+    public String getCompoundKey() {
+    	return String.join("", this.getQueryPhenotypeId(), this.getMatchPhenotypeId());
+    }
+    
     @JsonProperty("query")
     public PhenotypeTerm getQueryPhenotype() {
         return queryPhenotype;
