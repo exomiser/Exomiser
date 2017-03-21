@@ -1,7 +1,7 @@
 dependencies:
   override:
     #need to do an install here otherwise the exomiser-core lib won't be found when getting deps for the other modules
-    - mvn install
+    - mvn install -DskipTests=true
 test:
   override:
     - mvn test
