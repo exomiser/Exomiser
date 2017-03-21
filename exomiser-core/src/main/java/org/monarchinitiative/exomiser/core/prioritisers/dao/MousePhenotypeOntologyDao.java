@@ -48,8 +48,12 @@ public class MousePhenotypeOntologyDao implements OntologyDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MousePhenotypeOntologyDao.class);
 
+    private final DataSource dataSource;
+
     @Autowired
-    private DataSource dataSource;
+    public MousePhenotypeOntologyDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @Override
     public Set<PhenotypeTerm> getAllTerms() {

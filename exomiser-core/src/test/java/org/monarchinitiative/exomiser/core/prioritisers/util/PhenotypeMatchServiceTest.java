@@ -1,11 +1,17 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.model.Model;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -19,19 +25,74 @@ public class PhenotypeMatchServiceTest {
     }
 
     @Test
-    public void testWithModelScorer() {
+    public void testIntegrationWithModelScorer() {
         PhenotypeMatchService instance = new PhenotypeMatchService(ontologyService);
         List<String> hpoIds = getAllHpoIds();
-        //Rename OrganismPhenotypeMatches to QueryPhenotypeMatches?
-        OrganismPhenotypeMatches hpHpMatches = instance.getBestHumanPhenotypeMatchesForQuery(hpoIds);
-    //        QueryPhenotypeMatches queryMpoPhenotypeMatches = phenotypeMatchService.getBestMousePhenotypeMatches(hpoTerms);
-    //        QueryPhenotypeMatches queryZpoPhenotypeMatches = phenotypeMatchService.getBestFishPhenotypeMatches(hpoTerms);
+        OrganismPhenotypeMatcher hpHpMatches = instance.getHumanPhenotypeMatcherForIds(hpoIds);
 
-            ModelScorer modelScorer = ModelScorer.forSameSpecies(hpHpMatches);
-    //        for (Model model : diseaseModels) {
-    //          PhenotypeMatchScore score = modelScorer.scorePhenotypes(model.getPhenotypeIds());
-    //        }
+        ModelScorer modelScorer = ModelScorer.forSameSpecies(hpHpMatches);
+
+        TestModel exactMatch = new TestModel("EXACT_MATCH", hpoIds);
+        TestModel noMatch = new TestModel("NO_MATCH", Collections.emptyList());
+
+        List<ModelPhenotypeMatchScore> matches = Stream.of(exactMatch, noMatch)
+                .map(modelScorer::scoreModel)
+                .sorted()
+                .collect(toList());
+
+        ModelPhenotypeMatchScore topScore = matches.get(0);
+        assertThat(topScore.getScore(), equalTo(1d));
+        assertThat(topScore.getModel(), equalTo(exactMatch));
+
+        ModelPhenotypeMatchScore bottomScore = matches.get(1);
+        assertThat(bottomScore.getScore(), equalTo(0d));
+        assertThat(bottomScore.getModel(), equalTo(noMatch));
 
     }
 
+    /**
+     * Simple class to enable testing the ModelScorer.
+     */
+    private class TestModel implements Model {
+
+        private final String id;
+        private final List<String> phenotypes;
+
+        public TestModel(String id, List<String> phenotypes) {
+            this.id = id;
+            this.phenotypes = phenotypes;
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public List<String> getPhenotypeIds() {
+            return phenotypes;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            TestModel testModel = (TestModel) o;
+            return Objects.equals(id, testModel.id) &&
+                    Objects.equals(phenotypes, testModel.phenotypes);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, phenotypes);
+        }
+
+        @Override
+        public String toString() {
+            return "TestModel{" +
+                    "id='" + id + '\'' +
+                    ", phenotypes=" + phenotypes +
+                    '}';
+        }
+    }
 }

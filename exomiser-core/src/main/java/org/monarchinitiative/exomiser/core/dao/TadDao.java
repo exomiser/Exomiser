@@ -45,8 +45,13 @@ public class TadDao {
 
     private final Logger logger = LoggerFactory.getLogger(TadDao.class);
 
+    private final DataSource dataSource;
+
     @Autowired
-    private DataSource dataSource;
+    public TadDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
 
     public List<TopologicalDomain> getAllTads() {
         try (Connection connection = dataSource.getConnection();

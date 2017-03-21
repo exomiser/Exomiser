@@ -65,11 +65,6 @@ public class TestOntologyService implements OntologyService {
     }
 
     @Override
-    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
-        return Collections.emptyList();
-    }
-
-    @Override
     public Set<PhenotypeMatch> getHpoMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
         List<PhenotypeMatch> matches = humanHumanMappings.get(hpoTerm);
         return (matches == null) ? Collections.emptySet() : Sets.newHashSet(matches);

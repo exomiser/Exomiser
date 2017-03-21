@@ -54,7 +54,7 @@ public class TestPriorityServiceFactory {
                 .setHumanFishMappings(Collections.emptyMap())
                 .build();
 
-        return new PriorityService(stubOntologyService, stubModelService, null);
+        return new PriorityService(stubOntologyService, stubModelService, new PhenotypeMatchService(stubOntologyService), null);
     }
 
     private static PriorityService setUpPriorityService() {
@@ -73,7 +73,7 @@ public class TestPriorityServiceFactory {
         List<Disease> diseases = TestPrioritiserDataFileReader.readDiseaseData("src/test/resources/prioritisers/disease-models");
         TestDiseaseDao testDiseaseDao = new TestDiseaseDao(diseases);
 
-        return new PriorityService(testOntologyService, testModelService, testDiseaseDao);
+        return new PriorityService(testOntologyService, testModelService, new PhenotypeMatchService(testOntologyService), testDiseaseDao);
     }
 
     private static OntologyService setUpOntologyService() {

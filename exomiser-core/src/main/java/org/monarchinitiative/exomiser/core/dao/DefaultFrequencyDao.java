@@ -56,13 +56,15 @@ import java.util.Set;
 public class DefaultFrequencyDao implements FrequencyDao {
 
     private final Logger logger = LoggerFactory.getLogger(DefaultFrequencyDao.class);
-    
-    @Autowired
-    private DataSource dataSource;
+
+    private final DataSource dataSource;
 
     private final Map<FrequencySource, String> frequencySourceColumnMappings;
-    
-    public DefaultFrequencyDao() {
+
+    @Autowired
+    public DefaultFrequencyDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+
         Map<FrequencySource, String> frequencyMap = new EnumMap<>(FrequencySource.class);
         frequencyMap.put(FrequencySource.THOUSAND_GENOMES, "dbSNPmaf");
         frequencyMap.put(FrequencySource.ESP_AFRICAN_AMERICAN, "espAAmaf");

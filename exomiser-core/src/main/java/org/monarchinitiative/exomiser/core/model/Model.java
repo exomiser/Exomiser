@@ -27,23 +27,14 @@ package org.monarchinitiative.exomiser.core.model;
 import java.util.List;
 
 /**
- * Interface for encapsulating data involved in a disease/animal model to human
- * gene association. This interface defines the common features of a model -
- * gene and disease models are somewhat different otherwise.
+ * Generic interface for defining the phenotype of an entity. In ontology terms this is the associations of an individual
+ * to a set of ontology classes.
  *
- * For example the disease Pfeiffer syndrome (OMIM:101600) has a set of defined
- * phenotypes encoded using HPO terms is associated with two causative genes,
- * FGFR1 (Entrez:2260) and FGFR2 (Entrez:2263).
+ * @see GeneModel
+ * @see GeneModelPhenotypeMatch
+ * @see org.monarchinitiative.exomiser.core.prioritisers.util.ModelScorer
  *
- * There are also mouse models where the mouse homologue of FGFR1 and FGFR2 have
- * been knocked-out and they too have a set of defined phenotypes. However the
- * mouse phenotypes are encoded using the MPO.
- *
- * Due to the phenotypic similarities of the mouse knockout and/or the human
- * disease it is possible to infer a likely causative gene for a given set of
- * input phenotypes.
- *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public interface Model {
 

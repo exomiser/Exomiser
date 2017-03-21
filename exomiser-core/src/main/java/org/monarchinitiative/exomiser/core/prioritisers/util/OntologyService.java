@@ -8,7 +8,6 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,8 +23,6 @@ public interface OntologyService {
     Set<PhenotypeTerm> getMpoTerms();
     
     Set<PhenotypeTerm> getZpoTerms();
-    
-    List<String> getHpoIdsForDiseaseId(String diseaseId);
 
     Set<PhenotypeMatch> getHpoMatchesForHpoTerm(PhenotypeTerm hpoTerm);
 

@@ -37,9 +37,9 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class OrganismPhenotypeMatchesTest {
+public class OrganismPhenotypeMatcherTest {
 
-    private OrganismPhenotypeMatches instance;
+    private OrganismPhenotypeMatcher instance;
 
     //Nose phenotypes
     private final PhenotypeTerm bigNose = PhenotypeTerm.of("HP:0000001", "Big nose");
@@ -66,12 +66,12 @@ public class OrganismPhenotypeMatchesTest {
         phenotypeMatches.put(bigNose, Sets.newHashSet(perfectNoseMatch, noseMatch));
         phenotypeMatches.put(bigToe, Sets.newHashSet(bestToeMatch, bigToeCrookedToeMatch));
 
-        instance = new OrganismPhenotypeMatches(Organism.HUMAN, phenotypeMatches);
+        instance = new OrganismPhenotypeMatcher(Organism.HUMAN, phenotypeMatches);
     }
 
     @Test
     public void emptyInputValues() throws Exception {
-        OrganismPhenotypeMatches instance = new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap());
+        OrganismPhenotypeMatcher instance = new OrganismPhenotypeMatcher(Organism.HUMAN, Collections.emptyMap());
 
         assertThat(instance.getOrganism(), equalTo(Organism.HUMAN));
         assertThat(instance.getQueryTerms(), equalTo(Collections.emptyList()));
@@ -80,16 +80,16 @@ public class OrganismPhenotypeMatchesTest {
 
     @Test
     public void testEquals() {
-        OrganismPhenotypeMatches emptyHumanOne = new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap());
-        OrganismPhenotypeMatches emptyMouseOne = new OrganismPhenotypeMatches(Organism.MOUSE, Collections.emptyMap());
-        OrganismPhenotypeMatches emptyHumanTwo = new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap());
+        OrganismPhenotypeMatcher emptyHumanOne = new OrganismPhenotypeMatcher(Organism.HUMAN, Collections.emptyMap());
+        OrganismPhenotypeMatcher emptyMouseOne = new OrganismPhenotypeMatcher(Organism.MOUSE, Collections.emptyMap());
+        OrganismPhenotypeMatcher emptyHumanTwo = new OrganismPhenotypeMatcher(Organism.HUMAN, Collections.emptyMap());
         assertThat(emptyHumanOne, equalTo(emptyHumanTwo));
         assertThat(emptyHumanOne, not(equalTo(emptyMouseOne)));
     }
 
     @Test
     public void testToString() {
-        System.out.println(new OrganismPhenotypeMatches(Organism.HUMAN, Collections.emptyMap()));
+        System.out.println(new OrganismPhenotypeMatcher(Organism.HUMAN, Collections.emptyMap()));
         System.out.println(instance);
     }
 

@@ -28,13 +28,13 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class ModelPhenotypeMatch implements GeneModel {
+public class GeneModelPhenotypeMatch implements GeneModel {
 
     private final double score;
     private final GeneModel model;
     private final List<PhenotypeMatch> bestModelPhenotypeMatches;
 
-    public ModelPhenotypeMatch(double score, GeneModel model, List<PhenotypeMatch> bestModelPhenotypeMatches) {
+    public GeneModelPhenotypeMatch(double score, GeneModel model, List<PhenotypeMatch> bestModelPhenotypeMatches) {
         this.score = score;
         this.model = model;
         this.bestModelPhenotypeMatches = ImmutableList.copyOf(bestModelPhenotypeMatches);
@@ -85,8 +85,8 @@ public class ModelPhenotypeMatch implements GeneModel {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ModelPhenotypeMatch)) return false;
-        ModelPhenotypeMatch that = (ModelPhenotypeMatch) o;
+        if (!(o instanceof GeneModelPhenotypeMatch)) return false;
+        GeneModelPhenotypeMatch that = (GeneModelPhenotypeMatch) o;
         return Double.compare(that.score, score) == 0 &&
                 Objects.equals(model, that.model) &&
                 Objects.equals(bestModelPhenotypeMatches, that.bestModelPhenotypeMatches);
@@ -100,7 +100,7 @@ public class ModelPhenotypeMatch implements GeneModel {
 
     @Override
     public String toString() {
-        return "ModelPhenotypeMatch{" +
+        return "GeneModelPhenotypeMatch{" +
                 "score=" + score +
                 ", model=" + model +
                 ", bestModelPhenotypeMatches=" + bestModelPhenotypeMatches +

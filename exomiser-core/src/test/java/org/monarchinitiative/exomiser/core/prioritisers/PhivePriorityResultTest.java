@@ -20,8 +20,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.model.GeneModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
-import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.Organism;
 
 import java.util.Collections;
@@ -36,18 +36,19 @@ import static org.junit.Assert.assertThat;
 public class PhivePriorityResultTest {
 
     private final GeneOrthologModel mouseModel = new GeneOrthologModel("mouse-model_1", Organism.MOUSE, 2263, "FGFR2", "MGI:95523", "Fgfr2", Collections.emptyList());
-    private final ModelPhenotypeMatch modelPhenotypeMatch = new ModelPhenotypeMatch(0.827862024307251, mouseModel, Collections.emptyList());
+    private final GeneModelPhenotypeMatch geneModelPhenotypeMatch = new GeneModelPhenotypeMatch(0.827862024307251, mouseModel, Collections
+            .emptyList());
 
     @Test
     public void testIsEquals() throws Exception {
-        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, modelPhenotypeMatch);
-        PhivePriorityResult other = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, modelPhenotypeMatch);
+        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, geneModelPhenotypeMatch);
+        PhivePriorityResult other = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, geneModelPhenotypeMatch);
         assertThat(result, equalTo(other));
     }
 
     @Test
     public void testToString() throws Exception {
-        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, modelPhenotypeMatch);
+        PhivePriorityResult result = new PhivePriorityResult(2263, "FGFR2", 0.827862024307251, geneModelPhenotypeMatch);
         assertThat(result.toString(), startsWith("PhivePriorityResult{geneId=2263, geneSymbol='FGFR2', score=0.827862024307251"));
     }
 

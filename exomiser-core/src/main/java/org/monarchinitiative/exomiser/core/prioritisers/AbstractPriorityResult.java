@@ -26,13 +26,13 @@ import java.util.Objects;
  */
 abstract class AbstractPriorityResult implements PriorityResult {
 
-    final PriorityType priorityType;
+    private final PriorityType priorityType;
 
     final int geneId;
     final String geneSymbol;
     final double score;
 
-    protected AbstractPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) {
+    AbstractPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) {
         this.priorityType = priorityType;
         this.geneId = geneId;
         this.geneSymbol = geneSymbol;
@@ -57,11 +57,6 @@ abstract class AbstractPriorityResult implements PriorityResult {
     @Override
     public double getScore() {
         return score;
-    }
-
-    @Override
-    public String getHTMLCode() {
-        return "Not implemented here";
     }
 
     @Override

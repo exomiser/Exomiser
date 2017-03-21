@@ -20,15 +20,13 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
 
 import java.util.*;
 import java.util.function.Function;
-
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -64,7 +62,7 @@ public class TheoreticalModel {
                 .stream()
                 .map(bestPhenotypeMatch())
                 .filter(Objects::nonNull)
-                .collect(collectingAndThen(toSet(), Collections::unmodifiableSet));
+                .collect(ImmutableSet.toImmutableSet());
     }
 
     /**

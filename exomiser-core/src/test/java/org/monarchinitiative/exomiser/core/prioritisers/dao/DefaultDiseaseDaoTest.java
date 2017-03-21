@@ -47,12 +47,16 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoTestConfig.class)
-@Sql(scripts = {"file:src/test/resources/sql/create_disease.sql", "file:src/test/resources/sql/create_disease_hp.sql", "file:src/test/resources/sql/create_entrez2sym.sql", "file:src/test/resources/sql/diseaseDaoTestData.sql"})
+@ContextConfiguration(classes = {TestDataSourceConfig.class, DefaultDiseaseDao.class})
+@Sql(scripts = {
+        "file:src/test/resources/sql/create_disease.sql",
+        "file:src/test/resources/sql/create_disease_hp.sql",
+        "file:src/test/resources/sql/create_entrez2sym.sql",
+        "file:src/test/resources/sql/diseaseDaoTestData.sql"})
 public class DefaultDiseaseDaoTest {
     
     @Autowired
-    DiseaseDao instance;
+    DefaultDiseaseDao instance;
 
     private final Disease disease = Disease.builder()
             .diseaseId("OMIM:101600")

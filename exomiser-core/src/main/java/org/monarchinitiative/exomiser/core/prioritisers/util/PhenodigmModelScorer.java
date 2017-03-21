@@ -12,20 +12,21 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Phive algorithm for scoring the semantic similarity of a model against the best theoretical model
- * for a set of phenotypes in a given organism.
+ * Class implementing the Phenodigm (PHENOtype comparisons for DIsease Genes and Models) algorithm for scoring the
+ * semantic similarity of a model against the best theoretical model for a set of phenotypes in a given organism.
+ * See original publication here - https://doi.org/10.1093/database/bat025
  *
  * @since 8.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class PhiveModelScorer implements ModelScorer {
+public class PhenodigmModelScorer implements ModelScorer {
 
-    private static final Logger logger = LoggerFactory.getLogger(PhiveModelScorer.class);
+    private static final Logger logger = LoggerFactory.getLogger(PhenodigmModelScorer.class);
 
     private final double theoreticalMaxMatchScore;
     private final double theoreticalBestAvgScore;
 
-    private final OrganismPhenotypeMatches organismPhenotypeMatches;
+    private final OrganismPhenotypeMatcher organismPhenotypeMatcher;
     private final int numQueryPhenotypes;
 
     /**
@@ -33,11 +34,11 @@ public class PhiveModelScorer implements ModelScorer {
      * For multi cross-species comparisons use the constructor which requires the {@link TheoreticalModel} against which
      * all models are compared.
      *
-     * @param organismPhenotypeMatches the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
+     * @param organismPhenotypeMatcher the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
      * @param numQueryPhenotypes
      */
-    PhiveModelScorer(OrganismPhenotypeMatches organismPhenotypeMatches, int numQueryPhenotypes) {
-        this(organismPhenotypeMatches.getBestTheoreticalModel(), organismPhenotypeMatches, numQueryPhenotypes);
+    PhenodigmModelScorer(OrganismPhenotypeMatcher organismPhenotypeMatcher, int numQueryPhenotypes) {
+        this(organismPhenotypeMatcher.getBestTheoreticalModel(), organismPhenotypeMatcher, numQueryPhenotypes);
     }
 
     /**
@@ -45,21 +46,21 @@ public class PhiveModelScorer implements ModelScorer {
      * use the alternate constructor.
      *
      * @param theoreticalModel against which all models are compared.
-     * @param organismPhenotypeMatches the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
+     * @param organismPhenotypeMatcher the best phenotype matches for this organism e.g. HP-HP, HP-MP or HP-MP
      * @param numQueryPhenotypes
      */
-    PhiveModelScorer(TheoreticalModel theoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, int numQueryPhenotypes) {
+    PhenodigmModelScorer(TheoreticalModel theoreticalModel, OrganismPhenotypeMatcher organismPhenotypeMatcher, int numQueryPhenotypes) {
         this.theoreticalMaxMatchScore = theoreticalModel.getMaxMatchScore();
         this.theoreticalBestAvgScore = theoreticalModel.getBestAvgScore();
 
-        this.organismPhenotypeMatches = organismPhenotypeMatches;
+        this.organismPhenotypeMatcher = organismPhenotypeMatcher;
         this.numQueryPhenotypes = numQueryPhenotypes;
         logOrganismPhenotypeMatches();
     }
 
     private void logOrganismPhenotypeMatches() {
-        logger.info("Best {} phenotype matches:", organismPhenotypeMatches.getOrganism());
-        Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches = organismPhenotypeMatches.getTermPhenotypeMatches();
+        logger.info("Best {} phenotype matches:", organismPhenotypeMatcher.getOrganism());
+        Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches = organismPhenotypeMatcher.getTermPhenotypeMatches();
         for (Map.Entry<PhenotypeTerm, Set<PhenotypeMatch>> entry : termPhenotypeMatches.entrySet()) {
             PhenotypeTerm queryTerm = entry.getKey();
             Set<PhenotypeMatch> matches = entry.getValue();
@@ -72,13 +73,13 @@ public class PhiveModelScorer implements ModelScorer {
                 logger.info("{}-{}={}", queryTerm.getId(), bestMatch.getMatchPhenotypeId(), bestMatch.getScore());
             }
         }
-        TheoreticalModel organismTheoreticalModel = organismPhenotypeMatches.getBestTheoreticalModel();
+        TheoreticalModel organismTheoreticalModel = organismPhenotypeMatcher.getBestTheoreticalModel();
         logger.info("bestMaxScore={} bestAvgScore={}", organismTheoreticalModel.getMaxMatchScore(), organismTheoreticalModel.getBestAvgScore());
     }
 
     @Override
     public ModelPhenotypeMatchScore scoreModel(Model model) {
-        OrganismPhenotypeMatchScore rawModelScore = organismPhenotypeMatches.calculateModelPhenotypeScores(model.getPhenotypeIds());
+        OrganismPhenotypeMatchScore rawModelScore = organismPhenotypeMatcher.calculateModelPhenotypeScores(model.getPhenotypeIds());
         double score = calculateCombinedScore(rawModelScore);
         return ModelPhenotypeMatchScore.of(score, model, rawModelScore.getBestPhenotypeMatches());
     }
@@ -119,24 +120,24 @@ public class PhiveModelScorer implements ModelScorer {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PhiveModelScorer that = (PhiveModelScorer) o;
+        PhenodigmModelScorer that = (PhenodigmModelScorer) o;
         return Double.compare(that.theoreticalMaxMatchScore, theoreticalMaxMatchScore) == 0 &&
                 Double.compare(that.theoreticalBestAvgScore, theoreticalBestAvgScore) == 0 &&
                 numQueryPhenotypes == that.numQueryPhenotypes &&
-                Objects.equals(organismPhenotypeMatches, that.organismPhenotypeMatches);
+                Objects.equals(organismPhenotypeMatcher, that.organismPhenotypeMatcher);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(theoreticalMaxMatchScore, theoreticalBestAvgScore, organismPhenotypeMatches, numQueryPhenotypes);
+        return Objects.hash(theoreticalMaxMatchScore, theoreticalBestAvgScore, organismPhenotypeMatcher, numQueryPhenotypes);
     }
 
     @Override
     public String toString() {
-        return "PhiveModelScorer{" +
+        return "PhenodigmModelScorer{" +
                 "theoreticalMaxMatchScore=" + theoreticalMaxMatchScore +
                 ", theoreticalBestAvgScore=" + theoreticalBestAvgScore +
-                ", organismPhenotypeMatches=" + organismPhenotypeMatches +
+                ", organismPhenotypeMatcher=" + organismPhenotypeMatcher +
                 ", numQueryPhenotypes=" + numQueryPhenotypes +
                 '}';
     }

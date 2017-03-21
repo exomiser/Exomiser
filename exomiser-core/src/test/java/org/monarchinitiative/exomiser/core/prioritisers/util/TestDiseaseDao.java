@@ -19,20 +19,20 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
+import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseDao;
 
 import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class TestDiseaseDao implements DiseaseDao {
 
-    Set<Disease> diseases;
-    Map<Integer, List<Disease>> geneDiseaseAssociations;
+    private final Set<Disease> diseases;
+    private final Map<Integer, List<Disease>> geneDiseaseAssociations;
 
     public TestDiseaseDao(List<Disease> diseases) {
         this.diseases = new LinkedHashSet<>(diseases);
@@ -41,7 +41,10 @@ public class TestDiseaseDao implements DiseaseDao {
 
     @Override
     public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
-        return diseases.stream().filter(entry -> entry.getDiseaseId().equals(diseaseId)).flatMap(entry -> entry.getPhenotypeIds().stream()).collect(toSet());
+        return diseases.stream()
+                .filter(entry -> entry.getDiseaseId().equals(diseaseId))
+                .flatMap(entry -> entry.getPhenotypeIds().stream())
+                .collect(ImmutableSet.toImmutableSet());
     }
 
     @Override

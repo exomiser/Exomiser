@@ -32,7 +32,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.HumanPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.MousePhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.ZebraFishPhenotypeOntologyDao;
@@ -40,7 +39,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.dao.ZebraFishPhenotypeOn
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -54,18 +52,13 @@ public class OntologyServiceImplTest {
     private OntologyServiceImpl instance;
 
     @Mock
-    DiseaseDao mockDiseaseDao;
+    private HumanPhenotypeOntologyDao mockHpoDao;
+    @Mock
+    private MousePhenotypeOntologyDao mockMpoDao;
+    @Mock
+    private ZebraFishPhenotypeOntologyDao mockZpoDao;
 
-    @Mock
-    HumanPhenotypeOntologyDao mockHpoDao;
-    @Mock
-    MousePhenotypeOntologyDao mockMpoDao;
-    @Mock
-    ZebraFishPhenotypeOntologyDao mockZpoDao;
-
-    private final String diseaseIdInDatabase = "DISEASE:00000";
-    private final String diseaseIdNotInDatabase = "DISEASE:99999";
-    private Set<String> diseaseHpoIds;
+    private List<String> diseaseHpoIds;
     private Set<PhenotypeTerm> hpoTerms;
     private Set<PhenotypeTerm> mpoTerms;
     private Set<PhenotypeTerm> zpoTerms;
@@ -77,7 +70,7 @@ public class OntologyServiceImplTest {
 
     @Before
     public void setUp() {
-        diseaseHpoIds = new TreeSet<>();
+        diseaseHpoIds = new ArrayList<>();
         diseaseHpoIds.addAll(Arrays.asList("HP:000000", "HP:000001", "HP:000002", "HP:000003", "HP:000004"));
 
         hpoTerms = new HashSet<>();
@@ -94,32 +87,14 @@ public class OntologyServiceImplTest {
     }
 
     private void setUpDaoMocks() {
-        setUpDiseaseDaoMock();
         Mockito.when(mockHpoDao.getAllTerms()).thenReturn(hpoTerms);
-        Mockito.when(mockHpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.EMPTY_SET);
+        Mockito.when(mockHpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
 
         Mockito.when(mockMpoDao.getAllTerms()).thenReturn(mpoTerms);
-        Mockito.when(mockMpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.EMPTY_SET);
+        Mockito.when(mockMpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
 
         Mockito.when(mockZpoDao.getAllTerms()).thenReturn(zpoTerms);
-        Mockito.when(mockZpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.EMPTY_SET);
-    }
-
-    private void setUpDiseaseDaoMock() {
-        Mockito.when(mockDiseaseDao.getHpoIdsForDiseaseId(diseaseIdInDatabase)).thenReturn(diseaseHpoIds);
-        Set<String> emptyStringSet = Collections.emptySet();
-        Mockito.when(mockDiseaseDao.getHpoIdsForDiseaseId(diseaseIdNotInDatabase)).thenReturn(emptyStringSet);
-    }
-
-    @Test
-    public void testGetHpoIdsForDiseaseInDatabase() {
-        List<String> diseaseHpoIdList = new ArrayList<>(diseaseHpoIds);
-        assertThat(instance.getHpoIdsForDiseaseId(diseaseIdInDatabase), equalTo(diseaseHpoIdList));
-    }
-
-    @Test
-    public void testGetHpoIdsForDiseaseNotInDatabaseReturnsEmptyList() {
-        assertThat(instance.getHpoIdsForDiseaseId(diseaseIdNotInDatabase).isEmpty(), is(true));
+        Mockito.when(mockZpoDao.getPhenotypeMatchesForHpoTerm(Mockito.any())).thenReturn(Collections.emptySet());
     }
 
     @Test
@@ -139,17 +114,17 @@ public class OntologyServiceImplTest {
 
     @Test
     public void canGetPhenotypeMatchesForHpoTerm() {
-        assertThat(instance.getHpoMatchesForHpoTerm(cleftHelix), equalTo(Collections.EMPTY_SET));
+        assertThat(instance.getHpoMatchesForHpoTerm(cleftHelix), equalTo(Collections.emptySet()));
     }
 
     @Test
     public void canGetPhenotypeMatchesForMpoTerm() {
-        assertThat(instance.getMpoMatchesForHpoTerm(cleftHelix), equalTo(Collections.EMPTY_SET));
+        assertThat(instance.getMpoMatchesForHpoTerm(cleftHelix), equalTo(Collections.emptySet()));
     }
 
     @Test
     public void canGetPhenotypeMatchesForZpoTerm() {
-        assertThat(instance.getZpoMatchesForHpoTerm(cleftHelix), equalTo(Collections.EMPTY_SET));
+        assertThat(instance.getZpoMatchesForHpoTerm(cleftHelix), equalTo(Collections.emptySet()));
     }
 
     @Test

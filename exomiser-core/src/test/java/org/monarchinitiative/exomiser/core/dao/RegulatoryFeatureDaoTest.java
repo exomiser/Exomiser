@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.dao;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DaoTestConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -38,8 +38,11 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoTestConfig.class)
-@Sql(scripts = {"file:src/test/resources/sql/create_regulatory_features.sql", "file:src/test/resources/sql/regulatoryFeatureTestData.sql"})
+@ContextConfiguration(classes = {TestDataSourceConfig.class, RegulatoryFeatureDao.class})
+@Sql(scripts = {
+        "file:src/test/resources/sql/create_regulatory_features.sql",
+        "file:src/test/resources/sql/regulatoryFeatureTestData.sql"
+})
 public class RegulatoryFeatureDaoTest {
 
     @Autowired

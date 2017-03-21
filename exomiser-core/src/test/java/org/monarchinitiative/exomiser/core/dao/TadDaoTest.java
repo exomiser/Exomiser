@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.dao;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DaoTestConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoTestConfig.class)
+@ContextConfiguration(classes = {TestDataSourceConfig.class, TadDao.class})
 @Sql(scripts = {"file:src/test/resources/sql/create_tad.sql", "file:src/test/resources/sql/tadDaoTestData.sql"})
 public class TadDaoTest {
 

@@ -24,10 +24,9 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.GeneModel;
 import org.monarchinitiative.exomiser.core.model.Organism;
-import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseDao;
 import org.slf4j.Logger;
@@ -36,7 +35,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -53,12 +55,14 @@ public class PriorityService {
 
     private final OntologyService ontologyService;
     private final ModelService modelService;
+    private final PhenotypeMatchService phenotypeMatchService;
     private final DiseaseDao diseaseDao;
 
     @Autowired
-    public PriorityService(OntologyService ontologyService, ModelService modelService, DiseaseDao diseaseDao) {
+    public PriorityService(OntologyService ontologyService, ModelService modelService, PhenotypeMatchService phenotypeMatchService, DiseaseDao diseaseDao) {
         this.ontologyService = ontologyService;
         this.modelService = modelService;
+        this.phenotypeMatchService = phenotypeMatchService;
         this.diseaseDao = diseaseDao;
     }
 
@@ -75,7 +79,7 @@ public class PriorityService {
     }
 
     public List<String> getHpoIdsForDiseaseId(String diseaseId) {
-        return ontologyService.getHpoIdsForDiseaseId(diseaseId);
+        return ImmutableList.copyOf(diseaseDao.getHpoIdsForDiseaseId(diseaseId));
     }
 
     public List<PhenotypeTerm> makePhenotypeTermsFromHpoIds(List<String> hpoIds) {
@@ -85,26 +89,16 @@ public class PriorityService {
                 .collect(toList());
     }
 
-    public OrganismPhenotypeMatches getMatchingPhenotypesForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
-        logger.info("Fetching HUMAN-{} phenotype matches...", organism);
-        Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
-        for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
-            Set<PhenotypeMatch> termMatches = getSpeciesMatchesForHpoTerm(hpoTerm, organism);
-            speciesPhenotypeMatches.put(hpoTerm, termMatches);
-        }
-        return new OrganismPhenotypeMatches(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
-    }
-
-    private Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {
-        switch (species) {
+    public OrganismPhenotypeMatcher getPhenotypeMatcherForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
+        switch (organism) {
             case HUMAN:
-                return ontologyService.getHpoMatchesForHpoTerm(hpoTerm);
+                return phenotypeMatchService.getHumanPhenotypeMatcherForTerms(queryHpoPhenotypes);
             case MOUSE:
-                return ontologyService.getMpoMatchesForHpoTerm(hpoTerm);
+                return phenotypeMatchService.getMousePhenotypeMatcherForTerms(queryHpoPhenotypes);
             case FISH:
-                return ontologyService.getZpoMatchesForHpoTerm(hpoTerm);
+                return phenotypeMatchService.getFishPhenotypeMatcherForTerms(queryHpoPhenotypes);
             default:
-                return Collections.emptySet();
+                throw new IllegalArgumentException("Organism" + organism + "not valid");
         }
     }
 

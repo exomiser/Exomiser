@@ -41,9 +41,9 @@ import static java.util.stream.Collectors.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OrganismPhenotypeMatches {
+public class OrganismPhenotypeMatcher {
 
-    private static final Logger logger = LoggerFactory.getLogger(OrganismPhenotypeMatches.class);
+    private static final Logger logger = LoggerFactory.getLogger(OrganismPhenotypeMatcher.class);
 
     private final Organism organism;
     private final Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches;
@@ -59,7 +59,7 @@ public class OrganismPhenotypeMatches {
      * @param organism             - The organism for which these PhenotypeMatches are associated.
      * @param termPhenotypeMatches - Map of query PhenotypeTerms and their corresponding PhenotypeMatches. If there is no match then an empty Set of PhenotypeMatches is expected.
      */
-    public OrganismPhenotypeMatches(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
+    public OrganismPhenotypeMatcher(Organism organism, Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
         this.organism = organism;
         this.termPhenotypeMatches = ImmutableMap.copyOf(termPhenotypeMatches);
 
@@ -221,7 +221,8 @@ public class OrganismPhenotypeMatches {
                 .map(Optional::get)
                 .collect(toList());
 
-        return Stream.concat(forwardMatches.stream(), reciprocalMatches.stream()).collect(collectingAndThen(toList(), ImmutableList::copyOf));
+         return Stream.concat(forwardMatches.stream(), reciprocalMatches.stream())
+                 .collect(ImmutableList.toImmutableList());
     }
 
     /**
@@ -250,8 +251,8 @@ public class OrganismPhenotypeMatches {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof OrganismPhenotypeMatches)) return false;
-        OrganismPhenotypeMatches that = (OrganismPhenotypeMatches) o;
+        if (!(o instanceof OrganismPhenotypeMatcher)) return false;
+        OrganismPhenotypeMatcher that = (OrganismPhenotypeMatcher) o;
         return organism == that.organism &&
                 Objects.equals(termPhenotypeMatches, that.termPhenotypeMatches);
     }
@@ -264,7 +265,7 @@ public class OrganismPhenotypeMatches {
 
     @Override
     public String toString() {
-        return "OrganismPhenotypeMatches{" +
+        return "OrganismPhenotypeMatcher{" +
                 "organism=" + organism +
                 ", termPhenotypeMatches=" + termPhenotypeMatches +
                 '}';

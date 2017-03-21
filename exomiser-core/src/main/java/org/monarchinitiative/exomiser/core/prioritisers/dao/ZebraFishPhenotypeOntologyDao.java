@@ -48,8 +48,12 @@ public class ZebraFishPhenotypeOntologyDao implements OntologyDao {
 
     private static final Logger logger = LoggerFactory.getLogger(ZebraFishPhenotypeOntologyDao.class);
 
+    private final DataSource dataSource;
+
     @Autowired
-    private DataSource dataSource;
+    public ZebraFishPhenotypeOntologyDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @Override
     public Set<PhenotypeTerm> getAllTerms() {

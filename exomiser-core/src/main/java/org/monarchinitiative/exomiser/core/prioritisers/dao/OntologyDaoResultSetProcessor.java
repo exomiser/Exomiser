@@ -38,7 +38,7 @@ import java.util.Set;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OntologyDaoResultSetProcessor {
+class OntologyDaoResultSetProcessor {
 
     private OntologyDaoResultSetProcessor() {
     }

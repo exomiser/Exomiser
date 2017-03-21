@@ -25,10 +25,6 @@
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.monarchinitiative.exomiser.core.dao.DefaultFrequencyDao;
-import org.monarchinitiative.exomiser.core.dao.DefaultPathogenicityDao;
-import org.monarchinitiative.exomiser.core.dao.RegulatoryFeatureDao;
-import org.monarchinitiative.exomiser.core.dao.TadDao;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,53 +35,14 @@ import javax.sql.DataSource;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-public class DaoTestConfig {
+public class TestDataSourceConfig {
     
     @Bean
     public DataSource dataSource() {
         String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;";
         String user = "sa";
         String password = "sa";
-        
-        JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
-        return dataSource;
-    }
-    
-    @Bean
-    public DefaultFrequencyDao defaultFrequencyDao() {
-        return new DefaultFrequencyDao();
-    }
 
-    @Bean
-    public DefaultPathogenicityDao defaultPathogenicityDao() {
-        return new DefaultPathogenicityDao();
-    }
-
-    @Bean
-    public DiseaseDao defaultDiseaseDao() {
-        return new DefaultDiseaseDao();
-    }
-
-    @Bean
-    public HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
-        return new HumanPhenotypeOntologyDao();
-    }
-
-    @Bean MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
-        return new MousePhenotypeOntologyDao();
-    }
-
-    @Bean ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
-        return new ZebraFishPhenotypeOntologyDao();
-    }
-
-    @Bean
-    public TadDao tadDao() {
-        return new TadDao();
-    }
-
-    @Bean
-    public RegulatoryFeatureDao regulatoryFeatureDao() {
-        return new RegulatoryFeatureDao();
+        return JdbcConnectionPool.create(url, user, password);
     }
 }

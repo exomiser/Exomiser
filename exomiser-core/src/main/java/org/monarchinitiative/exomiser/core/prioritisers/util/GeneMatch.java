@@ -21,7 +21,7 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.model.GeneModelPhenotypeMatch;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,9 +37,9 @@ public class GeneMatch {
     private final Integer queryGeneId;
     private final Integer matchGeneId;
     private final double score;
-    private final List<ModelPhenotypeMatch> bestMatchModels;
+    private final List<GeneModelPhenotypeMatch> bestMatchModels;
 
-    private GeneMatch(Integer queryGeneId, Integer matchGeneId, double score, List<ModelPhenotypeMatch> bestMatchModels) {
+    private GeneMatch(Integer queryGeneId, Integer matchGeneId, double score, List<GeneModelPhenotypeMatch> bestMatchModels) {
         this.queryGeneId = queryGeneId;
         this.matchGeneId = matchGeneId;
         this.score = score;
@@ -58,7 +58,7 @@ public class GeneMatch {
         return score;
     }
 
-    public List<ModelPhenotypeMatch> getBestMatchModels() {
+    public List<GeneModelPhenotypeMatch> getBestMatchModels() {
         return bestMatchModels;
     }
 
@@ -97,7 +97,7 @@ public class GeneMatch {
         private Integer queryGeneId = 0;
         private Integer matchGeneId = 0;
         private double score = 0;
-        private List<ModelPhenotypeMatch> bestMatchModels = Lists.newArrayList();
+        private List<GeneModelPhenotypeMatch> bestMatchModels = Lists.newArrayList();
 
 
         public Builder queryGeneId(Integer queryGeneId) {
@@ -115,7 +115,7 @@ public class GeneMatch {
             return this;
         }
 
-        public Builder bestMatchModels(List<ModelPhenotypeMatch> bestMatchModels) {
+        public Builder bestMatchModels(List<GeneModelPhenotypeMatch> bestMatchModels) {
             this.bestMatchModels = bestMatchModels;
             return this;
         }

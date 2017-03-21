@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * DTO class for transferring data from {@link OrganismPhenotypeMatches} to {@link PhiveModelScorer}
+ * DTO class for transferring data from {@link OrganismPhenotypeMatcher} to {@link PhenodigmModelScorer}. This is
+ * package private as it
  *
  * @since 8.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -25,19 +26,19 @@ class OrganismPhenotypeMatchScore {
         this.bestPhenotypeMatches = bestPhenotypeMatches;
     }
 
-    public double getMaxModelMatchScore() {
+    double getMaxModelMatchScore() {
         return maxModelMatchScore;
     }
 
-    public double getSumModelBestMatchScores() {
+    double getSumModelBestMatchScores() {
         return sumModelBestMatchScores;
     }
 
-    public List<String> getMatchingPhenotypes() {
+    List<String> getMatchingPhenotypes() {
         return matchingPhenotypes;
     }
 
-    public List<PhenotypeMatch> getBestPhenotypeMatches() {
+    List<PhenotypeMatch> getBestPhenotypeMatches() {
         return bestPhenotypeMatches;
     }
 

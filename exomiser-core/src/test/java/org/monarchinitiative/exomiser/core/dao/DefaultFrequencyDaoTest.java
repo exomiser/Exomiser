@@ -33,7 +33,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DaoTestConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -49,9 +49,11 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoTestConfig.class)
-@Sql(scripts = { "file:src/test/resources/sql/create_frequency.sql",
-        "file:src/test/resources/sql/frequencyDaoTestData.sql" })
+@ContextConfiguration(classes = {TestDataSourceConfig.class, DefaultFrequencyDao.class})
+@Sql(scripts = {
+        "file:src/test/resources/sql/create_frequency.sql",
+        "file:src/test/resources/sql/frequencyDaoTestData.sql"
+})
 public class DefaultFrequencyDaoTest {
 
     @Autowired

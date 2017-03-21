@@ -11,13 +11,13 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
-public class ModelPhenotypeMatchScore {
+public class ModelPhenotypeMatchScore implements Comparable<ModelPhenotypeMatchScore> {
 
     private final double score;
     private final Model model;
     private final List<PhenotypeMatch> bestPhenotypeMatches;
 
-    private ModelPhenotypeMatchScore(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatches) {
+    public ModelPhenotypeMatchScore(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatches) {
         this.score = score;
         this.model = model;
         this.bestPhenotypeMatches = bestPhenotypeMatches;
@@ -37,6 +37,17 @@ public class ModelPhenotypeMatchScore {
 
     public List<PhenotypeMatch> getBestPhenotypeMatches() {
         return bestPhenotypeMatches;
+    }
+
+    /**
+     * The natural order of this class is the opposite of the natural numerical order.
+     *
+     * @param o
+     * @return
+     */
+    @Override
+    public int compareTo(ModelPhenotypeMatchScore o) {
+        return -Double.compare(this.score, o.score);
     }
 
     @Override

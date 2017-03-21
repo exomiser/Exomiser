@@ -140,27 +140,27 @@ public class PhenoGridAdaptorTest {
                 .build();
     }
 
-    private ModelPhenotypeMatch getDiseaseModelPhenotypeMatch() {
+    private GeneModelPhenotypeMatch getDiseaseModelPhenotypeMatch() {
         GeneDiseaseModel geneDiseaseModel = new GeneDiseaseModel("OMIM:00000", Organism.HUMAN, allModelEntrezGeneId, allModelGeneSymbol, "OMIM:00000", "Rare disease", Collections.emptyList());
-        return new ModelPhenotypeMatch(0.99, geneDiseaseModel, Lists.newArrayList(diseasePhenotypeMatch));
+        return new GeneModelPhenotypeMatch(0.99, geneDiseaseModel, Lists.newArrayList(diseasePhenotypeMatch));
     }
 
-    private ModelPhenotypeMatch getMouseModelPhenotypeMatch() {
+    private GeneModelPhenotypeMatch getMouseModelPhenotypeMatch() {
         GeneOrthologModel mouseModel = new GeneOrthologModel("1_12345", Organism.MOUSE, allModelEntrezGeneId, allModelGeneSymbol, "MGI:00000", "All1", Collections.emptyList());
-        return new ModelPhenotypeMatch(0.88, mouseModel, Lists.newArrayList(mousePhenotypeMatch));
+        return new GeneModelPhenotypeMatch(0.88, mouseModel, Lists.newArrayList(mousePhenotypeMatch));
     }
 
-    private ModelPhenotypeMatch getFishModelPhenotypeMatch() {
+    private GeneModelPhenotypeMatch getFishModelPhenotypeMatch() {
         GeneOrthologModel fishModel = new GeneOrthologModel("2_12345", Organism.FISH, allModelEntrezGeneId, allModelGeneSymbol, "ZDB-GENE-000000-0", "all1", Collections.emptyList());
-        return new ModelPhenotypeMatch(0.50, fishModel, Lists.newArrayList(fishPhenotypeMatch));
+        return new GeneModelPhenotypeMatch(0.50, fishModel, Lists.newArrayList(fishPhenotypeMatch));
     }
 
     private void setUpHiPhiveResults() {
-        List<ModelPhenotypeMatch> allModels = Arrays.asList(getDiseaseModelPhenotypeMatch(), getMouseModelPhenotypeMatch(), getFishModelPhenotypeMatch());
+        List<GeneModelPhenotypeMatch> allModels = Arrays.asList(getDiseaseModelPhenotypeMatch(), getMouseModelPhenotypeMatch(), getFishModelPhenotypeMatch());
 
         allModelsHiPhiveResult = new HiPhivePriorityResult(allModelEntrezGeneId, allModelGeneSymbol, allModelScore, queryPhenotypeTerms, allModels, Collections.emptyList(), allModelWalkerScore, false);
-    
-        List<ModelPhenotypeMatch> models = Arrays.asList(getDiseaseModelPhenotypeMatch());
+
+        List<GeneModelPhenotypeMatch> models = Arrays.asList(getDiseaseModelPhenotypeMatch());
 
         onlyDiseaseModelHiPhiveResult = new HiPhivePriorityResult(onlyDiseaseEntrezGeneId, onlyDiseaseGeneSymbol, onlyDiseaseModelScore, queryPhenotypeTerms, models, Collections.emptyList(), onlyDiseaseModelWalkerScore, false);
     

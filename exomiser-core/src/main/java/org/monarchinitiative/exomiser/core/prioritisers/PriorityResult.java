@@ -57,7 +57,9 @@ public interface PriorityResult extends Comparable<PriorityResult> {
      * @deprecated this should be handled by the writers
      */
     @Deprecated
-    String getHTMLCode();
+    default String getHTMLCode() {
+        return "";
+    }
 
     /**
      * PriorityResults are sorted according to descending numerical value of the score (in other words higher is better)

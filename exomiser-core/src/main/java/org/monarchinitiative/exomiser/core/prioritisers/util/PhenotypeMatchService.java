@@ -13,8 +13,8 @@ import java.util.*;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Utility class for generating the best phenotypic matches for a given set of HPO terms against human, mouse or fish
- * ontologies. The matches are produced from Phenodigm data which computed the scores using OwlSim.
+ * Service for generating the best phenotypic matches for a given set of HPO terms against human, mouse or fish
+ * ontologies. The matches are produced from Phenodigm data which computed the scores using OwlSim. 
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
@@ -31,27 +31,43 @@ public class PhenotypeMatchService {
         this.ontologyService = ontologyService;
     }
 
-    public OrganismPhenotypeMatches getBestHumanPhenotypeMatchesForQuery(List<String> hpoIds) {
-        return getMatchingPhenotypesForOrganism(hpoIds, Organism.HUMAN);
+    public OrganismPhenotypeMatcher getHumanPhenotypeMatcherForIds(List<String> hpoIds) {
+        return getOrganismPhenotypeMatcher(hpoIds, Organism.HUMAN);
     }
 
-    public OrganismPhenotypeMatches getBestMousePhenotypeMatchesForQuery(List<String> hpoIds) {
-        return getMatchingPhenotypesForOrganism(hpoIds, Organism.MOUSE);
+    public OrganismPhenotypeMatcher getHumanPhenotypeMatcherForTerms(List<PhenotypeTerm> hpoPhenotypeTerms) {
+        return getOrganismPhenotypeMatcherFromTerms(hpoPhenotypeTerms, Organism.HUMAN);
     }
 
-    public OrganismPhenotypeMatches getBestFishPhenotypeMatchesForQuery(List<String> hpoIds) {
-        return getMatchingPhenotypesForOrganism(hpoIds, Organism.FISH);
+    public OrganismPhenotypeMatcher getMousePhenotypeMatcherForIds(List<String> hpoIds) {
+        return getOrganismPhenotypeMatcher(hpoIds, Organism.MOUSE);
     }
 
-    private OrganismPhenotypeMatches getMatchingPhenotypesForOrganism(List<String> hpoIds, Organism organism) {
+    public OrganismPhenotypeMatcher getMousePhenotypeMatcherForTerms(List<PhenotypeTerm> hpoPhenotypeTerms) {
+        return getOrganismPhenotypeMatcherFromTerms(hpoPhenotypeTerms, Organism.MOUSE);
+    }
+
+    public OrganismPhenotypeMatcher getFishPhenotypeMatcherForIds(List<String> hpoIds) {
+        return getOrganismPhenotypeMatcher(hpoIds, Organism.FISH);
+    }
+
+    public OrganismPhenotypeMatcher getFishPhenotypeMatcherForTerms(List<PhenotypeTerm> hpoPhenotypeTerms) {
+        return getOrganismPhenotypeMatcherFromTerms(hpoPhenotypeTerms, Organism.FISH);
+    }
+
+    private OrganismPhenotypeMatcher getOrganismPhenotypeMatcher(List<String> hpoIds, Organism organism) {
         List<PhenotypeTerm> queryHpoPhenotypes = makePhenotypeTermsFromHpoIds(hpoIds);
+        return getOrganismPhenotypeMatcherFromTerms(queryHpoPhenotypes, organism);
+    }
+
+    private OrganismPhenotypeMatcher getOrganismPhenotypeMatcherFromTerms(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
         logger.info("Fetching HUMAN-{} phenotype matches...", organism);
         Map<PhenotypeTerm, Set<PhenotypeMatch>> speciesPhenotypeMatches = new LinkedHashMap<>();
         for (PhenotypeTerm hpoTerm : queryHpoPhenotypes) {
             Set<PhenotypeMatch> termMatches = getSpeciesMatchesForHpoTerm(hpoTerm, organism);
             speciesPhenotypeMatches.put(hpoTerm, termMatches);
         }
-        return new OrganismPhenotypeMatches(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
+        return new OrganismPhenotypeMatcher(organism, ImmutableMap.copyOf(speciesPhenotypeMatches));
     }
 
     private List<PhenotypeTerm> makePhenotypeTermsFromHpoIds(List<String> hpoIds) {

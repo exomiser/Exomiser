@@ -48,8 +48,12 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
 
     private static final Logger logger = LoggerFactory.getLogger(HumanPhenotypeOntologyDao.class);
 
+    private final DataSource dataSource;
+
     @Autowired
-    private DataSource dataSource;
+    public HumanPhenotypeOntologyDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @Override
     public Set<PhenotypeTerm> getAllTerms() {

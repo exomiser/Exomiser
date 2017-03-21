@@ -14,22 +14,22 @@ public interface ModelScorer {
      * Produces a {@link ModelScorer} which will score human models only, e.g. disease models or individuals where
      * their phenotypes are encoded using HPO terms.
      *
-     * @param organismPhenotypeMatches The HP to HP PhenotypeMatches for the query Phenotypes.
+     * @param organismPhenotypeMatcher The HP to HP PhenotypeMatches for the query Phenotypes.
      */
-    static ModelScorer forSameSpecies(OrganismPhenotypeMatches organismPhenotypeMatches) {
-        int numQueryPhenotypes = organismPhenotypeMatches.getQueryTerms().size();
-        return new PhiveModelScorer(organismPhenotypeMatches, numQueryPhenotypes);
+    static ModelScorer forSameSpecies(OrganismPhenotypeMatcher organismPhenotypeMatcher) {
+        int numQueryPhenotypes = organismPhenotypeMatcher.getQueryTerms().size();
+        return new PhenodigmModelScorer(organismPhenotypeMatcher, numQueryPhenotypes);
     }
 
     /**
      * Produces a {@link ModelScorer} which will score models between human and a single other species. Requires an
-     * {@link OrganismPhenotypeMatches} for the relevant organism i.e. mouse or fish.
+     * {@link OrganismPhenotypeMatcher} for the relevant organism i.e. mouse or fish.
      *
-     * @param organismPhenotypeMatches The HP to MP/ZP PhenotypeMatches for the query Phenotypes.
+     * @param organismPhenotypeMatcher The HP to MP/ZP PhenotypeMatches for the query Phenotypes.
      */
-    static ModelScorer forSingleCrossSpecies(OrganismPhenotypeMatches organismPhenotypeMatches) {
-        int numQueryPhenotypes = organismPhenotypeMatches.getBestPhenotypeMatches().size();
-        return new PhiveModelScorer(organismPhenotypeMatches, numQueryPhenotypes);
+    static ModelScorer forSingleCrossSpecies(OrganismPhenotypeMatcher organismPhenotypeMatcher) {
+        int numQueryPhenotypes = organismPhenotypeMatcher.getBestPhenotypeMatches().size();
+        return new PhenodigmModelScorer(organismPhenotypeMatcher, numQueryPhenotypes);
     }
 
     /**
@@ -37,10 +37,10 @@ public interface ModelScorer {
      * species (human) so that the scores are scaled correctly across the species.
      *
      * @param theoreticalModel for the reference organism - this should be for the HP-HP hits.
-     * @param organismPhenotypeMatches the best phenotype matches for the organism i.e. HP-HP, HP-MP or HP-ZP matches.
+     * @param organismPhenotypeMatcher the best phenotype matches for the organism i.e. HP-HP, HP-MP or HP-ZP matches.
      */
-    static ModelScorer forMultiCrossSpecies(TheoreticalModel theoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches) {
+    static ModelScorer forMultiCrossSpecies(TheoreticalModel theoreticalModel, OrganismPhenotypeMatcher organismPhenotypeMatcher) {
         int numQueryPhenotypes = theoreticalModel.getQueryTerms().size();
-        return new PhiveModelScorer(theoreticalModel, organismPhenotypeMatches, numQueryPhenotypes);
+        return new PhenodigmModelScorer(theoreticalModel, organismPhenotypeMatcher, numQueryPhenotypes);
     }
 }

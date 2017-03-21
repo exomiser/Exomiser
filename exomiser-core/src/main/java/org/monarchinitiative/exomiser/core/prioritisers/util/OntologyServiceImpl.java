@@ -7,7 +7,6 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.HumanPhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.MousePhenotypeOntologyDao;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.ZebraFishPhenotypeOntologyDao;
@@ -15,8 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,20 +25,15 @@ import java.util.Set;
 @Service
 public class OntologyServiceImpl implements OntologyService {
 
-    @Autowired
-    private DiseaseDao diseaseDao;
+    private final HumanPhenotypeOntologyDao hpoDao;
+    private final MousePhenotypeOntologyDao mpoDao;
+    private final ZebraFishPhenotypeOntologyDao zpoDao;
 
     @Autowired
-    private HumanPhenotypeOntologyDao hpoDao;
-    @Autowired
-    private MousePhenotypeOntologyDao mpoDao;
-    @Autowired
-    private ZebraFishPhenotypeOntologyDao zpoDao;
-
-    @Cacheable(value = "diseaseHp")
-    @Override
-    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
-        return new ArrayList<>(diseaseDao.getHpoIdsForDiseaseId(diseaseId));
+    public OntologyServiceImpl(HumanPhenotypeOntologyDao hpoDao, MousePhenotypeOntologyDao mpoDao, ZebraFishPhenotypeOntologyDao zpoDao) {
+        this.hpoDao = hpoDao;
+        this.mpoDao = mpoDao;
+        this.zpoDao = zpoDao;
     }
 
     @Cacheable(value = "hpo")

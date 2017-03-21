@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.DaoTestConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -45,8 +45,11 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoTestConfig.class)
-@Sql(scripts = {"file:src/test/resources/sql/create_pathogenicity.sql", "file:src/test/resources/sql/pathogenicityDaoTestData.sql"})
+@ContextConfiguration(classes = {TestDataSourceConfig.class, DefaultPathogenicityDao.class})
+@Sql(scripts = {
+        "file:src/test/resources/sql/create_pathogenicity.sql",
+        "file:src/test/resources/sql/pathogenicityDaoTestData.sql"
+})
 public class DefaultPathogenicityDaoTest {
 
     @Autowired

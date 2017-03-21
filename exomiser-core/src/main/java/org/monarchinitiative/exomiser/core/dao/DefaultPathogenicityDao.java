@@ -48,8 +48,12 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
     private final Logger logger = LoggerFactory.getLogger(DefaultPathogenicityDao.class);
 
+    private final DataSource dataSource;
+
     @Autowired
-    private DataSource dataSource;
+    public DefaultPathogenicityDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @Cacheable(value = "pathogenicity", key = "#variant.hgvsGenome")
     @Override

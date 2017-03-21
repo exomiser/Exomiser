@@ -48,8 +48,12 @@ public class RegulatoryFeatureDao {
 
     private final Logger logger = LoggerFactory.getLogger(RegulatoryFeatureDao.class);
 
+    private final DataSource dataSource;
+
     @Autowired
-    private DataSource dataSource;
+    public RegulatoryFeatureDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public List<RegulatoryFeature> getRegulatoryFeatures() {
         try (

@@ -46,12 +46,14 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoTestConfig.class)
-@Sql(scripts = {"file:src/test/resources/sql/create_hpo.sql", "file:src/test/resources/sql/humanPhenotypeOntologyDaoTestData.sql"})
+@ContextConfiguration(classes = {TestDataSourceConfig.class, HumanPhenotypeOntologyDao.class})
+@Sql(scripts = {"" +
+        "file:src/test/resources/sql/create_hpo.sql",
+        "file:src/test/resources/sql/humanPhenotypeOntologyDaoTestData.sql"})
 public class HumanPhenotypeOntologyDaoTest {
 
     @Autowired
-    HumanPhenotypeOntologyDao instance;
+    private HumanPhenotypeOntologyDao instance;
 
     private Set<PhenotypeTerm> allHpoTerms;
     private Map<String, String> allHpoAsStrings;
