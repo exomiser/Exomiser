@@ -31,6 +31,7 @@
         <version>7.3.0-SNAPSHOT</version>
     </parent>
 
+
     <dependencies>
         <!--Jannovar is used for providing known gene annotations on variants -->
         <dependency>
@@ -51,11 +52,6 @@
             <version>${jannovar.version}</version>
         </dependency>
         <!--Guava 0.19 is required by Jannovar-->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>21.0</version>
-        </dependency>
         <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
