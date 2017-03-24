@@ -11,8 +11,6 @@ import java.util.Objects;
  */
 public class GeneIdentifier {
 
-    //TODO - Should this be where the Organism should sit instead of in Model? Does it make any difference?
-
     public static final String EMPTY_FIELD = "";
     public static final Integer NULL_ENTREZ_ID = -1;
 
