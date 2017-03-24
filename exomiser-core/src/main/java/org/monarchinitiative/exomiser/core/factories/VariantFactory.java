@@ -65,7 +65,7 @@ public class VariantFactory {
 
     //in cases where a variant cannot be positioned on a chromosome we're going to use 0 in order to fulfil the
     //requirement of a variant having an integer chromosome
-    private final int UNKNOWN_CHROMOSOME = 0;
+    private static final int UNKNOWN_CHROMOSOME = 0;
 
     @Autowired
     public VariantFactory(JannovarData jannovarData) {
@@ -239,7 +239,7 @@ public class VariantFactory {
         return new VariantEvaluation.Builder(chr, pos, ref, alt)
                 //HTSJDK derived data are only used for writing out the
                 //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
-                //can be removed from InheritaceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
+                //can be removed from InheritanceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
                 //need most/all of the info in order to write it all out again.
                 //TODO: remove this direct dependency without it the RAM usage can be halved such that a SPARSE analysis of the POMP sample can be held comfortably in 8GB RAM
                 .variantContext(variantContext)
