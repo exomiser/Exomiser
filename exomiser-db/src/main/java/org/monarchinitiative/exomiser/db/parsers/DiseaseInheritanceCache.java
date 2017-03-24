@@ -19,7 +19,7 @@
 
 package org.monarchinitiative.exomiser.db.parsers;
 
-import org.monarchinitiative.exomiser.core.model.InheritanceMode;
+import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.db.resources.Resource;
 import org.monarchinitiative.exomiser.db.resources.ResourceOperationStatus;
 import org.slf4j.Logger;

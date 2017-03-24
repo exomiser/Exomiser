@@ -32,7 +32,7 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.writers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

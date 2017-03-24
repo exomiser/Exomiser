@@ -26,7 +26,7 @@
 package org.monarchinitiative.exomiser.db.parsers;
 
 import org.junit.*;
-import org.monarchinitiative.exomiser.core.model.InheritanceMode;
+import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.db.resources.Resource;
 
 import java.nio.file.Paths;
