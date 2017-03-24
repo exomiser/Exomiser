@@ -76,7 +76,8 @@ public class ZebraFishPhenotypeOntologyDao implements OntologyDao {
         String mappingQuery = "SELECT simj, ic, score, zp_id AS hit_id, zp_term AS hit_term, lcs_id, lcs_term FROM hp_zp_mappings WHERE hp_id = ?";
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement ps = setQueryHpId(connection, mappingQuery, hpoTerm);
+                PreparedStatement ps = PreparedStatementSetter.prepareStatement(connection, mappingQuery, setter -> setter
+                        .setString(1, hpoTerm.getId()));
                 ResultSet rs = ps.executeQuery()) {
 
             return OntologyDaoResultSetProcessor.processOntologyTermMatchResultSet(rs, hpoTerm);
@@ -87,10 +88,4 @@ public class ZebraFishPhenotypeOntologyDao implements OntologyDao {
         return Collections.emptySet();
     }
 
-    private PreparedStatement setQueryHpId(final Connection connection, String mappingQuery, PhenotypeTerm hpoTerm) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(mappingQuery);
-        ps.setString(1, hpoTerm.getId());
-        return ps;
-    }
-    
 }

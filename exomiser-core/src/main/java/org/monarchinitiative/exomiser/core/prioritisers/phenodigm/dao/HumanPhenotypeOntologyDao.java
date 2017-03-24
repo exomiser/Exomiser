@@ -29,6 +29,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -74,9 +75,11 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
     @Override
     public Set<PhenotypeMatch> getPhenotypeMatchesForHpoTerm(PhenotypeTerm hpoTerm) {
         String mappingQuery = "SELECT simj, ic, score, hp_id_hit AS hit_id, hp_hit_term AS hit_term, lcs_id, lcs_term FROM hp_hp_mappings WHERE hp_id = ?";
+        JdbcTemplate template = new JdbcTemplate(dataSource);
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement ps = setQueryHpId(connection, mappingQuery, hpoTerm);
+                PreparedStatement ps = PreparedStatementSetter.prepareStatement(connection, mappingQuery, setter -> setter
+                        .setString(1, hpoTerm.getId()));
                 ResultSet rs = ps.executeQuery()) {
 
             return OntologyDaoResultSetProcessor.processOntologyTermMatchResultSet(rs, hpoTerm);
@@ -87,10 +90,4 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
         return Collections.emptySet();
     }
 
-    private PreparedStatement setQueryHpId(final Connection connection, String mappingQuery, PhenotypeTerm hpoTerm) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(mappingQuery);
-        ps.setString(1, hpoTerm.getId());
-        return ps;
-    }
-    
 }
