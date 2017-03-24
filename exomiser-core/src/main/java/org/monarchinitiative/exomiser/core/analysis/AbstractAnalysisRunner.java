@@ -27,7 +27,6 @@ import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
 import org.monarchinitiative.exomiser.core.factories.GeneFactory;
-import org.monarchinitiative.exomiser.core.factories.PedigreeFactory;
 import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantFactory;
 import org.monarchinitiative.exomiser.core.filters.GeneFilter;
