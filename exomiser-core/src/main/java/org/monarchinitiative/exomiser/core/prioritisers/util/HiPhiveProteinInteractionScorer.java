@@ -23,7 +23,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import org.jblas.FloatMatrix;
-import org.monarchinitiative.exomiser.core.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

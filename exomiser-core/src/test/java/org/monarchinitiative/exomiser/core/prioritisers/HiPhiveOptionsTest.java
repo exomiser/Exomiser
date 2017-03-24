@@ -25,11 +25,11 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.GeneDiseaseModel;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
-import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
-import org.monarchinitiative.exomiser.core.model.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 
 import java.util.Collections;
 import java.util.EnumSet;

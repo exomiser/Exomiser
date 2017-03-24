@@ -20,8 +20,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.monarchinitiative.exomiser.core.model.GeneModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 
 import java.util.Objects;
 

@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDataSourceConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;

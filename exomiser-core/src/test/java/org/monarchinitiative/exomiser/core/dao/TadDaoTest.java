@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.dao;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDataSourceConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;

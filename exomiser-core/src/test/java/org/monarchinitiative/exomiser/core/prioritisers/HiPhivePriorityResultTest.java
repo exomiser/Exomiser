@@ -26,10 +26,10 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.GeneModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.model.GeneOrthologModel;
-import org.monarchinitiative.exomiser.core.model.Organism;
-import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
 
 import java.util.ArrayList;
 import java.util.Arrays;

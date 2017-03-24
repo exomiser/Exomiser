@@ -32,6 +32,7 @@ import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactoryImpl;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,7 +51,7 @@ public class ExomiserTest {
 
     private final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
     private final VariantDataService stubDataService = new VariantDataServiceStub();
-    private final PriorityFactory priorityFactory = new PriorityFactoryImpl();
+    private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.TEST_SERVICE, null, null);
 
     private final AnalysisFactory analysisFactory = new AnalysisFactory(jannovarData, priorityFactory, stubDataService);
     //AnalysisFactory is only ever used here, but it provides a clean interface to the Analysis module

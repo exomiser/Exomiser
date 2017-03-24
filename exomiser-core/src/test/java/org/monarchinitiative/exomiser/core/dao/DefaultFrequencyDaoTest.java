@@ -33,7 +33,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDataSourceConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;

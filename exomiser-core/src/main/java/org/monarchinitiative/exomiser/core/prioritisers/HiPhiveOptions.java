@@ -20,9 +20,9 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.Sets;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
-import org.monarchinitiative.exomiser.core.model.Model;
-import org.monarchinitiative.exomiser.core.model.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

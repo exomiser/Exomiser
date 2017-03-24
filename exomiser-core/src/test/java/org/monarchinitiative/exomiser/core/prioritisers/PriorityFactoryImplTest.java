@@ -27,13 +27,13 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DefaultDiseaseDao;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.HumanPhenotypeOntologyDao;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.MousePhenotypeOntologyDao;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.ZebraFishPhenotypeOntologyDao;
-import org.monarchinitiative.exomiser.core.prioritisers.util.ModelServiceImpl;
-import org.monarchinitiative.exomiser.core.prioritisers.util.OntologyServiceImpl;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PhenotypeMatchService;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeMatchService;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.dao.HumanPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.dao.MousePhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.dao.ZebraFishPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.service.OntologyServiceImpl;
+import org.monarchinitiative.exomiser.core.prioritisers.service.ModelServiceImpl;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -51,6 +51,7 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
+        PriorityFactoryImpl.class,
         PriorityFactoryTestConfig.class,
         PriorityService.class,
         OntologyServiceImpl.class,

@@ -25,7 +25,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.exomiser.core.prioritisers.util.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

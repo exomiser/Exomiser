@@ -20,11 +20,15 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.ImmutableSet;
-import org.monarchinitiative.exomiser.core.model.*;
-import org.monarchinitiative.exomiser.core.prioritisers.util.ModelPhenotypeMatchScore;
-import org.monarchinitiative.exomiser.core.prioritisers.util.ModelScorer;
-import org.monarchinitiative.exomiser.core.prioritisers.util.OrganismPhenotypeMatcher;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.ModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.ModelScorer;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.OrganismPhenotypeMatcher;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +126,7 @@ public class PhivePriority implements Prioritiser {
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
         List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = models.parallelStream()
                 .map(model -> {
-                    ModelPhenotypeMatchScore score = modelScorer.scoreModel(model);
+                    ModelPhenotypeMatch score = modelScorer.scoreModel(model);
                     return new GeneModelPhenotypeMatch(score.getScore(), model, score.getBestPhenotypeMatches());
                 })
                 .collect(toList());

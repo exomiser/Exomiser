@@ -20,10 +20,10 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.monarchinitiative.exomiser.core.model.GeneDiseaseModel;
-import org.monarchinitiative.exomiser.core.model.GeneModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
 
 import java.util.List;
 import java.util.Map;

@@ -25,8 +25,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.jblas.FloatMatrix;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
-import org.monarchinitiative.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
 
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -20,9 +20,9 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.InheritanceMode;
-import org.monarchinitiative.exomiser.core.prioritisers.util.Disease;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 
 import java.util.List;
 import java.util.function.Function;
