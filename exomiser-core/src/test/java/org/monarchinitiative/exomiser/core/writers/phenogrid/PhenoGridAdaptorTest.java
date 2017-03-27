@@ -27,13 +27,13 @@ package org.monarchinitiative.exomiser.core.writers.phenogrid;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
 
 import java.util.*;
 

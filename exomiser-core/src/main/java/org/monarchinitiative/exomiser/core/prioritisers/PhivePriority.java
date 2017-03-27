@@ -21,13 +21,13 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.phenodigm.ModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenodigm.ModelScorer;
+import org.monarchinitiative.exomiser.core.phenodigm.OrganismPhenotypeMatcher;
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.ModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.ModelScorer;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.OrganismPhenotypeMatcher;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -19,14 +19,14 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatchService;
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenodigm.service.OntologyService;
+import org.monarchinitiative.exomiser.core.phenodigm.service.TestOntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeMatchService;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.service.OntologyService;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.service.TestOntologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

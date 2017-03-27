@@ -20,9 +20,9 @@
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
 import com.google.common.collect.Lists;
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.model.*;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.prioritisers.phenodigm.PhenotypeTerm;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
