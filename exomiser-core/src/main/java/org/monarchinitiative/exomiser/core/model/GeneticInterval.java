@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  *
  * @author Jules Jacobsen
  */
-public class GeneticInterval {
+public class GeneticInterval implements ChromosomalRegion {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneticInterval.class);
 
@@ -64,14 +64,17 @@ public class GeneticInterval {
         return new GeneticInterval(localChr, localStart, localEnd);
     }
 
+    @Override
     public int getChromosome() {
         return chromosome;
     }
 
+    @Override
     public int getStart() {
         return start;
     }
 
+    @Override
     public int getEnd() {
         return end;
     }
