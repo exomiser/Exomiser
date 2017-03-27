@@ -24,6 +24,8 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
+import org.monarchinitiative.exomiser.core.phenodigm.Organism;
+
 import java.util.List;
 import java.util.Objects;
 

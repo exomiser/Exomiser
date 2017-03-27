@@ -21,7 +21,6 @@ package org.monarchinitiative.exomiser.core.phenodigm;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

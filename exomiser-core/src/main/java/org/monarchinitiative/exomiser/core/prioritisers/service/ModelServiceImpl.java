@@ -24,10 +24,10 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
+import org.monarchinitiative.exomiser.core.phenodigm.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

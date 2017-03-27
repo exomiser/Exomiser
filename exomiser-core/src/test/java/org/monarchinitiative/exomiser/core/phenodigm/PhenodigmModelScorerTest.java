@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.phenodigm.service.OntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
 import java.util.ArrayList;

@@ -20,6 +20,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.phenodigm.Organism;
 
 import java.util.Collections;
 

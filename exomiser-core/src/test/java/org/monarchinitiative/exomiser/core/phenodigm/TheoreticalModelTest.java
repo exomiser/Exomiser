@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.phenodigm;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 
 import java.util.*;
 

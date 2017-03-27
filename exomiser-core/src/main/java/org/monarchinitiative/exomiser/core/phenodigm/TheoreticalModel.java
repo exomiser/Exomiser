@@ -21,7 +21,6 @@ package org.monarchinitiative.exomiser.core.phenodigm;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 
 import java.util.*;
 import java.util.function.Function;

@@ -22,7 +22,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.monarchinitiative.exomiser.core.prioritisers.model;
+package org.monarchinitiative.exomiser.core.phenodigm;
 
 /**
  * Enum representing the model organism present in the Exomiser database for which

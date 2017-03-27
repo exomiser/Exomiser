@@ -20,9 +20,13 @@
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
 import com.google.common.collect.Lists;
+import org.monarchinitiative.exomiser.core.phenodigm.Organism;
 import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
-import org.monarchinitiative.exomiser.core.prioritisers.model.*;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

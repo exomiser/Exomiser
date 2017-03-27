@@ -20,9 +20,9 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.phenodigm.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 
 import java.util.Collections;
 

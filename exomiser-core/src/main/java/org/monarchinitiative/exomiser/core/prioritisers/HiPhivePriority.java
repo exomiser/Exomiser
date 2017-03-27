@@ -28,7 +28,6 @@ import org.monarchinitiative.exomiser.core.phenodigm.*;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.prioritisers.model.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.util.HiPhiveProteinInteractionScorer;
