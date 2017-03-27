@@ -69,7 +69,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
             logger.error("Please supply some command line arguments - none found");
         }
         CommandLine commandLine = parseCommandLineOptions(strings);
-        if (commandLine == null || commandLine.hasOption("help")) {
+        if (commandLine.hasOption("help")) {
             printHelp();
         }
         runAnalyses(commandLine);
@@ -114,8 +114,9 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         try {
             return parser.parse(options, args);
         } catch (ParseException ex) {
-            logger.error("Unable to parse command line arguments. Please check you have typed the parameters correctly.", ex);
-            return null;
+            String message = "Unable to parse command line arguments. Please check you have typed the parameters correctly." +
+                    " Use command --help for a list of commands.";
+            throw new CommandLineParseError(message, ex);
         }
     }
 

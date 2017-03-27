@@ -10,7 +10,11 @@ package org.monarchinitiative.exomiser.cli;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class CommandLineParseError extends RuntimeException {
-    
+
+    public CommandLineParseError(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     public CommandLineParseError(String message) {
         super(message);
     }
