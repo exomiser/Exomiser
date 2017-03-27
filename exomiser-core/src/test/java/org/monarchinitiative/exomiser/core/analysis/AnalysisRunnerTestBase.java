@@ -25,10 +25,10 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.factories.TestFactory;
-import org.monarchinitiative.exomiser.core.factories.VariantAnnotationData;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
-import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.VariantAnnotationData;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;

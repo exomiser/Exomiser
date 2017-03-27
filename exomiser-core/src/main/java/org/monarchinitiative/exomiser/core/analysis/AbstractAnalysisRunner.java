@@ -26,13 +26,13 @@ import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.analysis.util.*;
-import org.monarchinitiative.exomiser.core.factories.GeneFactory;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
-import org.monarchinitiative.exomiser.core.factories.VariantFactory;
 import org.monarchinitiative.exomiser.core.filters.GeneFilter;
 import org.monarchinitiative.exomiser.core.filters.GeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
 import org.monarchinitiative.exomiser.core.filters.VariantFilterRunner;
+import org.monarchinitiative.exomiser.core.genome.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
@@ -63,6 +63,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
+    //TODO JannovarData should be used directly by GeneFactory (rename to service?) and VariantFactory and these passed in here.
     private final JannovarData jannovarData;
     private final VariantDataService variantDataService;
     final VariantFilterRunner variantFilterRunner;

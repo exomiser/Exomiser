@@ -26,7 +26,7 @@ package org.monarchinitiative.exomiser.core.filters;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.factories.VariantDataServiceMock;
+import org.monarchinitiative.exomiser.core.genome.VariantDataServiceMock;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;

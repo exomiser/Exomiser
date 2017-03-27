@@ -20,7 +20,7 @@
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.factories.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.GeneFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.slf4j.Logger;

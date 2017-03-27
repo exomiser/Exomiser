@@ -1,6 +1,6 @@
 package org.monarchinitiative.exomiser.core.filters;
 
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;

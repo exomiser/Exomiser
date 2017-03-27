@@ -21,8 +21,8 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
-import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 
