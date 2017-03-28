@@ -24,7 +24,6 @@
  */
 package org.monarchinitiative.exomiser.core;
 
-import de.charite.compbio.jannovar.data.JannovarData;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
@@ -49,11 +48,11 @@ public class ExomiserTest {
 
     private static final Path VCF_PATH = Paths.get("src/test/resources/smallTest.vcf");
 
-    private final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
     private final VariantDataService stubDataService = new VariantDataServiceStub();
     private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.TEST_SERVICE, null, null);
 
-    private final AnalysisFactory analysisFactory = new AnalysisFactory(jannovarData, priorityFactory, stubDataService);
+    private final AnalysisFactory analysisFactory = new AnalysisFactory(TestFactory.buildDefaultGeneFactory(), TestFactory
+            .buildDefaultVariantFactory(), priorityFactory, stubDataService);
     //AnalysisFactory is only ever used here, but it provides a clean interface to the Analysis module
     private Exomiser instance = new Exomiser(analysisFactory);
 

@@ -225,7 +225,7 @@ public class VariantFactory {
      * @param variantAnnotations
      * @return
      */
-     VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
+    VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
         int chr = variantAnnotations.getChr();
         int pos = buildPos(variantAnnotations);
         String ref = buildRef(variantAnnotations);
@@ -235,6 +235,8 @@ public class VariantFactory {
         GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         //Attention! highestImpactAnnotation can be null
         Annotation highestImpactAnnotation = variantAnnotations.getHighestImpactAnnotation();
+
+        List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
         return new VariantEvaluation.Builder(chr, pos, ref, alt)
                 //HTSJDK derived data are only used for writing out the
@@ -253,7 +255,7 @@ public class VariantFactory {
                 .geneSymbol(buildGeneSymbol(highestImpactAnnotation))
                 .geneId(buildGeneId(highestImpactAnnotation))
                 .variantEffect(variantEffect)
-                .annotations(buildTranscriptAnnotations(variantAnnotations.getAnnotations()))
+                .annotations(annotations)
                 .build();
     }
 

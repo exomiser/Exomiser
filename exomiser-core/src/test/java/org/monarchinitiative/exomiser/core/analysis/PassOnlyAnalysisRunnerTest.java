@@ -20,7 +20,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
@@ -43,12 +42,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
-    private PassOnlyAnalysisRunner instance;
-    
-    @Before
-    public void setUp() {
-        instance = new PassOnlyAnalysisRunner(jannovarData, stubDataService);
-    }
+    private final PassOnlyAnalysisRunner instance = new PassOnlyAnalysisRunner(geneFactory, variantFactory, stubDataService);
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {

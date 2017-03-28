@@ -45,24 +45,26 @@ public class GeneFactoryTest {
 
     private static final JannovarData DEFAULT_JANNOVAR_DATA = TestFactory.buildDefaultJannovarData();
 
+    private GeneFactory instance = new GeneFactory(DEFAULT_JANNOVAR_DATA);
+
     @Test
     public void testCreateKnownGeneIds() {
         Set<GeneIdentifier> expected = Sets.newHashSet(TestFactory.buildGeneIdentifiers());
-        Set<GeneIdentifier> knownGeneIds = GeneFactory.createKnownGeneIds(DEFAULT_JANNOVAR_DATA);
+        Set<GeneIdentifier> knownGeneIds = instance.createKnownGeneIds();
         assertThat(knownGeneIds, equalTo(expected));
     }
 
     @Test
     public void testCreateKnownGenes() {
         Set<Gene> expected = Sets.newHashSet(TestGeneFactory.buildGenes());
-        Set<Gene> knownGenes = Sets.newHashSet(GeneFactory.createKnownGenes(DEFAULT_JANNOVAR_DATA));
+        Set<Gene> knownGenes = Sets.newHashSet(instance.createKnownGenes());
         assertThat(knownGenes, equalTo(expected));
     }
 
     @Test
     public void testCreateKnownGeneIdentifiers() throws Exception {
         Map<String, String> expected = TestFactory.buildGeneIdentifiers().stream().collect(toMap(GeneIdentifier::getEntrezId, GeneIdentifier::getGeneSymbol));
-        Map<String, String> knownGenes = GeneFactory.createKnownGeneIdentifiers(DEFAULT_JANNOVAR_DATA);
+        Map<String, String> knownGenes = instance.createKnownGeneIdentifiers();
         assertThat(knownGenes, equalTo(expected));
     }
 }

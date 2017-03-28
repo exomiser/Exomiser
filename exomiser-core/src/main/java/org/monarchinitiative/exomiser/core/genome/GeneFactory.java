@@ -32,6 +32,8 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.function.Function;
@@ -44,19 +46,24 @@ import static java.util.stream.Collectors.toList;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
+@Component
 public class GeneFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneFactory.class);
 
-    private GeneFactory (){}
+    private final JannovarData jannovarData;
+
+    @Autowired
+    public GeneFactory(JannovarData jannovarData) {
+        this.jannovarData = jannovarData;
+    }
 
     /**
      * Returns a list of genes from the JannovarData TranscriptModels.
-     * @param jannovarData
      * @return
      */
-    public static List<Gene> createKnownGenes(JannovarData jannovarData ) {
-        List<Gene> knownGenes = createKnownGeneIds(jannovarData).stream()
+    public List<Gene> createKnownGenes() {
+        List<Gene> knownGenes = createKnownGeneIds().stream()
                 // We're assuming the GeneIdentifier includes Entrez ids here. They should be present.
                 // If not the entire analysis will fail.
                 .map(Gene::new)
@@ -67,15 +74,16 @@ public class GeneFactory {
 
     /**
      * Creates a map of gene identifiers to gene symbols.
-     * @param jannovarData
      * @return a map of gene identifiers to gene symbol. In cases where there is no valid geneId (i.e. the transcript is
      * in a non-coding region) the symbol and identifier will be the same. As an example {BC038731=BC038731, Mir_378=Mir_378}.
      * A valid gene id/symbol pair will depend in the underlying data used to create the JannovarData. Currently Exomiser
      * uses Entrez gene ids which are plain integers.
      *
+     * @deprecated Use the typed method {@link #createKnownGeneIds()}.
      */
     //TODO: remove from here - this is only used by the PrioritiserController (and GeneFactoryTest)
-    public static Map<String, String> createKnownGeneIdentifiers(JannovarData jannovarData) {
+    @Deprecated
+    public Map<String, String> createKnownGeneIdentifiers() {
         ImmutableMap.Builder<String, String> geneIdentifiers = ImmutableMap.builder();
         int identifiers = 0;
         int noEntrezId = 0;
@@ -115,7 +123,7 @@ public class GeneFactory {
         return geneIdentifiers.build();
     }
 
-    public static Set<GeneIdentifier> createKnownGeneIds(JannovarData jannovarData) {
+    public Set<GeneIdentifier> createKnownGeneIds() {
         ImmutableSet.Builder<GeneIdentifier> geneIdentifiers = ImmutableSet.builder();
         int identifiers = 0;
         int noEntrezId = 0;
@@ -142,7 +150,7 @@ public class GeneFactory {
         return geneIdentifiers.build();
     }
 
-    private static Function<TranscriptModel, GeneIdentifier> toGeneIdentifier() {
+    private Function<TranscriptModel, GeneIdentifier> toGeneIdentifier() {
         //logger.info("{} {} {} {}", transcriptModel.getGeneSymbol(), transcriptModel.getGeneID(), transcriptModel.getAccession(), transcriptModel.getAltGeneIDs());
         //Using ucsc_hg19: LMOD1 ENTREZ25802 uc010ppu.2 null (pre-jannovar 0.19)
         //Using hg19_ucsc: LMOD1 25802 uc010ppu.2 {CCDS_ID=CCDS53457, COSMIC_ID=LMOD1, ENSEMBL_GENE_ID=ENSG00000163431, ENTREZ_ID=25802, HGNC_ALIAS=64kD|D1|1D, HGNC_ID=HGNC:6647, HGNC_PREVIOUS=, HGNC_SYMBOL=LMOD1, MGD_ID=MGI:2135671, OMIM_ID=602715, PUBMED_ID=, REFSEQ_ACCESSION=NM_012134, RGD_ID=RGD:1307236, UCSC_ID=uc057oju.1, UNIPROT_ID=P29536, VEGA_ID=OTTHUMG00000035802}

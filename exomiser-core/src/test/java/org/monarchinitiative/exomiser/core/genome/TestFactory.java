@@ -46,6 +46,7 @@ public class TestFactory {
     private static final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
 
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
+    private static final GeneFactory DEFAULT_GENE_FACTORY = new GeneFactory(DEFAULT_JANNOVAR_DATA);
     private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(DEFAULT_JANNOVAR_DATA);
     private static final VariantAnnotationData DEFAULT_VARIANT_ANNOTATION_DATA = new VariantAnnotationData(DEFAULT_JANNOVAR_DATA);
 
@@ -89,6 +90,10 @@ public class TestFactory {
 
     public static VariantAnnotationData buildVariantAnnotationData(JannovarData jannovarData) {
         return new VariantAnnotationData(jannovarData);
+    }
+
+    public static GeneFactory buildDefaultGeneFactory() {
+        return DEFAULT_GENE_FACTORY;
     }
 
     public static List<GeneIdentifier> buildGeneIdentifiers() {

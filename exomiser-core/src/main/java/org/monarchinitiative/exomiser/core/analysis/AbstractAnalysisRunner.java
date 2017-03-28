@@ -20,7 +20,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -63,14 +62,16 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
-    //TODO JannovarData should be used directly by GeneFactory (rename to service?) and VariantFactory and these passed in here.
-    private final JannovarData jannovarData;
+    private final GeneFactory geneFactory;
+    private final VariantFactory variantFactory;
+
     private final VariantDataService variantDataService;
     final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 
-    public AbstractAnalysisRunner(JannovarData jannovarData, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
-        this.jannovarData = jannovarData;
+    public AbstractAnalysisRunner(GeneFactory geneFactory, VariantFactory variantFactory, VariantDataService variantDataService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
+        this.geneFactory = geneFactory;
+        this.variantFactory = variantFactory;
         this.variantDataService = variantDataService;
         this.variantFilterRunner = variantFilterRunner;
         this.geneFilterRunner = geneFilterRunner;
@@ -252,7 +253,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         List<RegulatoryFeature> regulatoryFeatures = variantDataService.getRegulatoryFeatures();
         ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = new ChromosomalRegionIndex<>(regulatoryFeatures);
         logger.info("Loaded {} regulatory regions", regulatoryFeatures.size());
-        VariantFactory variantFactory = new VariantFactory(jannovarData);
         //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
         return variantFactory.streamVariantEvaluations(vcfPath).map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
     }
@@ -304,7 +304,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return a map of genes indexed by gene symbol.
      */
     private Map<String, Gene> makeKnownGenes() {
-        return GeneFactory.createKnownGenes(jannovarData)
+        return geneFactory.createKnownGenes()
                 .parallelStream()
                 .collect(toConcurrentMap(Gene::getGeneSymbol, Function.identity()));
     }
