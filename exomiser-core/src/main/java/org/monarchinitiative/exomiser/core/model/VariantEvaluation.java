@@ -531,6 +531,35 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return this.alt.compareTo(other.alt);
     }
 
+    public static class RankBasedComparator implements Comparator<VariantEvaluation> {
+
+        @Override
+        public int compare(VariantEvaluation v1, VariantEvaluation v2) {
+            return compareByRank(v1, v2);
+        }
+    }
+
+    public static int compareByRank(VariantEvaluation some, VariantEvaluation other) {
+        if (some.contributesToGeneScore != other.contributesToGeneScore) {
+            return -Boolean.compare(some.contributesToGeneScore, other.contributesToGeneScore);
+        }
+        float thisScore = some.getVariantScore();
+        float otherScore = other.getVariantScore();
+        if (thisScore != otherScore) {
+            return -Float.compare(thisScore, otherScore);
+        }
+        if (some.chr != other.chr) {
+            return Integer.compare(some.chr, other.chr);
+        }
+        if (some.pos != other.pos) {
+            return Integer.compare(some.pos, other.pos);
+        }
+        if (!some.ref.equals(other.ref)) {
+            return some.ref.compareTo(other.ref);
+        }
+        return some.alt.compareTo(other.alt);
+    }
+
     @Override
     public int hashCode() {
         int hash = 3;

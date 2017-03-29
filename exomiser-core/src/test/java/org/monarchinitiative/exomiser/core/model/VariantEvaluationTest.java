@@ -593,6 +593,73 @@ public class VariantEvaluationTest {
         assertThat(variants, equalTo(expected));
     }
 
+    private List<VariantEvaluation> scoredVariantsInDescendingRankOrder() {
+        VariantEvaluation zero = new VariantEvaluation.Builder(2, 1, "C", "TT")
+                .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
+                .pathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1.0f)))
+                .build();
+        zero.setAsContributingToGeneScore();
+        VariantEvaluation one = new VariantEvaluation.Builder(2, 1, "C", "T")
+                .variantEffect(VariantEffect.STOP_GAINED)
+                .frequencyData(new FrequencyData(null, Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
+                .pathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1.0f)))
+                .build();
+        one.setAsContributingToGeneScore();
+        VariantEvaluation two = new VariantEvaluation.Builder(1, 2, "A", "G")
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        VariantEvaluation three = new VariantEvaluation.Builder(1, 2, "AC", "G")
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
+        VariantEvaluation four = new VariantEvaluation.Builder(1, 1, "A", "C")
+                .variantEffect(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT)
+                .build();
+
+        List<VariantEvaluation> variants = new ArrayList<>();
+        variants.add(zero);
+        variants.add(one);
+        variants.add(two);
+        variants.add(three);
+        variants.add(four);
+        return variants;
+    }
+
+    @Test
+    public void testVariantRankComparator() {
+        //variants are sorted according to whether they are contributing to the gene score, variant score, position  ref and alt.
+        List<VariantEvaluation> variants = scoredVariantsInDescendingRankOrder();
+        Collections.shuffle(variants);
+
+        System.out.println("Shuffled:");
+        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+
+        variants.sort(new VariantEvaluation.RankBasedComparator());
+
+        System.out.println("Sorted:");
+        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+        assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
+    }
+
+    @Test
+    public void testVariantCompareByRank() {
+        //variants are sorted according to whether they are contributing to the gene score, variant score, position  ref and alt.
+        List<VariantEvaluation> variants = scoredVariantsInDescendingRankOrder();
+        Collections.shuffle(variants);
+
+        System.out.println("Shuffled:");
+        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+
+        variants.sort(VariantEvaluation::compareByRank);
+
+        System.out.println("Sorted:");
+        variants.forEach(variant -> System.out.printf("%s score: %3f chr: %2d pos: %2d ref: %-2s alt: %-2s%n", (variant.contributesToGeneScore() ? '*' : ' '), variant
+                .getVariantScore(), variant.getChromosome(), variant.getPosition(), variant.getRef(), variant.getAlt()));
+        assertThat(variants, equalTo(scoredVariantsInDescendingRankOrder()));
+    }
+
     @Test
     public void testToString() {
         String expected = "VariantEvaluation{chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
