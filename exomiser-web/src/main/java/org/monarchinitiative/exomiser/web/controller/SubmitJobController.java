@@ -262,6 +262,12 @@ public class SubmitJobController {
 
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleGenes, maxGenes);
         model.addAttribute("genes", passedGenes);
+        //this will change the links to the relevant resource.
+        // For the time being we're going to maintain the original behaviour (UCSC)
+        // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
+        // One of UCSC, ENSEMBL or REFSEQ
+        model.addAttribute("transcriptDb", "UCSC");
+        model.addAttribute("variantRankComparator", new VariantEvaluation.RankBasedComparator());
     }
 
     private int numGenesPassedFilters(List<Gene> genes) {
