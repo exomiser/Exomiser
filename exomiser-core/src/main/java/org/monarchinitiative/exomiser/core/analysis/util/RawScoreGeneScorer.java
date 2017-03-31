@@ -104,6 +104,12 @@ public class RawScoreGeneScorer implements GeneScorer {
     }
 
     private float calculateGenePriorityScore(Gene gene) {
+        //TODO #194 - this is broken as the Gene priority results are almost never empty as OMIM is typically always run.
+        // If a gene has only got an OMIM prioritiser result and the result of this is the default 1.0 the gene will score top. If run in conjunction with a second prioritiser
+        // and when a gene id/symbol in a model doesn't match that of the gene itself - e.g. {USF3, 205717} {KIAA2018, 205717} where the HGNC changed the symbol, the gene with
+        // *only* the OMIM result will have a score of 1.0 and hence be ranked above the top real result.
+        // Possible solutions - don't return 1.0 score from OMIM, only take into account OOMIM if the score is not 1.0, apply OMIM scoring at a different stage,
+        //OMIM prioritiser shouldn't be a prioritiser - the scoring is actually via the inheritance mode of the known diseases associated with that gene.
         if (gene.getPriorityResults().isEmpty()) {
             return 0f;
         }

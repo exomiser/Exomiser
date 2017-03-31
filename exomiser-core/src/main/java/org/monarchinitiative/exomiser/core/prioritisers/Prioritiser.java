@@ -59,10 +59,10 @@ public interface Prioritiser extends AnalysisStep {
      * @param genes
      */
     default void prioritizeGenes(List<Gene> genes){
-        Map<String, Optional<PriorityResult>> results = prioritise(genes)
-                .collect(groupingBy(PriorityResult::getGeneSymbol, maxBy(comparingDouble(PriorityResult::getScore))));
+        Map<Integer, Optional<PriorityResult>> results = prioritise(genes)
+                .collect(groupingBy(PriorityResult::getGeneId, maxBy(comparingDouble(PriorityResult::getScore))));
 
-        genes.forEach(gene -> results.getOrDefault(gene.getGeneSymbol(), Optional.empty())
+        genes.forEach(gene -> results.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
                 .ifPresent(gene::addPriorityResult));
     }
 
