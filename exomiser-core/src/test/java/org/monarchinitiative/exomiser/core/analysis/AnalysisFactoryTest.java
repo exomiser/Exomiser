@@ -19,10 +19,8 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
-import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 
@@ -35,14 +33,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class AnalysisFactoryTest {
 
-    private AnalysisFactory instance;
     private final PriorityFactory priorityFactory = new NoneTypePriorityFactoryStub();
     private final VariantDataService variantDataService = new VariantDataServiceStub();
+    private final GeneFactory geneFactory = TestFactory.buildDefaultGeneFactory();
+    private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
-    @Before
-    public void setUp() {
-        instance = new AnalysisFactory(null, priorityFactory, variantDataService);
-    }
+    private final AnalysisFactory instance = new AnalysisFactory(geneFactory, variantFactory, priorityFactory, variantDataService);
 
     @Test
     public void testCanMakeFullAnalysisRunner() {

@@ -31,9 +31,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
-import org.monarchinitiative.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
 
 import java.math.BigDecimal;
 import java.util.*;

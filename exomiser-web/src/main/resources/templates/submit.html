@@ -27,19 +27,46 @@ and open the template in the editor.
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
     <head>
-        <title>Analysis Settings</title>
+        <title>Exomiser :: Analysis</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <link rel='icon' type='image/x-icon' href="favicon.ico" th:href="@{/favicon.ico}"/>
-        <link href="http://cdn.jsdelivr.net/webjars/chosen/1.3.0/chosen.min.css" th:href="@{/webjars/chosen/1.3.0/chosen.min.css}" rel="stylesheet" media="screen"/>
+        <link rel="icon" type="image/x-icon" href="../static/favicon.ico" th:href="@{favicon.ico}"/>
+        <link href="https://cdn.jsdelivr.net/webjars/chosen/1.3.0/chosen.min.css" th:href="@{/webjars/chosen/1.3.0/chosen.min.css}" rel="stylesheet" media="screen"/>
         <link href="css/bootstrap-chosen/bootstrap-chosen.css" th:href="@{/css/bootstrap-chosen/bootstrap-chosen.css}" rel="stylesheet" media="screen"/>
-        <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+        <link href="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
     </head>
 
     <body>
-
+    <nav class="navbar navbar-default">
         <div class="container">
-            <h2>Exomiser Analysis Options</h2>
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <!--<a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">Exomiser</a>-->
+                <a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">
+                    <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="index" th:href="@{../exomiser}">Home</a></li>
+                    <li class="active"><a href="submit" th:href="@{submit}">Analyse</a></li>
+                    <li><a href="#publications">Publications</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+        <div class="container">
+            <div class="alert alert-danger" role="alert" th:if="not ${@clinicalInstance}">
+                <strong>CAUTION!</strong> This instance of the Exomiser is not running in a clincal-grade data centre. Under no circumstances should this be used for analysing real patient data as there are no safeguards in place for protecting patient privacy.
+            </div>
+            <h2>Analysis Options</h2>
             <form role="form" id="configure-analysis" action="submit" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
                 <div class="panel panel-default" id="input-data">
                     <div class="panel-heading">
@@ -214,9 +241,9 @@ and open the template in the editor.
                 </div>
             </form>
         </div>
-        <script type="text/javascript" src="http://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
-        <script type="text/javascript" src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
-        <script type="text/javascript" src="http://cdn.jsdelivr.net/webjars/chosen/1.3.0/chosen.jquery.min.js" th:href="@{/webjars/chosen/1.3.0/chosen.jquery.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/chosen/1.3.0/chosen.jquery.min.js" th:href="@{/webjars/chosen/1.3.0/chosen.jquery.min.js}"/>
         <script type="text/javascript" src="js/ajax-chosen/ajax-chosen.min.js" th:href="@{/js/ajax-chosen/ajax-chosen.min.js}"/>
 
         <script type="text/javascript" >

@@ -20,8 +20,9 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.Sets;
-import org.monarchinitiative.exomiser.core.model.Model;
-import org.monarchinitiative.exomiser.core.model.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.Model;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,11 +96,11 @@ public class HiPhiveOptions {
         return runHuman;
     }
 
-    public boolean isBenchmarkHit(Model model) {
+    public boolean isBenchmarkHit(GeneModel model) {
         return matchesDisease(model) && matchesCandidateGeneSymbol(model);
     }
 
-    private boolean matchesCandidateGeneSymbol(Model model) {
+    private boolean matchesCandidateGeneSymbol(GeneModel model) {
         return model.getHumanGeneSymbol() == null ? candidateGeneSymbol == null : model.getHumanGeneSymbol().equals(candidateGeneSymbol);
     }
 

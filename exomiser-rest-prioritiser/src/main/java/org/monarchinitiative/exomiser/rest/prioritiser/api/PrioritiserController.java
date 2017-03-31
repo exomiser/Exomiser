@@ -19,8 +19,7 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.factories.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.GeneFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.slf4j.Logger;
@@ -53,9 +52,9 @@ public class PrioritiserController {
     private final Map<String, String> geneIdentifiers;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory, JannovarData jannovarData) {
+    public PrioritiserController(PriorityFactory priorityFactory, GeneFactory geneFactory) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = GeneFactory.createKnownGeneIdentifiers(jannovarData);
+        this.geneIdentifiers = geneFactory.createKnownGeneIdentifiers();
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 

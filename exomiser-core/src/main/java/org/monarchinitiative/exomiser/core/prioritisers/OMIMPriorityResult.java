@@ -19,8 +19,8 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import org.monarchinitiative.exomiser.core.model.InheritanceMode;
-import org.monarchinitiative.exomiser.core.prioritisers.util.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 
 import java.util.List;
 

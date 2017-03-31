@@ -32,7 +32,7 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.writers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +66,8 @@ public class SubmitJobController {
     private Integer maxVariants;
     @Autowired
     private Integer maxGenes;
+    @Autowired
+    private boolean clinicalInstance;
 
     @Autowired
     private Exomiser exomiser;
@@ -262,6 +264,12 @@ public class SubmitJobController {
 
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(sampleGenes, maxGenes);
         model.addAttribute("genes", passedGenes);
+        //this will change the links to the relevant resource.
+        // For the time being we're going to maintain the original behaviour (UCSC)
+        // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
+        // One of UCSC, ENSEMBL or REFSEQ
+        model.addAttribute("transcriptDb", "UCSC");
+        model.addAttribute("variantRankComparator", new VariantEvaluation.RankBasedComparator());
     }
 
     private int numGenesPassedFilters(List<Gene> genes) {

@@ -27,16 +27,42 @@ and open the template in the editor.
       xmlns:th="http://www.thymeleaf.org">
 
     <head>
-        <title>The Exomiser - A Tool to Annotate and Prioritise Whole-Exome Sequencing Data</title>
+        <title>Exomiser :: Results</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel='icon' type='image/x-icon' href="favicon.ico" th:href="@{/favicon.ico}"/>
-        <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+        <link href="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
     </head>
     <body>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <!--<a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">Exomiser</a>-->
+                <a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">
+                    <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="index" th:href="@{../exomiser}">Home</a></li>
+                    <li class="active"><a href="submit" th:href="@{submit}">Analyse</a></li>
+                    <li><a href="#publications">Publications</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
         <div id="content" class="container">
             <h2>
-                Exomiser Analysis Results for <th:block th:text="${sampleName}"> Slartibartfast</th:block>
+                Analysis Results for
+                <th:block th:text="${sampleName}"> Slartibartfast</th:block>
             </h2>
             <ul class="nav nav-pills" id="tabs">
                 <li><a href="#settings" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-cog"/> Analysis Settings</b></a></li>
@@ -173,12 +199,23 @@ and open the template in the editor.
                                     </div>
                                     <div class="row">
                                         <div class="col-sm-12">
-                                            <th:block th:each="priorityResult: ${gene.priorityResults}" th:utext="${priorityResult.value.HTMLCode}"><a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal syndrome</a></th:block>
+                                            <b>Phenotype matches:</b>
+                                        </div>
+                                        <div class="col-sm-12">
+                                            <th:block th:each="priorityResult: ${gene.priorityResults}"
+                                                      th:utext="${priorityResult.value.HTMLCode}">
+                                                <a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal
+                                                    syndrome</a>
+                                            </th:block>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <b>Top ranked variants:</b>
                                         </div>
                                     </div>
                                     <div class="row"
-                                         th:each="variantEvaluation: ${gene.variantEvaluations}"
-                                         th:if="${#sets.isEmpty(variantEvaluation.failedFilterTypes)}">
+                                         th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}">
                                         <div class="col-sm-12">
                                             <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
                                             <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|"> chr10:g.123256215T>G [0/1]</b>
@@ -199,10 +236,16 @@ and open the template in the editor.
                                             <dl class="list-unstyled" >
                                                 <dt>Transcripts:</dt>
                                                 <dd th:each="annotation: ${variantEvaluation.annotations}"
-                                                    th:with="ucscData=${#strings.listSplit(annotation.accession,':')}, ucscId=${ucscData[0]}">
-                                                    <a th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${ucscId})}"
-                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A
-                                                    </a>
+                                                    th:switch="${transcriptDb}">
+                                                    <a th:case="'UCSC'"
+                                                       th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                                                    <a th:case="'ENSEMBL'"
+                                                       th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                                                    <a th:case="'REFSEQ'"
+                                                       th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
                                                 </dd>
                                             </dl>
                                         </div>
@@ -258,8 +301,8 @@ and open the template in the editor.
             </div>
         </div>
 
-        <script type="text/javascript" src="http://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
-        <script type="text/javascript" src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
 
         <script type ="text/javascript">
             $(document).ready(function () {

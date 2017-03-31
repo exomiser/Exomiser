@@ -24,11 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.factories.TestFactory;
-import org.monarchinitiative.exomiser.core.factories.VariantAnnotationData;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
-import org.monarchinitiative.exomiser.core.factories.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -57,11 +53,10 @@ public abstract class AnalysisRunnerTestBase {
     final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
     final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
 
-    final VariantAnnotationData variantAnnotationData = TestFactory.buildDefaultVariantAnnotationData();
-    final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
+    final GeneFactory geneFactory = TestFactory.buildDefaultGeneFactory();
+    final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
     final VariantDataService stubDataService = new VariantDataServiceStub();
-    
-    
+
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
         return Analysis.builder()
                 .vcfPath(vcfPath)

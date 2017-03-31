@@ -27,7 +27,7 @@ import org.monarchinitiative.exomiser.core.filters.PriorityScoreFilter;
 import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriority;
 import org.monarchinitiative.exomiser.core.prioritisers.PhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
-import org.monarchinitiative.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
 import java.util.ArrayList;
 

@@ -28,8 +28,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.monarchinitiative.exomiser.core.model.InheritanceMode;
-import org.monarchinitiative.exomiser.core.prioritisers.util.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceConfig;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -47,12 +48,16 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = DaoTestConfig.class)
-@Sql(scripts = {"file:src/test/resources/sql/create_disease.sql", "file:src/test/resources/sql/create_disease_hp.sql", "file:src/test/resources/sql/create_entrez2sym.sql", "file:src/test/resources/sql/diseaseDaoTestData.sql"})
+@ContextConfiguration(classes = {TestDataSourceConfig.class, DefaultDiseaseDao.class})
+@Sql(scripts = {
+        "file:src/test/resources/sql/create_disease.sql",
+        "file:src/test/resources/sql/create_disease_hp.sql",
+        "file:src/test/resources/sql/create_entrez2sym.sql",
+        "file:src/test/resources/sql/diseaseDaoTestData.sql"})
 public class DefaultDiseaseDaoTest {
     
     @Autowired
-    DiseaseDao instance;
+    DefaultDiseaseDao instance;
 
     private final Disease disease = Disease.builder()
             .diseaseId("OMIM:101600")

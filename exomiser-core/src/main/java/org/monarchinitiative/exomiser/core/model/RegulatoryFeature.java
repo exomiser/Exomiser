@@ -40,14 +40,17 @@ public class RegulatoryFeature implements ChromosomalRegion {
         this.featureType = featureType;
     }
 
+    @Override
     public int getChromosome() {
         return chromosome;
     }
 
+    @Override
     public int getStart() {
         return start;
     }
 
+    @Override
     public int getEnd() {
         return end;
     }

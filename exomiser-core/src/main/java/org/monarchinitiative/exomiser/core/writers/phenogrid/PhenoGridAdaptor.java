@@ -24,8 +24,13 @@
  */
 package org.monarchinitiative.exomiser.core.writers.phenogrid;
 
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,13 +57,13 @@ public class PhenoGridAdaptor {
             }
         }
         PhenoGridQueryTerms phenoGridQueryTerms = new PhenoGridQueryTerms(phenoGridId, phenotypeIds);
-        
-        List<ModelPhenotypeMatch> diseaseModels = new ArrayList<>();
-        List<ModelPhenotypeMatch> mouseModels = new ArrayList<>();
-        List<ModelPhenotypeMatch> fishModels = new ArrayList<>();
+
+        List<GeneModelPhenotypeMatch> diseaseModels = new ArrayList<>();
+        List<GeneModelPhenotypeMatch> mouseModels = new ArrayList<>();
+        List<GeneModelPhenotypeMatch> fishModels = new ArrayList<>();
 
         for (HiPhivePriorityResult result : hiPhiveResults) {
-            for (ModelPhenotypeMatch model : result.getPhenotypeEvidence()) {
+            for (GeneModelPhenotypeMatch model : result.getPhenotypeEvidence()) {
                 switch(model.getOrganism()) {
                     case HUMAN:
                         diseaseModels.add(model);
@@ -77,7 +82,7 @@ public class PhenoGridAdaptor {
         return new PhenoGrid(phenoGridQueryTerms, phenoGridMatchGroups);        
     }
 
-    private List<PhenoGridMatchGroup> createPhenogridMatchGroups(Set<String> phenotypeIds, List<ModelPhenotypeMatch> diseaseModels, List<ModelPhenotypeMatch> mouseModels, List<ModelPhenotypeMatch> fishModels) {
+    private List<PhenoGridMatchGroup> createPhenogridMatchGroups(Set<String> phenotypeIds, List<GeneModelPhenotypeMatch> diseaseModels, List<GeneModelPhenotypeMatch> mouseModels, List<GeneModelPhenotypeMatch> fishModels) {
         List<PhenoGridMatchGroup> phenoGridMatchGroups = new ArrayList<>();
         
         if (!diseaseModels.isEmpty()){
@@ -98,27 +103,28 @@ public class PhenoGridAdaptor {
         return phenoGridMatchGroups;
     }
 
-    private PhenoGridMatchGroup makePhenoGridMatchGroup(PhenoGridMatchTaxon taxon, List<ModelPhenotypeMatch> modelPhenotypeMatches, Set<String> phenotypeIds) {
-        List<PhenoGridMatch> phenoGridMatches = makePhenogridMatchesFromModels(modelPhenotypeMatches, taxon);
+    private PhenoGridMatchGroup makePhenoGridMatchGroup(PhenoGridMatchTaxon taxon, List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches, Set<String> phenotypeIds) {
+        List<PhenoGridMatch> phenoGridMatches = makePhenogridMatchesFromModels(geneModelPhenotypeMatches, taxon);
         PhenoGridMatchGroup phenoGridMatchGroup = new PhenoGridMatchGroup(phenoGridMatches, phenotypeIds);
         return phenoGridMatchGroup;
     }
 
-    private List<PhenoGridMatch> makePhenogridMatchesFromModels(List<ModelPhenotypeMatch> diseaseGeneModels, PhenoGridMatchTaxon taxon) {
+    private List<PhenoGridMatch> makePhenogridMatchesFromModels(List<GeneModelPhenotypeMatch> diseaseGeneModels, PhenoGridMatchTaxon taxon) {
         List<PhenoGridMatch> phenoGridMatches = new ArrayList<>();
         //the models will be ordered according to the exomiser combined score, we want to re-order things purely by phenotype score
         Collections.sort(diseaseGeneModels, new DescendingScoreBasedModelComparator());
         
         int modelCount = 0;
-        for (ModelPhenotypeMatch modelPhenotypeMatch : diseaseGeneModels) {
-            PhenoGridMatchScore score = new PhenoGridMatchScore("hiPhive", (int) (modelPhenotypeMatch.getScore() * 100f), modelCount++);
-            logger.debug("Made new {} score modelScore:{} gridScore:{} rank:{}", modelPhenotypeMatch.getOrganism(), modelPhenotypeMatch.getScore(), score.getScore(), score.getRank());
-            List<PhenotypeMatch> phenotypeMatches = modelPhenotypeMatch.getBestPhenotypeMatchForTerms();
-            if (modelPhenotypeMatch.getOrganism() == Organism.HUMAN) {
-                PhenoGridMatch match = makeDiseasePhenoGridMatch(modelPhenotypeMatch, phenotypeMatches, score, taxon);
+        for (GeneModelPhenotypeMatch geneModelPhenotypeMatch : diseaseGeneModels) {
+            PhenoGridMatchScore score = new PhenoGridMatchScore("hiPhive", (int) (geneModelPhenotypeMatch.getScore() * 100f), modelCount++);
+            logger.debug("Made new {} score modelScore:{} gridScore:{} rank:{}", geneModelPhenotypeMatch.getOrganism(), geneModelPhenotypeMatch
+                    .getScore(), score.getScore(), score.getRank());
+            List<PhenotypeMatch> phenotypeMatches = geneModelPhenotypeMatch.getBestModelPhenotypeMatches();
+            if (geneModelPhenotypeMatch.getOrganism() == Organism.HUMAN) {
+                PhenoGridMatch match = makeDiseasePhenoGridMatch(geneModelPhenotypeMatch, phenotypeMatches, score, taxon);
                 phenoGridMatches.add(match);            
             } else {
-                PhenoGridMatch match = makeGenePhenoGridMatch(modelPhenotypeMatch, phenotypeMatches, score, taxon);
+                PhenoGridMatch match = makeGenePhenoGridMatch(geneModelPhenotypeMatch, phenotypeMatches, score, taxon);
                 phenoGridMatches.add(match);  
             }
         }
@@ -126,19 +132,19 @@ public class PhenoGridAdaptor {
         return phenoGridMatches;
     }
 
-    private PhenoGridMatch makeDiseasePhenoGridMatch(ModelPhenotypeMatch modelPhenotypeMatch, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
-        DiseaseModel diseaseModel = (DiseaseModel) modelPhenotypeMatch.getModel();
-        return new PhenoGridMatch(diseaseModel.getDiseaseId(), diseaseModel.getDiseaseTerm(), "disease", phenotypeMatches, score, taxon);
-    }
-    
-    private PhenoGridMatch makeGenePhenoGridMatch(ModelPhenotypeMatch modelPhenotypeMatch, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
-        GeneModel geneModel = (GeneModel) modelPhenotypeMatch.getModel();
-        return new PhenoGridMatch(geneModel.getModelGeneId(), geneModel.getModelGeneSymbol(), "gene", phenotypeMatches, score, taxon);
+    private PhenoGridMatch makeDiseasePhenoGridMatch(GeneModelPhenotypeMatch geneModelPhenotypeMatch, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
+        GeneDiseaseModel geneDiseaseModel = (GeneDiseaseModel) geneModelPhenotypeMatch.getModel();
+        return new PhenoGridMatch(geneDiseaseModel.getDiseaseId(), geneDiseaseModel.getDiseaseTerm(), "disease", phenotypeMatches, score, taxon);
     }
 
-    private static class DescendingScoreBasedModelComparator implements Comparator<ModelPhenotypeMatch> {
+    private PhenoGridMatch makeGenePhenoGridMatch(GeneModelPhenotypeMatch geneModelPhenotypeMatch, List<PhenotypeMatch> phenotypeMatches, PhenoGridMatchScore score, PhenoGridMatchTaxon taxon) {
+        GeneOrthologModel geneOrthologModel = (GeneOrthologModel) geneModelPhenotypeMatch.getModel();
+        return new PhenoGridMatch(geneOrthologModel.getModelGeneId(), geneOrthologModel.getModelGeneSymbol(), "gene", phenotypeMatches, score, taxon);
+    }
+
+    private static class DescendingScoreBasedModelComparator implements Comparator<GeneModelPhenotypeMatch> {
         @Override
-        public int compare(ModelPhenotypeMatch model1, ModelPhenotypeMatch model2) {
+        public int compare(GeneModelPhenotypeMatch model1, GeneModelPhenotypeMatch model2) {
             //we want the results in descending order i.e. greater score first
             return - Double.compare(model1.getScore(), model2.getScore());
         }

@@ -23,24 +23,54 @@ To change this license header, choose License Headers in Project Properties.
 To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
-<html lang="en" 
+<html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
     <head>
-        <title>Analysis Settings</title>
+        <title>Exomiser :: Analysis</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel='icon' type='image/x-icon' href="favicon.ico" th:href="@{/favicon.ico}"/>
-        <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen" />
+        <link href="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen" />
     </head>
 
     <body>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <!--<a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">Exomiser</a>-->
+                <a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">
+                    <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="index" th:href="@{../exomiser}">Home</a></li>
+                    <li class="active"><a href="submit" th:href="@{submit}">Analyse</a></li>
+                    <li><a href="#publications">Publications</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
         <div class="alert alert-danger" role="alert">
-            For performance reasons we are unable to process VCF files containing more than <span th:text="${@maxVariants}">100000</span> variants - your file contains 
+            For performance reasons we are unable to process VCF files containing more than <span
+                th:text="${@maxVariants}">100000</span> variants - your file contains
             <span th:text="${numVariants}">99999</span> variants. Please <a href="submit" class="alert-link">go back</a> and reduce the number of variants you submit.
 
-            Alternatively, if you want to run the original file, please try the offline version which you can 
-            <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/" class="alert-link">download from the FTP site</a>. 
+            Alternatively, if you want to run the original file, please try the offline version which you can
+            <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/" class="alert-link">download
+                from the FTP site</a>.
         </div>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+
     </body>
 </html>

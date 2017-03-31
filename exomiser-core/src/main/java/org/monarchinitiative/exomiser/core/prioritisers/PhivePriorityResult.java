@@ -20,8 +20,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
-import org.monarchinitiative.exomiser.core.model.ModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 
 import java.util.Objects;
 
@@ -52,22 +52,22 @@ public class PhivePriorityResult extends AbstractPriorityResult {
      * with the several mouse models that have been made to investigate this
      * gene.
      */
-    private final ModelPhenotypeMatch modelPhenotypeMatch;
+    private final GeneModelPhenotypeMatch geneModelPhenotypeMatch;
 
     /**
      * @param geneSymbol The corresponding gene symbol, e.g., Gfl1
      * @param score the phenodigm score for this gene as calculated by OWLsim. This score indicates the
      * similarity between a humam disease and the phenotype of a genetically
      * modified mouse model.
-     * @param modelPhenotypeMatch the mouse model evidence for this result.
+     * @param geneModelPhenotypeMatch the mouse model evidence for this result.
      */
-    public PhivePriorityResult(int geneId, String geneSymbol, double score, ModelPhenotypeMatch modelPhenotypeMatch) {
+    public PhivePriorityResult(int geneId, String geneSymbol, double score, GeneModelPhenotypeMatch geneModelPhenotypeMatch) {
         super(PriorityType.PHIVE_PRIORITY, geneId, geneSymbol, score);
-        this.modelPhenotypeMatch = modelPhenotypeMatch;
+        this.geneModelPhenotypeMatch = geneModelPhenotypeMatch;
     }
 
-    public ModelPhenotypeMatch getModelPhenotypeMatch() {
-        return modelPhenotypeMatch;
+    public GeneModelPhenotypeMatch getGeneModelPhenotypeMatch() {
+        return geneModelPhenotypeMatch;
     }
 
     /**
@@ -77,10 +77,10 @@ public class PhivePriorityResult extends AbstractPriorityResult {
     @JsonIgnore
     @Override
     public String getHTMLCode() {
-        if (modelPhenotypeMatch == null) {
+        if (geneModelPhenotypeMatch == null) {
             return "<dl><dt>No mouse model for this gene</dt></dl>";
         } else {
-            String link = makeMgiGeneLink((GeneModel) modelPhenotypeMatch.getModel());
+            String link = makeMgiGeneLink((GeneOrthologModel) geneModelPhenotypeMatch.getModel());
             return String.format("<dl><dt>Mouse phenotype data for %s</dt></dl>", link);
         }
     }
@@ -90,9 +90,9 @@ public class PhivePriorityResult extends AbstractPriorityResult {
      * MGI:101757 it will create a link to
      * {@code http://www.informatics.jax.org/marker/MGI:101757}.
      */
-    private String makeMgiGeneLink(GeneModel geneModel) {
-        String url = String.format("http://www.informatics.jax.org/marker/%s", geneModel.getModelGeneId());
-        return String.format("<a href=\"%s\">%s</a>", url, geneModel.getModelGeneSymbol());
+    private String makeMgiGeneLink(GeneOrthologModel geneOrthologModel) {
+        String url = String.format("http://www.informatics.jax.org/marker/%s", geneOrthologModel.getModelGeneId());
+        return String.format("<a href=\"%s\">%s</a>", url, geneOrthologModel.getModelGeneSymbol());
     }
 
     @Override
@@ -101,12 +101,12 @@ public class PhivePriorityResult extends AbstractPriorityResult {
         if (!(o instanceof PhivePriorityResult)) return false;
         if (!super.equals(o)) return false;
         PhivePriorityResult that = (PhivePriorityResult) o;
-        return Objects.equals(modelPhenotypeMatch, that.modelPhenotypeMatch);
+        return Objects.equals(geneModelPhenotypeMatch, that.geneModelPhenotypeMatch);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), modelPhenotypeMatch);
+        return Objects.hash(super.hashCode(), geneModelPhenotypeMatch);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class PhivePriorityResult extends AbstractPriorityResult {
                 "geneId=" + geneId +
                 ", geneSymbol='" + geneSymbol + '\'' +
                 ", score=" + score +
-                ", modelPhenotypeMatch=" + modelPhenotypeMatch +
+                ", geneModelPhenotypeMatch=" + geneModelPhenotypeMatch +
                 "}";
     }
 }

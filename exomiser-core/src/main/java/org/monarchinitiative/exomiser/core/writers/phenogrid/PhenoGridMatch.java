@@ -6,8 +6,8 @@
 package org.monarchinitiative.exomiser.core.writers.phenogrid;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 
 import java.util.List;
 import java.util.Objects;

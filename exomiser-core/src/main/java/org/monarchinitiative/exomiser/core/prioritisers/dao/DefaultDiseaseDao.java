@@ -25,7 +25,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.exomiser.core.prioritisers.util.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,15 +48,20 @@ public class DefaultDiseaseDao implements DiseaseDao {
 
     private final Logger logger = LoggerFactory.getLogger(DefaultDiseaseDao.class);
 
-    @Autowired
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
+    @Autowired
+    public DefaultDiseaseDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    @Cacheable(value = "diseaseHp")
     @Override
     public Set<String> getHpoIdsForDiseaseId(String diseaseId) {
         String hpoListString = "";
         try (
-            Connection connection = dataSource.getConnection();
-            PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?")
+                Connection connection = dataSource.getConnection();
+                PreparedStatement hpoIdsStatement = connection.prepareStatement("SELECT hp_id FROM disease_hp WHERE disease_id = ?")
         ) {
             hpoIdsStatement.setString(1, diseaseId);
             ResultSet rs = hpoIdsStatement.executeQuery();

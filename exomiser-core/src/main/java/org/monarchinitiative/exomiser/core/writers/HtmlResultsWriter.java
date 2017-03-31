@@ -128,7 +128,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
         // One of UCSC, ENSEMBL or REFSEQ
         context.setVariable("transcriptDb", "UCSC");
-
+        context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         return templateEngine.process("results", context);
     }
 

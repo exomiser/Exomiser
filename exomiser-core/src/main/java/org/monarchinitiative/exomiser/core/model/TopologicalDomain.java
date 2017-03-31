@@ -40,14 +40,17 @@ public class TopologicalDomain implements ChromosomalRegion {
         this.genes = genes;
     }
 
+    @Override
     public int getChromosome() {
         return chromosome;
     }
 
+    @Override
     public int getStart() {
         return start;
     }
 
+    @Override
     public int getEnd() {
         return end;
     }

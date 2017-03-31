@@ -24,7 +24,7 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers.dao;
 
-import org.monarchinitiative.exomiser.core.prioritisers.util.Disease;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
 import java.util.List;
 import java.util.Set;

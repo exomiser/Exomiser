@@ -19,9 +19,10 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.data.JannovarData;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +44,16 @@ public class AnalysisFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisFactory.class);
 
-    private final JannovarData jannovarData;
+    private final GeneFactory geneFactory;
+    private final VariantFactory variantFactory;
+
     private final PriorityFactory priorityFactory;
     private final VariantDataService variantDataService;
 
     @Autowired
-    public AnalysisFactory(JannovarData jannovarData, PriorityFactory priorityFactory, VariantDataService variantDataService) {
-        this.jannovarData = jannovarData;
+    public AnalysisFactory(GeneFactory geneFactory, VariantFactory variantFactory, PriorityFactory priorityFactory, VariantDataService variantDataService) {
+        this.geneFactory = geneFactory;
+        this.variantFactory = variantFactory;
         this.variantDataService = variantDataService;
         this.priorityFactory = priorityFactory;
     }
@@ -60,13 +64,13 @@ public class AnalysisFactory {
         // below are package-private.
         switch (analysisMode) {
             case FULL:
-                return new SimpleAnalysisRunner(jannovarData, variantDataService);
+                return new SimpleAnalysisRunner(geneFactory, variantFactory, variantDataService);
             case SPARSE:
-                return new SparseAnalysisRunner(jannovarData, variantDataService);
+                return new SparseAnalysisRunner(geneFactory, variantFactory, variantDataService);
             case PASS_ONLY:
             default:
                 //this guy takes up the least RAM
-                return new PassOnlyAnalysisRunner(jannovarData, variantDataService);
+                return new PassOnlyAnalysisRunner(geneFactory, variantFactory, variantDataService);
         }
     }
 

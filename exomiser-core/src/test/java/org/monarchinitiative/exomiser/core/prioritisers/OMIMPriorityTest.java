@@ -24,7 +24,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.prioritisers.util.TestPriorityServiceFactory;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
 import java.util.EnumSet;
 import java.util.List;

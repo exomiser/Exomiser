@@ -25,11 +25,11 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.DiseaseModel;
-import org.monarchinitiative.exomiser.core.model.GeneModel;
-import org.monarchinitiative.exomiser.core.model.Model;
-import org.monarchinitiative.exomiser.core.model.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -42,7 +42,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class HiPhiveOptionsTest {
 
-    private final Model model = new DiseaseModel("OMIM:101600", Organism.HUMAN, 12345, "Gene1", "DISEASE:1", "Test disease", Collections.emptyList());
+    private final GeneModel model = new GeneDiseaseModel("OMIM:101600", Organism.HUMAN, 12345, "Gene1", "DISEASE:1", "Test disease", Collections.emptyList());
 
     private void assertAllRunParamsAreTrue(HiPhiveOptions hiPhiveOptions) {
         assertThat(hiPhiveOptions.runHuman(), is(true));
@@ -180,7 +180,7 @@ public class HiPhiveOptionsTest {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
 
-        Model model = new GeneModel(diseaseId, Organism.HUMAN, 12345, candidateGeneSymbol, "DISEASE:1", "Test disease", Collections.emptyList());
+        GeneModel model = new GeneOrthologModel(diseaseId, Organism.HUMAN, 12345, candidateGeneSymbol, "DISEASE:1", "Test disease", Collections.emptyList());
 
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol(candidateGeneSymbol)
@@ -284,7 +284,7 @@ public class HiPhiveOptionsTest {
     public void returnsFalseWhenModelIdIsNull() {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
-        Model model = new DiseaseModel(null, Organism.HUMAN, 12345, candidateGeneSymbol, diseaseId, "Test disease", Collections.emptyList());
+        GeneModel model = new GeneDiseaseModel(null, Organism.HUMAN, 12345, candidateGeneSymbol, diseaseId, "Test disease", Collections.emptyList());
 
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol(candidateGeneSymbol)
@@ -299,7 +299,7 @@ public class HiPhiveOptionsTest {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
 
-        Model model = new DiseaseModel(diseaseId, Organism.HUMAN, 12345, null, diseaseId, "Test disease", Collections.emptyList());
+        GeneModel model = new GeneDiseaseModel(diseaseId, Organism.HUMAN, 12345, null, diseaseId, "Test disease", Collections.emptyList());
 
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol(candidateGeneSymbol)

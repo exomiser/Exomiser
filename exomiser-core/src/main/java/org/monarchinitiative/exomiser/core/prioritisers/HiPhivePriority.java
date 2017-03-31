@@ -23,8 +23,14 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-import org.monarchinitiative.exomiser.core.model.*;
-import org.monarchinitiative.exomiser.core.prioritisers.util.*;
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.phenotype.*;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
+import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
+import org.monarchinitiative.exomiser.core.prioritisers.util.HiPhiveProteinInteractionScorer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,9 +89,10 @@ public class HiPhivePriority implements Prioritiser {
         }
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
 
-        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
+        Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(ImmutableSet.toImmutableSet());
 
-        ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels = makeBestGeneModelsForOrganisms(hpoPhenotypeTerms, Organism.HUMAN, options.getOrganismsToRun(), wantedGeneIds);
+        ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels = makeBestGeneModelsForOrganisms(hpoPhenotypeTerms, Organism.HUMAN, options
+                .getOrganismsToRun(), wantedGeneIds);
 
         HiPhiveProteinInteractionScorer ppiScorer = makeHiPhiveProteinInteractionScorer(bestGeneModels, options.runPpi());
 
@@ -93,20 +100,20 @@ public class HiPhivePriority implements Prioritiser {
         return genes.stream().map(makeHiPhivePriorityResult(hpoPhenotypeTerms, bestGeneModels, ppiScorer));
     }
 
-    private Function<Gene, HiPhivePriorityResult> makeHiPhivePriorityResult(List<PhenotypeTerm> hpoPhenotypeTerms, ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels, HiPhiveProteinInteractionScorer ppiScorer) {
+    private Function<Gene, HiPhivePriorityResult> makeHiPhivePriorityResult(List<PhenotypeTerm> hpoPhenotypeTerms, ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels, HiPhiveProteinInteractionScorer ppiScorer) {
         return gene -> {
             Integer entrezGeneId = gene.getEntrezGeneID();
 
             String geneSymbol = gene.getGeneSymbol();
 
-            List<ModelPhenotypeMatch> bestPhenotypeMatchModels = bestGeneModels.get(entrezGeneId);
+            List<GeneModelPhenotypeMatch> bestPhenotypeMatchModels = bestGeneModels.get(entrezGeneId);
             double phenoScore = bestPhenotypeMatchModels.stream()
-                    .mapToDouble(ModelPhenotypeMatch::getScore)
+                    .mapToDouble(GeneModelPhenotypeMatch::getScore)
                     .max()
                     .orElse(0);
 
             GeneMatch closestPhenoMatchInNetwork = ppiScorer.getClosestPhenoMatchInNetwork(entrezGeneId);
-            List<ModelPhenotypeMatch> closestPhysicallyInteractingGeneModels = closestPhenoMatchInNetwork.getBestMatchModels();
+            List<GeneModelPhenotypeMatch> closestPhysicallyInteractingGeneModels = closestPhenoMatchInNetwork.getBestMatchModels();
             double ppiScore = closestPhenoMatchInNetwork.getScore();
 
             double score = Double.max(phenoScore, ppiScore);
@@ -121,45 +128,46 @@ public class HiPhivePriority implements Prioritiser {
         return options.getCandidateGeneSymbol().equals(geneSymbol) || geneSymbol.startsWith(options.getCandidateGeneSymbol() + ",");
     }
 
-    private HiPhiveProteinInteractionScorer makeHiPhiveProteinInteractionScorer(ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels, boolean runPpi) {
+    private HiPhiveProteinInteractionScorer makeHiPhiveProteinInteractionScorer(ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels, boolean runPpi) {
         if (runPpi) {
             return new HiPhiveProteinInteractionScorer(randomWalkMatrix, bestGeneModels, HIGH_QUALITY_SCORE_CUTOFF);
         }
         return HiPhiveProteinInteractionScorer.EMPTY;
     }
 
-    private ListMultimap<Integer, ModelPhenotypeMatch> makeBestGeneModelsForOrganisms(List<PhenotypeTerm> hpoPhenotypeTerms, Organism referenceOrganism, Set<Organism> organismsToCompare, Set<Integer> wantedGeneIds) {
+    private ListMultimap<Integer, GeneModelPhenotypeMatch> makeBestGeneModelsForOrganisms(List<PhenotypeTerm> hpoPhenotypeTerms, Organism referenceOrganism, Set<Organism> organismsToCompare, Set<Integer> wantedGeneIds) {
 
         //CAUTION!! this must always run in order that the best score is set - HUMAN runs first as we are comparing HP to other phenotype ontology terms.
-        OrganismPhenotypeMatches referenceOrganismPhenotypeMatches = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, referenceOrganism);
-        TheoreticalModel bestTheoreticalModel = referenceOrganismPhenotypeMatches.getBestTheoreticalModel();
-        if (bestTheoreticalModel.getBestPhenotypeMatches().isEmpty()) {
-            logger.warn("{} has no phenotype matches for input set {}", bestTheoreticalModel, hpoPhenotypeTerms);
+        PhenotypeMatcher referenceOrganismPhenotypeMatcher = priorityService.getPhenotypeMatcherForOrganism(hpoPhenotypeTerms, referenceOrganism);
+        QueryPhenotypeMatch bestQueryPhenotypeMatch = referenceOrganismPhenotypeMatcher.getQueryPhenotypeMatch();
+        if (bestQueryPhenotypeMatch.getBestPhenotypeMatches().isEmpty()) {
+            logger.warn("{} has no phenotype matches for input set {}", bestQueryPhenotypeMatch, hpoPhenotypeTerms);
         }
-        List<OrganismPhenotypeMatches> bestOrganismPhenotypeMatches = getBestOrganismPhenotypeMatches(hpoPhenotypeTerms, referenceOrganismPhenotypeMatches, organismsToCompare);
+        List<PhenotypeMatcher> bestOrganismPhenotypeMatches = getBestOrganismPhenotypeMatches(hpoPhenotypeTerms, referenceOrganismPhenotypeMatcher, organismsToCompare);
 
-        ListMultimap<Integer, ModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
-        for (OrganismPhenotypeMatches organismPhenotypeMatches : bestOrganismPhenotypeMatches) {
-            Set<Model> modelsToScore = priorityService.getModelsForOrganism(organismPhenotypeMatches.getOrganism()).stream()
+        ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
+        for (PhenotypeMatcher organismPhenotypeMatcher : bestOrganismPhenotypeMatches) {
+            Set<GeneModel> modelsToScore = priorityService.getModelsForOrganism(organismPhenotypeMatcher.getOrganism())
+                    .stream()
                     .filter(model -> wantedGeneIds.contains(model.getEntrezGeneId()))
                     .collect(toSet());
 
-            List<ModelPhenotypeMatch> modelPhenotypeMatches = scoreModels(bestTheoreticalModel, organismPhenotypeMatches, modelsToScore);
-            Map<Integer, ModelPhenotypeMatch> bestGeneModelsForOrganism = mapBestModelByGene(modelPhenotypeMatches);
+            List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = scoreModels(bestQueryPhenotypeMatch, organismPhenotypeMatcher, modelsToScore);
+            Map<Integer, GeneModelPhenotypeMatch> bestGeneModelsForOrganism = mapBestModelByGene(geneModelPhenotypeMatches);
             bestGeneModelsForOrganism.entrySet().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
         }
 
         return bestGeneModels;
     }
 
-    private List<OrganismPhenotypeMatches> getBestOrganismPhenotypeMatches(List<PhenotypeTerm> hpoPhenotypeTerms, OrganismPhenotypeMatches referenceOrganismPhenotypeMatches, Set<Organism> organismsToCompare) {
-        ImmutableList.Builder<OrganismPhenotypeMatches> bestPossibleOrganismPhenotypeMatches = ImmutableList.builder();
+    private List<PhenotypeMatcher> getBestOrganismPhenotypeMatches(List<PhenotypeTerm> hpoPhenotypeTerms, PhenotypeMatcher referenceOrganismPhenotypeMatcher, Set<Organism> organismsToCompare) {
+        ImmutableList.Builder<PhenotypeMatcher> bestPossibleOrganismPhenotypeMatches = ImmutableList.builder();
         for (Organism organism : organismsToCompare) {
-            if (organism == referenceOrganismPhenotypeMatches.getOrganism()) {
+            if (organism == referenceOrganismPhenotypeMatcher.getOrganism()) {
                 //no need to re-query the database for these
-                bestPossibleOrganismPhenotypeMatches.add(referenceOrganismPhenotypeMatches);
+                bestPossibleOrganismPhenotypeMatches.add(referenceOrganismPhenotypeMatcher);
             } else {
-                OrganismPhenotypeMatches bestOrganismPhenotypes = priorityService.getMatchingPhenotypesForOrganism(hpoPhenotypeTerms, organism);
+                PhenotypeMatcher bestOrganismPhenotypes = priorityService.getPhenotypeMatcherForOrganism(hpoPhenotypeTerms, organism);
                 bestPossibleOrganismPhenotypeMatches.add(bestOrganismPhenotypes);
             }
         }
@@ -167,49 +175,52 @@ public class HiPhivePriority implements Prioritiser {
     }
 
     //returns a map of geneId to best model
-    private Map<Integer, ModelPhenotypeMatch> mapBestModelByGene(List<ModelPhenotypeMatch> organismModels) {
+    private Map<Integer, GeneModelPhenotypeMatch> mapBestModelByGene(List<GeneModelPhenotypeMatch> organismModels) {
         return getBestModelsByGene(organismModels)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(toMap(ModelPhenotypeMatch::getEntrezGeneId, Function.identity()));
+                .collect(toMap(GeneModelPhenotypeMatch::getEntrezGeneId, Function.identity()));
     }
 
-    private Stream<Optional<ModelPhenotypeMatch>> getBestModelsByGene(List<ModelPhenotypeMatch> organismModels) {
+    private Stream<Optional<GeneModelPhenotypeMatch>> getBestModelsByGene(List<GeneModelPhenotypeMatch> organismModels) {
         if (options.isBenchmarkingEnabled()) {
             return organismModels.parallelStream()
                     .filter(model -> model.getScore() > 0)
                     // catch hit to known disease-gene association for purposes of benchmarking i.e to simulate novel gene discovery performance
                     .filter(model -> !options.isBenchmarkHit(model))
-                    .collect(groupingByConcurrent(ModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(ModelPhenotypeMatch::getScore))))
+                    .collect(groupingByConcurrent(GeneModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(GeneModelPhenotypeMatch::getScore))))
                     .values()
                     .stream();
         }
         return organismModels.parallelStream()
                 .filter(model -> model.getScore() > 0)
-                .collect(groupingByConcurrent(ModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(ModelPhenotypeMatch::getScore))))
+                .collect(groupingByConcurrent(GeneModelPhenotypeMatch::getEntrezGeneId, maxBy(comparingDouble(GeneModelPhenotypeMatch::getScore))))
                 .values()
                 .stream();
     }
 
-    //n.b. this is *almost* identical to PhivePriority.scoreModels() the only difference is in HiPhive we're comparing the input terms
+    // n.b. this is *almost* identical to PhivePriority.scoreModels() the only difference is in HiPhive we're comparing the input terms
     // against all possible models (disease, mouse, fish), whereas in Phive we're only comparing against mouse.
-    // For HiPhive the bestTheoreticalModel is going to be an HPO self-hit for every term in the query set so the
+    // For HiPhive the bestQueryPhenotypeMatch is going to be an HPO self-hit for every term in the query set so the
     // scoreModelPhenotypeMatch uses hpoIds.size() as the numMatchedQueryPhenotypes.
-    private List<ModelPhenotypeMatch> scoreModels(TheoreticalModel bestTheoreticalModel, OrganismPhenotypeMatches organismPhenotypeMatches, Collection<Model> models) {
-        Organism organism = organismPhenotypeMatches.getOrganism();
+    private List<GeneModelPhenotypeMatch> scoreModels(QueryPhenotypeMatch bestQueryPhenotypeMatch, PhenotypeMatcher organismPhenotypeMatcher, Collection<GeneModel> models) {
+        Organism organism = organismPhenotypeMatcher.getOrganism();
 
-        ModelScorer modelScorer = PhiveModelScorer.forMultiCrossSpecies(bestTheoreticalModel, organismPhenotypeMatches);
+        ModelScorer modelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, organismPhenotypeMatcher);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
-        List<ModelPhenotypeMatch> modelPhenotypeMatches = models.parallelStream()
-                .map(modelScorer::scoreModel)
+        List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = models.parallelStream()
+                .map(model -> {
+                    ModelPhenotypeMatch score = modelScorer.scoreModel(model);
+                    return new GeneModelPhenotypeMatch(score.getScore(), model, score.getBestPhenotypeMatches());
+                })
                 .collect(toList());
 
         Duration duration = Duration.between(timeStart, Instant.now());
         logger.info("Scored {} {} models - {} ms", models.size(), organism, duration.toMillis());
-        return modelPhenotypeMatches;
+        return geneModelPhenotypeMatches;
     }
 
     @Override

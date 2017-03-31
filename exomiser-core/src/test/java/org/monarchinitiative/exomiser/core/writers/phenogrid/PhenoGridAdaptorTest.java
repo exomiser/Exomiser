@@ -27,8 +27,13 @@ package org.monarchinitiative.exomiser.core.writers.phenogrid;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.*;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 
 import java.util.*;
 
@@ -140,27 +145,27 @@ public class PhenoGridAdaptorTest {
                 .build();
     }
 
-    private ModelPhenotypeMatch getDiseaseModelPhenotypeMatch() {
-        DiseaseModel diseaseModel = new DiseaseModel("OMIM:00000", Organism.HUMAN, allModelEntrezGeneId, allModelGeneSymbol, "OMIM:00000", "Rare disease", Collections.emptyList());
-        return new ModelPhenotypeMatch(0.99, diseaseModel, Lists.newArrayList(diseasePhenotypeMatch));
+    private GeneModelPhenotypeMatch getDiseaseModelPhenotypeMatch() {
+        GeneDiseaseModel geneDiseaseModel = new GeneDiseaseModel("OMIM:00000", Organism.HUMAN, allModelEntrezGeneId, allModelGeneSymbol, "OMIM:00000", "Rare disease", Collections.emptyList());
+        return new GeneModelPhenotypeMatch(0.99, geneDiseaseModel, Lists.newArrayList(diseasePhenotypeMatch));
     }
 
-    private ModelPhenotypeMatch getMouseModelPhenotypeMatch() {
-        GeneModel mouseModel = new GeneModel("1_12345", Organism.MOUSE, allModelEntrezGeneId, allModelGeneSymbol, "MGI:00000", "All1", Collections.emptyList());
-        return new ModelPhenotypeMatch(0.88, mouseModel, Lists.newArrayList(mousePhenotypeMatch));
+    private GeneModelPhenotypeMatch getMouseModelPhenotypeMatch() {
+        GeneOrthologModel mouseModel = new GeneOrthologModel("1_12345", Organism.MOUSE, allModelEntrezGeneId, allModelGeneSymbol, "MGI:00000", "All1", Collections.emptyList());
+        return new GeneModelPhenotypeMatch(0.88, mouseModel, Lists.newArrayList(mousePhenotypeMatch));
     }
 
-    private ModelPhenotypeMatch getFishModelPhenotypeMatch() {
-        GeneModel fishModel = new GeneModel("2_12345", Organism.FISH, allModelEntrezGeneId, allModelGeneSymbol, "ZDB-GENE-000000-0", "all1", Collections.emptyList());
-        return new ModelPhenotypeMatch(0.50, fishModel, Lists.newArrayList(fishPhenotypeMatch));
+    private GeneModelPhenotypeMatch getFishModelPhenotypeMatch() {
+        GeneOrthologModel fishModel = new GeneOrthologModel("2_12345", Organism.FISH, allModelEntrezGeneId, allModelGeneSymbol, "ZDB-GENE-000000-0", "all1", Collections.emptyList());
+        return new GeneModelPhenotypeMatch(0.50, fishModel, Lists.newArrayList(fishPhenotypeMatch));
     }
 
     private void setUpHiPhiveResults() {
-        List<ModelPhenotypeMatch> allModels = Arrays.asList(getDiseaseModelPhenotypeMatch(), getMouseModelPhenotypeMatch(), getFishModelPhenotypeMatch());
+        List<GeneModelPhenotypeMatch> allModels = Arrays.asList(getDiseaseModelPhenotypeMatch(), getMouseModelPhenotypeMatch(), getFishModelPhenotypeMatch());
 
         allModelsHiPhiveResult = new HiPhivePriorityResult(allModelEntrezGeneId, allModelGeneSymbol, allModelScore, queryPhenotypeTerms, allModels, Collections.emptyList(), allModelWalkerScore, false);
-    
-        List<ModelPhenotypeMatch> models = Arrays.asList(getDiseaseModelPhenotypeMatch());
+
+        List<GeneModelPhenotypeMatch> models = Arrays.asList(getDiseaseModelPhenotypeMatch());
 
         onlyDiseaseModelHiPhiveResult = new HiPhivePriorityResult(onlyDiseaseEntrezGeneId, onlyDiseaseGeneSymbol, onlyDiseaseModelScore, queryPhenotypeTerms, models, Collections.emptyList(), onlyDiseaseModelWalkerScore, false);
     

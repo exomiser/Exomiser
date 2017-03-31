@@ -26,6 +26,14 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
+import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyServiceImpl;
+import org.monarchinitiative.exomiser.core.prioritisers.dao.DefaultDiseaseDao;
+import org.monarchinitiative.exomiser.core.prioritisers.service.ModelServiceImpl;
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -42,8 +50,24 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = PriorityFactoryTestConfig.class)
-@Sql(scripts = {"file:src/test/resources/sql/create_disease.sql", "file:src/test/resources/sql/create_disease_hp.sql", "file:src/test/resources/sql/create_entrez2sym.sql", "file:src/test/resources/sql/diseaseDaoTestData.sql"})
+@ContextConfiguration(classes = {
+        PriorityFactoryImpl.class,
+        PriorityFactoryTestConfig.class,
+        PriorityService.class,
+        OntologyServiceImpl.class,
+        PhenotypeMatchService.class,
+        ModelServiceImpl.class,
+        DefaultDiseaseDao.class,
+        HumanPhenotypeOntologyDao.class,
+        MousePhenotypeOntologyDao.class,
+        ZebraFishPhenotypeOntologyDao.class
+})
+@Sql(scripts = {
+        "file:src/test/resources/sql/create_disease.sql",
+        "file:src/test/resources/sql/create_disease_hp.sql",
+        "file:src/test/resources/sql/create_entrez2sym.sql",
+        "file:src/test/resources/sql/diseaseDaoTestData.sql"
+})
 public class PriorityFactoryImplTest {
 
     @Autowired

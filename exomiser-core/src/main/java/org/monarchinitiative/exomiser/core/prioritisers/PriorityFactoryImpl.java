@@ -24,8 +24,8 @@
  */
 package org.monarchinitiative.exomiser.core.prioritisers;
 
+import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
-import org.monarchinitiative.exomiser.core.prioritisers.util.PriorityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +46,19 @@ public class PriorityFactoryImpl implements PriorityFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(PriorityFactoryImpl.class);
 
-    @Autowired
-    private PriorityService priorityService;
-    @Autowired
+    private final PriorityService priorityService;
+    private final DataMatrix randomWalkMatrix;
+    private final Path phenixDataDirectory;
+
+    // The randomWalkMatrix takes about 1min to load into RAM and isn't always required, so @Lazy is used to defer loading
+    // until it is required.
     @Lazy
-    private DataMatrix randomWalkMatrix;
     @Autowired
-    private Path phenixDataDirectory;
+    public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory) {
+        this.priorityService = priorityService;
+        this.randomWalkMatrix = randomWalkMatrix;
+        this.phenixDataDirectory = phenixDataDirectory;
+    }
 
     /**
      * Returns a Prioritiser of the given type, ready to run according to the

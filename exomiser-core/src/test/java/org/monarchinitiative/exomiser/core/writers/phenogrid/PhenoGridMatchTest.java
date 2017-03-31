@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.model.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.model.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 
 import java.util.LinkedHashSet;
 import java.util.List;

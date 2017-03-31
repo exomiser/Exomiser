@@ -52,6 +52,7 @@
         <project.organization>The Monarch Initiative</project.organization>
         <sonar.language>java</sonar.language>
         <jannovar.version>0.19</jannovar.version>
+        <guava.version>21.0</guava.version>
         <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
     </properties>
  
@@ -138,6 +139,13 @@
             <groupId>com.impossibl.pgjdbc-ng</groupId>
             <artifactId>pgjdbc-ng</artifactId>
             <version>0.4</version>
+        </dependency>
+        <!-- Need to override guava to version 21.0 which  contains the Java 8 Collectors support on immutable Collections
+        used by exomiser-core-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
         <!--HikariCP is a "zero-overhead" production ready JDBC connection pool.
         https://github.com/brettwooldridge/HikariCP -->

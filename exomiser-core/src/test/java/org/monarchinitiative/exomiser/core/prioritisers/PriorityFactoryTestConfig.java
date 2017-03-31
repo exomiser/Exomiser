@@ -26,8 +26,9 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jblas.FloatMatrix;
-import org.monarchinitiative.exomiser.core.prioritisers.dao.*;
-import org.monarchinitiative.exomiser.core.prioritisers.util.*;
+import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -43,24 +44,26 @@ import java.util.Map;
  */
 @Configuration
 public class PriorityFactoryTestConfig {
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(PriorityFactoryTestConfig.class);
+
     @Bean
     DataSource dataSource() {
         String url = "jdbc:h2:mem:exomiser;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;";
         String user = "sa";
         String password = "sa";
-        
-        JdbcConnectionPool dataSource = JdbcConnectionPool.create(url, user, password);
-        return dataSource;
+
+        return JdbcConnectionPool.create(url, user, password);
     }
-    
-    @Bean
-    PriorityFactoryImpl priorityFactory() {
-        return new PriorityFactoryImpl();
-    }
+
+//    @Bean
+//    PriorityFactoryImpl priorityFactory() {
+//        return new PriorityFactoryImpl();
+//    }
     
     @Bean
     DataMatrix randomWalkMatrix() {
+        logger.info("Loading random walk matrix bean...");
         Map<Integer, Integer> stubMatrixIndex = new HashMap<>();
         return new DataMatrix(FloatMatrix.EMPTY, stubMatrixIndex);
     }
@@ -69,39 +72,5 @@ public class PriorityFactoryTestConfig {
     Path phenixDataDirectory() {
         return Paths.get("stubPhenixDataDir");
     }
-    
-    @Bean
-    PriorityService priorityService() {
-        return new PriorityService(ontologyService(), modelService(), diseaseDao());
-    }
-    
-    @Bean
-    ModelService modelService() {
-        return new ModelServiceImpl();
-    }
-    
-    @Bean
-    OntologyService ontologyService() {
-        return new OntologyServiceImpl();
-    }
-    
-    @Bean
-    DiseaseDao diseaseDao() {
-        return new DefaultDiseaseDao();
-    }
-    
-    @Bean
-    HumanPhenotypeOntologyDao humanPhenotypeOntologyDao() {
-        return new HumanPhenotypeOntologyDao();
-    }
-    
-    @Bean
-    MousePhenotypeOntologyDao mousePhenotypeOntologyDao() {
-        return new MousePhenotypeOntologyDao();
-    }
-    
-    @Bean
-    ZebraFishPhenotypeOntologyDao zebraFishPhenotypeOntologyDao() {
-        return new ZebraFishPhenotypeOntologyDao();
-    }
+
 }

@@ -20,7 +20,6 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.model.FilterStatus;
@@ -43,13 +42,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
-    
-    private SparseAnalysisRunner instance;
-        
-    @Before
-    public void setUp() {
-        instance = new SparseAnalysisRunner(jannovarData, stubDataService);
-    }
+
+    private final SparseAnalysisRunner instance = new SparseAnalysisRunner(geneFactory, variantFactory, stubDataService);
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {

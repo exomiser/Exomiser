@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.prioritisers.util;
 import com.google.common.collect.ArrayListMultimap;
 import org.jblas.FloatMatrix;
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;

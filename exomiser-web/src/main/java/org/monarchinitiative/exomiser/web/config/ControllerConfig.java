@@ -46,16 +46,26 @@ public class ControllerConfig extends WebMvcConfigurerAdapter {
 
     @Bean
     public Integer maxVariants() {
-        int maxVariants = Integer.valueOf(env.getProperty("maxVariants"));
+        Integer maxVariants = Integer.valueOf(env.getProperty("exomiser.web.max-variants"));
         logger.info("Set max variants to {}", maxVariants);
         return maxVariants;
     }
 
     @Bean
     public Integer maxGenes() {
-        int maxGenes = Integer.valueOf(env.getProperty("maxGenes"));
+        Integer maxGenes = Integer.valueOf(env.getProperty("exomiser.web.max-genes"));
         logger.info("Set max genes to {}", maxGenes);
         return maxGenes;
     }
 
+    @Bean
+    public Boolean clinicalInstance() {
+        Boolean clinicalInstance = Boolean.valueOf(env.getProperty("exomiser.web.clinical-instance"));
+        if (clinicalInstance) {
+            logger.info("Instance is running in a CLINICAL setting.");
+        } else {
+            logger.info("Instance is running in a NON-CLINICAL setting.");
+        }
+        return clinicalInstance;
+    }
 }

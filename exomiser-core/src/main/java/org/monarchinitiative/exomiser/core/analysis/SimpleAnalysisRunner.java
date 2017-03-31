@@ -19,11 +19,12 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.filters.SimpleGeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.SimpleVariantFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
+import org.monarchinitiative.exomiser.core.genome.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
@@ -38,8 +39,8 @@ import java.util.function.Predicate;
  */
 class SimpleAnalysisRunner extends AbstractAnalysisRunner {
 
-    SimpleAnalysisRunner(JannovarData jannovarData, VariantDataService variantDataService) {
-        super(jannovarData, variantDataService, new SimpleVariantFilterRunner(), new SimpleGeneFilterRunner());
+    SimpleAnalysisRunner(GeneFactory geneFactory, VariantFactory variantFactory, VariantDataService variantDataService) {
+        super(geneFactory, variantFactory, variantDataService, new SimpleVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override

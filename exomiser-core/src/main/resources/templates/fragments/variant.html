@@ -1,0 +1,73 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<div th:fragment="variant (variantEvaluation)">
+    <div class="col-sm-12">
+        <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
+        <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|"> chr10:g.123256215T>G
+            [0/1]</b>
+        <th:block th:each="frequencyData: ${variantEvaluation.frequencyData}">
+            <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
+               th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}" th:text="${rsId}">rs141235720
+            </a>
+            <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
+               th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId})}"> (variation viewer)
+            </a>
+        </th:block>
+    </div>
+    <!--<div class="col-sm-12">-->
+    <!--</div>-->
+    <div class="col-sm-6">
+        <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant
+            score: 0.600</b>
+        <span class="label label-info" th:if="${variantEvaluation.contributesToGeneScore()}"
+              th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
+        <dl class="list-unstyled">
+            <dt>Transcripts:</dt>
+            <dd th:each="annotation: ${variantEvaluation.annotations}"
+                th:switch="${transcriptDb}">
+                <a th:case="'UCSC'"
+                   th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                <a th:case="'ENSEMBL'"
+                   th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
+                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                <a th:case="'REFSEQ'"
+                   th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
+                   th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
+            </dd>
+        </dl>
+    </div>
+    <div class="col-sm-3">
+        <!--<b>Pathogenicity Score: 1.00</b>-->
+        <dl class="list-unstyled" th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
+            <dt>Pathogenicity Data:</dt>
+            <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}"
+                th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00
+            </dd>
+            <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No pathogenicity data</dd>
+            <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}" th:text="${pathScore}">Mutation
+                Taster: 0.999 (P)
+            </dd>
+        </dl>
+    </div>
+    <div class="col-sm-3">
+        <!--<b>Frequency Score: 0.95</b>-->
+        <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
+            <dt>Frequency Data:</dt>
+            <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
+            <dd th:each="freq: ${frequencyData.knownFrequencies}"
+                th:text="${freq.source.source} + ': ' + ${#numbers.formatDecimal(freq.frequency,1,4)} + '%'">
+                1000Genomes: 0.02%
+            </dd>
+        </dl>
+    </div>
+</div>
+
+</body>
+
+</html>

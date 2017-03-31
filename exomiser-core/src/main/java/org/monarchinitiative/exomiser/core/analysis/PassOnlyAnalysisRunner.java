@@ -19,11 +19,12 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.monarchinitiative.exomiser.core.factories.VariantDataService;
 import org.monarchinitiative.exomiser.core.filters.SimpleGeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.SparseVariantFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
+import org.monarchinitiative.exomiser.core.genome.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -44,9 +45,9 @@ import static java.util.stream.Collectors.toList;
 class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
-    
-    PassOnlyAnalysisRunner(JannovarData jannovarData, VariantDataService variantDataService) {
-        super(jannovarData, variantDataService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
+
+    PassOnlyAnalysisRunner(GeneFactory geneFactory, VariantFactory variantFactory, VariantDataService variantDataService) {
+        super(geneFactory, variantFactory, variantDataService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override
