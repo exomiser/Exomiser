@@ -65,7 +65,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
 
         instance = new CrossSpeciesPhenotypeMatcher(Organism.HUMAN, phenotypeMatches);
 
-        //would this make more sense?
+        //TODO: would this make more sense?
         //QueryPhenotypeMatch queryPhenotypeMatch = new QueryPhenotypeMatch(Organism.HUMAN, phenotypeMatches);
         //CrossSpeciesPhenotypeMatcher phenotypeMatcher = new CrossSpeciesPhenotypeMatcher(queryPhenotypeMatch);
     }
@@ -111,7 +111,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
     public void testCanCalculateBestPhenotypeMatchesByTerm() {
         List<PhenotypeMatch> bestForwardAndReciprocalMatches = Lists.newArrayList(noseMatch, bestToeMatch, perfectNoseMatch, bestToeMatch);
         List<PhenotypeMatch> result = instance.calculateBestPhenotypeMatchesByTerm(bestForwardAndReciprocalMatches);
-        assertThat(result, containsInAnyOrder(bestToeMatch, perfectNoseMatch));
+        assertThat(result, containsInAnyOrder(bestMatches));
     }
 
     @Test
