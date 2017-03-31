@@ -55,8 +55,6 @@ public class CrossSpeciesPhenotypeMatcherTest {
     private final PhenotypeMatch bestToeMatch = PhenotypeMatch.builder().query(bigToe).match(longToe).lcs(toe).score(2.0).build();
     private final PhenotypeMatch bigToeCrookedToeMatch = PhenotypeMatch.builder().query(bigToe).match(crookedToe).lcs(toe).score(1.5).build();
 
-    private final Set<PhenotypeMatch> bestMatches = Sets.newHashSet(perfectNoseMatch, bestToeMatch);
-
     @Before
     public void setUp() {
         Map<PhenotypeTerm, Set<PhenotypeMatch>> phenotypeMatches = new LinkedHashMap<>();
@@ -111,7 +109,7 @@ public class CrossSpeciesPhenotypeMatcherTest {
     public void testCanCalculateBestPhenotypeMatchesByTerm() {
         List<PhenotypeMatch> bestForwardAndReciprocalMatches = Lists.newArrayList(noseMatch, bestToeMatch, perfectNoseMatch, bestToeMatch);
         List<PhenotypeMatch> result = instance.calculateBestPhenotypeMatchesByTerm(bestForwardAndReciprocalMatches);
-        assertThat(result, containsInAnyOrder(bestMatches));
+        assertThat(result, containsInAnyOrder(bestToeMatch, perfectNoseMatch));
     }
 
     @Test
