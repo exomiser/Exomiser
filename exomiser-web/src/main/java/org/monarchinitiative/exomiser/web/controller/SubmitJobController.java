@@ -66,6 +66,8 @@ public class SubmitJobController {
     private Integer maxVariants;
     @Autowired
     private Integer maxGenes;
+    @Autowired
+    private boolean clinicalInstance;
 
     @Autowired
     private Exomiser exomiser;
