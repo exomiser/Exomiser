@@ -1,7 +1,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers.model;
 
-import org.monarchinitiative.exomiser.core.phenodigm.Model;
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.Model;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
 
 /**
  * Interface for encapsulating data involved in a disease/animal model to human

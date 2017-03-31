@@ -19,11 +19,11 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatchService;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
-import org.monarchinitiative.exomiser.core.phenodigm.service.OntologyService;
-import org.monarchinitiative.exomiser.core.phenodigm.service.TestOntologyService;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
+import org.monarchinitiative.exomiser.core.phenotype.service.TestOntologyService;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.TestDiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;

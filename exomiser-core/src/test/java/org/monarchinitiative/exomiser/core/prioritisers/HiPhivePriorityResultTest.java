@@ -26,8 +26,8 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
 

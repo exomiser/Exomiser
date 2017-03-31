@@ -26,11 +26,11 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatchService;
-import org.monarchinitiative.exomiser.core.phenodigm.dao.HumanPhenotypeOntologyDao;
-import org.monarchinitiative.exomiser.core.phenodigm.dao.MousePhenotypeOntologyDao;
-import org.monarchinitiative.exomiser.core.phenodigm.dao.ZebraFishPhenotypeOntologyDao;
-import org.monarchinitiative.exomiser.core.phenodigm.service.OntologyServiceImpl;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
+import org.monarchinitiative.exomiser.core.phenotype.dao.HumanPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.MousePhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.dao.ZebraFishPhenotypeOntologyDao;
+import org.monarchinitiative.exomiser.core.phenotype.service.OntologyServiceImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DefaultDiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.service.ModelServiceImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;

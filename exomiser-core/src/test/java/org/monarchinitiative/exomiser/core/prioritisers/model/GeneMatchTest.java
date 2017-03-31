@@ -21,7 +21,7 @@ package org.monarchinitiative.exomiser.core.prioritisers.model;
 
 import com.google.common.collect.Lists;
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
 
 import java.util.Collections;
 import java.util.List;

@@ -22,23 +22,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.monarchinitiative.exomiser.core.prioritisers.model;
+package org.monarchinitiative.exomiser.core.phenotype;
 
-import org.junit.Test;
-import org.monarchinitiative.exomiser.core.phenotype.Organism;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import java.util.List;
 
 /**
+ * Generic interface for defining the phenotype of an entity. In ontology terms this is the associations of an individual
+ * to a set of ontology classes.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @see ModelScorer
+ *
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class OrganismTest {
+public interface Model {
 
-    @Test
-    public void testValues() {
-        Organism[] values = {Organism.HUMAN, Organism.MOUSE, Organism.FISH};
-        assertThat(Organism.values(), equalTo(values));
-    }
+    String getId();
+    
+    List<String> getPhenotypeIds();
+
 }

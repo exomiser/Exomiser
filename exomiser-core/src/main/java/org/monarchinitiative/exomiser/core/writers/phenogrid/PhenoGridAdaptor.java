@@ -24,9 +24,9 @@
  */
 package org.monarchinitiative.exomiser.core.writers.phenogrid;
 
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;

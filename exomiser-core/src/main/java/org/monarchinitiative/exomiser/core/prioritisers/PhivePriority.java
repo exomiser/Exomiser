@@ -21,7 +21,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.phenodigm.*;
+import org.monarchinitiative.exomiser.core.phenotype.*;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
@@ -81,7 +81,7 @@ public class PhivePriority implements Prioritiser {
         logger.info("Starting {}", PRIORITY_TYPE);
 
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
-        OrganismPhenotypeMatcher humanMousePhenotypeMatcher = priorityService.getPhenotypeMatcherForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
+        PhenotypeMatcher humanMousePhenotypeMatcher = priorityService.getPhenotypeMatcherForOrganism(hpoPhenotypeTerms, Organism.MOUSE);
 
         Set<Integer> wantedGeneIds = genes.stream().map(Gene::getEntrezGeneID).collect(ImmutableSet.toImmutableSet());
 
@@ -112,10 +112,10 @@ public class PhivePriority implements Prioritiser {
         return modelPhenotypeMatch -> new PhivePriorityResult(modelPhenotypeMatch.getEntrezGeneId(), modelPhenotypeMatch.getHumanGeneSymbol(), modelPhenotypeMatch.getScore(), modelPhenotypeMatch);
     }
 
-    private List<GeneModelPhenotypeMatch> scoreModels(OrganismPhenotypeMatcher organismPhenotypeMatcher, Collection<GeneModel> models) {
+    private List<GeneModelPhenotypeMatch> scoreModels(PhenotypeMatcher organismPhenotypeMatcher, Collection<GeneModel> models) {
         Organism organism = organismPhenotypeMatcher.getOrganism();
 
-        ModelScorer modelScorer = ModelScorer.forSingleCrossSpecies(organismPhenotypeMatcher);
+        ModelScorer modelScorer = PhenodigmModelScorer.forSingleCrossSpecies(organismPhenotypeMatcher);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();

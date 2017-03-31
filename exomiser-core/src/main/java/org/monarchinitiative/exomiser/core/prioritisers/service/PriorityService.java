@@ -25,10 +25,10 @@
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
-import org.monarchinitiative.exomiser.core.phenodigm.OrganismPhenotypeMatcher;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatchService;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatcher;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
@@ -71,7 +71,7 @@ public class PriorityService {
         return phenotypeMatchService.makePhenotypeTermsFromHpoIds(hpoIds);
     }
 
-    public OrganismPhenotypeMatcher getPhenotypeMatcherForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
+    public PhenotypeMatcher getPhenotypeMatcherForOrganism(List<PhenotypeTerm> queryHpoPhenotypes, Organism organism) {
         switch (organism) {
             case HUMAN:
                 return phenotypeMatchService.getHumanPhenotypeMatcherForTerms(queryHpoPhenotypes);

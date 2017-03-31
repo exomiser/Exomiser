@@ -24,8 +24,8 @@
  */
 package org.monarchinitiative.exomiser.core.writers.phenogrid;
 
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeTerm;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 
 import java.util.ArrayList;
 import java.util.Arrays;

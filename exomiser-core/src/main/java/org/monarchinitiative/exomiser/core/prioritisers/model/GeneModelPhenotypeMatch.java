@@ -21,8 +21,8 @@ package org.monarchinitiative.exomiser.core.prioritisers.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
-import org.monarchinitiative.exomiser.core.phenodigm.PhenotypeMatch;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 
 import java.util.List;
 import java.util.Objects;

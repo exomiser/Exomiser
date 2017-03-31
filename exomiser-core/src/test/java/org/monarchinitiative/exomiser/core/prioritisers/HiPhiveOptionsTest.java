@@ -25,7 +25,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.junit.Test;
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;

@@ -20,8 +20,8 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import com.google.common.collect.Sets;
-import org.monarchinitiative.exomiser.core.phenodigm.Model;
-import org.monarchinitiative.exomiser.core.phenodigm.Organism;
+import org.monarchinitiative.exomiser.core.phenotype.Model;
+import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

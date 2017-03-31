@@ -22,23 +22,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.monarchinitiative.exomiser.core.prioritisers.model;
-
-import org.junit.Test;
-import org.monarchinitiative.exomiser.core.phenotype.Organism;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+package org.monarchinitiative.exomiser.core.phenotype;
 
 /**
+ * Enum representing the model organism present in the Exomiser database for which
+ * there are phenotype mappings. These are few and should not be added to
+ * frequently.
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class OrganismTest {
+public enum Organism {
 
-    @Test
-    public void testValues() {
-        Organism[] values = {Organism.HUMAN, Organism.MOUSE, Organism.FISH};
-        assertThat(Organism.values(), equalTo(values));
-    }
+    HUMAN,
+    MOUSE,
+    FISH
+
 }
