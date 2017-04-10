@@ -44,8 +44,8 @@ public class PedigreeFactoryTest {
     
     private PedigreeFactory instance;
 
-    private static final Path validPedFilePath = Paths.get("src/test/resources/validPedTestFile.ped");
-    private static final Path inValidPedFilePath = Paths.get("src/test/resources/invalidPedTestFile.ped");
+    private static final Path validPedFilePath = Paths.get("src/test/resources/pedValid.ped");
+    private static final Path inValidPedFilePath = Paths.get("src/test/resources/pedNotValid.ped");
 
     private static final Person ADAM = new Person("Adam", null, null, Sex.MALE, Disease.UNAFFECTED);
     private static final Person EVA = new Person("Eva", null, null, Sex.FEMALE, Disease.UNAFFECTED);
@@ -95,7 +95,8 @@ public class PedigreeFactoryTest {
     
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void throwsErrorForNamedMultiSampleWithInvalidPedFile() {
-        instance.createPedigreeForSampleData(inValidPedFilePath, Arrays.asList("Adam", "Eva", "Seth"));
+        Pedigree pedigree = instance.createPedigreeForSampleData(inValidPedFilePath, Arrays.asList("Adam", "Eva", "Seth"));
+        pedigree.getMembers().forEach(System.out::println);
     }
     
     @Test
@@ -156,12 +157,18 @@ public class PedigreeFactoryTest {
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithSpacesInsteadOfTabs() {
-        instance.createPedigreeForSampleData(Paths.get("src/test/resources/malformedPedTestFileWithSpaces.ped"), Arrays.asList("Adam", "Eva", "Seth"));
+        Pedigree pedigree = instance.createPedigreeForSampleData(Paths.get("src/test/resources/pedWithSpaces.ped"), Arrays
+                .asList("Adam", "Eva", "Seth"));
+        pedigree.getMembers().forEach(System.out::println);
+        assertThat(pedigree.getMembers().size(), equalTo(3));
+        assertContainsPerson(ADAM, pedigree);
+        assertContainsPerson(EVA, pedigree);
+        assertContainsPerson(SETH, pedigree);
     }
 
     @Test(expected = PedigreeFactory.PedigreeCreationException.class)
     public void testCreatePedigreeWithMoreThanOneFamilyInFile() {
-        instance.createPedigreeForSampleData(Paths.get("src/test/resources/multiFamilyTest.ped"), Arrays.asList("Adam", "Eva", "Seth"));
+        instance.createPedigreeForSampleData(Paths.get("src/test/resources/pedMultiFamily.ped"), Arrays.asList("Adam", "Eva", "Seth"));
     }
 
 }

@@ -45,12 +45,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Until Jannovar issue #285 https://github.com/charite/jannovar/issues/285 is fixed we'll still use the old version-->
-        <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>jannovar-inheritance-checker</artifactId>
-            <version>${jannovar.version}</version>
-        </dependency>
         <!--Guava 0.19 is required by Jannovar-->
         <dependency>
             <groupId>org.jblas</groupId>

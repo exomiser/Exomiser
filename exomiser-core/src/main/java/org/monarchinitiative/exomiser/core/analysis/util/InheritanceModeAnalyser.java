@@ -30,8 +30,6 @@ import de.charite.compbio.jannovar.mendel.bridge.CannotAnnotateMendelianInherita
 import de.charite.compbio.jannovar.mendel.bridge.VariantContextMendelianAnnotator;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import de.charite.compbio.jannovar.pedigree.Pedigree;
-import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityChecker;
-import de.charite.compbio.jannovar.pedigree.compatibilitychecker.InheritanceCompatibilityCheckerException;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -57,20 +55,16 @@ public class InheritanceModeAnalyser {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
-    private static final boolean USE_NEW_JANNOVAR_INHERITANCE_CHECKER = false;
     private final VariantContextMendelianAnnotator inheritanceAnnotator;
 
     private final ModeOfInheritance modeOfInheritance;
-
-    private final InheritanceCompatibilityChecker inheritanceCompatibilityChecker;
 
     private final Set<ModeOfInheritance> compatibleModes;
 
     public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
         this.modeOfInheritance = modeOfInheritance;
+//        inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree, false, false);
         inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree);
-
-        inheritanceCompatibilityChecker = new InheritanceCompatibilityChecker.Builder().pedigree(pedigree).addMode(modeOfInheritance).build();
 
         compatibleModes = Sets.immutableEnumSet(modeOfInheritance);
     }
@@ -137,13 +131,9 @@ public class InheritanceModeAnalyser {
             //Make sure only ONE variantContext is added if there are multiple alleles as there will be one VariantEvaluation per allele.
             //Having multiple copies of a VariantContext might cause problems with the comp het calculations 
             List<VariantContext> geneVariants = passedVariantEvaluations.stream().map(VariantEvaluation::getVariantContext).distinct().collect(toList());
-            if (USE_NEW_JANNOVAR_INHERITANCE_CHECKER) {
-                ImmutableMap<ModeOfInheritance, ImmutableList<VariantContext>> compatibleMap = inheritanceAnnotator.computeCompatibleInheritanceModes(geneVariants);
-                return compatibleMap.getOrDefault(modeOfInheritance, ImmutableList.of());
-            } else {
-                return inheritanceCompatibilityChecker.getCompatibleWith(geneVariants);
-            }
-        } catch (CannotAnnotateMendelianInheritance | InheritanceCompatibilityCheckerException ex) {
+            ImmutableMap<ModeOfInheritance, ImmutableList<VariantContext>> compatibleMap = inheritanceAnnotator.computeCompatibleInheritanceModes(geneVariants);
+            return compatibleMap.getOrDefault(modeOfInheritance, ImmutableList.of());
+        } catch (CannotAnnotateMendelianInheritance ex) {
             logger.error(null, ex);
         }
         return Collections.emptyList();
