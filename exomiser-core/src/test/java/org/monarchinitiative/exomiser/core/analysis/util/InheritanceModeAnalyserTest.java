@@ -29,7 +29,6 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.*;
 import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.variantcontext.Genotype;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
@@ -50,11 +49,6 @@ import static org.junit.Assert.assertThat;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class InheritanceModeAnalyserTest {
-
-    @Before
-    public void setUp() {
-
-    }
 
     private VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult) {
         VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt).build();
