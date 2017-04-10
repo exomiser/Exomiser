@@ -97,14 +97,6 @@ public class TestVariantFactory {
         return annotations;
     }
 
-    public Variant constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int rd, int altAlleleID) {
-        return constructVariant(chrom, pos, ref, alt, gt, rd, altAlleleID, 20.0);
-    }
-
-    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth) {
-        return constructVariantContext(chrom, pos, ref, alt, gt, readDepth, 20.0);
-    }
-
     public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, double qual) {
         Allele refAllele = Allele.create(ref, true);
         Allele altAllele = Allele.create(alt);
