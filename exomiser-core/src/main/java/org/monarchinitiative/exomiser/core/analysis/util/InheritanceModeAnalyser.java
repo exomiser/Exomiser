@@ -63,9 +63,7 @@ public class InheritanceModeAnalyser {
 
     public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
         this.modeOfInheritance = modeOfInheritance;
-//        inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree, false, false);
-        inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree);
-
+        inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree, false, false);
         compatibleModes = Sets.immutableEnumSet(modeOfInheritance);
     }
 
