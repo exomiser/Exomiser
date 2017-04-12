@@ -19,22 +19,28 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.annotation.Annotation;
-import de.charite.compbio.jannovar.annotation.InvalidGenomeVariant;
+import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderDispatcher;
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
+import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.reference.*;
+import de.charite.compbio.jannovar.reference.GenomePosition;
+import de.charite.compbio.jannovar.reference.GenomeVariant;
+import de.charite.compbio.jannovar.reference.PositionType;
+import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Helper class for constructing {@link Variant} objects for tests.
@@ -45,17 +51,19 @@ import java.util.Arrays;
  */
 public class TestVariantFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(TestVariantFactory.class);
+
+    private final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
     private final ReferenceDictionary refDict = TestFactory.getDefaultRefDict();
+    private final VariantAnnotator variantAnnotator = new VariantAnnotator(refDict, jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+
     private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
-    private final TranscriptModel tmFGFR2 = TestTranscriptModelFactory.buildTMForFGFR2();
-    private final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
-
     /**
-     * Construct a new {@link Variant} object with the given values.
+     * Construct a new {@link Variant} object with the given values. n.b. this follows the VCF standard of being 1-based.
      *
      * @param chrom numeric chromosome id
-     * @param pos zero-based position of the variant
+     * @param pos one-based position of the variant
      * @param ref reference string
      * @param alt alt string
      * @param gt the Genotype to use
@@ -64,8 +72,8 @@ public class TestVariantFactory {
      * @param qual phred-scale quality
      * @return {@link Variant} with the setting
      */
-    public VariantEvaluation constructVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
-        VariantContext variantContext = constructVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
+    public VariantEvaluation buildVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
+        VariantContext variantContext = buildVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
         VariantAnnotations annotations = buildVariantAnnotations(chrom, pos, ref, alt);
 
         return variantFactory.buildAnnotatedVariantEvaluation(variantContext, altAlleleID, annotations);
@@ -73,62 +81,55 @@ public class TestVariantFactory {
 
     private VariantAnnotations buildVariantAnnotations(int chrom, int pos, String ref, String alt) {
         // build annotation list (for the one transcript we have below only)
-        final GenomePosition genomePosition = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ZERO_BASED);
-        final GenomeVariant genomeVariant = new GenomeVariant(genomePosition, ref, alt);
-        final AnnotationBuilderDispatcher dispatcher;
-        if (tmFGFR2.getTXRegion().contains(genomePosition)) {
-            dispatcher = new AnnotationBuilderDispatcher(tmFGFR2, genomeVariant, new AnnotationBuilderOptions());
-        } else if (tmSHH.getTXRegion().contains(genomePosition)) {
-            dispatcher = new AnnotationBuilderDispatcher(tmSHH, genomeVariant, new AnnotationBuilderOptions());
-        } else {
-            dispatcher = new AnnotationBuilderDispatcher(null, genomeVariant, new AnnotationBuilderOptions());
-        }
-        final VariantAnnotations annotations;
+        GenomeVariant genomeVariant = buildGenomeVariant(chrom, pos, ref, alt);
         try {
-            Annotation anno = dispatcher.build();
-            if (anno != null) {
-                annotations = new VariantAnnotations(genomeVariant, Arrays.asList(anno));
-            } else {
-                annotations = new VariantAnnotations(genomeVariant, Arrays.asList());
-            }
-        } catch (InvalidGenomeVariant e) {
-            throw new RuntimeException("Problem building annotation", e);
+            return variantAnnotator.buildAnnotations(genomeVariant);
+        } catch (AnnotationException e) {
+            logger.error("UNABLE TO BUILD ANNOTATIONS FOR {}", genomeVariant, e);
         }
-        return annotations;
+        return new VariantAnnotations(genomeVariant, Collections.emptyList());
     }
 
-    public VariantContext constructVariantContext(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, double qual) {
+    private GenomeVariant buildGenomeVariant(int chrom, int pos, String ref, String alt) {
+        final GenomePosition genomePosition = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ONE_BASED);
+        return new GenomeVariant(genomePosition, ref, alt);
+    }
+
+    private VariantContext buildVariantContext(int chrom, int pos, String ref, String alt, Genotype genotype, int readDepth, double qual) {
         Allele refAllele = Allele.create(ref, true);
         Allele altAllele = Allele.create(alt);
-        VariantContextBuilder vcBuilder = new VariantContextBuilder();
 
         // build Genotype
-        GenotypeBuilder gtBuilder = new GenotypeBuilder("sample");
-        setGenotype(gtBuilder, refAllele, altAllele, gt);
-        gtBuilder.attribute("RD", readDepth);
-        // System.err.println(gtBuilder.make().toString());
+        GenotypeBuilder genotypeBuilder = buildGenotype(genotype, readDepth, refAllele, altAllele);
 
         // build VariantContext
-        vcBuilder.loc("chr" + chrom, pos + 1, pos + ref.length());
+        VariantContextBuilder vcBuilder = new VariantContextBuilder();
+        vcBuilder.loc("chr" + chrom, pos, pos - 1L + ref.length());
         vcBuilder.alleles(Arrays.asList(refAllele, altAllele));
-        vcBuilder.genotypes(gtBuilder.make());
+        vcBuilder.genotypes(genotypeBuilder.make());
         vcBuilder.attribute("RD", readDepth);
         vcBuilder.log10PError(-0.1 * qual);
-        // System.err.println(vcBuilder.make().toString());
 
         return vcBuilder.make();
     }
 
-    private void setGenotype(GenotypeBuilder gtb, Allele refAllele, Allele altAllele, Genotype gt) {
-        switch (gt) {
+    private GenotypeBuilder buildGenotype(Genotype gt, int readDepth, Allele refAllele, Allele altAllele) {
+        GenotypeBuilder gtBuilder = new GenotypeBuilder("sample");
+        setGenotype(gtBuilder, refAllele, altAllele, gt);
+        gtBuilder.attribute("RD", readDepth);
+        return gtBuilder;
+    }
+
+    private void setGenotype(GenotypeBuilder genotypeBuilder, Allele refAllele, Allele altAllele, Genotype genotype) {
+        switch (genotype) {
             case HOMOZYGOUS_ALT:
-                gtb.alleles(Arrays.asList(altAllele, altAllele));
+                genotypeBuilder.alleles(Arrays.asList(altAllele, altAllele));
                 break;
             case HOMOZYGOUS_REF:
-                gtb.alleles(Arrays.asList(refAllele, refAllele));
+                genotypeBuilder.alleles(Arrays.asList(refAllele, refAllele));
                 break;
             case HETEROZYGOUS:
-                gtb.alleles(Arrays.asList(refAllele, altAllele));
+                genotypeBuilder.alleles(Arrays.asList(refAllele, altAllele));
                 break;
             default:
                 break;

@@ -68,9 +68,9 @@ public class TsvVariantResultsWriterTest {
             "EXOMISER_VARIANT_SCORE\tEXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\tCONTRIBUTING_VARIANT\n";
     
     private static final String HEADER = VARIANT_DETAILS_HEADER + PATHOGENICITY_SCORES_HEADER + FREQUENCY_DATA_HEADER + EXOMISER_SCORES_HEADER;
-    
-    private static final String PASS_VARIANT_DETAILS = "chr10\t123353298\tG\tC\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.34C>G:p.(Leu12Val)\tFGFR2";
-    private static final String FAIL_VARIANT_DETAILS = "chr7\t155604801\tC\tCTT\t1.0\tvar-effect\t0/1\t0\tframeshift_variant\tSHH:uc003wmk.1:c.16_17insAA:p.(Arg6Lysfs*6)\tSHH";
+
+    private static final String PASS_VARIANT_DETAILS = "chr10\t123256215\tT\tG\t2.2\tPASS\t0/1\t0\tmissense_variant\tFGFR2:uc021pzz.1:c.1694A>C:p.(Glu565Ala)\tFGFR2";
+    private static final String FAIL_VARIANT_DETAILS = "chr7\t155604800\tC\tCTT\t1.0\tvar-effect\t0/1\t0\tframeshift_variant\tSHH:uc003wmk.1:c.16_17insAA:p.(Arg6Lysfs*6)\tSHH";
     private static final String NO_PATH_SCORES = "\t.\t.\t.\t.\t.";
     private static final String NO_FREQUENCY_DATA = "\t.\t0.0\t.\t.\t.\t.\t.\t.\t.\t.\t.\t.";
     private static final String PASS_VARIANT_EXOMISER_SCORES = "\t1.0\t0.0\t0.0\t0.0";
@@ -100,14 +100,14 @@ public class TsvVariantResultsWriterTest {
     }
 
     private VariantEvaluation makePassVariant() {
-        VariantEvaluation variant = varFactory.constructVariant(10, 123353297, "G", "C", Genotype.HETEROZYGOUS, 30, 0, 2.2);
+        VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
         variant.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)));
         return variant;
     }
     
     private VariantEvaluation makeFailVariant() {
-        VariantEvaluation variant = varFactory.constructVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
+        VariantEvaluation variant = varFactory.buildVariant(7, 155604800, "C", "CTT", Genotype.HETEROZYGOUS, 30, 0, 1.0);
         variant.addFilterResult(FilterResult.fail(FilterType.VARIANT_EFFECT_FILTER));
         return variant;
     }
