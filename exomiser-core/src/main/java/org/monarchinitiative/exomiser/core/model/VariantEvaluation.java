@@ -699,7 +699,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             gtBuilder.alleles(alleles);
 
             // build VariantContext
-            vcBuilder.loc("chr" + chr, pos, (pos - 1) + ref.length());
+            vcBuilder.loc("chr" + chr, pos, pos - 1L + ref.length());
             vcBuilder.alleles(alleles);
             vcBuilder.genotypes(gtBuilder.make());
             vcBuilder.log10PError(-0.1 * qual);
