@@ -92,11 +92,19 @@ public class PedigreeFactoryTest {
     public void throwsErrorWhenMultiSampleDataHasNoPedFile() {
         instance.createPedigreeForSampleData(null, Arrays.asList("Adam", "Eve", "Cain", "Abel"));
     }
-    
-    @Test(expected = PedigreeFactory.PedigreeCreationException.class)
+
+    @Test
     public void throwsErrorForNamedMultiSampleWithInvalidPedFile() {
         Pedigree pedigree = instance.createPedigreeForSampleData(inValidPedFilePath, Arrays.asList("Adam", "Eva", "Seth"));
         pedigree.getMembers().forEach(System.out::println);
+        assertThat(pedigree.getMembers().size(), equalTo(3));
+        assertContainsPerson(ADAM, pedigree);
+        //TODO: should we throw an exception still, log a warning, or leave it to go through?
+        Person eva = pedigree.getNameToMember().get(EVA.getName()).getPerson();
+        assertThat(eva.getSex(), equalTo(Sex.UNKNOWN));
+
+        Person seth = pedigree.getNameToMember().get(SETH.getName()).getPerson();
+        assertThat(seth, equalTo(new Person("Seth", ADAM, eva, Sex.MALE, Disease.AFFECTED)));
     }
     
     @Test
@@ -155,7 +163,7 @@ public class PedigreeFactoryTest {
         instance.createPedigreeForSampleData(validPedFilePath, Arrays.asList("Homer", "Marge", "Bart", "Lisa", "Maggie"));
     }
 
-    @Test(expected = PedigreeFactory.PedigreeCreationException.class)
+    @Test
     public void testCreatePedigreeWithSpacesInsteadOfTabs() {
         Pedigree pedigree = instance.createPedigreeForSampleData(Paths.get("src/test/resources/pedWithSpaces.ped"), Arrays
                 .asList("Adam", "Eva", "Seth"));
