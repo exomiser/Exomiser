@@ -88,7 +88,7 @@ public class MainConfig {
 
     @Bean
     public Path exomiserDataDirectory(Path jarFilePath) {
-        String dataDirValue = env.getProperty("dataDir");
+        String dataDirValue = env.getProperty("exomiser.data-directory");
         logger.info("Data source directory defined in properties as: {}", dataDirValue);
         Path dataPath = jarFilePath.resolve(dataDirValue);
         logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
