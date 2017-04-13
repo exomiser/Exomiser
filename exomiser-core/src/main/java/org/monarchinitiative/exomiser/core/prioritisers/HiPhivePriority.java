@@ -96,14 +96,13 @@ public class HiPhivePriority implements Prioritiser {
 
         HiPhiveProteinInteractionScorer ppiScorer = makeHiPhiveProteinInteractionScorer(bestGeneModels, options.runPpi());
 
-        logger.info("Mapping results...");
+        logger.info("Prioritising genes...");
         return genes.stream().map(makeHiPhivePriorityResult(hpoPhenotypeTerms, bestGeneModels, ppiScorer));
     }
 
     private Function<Gene, HiPhivePriorityResult> makeHiPhivePriorityResult(List<PhenotypeTerm> hpoPhenotypeTerms, ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels, HiPhiveProteinInteractionScorer ppiScorer) {
         return gene -> {
             Integer entrezGeneId = gene.getEntrezGeneID();
-
             String geneSymbol = gene.getGeneSymbol();
 
             List<GeneModelPhenotypeMatch> bestPhenotypeMatchModels = bestGeneModels.get(entrezGeneId);
@@ -130,6 +129,7 @@ public class HiPhivePriority implements Prioritiser {
 
     private HiPhiveProteinInteractionScorer makeHiPhiveProteinInteractionScorer(ListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels, boolean runPpi) {
         if (runPpi) {
+            logger.info("Creating PPI scorer ");
             return new HiPhiveProteinInteractionScorer(randomWalkMatrix, bestGeneModels, HIGH_QUALITY_SCORE_CUTOFF);
         }
         return HiPhiveProteinInteractionScorer.EMPTY;

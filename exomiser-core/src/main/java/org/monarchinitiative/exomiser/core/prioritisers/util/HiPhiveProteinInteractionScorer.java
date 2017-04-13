@@ -87,12 +87,15 @@ public class HiPhiveProteinInteractionScorer {
                 }
             }
         }
+        logger.info("Using {} high quality phenotypic gene match scores (score > {})", highestGeneIdPhenoScores.size(), highQualityPhenoScoreCutOff);
         return Collections.unmodifiableMap(highestGeneIdPhenoScores);
     }
 
     //todo: If this returned a DataMatrix things might be a bit more convenient later on...
-    public FloatMatrix makeWeightedProteinInteractionMatrix() {
+    private FloatMatrix makeWeightedProteinInteractionMatrix() {
         logger.info("Making weighted-score Protein-Protein interaction sub-matrix from high quality phenotypic gene matches...");
+        logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.getMatrix()
+                .getRows(), dataMatrix.getMatrix().getColumns());
         int rows = dataMatrix.getMatrix().getRows();
         int cols = highQualityPhenoMatchedGeneScores.size();
         FloatMatrix highQualityPpiMatrix = FloatMatrix.zeros(rows, cols);
@@ -110,9 +113,30 @@ public class HiPhiveProteinInteractionScorer {
             }
             c++;
         }
-        logger.info("Original data matrix ({} rows * {} columns)", dataMatrix.getMatrix().getRows(), dataMatrix.getMatrix().getColumns(), highQualityPhenoMatchedGeneScores.size());
-        logger.info("Made high quality interaction matrix ({} rows * {} columns) from {} high quality gene scores", highQualityPpiMatrix.getRows(), highQualityPpiMatrix.getColumns(), highQualityPhenoMatchedGeneScores.size());
+        logger.info("Made high quality interaction matrix ({} rows * {} columns)", highQualityPpiMatrix.getRows(), highQualityPpiMatrix
+                .getColumns());
         return highQualityPpiMatrix;
+    }
+
+    public GeneMatch getClosestPhenoMatchInNetwork(Integer entrezGeneId) {
+        if (!dataMatrix.containsGene(entrezGeneId) || highQualityPhenoMatchedGeneIds.isEmpty()) {
+            return GeneMatch.NO_HIT;
+        }
+        int rowIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
+        int columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(entrezGeneId);
+
+        // optimal adjustment based on benchmarking to allow walker scores to compete with low phenotype scores
+        double walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, columnIndex);
+
+        Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
+        List<GeneModelPhenotypeMatch> models = bestGeneModels.get(closestGeneId);
+
+        return GeneMatch.builder()
+                .queryGeneId(entrezGeneId)
+                .matchGeneId(closestGeneId)
+                .score(walkerScore)
+                .bestMatchModels(models)
+                .build();
     }
 
     /**
@@ -148,28 +172,6 @@ public class HiPhiveProteinInteractionScorer {
             }
         }
         return bestHitIndex;
-    }
-
-
-    public GeneMatch getClosestPhenoMatchInNetwork(Integer entrezGeneId) {
-        if (!dataMatrix.containsGene(entrezGeneId) || highQualityPhenoMatchedGeneIds.isEmpty()) {
-            return GeneMatch.NO_HIT;
-        }
-        int columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(entrezGeneId);
-        int rowIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
-
-        // optimal adjustment based on benchmarking to allow walker scores to compete with low phenotype scores
-        double walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, columnIndex);
-
-        Integer closestGeneId = highQualityPhenoMatchedGeneIds.get(columnIndex);
-        List<GeneModelPhenotypeMatch> models = bestGeneModels.get(closestGeneId);
-
-        return GeneMatch.builder()
-                .queryGeneId(entrezGeneId)
-                .matchGeneId(closestGeneId)
-                .score(walkerScore)
-                .bestMatchModels(models)
-                .build();
     }
 
 }
