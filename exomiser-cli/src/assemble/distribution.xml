@@ -62,15 +62,19 @@
             <outputDirectory>/data</outputDirectory>
             <includes>
                 <include>Pfeiffer.vcf</include>
-                <include>Pfeiffer-quartet.vcf</include>
+                <include>Pfeiffer-quartet.vcf.gz</include>
                 <include>Pfeiffer-quartet.ped</include>
-                <include>ucsc_hg19.ser</include>
+                <include>NA19722_252900_AR_SGSH_1_NONSYNONYMOUS.vcf</include>
+                <include>NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz</include>
+                <include>hg19_ucsc.ser</include>
+                <include>hg19_refseq.ser</include>
+                <include>hg19_ensembl.ser</include>
                 <include>rw_string_9_05.gz</include>
                 <include>rw_string_9_05_id2index.gz</include>
                 <include>exomiser.h2.db</include>
                 <include>phenix/*</include>
-                <include>*.tsv.gz</include>
-                <include>*.tsv.gz.tbi</include>     
+                <include>placeholder.tsv.gz</include>
+                <include>placeholder.tsv.gz.tbi</include>
             </includes>
         </fileSet>
         <fileSet>

@@ -63,6 +63,7 @@
                 <excludes>
                     <exclude>log4j2.xml</exclude>
                     <exclude>distribution/*</exclude>
+                    <exclude>data/*</exclude>
                 </excludes>
             </resource>
         </resources> 
@@ -139,17 +140,17 @@
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>src/main/resources/distribution/data</directory>
+                                    <directory>src/main/resources/data</directory>
                                     <includes>
+                                        <include>Pfeiffer.vcf</include>
+                                        <include>Pfeiffer-quartet.vcf.gz</include>
+                                        <include>Pfeiffer-quartet.ped</include>
+                                        <include>*.vcf</include>
+                                        <include>*.vcf.gz</include>
+                                        <include>*.ser</include>
                                         <include>*.tsv.gz</include>
                                         <include>*.tsv.gz.tbi</include>
                                     </includes>
-                                </resource>
-                                <resource>
-                                    <directory>src/test/resources</directory>
-                                    <include>Pfeiffer.vcf</include>
-                                    <include>Pfeiffer-quartet.vcf.gz</include>
-                                    <include>Pfeiffer-quartet.ped</include>
                                 </resource>
                             </resources>
                         </configuration>
