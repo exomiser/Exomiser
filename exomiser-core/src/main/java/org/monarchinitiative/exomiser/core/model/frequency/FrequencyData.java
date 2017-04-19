@@ -112,6 +112,10 @@ public class FrequencyData {
         return false;
     }
 
+    public boolean hasKnownFrequency() {
+        return !knownFrequencies.isEmpty();
+    }
+
     /**
      * Returns a list of Frequency objects. If there is no known frequency data
      * then an empty list will be returned.
@@ -189,4 +193,5 @@ public class FrequencyData {
             return 1f - (0.13533f * (float) Math.exp(max));
         }
     }
+
 }
