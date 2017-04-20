@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~
+  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Affero General Public License as
+  ~  published by the Free Software Foundation, either version 3 of the
+  ~  License, or (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Affero General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Affero General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Exomiser</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/x-icon" href="../static/favicon.ico" th:href="@{../static/favicon.ico}"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+</head>
+<body>
+<!--<div class="masthead">-->
+<!--<img slogo.png.png" th:src=logo.png.png}"/>-->
+<!--</div>-->
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">Exomiser</a>-->
+            <a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">
+                <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+            </a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="index.html" th:href="@{index}">Home</a></li>
+                <li><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                <li><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                <li><a href="download.html" th:href="@{download}">Download</a></li>
+                <li class="active"><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                <li><a href="about.html" th:href="@{about}">About</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+    <p>
+        You have been identified as a recipient of one or more Monarch Initiative software and/or data collection tools, including but not limited to the Exomiser (“Monarch Tools”) developed in part at Oregon Health &amp; Science University (“OHSU”).  OHSU provides you the Monarch Tools under the following limitations.  By accessing and using one or more Monarch Tools, you agree to the following terms ("Terms"), which constitute a legally binding agreement between you and OHSU. If you do not agree with any of these Terms, please do not use or access the Monarch Tools.
+    </p>
+    <h4>Disclaimer</h4>
+    <p>
+       <bold>
+           YOU ACKNOWLEDGE THAT THE MONARCH TOOLS, INCLUDING WITHOUT LIMITATION, THE DATABASE OF INFORMATION CONTAINED THEREIN, IS EXPERIMENTAL AND ACADEMIC IN NATURE, AND IS NOT LICENSED BY THE U.S. FOOD AND DRUG ADMINISTRATION OR ANY OTHER REGULATORY BODY.
+        THE MONARCH TOOLS ARE PROVIDED ON AN "AS IS" AND “AS AVAILABLE” BASIS WITH ALL FAULTS, WITHOUT WARRANTY OR REPRESENTATION OF ANY KIND, EXPRESS OR IMPLIED. OHSU DISCLAIM ALL WARRANTIES AND REPRESENTATIONS, EXPRESS OR IMPLIED, WITH RESPECT TO THE MONARCH TOOLS, INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF TITLE, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. THIS DISCLAIMER APPLIES TO THE FULLEST EXTENT POSSIBLE. OHSU DOES NOT WARRANT THAT THE MONARCH TOOLS WILL MEET YOUR REQUIREMENTS OR THAT THE USE OF THE MONARCH TOOLS WILL BE FREE OF INFECTION OR VIRUSES, ERROR-FREE, UNINTERRUPED, SECURE OR WILL PRODUCE ACCURATE RESULTS.  YOU SHALL BEAR TOTAL AND EXCLUSIVE RESPONSIBILITY AND RISK FOR THE USE OF THE MONARCH TOOLS.  YOU SHALL BE SOLELY RESPONSIBLE FOR ANY RESULTING DAMAGE TO YOUR COMPUTER SYSTEMS OR LOSS OF DATA.  IF YOU ARE DISSATISFIED WITH THE MONARCH TOOLS, OR WITH ANY OF THESE TERMS, YOUR SOLE AND EXCLUSIVE REMEDY IS TO DISCONTINUE USING THE MONARCH TOOLS.
+       </bold>
+    </p>
+    <h4>Limitation of Liability</h4>
+    <p>
+        <bold>
+            IN NO EVENT SHALL OHSU, OR THEIR RESPECTIVE DIRECTORS, OFFICERS, EMPLOYEES, AGENTS, LICENSEES, LICENSORS, CONTRIBUTORS, FOUNDERS OR ADVISORS, OR ANY OTHER PERSON WHO HAS BEEN INVOLVED IN THE CREATION OR PRODUCTION OF THE MONARCH TOOLS (EACH A “RELEASED PARTY” AND COLLECTIVELY, "RELEASED PARTIES") BE LIABLE FOR ANY CLAIMS, DEMANDS, LIABILITIES, COSTS, LOSSES, DAMAGES OR EXPENSES (INCLUDING WITHOUT LIMITATION LEGAL COSTS AND ATTORNEYS’ FEES) CAUSED TO OR SUFFERED BY ANY PERSONS OR ENTITIES (INCLUDING WITHOUT LIMITATION, YOU), THAT DIRECTLY OR INDIRECTLY ARISE OUT OF OR RESULT FROM THE USE OF, THE INABILITY TO USE, OR ERRORS, OMISSIONS, INTERRUPTIONS OR OTHER INACCURACIES IN, THE MONARCH TOOLS OR VIOLATION OF ANY RIGHTS OF ANY THIRD PARTY.  WITHOUT LIMITING THE FOREGOING, THE RELEASED PARTIES SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, PUNITIVE OR EXEMPLARY DAMAGES, OR ANY OTHER DAMAGES OF ANY KIND, INCLUDING WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS, LOSS OF DATA, LOST PROFITS OR BUSINESS INTERRUPTION, UNDER ANY CONTRACT, NEGLIGENCE, STRICT LIABILITY OR OTHER THEORY, EVEN IF A RELEASED PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.  THIS LIMITATION OF LIABILITY APPLIES TO THE FULLEST EXTENT POSSIBLE.
+       </bold>
+    </p>
+</div>
+
+<footer th:include="footer :: footer" class="navbar-default navbar-bottom"></footer>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js"
+        th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"
+        th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+
+</body>
+</html>

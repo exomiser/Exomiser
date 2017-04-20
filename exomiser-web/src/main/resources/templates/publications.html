@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~
+  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Affero General Public License as
+  ~  published by the Free Software Foundation, either version 3 of the
+  ~  License, or (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Affero General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Affero General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Exomiser</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/x-icon" href="../static/favicon.ico" th:href="@{../static/favicon.ico}"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+</head>
+<body>
+<!--<div class="masthead">-->
+<!--<img slogo.png.png" th:src=logo.png.png}"/>-->
+<!--</div>-->
+<nav class="navbar navbar-default">
+    <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <!--<a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">Exomiser</a>-->
+                    <a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">
+                        <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+                    </a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href="index.html" th:href="@{index}">Home</a></li>
+                        <li><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                        <li class="active"><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                        <li><a href="download.html" th:href="@{download}">Download</a></li>
+                        <li><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                        <li><a href="about.html" th:href="@{about}">About</a></li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+
+        <div class="container">
+            <p>
+                <b>A Whole-Genome Analysis Framework for Effective Identification of Pathogenic Regulatory Variants in
+                    Mendelian Disease.</b>
+                Smedley D, Schubach M, Jacobsen JOB, Köhler S, Zemojtel T, Spielmann M, Jäger M, Hochheiser H,
+                Washington
+                NL, McMurry JA, Haendel MA, Mungall CJ, Lewis SE, Groza T, Valentini G, Robinson PN,
+                <i>The American Journal of Human Genetics 2016;99;3;595-606</i><br/>
+                PMID:<a href="http://europepmc.org/abstract/MED/27569544">27569544</a> DOI:<a
+                    href="https://doi.org/10.1016/j.ajhg.2016.07.005">10.1016/j.ajhg.2016.07.005</a>
+            </p>
+            <p>
+                <b>Next-generation diagnostics and disease-gene discovery with the Exomiser.</b>
+                Smedley D, Jacobsen JO, Jäger M, Köhler S, Holtgrewe M et al.
+                <i>Nature protocols 2015;10;12;2004-15</i><br/>
+                PMID:<a href="http://europepmc.org/abstract/MED/26562621">26562621</a> DOI:<a
+                    href="https://doi.org/10.1038/nprot.2015.124">10.1038/nprot.2015.124</a>
+            </p>
+            <p>
+                <b>Computational evaluation of exome sequence data using human and model organism phenotypes improves
+                    diagnostic efficiency.</b>
+                Bone WP, Washington NL, Buske OJ, Adams DR, Davis J et al.
+                <i>Genetics in medicine : official journal of the American College of Medical Genetics 2015</i><br/>
+                PMID:<a href="http://europepmc.org/abstract/MED/26562225">26562225</a> DOI:<a
+                    href="https://doi.org/10.1038/gim.2015.137">10.1038/gim.2015.137</a>
+            </p>
+            <p>
+                <b>Walking the interactome for candidate prioritization in exome sequencing studies of Mendelian
+                    diseases.</b>
+                Smedley D, Köhler S, Czeschik JC, Amberger J, Bocchini C et al.
+                <i>Bioinformatics (Oxford, England) 2014;30;22;3215-22</i><br/>
+                PMID:<a href="http://europepmc.org/abstract/MED/25078397">25078397</a> DOI:<a
+                    href="https://doi.org/10.1093/bioinformatics/btu508">10.1093/bioinformatics/btu508</a>
+            </p>
+            <p>
+                <b>Effective diagnosis of genetic disease by computational phenotype analysis of the disease-associated
+                    genome.</b>
+                Zemojtel T, Köhler S, Mackenroth L, Jäger M, Hecht J et al.
+                <i>Science translational medicine 2014;6;252;252ra123</i><br/>
+                PMID:<a href="http://europepmc.org/abstract/MED/25186178">25186178</a> DOI:<a
+                    href="https://doi.org/10.1126/scitranslmed.3009262">10.1126/scitranslmed.3009262</a>
+            </p>
+            <p>
+                <b>Improved exome prioritization of disease genes through cross-species phenotype comparison.</b>
+                Robinson PN, Köhler S, Oellrich A, Sanger Mouse Genetics Project, Wang K et al.
+                <i>Genome research 2014;24;2;340-8</i><br/>
+                PMID:<a href="http://europepmc.org/abstract/MED/24162188">24162188</a> DOI:<a
+                    href="https://doi.org/10.1101/gr.160325.113">10.1101/gr.160325.113</a>
+            </p>
+        </div>
+
+        <footer th:include="footer :: footer" class="navbar-default navbar-fixed-bottom"></footer>
+
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+
+</body>
+</html>

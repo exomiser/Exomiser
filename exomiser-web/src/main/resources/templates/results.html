@@ -51,10 +51,12 @@ and open the template in the editor.
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="index" th:href="@{../exomiser}">Home</a></li>
-                    <li class="active"><a href="submit" th:href="@{submit}">Analyse</a></li>
-                    <li><a href="#publications">Publications</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="index.html" th:href="@{index}">Home</a></li>
+                    <li class="active"><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                    <li><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                    <li><a href="download.html" th:href="@{download}">Download</a></li>
+                    <li><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                    <li><a href="about.html" th:href="@{about}">About</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
@@ -276,30 +278,12 @@ and open the template in the editor.
                                 });
                             </script>-->
                 <div class="tab-pane fade" id="about">
-                    <p>
-                        The Exomizer is a Java program that functionally annotates variants from whole-exome 
-                        sequencing data starting from a VCF file (version 4). The functional annotation code is 
-                        based on <a href="https://github.com/charite/jannovar/">Jannovar</a> and uses 
-                        <a href="http://genome.ucsc.edu/">UCSC</a> KnownGene transcript definitions and 
-                        hg19 genomic coordinates
-                    </p>
-                    <p>
-                        Variants are prioritized according to user-defined criteria on variant frequency, pathogenicity, 
-                        quality, inheritance pattern, and model organism phenotype data. Predicted pathogenicity data 
-                        was extracted from the <a href="http://www.ncbi.nlm.nih.gov/pubmed/21520341">dbNSFP</a> resource.
-                    </p>
-                    <p>
-                        Developed by the Computational Biology and Bioinformatics group at the 
-                        <a href="http://genetik.charite.de/">Institute for Medical Genetics and Human Genetics</a> of the 
-                        <a href="http://www.charite.de">Charit&eacute; - Universit&auml;tsmedizin Berlin</a> and the Mouse 
-                        Informatics Group at the <a href="http://www.sanger.ac.uk/">Sanger Institute</a>.  
-                    </p>
-
-
                     <p>Problems, suggestions, or comments? Please <a href="mailto:peter.robinson@jax.org">let us know</a></p>
                 </div>
             </div>
         </div>
+
+        <footer th:include="footer :: footer" class="navbar-default navbar-bottom"></footer>
 
         <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~
+  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Affero General Public License as
+  ~  published by the Free Software Foundation, either version 3 of the
+  ~  License, or (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Affero General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Affero General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Exomiser</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/x-icon" href="../static/favicon.ico" th:href="@{../static/favicon.ico}"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+</head>
+<body>
+<!--<div class="masthead">-->
+<!--<img slogo.png.png" th:src=logo.png.png}"/>-->
+<!--</div>-->
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">Exomiser</a>-->
+            <a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">
+                <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+            </a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="index.html" th:href="@{index}">Home</a></li>
+                <li><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                <li><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                <li class="active"><a href="download.html" th:href="@{download}">Download</a></li>
+                <li><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                <li><a href="about.html" th:href="@{about}">About</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+    <p>
+        Links to the executable binaries and data required to run the exomiser offline can be found below. For instructions on how to setup and run the application see the README file and refer to the online <a href="http://exomiser.github.io/Exomiser"> manual</a>.
+    </p>
+    <embed type="text/html" src="https://data.monarchinitiative.org/exomiser/" width="100%" height="250"></embed>
+
+</div>
+
+<footer th:include="footer :: footer" class="navbar-default navbar-fixed-bottom"></footer>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js"
+        th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"
+        th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+
+</body>
+</html>

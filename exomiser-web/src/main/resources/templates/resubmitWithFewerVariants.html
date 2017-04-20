@@ -52,10 +52,12 @@ and open the template in the editor.
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="index" th:href="@{../exomiser}">Home</a></li>
-                    <li class="active"><a href="submit" th:href="@{submit}">Analyse</a></li>
-                    <li><a href="#publications">Publications</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="index.html" th:href="@{index}">Home</a></li>
+                    <li class="active"><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                    <li><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                    <li><a href="download.html" th:href="@{download}">Download</a></li>
+                    <li><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                    <li><a href="about.html" th:href="@{about}">About</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
@@ -69,6 +71,9 @@ and open the template in the editor.
             <a href="https://data.monarchinitiative.org/exomiser/" class="alert-link">download
                 from the FTP site</a>.
         </div>
+
+    <footer th:include="footer :: footer" class="navbar-default navbar-fixed-bottom"></footer>
+
     <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
 

@@ -1,0 +1,71 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Exomiser</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/x-icon" href="../static/favicon.ico" th:href="@{../static/favicon.ico}"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/exomiser" th:href="@{../exomiser}">
+                <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+            </a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="index.html" th:href="@{index}">Home</a></li>
+                <li><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                <li><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                <li><a href="download.html" th:href="@{download}">Download</a></li>
+                <li><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                <li class="active"><a href="about.html" th:href="@{about}">About</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+        <h4>Who we are</h4>
+        <p>
+            The Monarch Initiative is a collaboration between Oregon Health &amp; Science University,
+            The Jackson Laboratory, Lawrence Berkeley National Laboratory, the University of
+            Pittsburgh, Sanger Institute, Charité - Universitätsmedizin Berlin, Garvan Institute of Medical Research,
+            and William Harvey Research Institute, Barts &amp; The London School of Medicine &amp; Dentistry,
+            Queen Mary University of London.
+        </p>
+    </div>
+
+    <div class="container">
+        <h4>Source Data</h4>
+    <p>
+        We are grateful to the many <a href="https://monarchinitiative.org/about/sources">original
+        sources of our data</a> for allowing Monarch to integrate them in this way.
+    </p>
+    </div>
+
+    <div class="container">
+        <h4>Funding</h4>
+        Monarch is supported generously by a NIH Office of the Director Grant #5R24OD011883,
+        as well as by NIH-UDP: HHSN268201300036C, HHSN268201400093P, NCI/Leidos #15X143.<br/>
+    </div>
+
+    <footer th:include="footer :: footer" class="navbar-default navbar-fixed-bottom"></footer>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+
+</body>
+
+</html>
