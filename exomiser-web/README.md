@@ -42,3 +42,16 @@ Launch the application by intoning the incantation thus:
  ```
    http://localhost:8080/exomiser/submit
  ```
+
+The submission page now contains a warning, shown by default, alerting users not to input sensitive clinical data. 
+If the instance *is* running in a clinically-compliant setting, the banner can be removed by setting the field 
+```exomiser.web.clinical-instance``` to ```true``` in the application.properties file:
+
+```properties
+exomiser.web.clinical-instance=true
+```
+or override this by launching the application using the command-line option
+
+```shell
+--exomiser.web.clinical-instance=true
+```
