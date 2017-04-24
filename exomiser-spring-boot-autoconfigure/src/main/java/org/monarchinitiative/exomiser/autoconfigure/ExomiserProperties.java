@@ -40,6 +40,8 @@ public class ExomiserProperties {
     private String caddInDelPath = "";
     private String remmPath = "";
 
+    private String localFrequencyPath = "";
+
     //http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html
 //    private CacheType cache = CacheType.NONE;
 
@@ -108,6 +110,14 @@ public class ExomiserProperties {
 
     public void setRemmPath(String remmPath) {
         this.remmPath = remmPath;
+    }
+
+    public String getLocalFrequencyPath() {
+        return localFrequencyPath;
+    }
+
+    public void setLocalFrequencyPath(String localFrequencyPath) {
+        this.localFrequencyPath = localFrequencyPath;
     }
 
     public String getCache() {

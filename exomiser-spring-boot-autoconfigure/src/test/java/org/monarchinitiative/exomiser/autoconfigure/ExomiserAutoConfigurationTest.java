@@ -169,6 +169,21 @@ public class ExomiserAutoConfigurationTest {
     }
 
     @Test
+    public void loadLocalFrequencyTabixFromPlaceholderWhenNotDefined() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        TabixReader tabixReader = (TabixReader) context.getBean("localFrequencyTabixReader");
+        assertThat(tabixReader.getSource(), equalTo(TEST_DATA.resolve("placeholder.tsv.gz").toString()));
+    }
+
+    @Test
+    public void loadLocalFrequencyTabixFileFromFullPathWhenDefined() {
+        String testTabixFilePath = TEST_DATA.resolve("placeholder.tsv.gz").toAbsolutePath().toString();
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.local-frequency-path=" + testTabixFilePath);
+        TabixReader tabixReader = (TabixReader) context.getBean("localFrequencyTabixReader");
+        assertThat(tabixReader.getSource(), equalTo(testTabixFilePath));
+    }
+
+    @Test
     public void phenixDirectoryDefaultNameIsDefinedRelativeToDataPath() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
         Path phenixDataDirectory = (Path) this.context.getBean("phenixDataDirectory");

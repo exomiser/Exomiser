@@ -171,6 +171,19 @@ public class ExomiserAutoConfiguration {
         return getTabixReaderOrDefaultForProperty(properties.getRemmPath());
     }
 
+    /**
+     * Optional full system path to local frequency .tsv.gz and .tsv.gz.tbi file pair.
+     * <p>
+     * Default is empty and will return no data.
+     *
+     * @return
+     */
+    @Lazy
+    @Bean
+    public TabixReader localFrequencyTabixReader() {
+        return getTabixReaderOrDefaultForProperty(properties.getLocalFrequencyPath());
+    }
+
     private TabixReader getTabixReaderOrDefaultForProperty(String pathToTabixGzFile) {
         String tabixGzPathValue = pathToTabixGzFile;
         if (tabixGzPathValue.isEmpty()) {
