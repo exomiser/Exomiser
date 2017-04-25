@@ -60,4 +60,10 @@ public class ExomiserStubDataConfig {
         return Mockito.mock(TabixReader.class);
     }
 
+    @Bean
+    public TabixReader localFrequencyTabixReader() {
+        logger.info("Mocking localFrequencyTabixReader");
+        return Mockito.mock(TabixReader.class);
+    }
+
 }
