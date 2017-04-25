@@ -28,6 +28,7 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -52,8 +53,10 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImpl.class);
 
-    @Autowired
-    private FrequencyDao frequencyDao;
+    @Resource(name = "defaultFrequencyDao")
+    private FrequencyDao defaultFrequencyDao;
+    @Resource(name = "localFrequencyDao")
+    private FrequencyDao localFrequencyDao;
     @Autowired
     private PathogenicityDao pathogenicityDao;
     @Resource(name = "caddDao")
@@ -67,18 +70,26 @@ public class VariantDataServiceImpl implements VariantDataService {
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
-        FrequencyData allFrequencyData = frequencyDao.getFrequencyData(variant);
-        return frequencyDataFromSpecifiedSources(allFrequencyData, frequencySources);
+        List<Frequency> allFrequencies = new ArrayList<>();
+        FrequencyData allFrequencyData = defaultFrequencyDao.getFrequencyData(variant);
+        allFrequencies.addAll(allFrequencyData.getKnownFrequencies());
+
+        if (frequencySources.contains(FrequencySource.LOCAL)) {
+            FrequencyData localFrequencyData = localFrequencyDao.getFrequencyData(variant);
+            allFrequencies.addAll(localFrequencyData.getKnownFrequencies());
+        }
+
+        return frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencies, frequencySources);
     }
 
-    protected FrequencyData frequencyDataFromSpecifiedSources(FrequencyData allFrequencyData, Set<FrequencySource> frequencySources) {
-        Set<Frequency> wanted = allFrequencyData.getKnownFrequencies().stream()
+    FrequencyData frequencyDataFromSpecifiedSources(RsId rsid, List<Frequency> allFrequencies, Set<FrequencySource> frequencySources) {
+        Set<Frequency> wanted = allFrequencies.stream()
                 .filter(frequency -> frequencySources.contains(frequency.getSource()))
                 .collect(toSet());
-        if (allFrequencyData.getRsId() == null && wanted.isEmpty()) {
+        if (rsid == null && wanted.isEmpty()) {
             return FrequencyData.EMPTY_DATA;
         }
-        return new FrequencyData(allFrequencyData.getRsId(), wanted);
+        return new FrequencyData(rsid, wanted);
     }
 
     @Override
