@@ -141,7 +141,15 @@ public class ExomiserAutoConfiguration {
     @Lazy
     @Bean
     public TabixReader inDelTabixReader() {
-        return getTabixReaderOrDefaultForProperty(properties.getCaddInDelPath());
+        String caddInDelPath = properties.getCaddInDelPath();
+        logTabixPathIfNotEmpty("Reading CADD InDel file from:", caddInDelPath);
+        return getTabixReaderOrDefaultForProperty(caddInDelPath);
+    }
+
+    private void logTabixPathIfNotEmpty(String prefixMessage, String tabixPath) {
+        if(!tabixPath.isEmpty()){
+            logger.info("{} {}", prefixMessage, tabixPath);
+        }
     }
 
     /**
@@ -155,7 +163,9 @@ public class ExomiserAutoConfiguration {
     @Lazy
     @Bean
     public TabixReader snvTabixReader() {
-        return getTabixReaderOrDefaultForProperty(properties.getCaddSnvPath());
+        String caddSnvPath = properties.getCaddSnvPath();
+        logTabixPathIfNotEmpty("Reading CADD snv file from:", caddSnvPath);
+        return getTabixReaderOrDefaultForProperty(caddSnvPath);
     }
 
     /**
@@ -168,7 +178,24 @@ public class ExomiserAutoConfiguration {
     @Lazy
     @Bean
     public TabixReader remmTabixReader() {
-        return getTabixReaderOrDefaultForProperty(properties.getRemmPath());
+        String remmPath = properties.getRemmPath();
+        logTabixPathIfNotEmpty("Reading REMM data file from:", remmPath);
+        return getTabixReaderOrDefaultForProperty(remmPath);
+    }
+
+    /**
+     * Optional full system path to local frequency .tsv.gz and .tsv.gz.tbi file pair.
+     * <p>
+     * Default is empty and will return no data.
+     *
+     * @return
+     */
+    @Lazy
+    @Bean
+    public TabixReader localFrequencyTabixReader() {
+        String localFrequencyPath = properties.getLocalFrequencyPath();
+        logTabixPathIfNotEmpty("Reading local frequency file from:", localFrequencyPath);
+        return getTabixReaderOrDefaultForProperty(localFrequencyPath);
     }
 
     private TabixReader getTabixReaderOrDefaultForProperty(String pathToTabixGzFile) {

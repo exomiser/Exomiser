@@ -32,6 +32,9 @@ public class ExomiserStubDataConfigTest {
     @Autowired
     private TabixReader remmTabixReader;
 
+    @Autowired
+    private TabixReader localFrequencyTabixReader;
+
     @Test
     public void testJannovarData() {
         assertThat(jannovarData.getChromosomes().size(), equalTo(25));
@@ -50,5 +53,10 @@ public class ExomiserStubDataConfigTest {
     @Test
     public void testRemmTabixReader() {
         assertThat(remmTabixReader, instanceOf(TabixReader.class));
+    }
+
+    @Test
+    public void testLocalFrequencyTabixReader() {
+        assertThat(localFrequencyTabixReader, instanceOf(TabixReader.class));
     }
 }

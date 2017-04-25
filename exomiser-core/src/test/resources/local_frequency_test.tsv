@@ -1,0 +1,8 @@
+##Test file for local frequency data.
+##Chromosome names: 1-22, X, Y, M
+##Positions should be 1-based.
+##REF/ALT deletions should have a '.' character in their place.
+##Frequency column should be a percentage value i.e. range 0.0 - 100.0
+##Multiple alternative alleles should be split so that each occurs on its own line.
+#CHR	POS	REF	ALT	FREQ(%)
+10	123256215	T	G	0.001

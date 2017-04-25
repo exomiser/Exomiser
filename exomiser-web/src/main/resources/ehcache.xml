@@ -13,6 +13,9 @@
     <!--Frequency cache-->
     <cache name="frequency" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 
+    <!--local frequencies -->
+    <cache name="local" eternal="true" maxEntriesLocalHeap="50000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
+
     <!--disease HP terms -->
     <cache name="diseaseHp" eternal="true" maxEntriesLocalHeap="500000" transactionalMode="off" memoryStoreEvictionPolicy="LFU"></cache>
 

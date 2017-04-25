@@ -106,7 +106,7 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.EMPTY_DATA);
-        return frequencyDataFromSpecifiedSources(allFrequencyData, frequencySources);
+        return frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencyData.getKnownFrequencies(), frequencySources);
     }
 
     @Override
