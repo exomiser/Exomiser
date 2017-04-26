@@ -24,6 +24,8 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -33,12 +35,14 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -49,10 +53,33 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(TsvGeneResultsWriter.class);
 
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.TSV_GENE;
-    private static final String HEADER_LINE = "#GENE_SYMBOL	ENTREZ_GENE_ID\t"
-            + "EXOMISER_GENE_PHENO_SCORE\tEXOMISER_GENE_VARIANT_SCORE\tEXOMISER_GENE_COMBINED_SCORE\t"
-            + "HUMAN_PHENO_SCORE\tMOUSE_PHENO_SCORE\tFISH_PHENO_SCORE\tWALKER_SCORE\t"
-            + "PHIVE_ALL_SPECIES_SCORE\tOMIM_SCORE\tMATCHES_CANDIDATE_GENE\tHUMAN_PHENO_EVIDENCE\tMOUSE_PHENO_EVIDENCE\tFISH_PHENO_EVIDENCE\tHUMAN_PPI_EVIDENCE\tMOUSE_PPI_EVIDENCE\tFISH_PPI_EVIDENCE\n";
+
+    private final CSVFormat format = CSVFormat
+            .newFormat('\t')
+            .withQuote(null)
+            .withRecordSeparator("\n")
+            .withIgnoreSurroundingSpaces(true)
+            .withHeader("#GENE_SYMBOL",
+                    "ENTREZ_GENE_ID",
+                    "EXOMISER_GENE_PHENO_SCORE",
+                    "EXOMISER_GENE_VARIANT_SCORE",
+                    "EXOMISER_GENE_COMBINED_SCORE",
+                    "HUMAN_PHENO_SCORE",
+                    "MOUSE_PHENO_SCORE",
+                    "FISH_PHENO_SCORE",
+                    "WALKER_SCORE",
+                    "PHIVE_ALL_SPECIES_SCORE",
+                    "OMIM_SCORE",
+                    "MATCHES_CANDIDATE_GENE",
+                    "HUMAN_PHENO_EVIDENCE",
+                    "MOUSE_PHENO_EVIDENCE",
+                    "FISH_PHENO_EVIDENCE",
+                    "HUMAN_PPI_EVIDENCE",
+                    "MOUSE_PPI_EVIDENCE",
+                    "FISH_PPI_EVIDENCE"
+            );
+
+    private final DecimalFormat decimalFormat = new DecimalFormat("0.0000");
 
     public TsvGeneResultsWriter() {
         Locale.setDefault(Locale.UK);
@@ -62,9 +89,8 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
-
-        try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-            writer.write(writeString(analysis, analysisResults, settings));
+        try (CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8), format)) {
+            writeData(analysisResults, printer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -75,24 +101,24 @@ public class TsvGeneResultsWriter implements ResultsWriter {
     @Override
     public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(HEADER_LINE);
-
-        for (Gene gene : analysisResults.getGenes()) {
-            if (gene.passedFilters()) {
-                stringBuilder.append(makeGeneLine(gene));
-            }
+        try (CSVPrinter printer = new CSVPrinter(stringBuilder, format)) {
+            writeData(analysisResults, printer);
+        } catch (IOException ex) {
+            logger.error("Unable to write results to string {}.", stringBuilder, ex);
         }
         return stringBuilder.toString();
     }
 
-    /**
-     * Writes out the gene data in a tab delimited string ending in a newline
-     * character.
-     *
-     * @param gene
-     * @return
-     */
-    protected String makeGeneLine(Gene gene) {
+    private void writeData(AnalysisResults analysisResults, CSVPrinter printer) throws IOException {
+        for (Gene gene : analysisResults.getGenes()) {
+            if (gene.passedFilters()) {
+                List<String> geneRecord = makeGeneRecord(gene);
+                printer.printRecord(geneRecord);
+            }
+        }
+    }
+
+    private List<String> makeGeneRecord(Gene gene) {
         double humanPhenScore = 0;
         double mousePhenScore = 0;
         double fishPhenScore = 0;
@@ -123,21 +149,23 @@ public class TsvGeneResultsWriter implements ResultsWriter {
                 walkerScore = prioritiserResult.getScore();
             }
         }
+        ArrayList<String> values = new ArrayList<>(13);
 
-        return String.format("%s\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%d\t%s\n",
-                gene.getGeneSymbol(),
-                gene.getEntrezGeneID(),
-                gene.getPriorityScore(),
-                gene.getVariantScore(),
-                gene.getCombinedScore(),
-                humanPhenScore,
-                mousePhenScore,
-                fishPhenScore,
-                walkerScore,
-                phiveAllSpeciesScore,
-                omimScore,
-                matchesCandidateGene,
-                phenoEvidence);
+        values.add(gene.getGeneSymbol());
+        values.add(Integer.toString(gene.getEntrezGeneID()));
+        values.add(decimalFormat.format(gene.getPriorityScore()));
+        values.add(decimalFormat.format(gene.getVariantScore()));
+        values.add(decimalFormat.format(gene.getCombinedScore()));
+        values.add(decimalFormat.format(humanPhenScore));
+        values.add(decimalFormat.format(mousePhenScore));
+        values.add(decimalFormat.format(fishPhenScore));
+        values.add(decimalFormat.format(walkerScore));
+        values.add(decimalFormat.format(phiveAllSpeciesScore));
+        values.add(decimalFormat.format(omimScore));
+        values.add(Integer.toString(matchesCandidateGene));
+        values.add(phenoEvidence);
+
+        return values;
     }
 
 }
