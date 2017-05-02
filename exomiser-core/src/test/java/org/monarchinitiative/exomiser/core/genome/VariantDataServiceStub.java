@@ -44,7 +44,7 @@ public class VariantDataServiceStub implements VariantDataService {
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
-        return new FrequencyData(null, Collections.emptySet());
+        return FrequencyData.empty();
     }
 
     @Override

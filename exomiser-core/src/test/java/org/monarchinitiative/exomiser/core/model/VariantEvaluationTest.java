@@ -170,19 +170,19 @@ public class VariantEvaluationTest {
     @Test
     public void testThatTheConstructorCreatesAnEmptyFrequencyDataObject() {
         FrequencyData frequencyData = instance.getFrequencyData();
-        assertThat(frequencyData, equalTo(FrequencyData.EMPTY_DATA));
+        assertThat(frequencyData, equalTo(FrequencyData.empty()));
     }
     
     @Test
     public void testThatTheBuilderCanSetAFrequencyDataObject() {
-        FrequencyData frequencyData = new FrequencyData(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
         instance = testVariantBuilder().frequencyData(frequencyData).build();
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
 
     @Test
     public void testCanSetFrequencyDataAfterConstruction() {
-        FrequencyData frequencyData = new FrequencyData(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
         instance.setFrequencyData(frequencyData);
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
@@ -324,7 +324,7 @@ public class VariantEvaluationTest {
     @Test
     public void testGetVariantScoreWithEmptyFreqAndPathData() {
         instance = testVariantBuilder()
-                .frequencyData(FrequencyData.EMPTY_DATA)
+                .frequencyData(FrequencyData.empty())
                 .pathogenicityData(PathogenicityData.empty())
                 .build();
         assertThat(instance.getVariantScore(), equalTo(0f));
@@ -334,7 +334,7 @@ public class VariantEvaluationTest {
     public void testVariantScoreIsIndependentOfFilterStatus() {
         instance = testVariantBuilder()
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .frequencyData(FrequencyData.EMPTY_DATA)
+                .frequencyData(FrequencyData.empty())
                 //PolyPhen of 1 is predicted as highly pathogenic
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)))
                 .build();
@@ -601,7 +601,7 @@ public class VariantEvaluationTest {
         zero.setAsContributingToGeneScore();
         VariantEvaluation one = new VariantEvaluation.Builder(2, 1, "C", "T")
                 .variantEffect(VariantEffect.STOP_GAINED)
-                .frequencyData(new FrequencyData(null, Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
+                .frequencyData(FrequencyData.of(null, Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
         one.setAsContributingToGeneScore();

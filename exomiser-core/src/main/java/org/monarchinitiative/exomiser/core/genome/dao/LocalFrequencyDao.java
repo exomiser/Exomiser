@@ -71,12 +71,12 @@ public class LocalFrequencyDao implements FrequencyDao {
         } catch (IOException e) {
             logger.error("Unable to read from local frequency tabix file {}", tabixReader.getSource(), e);
         }
-        return FrequencyData.EMPTY_DATA;
+        return FrequencyData.empty();
     }
 
     private FrequencyData parseLocalFrequency(String frequencyInPercentField) {
         float value = Float.parseFloat(frequencyInPercentField);
         Frequency localFreq = Frequency.valueOf(value, FrequencySource.LOCAL);
-        return new FrequencyData(null, localFreq);
+        return FrequencyData.of(null, localFreq);
     }
 }

@@ -23,6 +23,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -95,7 +96,14 @@ public class PathogenicityDataTest {
         PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
         assertThat(mostPathogenicScore, equalTo(POLYPHEN_FAIL));
     }
-    
+
+    @Test
+    public void testConstructorWithCollection_ReturnsMostPathogenicScore() {
+        PathogenicityData instance = PathogenicityData.of(Arrays.asList(POLYPHEN_FAIL, SIFT_PASS));
+        PathogenicityScore mostPathogenicScore = instance.getMostPathogenicScore();
+        assertThat(mostPathogenicScore, equalTo(SIFT_PASS));
+    }
+
     @Test
     public void testGetMostPathogenicScore_ReturnsMostPathogenicScore() {
         PathogenicityData instance = PathogenicityData.of(POLYPHEN_FAIL, SIFT_PASS);

@@ -30,7 +30,6 @@ import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,7 +48,7 @@ public class FrequencyDataProviderTest {
     private VariantDataServiceMock variantDataService;
 
     private VariantEvaluation variant;
-    private final FrequencyData defaultFrequencyData = new FrequencyData(null, new HashSet<>());
+    private final FrequencyData defaultFrequencyData = FrequencyData.empty();
 
     @Before
     public void setUp() {
@@ -79,7 +78,7 @@ public class FrequencyDataProviderTest {
 
     @Test
     public void testProvidesFrequencyDataForVariantWhenRun() {
-        FrequencyData expectedData = new FrequencyData(RsId.valueOf(123456), Frequency.valueOf(1.0f, ESP_ALL));
+        FrequencyData expectedData = FrequencyData.of(RsId.valueOf(123456), Frequency.valueOf(1.0f, ESP_ALL));
         variantDataService.put(variant, expectedData);
        
         instance = new FrequencyDataProvider(variantDataService, EnumSet.allOf(FrequencySource.class), new KnownVariantFilter());
@@ -107,21 +106,22 @@ public class FrequencyDataProviderTest {
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(ESP_ALL), decoratedFilter);
         instance.runFilter(variant);
 
-        assertThat(variant.getFrequencyData(), equalTo(new FrequencyData(null, new HashSet<>())));
+        assertThat(variant.getFrequencyData(), equalTo(FrequencyData.empty()));
     }
 
     @Test
     public void testFrequencyDataOnlyContainsSpecifiedSources_OneSourceSpecifiedAllDataSourcesInDatabase() {
 
         Frequency espAll = Frequency.valueOf(0.01f, ESP_ALL);
-        FrequencyData variantFrequencyData = new FrequencyData(RsId.valueOf(123456), espAll, Frequency.valueOf(0.234f, EXAC_AFRICAN_INC_AFRICAN_AMERICAN), Frequency.valueOf(0.02f, EXAC_FINNISH));
+        FrequencyData variantFrequencyData = FrequencyData.of(RsId.valueOf(123456), espAll, Frequency.valueOf(0.234f, EXAC_AFRICAN_INC_AFRICAN_AMERICAN), Frequency
+                .valueOf(0.02f, EXAC_FINNISH));
         
         variantDataService.put(variant, variantFrequencyData);
 
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.getSource()), new KnownVariantFilter());
         instance.runFilter(variant);
 
-        assertThat(variant.getFrequencyData(), equalTo(new FrequencyData(RsId.valueOf(123456), espAll)));
+        assertThat(variant.getFrequencyData(), equalTo(FrequencyData.of(RsId.valueOf(123456), espAll)));
     }
     
     @Test
@@ -129,14 +129,14 @@ public class FrequencyDataProviderTest {
 
         Frequency espAll = Frequency.valueOf(0.01f, ESP_ALL);
         Frequency exacAfr = Frequency.valueOf(0.234f, EXAC_AFRICAN_INC_AFRICAN_AMERICAN);
-        FrequencyData variantFrequencyData = new FrequencyData(RsId.valueOf(123456), espAll, exacAfr, Frequency.valueOf(0.02f, EXAC_FINNISH));
+        FrequencyData variantFrequencyData = FrequencyData.of(RsId.valueOf(123456), espAll, exacAfr, Frequency.valueOf(0.02f, EXAC_FINNISH));
 
         variantDataService.put(variant, variantFrequencyData);
 
         instance = new FrequencyDataProvider(variantDataService, EnumSet.of(espAll.getSource(), exacAfr.getSource()), new KnownVariantFilter());
         instance.runFilter(variant);
 
-        assertThat(variant.getFrequencyData(), equalTo(new FrequencyData(RsId.valueOf(123456), espAll, exacAfr)));
+        assertThat(variant.getFrequencyData(), equalTo(FrequencyData.of(RsId.valueOf(123456), espAll, exacAfr)));
     }
     
     @Test

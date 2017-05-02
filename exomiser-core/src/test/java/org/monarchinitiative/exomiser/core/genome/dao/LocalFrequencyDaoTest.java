@@ -47,7 +47,7 @@ public class LocalFrequencyDaoTest {
     }
 
     private FrequencyData localFrequencyData(float freq) {
-        return new FrequencyData(null, Frequency.valueOf(freq, FrequencySource.LOCAL));
+        return FrequencyData.of(null, Frequency.valueOf(freq, FrequencySource.LOCAL));
     }
 
     //Local frequency file defined as tab-delimited lines in 'VCF-lite' format:
@@ -63,7 +63,7 @@ public class LocalFrequencyDaoTest {
         Mockito.when(tabixReader.query("1:12345-12345"))
                 .thenReturn(new MockTabixIterator(Collections.emptyList()));
 
-        assertThat(instance.getFrequencyData(variant(1, 12345, "A", "T")), equalTo(FrequencyData.EMPTY_DATA));
+        assertThat(instance.getFrequencyData(variant(1, 12345, "A", "T")), equalTo(FrequencyData.empty()));
     }
 
     @Test

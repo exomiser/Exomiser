@@ -31,21 +31,29 @@ import java.util.*;
  */
 public class FrequencyData {
 
-    public static final FrequencyData EMPTY_DATA = new FrequencyData();
+    private static final FrequencyData EMPTY_DATA = new FrequencyData(null, Collections.emptyList());
 
     private final RsId rsId;
     private final Map<FrequencySource, Frequency> knownFrequencies;
 
-    private FrequencyData() {
-        this.rsId = null;
-        this.knownFrequencies = Collections.emptyMap();
+
+    public static FrequencyData of(RsId rsId, Collection<Frequency> frequencies) {
+        return new FrequencyData(rsId, frequencies);
     }
 
-    public FrequencyData(RsId rsId, Frequency... frequency) {
-        this(rsId, new HashSet<>(Arrays.asList(frequency)));
-    } 
+    public static FrequencyData of(RsId rsId, Frequency frequency) {
+        return new FrequencyData(rsId, Collections.singletonList(frequency));
+    }
 
-    public FrequencyData(RsId rsId, Collection<Frequency> frequencies) {
+    public static FrequencyData of(RsId rsId, Frequency... frequency) {
+        return new FrequencyData(rsId, Arrays.asList(frequency));
+    }
+
+    public static FrequencyData empty() {
+        return EMPTY_DATA;
+    }
+
+    private FrequencyData(RsId rsId, Collection<Frequency> frequencies) {
         this.rsId = rsId;
         knownFrequencies = new EnumMap<>(FrequencySource.class);
         for (Frequency frequency : frequencies) {

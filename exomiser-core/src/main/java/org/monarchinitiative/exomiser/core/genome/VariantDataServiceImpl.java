@@ -87,9 +87,9 @@ public class VariantDataServiceImpl implements VariantDataService {
                 .filter(frequency -> frequencySources.contains(frequency.getSource()))
                 .collect(toSet());
         if (rsid == null && wanted.isEmpty()) {
-            return FrequencyData.EMPTY_DATA;
+            return FrequencyData.empty();
         }
-        return new FrequencyData(rsid, wanted);
+        return FrequencyData.of(rsid, wanted);
     }
 
     @Override

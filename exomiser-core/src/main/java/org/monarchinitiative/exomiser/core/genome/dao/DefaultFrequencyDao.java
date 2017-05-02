@@ -97,7 +97,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
         } catch (SQLException e) {
             logger.error("Error executing frequency query: ", e);
         }
-        return FrequencyData.EMPTY_DATA;
+        return FrequencyData.empty();
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
@@ -141,9 +141,9 @@ public class DefaultFrequencyDao implements FrequencyDao {
 
     private FrequencyData makeFrequencyData(RsId rsId, Set<Frequency> frequencies) {
         if (rsId == null && frequencies.isEmpty()) {
-            return FrequencyData.EMPTY_DATA;
+            return FrequencyData.empty();
         }
-        return new FrequencyData(rsId, frequencies);
+        return FrequencyData.of(rsId, frequencies);
     }
 
     private RsId makeRsId(ResultSet rs) throws SQLException {
