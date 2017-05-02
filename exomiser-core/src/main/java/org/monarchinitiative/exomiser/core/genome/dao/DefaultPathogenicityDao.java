@@ -63,7 +63,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         //the database as we're going to assign it a constant pathogenicity score.
         VariantEffect variantEffect = variant.getVariantEffect();
         if (variantEffect != VariantEffect.MISSENSE_VARIANT) {
-            return PathogenicityData.EMPTY_DATA;
+            return PathogenicityData.empty();
         }
 
         try (
@@ -76,7 +76,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         } catch (SQLException e) {
             logger.error("Error executing pathogenicity query: ", e);
         }
-        return PathogenicityData.EMPTY_DATA;
+        return PathogenicityData.empty();
     }
 
     private PreparedStatement createPreparedStatement(Connection connection, Variant variant) throws SQLException {
@@ -128,9 +128,9 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
     private PathogenicityData makePathogenicityData(SiftScore siftScore, PolyPhenScore polyPhenScore, MutationTasterScore mutationTasterScore) {
         if (siftScore == null && polyPhenScore == null && mutationTasterScore == null) {
-            return PathogenicityData.EMPTY_DATA;
+            return PathogenicityData.empty();
         }
-        return new PathogenicityData(polyPhenScore, mutationTasterScore, siftScore);
+        return PathogenicityData.of(polyPhenScore, mutationTasterScore, siftScore);
     }
 
     private SiftScore getBestSiftScore(ResultSet rs, SiftScore score) throws SQLException {

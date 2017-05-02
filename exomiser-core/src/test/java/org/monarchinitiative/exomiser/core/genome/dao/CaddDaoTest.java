@@ -101,7 +101,7 @@ public class CaddDaoTest {
     @Test
     public void testGetPathogenicityData_unableToReadFromSnvSource() {
         Mockito.when(snvTabixReader.query("1:2-2")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(1, 2, "A", "T")), equalTo(new PathogenicityData()));
+        assertThat(instance.getPathogenicityData(variant(1, 2, "A", "T")), equalTo(PathogenicityData.empty()));
     }
     
     @Test
@@ -121,7 +121,7 @@ public class CaddDaoTest {
     @Test
     public void testGetPathogenicityData_unableToReadFromInDelSource() {
         Mockito.when(indelTabixReader.query("1:2-2")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(1, 2, "-", "A")), equalTo(new PathogenicityData()));
+        assertThat(instance.getPathogenicityData(variant(1, 2, "-", "A")), equalTo(PathogenicityData.empty()));
     }
     
     @Test

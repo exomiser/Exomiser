@@ -33,7 +33,7 @@ public class PathogenicityDataProvider extends AbstractFilterDataProvider {
 
     @Override
     public void provideVariantData(VariantEvaluation variantEvaluation) {
-        if (variantEvaluation.getPathogenicityData().getPredictedPathogenicityScores().isEmpty()) {
+        if (variantEvaluation.getPathogenicityData().isEmpty()) {
             PathogenicityData pathData = variantDataService.getVariantPathogenicityData(variantEvaluation, pathogenicitySources);
             variantEvaluation.setPathogenicityData(pathData);
         }

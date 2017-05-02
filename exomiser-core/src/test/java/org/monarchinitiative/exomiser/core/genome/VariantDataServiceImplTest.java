@@ -73,9 +73,10 @@ public class VariantDataServiceImplTest {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
-    private static final PathogenicityData PATH_DATA = new PathogenicityData(PolyPhenScore.valueOf(1), MutationTasterScore.valueOf(1), SiftScore.valueOf(0));
+    private static final PathogenicityData PATH_DATA = PathogenicityData.of(PolyPhenScore.valueOf(1), MutationTasterScore
+            .valueOf(1), SiftScore.valueOf(0));
     private static final FrequencyData FREQ_DATA = new FrequencyData(RsId.valueOf(1234567), Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
-    private static final PathogenicityData CADD_DATA = new PathogenicityData(CaddScore.valueOf(1));
+    private static final PathogenicityData CADD_DATA = PathogenicityData.of(CaddScore.valueOf(1));
     private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
     private VariantEvaluation variant;
@@ -113,14 +114,14 @@ public class VariantDataServiceImplTest {
     @Test
     public void serviceReturnsEmptyPathogenicityDataForVariantWhenNoSourcesAreDefined() {
         PathogenicityData result = instance.getVariantPathogenicityData(variant, Collections.emptySet());
-        assertThat(result, equalTo(new PathogenicityData()));
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.POLYPHEN));
-        assertThat(result, equalTo(new PathogenicityData(PolyPhenScore.valueOf(1f))));
+        assertThat(result, equalTo(PathogenicityData.of(PolyPhenScore.valueOf(1f))));
     }
 
     @Test
@@ -134,14 +135,14 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsCaddAndStandardMissenseDescriptorDataForMissenseVariant() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.POLYPHEN));
-        
-        assertThat(result, equalTo(new PathogenicityData(PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
+
+        assertThat(result, equalTo(PathogenicityData.of(PolyPhenScore.valueOf(1f), CaddScore.valueOf(1f))));
     }
     
     @Test
     public void serviceReturnsSpecifiedPathogenicityDataForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = new PathogenicityData(RemmScore.valueOf(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(RemmScore.valueOf(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));
@@ -151,15 +152,15 @@ public class VariantDataServiceImplTest {
     public void serviceReturnsSpecifiedPathogenicityDataForNonCodingNonRegulatoryVariant() {
         variant = buildVariantOfType(VariantEffect.SPLICE_REGION_VARIANT);
         //Test that the REMM DAO is only called whe the variant type is of the type REMM is trained against.
-        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(new PathogenicityData(RemmScore.valueOf(1f)));
+        Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(PathogenicityData.of(RemmScore.valueOf(1f)));
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.REMM));
-        assertThat(result, equalTo(new PathogenicityData()));
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
     
     @Test
     public void serviceReturnsCaddAndNonCodingScoreForKnownNonCodingVariant() {
         variant = buildVariantOfType(VariantEffect.REGULATORY_REGION_VARIANT);
-        PathogenicityData expectedNcdsData = new PathogenicityData(CaddScore.valueOf(1f), RemmScore.valueOf(1f));
+        PathogenicityData expectedNcdsData = PathogenicityData.of(CaddScore.valueOf(1f), RemmScore.valueOf(1f));
         Mockito.when(mockRemmDao.getPathogenicityData(variant)).thenReturn(expectedNcdsData);
         PathogenicityData result = instance.getVariantPathogenicityData(variant, EnumSet.of(PathogenicitySource.CADD, PathogenicitySource.REMM));
         assertThat(result, equalTo(expectedNcdsData));

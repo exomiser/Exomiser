@@ -57,7 +57,7 @@ public class RemmDao {
     public PathogenicityData getPathogenicityData(Variant variant) {
         // MNCDS has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
-            return PathogenicityData.EMPTY_DATA;
+            return PathogenicityData.empty();
         }
         return processResults(variant);
     }
@@ -107,12 +107,12 @@ public class RemmDao {
             }
             //logger.info("Final score " + ncds);
             if (!Float.isNaN(ncds)) {
-                return new PathogenicityData(RemmScore.valueOf(ncds));
+                return PathogenicityData.of(RemmScore.valueOf(ncds));
             }
         } catch (IOException e) {
             logger.error("Unable to read from REMM tabix file {}", remmTabixReader.getSource(), e);
         }
-        return new PathogenicityData();
+        return PathogenicityData.empty();
     }
 
 }

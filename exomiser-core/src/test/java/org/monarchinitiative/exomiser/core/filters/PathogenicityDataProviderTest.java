@@ -33,7 +33,6 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,8 +51,9 @@ public class PathogenicityDataProviderTest {
     private VariantDataServiceMock variantDataService;
 
     private VariantEvaluation variant;
-    private static final PathogenicityData EXPECTED_PATH_DATA = new PathogenicityData(PolyPhenScore.valueOf(1f), SiftScore.valueOf(0f), MutationTasterScore.valueOf(1f));
-    private static final PathogenicityData EMPTY_PATH_DATA = new PathogenicityData(new HashSet<>());
+    private static final PathogenicityData EXPECTED_PATH_DATA = PathogenicityData.of(PolyPhenScore.valueOf(1f), SiftScore
+            .valueOf(0f), MutationTasterScore.valueOf(1f));
+    private static final PathogenicityData EMPTY_PATH_DATA = PathogenicityData.empty();
 
     @Before
     public void setUp() {

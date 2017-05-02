@@ -106,7 +106,7 @@ public class CaddDao {
         } catch (IOException e) {
             logger.error("Unable to read from Indel tabix file {}", inDelTabixReader.getSource(), e);
         }
-        return PathogenicityData.EMPTY_DATA;
+        return PathogenicityData.empty();
     }
  
     private PathogenicityData getSnvCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
@@ -124,13 +124,13 @@ public class CaddDao {
             }
         } catch (IOException e) {
             logger.error("Unable to read from SNV tabix file {}", snvTabixReader.getSource(), e);
-        }        
-        return PathogenicityData.EMPTY_DATA;
+        }
+        return PathogenicityData.empty();
     }
  
     private PathogenicityData makeCaddPathData(String phredScaledCaddScore) {
         CaddScore caddScore = parseCaddScore(phredScaledCaddScore);
-        return new PathogenicityData(caddScore);
+        return PathogenicityData.of(caddScore);
     }
  
     private CaddScore parseCaddScore(String phredScaledCaddScore) throws NumberFormatException {

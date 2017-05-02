@@ -49,7 +49,7 @@ public class VariantDataServiceStub implements VariantDataService {
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-        return new PathogenicityData(Collections.emptySet());
+        return PathogenicityData.empty();
     }
 
     @Override

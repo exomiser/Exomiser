@@ -111,7 +111,7 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-        PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, new PathogenicityData());
+        PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, PathogenicityData.empty());
         return pathDataFromSpecifiedDataSources(pathData.getPredictedPathogenicityScores(), pathogenicitySources);
     }
 

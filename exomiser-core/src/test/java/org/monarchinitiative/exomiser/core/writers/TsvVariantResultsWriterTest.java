@@ -102,7 +102,7 @@ public class TsvVariantResultsWriterTest {
     private VariantEvaluation makePassVariant() {
         VariantEvaluation variant = varFactory.buildVariant(10, 123256215, "T", "G", Genotype.HETEROZYGOUS, 30, 0, 2.2);
         variant.addFilterResult(FilterResult.pass(FilterType.VARIANT_EFFECT_FILTER));
-        variant.setPathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)));
+        variant.setPathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)));
         return variant;
     }
     
