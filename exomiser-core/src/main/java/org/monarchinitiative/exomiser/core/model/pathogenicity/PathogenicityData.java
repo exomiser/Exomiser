@@ -32,6 +32,10 @@ public class PathogenicityData {
 
     private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
 
+    public static PathogenicityData of(PathogenicityScore pathScore) {
+        return new PathogenicityData(Collections.singletonList(pathScore));
+    }
+
     public static PathogenicityData of(PathogenicityScore... pathScore) {
         return new PathogenicityData(Arrays.asList(pathScore));
     }
