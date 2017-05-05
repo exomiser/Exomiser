@@ -1,7 +1,7 @@
 The Exomiser - A Tool to Annotate and Prioritize Exome Variants
 ===============================================================
 
-####Overview:
+#### Overview
 
 The Exomiser is a Java program that finds potential disease-causing variants from whole-exome or whole-genome sequencing data.
 
@@ -13,12 +13,12 @@ Variants are prioritised according to user-defined criteria on variant frequency
 
 The Exomiser was developed by the Computational Biology and Bioinformatics group at the Institute for Medical Genetics and Human Genetics of the Charité - Universitätsmedizin Berlin, the Mouse Informatics Group at the Sanger Institute and other members of the [Monarch initiative](https://monarchinitiative.org).
 
-####Download and Installation
+#### Download and Installation
 
 The prebuilt Exomiser binaries can be obtained from the [releases](https://github.com/exomiser/Exomiser/releases) page and supporting data files can be downloaded from the [Exomiser FTP site](http://data.monarchinitiative.org/exomiser).
 
 For instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
 
-####Running it
+#### Running it
 
 Please refer to the [manual](http://exomiser.github.io/Exomiser/) for details on how to configure and run the Exomiser.
