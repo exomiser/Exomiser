@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class HtmlResultsWriter implements ResultsWriter {
@@ -57,9 +56,9 @@ public class HtmlResultsWriter implements ResultsWriter {
     private static final Logger logger = LoggerFactory.getLogger(HtmlResultsWriter.class);
 
     private final TemplateEngine templateEngine;
-    
+
     private static final OutputFormat OUTPUT_FORMAT = OutputFormat.HTML;
-    
+
     public HtmlResultsWriter(TemplateEngine templateEngine) {
         Locale.setDefault(Locale.UK);
         this.templateEngine = templateEngine;
@@ -70,11 +69,9 @@ public class HtmlResultsWriter implements ResultsWriter {
 
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
-
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-
-            writer.write(writeString(analysis, analysisResults, settings));
-
+            Context context = buildContext(analysis, analysisResults, settings);
+            templateEngine.process("results", context, writer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}.", outFileName, ex);
         }
@@ -84,6 +81,11 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     @Override
     public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+        Context context = buildContext(analysis, analysisResults, settings);
+        return templateEngine.process("results", context);
+    }
+
+    private Context buildContext(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
         Context context = new Context();
         //write the settings
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -101,25 +103,25 @@ public class HtmlResultsWriter implements ResultsWriter {
             logger.error("Unable to process JSON settings", ex);
         }
         context.setVariable("settings", jsonSettings);
-        
+
         //make the user aware of any unanalysed variants
         List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
-        
+
         //write out the analysis reports section
         List<FilterReport> analysisStepReports = makeAnalysisStepReports(analysis, analysisResults);
         context.setVariable("filterReports", analysisStepReports);
         //write out the variant type counters
         List<VariantEffectCount> variantTypeCounters = makeVariantEffectCounters(analysisResults.getVariantEvaluations());
-        List<String> sampleNames= analysisResults.getSampleNames();
+        List<String> sampleNames = analysisResults.getSampleNames();
         String sampleName = "Anonymous";
-        if(!analysisResults.getProbandSampleName().isEmpty()) {
+        if (!analysisResults.getProbandSampleName().isEmpty()) {
             sampleName = analysisResults.getProbandSampleName();
         }
         context.setVariable("sampleName", sampleName);
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
-                 
+
         List<Gene> passedGenes = ResultsWriterUtils.getMaxPassedGenes(analysisResults.getGenes(), settings.getNumberOfGenesToShow());
         context.setVariable("genes", passedGenes);
 
@@ -129,14 +131,14 @@ public class HtmlResultsWriter implements ResultsWriter {
         // One of UCSC, ENSEMBL or REFSEQ
         context.setVariable("transcriptDb", "UCSC");
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
-        return templateEngine.process("results", context);
+        return context;
     }
 
-    protected List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
+    private List<VariantEffectCount> makeVariantEffectCounters(List<VariantEvaluation> variantEvaluations) {
         return ResultsWriterUtils.makeVariantEffectCounters(variantEvaluations);
     }
-    
-    protected List<FilterReport> makeAnalysisStepReports(Analysis analysis, AnalysisResults analysisResults) {
+
+    private List<FilterReport> makeAnalysisStepReports(Analysis analysis, AnalysisResults analysisResults) {
         return ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
     }
 
@@ -194,5 +196,5 @@ public class HtmlResultsWriter implements ResultsWriter {
 //            out.write("<br/>\n");
 //        }
 //    }
-    
+
 }
