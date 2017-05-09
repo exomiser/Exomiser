@@ -111,11 +111,5 @@ public class TsvGeneResultsWriterTest {
         String[] lines = outString.split("\n");
         assertThat(lines[0] + "\n", equalTo(HEADER));
     }
-    
-    @Test
-    public void testMakeGeneLine() {
-        String result = instance.makeGeneLine(TestFactory.newGeneFGFR2());
-        assertThat(result, equalTo(FGFR2_GENE_STRING));
-    }
 
 }

@@ -629,8 +629,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private VariantContext variantContext;
         private int altAlleleId;
 
-        private PathogenicityData pathogenicityData = PathogenicityData.EMPTY_DATA;
-        private FrequencyData frequencyData = FrequencyData.EMPTY_DATA;
+        private PathogenicityData pathogenicityData = PathogenicityData.empty();
+        private FrequencyData frequencyData = FrequencyData.empty();
 
         private final Set<FilterType> passedFilterTypes = EnumSet.noneOf(FilterType.class);
         private final Set<FilterType> failedFilterTypes = EnumSet.noneOf(FilterType.class);

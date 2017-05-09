@@ -87,16 +87,16 @@ public class VariantDataServiceImpl implements VariantDataService {
                 .filter(frequency -> frequencySources.contains(frequency.getSource()))
                 .collect(toSet());
         if (rsid == null && wanted.isEmpty()) {
-            return FrequencyData.EMPTY_DATA;
+            return FrequencyData.empty();
         }
-        return new FrequencyData(rsid, wanted);
+        return FrequencyData.of(rsid, wanted);
     }
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         //OK, this is a bit stupid, but if no sources are defined we're not going to bother checking for data
         if (pathogenicitySources.isEmpty()) {
-            return PathogenicityData.EMPTY_DATA;
+            return PathogenicityData.empty();
         }
         //TODO: ideally we'd have some sort of compact, high-performance document store for this sort of data rather than several different datasources to query and ship.
         List<PathogenicityScore> allPathScores = new ArrayList<>();
@@ -126,9 +126,9 @@ public class VariantDataServiceImpl implements VariantDataService {
                 .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
                 .collect(toSet());
         if (wanted.isEmpty()) {
-            return PathogenicityData.EMPTY_DATA;
+            return PathogenicityData.empty();
         }
-        return new PathogenicityData(wanted);
+        return PathogenicityData.of(wanted);
     }
 
     @Override

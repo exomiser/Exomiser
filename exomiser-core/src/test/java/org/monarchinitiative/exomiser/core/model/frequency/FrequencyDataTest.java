@@ -36,7 +36,6 @@ import static org.junit.Assert.assertThat;
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 
 /**
- *
  * @author Jules  Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class FrequencyDataTest {
@@ -52,9 +51,9 @@ public class FrequencyDataTest {
 
     private static final RsId RSID = RsId.valueOf(12335);
 
-    private static final FrequencyData FREQUENCY_DATA = new FrequencyData(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS);
-    private static final FrequencyData RS_ID_ONLY_DATA = new FrequencyData(RSID);
-    private static final FrequencyData EMPTY_DATA = FrequencyData.EMPTY_DATA;
+    private static final FrequencyData FREQUENCY_DATA = FrequencyData.of(RSID, DBSNP_PASS, ESP_ALL_PASS, ESP_AA_PASS, ESP_EA_PASS);
+    private static final FrequencyData RS_ID_ONLY_DATA = FrequencyData.of(RSID);
+    private static final FrequencyData EMPTY_DATA = FrequencyData.empty();
 
 
     @Test
@@ -62,6 +61,12 @@ public class FrequencyDataTest {
         assertThat(EMPTY_DATA.getRsId(), nullValue());
         assertThat(EMPTY_DATA.getKnownFrequencies().isEmpty(), is(true));
         assertThat(EMPTY_DATA.isRepresentedInDatabase(), is(false));
+    }
+
+    @Test
+    public void testSingleFrequencyValue() {
+        assertThat(FrequencyData.of(null, Frequency.valueOf(0.001f, FrequencySource.LOCAL))
+                .hasKnownFrequency(), is(true));
     }
 
     @Test
@@ -93,10 +98,10 @@ public class FrequencyDataTest {
     public void testNotRepresentedInDatabase() {
         assertThat(EMPTY_DATA.isRepresentedInDatabase(), is(false));
     }
-    
-     @Test
+
+    @Test
     public void testRepresentedInDatabaseEspAllOnly() {
-         FrequencyData instance = new FrequencyData(RSID, ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS);
         assertThat(instance.isRepresentedInDatabase(), is(true));
     }
 
@@ -109,12 +114,12 @@ public class FrequencyDataTest {
     public void testRepresentedInDatabaseRsIdOnly() {
         assertThat(RS_ID_ONLY_DATA.isRepresentedInDatabase(), is(true));
     }
-    
+
     @Test
     public void testHasDbSnpRsIdTrue() {
         assertThat(RS_ID_ONLY_DATA.hasDbSnpRsID(), is(true));
     }
-    
+
     @Test
     public void testHasDbSnpRsIdFalse() {
         assertThat(EMPTY_DATA.hasDbSnpRsID(), is(false));
@@ -122,7 +127,7 @@ public class FrequencyDataTest {
 
     @Test
     public void testHasEspDataTrue() {
-        FrequencyData instance = new FrequencyData(RSID, ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS);
         assertThat(instance.hasEspData(), is(true));
     }
 
@@ -133,26 +138,26 @@ public class FrequencyDataTest {
 
     @Test
     public void testHasEspDataIsFalseWhenOnlyNonEspFrequenciesArePresent() {
-        FrequencyData instance = new FrequencyData(RSID, Frequency.valueOf(PASS_FREQ, EXAC_FINNISH));
+        FrequencyData instance = FrequencyData.of(RSID, Frequency.valueOf(PASS_FREQ, EXAC_FINNISH));
         assertThat(instance.hasEspData(), is(false));
     }
 
     @Test
     public void testHasEspDataIsTrueWhenOtherNonEspFrequenciesArePresent() {
-        FrequencyData instance = new FrequencyData(RSID, Frequency.valueOf(PASS_FREQ, THOUSAND_GENOMES), ESP_AA_PASS, Frequency
+        FrequencyData instance = FrequencyData.of(RSID, Frequency.valueOf(PASS_FREQ, THOUSAND_GENOMES), ESP_AA_PASS, Frequency
                 .valueOf(PASS_FREQ, EXAC_FINNISH));
         assertThat(instance.hasEspData(), is(true));
     }
 
     @Test
     public void testHasExacDataTrue() {
-        FrequencyData instance = new FrequencyData(RSID, Frequency.valueOf(PASS_FREQ, EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
+        FrequencyData instance = FrequencyData.of(RSID, Frequency.valueOf(PASS_FREQ, EXAC_AFRICAN_INC_AFRICAN_AMERICAN));
         assertThat(instance.hasExacData(), is(true));
     }
-    
+
     @Test
     public void testHasExacDataFalse() {
-        FrequencyData instance = new FrequencyData(RSID, ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS);
         assertThat(instance.hasExacData(), is(false));
     }
 
@@ -170,32 +175,32 @@ public class FrequencyDataTest {
     public void testGetKnownFrequencies_noFrequencyData() {
         assertThat(EMPTY_DATA.getKnownFrequencies(), equalTo(Collections.emptyList()));
     }
-    
+
     @Test
     public void testGetKnownFrequencies() {
-        FrequencyData instance = new FrequencyData(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS, ESP_EA_PASS);
+        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS, ESP_EA_PASS);
         List<Frequency> expResult = new ArrayList<>();
         expResult.add(DBSNP_PASS);
         expResult.add(ESP_AA_PASS);
         expResult.add(ESP_EA_PASS);
         expResult.add(ESP_ALL_PASS);
-        
+
         List<Frequency> result = instance.getKnownFrequencies();
-        
+
         assertThat(result, equalTo(expResult));
     }
-    
+
     @Test
     public void testGetKnownFrequencies_isImmutable() {
-        FrequencyData instance = new FrequencyData(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS);
+        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS, DBSNP_PASS, ESP_AA_PASS);
         List<Frequency> expResult = new ArrayList<>();
         expResult.add(DBSNP_PASS);
         expResult.add(ESP_AA_PASS);
         expResult.add(ESP_ALL_PASS);
-        
+
         //try and add another score to the instance post-construction
         instance.getKnownFrequencies().add(ESP_EA_PASS);
-                
+
         assertThat(instance.getKnownFrequencies(), equalTo(expResult));
     }
 
@@ -204,12 +209,12 @@ public class FrequencyDataTest {
         float maxFreq = 0.0f;
         assertThat(EMPTY_DATA.getMaxFreq(), equalTo(maxFreq));
     }
-    
+
     @Test
     public void testGetMaxFreqWithData() {
         float maxFreq = 89.5f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
-        FrequencyData instance = new FrequencyData(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
+        FrequencyData instance = FrequencyData.of(RSID, DBSNP_PASS, maxFrequency, ESP_AA_PASS, ESP_EA_PASS);
         assertThat(instance.getMaxFreq(), equalTo(maxFreq));
     }
 
@@ -222,7 +227,7 @@ public class FrequencyDataTest {
     public void testGetScore_commonVariant() {
         float maxFreq = 100.0f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, THOUSAND_GENOMES);
-        FrequencyData instance = new FrequencyData(RSID, maxFrequency);
+        FrequencyData instance = FrequencyData.of(RSID, maxFrequency);
         assertThat(instance.getScore(), equalTo(0f));
     }
 
@@ -230,7 +235,7 @@ public class FrequencyDataTest {
     public void testGetScore_rareVariant() {
         float maxFreq = 0.1f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
-        FrequencyData instance = new FrequencyData(null, maxFrequency);
+        FrequencyData instance = FrequencyData.of(null, maxFrequency);
         assertThat(instance.getScore(), equalTo(0.8504372f));
     }
 }

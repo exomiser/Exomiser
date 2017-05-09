@@ -68,7 +68,7 @@ public class DefaultFrequencyDaoTest {
     private Frequency espAa = Frequency.valueOf(0.03f, FrequencySource.ESP_AFRICAN_AMERICAN);
     private Frequency espEa = Frequency.valueOf(0.04f, FrequencySource.ESP_EUROPEAN_AMERICAN);
 
-    private static final FrequencyData NO_DATA = FrequencyData.EMPTY_DATA;
+    private static final FrequencyData NO_DATA = FrequencyData.empty();
 
     @Before
     public void setUp() {
@@ -88,7 +88,7 @@ public class DefaultFrequencyDaoTest {
     @Test
     public void testVariantInDatabaseReturnsFrequencyData() {
         FrequencyData result = instance.getFrequencyData(variantInDatabaseWithRsId);
-        FrequencyData expected = new FrequencyData(rsId, dbSnp, espAa, espAll, espEa);
+        FrequencyData expected = FrequencyData.of(rsId, dbSnp, espAa, espAll, espEa);
         assertThat(result, equalTo(expected));
         assertThat(result.isRepresentedInDatabase(), is(true));
     }

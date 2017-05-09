@@ -60,8 +60,6 @@ public class DefaultPathogenicityDaoTest {
     private static final MutationTasterScore MUTATION_TASTER_SCORE = MutationTasterScore.valueOf(1.0f);
     private static final CaddScore CADD_SCORE = CaddScore.valueOf(23.7f);
 
-    private static final PathogenicityData NO_PATH_DATA = PathogenicityData.EMPTY_DATA;
-
     private final Variant missenseVariantInDatabase = makeMissenseVariant(10, 123256215, "T", "G");
 
     private Variant makeMissenseVariant(int chr, int pos, String ref, String alt) {
@@ -77,7 +75,7 @@ public class DefaultPathogenicityDaoTest {
                 .build();
         PathogenicityData result = instance.getPathogenicityData(nonMissenseVariant);
 
-        assertThat(result, equalTo(NO_PATH_DATA));
+        assertThat(result, equalTo(PathogenicityData.empty()));
         assertThat(result.hasPredictedScore(), is(false));
     }
 
@@ -86,14 +84,14 @@ public class DefaultPathogenicityDaoTest {
         Variant missenseVariantNotInDatabase = makeMissenseVariant(0, 0, "T", "G");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantNotInDatabase);
 
-        assertThat(result, equalTo(NO_PATH_DATA));
+        assertThat(result, equalTo(PathogenicityData.empty()));
         assertThat(result.hasPredictedScore(), is(false));
     }
 
     @Test
     public void testMissenseVariantReturnsPathogenicityDataWhenInDatabase() {
         PathogenicityData result = instance.getPathogenicityData(missenseVariantInDatabase);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
+        PathogenicityData expected = PathogenicityData.of(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 
@@ -113,7 +111,7 @@ public class DefaultPathogenicityDaoTest {
     public void testMissenseVariantInDatabaseWithNullSift() {
         Variant missenseVariantWithNullSift = makeMissenseVariant(1, 1, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullSift);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE);
+        PathogenicityData expected = PathogenicityData.of(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE);
         assertThat(result, equalTo(expected));
     }
 
@@ -121,7 +119,7 @@ public class DefaultPathogenicityDaoTest {
     public void testMissenseVariantInDatabaseWithNullCadd() {
         Variant missenseVariantWithNullCadd = makeMissenseVariant(1, 4, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullCadd);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
+        PathogenicityData expected = PathogenicityData.of(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 
@@ -129,7 +127,7 @@ public class DefaultPathogenicityDaoTest {
     public void testMissenseVariantInDatabaseWithNullPolyPhen() {
         Variant missenseVariantWithNullPolyPhen = makeMissenseVariant(1, 2, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullPolyPhen);
-        PathogenicityData expected = new PathogenicityData(MUTATION_TASTER_SCORE, SIFT_SCORE);
+        PathogenicityData expected = PathogenicityData.of(MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 
@@ -137,7 +135,7 @@ public class DefaultPathogenicityDaoTest {
     public void testMissenseVariantInDatabaseWithNullMutTaster() {
         Variant missenseVariantWithNullMutTaster = makeMissenseVariant(1, 3, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithNullMutTaster);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, SIFT_SCORE);
+        PathogenicityData expected = PathogenicityData.of(POLY_PHEN_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 
@@ -145,7 +143,7 @@ public class DefaultPathogenicityDaoTest {
     public void testMissenseVariantWithMultipleRowsReturnsBestScores() {
         Variant missenseVariantWithMultipleRows = makeMissenseVariant(1, 5, "A", "T");
         PathogenicityData result = instance.getPathogenicityData(missenseVariantWithMultipleRows);
-        PathogenicityData expected = new PathogenicityData(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
+        PathogenicityData expected = PathogenicityData.of(POLY_PHEN_SCORE, MUTATION_TASTER_SCORE, SIFT_SCORE);
         assertThat(result, equalTo(expected));
     }
 }

@@ -78,13 +78,13 @@ public class RemmDaoTest {
     public void testGetPathogenicityData_missenseVariant() {
         //missense variants are by definition protein-coding and therefore cannot be non-coding so we expect nothing 
         VariantEvaluation missenseVariant = new VariantEvaluation.Builder(1, 1, "A", "T").variantEffect(VariantEffect.MISSENSE_VARIANT).build();
-        assertThat(instance.getPathogenicityData(missenseVariant), equalTo(PathogenicityData.EMPTY_DATA));
+        assertThat(instance.getPathogenicityData(missenseVariant), equalTo(PathogenicityData.empty()));
     }
     
     @Test
     public void testGetPathogenicityData_unableToReadFromSource() {
         Mockito.when(remmTabixReader.query("1:1-1")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.EMPTY_DATA));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.empty()));
     }
     
     @Test
@@ -92,7 +92,7 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList());
         Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.EMPTY_DATA));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.empty()));
     }
     
     @Test
@@ -100,7 +100,7 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(new PathogenicityData(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
     
     @Test
@@ -108,7 +108,7 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(new PathogenicityData(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
     
     @Test
@@ -116,6 +116,6 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(new PathogenicityData(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
 }

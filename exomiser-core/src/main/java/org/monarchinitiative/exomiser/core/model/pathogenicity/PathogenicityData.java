@@ -19,11 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.model.pathogenicity;
 
-import com.google.common.collect.Sets;
-
 import java.util.*;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Container for PathogenicityScore data about a variant.
@@ -32,15 +28,27 @@ import static java.util.stream.Collectors.toList;
  */
 public class PathogenicityData {
 
-    public static final PathogenicityData EMPTY_DATA = new PathogenicityData();
+    private static final PathogenicityData EMPTY_DATA = new PathogenicityData(Collections.emptyList());
 
     private final Map<PathogenicitySource, PathogenicityScore> pathogenicityScores;
 
-    public PathogenicityData(PathogenicityScore... pathScore) {
-        this(Sets.newHashSet(pathScore));
+    public static PathogenicityData of(PathogenicityScore pathScore) {
+        return new PathogenicityData(Collections.singletonList(pathScore));
     }
 
-    public PathogenicityData(Collection<PathogenicityScore> pathScores) {
+    public static PathogenicityData of(PathogenicityScore... pathScore) {
+        return new PathogenicityData(Arrays.asList(pathScore));
+    }
+
+    public static PathogenicityData of(Collection<PathogenicityScore> pathScores) {
+        return new PathogenicityData(pathScores);
+    }
+
+    public static PathogenicityData empty() {
+        return EMPTY_DATA;
+    }
+
+    private PathogenicityData(Collection<PathogenicityScore> pathScores) {
         pathogenicityScores = new EnumMap<>(PathogenicitySource.class);
         for (PathogenicityScore pathScore : pathScores) {
             if (pathScore != null) {
@@ -70,7 +78,11 @@ public class PathogenicityData {
     }
     
     public List<PathogenicityScore> getPredictedPathogenicityScores() {
-        return pathogenicityScores.values().stream().collect(toList());
+        return new ArrayList<>(pathogenicityScores.values());
+    }
+
+    public boolean isEmpty() {
+        return pathogenicityScores.isEmpty();
     }
 
     public boolean hasPredictedScore() {

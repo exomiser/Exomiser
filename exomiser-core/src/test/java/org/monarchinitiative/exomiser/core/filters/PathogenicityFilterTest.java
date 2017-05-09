@@ -79,22 +79,22 @@ public class PathogenicityFilterTest {
         // make the variant evaluations
         missensePassesFilter = testVariantBuilder()
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .pathogenicityData(new PathogenicityData(SIFT_PASS))
+                .pathogenicityData(PathogenicityData.of(SIFT_PASS))
                 .build();
 
         predictedNonPathogenicMissense = testVariantBuilder()
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .pathogenicityData(new PathogenicityData(POLYPHEN_FAIL))
+                .pathogenicityData(PathogenicityData.of(POLYPHEN_FAIL))
                 .build();
 
         downstreamFailsFilter = testVariantBuilder()
                 .variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT)
-                .pathogenicityData(new PathogenicityData())
+                .pathogenicityData(PathogenicityData.empty())
                 .build();
 
         stopGainPassesFilter = testVariantBuilder()
                 .variantEffect(VariantEffect.STOP_GAINED)
-                .pathogenicityData(new PathogenicityData())
+                .pathogenicityData(PathogenicityData.empty())
                 .build();
     }
 

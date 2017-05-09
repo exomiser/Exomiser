@@ -55,12 +55,12 @@ public class FrequencyFilterTest {
 
     private static final Frequency DBSNP_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.THOUSAND_GENOMES);
 
-    private static final FrequencyData espAllPassData = new FrequencyData(null, ESP_ALL_PASS);
-    private static final FrequencyData espAllFailData = new FrequencyData(null, ESP_ALL_FAIL);
-    private static final FrequencyData espAaPassData = new FrequencyData(null, ESP_AA_PASS);
-    private static final FrequencyData espEaPassData = new FrequencyData(null, ESP_EA_PASS);
-    private static final FrequencyData dbSnpPassData = new FrequencyData(null, DBSNP_PASS);
-    private static final FrequencyData noFreqData = FrequencyData.EMPTY_DATA;
+    private static final FrequencyData espAllPassData = FrequencyData.of(null, ESP_ALL_PASS);
+    private static final FrequencyData espAllFailData = FrequencyData.of(null, ESP_ALL_FAIL);
+    private static final FrequencyData espAaPassData = FrequencyData.of(null, ESP_AA_PASS);
+    private static final FrequencyData espEaPassData = FrequencyData.of(null, ESP_EA_PASS);
+    private static final FrequencyData dbSnpPassData = FrequencyData.of(null, DBSNP_PASS);
+    private static final FrequencyData noFreqData = FrequencyData.empty();
 
     @Before
     public void setUp() throws Exception {

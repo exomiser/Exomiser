@@ -170,19 +170,19 @@ public class VariantEvaluationTest {
     @Test
     public void testThatTheConstructorCreatesAnEmptyFrequencyDataObject() {
         FrequencyData frequencyData = instance.getFrequencyData();
-        assertThat(frequencyData, equalTo(FrequencyData.EMPTY_DATA));
+        assertThat(frequencyData, equalTo(FrequencyData.empty()));
     }
     
     @Test
     public void testThatTheBuilderCanSetAFrequencyDataObject() {
-        FrequencyData frequencyData = new FrequencyData(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
         instance = testVariantBuilder().frequencyData(frequencyData).build();
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
 
     @Test
     public void testCanSetFrequencyDataAfterConstruction() {
-        FrequencyData frequencyData = new FrequencyData(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
+        FrequencyData frequencyData = FrequencyData.of(RsId.valueOf(12345), Frequency.valueOf(0.1f, FrequencySource.LOCAL));
         instance.setFrequencyData(frequencyData);
         assertThat(instance.getFrequencyData(), equalTo(frequencyData));
     }
@@ -195,7 +195,7 @@ public class VariantEvaluationTest {
     @Test
     public void testThatTheConstructorCreatesAnEmptyPathogenicityDataObject() {
         PathogenicityData pathogenicityData = instance.getPathogenicityData();
-        assertThat(pathogenicityData, equalTo(new PathogenicityData()));
+        assertThat(pathogenicityData, equalTo(PathogenicityData.empty()));
         assertThat(pathogenicityData.getMutationTasterScore(), nullValue());
         assertThat(pathogenicityData.getPolyPhenScore(), nullValue());
         assertThat(pathogenicityData.getSiftScore(), nullValue());
@@ -205,14 +205,14 @@ public class VariantEvaluationTest {
     
     @Test
     public void testThatTheBuilderCanSetAPathogenicityDataObject() {
-        PathogenicityData pathData = new PathogenicityData(PolyPhenScore.valueOf(1.0f));
+        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.valueOf(1.0f));
         instance = testVariantBuilder().pathogenicityData(pathData).build();
         assertThat(instance.getPathogenicityData(), equalTo(pathData));
     }
 
     @Test
     public void testCanSetPathogenicityDataAfterConstruction() {
-        PathogenicityData pathData = new PathogenicityData(PolyPhenScore.valueOf(1.0f));
+        PathogenicityData pathData = PathogenicityData.of(PolyPhenScore.valueOf(1.0f));
         instance.setPathogenicityData(pathData);
         assertThat(instance.getPathogenicityData(), equalTo(pathData));
     }
@@ -235,7 +235,7 @@ public class VariantEvaluationTest {
     @Test
     public void testGetPathogenicityScore_NonMissenseVariantWithPredictions() {
         VariantEffect type = VariantEffect.REGULATORY_REGION_VARIANT;
-        PathogenicityData pathData = new PathogenicityData(CaddScore.valueOf(1f));
+        PathogenicityData pathData = PathogenicityData.of(CaddScore.valueOf(1f));
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
         assertThat(instance.getPathogenicityScore(), equalTo(pathData.getScore()));
@@ -252,7 +252,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetPathogenicityScore_MissenseSiftPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS);
+        PathogenicityData pathData = PathogenicityData.of(POLYPHEN_FAIL, MTASTER_FAIL, SIFT_PASS);
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
@@ -262,7 +262,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetPathogenicityScore_MissensePolyPhenAndSiftPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS);
+        PathogenicityData pathData = PathogenicityData.of(POLYPHEN_PASS, MTASTER_FAIL, SIFT_PASS);
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
@@ -272,7 +272,7 @@ public class VariantEvaluationTest {
 
     @Test
     public void testGetPathogenicityScore_MissensePolyPhenSiftAndMutTasterPass() {
-        PathogenicityData pathData = new PathogenicityData(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS);
+        PathogenicityData pathData = PathogenicityData.of(POLYPHEN_PASS, MTASTER_PASS, SIFT_PASS);
         VariantEffect type = VariantEffect.MISSENSE_VARIANT;
         instance = testVariantBuilder().pathogenicityData(pathData).variantEffect(type).build();
 
@@ -324,8 +324,8 @@ public class VariantEvaluationTest {
     @Test
     public void testGetVariantScoreWithEmptyFreqAndPathData() {
         instance = testVariantBuilder()
-                .frequencyData(FrequencyData.EMPTY_DATA)
-                .pathogenicityData(PathogenicityData.EMPTY_DATA)
+                .frequencyData(FrequencyData.empty())
+                .pathogenicityData(PathogenicityData.empty())
                 .build();
         assertThat(instance.getVariantScore(), equalTo(0f));
     }
@@ -334,9 +334,9 @@ public class VariantEvaluationTest {
     public void testVariantScoreIsIndependentOfFilterStatus() {
         instance = testVariantBuilder()
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
-                .frequencyData(FrequencyData.EMPTY_DATA)
+                .frequencyData(FrequencyData.empty())
                 //PolyPhen of 1 is predicted as highly pathogenic
-                .pathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1f)))
+                .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1f)))
                 .build();
         assertThat(instance.getVariantScore(), equalTo(1f));
         assertThat(instance.passedFilters(), is(true));
@@ -596,13 +596,13 @@ public class VariantEvaluationTest {
     private List<VariantEvaluation> scoredVariantsInDescendingRankOrder() {
         VariantEvaluation zero = new VariantEvaluation.Builder(2, 1, "C", "TT")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
-                .pathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1.0f)))
+                .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
         zero.setAsContributingToGeneScore();
         VariantEvaluation one = new VariantEvaluation.Builder(2, 1, "C", "T")
                 .variantEffect(VariantEffect.STOP_GAINED)
-                .frequencyData(new FrequencyData(null, Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
-                .pathogenicityData(new PathogenicityData(PolyPhenScore.valueOf(1.0f)))
+                .frequencyData(FrequencyData.of(null, Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
+                .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
         one.setAsContributingToGeneScore();
         VariantEvaluation two = new VariantEvaluation.Builder(1, 2, "A", "G")
