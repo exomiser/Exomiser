@@ -90,11 +90,11 @@ public class MimToGeneParser implements ResourceParser {
                     continue;
                 }
                 String[] fields = line.split("\t");
-                if (fields.length < 3) { // malformed, should never happen
+                /*if (fields.length < 6) { // malformed, should never happen
                     logger.error("Malformed mim2gene line: " + line);
                     logger.error("Found only {} fields", fields.length);
                     continue;
-                }
+                }*/
                 try {
                     String type = fields[1].trim();
                     /* The following gets both "gene" and "gene/phenotype" */
@@ -105,9 +105,11 @@ public class MimToGeneParser implements ResourceParser {
                     /* There are a lot of lines such as
                      "102777	gene	-	-"
                      That do not have valid Entrez Gene ids. We just skip them */
-                    if (fields[2].equals("-")) {
+                    //if (fields[2].equals("-")) {
+                    if (fields.length != 5) {
                         continue;
                     }
+                    // typical line: 100850  gene    50      ACO2    ENSG00000100412
                     Integer mim = Integer.parseInt(fields[0]);
                     Integer entrezGeneId = Integer.parseInt(fields[2]); // Entrez Gene ID */
                     //String IDs[] = gene.split(",")

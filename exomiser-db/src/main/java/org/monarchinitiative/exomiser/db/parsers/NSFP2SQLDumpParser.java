@@ -116,12 +116,12 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * smaller than 0.5 and "deleterious" if the score is larger than 0.5.
      * Multiple entries separated by ";".
      */
-    private static int POLYPHEN2_HVAR_SCORE = 29;//28
+    private static int POLYPHEN2_HVAR_SCORE = 32;//28
 
     /**
      * MutationTaster score
      */
-    private static int MUTATION_TASTER_SCORE = 35;//33
+    private static int MUTATION_TASTER_SCORE = 39;//33
 
     /**
      * MutationTaster prediction, "A" ("disease_causing_automatic"), "D"
@@ -131,16 +131,16 @@ public class NSFP2SQLDumpParser implements ResourceParser {
      * "N" or "P", we set the mutation score to zero. If the score is "A" or
      * "D", we report the score as given in dbNSFP.
      */
-    private static int MUTATION_TASTER_PRED = 37;//35
+    private static int MUTATION_TASTER_PRED = 41;//35
 
     /**
      * Total number of fields in the dbNSFP database
      */
-    private static int N_NSFP_FIELDS = 86;//59
+    private static int N_NSFP_FIELDS = 471;//59
     
-    private static int CADD_raw = 51;
+    private static int CADD_raw = 76;
     
-    private static int CADD_raw_rankscore = 52;
+    private static int CADD_raw_rankscore = 77;
     
     /**
      * This variable will contain values such as A3238732G that represent the
@@ -222,6 +222,11 @@ public class NSFP2SQLDumpParser implements ResourceParser {
                             //try to autodetect the column positions for the parser 
                             setParseFields(line);                          
                         } else {
+                            String[] fields = line.split("\t");
+                            if (fields[CHR].equals(".")){
+                                // no hg19 coordinates present
+                                continue;
+                            }
                             VariantPathogenicity pathogenicity = parseLine(line);
                             writer.write(pathogenicity.toDumpLine());
                         }

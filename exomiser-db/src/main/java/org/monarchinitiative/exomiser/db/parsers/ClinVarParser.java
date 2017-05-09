@@ -165,16 +165,17 @@ public class ClinVarParser implements ResourceParser {
                     logger.warn("Line has only {} fields. Expected at least %s fields", split.length, expectedFieldLength);
                     continue;
                 }
-                String type = split[1];
-                String build = split[12];
-                String RCV = split[8];
-                String chr = split[13];
-                String from = split[14];
-                String to = split[15];
-                String sign = split[5];
-//                logger.info(line);
 
-                if (chr.equals("-") || chr.isEmpty() || from.equals("-") || from.equals("")) {
+                String type = split[1];
+                String build = split[16];
+                String RCV = split[11];
+                String chr = split[18];
+                String from = split[19];
+                String to = split[20];
+                String sign = split[6];
+//                logger.info(line);
+                //logger.info(chr+":"+from+":"+to+":"+sign+":"+type+":"+build+":"+RCV);
+                if (chr.equals("Un") || chr.equals("na") || chr.equals("-") || chr.isEmpty() || from.equals("-") || from.equals("")) {
                     logger.info("Skipping {} Chr='{}', from='{}' - No positional information defined on line: {}", type, chr, from, line);
                     noPositionInfoVariants++;
                     continue;

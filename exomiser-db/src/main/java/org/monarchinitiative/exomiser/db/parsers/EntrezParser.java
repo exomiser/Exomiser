@@ -52,16 +52,16 @@ public class EntrezParser implements ResourceParser {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] split = line.split("\t");
-                if (split.length != 14) {
+                if (split.length != 3) {
                     continue;
                 }
-                String ens = split[1];
+                String ens = split[0];
                 Integer entrez = null;
                 if (split[1].equals("")) {
                     continue;
                 }
                 try {
-                    entrez = Integer.parseInt(split[2]);
+                    entrez = Integer.parseInt(split[1]);
                 } catch (NumberFormatException e) {
                     logger.error("Malformed line: {} (could not parse entrez gene field: '{}')", line, split[1]);
                 }

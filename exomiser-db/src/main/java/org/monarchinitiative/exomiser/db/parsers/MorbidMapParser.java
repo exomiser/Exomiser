@@ -81,11 +81,14 @@ public class MorbidMapParser implements ResourceParser {
                 BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())){
 
             String line;
+            // expected format
+            // # Phenotype     Gene Symbols    MIM Number      Cyto Location
+            // 17,20-lyase deficiency, isolated, 202110 (3)    CYP17A1, CYP17, P450C17 609300  10q24.32
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
                     continue; // comment.
                 }
-                String[] fields = line.split("\\|");
+                String[] fields = line.split("\\t");
                 if (fields.length != 4) {
                     logger.error("Malformed morbid map line: {}", line);
                     logger.error("Expected 4 fields per line but got {}", fields.length);
