@@ -69,7 +69,7 @@ public class AppConfig {
     @Bean
     public boolean copyPheno2GeneResource() {
 
-        String resource = "src/main/resources/data/pheno2gene.txt";
+        String resource = "exomiser-db/src/main/resources/data/pheno2gene.txt";
         try {
             Files.copy(Paths.get(resource), downloadPath().resolve("pheno2gene.txt"), StandardCopyOption.REPLACE_EXISTING);
             logger.info("Copied {} to {}", resource, downloadPath());
