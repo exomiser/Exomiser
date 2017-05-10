@@ -179,12 +179,4 @@ public class ResultsWriterUtilsTest {
         assertThat(ResultsWriterUtils.getMaxPassedGenes(getGenes(), 100), equalTo(allPassedGenes));
     }
     
-    @Test
-    public void testPassedGenesReturnsAllPassedGenes() {
-        List<Gene> allPassedGenes = new ArrayList<>();
-        allPassedGenes.add(passedGeneOne);
-        allPassedGenes.add(passedGeneTwo);
-        assertThat(ResultsWriterUtils.getPassedGenes(getGenes()), equalTo(allPassedGenes));
-    }
-    
 }
