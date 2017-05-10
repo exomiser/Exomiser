@@ -20,63 +20,59 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Java configuration for providing {@code Resource} definitions for the 
+ * Java configuration for providing {@code Resource} definitions for the
  * application to work on.
- * 
+ * <p>
  * If you want to add another data source, this is where you define the resource
  * and the application will pick it up and incorporate the data into the database.
- * Obviously you'll have to write a parser and a flyway migration to get the data 
+ * Obviously you'll have to write a parser and a flyway migration to get the data
  * into the database.
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
 @PropertySource({"classpath:resource.properties"})
 public class ResourceConfig {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ResourceConfig.class);
-        
+
     @Autowired
     Environment env;
-    
-    private Set<Resource> resources;
-    
+
     @Bean
     public Set<Resource> resources() {
-        if (resources == null) {
-            logger.info("Making new set of Resources");
-            resources = new LinkedHashSet();
+        logger.info("Making new set of Resources");
+        Set<Resource> resources = new LinkedHashSet<>();
 //            resources.add(exampleResource());
-            resources.add(hpoResource());
-            //OMIM group
-            resources.add(omimMimToGeneResource());
-            resources.add(omimMorbidMapResource());
-            resources.add(hpoPhenotypeAnnotationsResource());
-            //StringDB group
-            resources.add(stringEntrezToSymResource());
-            resources.add(stringProteinLinksResource());
-            //Exome Walker
-            resources.add(exomeWalkerPhenotypicSeriesResource());
-            resources.add(exomeWalkerOmimToGeneResource());
-            //Regulatory features
-            resources.add(fantomEnhancerResource());
-            resources.add(ensemblEnhancerResource());
-            resources.add(clinVarResource());
-            resources.add(metaDataResource());
-            
-            //these ones are biggies:
-            resources.add(dbNsfpResource());
-            //VariantFrequency group
-            resources.add(dbSnpResource());
-            resources.add(espResource());
-            resources.add(jannovarResource());
-            resources.add(exacResource());
-        }
-        
+        resources.add(hpoResource());
+        //OMIM group
+        resources.add(omimMimToGeneResource());
+        resources.add(omimMorbidMapResource());
+        resources.add(hpoPhenotypeAnnotationsResource());
+        //StringDB group
+        resources.add(stringEntrezToSymResource());
+        resources.add(stringProteinLinksResource());
+        //Exome Walker
+        resources.add(exomeWalkerPhenotypicSeriesResource());
+        resources.add(exomeWalkerOmimToGeneResource());
+        //Regulatory features
+        resources.add(fantomEnhancerResource());
+        resources.add(ensemblEnhancerResource());
+        resources.add(clinVarResource());
+        resources.add(metaDataResource());
+
+        //these ones are biggies:
+        resources.add(dbNsfpResource());
+        //VariantFrequency group
+        resources.add(dbSnpResource());
+        resources.add(espResource());
+        resources.add(jannovarResource());
+        resources.add(exacResource());
+
         return resources;
-        
+
     }
-    
+
     @Bean
     public Resource exampleResource() {
         logger.info("Making example resource");
@@ -92,9 +88,9 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
-    } 
+    }
 
     //reads properties from resource.properties for a given resource and populates the resource variables
     private void populateResourceFromProperty(String resourcePropertyId, Resource resource) {
@@ -105,7 +101,7 @@ public class ResourceConfig {
         resource.setExtractionScheme(env.getProperty(resourcePropertyId + ".extractScheme"));
         resource.setParsedFileName(env.getProperty(resourcePropertyId + ".parsedName"));
     }
-    
+
     @Bean
     public Resource hpoResource() {
         logger.info("Making HPO resource");
@@ -116,9 +112,9 @@ public class ResourceConfig {
         //resource groups
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
-    } 
+    }
 
     @Bean
     public Resource dbNsfpResource() {
@@ -130,9 +126,9 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
-    } 
+    }
 
     @Bean
     public Resource dbSnpResource() {
@@ -144,10 +140,10 @@ public class ResourceConfig {
         //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource exacResource() {
         logger.info("Making ExAC resource");
@@ -158,10 +154,10 @@ public class ResourceConfig {
         //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource espResource() {
         logger.info("Making ESP resource");
@@ -172,10 +168,10 @@ public class ResourceConfig {
         //resource groups
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource jannovarResource() {
         logger.info("Making UCSC_HG19 resource");
@@ -186,9 +182,9 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName(VariantFrequencyResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(VariantFrequencyResourceGroupParser.class);
-        
+
         return resource;
-    } 
+    }
 
     @Bean
     public Resource omimMimToGeneResource() {
@@ -200,10 +196,10 @@ public class ResourceConfig {
         //part of the OMIM ResourceGroup
         resource.setResourceGroupName(OmimResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource omimMorbidMapResource() {
         logger.info("Making OMIM_morbidmap resource");
@@ -214,24 +210,24 @@ public class ResourceConfig {
         //part of the OMIM ResourceGroup
         resource.setResourceGroupName(OmimResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource hpoPhenotypeAnnotationsResource() {
         logger.info("Making HPO_phenotype_annotations resource");
         Resource resource = new Resource("HPO_phenotype_annotations");
         populateResourceFromProperty("omimpheno", resource);
-       //
+        //
         resource.setParserClass(DiseaseInheritanceCache.class);
         //part of the OMIM ResourceGroup
         resource.setResourceGroupName(OmimResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource stringEntrezToSymResource() {
         logger.info("Making STRING_entrez2sym resource");
@@ -242,10 +238,10 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName(StringResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(StringResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource stringProteinLinksResource() {
         logger.info("Making STRING_protein_links resource");
@@ -256,10 +252,10 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName(StringResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(StringResourceGroupParser.class);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource exomeWalkerPhenotypicSeriesResource() {
         logger.info("Making ExomeWalker_phenotypic_series resource");
@@ -271,10 +267,10 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName(null);
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource fantomEnhancerResource() {
         logger.info("Making FANTOM enhancer resource");
@@ -286,10 +282,10 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName(null);
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource ensemblEnhancerResource() {
         logger.info("Making Ensembl enhancer resource");
@@ -301,10 +297,10 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName(null);
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource exomeWalkerOmimToGeneResource() {
         logger.info("Making ExomeWalker_omim2gene resource");
@@ -315,10 +311,10 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource clinVarResource() {
         logger.info("Making ClinVar resource");
@@ -329,10 +325,10 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
     }
-    
+
     @Bean
     public Resource metaDataResource() {
         logger.info("Making MetaData resource");
@@ -348,8 +344,8 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
-        
+
         return resource;
     }
- 
+
 }

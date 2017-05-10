@@ -64,17 +64,10 @@ public class Main implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments applicationArguments) throws Exception {
-        //Get Spring to sort it's shit out... 
-//        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class, ResourceConfig.class, DataSourceConfig.class);
-
-//        AppConfig appConfig = context.getBean(AppConfig.class);
+    public void run(ApplicationArguments applicationArguments) {
         //set the Paths
         Path dataPath = appConfig.dataPath();
         Path downloadPath = appConfig.downloadPath();
-
-        //Get the Resources from the ResourceConfiguration 
-//        ResourceConfig resourceConfig = context.getBean(ResourceConfig.class);
 
         Set<Resource> externalResources = resourceConfig.resources();
 
@@ -120,14 +113,11 @@ public class Main implements ApplicationRunner {
         boolean dumpPhenoDigmData = appConfig.dumpPhenoDigmData();
         if (dumpPhenoDigmData) {
             logger.info("Making Phenodigm data dump files...");
-//            PhenodigmDataDumper phenodigmDataDumper = context.getBean(PhenodigmDataDumper.class);
             phenodigmDataDumper.dumpPhenodigmData(dataPath);
         } else {
             logger.info("Skipping making Phenodigm data dump files.");
         }
 
-        //create variables which would otherwise be injected manually from the context
-//        DataSourceConfig dataSourceConfig = context.getBean(DataSourceConfig.class);
         logger.info("Migrating exomiser databases...");
         //define where the data import path is otherwise everything will fail
         Map<String, String> propertyPlaceHolders = new HashMap<>();
