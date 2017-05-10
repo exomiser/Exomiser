@@ -57,7 +57,6 @@ public class MimToGeneParserTest {
         testResource.setParsedFileName("testMim2Gene.out");
         
         MimToGeneParser instance = new MimToGeneParser(mim2geneMap);
-        ResourceOperationStatus expResult = ResourceOperationStatus.SUCCESS;
         instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
         assertFalse(mim2geneMap.isEmpty());
         for (Entry<Integer, Set<Integer>> entry : mim2geneMap.entrySet()) {
@@ -65,8 +64,7 @@ public class MimToGeneParserTest {
                 System.out.println(entry);            
             }
         }
-        assertEquals(expResult, testResource.getParseStatus());
-
+        assertEquals(ResourceOperationStatus.SUCCESS, testResource.getParseStatus());
     }
     
 }
