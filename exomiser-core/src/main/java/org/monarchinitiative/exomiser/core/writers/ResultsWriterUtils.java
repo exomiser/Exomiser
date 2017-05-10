@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -131,7 +132,7 @@ public class ResultsWriterUtils {
         return result;
     }
 
-    protected static VariantEffectCounter makeVariantEffectCounter(List<VariantEvaluation> variantEvaluations) {
+    private static VariantEffectCounter makeVariantEffectCounter(List<VariantEvaluation> variantEvaluations) {
         if (variantEvaluations.isEmpty()) {
             return new VariantEffectCounter(0);
         }
@@ -158,26 +159,18 @@ public class ResultsWriterUtils {
         return getMaxGenes(passedGenes, maxGenes);
     }
 
-    public static List<Gene> getPassedGenes(List<Gene> genes) {
-        List<Gene> passedGenes = new ArrayList<>();
-        for (Gene gene : genes) {
-            if (gene.passedFilters()) {
-                passedGenes.add(gene);
-            }
-        }
+    private static List<Gene> getPassedGenes(List<Gene> genes) {
+        List<Gene> passedGenes = genes.stream()
+                .filter(Gene::passedFilters)
+                .collect(Collectors.toList());
         logger.info("{} of {} genes passed filters", passedGenes.size(), genes.size());
         return passedGenes;
     }
 
     private static List<Gene> getMaxGenes(List<Gene> genes, int maxGenes) {
-        List<Gene> passedGenes = new ArrayList<>();
-        int genesShown = 0;
-        for (Gene gene : genes) {
-            if (genesShown < maxGenes) {
-                passedGenes.add(gene);
-                genesShown++;
-            }
-        }
+        List<Gene> passedGenes = genes.stream()
+                .limit(maxGenes)
+                .collect(Collectors.toList());
         logger.info("Maximum gene limit set to {} - Returning first {} of {} genes which have passed filtering.", maxGenes, maxGenes, genes.size());
         return passedGenes;
     }

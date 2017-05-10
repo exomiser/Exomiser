@@ -66,7 +66,7 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     @Override
     public void writeFile(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
-
+        logger.info("Writing HTML results");
         String outFileName = ResultsWriterUtils.makeOutputFilename(analysis.getVcfPath(), settings.getOutputPrefix(), OUTPUT_FORMAT);
         Path outFile = Paths.get(outFileName);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
@@ -81,6 +81,7 @@ public class HtmlResultsWriter implements ResultsWriter {
 
     @Override
     public String writeString(Analysis analysis, AnalysisResults analysisResults, OutputSettings settings) {
+        logger.info("Writing HTML results");
         Context context = buildContext(analysis, analysisResults, settings);
         return templateEngine.process("results", context);
     }
