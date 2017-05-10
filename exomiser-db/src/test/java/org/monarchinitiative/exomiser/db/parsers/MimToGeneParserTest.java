@@ -30,13 +30,12 @@ import org.monarchinitiative.exomiser.db.resources.Resource;
 import org.monarchinitiative.exomiser.db.resources.ResourceOperationStatus;
 
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 
 /**
@@ -51,19 +50,21 @@ public class MimToGeneParserTest {
      */
     @Test
     public void testParse() {
-        Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
         Resource testResource = new Resource("MIM2GENE");
         testResource.setExtractedFileName("mim2gene.txt");
         testResource.setParsedFileName("testMim2Gene.out");
-        
+
+        Map<Integer, Set<Integer>> mim2geneMap = new HashMap<>();
         MimToGeneParser instance = new MimToGeneParser(mim2geneMap);
         instance.parseResource(testResource, Paths.get("src/test/resources/data"), Paths.get("target/test-data"));
-        assertFalse(mim2geneMap.isEmpty());
-        for (Entry<Integer, Set<Integer>> entry : mim2geneMap.entrySet()) {
-            if (entry.getValue().size() > 1) {
-                System.out.println(entry);            
-            }
-        }
+
+        Map<Integer, Set<Integer>> expected = new HashMap<>();
+        expected.put(123463, Collections.singleton(124));
+        expected.put(123464, Collections.singleton(123));
+        expected.put(123466, Collections.singleton(216));
+        expected.put(123468, Collections.singleton(87));
+
+        assertEquals(expected, mim2geneMap);
         assertEquals(ResourceOperationStatus.SUCCESS, testResource.getParseStatus());
     }
     

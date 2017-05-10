@@ -13,12 +13,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 /**
  * Provides configuration details from the app.properties file located in the
@@ -34,6 +40,9 @@ public class AppConfig {
 
     @Autowired
     Environment env;
+
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     @Bean
     public PhenodigmDataDumper phenodigmDataDumper() {
@@ -64,21 +73,23 @@ public class AppConfig {
 
     /**
      * Dirty hack to copy the static data into the data directory.
-     * @return 
      */
     @Bean
     public boolean copyPheno2GeneResource() {
-
-        String resource = "exomiser-db/src/main/resources/data/pheno2gene.txt";
-        try {
-            Files.copy(Paths.get(resource), downloadPath().resolve("pheno2gene.txt"), StandardCopyOption.REPLACE_EXISTING);
+        Resource resource = new ClassPathResource("data/pheno2gene.txt");
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()));
+             BufferedWriter writer = Files.newBufferedWriter(downloadPath().resolve("pheno2gene.txt"), Charset.forName("UTF-8"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                writer.write(line + "\n");
+            }
             logger.info("Copied {} to {}", resource, downloadPath());
         } catch (IOException ex) {
             logger.error("Unable to copy resource {}", resource, ex);
         }
         return true;
     }
-    
+
     @Bean
     public Path processPath() {
         Path processPath = dataPath().resolve(env.getProperty("process.path"));
@@ -92,43 +103,43 @@ public class AppConfig {
 
     @Bean
     public boolean downloadResources() {
-        boolean download = Boolean.parseBoolean(env.getProperty("downloadResources")); 
+        boolean download = Boolean.parseBoolean(env.getProperty("downloadResources"));
         logger.info("Setting application to download resources: {}", download);
         return download;
     }
 
     @Bean
     public boolean extractResources() {
-        boolean extract = Boolean.parseBoolean(env.getProperty("extractResources")); 
+        boolean extract = Boolean.parseBoolean(env.getProperty("extractResources"));
         logger.info("Setting application to extract resources: {}", extract);
-        return extract;    
+        return extract;
     }
 
     @Bean
     public boolean parseResources() {
-        boolean parse = Boolean.parseBoolean(env.getProperty("parseResources")); 
+        boolean parse = Boolean.parseBoolean(env.getProperty("parseResources"));
         logger.info("Setting application to parse resources: {}", parse);
-        return parse;    
+        return parse;
     }
 
     @Bean
     public boolean dumpPhenoDigmData() {
-        boolean dumpPhenoDigmData = Boolean.parseBoolean(env.getProperty("dumpPhenoDigmData")); 
+        boolean dumpPhenoDigmData = Boolean.parseBoolean(env.getProperty("dumpPhenoDigmData"));
         logger.info("Setting application to dump PhenoDigm data: {}", dumpPhenoDigmData);
-        return dumpPhenoDigmData;    
+        return dumpPhenoDigmData;
     }
 
     @Bean
     public boolean migratePostgres() {
-        boolean migratePostgres = Boolean.parseBoolean(env.getProperty("migratePostgres")); 
+        boolean migratePostgres = Boolean.parseBoolean(env.getProperty("migratePostgres"));
         logger.info("Setting application to migrate PostgreSQL database: {}", migratePostgres);
-        return migratePostgres;    
+        return migratePostgres;
     }
 
     @Bean
     public boolean migrateH2() {
-        boolean migrateH2 = Boolean.parseBoolean(env.getProperty("migrateH2")); 
+        boolean migrateH2 = Boolean.parseBoolean(env.getProperty("migrateH2"));
         logger.info("Setting application to migrate H2 database: {}", migrateH2);
-        return migrateH2;    
+        return migrateH2;
     }
 }

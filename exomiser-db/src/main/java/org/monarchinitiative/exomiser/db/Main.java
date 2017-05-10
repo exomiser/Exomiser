@@ -30,7 +30,9 @@ import org.monarchinitiative.exomiser.db.resources.ResourceExtractionHandler;
 import org.monarchinitiative.exomiser.db.resources.ResourceParserHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
@@ -44,21 +46,35 @@ import java.util.Set;
  * {@code  org.monarchinitiative.exomiser.config.ResourceConfig}.
  *
  */
-public class Main {
+@Component
+public class Main implements ApplicationRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
-        //Get Spring to sort it's shit out... 
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class, ResourceConfig.class, DataSourceConfig.class);
+    private final AppConfig appConfig;
+    private final ResourceConfig resourceConfig;
+    private final DataSourceConfig dataSourceConfig;
+    private final PhenodigmDataDumper phenodigmDataDumper;
 
-        AppConfig appConfig = context.getBean(AppConfig.class);
+    public Main(AppConfig appConfig, ResourceConfig resourceConfig, DataSourceConfig dataSourceConfig, PhenodigmDataDumper phenodigmDataDumper) {
+        this.appConfig = appConfig;
+        this.resourceConfig = resourceConfig;
+        this.dataSourceConfig = dataSourceConfig;
+        this.phenodigmDataDumper = phenodigmDataDumper;
+    }
+
+    @Override
+    public void run(ApplicationArguments applicationArguments) throws Exception {
+        //Get Spring to sort it's shit out... 
+//        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class, ResourceConfig.class, DataSourceConfig.class);
+
+//        AppConfig appConfig = context.getBean(AppConfig.class);
         //set the Paths
         Path dataPath = appConfig.dataPath();
         Path downloadPath = appConfig.downloadPath();
 
         //Get the Resources from the ResourceConfiguration 
-        ResourceConfig resourceConfig = context.getBean(ResourceConfig.class);
+//        ResourceConfig resourceConfig = context.getBean(ResourceConfig.class);
 
         Set<Resource> externalResources = resourceConfig.resources();
 
@@ -104,14 +120,14 @@ public class Main {
         boolean dumpPhenoDigmData = appConfig.dumpPhenoDigmData();
         if (dumpPhenoDigmData) {
             logger.info("Making Phenodigm data dump files...");
-            PhenodigmDataDumper phenoDumper = context.getBean(PhenodigmDataDumper.class);
-            phenoDumper.dumpPhenodigmData(dataPath);
+//            PhenodigmDataDumper phenodigmDataDumper = context.getBean(PhenodigmDataDumper.class);
+            phenodigmDataDumper.dumpPhenodigmData(dataPath);
         } else {
             logger.info("Skipping making Phenodigm data dump files.");
         }
 
         //create variables which would otherwise be injected manually from the context
-        DataSourceConfig dataSourceConfig = context.getBean(DataSourceConfig.class);
+//        DataSourceConfig dataSourceConfig = context.getBean(DataSourceConfig.class);
         logger.info("Migrating exomiser databases...");
         //define where the data import path is otherwise everything will fail
         Map<String, String> propertyPlaceHolders = new HashMap<>();

@@ -32,7 +32,7 @@
         <artifactId>exomiser</artifactId>
         <version>7.3.0-SNAPSHOT</version>
     </parent>
-  
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <data.import.path>data</data.import.path>
@@ -43,7 +43,8 @@
             <id>migrate-H2</id>
             <properties>
                 <!--this is a write-optimised setting - don't use anything after 'PostgreSQL;' for standard use-->
-                <db.url>jdbc:h2:file:data/exomiser;MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;</db.url>
+                <db.url>jdbc:h2:file:data/exomiser;MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;
+                </db.url>
                 <db.username>sa</db.username>
                 <db.password></db.password>
                 <db.location>db.migration.h2</db.location>
@@ -65,6 +66,11 @@
             <groupId>org.monarchinitiative</groupId>
             <artifactId>exomiser-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
         <!-- Database dependencies-->
         <dependency>
@@ -90,30 +96,25 @@
         <dependency>
             <groupId>com.esotericsoftware.yamlbeans</groupId>
             <artifactId>yamlbeans</artifactId>
-            <version>1.06</version>            
+            <version>1.06</version>
         </dependency>
         <!--Commons VFS is used for obtaining the required flatfiles-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-vfs2</artifactId>
-            <version>2.0</version>            
+            <version>2.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.3</version>
         </dependency>
         <!--Joda time as we're not using Java 8 yet -->
         <dependency>
@@ -128,28 +129,47 @@
         </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>repackage</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>org.monarchinitiative.exomiser.db.Main</mainClass>
-                    <!--optional--> 
-                    <workingDirectory>${project.build.dir}</workingDirectory>
-                    <!--                    <arguments>
-                        <argument>-X</argument>
-                        <argument>myproject:dist</argument>
-                    </arguments>-->
-                </configuration>
             </plugin>
+            <!--<plugin>-->
+            <!--<groupId>org.codehaus.mojo</groupId>-->
+            <!--<artifactId>exec-maven-plugin</artifactId>-->
+            <!--<version>1.2.1</version>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<goals>-->
+            <!--<goal>exec</goal>-->
+            <!--</goals>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--<configuration>-->
+            <!--<mainClass>org.monarchinitiative.exomiser.db.Main</mainClass>-->
+            <!--&lt;!&ndash;optional&ndash;&gt;-->
+            <!--<workingDirectory>${project.build.dir}</workingDirectory>-->
+            <!--&lt;!&ndash;                    <arguments>-->
+            <!--<argument>-X</argument>-->
+            <!--<argument>myproject:dist</argument>-->
+            <!--</arguments>&ndash;&gt;-->
+            <!--</configuration>-->
+            <!--</plugin>-->
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
@@ -167,7 +187,7 @@
                     <locations>
                         <location>db.migration.common</location>
                         <location>${db.location}</location>
-                    </locations>             
+                    </locations>
                 </configuration>
             </plugin>
         </plugins>
