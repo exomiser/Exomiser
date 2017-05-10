@@ -64,12 +64,13 @@ public class MimToGeneParser implements ResourceParser {
     /**
      * Parse OMIMs mim2gene.txt file. A typical line is
      * <pre>
-     * 100710  gene    1140    CHRNB1
+     * # MIM Number	MIM Entry Type (see FAQ 1.3 at https://omim.org/help/faq)	Entrez Gene ID (NCBI)	Approved Gene Symbol (HGNC)	Ensembl Gene ID (Ensembl)
+     * 100850  gene    50      ACO2    ENSG00000100412
      * </pre> The first number is the MIM number, the second field tells us
-     * whether the entry is a gene or a phenotype, the thrid entry is the Entrez
+     * whether the entry is a gene or a phenotype, the third entry is the Entrez
      * Gene ID, and the fourth field is the gene symbol. Note the we
      * parseResource this file exclusively for the phenotype to gene relations,
-     * meaning we only use the lines that start with the keyword "gene".
+     * meaning we only use the lines that have with the keyword "gene" in the second column.
      */
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
@@ -83,48 +84,10 @@ public class MimToGeneParser implements ResourceParser {
 
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset())) {
             String line;
-
             while ((line = reader.readLine()) != null) {
                 //ignore comment lines
-                if (line.startsWith("#")) {
-                    continue;
-                }
-                String[] fields = line.split("\t");
-                /*if (fields.length < 6) { // malformed, should never happen
-                    logger.error("Malformed mim2gene line: " + line);
-                    logger.error("Found only {} fields", fields.length);
-                    continue;
-                }*/
-                try {
-                    String type = fields[1].trim();
-                    /* The following gets both "gene" and "gene/phenotype" */
-                    if (!type.startsWith("gene")) {
-                        continue;  /* We do not need phenotype MIMs or other types such as removed */
-
-                    }
-                    /* There are a lot of lines such as
-                     "102777	gene	-	-"
-                     That do not have valid Entrez Gene ids. We just skip them */
-                    //if (fields[2].equals("-")) {
-                    if (fields.length != 5) {
-                        continue;
-                    }
-                    // typical line: 100850  gene    50      ACO2    ENSG00000100412
-                    Integer mim = Integer.parseInt(fields[0]);
-                    Integer entrezGeneId = Integer.parseInt(fields[2]); // Entrez Gene ID */
-                    //String IDs[] = gene.split(",")
-//                    addMIM2EntrezGenePair(mim, entrezGeneId);
-                    Set<Integer> geneSet;
-                    if (mim2geneMap.containsKey(mim)) {
-                        geneSet = mim2geneMap.get(mim);
-                        geneSet.add(entrezGeneId);
-                    } else {
-                        geneSet = new TreeSet<>();
-                        geneSet.add(entrezGeneId);
-                        mim2geneMap.put(mim, geneSet);
-                    }
-                } catch (NumberFormatException e) {
-                    logger.error("{}", e);
+                if (!line.startsWith("#")) {
+                    parseLine(line);
                 }
             }
             logger.info("Extracted {} genes from {}", mim2geneMap.size(), inFile);
@@ -142,36 +105,27 @@ public class MimToGeneParser implements ResourceParser {
         logger.info("{}", status);
 
     }
-    
-//    /**
-//     * This is essentially a structure with three elements representing a line
-//     * in the mim2gene File
-//     */
-//    private class MIM2Gene {
-//
-//        /**
-//         * MIM number
-//         */
-//        public int mim;
-//        /**
-//         * 'P': phenotype, 'G': gene
-//         */
-//        public char type;
-//        /**
-//         * Entrez Gene ID
-//         */
-//        public int geneID;
-//
-//        public MIM2Gene(int m, String t, int g) {
-//            this.mim = m;
-//            if (t.equals("gene")) {
-//                this.type = 'G';
-//            } else {
-//                System.err.println("Could not identify type in MIM2Gene: " + t);
-//                System.exit(1);
-//            }
-//            this.geneID = g;
-//        }
-//    }
+
+    private void parseLine(String line) {
+        String[] fields = line.split("\t");
+        try {
+            String type = fields[1].trim();
+            /* The following gets both "gene" and "gene/phenotype" */
+            if (type.startsWith("gene") && fields.length == 5) {
+                // typical line: 100850  gene    50      ACO2    ENSG00000100412
+                Integer mim = Integer.parseInt(fields[0]);
+                Integer entrezGeneId = Integer.parseInt(fields[2]); // Entrez Gene ID */
+                if (mim2geneMap.containsKey(mim)) {
+                    mim2geneMap.get(mim).add(entrezGeneId);
+                } else {
+                    Set<Integer> geneSet = new TreeSet<>();
+                    geneSet.add(entrezGeneId);
+                    mim2geneMap.put(mim, geneSet);
+                }
+            }
+        } catch (NumberFormatException e) {
+            logger.error("{}", e);
+        }
+    }
 
 }
