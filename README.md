@@ -20,7 +20,21 @@ The Exomiser was developed by the Computational Biology and Bioinformatics group
 
 The prebuilt Exomiser binaries can be obtained from the [releases](https://github.com/exomiser/Exomiser/releases) page and supporting data files can be downloaded from the [Exomiser FTP site](http://data.monarchinitiative.org/exomiser).
 
-For instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
+It is possible to use the same data sources for each major version, in order to avoid having to download the data files for each software point release. To do this, edit the ```exomiser.data-directory``` field in the ```application.properties``` file to point to the data directory of the other installation.
+    
+For example you have an exomiser installation located at ```/opt/exomiser-cli-7.0.0``` which contains the data files in the directory ```/opt/exomiser-cli-7.0.0/data```. You can use the release 7.2.3 (same major version) by unzipping the release to ```/opt/exomiser-cli-7.2.3``` and changing the line in the file ```/opt/exomiser-cli-7.2.3/application.properties``` from
+```properties
+#root path where data is to be downloaded and worked on
+#it is assumed that all the files required by exomiser listed in this properties file
+#will be found in the data directory unless specifically overridden here.
+exomiser.data-directory=data
+```
+to
+```properties
+exomiser.data-directory=/opt/exomiser-cli-7.0.0/data
+```
+
+For further instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
 
 #### Running it
 
