@@ -75,6 +75,10 @@ public class GeneIdentifier {
         return entrezId.equals(EMPTY_FIELD) ? NULL_ENTREZ_ID : Integer.valueOf(entrezId);
     }
 
+    public boolean hasEntrezId() {
+        return !entrezId.isEmpty();
+    }
+
     public String getEnsemblId() {
         return ensemblId;
     }

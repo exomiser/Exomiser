@@ -21,6 +21,7 @@ package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
 import org.monarchinitiative.exomiser.core.genome.GeneFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
@@ -39,9 +40,11 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -52,12 +55,14 @@ public class PrioritiserController {
     private static final Logger logger = LoggerFactory.getLogger(PrioritiserController.class);
 
     private final PriorityFactory priorityFactory;
-    private final Map<String, String> geneIdentifiers;
+    private final Map<Integer, GeneIdentifier> geneIdentifiers;
 
     @Autowired
     public PrioritiserController(PriorityFactory priorityFactory, GeneFactory geneFactory) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = geneFactory.createKnownGeneIdentifiers();
+        this.geneIdentifiers = geneFactory.createKnownGeneIds().stream()
+                .filter(GeneIdentifier::hasEntrezId)
+                .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());
     }
 
@@ -79,11 +84,10 @@ public class PrioritiserController {
 
         logger.info("phenotypes: {}({}) genes: {} prioritiser: {} prioritiser-params: {}", phenotypes, phenotypes.size(), genesIds, prioritiserName, prioritiserParams);
 
-        //this is a slow step - GeneIdentifiers should be used instead of genes. GeneIdentifiers can be cached.
         Instant start = Instant.now();
 
         Prioritiser prioritiser = parsePrioritser(prioritiserName, prioritiserParams);
-        List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toList());
+        List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toImmutableList());
         List<Gene> genes = parseGeneIdentifiers(genesIds);
         List<PriorityResult> results = runLimitAndCollectResults(prioritiser, uniquePhenotypes, genes, limit);
 
@@ -120,23 +124,19 @@ public class PrioritiserController {
             logger.info("Gene identifiers not specified - will compare against all known genes.");
             //If not specified, we'll assume they want to use the whole genome. Should save people a lot of typing.
             //n.b. Gene is mutable so these can't be cached and returned.
-            return geneIdentifiers.entrySet().parallelStream()
-                    //geneId and geneSymbol are the same in cases where
-                    .map(entry -> {
-                        String geneId = entry.getKey();
-                        String geneSymbol = entry.getValue();
-                        if (geneId.equals(geneSymbol)) {
-                            return new Gene(geneSymbol, -1);
-                        }
-                        //we're assuming Entrez ids here.
-                        return new Gene(geneSymbol, Integer.parseInt(geneId));
-                    })
-                    .collect(toList());
+            return geneIdentifiers.values().parallelStream()
+                    .map(Gene::new)
+                    .collect(toImmutableList());
         }
-        //this is a hack - really the Prioritiser should only work on GeneIds, but currently this isn't possible as OmimPrioritiser uses some properties of Gene
+        // This is a hack - really the Prioritiser should only work on GeneIds, but currently this isn't possible as
+        // OmimPrioritiser uses some properties of Gene
         return genesIds.stream()
-                .map(id -> new Gene(geneIdentifiers.getOrDefault(Integer.toString(id), "GENE:" + id), id))
-                .collect(toList());
+                .map(id -> new Gene(geneIdentifiers.getOrDefault(id, unrecognisedGeneIdentifier(id))))
+                .collect(toImmutableList());
+    }
+
+    private GeneIdentifier unrecognisedGeneIdentifier(Integer id) {
+        return GeneIdentifier.builder().geneSymbol("GENE:" + id).build();
     }
 
     private List<PriorityResult> runLimitAndCollectResults(Prioritiser prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
@@ -144,9 +144,9 @@ public class PrioritiserController {
                 .sorted(Comparator.naturalOrder());
         logger.info("Finished {}", prioritiser.getPriorityType());
         if (limit == 0) {
-            return resultsStream.collect(toList());
+            return resultsStream.collect(toImmutableList());
         }
-        return resultsStream.limit(limit).collect(toList());
+        return resultsStream.limit(limit).collect(toImmutableList());
     }
 
 }

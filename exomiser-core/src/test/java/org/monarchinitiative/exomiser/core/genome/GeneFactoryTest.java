@@ -30,10 +30,8 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 
-import java.util.Map;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -61,10 +59,4 @@ public class GeneFactoryTest {
         assertThat(knownGenes, equalTo(expected));
     }
 
-    @Test
-    public void testCreateKnownGeneIdentifiers() throws Exception {
-        Map<String, String> expected = TestFactory.buildGeneIdentifiers().stream().collect(toMap(GeneIdentifier::getEntrezId, GeneIdentifier::getGeneSymbol));
-        Map<String, String> knownGenes = instance.createKnownGeneIdentifiers();
-        assertThat(knownGenes, equalTo(expected));
-    }
 }

@@ -24,7 +24,6 @@
  */
 package org.monarchinitiative.exomiser.core.genome;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.TranscriptModel;
@@ -70,57 +69,6 @@ public class GeneFactory {
                 .collect(toList());
         logger.info("Created {} known genes.", knownGenes.size());
         return knownGenes;
-    }
-
-    /**
-     * Creates a map of gene identifiers to gene symbols.
-     * @return a map of gene identifiers to gene symbol. In cases where there is no valid geneId (i.e. the transcript is
-     * in a non-coding region) the symbol and identifier will be the same. As an example {BC038731=BC038731, Mir_378=Mir_378}.
-     * A valid gene id/symbol pair will depend in the underlying data used to create the JannovarData. Currently Exomiser
-     * uses Entrez gene ids which are plain integers.
-     *
-     * @deprecated Use the typed method {@link #createKnownGeneIds()}.
-     */
-    //TODO: remove from here - this is only used by the PrioritiserController (and GeneFactoryTest)
-    @Deprecated
-    public Map<String, String> createKnownGeneIdentifiers() {
-        ImmutableMap.Builder<String, String> geneIdentifiers = ImmutableMap.builder();
-        int identifiers = 0;
-        int noEntrezId = 0;
-        for (String geneSymbol : jannovarData.getTmByGeneSymbol().keySet()) {
-            Collection<TranscriptModel> transcriptModels = jannovarData.getTmByGeneSymbol().get(geneSymbol);
-            String geneId = transcriptModels.stream()
-                    .filter(Objects::nonNull)
-                    .filter(transcriptModel -> transcriptModel.getGeneID() != null)
-                    .filter(transcriptModel -> !transcriptModel.getGeneID().equals("null"))
-                    // The gene ID is of the form "${NAMESPACE}${NUMERIC_ID}" where "NAMESPACE" is "ENTREZ"
-                    // for UCSC. At this point, there is a hard dependency on using the UCSC database.
-                    .map(transcriptModel -> {
-                        //logger.info("{} {} {} {}", transcriptModel.getGeneSymbol(), transcriptModel.getGeneID(), transcriptModel.getAccession(), transcriptModel.getAltGeneIDs());
-                        //Using ucsc_hg19: LMOD1 ENTREZ25802 uc010ppu.2 null
-                        //Using hg19_ucsc: LMOD1 25802 uc010ppu.2 {CCDS_ID=CCDS53457, COSMIC_ID=LMOD1, ENSEMBL_GENE_ID=ENSG00000163431, ENTREZ_ID=25802, HGNC_ALIAS=64kD|D1|1D, HGNC_ID=HGNC:6647, HGNC_PREVIOUS=, HGNC_SYMBOL=LMOD1, MGD_ID=MGI:2135671, OMIM_ID=602715, PUBMED_ID=, REFSEQ_ACCESSION=NM_012134, RGD_ID=RGD:1307236, UCSC_ID=uc057oju.1, UNIPROT_ID=P29536, VEGA_ID=OTTHUMG00000035802}
-                        //Using hg19_ensembl: LMOD1 ENSG00000163431 ENST00000367288 {CCDS_ID=CCDS53457, COSMIC_ID=LMOD1, ENSEMBL_GENE_ID=ENSG00000163431, ENTREZ_ID=25802, HGNC_ALIAS=64kD|D1|1D, HGNC_ID=HGNC:6647, HGNC_PREVIOUS=, HGNC_SYMBOL=LMOD1, MGD_ID=MGI:2135671, OMIM_ID=602715, PUBMED_ID=, REFSEQ_ACCESSION=NM_012134, RGD_ID=RGD:1307236, UCSC_ID=uc057oju.1, UNIPROT_ID=P29536, VEGA_ID=OTTHUMG00000035802}
-                        String geneID = transcriptModel.getGeneID();
-                        if (geneID.startsWith("ENTREZ")) {
-                            //we've got an old one
-                            return geneID.substring("ENTREZ".length());
-                        }
-                        return geneID;
-                    })
-                    .distinct()
-                    .findFirst()
-                    .orElse(geneSymbol);
-
-            if (geneId.equals(geneSymbol)) {
-                noEntrezId++;
-                logger.debug("No geneId associated with gene symbol {} geneId set to {}", geneSymbol, geneId);
-            }
-            identifiers++;
-            geneIdentifiers.put(geneId, geneSymbol);
-        }
-        int geneIds = identifiers - noEntrezId;
-        logger.info("Created {} gene identifiers ({} genes, {} without EntrezId)", identifiers, geneIds, noEntrezId);
-        return geneIdentifiers.build();
     }
 
     public Set<GeneIdentifier> createKnownGeneIds() {

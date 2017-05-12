@@ -2,6 +2,7 @@ package org.monarchinitiative.exomiser.core.model;
 
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -95,6 +96,15 @@ public class GeneIdentifierTest {
                 .ucscId("ucscId")
                 .build();
         assertThat(instance.getUcscId(), equalTo("ucscId"));
+    }
+
+    @Test
+    public void testKnownGeneIdentifier() {
+        assertThat(EMPTY_GENE_IDENTIFIER.hasEntrezId(), is(false));
+        GeneIdentifier geneIdentifier = GeneIdentifier.builder()
+                .entrezId("2263")
+                .build();
+        assertThat(geneIdentifier.hasEntrezId(), is(true));
     }
 
 }
