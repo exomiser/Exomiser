@@ -71,31 +71,25 @@ public class PriorityFactoryImpl implements PriorityFactory {
     @Override
     public Prioritiser makePrioritiser(PrioritiserSettings settings) {
         PriorityType priorityType = settings.getPrioritiserType();
-        List<String> hpoIds = settings.getHpoIds();
         List<Integer> entrezSeedGenes = settings.getSeedGeneList();
         String diseaseId = settings.getDiseaseId();
         String candidateGene = settings.getCandidateGene();
         String hiPhiveParams = settings.getHiPhiveParams();
-        
-        if (hpoIds.isEmpty()) {
-            logger.info("HPO terms have not been specified. Setting HPO IDs using disease annotations for {}", diseaseId);
-            hpoIds = getHpoIdsForDiseaseId(diseaseId);
-        }
 
         switch (priorityType) {
             case OMIM_PRIORITY:
                 return makeOmimPrioritiser();
             case PHENIX_PRIORITY:
-                return makePhenixPrioritiser(hpoIds);
+                return makePhenixPrioritiser();
             case HIPHIVE_PRIORITY:
                 HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
                         .diseaseId(diseaseId)
                         .candidateGeneSymbol(candidateGene)
                         .runParams(hiPhiveParams)
                         .build();
-                return makeHiPhivePrioritiser(hpoIds, hiPhiveOptions);
+                return makeHiPhivePrioritiser(hiPhiveOptions);
             case PHIVE_PRIORITY:
-                return makePhivePrioritiser(hpoIds);
+                return makePhivePrioritiser();
             case EXOMEWALKER_PRIORITY:
                 return makeExomeWalkerPrioritiser(entrezSeedGenes);
             case NONE:
@@ -107,7 +101,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
 
     }
 
-    private List<String> getHpoIdsForDiseaseId(String diseaseId) {
+    @Override
+    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
         if (diseaseId == null || diseaseId.isEmpty()) {
             return Collections.emptyList();
         }
@@ -120,14 +115,14 @@ public class PriorityFactoryImpl implements PriorityFactory {
     }
 
     @Override
-    public PhenixPriority makePhenixPrioritiser(List<String> hpoIds) {
+    public PhenixPriority makePhenixPrioritiser() {
         boolean symmetric = false;
-        return new PhenixPriority(phenixDataDirectory.toString(), hpoIds, symmetric);
+        return new PhenixPriority(phenixDataDirectory.toString(), symmetric);
     }
 
     @Override
-    public PhivePriority makePhivePrioritiser(List<String> hpoIds) {
-        return new PhivePriority(hpoIds, priorityService);
+    public PhivePriority makePhivePrioritiser() {
+        return new PhivePriority(priorityService);
     }
 
     @Override
@@ -136,8 +131,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
     }
 
     @Override
-    public HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
-        return new HiPhivePriority(hpoIds, hiPhiveOptions, randomWalkMatrix, priorityService);
+    public HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
+        return new HiPhivePriority(hiPhiveOptions, randomWalkMatrix, priorityService);
     }
 
 }

@@ -187,7 +187,7 @@ public class ExomeWalkerPriority implements Prioritiser {
     }
 
     @Override
-    public Stream<ExomeWalkerPriorityResult> prioritise(List<Gene> genes) {
+    public Stream<ExomeWalkerPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         if (seedGenes == null || seedGenes.isEmpty()) {
             throw new RuntimeException("Please specify a valid list of known genes!");
         }
@@ -204,13 +204,11 @@ public class ExomeWalkerPriority implements Prioritiser {
     /**
      * Prioritize a list of candidate {@link Gene Gene} objects
      * (the candidate genes have rare, potentially pathogenic variants).
-     * <P>
-     * You have to call {@link #setParameters} before running this function.
      *
      * @param geneList List of candidate genes.
      */
     @Override
-    public void prioritizeGenes(List<Gene> geneList) {
+    public void prioritizeGenes(List<String> hpoIds, List<Gene> geneList) {
         if (seedGenes == null || seedGenes.isEmpty()) {
             throw new RuntimeException("Please specify a valid list of known genes!");
         }

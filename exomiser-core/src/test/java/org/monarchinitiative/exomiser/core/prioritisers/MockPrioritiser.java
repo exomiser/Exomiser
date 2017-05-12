@@ -43,7 +43,7 @@ public class MockPrioritiser implements Prioritiser {
     }
 
     @Override
-    public void prioritizeGenes(List<Gene> genes) {
+    public void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
 //        for (Gene gene : genes) {
 //            String geneSymbol = gene.getGeneSymbol();
 //            Float score = expectedScores.getOrDefault(geneSymbol, 0f);
@@ -58,7 +58,7 @@ public class MockPrioritiser implements Prioritiser {
     }
 
     @Override
-    public Stream<PriorityResult> prioritise(List<Gene> genes) {
+    public Stream<PriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         return genes.stream().map(prioritiseGene());
     }
 

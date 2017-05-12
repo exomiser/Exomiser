@@ -8,6 +8,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -18,12 +19,12 @@ import java.util.stream.Stream;
 public class NoneTypePrioritiser implements Prioritiser {
     
     @Override
-    public void prioritizeGenes(List<Gene> geneList) {
+    public void prioritizeGenes(List<String> hpoIds, List<Gene> geneList) {
         //Deliberately empty - this prioritiser does nothing.
     }
 
     @Override
-    public Stream<PriorityResult> prioritise(List<Gene> genes) {
+    public Stream<PriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         return Stream.empty();
     }
 
@@ -34,21 +35,13 @@ public class NoneTypePrioritiser implements Prioritiser {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        return hash;
+        return Objects.hashCode(NoneTypePrioritiser.class.getName());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final NoneTypePrioritiser other = (NoneTypePrioritiser) obj;
-        return true;
-    } 
+        return obj != null && getClass() == obj.getClass();
+    }
 
     @Override
     public String toString() {

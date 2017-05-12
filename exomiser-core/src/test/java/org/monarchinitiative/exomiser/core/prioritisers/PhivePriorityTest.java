@@ -26,7 +26,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServ
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,7 @@ public class PhivePriorityTest {
 
     @Test
     public void testGetPriorityType() {
-        PhivePriority instance = new PhivePriority(Collections.emptyList(), TestPriorityServiceFactory.STUB_SERVICE);
+        PhivePriority instance = new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE);
         assertThat(instance.getPriorityType(), equalTo(PriorityType.PHIVE_PRIORITY));
     }
 
@@ -82,8 +81,8 @@ public class PhivePriorityTest {
         List<Gene> genes = getGenes();
 
         List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
-        PhivePriority phivePriority = new PhivePriority(hpoIds, TestPriorityServiceFactory.TEST_SERVICE);
-        phivePriority.prioritizeGenes(genes);
+        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
+        phivePriority.prioritizeGenes(hpoIds, genes);
 
         List<PhivePriorityResult> results = genes.stream()
                 .flatMap(gene -> gene.getPriorityResults().values().stream())
@@ -103,9 +102,9 @@ public class PhivePriorityTest {
         List<Gene> genes = getGenes();
 
         List<String> hpoIds= Lists.newArrayList("HP:0010055", "HP:0001363", "HP:0001156", "HP:0011304");
-        PhivePriority phivePriority = new PhivePriority(hpoIds, TestPriorityServiceFactory.TEST_SERVICE);
+        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
 
-        List<PhivePriorityResult> results = phivePriority.prioritise(genes)
+        List<PhivePriorityResult> results = phivePriority.prioritise(hpoIds, genes)
                 .sorted()
                 .collect(toList());
 
@@ -116,4 +115,12 @@ public class PhivePriorityTest {
         checkScores(actualScores, expectedMouseScores());
     }
 
+    @Test
+    public void testHashCode() {
+        PhivePriority phivePriority = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
+        PhivePriority other = new PhivePriority(TestPriorityServiceFactory.TEST_SERVICE);
+        System.out.println(phivePriority.hashCode());
+        System.out.println(other.hashCode());
+        assertThat(phivePriority, equalTo(other));
+    }
 }

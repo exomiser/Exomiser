@@ -69,11 +69,6 @@ public class PhenixPriority implements Prioritiser {
      * The semantic similarity measure used to calculate phenotypic similarity
      */
     private InformationContentObjectSimilarity similarityMeasure;
-    /**
-     * The HPO terms entered by the user describing the individual who is being
-     * sequenced by exome-sequencing or clinically relevant genome panel.
-     */
-    private List<Term> hpoQueryTerms;
 
     private static final double DEFAULT_SCORE = 0;
 
@@ -112,17 +107,12 @@ public class PhenixPriority implements Prioritiser {
      * {@code http://compbio.charite.de/hudson/job/hpo/}) and
      * ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt-file (obtained from
      * {@code http://compbio.charite.de/hudson/job/hpo.annotations.monthly/lastSuccessfulBuild/artifact/annotation/}).
-     * @param hpoQueryTermIds List of HPO terms
      * @param symmetric Flag to indicate if the semantic similarity score should
      * be calculated using the symmetrix formula.
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      * Hudson page</a>
      */
-    public PhenixPriority(String scoreDistributionFolder, List<String> hpoQueryTermIds, boolean symmetric) {
-
-        if (hpoQueryTermIds.isEmpty()) {
-            throw new PhenixException("Please supply some HPO terms. PhenIX is unable to prioritise genes without these.");
-        }
+    public PhenixPriority(String scoreDistributionFolder, boolean symmetric) {
 
         if (!scoreDistributionFolder.endsWith(File.separator)) {
             scoreDistributionFolder += File.separator;
@@ -139,28 +129,13 @@ public class PhenixPriority implements Prioritiser {
         SlimDirectedGraphView<Term> hpoSlim = hpo.getSlimGraphView();
         this.geneId2annotations = parseAnnotations(hpoAnnotationFile, hpo, hpoSlim);
         this.similarityMeasure = calculateInformationContentSimilarityMeasures(symmetric, hpo, hpoSlim, geneId2annotations);
-
-        //hpoQueryTerms can probably be calculated for each query and kept local
-        hpoQueryTerms = hpoQueryTermIds.stream()
-                .map(termIdString -> {
-                    Term term = hpo.getTermIncludingAlternatives(termIdString);
-                    if (term == null) {
-                        logger.error("Unrecognised HPO input term {}. This will not be used in the analysis.", termIdString);
-                    }
-                    return term;
-                })
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
-        logger.info("Created HPO query terms {}", hpoQueryTerms);
     }
 
     /**
      * STUB CONSTRUCTOR - ONLY USED FOR TESTING PURPOSES TO AVOID NULL POINTERS FROM ORIGINAL CONSTRUCTOR. DO NOT USE FOR PRODUCTION CODE!!!!
-     * @param hpoIds
      * @param symmetric
      */
-    protected PhenixPriority (List<String> hpoIds, boolean symmetric) {
+    protected PhenixPriority(boolean symmetric) {
         this.symmetric = symmetric;
     }
 
@@ -289,7 +264,15 @@ public class PhenixPriority implements Prioritiser {
     }
 
     @Override
-    public Stream<PhenixPriorityResult> prioritise(List<Gene> genes) {
+    public Stream<PhenixPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
+
+        if (hpoIds.isEmpty()) {
+            throw new PhenixException("Please supply some HPO terms. PhenIX is unable to prioritise genes without these.");
+        }
+
+        List<Term> hpoQueryTerms = makeHpoQueryTerms(hpoIds);
+        logger.info("Created HPO query terms {}", hpoQueryTerms);
+
         ScoreDistributionContainer scoredistributionContainer = new ScoreDistributionContainer(scoredistributionFolder, symmetric, hpoQueryTerms.size());
 
         Map<Gene, PhenixScore> geneScores = genes.stream().collect(toMap(Function.identity(), scoreGene(hpoQueryTerms, scoredistributionContainer)));
@@ -306,6 +289,20 @@ public class PhenixPriority implements Prioritiser {
                     double score = phenixScore.getSemanticSimilarityScore() * normalisationFactor;
                     return new PhenixPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, phenixScore.getSemanticSimilarityScore(), phenixScore.getNegativeLogP());
                 });
+    }
+
+    private List<Term> makeHpoQueryTerms(List<String> hpoIds) {
+        return hpoIds.stream()
+                .map(termIdString -> {
+                    Term term = hpo.getTermIncludingAlternatives(termIdString);
+                    if (term == null) {
+                        logger.error("Unrecognised HPO input term {}. This will not be used in the analysis.", termIdString);
+                    }
+                    return term;
+                })
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private Function<Gene, PhenixScore> scoreGene(List<Term> queryTerms, ScoreDistributionContainer scoredistributionContainer) {
@@ -384,30 +381,23 @@ public class PhenixPriority implements Prioritiser {
 //    }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 13 * hash + Objects.hashCode(this.hpoQueryTerms);
-        return hash;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PhenixPriority that = (PhenixPriority) o;
+        return symmetric == that.symmetric;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final PhenixPriority other = (PhenixPriority) obj;
-        if (!Objects.equals(this.hpoQueryTerms, other.hpoQueryTerms)) {
-            return false;
-        }
-        return this.symmetric == other.symmetric;
+    public int hashCode() {
+        return Objects.hash(PhenixPriority.class.getName(), symmetric);
     }
 
     @Override
     public String toString() {
-        return "PhenixPriority{" + "hpoQueryTerms=" + hpoQueryTerms + '}';
+        return "PhenixPriority{" +
+                "symmetric=" + symmetric +
+                '}';
     }
 
     //Tuple-esq container

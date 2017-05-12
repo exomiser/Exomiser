@@ -61,18 +61,12 @@ public class HiPhivePriority implements Prioritiser {
     private final DataMatrix randomWalkMatrix;
     private final PriorityService priorityService;
 
-    //TODO: make local
-    private final List<String> hpoIds;
-
     /**
-     * @param hpoIds
      * @param options
      * @param randomWalkMatrix
      */
-    public HiPhivePriority(List<String> hpoIds, HiPhiveOptions options, DataMatrix randomWalkMatrix, PriorityService priorityService) {
-        this.hpoIds = hpoIds;
+    public HiPhivePriority(HiPhiveOptions options, DataMatrix randomWalkMatrix, PriorityService priorityService) {
         this.options = options;
-
         this.randomWalkMatrix = randomWalkMatrix;
         this.priorityService = priorityService;
     }
@@ -83,7 +77,7 @@ public class HiPhivePriority implements Prioritiser {
     }
 
     @Override
-    public Stream<HiPhivePriorityResult> prioritise(List<Gene> genes) {
+    public Stream<HiPhivePriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         if (options.isBenchmarkingEnabled()) {
             logger.info("Running in benchmarking mode for disease: {} and candidateGene: {}", options.getDiseaseId(), options.getCandidateGeneSymbol());
         }
@@ -227,7 +221,6 @@ public class HiPhivePriority implements Prioritiser {
     public int hashCode() {
         int hash = 3;
         hash = 73 * hash + Objects.hashCode(this.randomWalkMatrix);
-        hash = 73 * hash + Objects.hashCode(this.hpoIds);
         hash = 73 * hash + Objects.hashCode(this.options);
         return hash;
     }
@@ -241,21 +234,13 @@ public class HiPhivePriority implements Prioritiser {
             return false;
         }
         final HiPhivePriority other = (HiPhivePriority) obj;
-        if (!Objects.equals(this.randomWalkMatrix, other.randomWalkMatrix)) {
-            return false;
-        }
-        if (!Objects.equals(this.hpoIds, other.hpoIds)) {
-            return false;
-        }
-        return Objects.equals(this.options, other.options);
+        return Objects.equals(this.randomWalkMatrix, other.randomWalkMatrix) && Objects.equals(this.options, other.options);
     }
 
     @Override
     public String toString() {
-        return "HiPhivePriority{"
-                + "hpoIds=" + hpoIds
-                + ", options=" + options
-                + '}';
+        return "HiPhivePriority{" +
+                "options=" + options +
+                '}';
     }
-
 }

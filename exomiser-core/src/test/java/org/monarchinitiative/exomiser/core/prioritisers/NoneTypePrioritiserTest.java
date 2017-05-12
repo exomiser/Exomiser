@@ -8,6 +8,8 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -26,7 +28,7 @@ public class NoneTypePrioritiserTest {
 
     @Test
     public void testRunAnalysisHasNoEffectOnGenes() {
-        instance.prioritizeGenes(null);
+        instance.prioritizeGenes(Collections.emptyList(), Collections.emptyList());
     }
 
     @Test

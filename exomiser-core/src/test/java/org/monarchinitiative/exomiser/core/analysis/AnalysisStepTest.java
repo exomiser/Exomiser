@@ -29,8 +29,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.PhivePriority;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
-import java.util.ArrayList;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -39,7 +37,7 @@ import static org.hamcrest.core.Is.is;
  */
 public class AnalysisStepTest {
 
-    private static final AnalysisStep PHIVE_PRIORITY = new PhivePriority(new ArrayList<>(), TestPriorityServiceFactory.STUB_SERVICE);
+    private static final AnalysisStep PHIVE_PRIORITY = new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE);
     private static final AnalysisStep PRIORITY_SCORE_FILTER = new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.6f);
     private static final AnalysisStep KNOWN_VARIANT_FILTER = new KnownVariantFilter();
     private static final AnalysisStep OMIM_PRIORITY = new OMIMPriority(TestPriorityServiceFactory.STUB_SERVICE);

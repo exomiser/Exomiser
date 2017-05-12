@@ -39,43 +39,42 @@ import static java.util.stream.Collectors.maxBy;
  * pathogenic), FilterType is intended to work on genes (predict the relevance of
  * the gene to the disease, without taking the nature or pathogenicity of any
  * variant into account).
- * <P>
+ * <p>
  * It is expected that the Exomiser will combine the evaluations of the Filter
  * and the FilterType evaluations in order to reach a final ranking of the genes
  * and variants into candidate disease-causing mutations.
  *
  * @author Peter N Robinson
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @version 0.13 (13 May, 2013).
  * @see org.monarchinitiative.exomiser.core.filters.Filter
  */
 public interface Prioritiser extends AnalysisStep {
 
     /**
-     * Apply a prioritization algorithm to a list of
-     * {@link Gene Gene} objects. This will have the side effect
-     * of adding the PriorityResult to the Gene object.
-     * <p>
+     * Apply a prioritization algorithm to a list of {@link Gene Gene} objects ranking the results against the similarity
+     * to the input HPO ids.
+     * This will have the side effect of adding the PriorityResult to the Gene object.
      *
+     * @param hpoIds
      * @param genes
      */
-    default void prioritizeGenes(List<Gene> genes){
-        Map<Integer, Optional<PriorityResult>> results = prioritise(genes)
+    default void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
+        Map<Integer, Optional<PriorityResult>> results = prioritise(hpoIds, genes)
                 .collect(groupingBy(PriorityResult::getGeneId, maxBy(comparingDouble(PriorityResult::getScore))));
 
         genes.forEach(gene -> results.getOrDefault(gene.getEntrezGeneID(), Optional.empty())
                 .ifPresent(gene::addPriorityResult));
     }
 
-    //TODO: Enable this. Consider using HumanGeneIdentifier objects as we want to decouple Gene from this package.
-    // OmimiPrioritiser will break though as this is the only prioritiser using anything other than geneId and geneSymbol.
-    //    public List<? extends PriorityResult> prioritizeGenes(Collection<String> hpoIds, List<Gene> genes);
-
     /**
      * Applies the prioritiser to the list of genes and returns a Stream of PriorityResult from the Prioritiser.
+     *
+     * @param hpoIds
      * @param genes
      * @return the stream of results.
      */
-    Stream<? extends PriorityResult> prioritise(List<Gene> genes);
+    Stream<? extends PriorityResult> prioritise(List<String> hpoIds, List<Gene> genes);
 
     /**
      * @return an enum constant representing the type of the implementing class.

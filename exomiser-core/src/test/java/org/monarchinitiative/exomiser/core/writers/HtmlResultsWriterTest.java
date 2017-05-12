@@ -46,6 +46,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.monarchinitiative.exomiser.core.prioritisers.OMIMPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PhivePriority;
+import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -189,7 +190,7 @@ public class HtmlResultsWriterTest {
                 .addStep(new RegulatoryFeatureFilter())
                 .addStep(new FrequencyFilter(0.1f))
                 .addStep(new PathogenicityFilter(true))
-                .addStep(new PhivePriority(Collections.emptyList(), null))
+                .addStep(new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE))
                 .build();
 
         OutputSettings settings = OutputSettings.builder().outputPrefix(testOutFilePrefix).build();

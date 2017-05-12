@@ -25,11 +25,13 @@ public interface PriorityFactory {
 
     OMIMPriority makeOmimPrioritiser();
 
-    PhenixPriority makePhenixPrioritiser(List<String> hpoIds);
+    PhenixPriority makePhenixPrioritiser();
 
-    PhivePriority makePhivePrioritiser(List<String> hpoIds);
+    PhivePriority makePhivePrioritiser();
 
     ExomeWalkerPriority makeExomeWalkerPrioritiser(List<Integer> entrezSeedGenes);
 
-    HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions);
+    HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions);
+
+    List<String> getHpoIdsForDiseaseId(String diseaseId);
 }

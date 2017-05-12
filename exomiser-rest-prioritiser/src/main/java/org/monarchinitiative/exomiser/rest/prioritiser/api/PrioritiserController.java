@@ -21,7 +21,10 @@ package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
 import org.monarchinitiative.exomiser.core.genome.GeneFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.prioritisers.*;
+import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
+import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,14 +78,14 @@ public class PrioritiserController {
     ) {
 
         logger.info("phenotypes: {}({}) genes: {} prioritiser: {} prioritiser-params: {}", phenotypes, phenotypes.size(), genesIds, prioritiserName, prioritiserParams);
-        Prioritiser prioritiser = setUpPrioritiser(phenotypes, prioritiserParams, prioritiserName);
 
         //this is a slow step - GeneIdentifiers should be used instead of genes. GeneIdentifiers can be cached.
         Instant start = Instant.now();
-        List<Gene> genes = parseGeneIdentifiers(genesIds);
 
-        //in an ideal world this would return Stream<PriorityResult> results = prioritiser.prioritise(hpoIds, geneIds)
-        List<PriorityResult> results = runLimitAndCollectResults(prioritiser, genes, limit);
+        Prioritiser prioritiser = parsePrioritser(prioritiserName, prioritiserParams);
+        List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toList());
+        List<Gene> genes = parseGeneIdentifiers(genesIds);
+        List<PriorityResult> results = runLimitAndCollectResults(prioritiser, uniquePhenotypes, genes, limit);
 
         Instant end = Instant.now();
         Duration duration = Duration.between(start, end);
@@ -97,26 +100,18 @@ public class PrioritiserController {
         return new PrioritiserResultSet(params, duration.toMillis(), results);
     }
 
-    private Prioritiser setUpPrioritiser(List<String> phenotypes, String prioritiserParams, String prioritiserName) {
-        PriorityType priorityType = parsePrioritserType(prioritiserName.trim());
-        List<String> uniquePhenotypes = phenotypes.stream().distinct().collect(toList());
-        PrioritiserSettings prioritiserSettings = PrioritiserSettings.builder()
-                .usePrioritiser(priorityType)
-                .hpoIdList(uniquePhenotypes)
-                .hiPhiveParams(prioritiserParams)
-                .build();
-        return priorityFactory.makePrioritiser(prioritiserSettings);
-    }
-
-    private PriorityType parsePrioritserType(String prioritiserName) {
+    private Prioritiser parsePrioritser(String prioritiserName, String prioritiserParams) {
         switch(prioritiserName) {
             case "phenix":
-                return PriorityType.PHENIX_PRIORITY;
+                return priorityFactory.makePhenixPrioritiser();
             case "phive":
-                return PriorityType.PHIVE_PRIORITY;
+                return priorityFactory.makePhivePrioritiser();
             case "hiphive":
             default:
-                return PriorityType.HIPHIVE_PRIORITY;
+                HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
+                        .runParams(prioritiserParams)
+                        .build();
+                return priorityFactory.makeHiPhivePrioritiser(hiPhiveOptions);
         }
     }
 
@@ -144,12 +139,14 @@ public class PrioritiserController {
                 .collect(toList());
     }
 
-    private List<PriorityResult> runLimitAndCollectResults(Prioritiser prioritiser, List<Gene> genes, int limit) {
-        Stream<? extends PriorityResult> resultsStream = prioritiser.prioritise(genes).sorted(Comparator.naturalOrder());
+    private List<PriorityResult> runLimitAndCollectResults(Prioritiser prioritiser, List<String> phenotypes, List<Gene> genes, int limit) {
+        Stream<? extends PriorityResult> resultsStream = prioritiser.prioritise(phenotypes, genes)
+                .sorted(Comparator.naturalOrder());
         logger.info("Finished {}", prioritiser.getPriorityType());
         if (limit == 0) {
             return resultsStream.collect(toList());
         }
         return resultsStream.limit(limit).collect(toList());
     }
+
 }

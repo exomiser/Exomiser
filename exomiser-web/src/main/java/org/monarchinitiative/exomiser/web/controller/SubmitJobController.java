@@ -164,10 +164,10 @@ public class SubmitJobController {
     }
 
     private List<String> getDiseasePhenotypes(String diseaseId) {
-        if (diseaseId != null && !diseaseId.isEmpty()) {
-            return priorityService.getHpoIdsForDiseaseId(diseaseId);
+        if (diseaseId == null || diseaseId.isEmpty()) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+        return priorityService.getHpoIdsForDiseaseId(diseaseId);
     }
 
     private int countVariantLinesInVcf(Path vcfPath) {

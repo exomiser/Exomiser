@@ -92,12 +92,20 @@ public class SettingsParser {
             .pedPath(settings.getPedPath())
             .probandSampleName(settings.getProbandSampleName())
             .modeOfInheritance(settings.getModeOfInheritance())
-            .hpoIds(settings.getHpoIds())
+                .hpoIds(populateHpoIdsIfEmpty(settings.getHpoIds(), settings.getDiseaseId()))
             .frequencySources(FrequencySource.ALL_EXTERNAL_FREQ_SOURCES)
             .pathogenicitySources(MISSENSE_VARIANT_PATH_SOURCES)
             .analysisMode(makeAnalysisMode(settings.runFullAnalysis()))
             .steps(makeAnalysisSteps(settings, settings))
             .build();
+    }
+
+    private List<String> populateHpoIdsIfEmpty(List<String> hpoIds, String diseaseId) {
+        if (hpoIds.isEmpty()) {
+            logger.info("HPO terms have not been specified. Setting HPO IDs using disease annotations for {}", diseaseId);
+            return prioritiserFactory.getHpoIdsForDiseaseId(diseaseId);
+        }
+        return hpoIds;
     }
 
     private AnalysisMode makeAnalysisMode(boolean runFullAnalysis) {

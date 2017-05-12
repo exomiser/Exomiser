@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -63,7 +64,7 @@ public class OMIMPriorityTest {
     public void prioritizeGenes_unrecognisedGene() throws Exception {
         List<Gene> genes = Lists.newArrayList(new Gene("Wibble", 999999999));
 
-        instance.prioritizeGenes(genes);
+        instance.prioritizeGenes(Collections.emptyList(), genes);
 
         genes.forEach(gene -> {
             OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
@@ -76,7 +77,7 @@ public class OMIMPriorityTest {
     @Test
     public void prioritizeGenes_NoInheritanceModes() throws Exception {
         List<Gene> genes = getGenes();
-        instance.prioritizeGenes(genes);
+        instance.prioritizeGenes(Collections.emptyList(), genes);
         genes.forEach(gene -> {
             OMIMPriorityResult result = (OMIMPriorityResult) gene.getPriorityResult(PriorityType.OMIM_PRIORITY);
             System.out.printf("%s %s %s%n", gene.getGeneSymbol(), gene.getInheritanceModes(), result);
@@ -90,7 +91,7 @@ public class OMIMPriorityTest {
         Gene znf738 = new Gene("ZNF738", 148203);
         List<Gene> genes = Lists.newArrayList(znf738);
 
-        instance.prioritise(genes).forEach(result -> {
+        instance.prioritise(Collections.emptyList(), genes).forEach(result -> {
             System.out.println(result);
             assertThat(result.getScore(), equalTo(1d));
             assertThat(result.getAssociatedDiseases().isEmpty(), is(true));
@@ -105,7 +106,7 @@ public class OMIMPriorityTest {
         ror2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
         List<Gene> genes = Lists.newArrayList(ror2);
 
-        instance.prioritizeGenes(genes);
+        instance.prioritizeGenes(Collections.emptyList(), genes);
 
         genes.forEach(gene -> {
             checkOmimScoreAndHasAssociatedDiseases(gene, 1d, false);
@@ -120,7 +121,7 @@ public class OMIMPriorityTest {
         ror2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         List<Gene> genes = Lists.newArrayList(ror2);
 
-        instance.prioritizeGenes(genes);
+        instance.prioritizeGenes(Collections.emptyList(), genes);
 
         genes.forEach(gene -> {
             checkOmimScoreAndHasAssociatedDiseases(gene, 1d, false);
@@ -134,7 +135,7 @@ public class OMIMPriorityTest {
         Gene ror2 = new Gene("ROR2", 4920);
         List<Gene> genes = Lists.newArrayList(ror2);
 
-        instance.prioritizeGenes(genes);
+        instance.prioritizeGenes(Collections.emptyList(), genes);
 
         genes.forEach(gene -> {
             checkOmimScoreAndHasAssociatedDiseases(gene, 1d, false);
@@ -155,7 +156,7 @@ public class OMIMPriorityTest {
         frem2.setInheritanceModes(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
         List<Gene> genes = Lists.newArrayList(frem2);
 
-        instance.prioritizeGenes(genes);
+        instance.prioritizeGenes(Collections.emptyList(), genes);
 
         genes.forEach(gene -> {
             checkOmimScoreAndHasAssociatedDiseases(gene, 0.5d, false);

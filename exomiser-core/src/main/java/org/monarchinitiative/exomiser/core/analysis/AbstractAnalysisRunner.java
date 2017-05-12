@@ -94,7 +94,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandSampleName, probandSampleId + 1, sampleNames);
         Instant timeStart = Instant.now();
-
+        List<String> hpoIds = analysis.getHpoIds();
         //soo many comments - this is a bad sign that this is too complicated.
         Map<String, Gene> allGenes = makeKnownGenes();
         List<VariantEvaluation> variantEvaluations = new ArrayList<>();
@@ -114,7 +114,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, new ArrayList<>(allGenes.values()), pedigree, analysis.getModeOfInheritance());
+                runSteps(analysisGroup, hpoIds, new ArrayList<>(allGenes.values()), pedigree, analysis.getModeOfInheritance());
             }
         }
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
@@ -310,18 +310,18 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     //might this be a nascent class waiting to get out here?
-    private void runSteps(List<AnalysisStep> analysisSteps, List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+    private void runSteps(List<AnalysisStep> analysisSteps, List<String> hpoIds, List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
         boolean inheritanceModesCalculated = false;
         for (AnalysisStep analysisStep : analysisSteps) {
             if (!inheritanceModesCalculated && analysisStep.isInheritanceModeDependent()) {
                 analyseGeneCompatibilityWithInheritanceMode(genes, pedigree, modeOfInheritance);
                 inheritanceModesCalculated = true;
             }
-            runStep(analysisStep, genes);
+            runStep(analysisStep, hpoIds, genes);
         }
     }
 
-    private void runStep(AnalysisStep analysisStep, List<Gene> genes) {
+    private void runStep(AnalysisStep analysisStep, List<String> hpoIds, List<Gene> genes) {
         if (analysisStep.isVariantFilter()) {
             VariantFilter filter = (VariantFilter) analysisStep;
             logger.info("Running VariantFilter: {}", filter);
@@ -341,7 +341,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         if (Prioritiser.class.isInstance(analysisStep)) {
             Prioritiser prioritiser = (Prioritiser) analysisStep;
             logger.info("Running Prioritiser: {}", prioritiser);
-            prioritiser.prioritizeGenes(genes);
+            prioritiser.prioritizeGenes(hpoIds, genes);
         }
     }
 

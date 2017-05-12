@@ -25,6 +25,7 @@ import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
@@ -76,7 +77,7 @@ public class OMIMPriority implements Prioritiser {
      * variants).
      */
     @Override
-    public void prioritizeGenes(List<Gene> genes) {
+    public void prioritizeGenes(List<String> hpoIds, List<Gene> genes) {
         for (Gene gene : genes) {
             OMIMPriorityResult result = prioritiseGene().apply(gene);
             gene.addPriorityResult(result);
@@ -84,7 +85,7 @@ public class OMIMPriority implements Prioritiser {
     }
 
     @Override
-    public Stream<OMIMPriorityResult> prioritise(List<Gene> genes) {
+    public Stream<OMIMPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         return genes.stream().map(prioritiseGene());
     }
 
@@ -150,20 +151,12 @@ public class OMIMPriority implements Prioritiser {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        return hash;
+        return Objects.hashCode(OMIMPriority.class.getName());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final OMIMPriority other = (OMIMPriority) obj;
-        return true;
+        return obj != null && getClass() == obj.getClass();
     }
 
     @Override

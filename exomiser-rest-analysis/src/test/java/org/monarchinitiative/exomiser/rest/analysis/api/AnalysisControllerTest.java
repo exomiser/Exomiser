@@ -30,13 +30,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
+import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter;
+import org.monarchinitiative.exomiser.core.filters.PriorityScoreFilter;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.rest.analysis.ExomiserAnalysisServer;
 import org.monarchinitiative.exomiser.rest.analysis.model.AnalysisResponse;
 import org.monarchinitiative.exomiser.test.ExomiserStubDataConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,6 +51,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -76,18 +82,20 @@ public class AnalysisControllerTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
         Analysis analysis = Analysis.builder()
+                .hpoIds(Arrays.asList("HP:000001", "HP:000002"))
                 .frequencySources(FrequencySource.ALL_ESP_SOURCES)
                 .pathogenicitySources(EnumSet.of(PathogenicitySource.POLYPHEN, PathogenicitySource.CADD))
+                //TODO: get these to de/serialise
+                .addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f))
+                .addStep(new FrequencyFilter(1.0f))
+                .addStep(new PathogenicityFilter(true))
                 .build();
-        //TODO: get these to serialise
-//        analysis.addStep(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.501f));
-//        analysis.addStep(new FrequencyFilter(1.0f));
-//        analysis.addStep(new PathogenicityFilter(true));
 
         mapper = new ObjectMapper();
         mapper.registerModule(new Jdk7Module());
         mapper.registerModule(new MyModule());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+//        mapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
 //        mapper.addMixIn(VariantFilter.class, VariantFilterMixIn.class);
         //TODO: need to write custom AnalysisMapper.
 //        mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.EXISTING_PROPERTY); // all non-final types
@@ -96,9 +104,10 @@ public class AnalysisControllerTest {
             jsonAnalysis = mapper.writeValueAsString(analysis);
         } catch (JsonProcessingException ex) {
         }
-        System.out.println("Created json analysis: " + jsonAnalysis);
+        System.out.println("Created json analysis:\n" + jsonAnalysis);
     }
 
+    @JsonComponent
     public class MyModule extends SimpleModule {
         public MyModule() {
             super();

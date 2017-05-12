@@ -60,11 +60,9 @@ public class PhivePriority implements Prioritiser {
     private static final float NO_PHENOTYPE_HIT_SCORE = 0.1f;
     static final float NO_MOUSE_MODEL_SCORE = 0.6f;
 
-    private final List<String> hpoIds;
     private final PriorityService priorityService;
 
-    public PhivePriority(List<String> hpoIds, PriorityService priorityService) {
-        this.hpoIds = hpoIds;
+    public PhivePriority(PriorityService priorityService) {
         this.priorityService = priorityService;
     }
 
@@ -77,7 +75,7 @@ public class PhivePriority implements Prioritiser {
     }
 
     @Override
-    public Stream<PhivePriorityResult> prioritise(List<Gene> genes) {
+    public Stream<PhivePriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         logger.info("Starting {}", PRIORITY_TYPE);
 
         List<PhenotypeTerm> hpoPhenotypeTerms = priorityService.makePhenotypeTermsFromHpoIds(hpoIds);
@@ -134,26 +132,17 @@ public class PhivePriority implements Prioritiser {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 47 * hash + Objects.hashCode(this.hpoIds);
-        return hash;
+        return Objects.hashCode(PhivePriority.class.getName());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final PhivePriority other = (PhivePriority) obj;
-        return Objects.equals(this.hpoIds, other.hpoIds);
+        return obj != null && getClass() == obj.getClass();
     }
 
     @Override
     public String toString() {
-        return "PhivePriority{" + "hpoIds=" + hpoIds + '}';
+        return "PhivePriority{}";
     }
 
 }

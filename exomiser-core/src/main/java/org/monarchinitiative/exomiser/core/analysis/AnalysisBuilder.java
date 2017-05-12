@@ -174,7 +174,7 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addPhivePrioritiser() {
-        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makePhivePrioritiser(hpoIds));
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makePhivePrioritiser());
         return this;
     }
 
@@ -186,17 +186,17 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addHiPhivePrioritiser() {
-        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
         return this;
     }
 
     public AnalysisBuilder addHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
-        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(hiPhiveOptions));
         return this;
     }
 
     public AnalysisBuilder addPhenixPrioritiser() {
-        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makePhenixPrioritiser(hpoIds));
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makePhenixPrioritiser());
         return this;
     }
 

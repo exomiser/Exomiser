@@ -307,7 +307,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisStep_HiPhivePrioritiserWithDefaultOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -315,21 +315,21 @@ public class AnalysisParserTest {
     public void testParseAnalysisStep_HiPhivePrioritiserWithUserDefinedOptions() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'}"));
         HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder().diseaseId("OMIM:101600").candidateGeneSymbol("FGFR2").runParams("human,mouse,fish,ppi").build();
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hiPhiveOptions));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
     public void testParseAnalysisStep_PhivePrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phivePrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makePhivePrioritiser(hpoIds));
+        analysisSteps.add(priorityFactory.makePhivePrioritiser());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
     @Test
     public void testParseAnalysisStep_PhenixPrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makePhenixPrioritiser(hpoIds));
+        analysisSteps.add(priorityFactory.makePhenixPrioritiser());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -361,8 +361,11 @@ public class AnalysisParserTest {
         analysisSteps.add(new PathogenicityFilter(false));
         analysisSteps.add(new InheritanceFilter(modeOfInheritance));
         analysisSteps.add(priorityFactory.makeOmimPrioritiser());
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT));
-        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.builder().diseaseId("OMIM:101600").candidateGeneSymbol("FGFR2").build()));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT));
+        analysisSteps.add(priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.builder()
+                .diseaseId("OMIM:101600")
+                .candidateGeneSymbol("FGFR2")
+                .build()));
         analysisSteps.add(new PriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.7f));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }

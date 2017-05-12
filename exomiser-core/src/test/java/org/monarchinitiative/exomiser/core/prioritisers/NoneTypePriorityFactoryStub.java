@@ -28,6 +28,7 @@ import org.jblas.FloatMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,13 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
     }
 
     @Override
-    public PhenixPriority makePhenixPrioritiser(List<String> hpoIds) {
-        return new PhenixPriority(hpoIds, true);
+    public PhenixPriority makePhenixPrioritiser() {
+        return new PhenixPriority(true);
     }
 
     @Override
-    public PhivePriority makePhivePrioritiser(List<String> hpoIds) {
-        return new PhivePriority(hpoIds, TestPriorityServiceFactory.STUB_SERVICE);
+    public PhivePriority makePhivePrioritiser() {
+        return new PhivePriority(TestPriorityServiceFactory.STUB_SERVICE);
     }
 
     @Override
@@ -65,8 +66,8 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
     }
 
     @Override
-    public HiPhivePriority makeHiPhivePrioritiser(List<String> hpoIds, HiPhiveOptions hiPhiveOptions) {
-        return new HiPhivePriority(hpoIds, hiPhiveOptions, null, TestPriorityServiceFactory.STUB_SERVICE);
+    public HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
+        return new HiPhivePriority(hiPhiveOptions, null, TestPriorityServiceFactory.STUB_SERVICE);
     }
 
     private DataMatrix makeDataMatrixWithGeneIds(List<Integer> entrezSeedGenes) {
@@ -82,4 +83,8 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
         return dataMatrix;
     }
 
+    @Override
+    public List<String> getHpoIdsForDiseaseId(String diseaseId) {
+        return Collections.emptyList();
+    }
 }

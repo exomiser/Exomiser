@@ -46,7 +46,7 @@ public class AnalysisBuilderTest {
     @Test
     public void analysisStepsAreCheckedAndCorrectedOnBuild() {
         List<AnalysisStep> correct = Arrays.asList(
-                priorityFactory.makePhivePrioritiser(hpoIds),
+                priorityFactory.makePhivePrioritiser(),
                 new PriorityScoreFilter(PriorityType.PHIVE_PRIORITY, 0.501f),
                 new QualityFilter(500.0),
                 new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT),
@@ -250,7 +250,7 @@ public class AnalysisBuilderTest {
         float frequencyCutOff = 1f;
         FrequencyFilter frequencyFilter = new FrequencyFilter(frequencyCutOff);
 
-        PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser(hpoIds);
+        PhivePriority phivePrioritiser = priorityFactory.makePhivePrioritiser();
 
         PriorityType priorityType = phivePrioritiser.getPriorityType();
         float minPriorityScore = 0.501f;
@@ -293,12 +293,12 @@ public class AnalysisBuilderTest {
     @Test(expected = IllegalStateException.class)
     public void testAddPhivePrioritiserThrowsExcptionWhenHpoIdsNotDefined() {
         analysisBuilder.addPhivePrioritiser();
-        assertThat(analysisSteps(), equalTo(singletonList(priorityFactory.makePhivePrioritiser(hpoIds))));
+        assertThat(analysisSteps(), equalTo(singletonList(priorityFactory.makePhivePrioritiser())));
     }
 
     @Test
     public void testCanSpecifyPhivePrioritiser() {
-        Prioritiser prioritiser = priorityFactory.makePhivePrioritiser(hpoIds);
+        Prioritiser prioritiser = priorityFactory.makePhivePrioritiser();
 
         analysisBuilder.hpoIds(hpoIds);
         analysisBuilder.addPhivePrioritiser();
@@ -308,7 +308,7 @@ public class AnalysisBuilderTest {
 
     @Test(expected = IllegalStateException.class)
     public void testAddHiPhivePrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT);
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT);
 
         analysisBuilder.addHiPhivePrioritiser();
 
@@ -316,7 +316,7 @@ public class AnalysisBuilderTest {
     }
     @Test
     public void testCanSpecifyHiPhivePrioritiser_noOptions() {
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(hpoIds, HiPhiveOptions.DEFAULT);
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT);
 
         analysisBuilder.hpoIds(hpoIds)
                 .addHiPhivePrioritiser();
@@ -332,7 +332,7 @@ public class AnalysisBuilderTest {
                 .runParams("human,mouse,fish,ppi")
                 .build();
 
-        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(hpoIds, options);
+        Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(options);
 
         analysisBuilder.hpoIds(hpoIds)
                 .addHiPhivePrioritiser(options);
@@ -342,7 +342,7 @@ public class AnalysisBuilderTest {
 
     @Test(expected = IllegalStateException.class)
     public void testAddPhenixPrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
-        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser(hpoIds);
+        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser();
 
         analysisBuilder.addPhenixPrioritiser();
 
@@ -351,7 +351,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyPhenixPrioritiser() {
-        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser(hpoIds);
+        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser();
 
         analysisBuilder.hpoIds(hpoIds)
                 .addPhenixPrioritiser();
@@ -372,7 +372,7 @@ public class AnalysisBuilderTest {
     @Test
     public void testCanSpecifyTwoPrioritisers() {
         Prioritiser omimPrioritiser = priorityFactory.makeOmimPrioritiser();
-        Prioritiser phivePrioritiser = priorityFactory.makePhivePrioritiser(hpoIds);
+        Prioritiser phivePrioritiser = priorityFactory.makePhivePrioritiser();
         List<AnalysisStep> steps = Arrays.asList(omimPrioritiser, phivePrioritiser);
 
         analysisBuilder.hpoIds(hpoIds)

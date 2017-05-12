@@ -254,6 +254,14 @@ public class AnalysisParser {
             return probandSampleName;
         }
 
+        private List<String> parseHpoIds(Map<String, List> analysisMap) {
+            List<String> hpoIds = analysisMap.get("hpoIds");
+            if (hpoIds == null) {
+                return new ArrayList<>();
+            }
+            return hpoIds;
+        }
+
         private ModeOfInheritance parseModeOfInheritance(Map<String, String> analysisMap) {
             String value = analysisMap.get("modeOfInheritance");
             if (value == null || value.isEmpty()) {
@@ -284,14 +292,6 @@ public class AnalysisParser {
                 logger.info("geneScoreMode is deprecated and {} will have no effect. " +
                         "Please consider removing this from your analysis script to prevent this message from showing again.", value);
             }
-        }
-
-        private List<String> parseHpoIds(Map<String, List> analysisMap) {
-            List<String> hpoIds = analysisMap.get("hpoIds");
-            if (hpoIds == null) {
-                hpoIds = new ArrayList();
-            }
-            return hpoIds;
         }
 
         private List<Map<String, Map>> parseAnalysisSteps(Map analysisMap) {
@@ -336,11 +336,11 @@ public class AnalysisParser {
                 case "omimPrioritiser":
                     return prioritiserFactory.makeOmimPrioritiser();
                 case "hiPhivePrioritiser":
-                    return makeHiPhivePrioritiser(analysisStepMap, parseHpoIds(analysisMap));
+                    return makeHiPhivePrioritiser(analysisStepMap);
                 case "phivePrioritiser":
-                    return prioritiserFactory.makePhivePrioritiser(parseHpoIds(analysisMap));
+                    return prioritiserFactory.makePhivePrioritiser();
                 case "phenixPrioritiser":
-                    return prioritiserFactory.makePhenixPrioritiser(parseHpoIds(analysisMap));
+                    return prioritiserFactory.makePhenixPrioritiser();
                 case "exomeWalkerPrioritiser":
                     return makeWalkerPrioritiser(analysisStepMap);
                 default:
@@ -496,10 +496,10 @@ public class AnalysisParser {
             return new InheritanceFilter(modeOfInheritance);
         }
 
-        private HiPhivePriority makeHiPhivePrioritiser(Map<String, String> options, List<String> hpoIds) {
+        private HiPhivePriority makeHiPhivePrioritiser(Map<String, String> options) {
             HiPhiveOptions hiPhiveOptions = makeHiPhiveOptions(options);
             logger.info("Made {}", hiPhiveOptions);
-            return prioritiserFactory.makeHiPhivePrioritiser(hpoIds, hiPhiveOptions);
+            return prioritiserFactory.makeHiPhivePrioritiser(hiPhiveOptions);
         }
 
         private HiPhiveOptions makeHiPhiveOptions(Map<String, String> options) {
