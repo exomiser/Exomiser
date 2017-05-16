@@ -99,6 +99,18 @@ public class AnalysisBuilder {
     }
 
     //Filters
+
+    /**
+     * Adds a {@link FailedVariantFilter} to the {@link Analysis}. This will remove variants without a 'PASS' or '.' in
+     * the input VCF.
+     *
+     * @return An {@link AnalysisBuilder} with a {@link FailedVariantFilter} added to the analysis steps.
+     */
+    public AnalysisBuilder addFailedVariantFilter() {
+        analysisSteps.add(new FailedVariantFilter());
+        return this;
+    }
+
     public AnalysisBuilder addIntervalFilter(GeneticInterval interval) {
         analysisSteps.add(new IntervalFilter(interval));
         return this;
@@ -119,14 +131,14 @@ public class AnalysisBuilder {
         return this;
     }
 
-    public AnalysisBuilder addKnownVariantFilterFilter() {
+    public AnalysisBuilder addKnownVariantFilter() {
         analysisSteps.add(makeFrequencyDependentStep(new KnownVariantFilter()));
         return this;
     }
 
     private FrequencyDataProvider makeFrequencyDependentStep(VariantFilter filter) {
         if (frequencySources.isEmpty()) {
-            throw new IllegalStateException("Frequency sources have not yet been defined. Add some frequency sources before defining the analysis steps.");
+            throw new IllegalArgumentException("Frequency sources have not yet been defined. Add some frequency sources before defining the analysis steps.");
         }
         return new FrequencyDataProvider(variantDataService, frequencySources, filter);
     }
@@ -143,12 +155,12 @@ public class AnalysisBuilder {
 
     private PathogenicityDataProvider makePathogenicityDependentStep(PathogenicityFilter pathogenicityFilter) {
         if (pathogenicitySources.isEmpty()) {
-            throw new IllegalStateException("Pathogenicity sources have not yet been defined. Add some pathogenicity sources before defining the analysis steps.");
+            throw new IllegalArgumentException("Pathogenicity sources have not yet been defined. Add some pathogenicity sources before defining the analysis steps.");
         }
         return new PathogenicityDataProvider(variantDataService, pathogenicitySources, pathogenicityFilter);
     }
 
-    public AnalysisBuilder addPriorityScoreFilter(PriorityType priorityType , float minPriorityScore) {
+    public AnalysisBuilder addPriorityScoreFilter(PriorityType priorityType, float minPriorityScore) {
         analysisSteps.add(new PriorityScoreFilter(priorityType, minPriorityScore));
         return this;
     }
@@ -180,7 +192,8 @@ public class AnalysisBuilder {
 
     private void addPrioritiserStepIfHpoIdsNotEmpty(Prioritiser prioritiser) {
         if (hpoIds == null || hpoIds.isEmpty()) {
-            throw new IllegalStateException("HPO IDs not yet defined. Define some sample phenotypes before adding Prioritiser of type " + prioritiser.getPriorityType());
+            throw new IllegalArgumentException("HPO IDs not yet defined. Define some sample phenotypes before adding Prioritiser of type " + prioritiser
+                    .getPriorityType());
         }
         analysisSteps.add(prioritiser);
     }
@@ -202,7 +215,7 @@ public class AnalysisBuilder {
 
     public AnalysisBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes) {
         if (seedGenes == null || seedGenes.isEmpty()) {
-            throw new IllegalStateException("seedGenes not defined. Define some ENTREZ gene identifiers before adding ExomeWalker prioritier");
+            throw new IllegalArgumentException("seedGenes not defined. Define some ENTREZ gene identifiers before adding ExomeWalker prioritier");
         }
         analysisSteps.add(priorityFactory.makeExomeWalkerPrioritiser(seedGenes));
         return this;

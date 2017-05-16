@@ -148,6 +148,12 @@ public class AnalysisBuilderTest {
     }
 
     @Test
+    public void testAddFailedVariantFilter() {
+        analysisBuilder.addFailedVariantFilter();
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new FailedVariantFilter())));
+    }
+
+    @Test
     public void testAddIntervalFilter() {
         GeneticInterval geneticInterval = new GeneticInterval(1, 1234, 6789);
         analysisBuilder.addIntervalFilter(geneticInterval);
@@ -175,19 +181,19 @@ public class AnalysisBuilderTest {
         assertThat(buildAndGetSteps(), equalTo(singletonList(new QualityFilter(cutoff))));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddKnownVariantFilterThrowsExceptionWhenFrequencySourcesAreNotDefined() {
-        analysisBuilder.addKnownVariantFilterFilter();
+        analysisBuilder.addKnownVariantFilter();
     }
 
     @Test
     public void testAddKnownVariantFilter() {
         analysisBuilder.frequencySources(EnumSet.allOf(FrequencySource.class));
-        analysisBuilder.addKnownVariantFilterFilter();
+        analysisBuilder.addKnownVariantFilter();
         assertThat(buildAndGetSteps(), equalTo(singletonList(new KnownVariantFilter())));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddFrequencyFilterThrowsExceptionWhenFrequencySourcesAreNotDefined() {
         analysisBuilder.addFrequencyFilter(0.01f);
     }
@@ -201,7 +207,7 @@ public class AnalysisBuilderTest {
         assertThat(buildAndGetSteps(), equalTo(singletonList(new FrequencyFilter(cutOff))));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddPathogenicityFilterStepThrowsExceptionWhenPathogenicitySourcesAreNotDefined() {
         analysisBuilder.addPathogenicityFilter(true);
     }
@@ -290,7 +296,7 @@ public class AnalysisBuilderTest {
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddPhivePrioritiserThrowsExcptionWhenHpoIdsNotDefined() {
         analysisBuilder.addPhivePrioritiser();
         assertThat(analysisSteps(), equalTo(singletonList(priorityFactory.makePhivePrioritiser())));
@@ -306,7 +312,7 @@ public class AnalysisBuilderTest {
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddHiPhivePrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
         Prioritiser prioritiser = priorityFactory.makeHiPhivePrioritiser(HiPhiveOptions.DEFAULT);
 
@@ -340,7 +346,7 @@ public class AnalysisBuilderTest {
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testAddPhenixPrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
         Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser();
 
@@ -357,6 +363,16 @@ public class AnalysisBuilderTest {
                 .addPhenixPrioritiser();
 
         assertThat(analysisSteps(), equalTo(singletonList(prioritiser)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testExomeWalkerPrioritiserThrowsExceptionWithEmptyList() {
+        analysisBuilder.addExomeWalkerPrioritiser(Collections.emptyList());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testExomeWalkerPrioritiserThrowsExceptionWithNullList() {
+        analysisBuilder.addExomeWalkerPrioritiser(null);
     }
 
     @Test
