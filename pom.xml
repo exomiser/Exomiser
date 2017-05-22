@@ -24,7 +24,50 @@
     <artifactId>exomiser</artifactId>
     <version>7.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <name>exomiser</name>
+    <description>A toolkit for filtering variants and prioritising genes by phenotype from whole genome or whole exome VCF files.</description>
+    <url>https://github.com/exomiser/Exomiser</url>
+    <inceptionYear>2012</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
+            <url>http://opensource.org/licenses/AGPL-3.0</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Jules Jacobsen</name>
+            <email>j.jacobsen@qmul.ac.uk</email>
+            <organization>Queen Mary University of London</organization>
+            <organizationUrl>http://qmul.ac.uk</organizationUrl>
+        </developer>
+        <developer>
+            <name>Damian Smedley</name>
+            <email>d.smedley@qmul.ac.uk</email>
+            <organization>Queen Mary University of London</organization>
+            <organizationUrl>http://qmul.ac.uk</organizationUrl>
+        </developer>
+        <developer>
+            <name>Peter Robinson</name>
+            <email>peter.robinson@jax.org</email>
+            <organization>The Jackson Laboratory for Genomic Medicine</organization>
+            <organizationUrl>https://www.jax.org/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/exomiser/Exomiser.git</connection>
+        <developerConnection>scm:git:git@github.com:exomiser/Exomiser.git</developerConnection>
+        <url>https://github.com/exomiser/Exomiser/tree/master</url>
+    </scm>
+
+    <ciManagement>
+        <system>Circle CI</system>
+        <url>https://circleci.com/gh/exomiser/Exomiser</url>
+    </ciManagement>
 
     <modules>
         <module>exomiser-core</module>
@@ -37,13 +80,6 @@
         <module>exomiser-rest-analysis</module>
         <module>exomiser-web</module>
     </modules>
-    
-    <licenses>
-        <license>
-            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
-            <url>http://opensource.org/licenses/AGPL-3.0</url>
-        </license>
-    </licenses>
 
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
