@@ -91,6 +91,22 @@ public class AppConfig {
     }
 
     @Bean
+    public boolean copyTadResource() {
+        Resource resource = new ClassPathResource("data/tad.pg");
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()));
+             BufferedWriter writer = Files.newBufferedWriter(downloadPath().resolve("tad.pg"), Charset.forName("UTF-8"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                writer.write(line + "\n");
+            }
+            logger.info("Copied {} to {}", resource, downloadPath());
+        } catch (IOException ex) {
+            logger.error("Unable to copy resource {}", resource, ex);
+        }
+        return true;
+    }
+
+    @Bean
     public Path processPath() {
         Path processPath = dataPath().resolve(env.getProperty("process.path"));
         logger.info("Data process directory set to: {}", processPath.toAbsolutePath());
