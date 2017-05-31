@@ -128,7 +128,8 @@ public class ModelServiceImpl implements ModelService {
                         
                 modelId = modelGeneId + "_" + modelId;
                 
-                String phenotypeIdString = rs.getString("pheno_ids");
+                String phenotypeIdString = toEmptyIfNull(rs.getString("pheno_ids"));
+
                 String[] mpInitial = phenotypeIdString.split(",");
                 List<String> phenotypeIds = Arrays.asList(mpInitial);
                 
@@ -139,6 +140,13 @@ public class ModelServiceImpl implements ModelService {
             logger.error("Problem setting up model query: {}", modelQuery, e);
         }
         return models;
+    }
+
+    private String toEmptyIfNull(String result) {
+        if (result == null) {
+            return "";
+        }
+        return result;
     }
 
 }
