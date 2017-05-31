@@ -92,7 +92,7 @@ public class OMIMPriorityResult extends AbstractPriorityResult {
         if (diseaseId.startsWith("OMIM:")){
             return makeOmimDisplayString(disease);
         }
-        if (diseaseId.startsWith("ORPHANET:")) {
+        if (diseaseId.startsWith("ORPHA:")) {
             return makeOrphanetDisplayString(disease);
         }
         //default return non-formatted disease id
