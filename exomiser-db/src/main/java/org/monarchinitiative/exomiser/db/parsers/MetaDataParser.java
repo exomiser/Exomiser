@@ -6,7 +6,6 @@
 
 package org.monarchinitiative.exomiser.db.parsers;
 
-import org.joda.time.Instant;
 import org.monarchinitiative.exomiser.db.resources.Resource;
 import org.monarchinitiative.exomiser.db.resources.ResourceOperationStatus;
 import org.slf4j.Logger;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 
 /**
  * Creates a pipe delimited file of resource|version

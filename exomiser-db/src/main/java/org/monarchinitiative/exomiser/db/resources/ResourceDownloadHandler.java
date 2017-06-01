@@ -5,7 +5,6 @@
  */
 package org.monarchinitiative.exomiser.db.resources;
 
-import org.joda.time.Instant;
 import org.monarchinitiative.exomiser.db.io.FileDownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.time.Instant;
 
 /**
  * Handles the business of downloading a set of ExternalResources

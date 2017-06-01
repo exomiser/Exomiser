@@ -32,7 +32,7 @@
         <artifactId>exomiser</artifactId>
         <version>7.3.0-SNAPSHOT</version>
     </parent>
-
+  
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <data.import.path>data</data.import.path>
@@ -43,7 +43,7 @@
             <id>migrate-H2</id>
             <properties>
                 <!--this is a write-optimised setting - don't use anything after 'PostgreSQL;' for standard use-->
-                <db.url>jdbc:h2:file:data/exomiser;MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;
+                <db.url>jdbc:h2:file:data/exomiser;MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;MV_STORE=FALSE;
                 </db.url>
                 <db.username>sa</db.username>
                 <db.password></db.password>
@@ -76,6 +76,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>4.2.0</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -92,40 +93,11 @@
             <artifactId>jannovar-core</artifactId>
             <version>${jannovar.version}</version>
         </dependency>
-        <!--YamlBeans is a java <-> yml library-->
-        <dependency>
-            <groupId>com.esotericsoftware.yamlbeans</groupId>
-            <artifactId>yamlbeans</artifactId>
-            <version>1.06</version>
-        </dependency>
         <!--Commons VFS is used for obtaining the required flatfiles-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-vfs2</artifactId>
-            <version>2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-        </dependency>
-        <!--Joda time as we're not using Java 8 yet -->
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>1</version>
-            <type>jar</type>
+            <version>2.0</version>            
         </dependency>
     </dependencies>
     <build>
@@ -149,27 +121,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-            <!--<groupId>org.codehaus.mojo</groupId>-->
-            <!--<artifactId>exec-maven-plugin</artifactId>-->
-            <!--<version>1.2.1</version>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<goals>-->
-            <!--<goal>exec</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--<configuration>-->
-            <!--<mainClass>org.monarchinitiative.exomiser.db.Main</mainClass>-->
-            <!--&lt;!&ndash;optional&ndash;&gt;-->
-            <!--<workingDirectory>${project.build.dir}</workingDirectory>-->
-            <!--&lt;!&ndash;                    <arguments>-->
-            <!--<argument>-X</argument>-->
-            <!--<argument>myproject:dist</argument>-->
-            <!--</arguments>&ndash;&gt;-->
-            <!--</configuration>-->
-            <!--</plugin>-->
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
@@ -187,7 +138,7 @@
                     <locations>
                         <location>db.migration.common</location>
                         <location>${db.location}</location>
-                    </locations>
+                    </locations>             
                 </configuration>
             </plugin>
         </plugins>
