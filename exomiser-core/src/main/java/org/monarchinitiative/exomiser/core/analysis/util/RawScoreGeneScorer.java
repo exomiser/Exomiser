@@ -39,12 +39,30 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
+ * Class for scoring Genes according to their phenotype similarity to the proband, the filtered variants and the
+ * inheritance mode under which these would have an effect.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class RawScoreGeneScorer implements GeneScorer {
 
     private static final Logger logger = LoggerFactory.getLogger(RawScoreGeneScorer.class);
+
+    private final int probandSampleId;
+    private final ModeOfInheritance modeOfInheritance;
+
+    private final InheritanceModeAnalyser inheritanceModeAnalyser;
+
+    /**
+     * @param probandSampleId   Sample id of the proband - this is the zero-based numerical position of the proband sample in the VCF.
+     * @param modeOfInheritance Inheritance mode which the genes should be scored for.
+     * @param pedigree          Pedigree containing the proband - either a single sample pedigree or the proband and their family.
+     */
+    public RawScoreGeneScorer(int probandSampleId, ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
+        this.probandSampleId = probandSampleId;
+        this.modeOfInheritance = modeOfInheritance;
+        this.inheritanceModeAnalyser = new InheritanceModeAnalyser(ModeOfInheritance.AUTOSOMAL_RECESSIVE, pedigree);
+    }
 
     /**
      * Calculates the final ranks of all genes that have survived the filtering
@@ -54,15 +72,12 @@ public class RawScoreGeneScorer implements GeneScorer {
      * the two most pathogenic variants. X-linked diseases are filtered such
      * that only X-chromosomal genes are left over, and the single worst variant
      * is taken.
-     *
-     * @param modeOfInheritance
-     * @param probandSampleId
      */
     @Override
-    public Consumer<Gene> scoreGene(ModeOfInheritance modeOfInheritance, int probandSampleId, Pedigree pedigree) {
+    public Consumer<Gene> scoreGene() {
         return gene -> {
             //It is critical only the PASS variants are used in the scoring
-            float variantScore = calculateVariantScore(gene.getPassedVariantEvaluations(), modeOfInheritance, probandSampleId, pedigree);
+            float variantScore = calculateVariantScore(gene.getPassedVariantEvaluations());
             gene.setVariantScore(variantScore);
 
             float priorityScore = calculateGenePriorityScore(gene);
@@ -88,16 +103,14 @@ public class RawScoreGeneScorer implements GeneScorer {
      * twice).
      *
      * @param variantEvaluations from a gene
-     * @param modeOfInheritance Autosomal recessive, dominant, or X chromosomal
-     * recessive.
      * @return
      */
-    private float calculateVariantScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, int sampleId, Pedigree pedigree) {
+    private float calculateVariantScore(List<VariantEvaluation> variantEvaluations) {
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }
         if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            return calculateAutosomalRecessiveFilterScore(variantEvaluations, sampleId, pedigree);
+            return calculateAutosomalRecessiveFilterScore(variantEvaluations);
         }
         return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
     }
@@ -156,19 +169,16 @@ public class RawScoreGeneScorer implements GeneScorer {
         }
     }
 
-
     /**
      * For assumed autosomal recessive variants, this method calculates the mean
      * of the worst(highest numerical) two variants. Requires the sampleId so that the correct inheritance pattern is
      * calculated for the proband alleles.
      */
-    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, int sampleId, Pedigree pedigree) {
+    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations) {
 
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }
-
-        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Optional<CompHetPair> bestCompHetPair = inheritanceModeAnalyser.findCompatibleCompHetAlleles(variantEvaluations)
                 .stream()
@@ -176,7 +186,7 @@ public class RawScoreGeneScorer implements GeneScorer {
                 .max(Comparator.comparing(CompHetPair::getScore));
 
         Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
-                .filter(variantIsHomozygousAlt(sampleId))
+                .filter(variantIsHomozygousAlt(probandSampleId))
                 .max(Comparator.comparing(VariantEvaluation::getVariantScore));
 
         // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong

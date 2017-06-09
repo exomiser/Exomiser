@@ -35,7 +35,6 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
@@ -64,14 +63,6 @@ public class RawScoreGeneScorerTest {
     private static final FilterResult FAIL_FREQUENCY = FilterResult.fail(FilterType.FREQUENCY_FILTER);
     private static final FilterResult PASS_PATHOGENICITY = FilterResult.pass(FilterType.PATHOGENICITY_FILTER);
     private static final FilterResult FAIL_PATHOGENICITY = FilterResult.fail(FilterType.PATHOGENICITY_FILTER);
-
-    private RawScoreGeneScorer instance;
-
-
-    @Before
-    public void setUp() {
-        instance = new RawScoreGeneScorer();
-    }
 
     private Gene newGene(VariantEvaluation... variantEvaluations) {
         Gene gene = new Gene("TEST1", 1234);
@@ -108,7 +99,12 @@ public class RawScoreGeneScorerTest {
     }
 
     private void scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, int sampleId) {
-        instance.scoreGene(modeOfInheritance, sampleId, Pedigree.constructSingleSamplePedigree("sample")).accept(gene);
+        scoreGene(gene, modeOfInheritance, sampleId, Pedigree.constructSingleSamplePedigree("sample"));
+    }
+
+    private void scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, int sampleId, Pedigree pedigree) {
+        RawScoreGeneScorer instance = new RawScoreGeneScorer(sampleId, modeOfInheritance, pedigree);
+        instance.scoreGene().accept(gene);
     }
 
     @Test
@@ -217,7 +213,7 @@ public class RawScoreGeneScorerTest {
         VariantEvaluation probandHomAlt = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext, VariantEffect.MISSENSE_VARIANT);
         Gene gene = newGene(probandHomAlt);
 
-        instance.scoreGene(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0, pedigree).accept(gene);
+        scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0, pedigree);
 
         float variantScore = probandHomAlt.getVariantScore();
 
@@ -357,7 +353,8 @@ public class RawScoreGeneScorerTest {
         List<Gene> genes = Lists.newArrayList(last, first, middle);
         Collections.shuffle(genes);
 
-        instance.scoreGenes(genes, ModeOfInheritance.ANY, 0, Pedigree.constructSingleSamplePedigree("Nemo"));
+        RawScoreGeneScorer instance = new RawScoreGeneScorer(0, ModeOfInheritance.ANY, Pedigree.constructSingleSamplePedigree("Nemo"));
+        instance.scoreGenes(genes);
 
         genes.forEach(System.out::println);
 

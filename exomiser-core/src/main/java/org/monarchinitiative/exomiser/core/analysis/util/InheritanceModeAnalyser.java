@@ -53,16 +53,14 @@ public class InheritanceModeAnalyser {
 
     private static final Logger logger = LoggerFactory.getLogger(InheritanceModeAnalyser.class);
 
-    private final VariantContextMendelianAnnotator inheritanceAnnotator;
-
     private final ModeOfInheritance modeOfInheritance;
-
+    private final VariantContextMendelianAnnotator inheritanceAnnotator;
     private final Set<ModeOfInheritance> compatibleModes;
 
-    public InheritanceModeAnalyser(Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
+    public InheritanceModeAnalyser(ModeOfInheritance modeOfInheritance, Pedigree pedigree) {
         this.modeOfInheritance = modeOfInheritance;
-        inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree, false, false);
-        compatibleModes = Sets.immutableEnumSet(modeOfInheritance);
+        this.inheritanceAnnotator = new VariantContextMendelianAnnotator(pedigree, false, false);
+        this.compatibleModes = Sets.immutableEnumSet(modeOfInheritance);
     }
 
     /**

@@ -91,6 +91,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         int probandSampleId = SampleNameChecker.getProbandSampleId(probandSampleName, sampleNames);
 
         Pedigree pedigree = new PedigreeFactory().createPedigreeForSampleData(pedigreeFilePath, sampleNames);
+        ModeOfInheritance modeOfInheritance = analysis.getModeOfInheritance();
 
         logger.info("Running analysis for proband {} (sample {} in VCF) from samples: {}", probandSampleName, probandSampleId + 1, sampleNames);
         Instant timeStart = Instant.now();
@@ -114,7 +115,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 assignVariantsToGenes(variantEvaluations, allGenes);
                 variantsLoaded = true;
             } else {
-                runSteps(analysisGroup, hpoIds, new ArrayList<>(allGenes.values()), pedigree, analysis.getModeOfInheritance());
+                runSteps(analysisGroup, hpoIds, new ArrayList<>(allGenes.values()), pedigree, modeOfInheritance);
             }
         }
         //maybe only the non-variant dependent steps have been run in which case we need to load the variants although
@@ -130,8 +131,8 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         }
 
         logger.info("Scoring genes");
-        GeneScorer geneScorer = new RawScoreGeneScorer();
-        List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()), analysis.getModeOfInheritance(), probandSampleId, pedigree);
+        GeneScorer geneScorer = new RawScoreGeneScorer(probandSampleId, modeOfInheritance, pedigree);
+        List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()));
         List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 
@@ -346,7 +347,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     }
 
     private void analyseGeneCompatibilityWithInheritanceMode(List<Gene> genes, Pedigree pedigree, ModeOfInheritance modeOfInheritance) {
-        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(pedigree, modeOfInheritance);
+        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(modeOfInheritance, pedigree);
         logger.info("Checking compatibility with {} inheritance mode for genes which passed filters", modeOfInheritance);
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
