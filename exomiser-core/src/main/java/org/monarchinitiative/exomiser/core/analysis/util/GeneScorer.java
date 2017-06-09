@@ -6,6 +6,7 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Gene;
 
 import java.util.Collections;
@@ -19,10 +20,10 @@ import java.util.function.Consumer;
 @FunctionalInterface
 public interface GeneScorer {
 
-    Consumer<Gene> scoreGene(ModeOfInheritance modeOfInheritance, int probandSampleId);
+    Consumer<Gene> scoreGene(ModeOfInheritance modeOfInheritance, int probandSampleId, Pedigree pedigree);
 
-    default List<Gene> scoreGenes(List<Gene> genes, ModeOfInheritance modeOfInheritance, int probandSampleId) {
-        genes.forEach(scoreGene(modeOfInheritance, probandSampleId));
+    default List<Gene> scoreGenes(List<Gene> genes, ModeOfInheritance modeOfInheritance, int probandSampleId, Pedigree pedigree) {
+        genes.forEach(scoreGene(modeOfInheritance, probandSampleId, pedigree));
         Collections.sort(genes);
         return genes;
     }

@@ -24,11 +24,15 @@
  */
 package org.monarchinitiative.exomiser.core.analysis.util;
 
-import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import de.charite.compbio.jannovar.pedigree.*;
-import htsjdk.variant.variantcontext.*;
+import de.charite.compbio.jannovar.pedigree.Disease;
+import de.charite.compbio.jannovar.pedigree.PedPerson;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Sex;
+import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeType;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
@@ -38,87 +42,18 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
 
 /**
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class InheritanceModeAnalyserTest {
-
-    private VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult) {
-        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt).build();
-        variant.addFilterResult(filterResult);
-        return variant;
-    }
-
-    private VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantContext variantContext) {
-        List<Allele> altAlleles = variantContext.getAlternateAlleles();
-        int altAlleleId = 0;
-        for (int i = 0; i < altAlleles.size(); i++) {
-            if (alt.equalsIgnoreCase(altAlleles.get(i).getBaseString())) {
-                altAlleleId = i;
-            }
-        }
-
-        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt)
-                .altAlleleId(altAlleleId)
-                .variantContext(variantContext)
-                .build();
-        variant.addFilterResult(filterResult);
-        return variant;
-    }
-
-    private List<Allele> buildAlleles(String ref, String... alts) {
-        Allele refAllele = Allele.create(ref, true);
-
-        List<Allele> altAlleles = Arrays.asList(alts).stream().map(Allele::create).collect(toList());
-        List<Allele> alleles = new ArrayList<>();
-        alleles.add(refAllele);
-        alleles.addAll(altAlleles);
-        return alleles;
-    }
-
-    private Genotype buildSampleGenotype(String sampleName, Allele ref, Allele alt) {
-        GenotypeBuilder gtBuilder = new GenotypeBuilder(sampleName).noAttributes().alleles(Arrays.asList(ref, alt)).phased(true);
-        return gtBuilder.make();
-    }
-
-    private VariantContext buildVariantContext(int chr, int pos, List<Allele> alleles, Genotype... genotypes) {
-        Allele refAllele = alleles.get(0);
-
-        VariantContextBuilder vcBuilder = new VariantContextBuilder();
-        vcBuilder.loc(Integer.toString(chr), pos, (pos - 1) + refAllele.length());
-        vcBuilder.alleles(alleles);
-        vcBuilder.genotypes(genotypes);
-        //yeah I know, it's a zero
-        vcBuilder.log10PError(-0.1 * 0);
-
-        return vcBuilder.make();
-    }
-
-    private Pedigree buildPedigree(PedPerson... people) {
-        ImmutableList.Builder<PedPerson> individualBuilder = new ImmutableList.Builder<PedPerson>();
-        individualBuilder.addAll(Arrays.asList(people));
-
-        PedFileContents pedFileContents = new PedFileContents(new ImmutableList.Builder<String>().build(), individualBuilder.build());
-
-        return buildPedigreeFromPedFile(pedFileContents);
-
-    }
-
-    private Pedigree buildPedigreeFromPedFile(PedFileContents pedFileContents) {
-        final String name = pedFileContents.getIndividuals().get(0).getPedigree();
-        try {
-            return new Pedigree(name, new PedigreeExtractor(name, pedFileContents).run());
-        } catch (PedParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Test
     public void testAnalyseInheritanceModes_SingleSample_NoVariants() {
@@ -599,5 +534,73 @@ public class InheritanceModeAnalyserTest {
                     System.out.println(variantString(variant));
                     assertThat(variant.getInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
                 });
+    }
+
+    @Test
+    public void testFindCompHetCompatibleAllelesTwoAffectedSibsUnaffectedMotherhMissingFater() {
+        Gene gene = newGene();
+
+        //1 98518687 . T A 733 . GT 1|0 1|0 1|0
+        List<Allele> alleles = buildAlleles("T", "A");
+
+        Genotype proband = buildSampleGenotype("Cain", alleles.get(0), alleles.get(1));
+        assertThat(proband.getType(), equalTo(GenotypeType.HET));
+
+        Genotype brother = buildSampleGenotype("Abel", alleles.get(0), alleles.get(1));
+        assertThat(brother.getType(), equalTo(GenotypeType.HET));
+
+        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        assertThat(mother.getType(), equalTo(GenotypeType.HET));
+
+        VariantContext vc98518687 = buildVariantContext(1, 98518687, alleles, proband, brother, mother);
+        VariantEvaluation var98518687 = filteredVariant(1, 98518687, "T", "A", FilterResult.pass(FilterType.FREQUENCY_FILTER), vc98518687);
+        System.out.println("Built allele " + var98518687);
+        gene.addVariant(var98518687);
+
+        //1 98518683 . T A 733 . GT 1|0 1|0 1|0
+        List<Allele> alleles98518683 = buildAlleles("T", "A");
+
+        Genotype proband98518683 = buildSampleGenotype("Cain", alleles98518683.get(0), alleles98518683.get(1));
+        assertThat(proband98518683.getType(), equalTo(GenotypeType.HET));
+
+        Genotype brother98518683 = buildSampleGenotype("Abel", alleles98518683.get(0), alleles98518683.get(1));
+        assertThat(brother98518683.getType(), equalTo(GenotypeType.HET));
+
+        Genotype mother98518683 = buildSampleGenotype("Eve", alleles98518683.get(0), alleles98518683.get(1));
+        assertThat(mother98518683.getType(), equalTo(GenotypeType.HET));
+
+        VariantContext vc98518683 = buildVariantContext(1, 98518683, alleles98518683, proband98518683, brother98518683, mother98518683);
+        VariantEvaluation var98518683 = filteredVariant(1, 98518683, "T", "A", FilterResult.pass(FilterType.FREQUENCY_FILTER), vc98518683);
+        System.out.println("Built allele " + var98518683);
+        gene.addVariant(var98518683);
+
+        //1 97723020 . A G 1141 . GT 1/0 0/0 1/0
+        List<Allele> alleles97723020 = buildAlleles("A", "G");
+
+        Genotype proband97723020 = buildSampleGenotype("Cain", alleles97723020.get(0), alleles97723020.get(1));
+        assertThat(proband97723020.getType(), equalTo(GenotypeType.HET));
+
+        Genotype brother97723020 = buildSampleGenotype("Abel", alleles97723020.get(0), alleles97723020.get(1));
+        assertThat(brother97723020.getType(), equalTo(GenotypeType.HET));
+
+        Genotype mother97723020 = buildSampleGenotype("Eve", alleles97723020.get(0), alleles97723020.get(0));
+        assertThat(mother97723020.getType(), equalTo(GenotypeType.HOM_REF));
+
+        VariantContext vc97723020 = buildVariantContext(1, 97723020, alleles97723020, proband97723020, brother97723020, mother97723020);
+        VariantEvaluation var97723020 = filteredVariant(1, 97723020, "A", "G", FilterResult.pass(FilterType.FREQUENCY_FILTER), vc97723020);
+        System.out.println("Built allele " + var97723020);
+        gene.addVariant(var97723020);
+
+        PedPerson probandPerson = new PedPerson("Family", "Cain", "0", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
+        PedPerson brotherPerson = new PedPerson("Family", "Abel", "0", "Eve", Sex.MALE, Disease.AFFECTED, Collections.emptyList());
+        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, Collections.emptyList());
+        Pedigree pedigree = buildPedigree(probandPerson, brotherPerson, motherPerson);
+
+        InheritanceModeAnalyser instance = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        List<List<VariantEvaluation>> compHetAlleles = instance.findCompatibleCompHetAlleles(gene.getPassedVariantEvaluations());
+
+        assertThat(compHetAlleles.size(), equalTo(2));
+        assertThat(compHetAlleles.get(0), equalTo(Arrays.asList(var98518687, var97723020)));
+        assertThat(compHetAlleles.get(1), equalTo(Arrays.asList(var98518683, var97723020)));
     }
 }

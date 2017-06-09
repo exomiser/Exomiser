@@ -25,6 +25,7 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
@@ -36,8 +37,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -60,10 +59,10 @@ public class RawScoreGeneScorer implements GeneScorer {
      * @param probandSampleId
      */
     @Override
-    public Consumer<Gene> scoreGene(ModeOfInheritance modeOfInheritance, int probandSampleId) {
+    public Consumer<Gene> scoreGene(ModeOfInheritance modeOfInheritance, int probandSampleId, Pedigree pedigree) {
         return gene -> {
             //It is critical only the PASS variants are used in the scoring
-            float variantScore = calculateVariantScore(gene.getPassedVariantEvaluations(), modeOfInheritance, probandSampleId);
+            float variantScore = calculateVariantScore(gene.getPassedVariantEvaluations(), modeOfInheritance, probandSampleId, pedigree);
             gene.setVariantScore(variantScore);
 
             float priorityScore = calculateGenePriorityScore(gene);
@@ -93,12 +92,12 @@ public class RawScoreGeneScorer implements GeneScorer {
      * recessive.
      * @return
      */
-    private float calculateVariantScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, int sampleId) {
+    private float calculateVariantScore(List<VariantEvaluation> variantEvaluations, ModeOfInheritance modeOfInheritance, int sampleId, Pedigree pedigree) {
         if (variantEvaluations.isEmpty()) {
             return 0f;
         }
         if (modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE) {
-            return calculateAutosomalRecessiveFilterScore(variantEvaluations, sampleId);
+            return calculateAutosomalRecessiveFilterScore(variantEvaluations, sampleId, pedigree);
         }
         return calculateNonAutosomalRecessiveFilterScore(variantEvaluations);
     }
@@ -163,13 +162,18 @@ public class RawScoreGeneScorer implements GeneScorer {
      * of the worst(highest numerical) two variants. Requires the sampleId so that the correct inheritance pattern is
      * calculated for the proband alleles.
      */
-    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, int sampleId) {
+    private float calculateAutosomalRecessiveFilterScore(List<VariantEvaluation> variantEvaluations, int sampleId, Pedigree pedigree) {
 
-        List<VariantEvaluation> heterozygous = variantEvaluations.stream()
-                .filter(variantIsHeterozygous(sampleId))
-                .sorted(Comparator.comparing(VariantEvaluation::getVariantScore).reversed())
-                .limit(2)
-                .collect(toList());
+        if (variantEvaluations.isEmpty()) {
+            return 0f;
+        }
+
+        InheritanceModeAnalyser inheritanceModeAnalyser = new InheritanceModeAnalyser(pedigree, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+
+        Optional<CompHetPair> bestCompHetPair = inheritanceModeAnalyser.findCompatibleCompHetAlleles(variantEvaluations)
+                .stream()
+                .map(pair -> new CompHetPair(pair.get(0), pair.get(1)))
+                .max(Comparator.comparing(CompHetPair::getScore));
 
         Optional<VariantEvaluation> bestHomozygousAlt = variantEvaluations.stream()
                 .filter(variantIsHomozygousAlt(sampleId))
@@ -177,10 +181,9 @@ public class RawScoreGeneScorer implements GeneScorer {
 
         // Realised original logic allows a comphet to be calculated between a top scoring het and second place hom which is wrong
         // Jannovar seems to currently be allowing hom_ref variants through so skip these as well
-        double bestCompHetScore = heterozygous.stream()
-                .mapToDouble(VariantEvaluation::getVariantScore)
-                .average()
-                .orElse(0f);
+        double bestCompHetScore = bestCompHetPair
+                .map(CompHetPair::getScore)
+                .orElse(0.0);
 
         double bestHomAltScore = bestHomozygousAlt
                 .map(VariantEvaluation::getVariantScore)
@@ -189,7 +192,7 @@ public class RawScoreGeneScorer implements GeneScorer {
         double bestScore = Double.max(bestHomAltScore, bestCompHetScore);
 
         if (BigDecimal.valueOf(bestScore).equals(BigDecimal.valueOf(bestCompHetScore))) {
-            heterozygous.forEach(VariantEvaluation::setAsContributingToGeneScore);
+            bestCompHetPair.ifPresent(CompHetPair::setAsContributingToGeneScore);
         } else {
             bestHomozygousAlt.ifPresent(VariantEvaluation::setAsContributingToGeneScore);
         }
@@ -222,5 +225,65 @@ public class RawScoreGeneScorer implements GeneScorer {
         bestVariant.ifPresent(VariantEvaluation::setAsContributingToGeneScore);
 
         return bestVariant.map(VariantEvaluation::getVariantScore).orElse(0f);
+    }
+
+    /**
+     * Data class for holding pairs of alleles which are compatible with AR compound heterozygous inheritance.
+     */
+    private final class CompHetPair {
+
+        private final double score;
+        private final VariantEvaluation allele1;
+        private final VariantEvaluation allele2;
+
+        CompHetPair(VariantEvaluation allele1, VariantEvaluation allele2) {
+            this.allele1 = allele1;
+            this.allele2 = allele2;
+            this.score = calculateScore(allele1, allele2);
+        }
+
+        double calculateScore(VariantEvaluation allele1, VariantEvaluation allele2) {
+            double allele1Score = allele1 == null ? 0 : allele1.getVariantScore();
+            double allele2Score = allele2 == null ? 0 : allele2.getVariantScore();
+            return (allele1Score + allele2Score) / 2.0;
+        }
+
+        double getScore() {
+            return score;
+        }
+
+        void setAsContributingToGeneScore() {
+            if (allele1 != null) {
+                allele1.setAsContributingToGeneScore();
+            }
+            if (allele2 != null) {
+                allele2.setAsContributingToGeneScore();
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CompHetPair that = (CompHetPair) o;
+            return Double.compare(that.score, score) == 0 &&
+                    Objects.equals(allele1, that.allele1) &&
+                    Objects.equals(allele2, that.allele2);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(allele1, allele2, score);
+        }
+
+        @Override
+        public String toString() {
+            return "CompHetPair{" +
+                    "score=" + score +
+                    ", allele1=" + allele1 +
+                    ", allele2=" + allele2 +
+                    '}';
+        }
+
     }
 }

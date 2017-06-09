@@ -27,6 +27,14 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.pedigree.Disease;
+import de.charite.compbio.jannovar.pedigree.PedPerson;
+import de.charite.compbio.jannovar.pedigree.Pedigree;
+import de.charite.compbio.jannovar.pedigree.Sex;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeType;
+import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
@@ -36,6 +44,7 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +52,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.monarchinitiative.exomiser.core.analysis.util.TestAlleleFactory.*;
 
 /**
  *
@@ -77,28 +87,28 @@ public class RawScoreGeneScorerTest {
     }
 
     private VariantEvaluation passAllFrameShift() {
-        return new VariantEvaluation.Builder(1, 1, "A", "T")
+        return new VariantEvaluation.Builder(1, 2, "A", "T")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
                 .filterResults(PASS_FREQUENCY, PASS_PATHOGENICITY)
                 .build();
     }
 
     VariantEvaluation passAllMissense() {
-        return new VariantEvaluation.Builder(1, 1, "A", "T")
+        return new VariantEvaluation.Builder(1, 3, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .filterResults(PASS_FREQUENCY, PASS_PATHOGENICITY)
                 .build();
     }
 
     VariantEvaluation passAllSynonymous() {
-        return new VariantEvaluation.Builder(1, 1, "A", "T")
+        return new VariantEvaluation.Builder(1, 4, "A", "T")
                 .variantEffect(VariantEffect.SYNONYMOUS_VARIANT)
                 .filterResults(PASS_FREQUENCY, PASS_PATHOGENICITY)
                 .build();
     }
 
     private void scoreGene(Gene gene, ModeOfInheritance modeOfInheritance, int sampleId) {
-        instance.scoreGene(modeOfInheritance, sampleId).accept(gene);
+        instance.scoreGene(modeOfInheritance, sampleId, Pedigree.constructSingleSamplePedigree("sample")).accept(gene);
     }
 
     @Test
@@ -182,18 +192,54 @@ public class RawScoreGeneScorerTest {
     }
 
     @Test
-    public void testScoreGeneWithSinglePassedVariant_AUTOSOMAL_RECESSIVE() {
-        VariantEvaluation passAllFrameShift = passAllFrameShift();
-        Gene gene = newGene(passAllFrameShift);
-        scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
+    public void testScoreGeneWithSinglePassedVariant_AUTOSOMAL_RECESSIVE_HOM_ALT() {
+        List<Allele> alleles = buildAlleles("A", "T");
 
-        float variantScore = passAllFrameShift.getVariantScore();
+        //Classical recessive inheritance mode
+        Genotype proband = buildSampleGenotype("Cain", alleles.get(1), alleles.get(1));
+        assertThat(proband.getType(), equalTo(GenotypeType.HOM_VAR));
 
-        assertThat(passAllFrameShift.contributesToGeneScore(), is(true));
+        Genotype mother = buildSampleGenotype("Eve", alleles.get(0), alleles.get(1));
+        assertThat(mother.getType(), equalTo(GenotypeType.HET));
+
+        Genotype father = buildSampleGenotype("Adam", alleles.get(1), alleles.get(0));
+        assertThat(father.getType(), equalTo(GenotypeType.HET));
+
+        VariantContext variantContext = buildVariantContext(1, 12345, alleles, proband, mother, father);
+        System.out.println("Built variant context " + variantContext);
+        System.out.println("Proband sample 0 has genotype " + variantContext.getGenotype(0).getGenotypeString());
+
+        PedPerson probandPerson = new PedPerson("Family", "Cain", "Adam", "Eve", Sex.MALE, Disease.AFFECTED, new ArrayList<>());
+        PedPerson motherPerson = new PedPerson("Family", "Eve", "0", "0", Sex.FEMALE, Disease.UNAFFECTED, new ArrayList<>());
+        PedPerson fatherPerson = new PedPerson("Family", "Adam", "0", "0", Sex.MALE, Disease.UNAFFECTED, new ArrayList<>());
+        Pedigree pedigree = buildPedigree(probandPerson, motherPerson, fatherPerson);
+
+        VariantEvaluation probandHomAlt = filteredVariant(1, 12345, "A", "T", FilterResult.pass(FilterType.FREQUENCY_FILTER), variantContext, VariantEffect.MISSENSE_VARIANT);
+        Gene gene = newGene(probandHomAlt);
+
+        instance.scoreGene(ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0, pedigree).accept(gene);
+
+        float variantScore = probandHomAlt.getVariantScore();
+
+        assertThat(probandHomAlt.contributesToGeneScore(), is(true));
 
         assertThat(gene.getVariantScore(), equalTo(variantScore));
         assertThat(gene.getPriorityScore(), equalTo(0f));
         assertThat(gene.getCombinedScore(), equalTo(variantScore / 2));
+    }
+
+    @Test
+    public void testScoreGeneWithSinglePassedVariant_AUTOSOMAL_RECESSIVE_HET() {
+        VariantEvaluation passAllFrameShift = passAllFrameShift();
+        Gene gene = newGene(passAllFrameShift);
+        scoreGene(gene, ModeOfInheritance.AUTOSOMAL_RECESSIVE, 0);
+
+        //A single het allele can't be compatible with AR
+        assertThat(passAllFrameShift.contributesToGeneScore(), is(false));
+
+        assertThat(gene.getVariantScore(), equalTo(0f));
+        assertThat(gene.getPriorityScore(), equalTo(0f));
+        assertThat(gene.getCombinedScore(), equalTo(0f));
     }
 
     @Test
@@ -311,7 +357,7 @@ public class RawScoreGeneScorerTest {
         List<Gene> genes = Lists.newArrayList(last, first, middle);
         Collections.shuffle(genes);
 
-        instance.scoreGenes(genes, ModeOfInheritance.ANY, 0);
+        instance.scoreGenes(genes, ModeOfInheritance.ANY, 0, Pedigree.constructSingleSamplePedigree("Nemo"));
 
         genes.forEach(System.out::println);
 

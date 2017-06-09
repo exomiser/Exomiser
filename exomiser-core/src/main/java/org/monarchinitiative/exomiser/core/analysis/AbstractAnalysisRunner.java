@@ -131,7 +131,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
         logger.info("Scoring genes");
         GeneScorer geneScorer = new RawScoreGeneScorer();
-        List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()), analysis.getModeOfInheritance(), probandSampleId);
+        List<Gene> genes = geneScorer.scoreGenes(getGenesWithVariants(allGenes).collect(toList()), analysis.getModeOfInheritance(), probandSampleId, pedigree);
         List<VariantEvaluation> variants = getFinalVariantList(variantEvaluations);
         logger.info("Analysed {} genes containing {} filtered variants", genes.size(), variants.size());
 

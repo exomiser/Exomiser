@@ -26,6 +26,7 @@ package org.monarchinitiative.exomiser.core.analysis.util;
 
 import com.google.common.collect.*;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
+import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.bridge.CannotAnnotateMendelianInheritance;
 import de.charite.compbio.jannovar.mendel.bridge.VariantContextMendelianAnnotator;
 import de.charite.compbio.jannovar.pedigree.Genotype;
@@ -37,10 +38,7 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
@@ -74,6 +72,51 @@ public class InheritanceModeAnalyser {
      */
     public void analyseInheritanceModes(Collection<Gene> genes) {
         genes.stream().filter(Gene::passedFilters).forEach(this::analyseInheritanceModes);
+    }
+
+    /**
+     * Finds pairs of alleles compatible with autosomal recessive compound heterozygous inheritance according to the
+     * pedigree supplied in the class constructor. This will work independently of the mode of inheritance specified in
+     * the class constructor.
+     *
+     * @param passedVariantEvaluations
+     * @return a list of allele pairs compatible with an autosomal recessive compound heterozygous inheritance pattern.
+     */
+    public List<List<VariantEvaluation>> findCompatibleCompHetAlleles(List<VariantEvaluation> passedVariantEvaluations) {
+        //Cant't be comp het if there's only one allele.
+        if (passedVariantEvaluations.size() <= 1) {
+            return Collections.emptyList();
+        }
+
+        List<List<VariantEvaluation>> compatibleAllelePairs = new ArrayList<>();
+        //don't do all vs all otherwise we'll get the reciprocal pairs being tested so only check one side of the diagonal
+        for (int i = 0; i < passedVariantEvaluations.size(); i++) {
+            for (int j = i + 1; j < passedVariantEvaluations.size(); j++) {
+                VariantEvaluation ve1 = passedVariantEvaluations.get(i);
+                VariantEvaluation ve2 = passedVariantEvaluations.get(j);
+                if (!ve1.equals(ve2) && isCompHetCompatible(ve1, ve2)) {
+                    compatibleAllelePairs.add(ImmutableList.of(ve1, ve2));
+                }
+            }
+        }
+        return ImmutableList.copyOf(compatibleAllelePairs);
+    }
+
+    private boolean isCompHetCompatible(VariantEvaluation ve1, VariantEvaluation ve2) {
+        List<VariantContext> pair = Arrays.asList(ve1.getVariantContext(), ve2.getVariantContext());
+        try {
+            ImmutableMap<SubModeOfInheritance, ImmutableList<VariantContext>> compatibleSubModesMap = inheritanceAnnotator
+                    .computeCompatibleInheritanceSubModes(pair);
+            if (compatibleSubModesMap.containsKey(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET)) {
+                ImmutableList<VariantContext> compHetPair = compatibleSubModesMap.get(SubModeOfInheritance.AUTOSOMAL_RECESSIVE_COMP_HET);
+                if (compHetPair.size() == 2) {
+                    return true;
+                }
+            }
+        } catch (CannotAnnotateMendelianInheritance ex) {
+            logger.error(null, ex);
+        }
+        return false;
     }
 
     /**
@@ -128,7 +171,10 @@ public class InheritanceModeAnalyser {
         try {
             //Make sure only ONE variantContext is added if there are multiple alleles as there will be one VariantEvaluation per allele.
             //Having multiple copies of a VariantContext might cause problems with the comp het calculations 
-            List<VariantContext> geneVariants = passedVariantEvaluations.stream().map(VariantEvaluation::getVariantContext).distinct().collect(toList());
+            List<VariantContext> geneVariants = passedVariantEvaluations.stream()
+                    .map(VariantEvaluation::getVariantContext)
+                    .distinct()
+                    .collect(toList());
             ImmutableMap<ModeOfInheritance, ImmutableList<VariantContext>> compatibleMap = inheritanceAnnotator.computeCompatibleInheritanceModes(geneVariants);
             return compatibleMap.getOrDefault(modeOfInheritance, ImmutableList.of());
         } catch (CannotAnnotateMendelianInheritance ex) {
@@ -139,13 +185,13 @@ public class InheritanceModeAnalyser {
 
     private void setVariantEvaluationInheritanceModes(Multimap<String, VariantEvaluation> geneVariants, List<VariantContext> compatibleVariants) {
         compatibleVariants.forEach(variantContext -> {
-                    //using toStringWithoutGenotypes as the genotype string gets changed and VariantContext does not override equals or hashcode so this cannot be used as a key
-                    Collection<VariantEvaluation> variants = geneVariants.get(toKeyValue(variantContext));
-                    variants.forEach(variant -> {
-                        variant.setInheritanceModes(compatibleModes);
-                        logger.debug("{}: {}", variant.getInheritanceModes(), variant);
-                    });
-                });
+            //using toStringWithoutGenotypes as the genotype string gets changed and VariantContext does not override equals or hashcode so this cannot be used as a key
+            Collection<VariantEvaluation> variants = geneVariants.get(toKeyValue(variantContext));
+            variants.forEach(variant -> {
+                variant.setInheritanceModes(compatibleModes);
+                logger.debug("{}: {}", variant.getInheritanceModes(), variant);
+            });
+        });
     }
 
     private Genotype getIndividualGenotype(Allele alternateAllele, List<Allele> alleles) {
