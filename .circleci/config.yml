@@ -13,4 +13,4 @@ jobs:
           paths:
             - ~/.m2
           key: exomiser-{{ checksum "pom.xml" }}
-      - run: ./mvnw install
+      - run: mvn install
