@@ -15,6 +15,6 @@ jobs:
           key: exomiser-{{ checksum "pom.xml" }}
       - run: mvn install
       - store_test_results:
-          path: ./*/target/surefire-reports
+          path: .*/target/surefire-reports
       - store_artifacts:
-          path: ./*/target/
+          path: .*/target/
