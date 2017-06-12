@@ -6,9 +6,15 @@ jobs:
       - image: circleci/openjdk:8-jdk-browsers
     steps:
       - checkout
-          #need to do an install here otherwise the exomiser-core lib won't be found when getting deps for the other modules
-      - run: mvn exomiser-core/install -DskipTests=true
-      - run: mvn test
-        post:
-          - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-          - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+      - restore_cache:
+          key: exomiser-{{ checksum "pom.xml" }}
+#      - run: mvn dependency:go-offline
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: exomiser-{{ checksum "pom.xml" }}
+      - run: mvn install
+      - store_test_results:
+          path: .*/target/surefire-reports
+      - store_artifacts:
+          path: .*/target/
