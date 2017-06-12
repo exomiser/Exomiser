@@ -8,7 +8,7 @@ Development: [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/develop
 
 The Exomiser is a Java program that finds potential disease-causing variants from whole-exome or whole-genome sequencing data.
 
-Starting from a VCF file and a set of phenotypes encoded using the [Human Phenotype Ontology](http://www.human-phenotype-ontology.or) (HPO) it will annotate, filter and prioritise likely causative variants. The program does this based on user-defined criteria such as a variant's predicted pathogenicity, frequency of occurrence in a population and also how closely the given phenotype matches the known phenotype of diseased genes from human and model organism data.
+Starting from a VCF file and a set of phenotypes encoded using the [Human Phenotype Ontology](http://www.human-phenotype-ontology.org) (HPO) it will annotate, filter and prioritise likely causative variants. The program does this based on user-defined criteria such as a variant's predicted pathogenicity, frequency of occurrence in a population and also how closely the given phenotype matches the known phenotype of diseased genes from human and model organism data.
 
 The functional annotation of variants is handled by [Jannovar](https://github.com/charite/jannovar) and uses [UCSC](http://genome.ucsc.edu) KnownGene transcript definitions and hg19 genomic coordinates.
 
