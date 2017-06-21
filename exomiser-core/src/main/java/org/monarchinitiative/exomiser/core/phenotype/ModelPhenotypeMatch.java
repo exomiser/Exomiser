@@ -17,7 +17,7 @@ public final class ModelPhenotypeMatch implements Comparable<ModelPhenotypeMatch
     private final Model model;
     private final List<PhenotypeMatch> bestPhenotypeMatches;
 
-    ModelPhenotypeMatch(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatches) {
+    private ModelPhenotypeMatch(double score, Model model, List<PhenotypeMatch> bestPhenotypeMatches) {
         this.score = score;
         this.model = model;
         this.bestPhenotypeMatches = bestPhenotypeMatches;
