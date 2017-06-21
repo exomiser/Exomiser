@@ -161,8 +161,6 @@ public class OMIMPriorityTest {
         genes.forEach(gene -> {
             checkOmimScoreAndHasAssociatedDiseases(gene, 0.5d, false);
         });
-
-
     }
 
 }

@@ -23,6 +23,8 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.InheritanceMode;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
@@ -49,6 +51,8 @@ import java.util.stream.Stream;
  * @version 0.16 (28 January,2014)
  */
 public class OMIMPriority implements Prioritiser {
+
+    private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
 
     private static final double DEFAULT_SCORE = 1d;
 
@@ -99,7 +103,13 @@ public class OMIMPriority implements Prioritiser {
         return gene -> {
             List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.getEntrezGeneID());
             //this is a pretty non-punitive prioritiser. We're relying on the other prioritisers to do the main ranking
-            double score = diseases.stream().map(Disease::getInheritanceMode).mapToDouble(scoreInheritanceMode(gene)).max().orElse(DEFAULT_SCORE);
+            double score = diseases.stream()
+                    .filter(disease -> disease.getDiseaseId().startsWith("OMIM"))
+                    .map(Disease::getInheritanceMode)
+                    .mapToDouble(scoreInheritanceMode(gene))
+                    .max()
+                    .orElse(DEFAULT_SCORE);
+
             return new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, diseases);
         };
     }
