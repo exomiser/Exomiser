@@ -236,6 +236,6 @@ public class FrequencyDataTest {
         float maxFreq = 0.1f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
         FrequencyData instance = FrequencyData.of(null, maxFrequency);
-        assertThat(instance.getScore(), equalTo(0.8504372f));
+        assertThat(instance.getScore(), equalTo(0.9857672f));
     }
 }

@@ -198,7 +198,7 @@ public class FrequencyData {
         } else if (max > 2) {
             return NOT_RARE_SCORE;
         } else {
-            return 1f - (0.13533f * (float) Math.exp(max));
+            return 1.13533f - (0.13533f * (float) Math.exp(max));
         }
     }
 
