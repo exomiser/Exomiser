@@ -106,7 +106,7 @@ public class LocalFrequencyDaoTest {
     public void testInsertion(){
         //1 12345   T   .   0.03  (an T->. monomorphic site (no alt allele) on chr1 at position 12345 with frequency of 0.03%)
         Mockito.when(tabixReader.query("1:12345-12345"))
-                .thenReturn(new MockTabixIterator(Collections.singletonList("1\t12345\t.\tT\t0.03")));
+                .thenReturn(new MockTabixIterator(Collections.singletonList("1\t12345\tA\tAT\t0.03")));
 
         assertThat(instance.getFrequencyData(variant(1, 12345, "-", "T")), equalTo(localFrequencyData(0.03f)));
     }
@@ -114,8 +114,8 @@ public class LocalFrequencyDaoTest {
     @Test
     public void testDeletion(){
         //1 12345   T   .   0.03  (an T->. monomorphic site (no alt allele) on chr1 at position 12345 with frequency of 0.03%)
-        Mockito.when(tabixReader.query("1:12345-12345"))
-                .thenReturn(new MockTabixIterator(Collections.singletonList("1\t12345\tT\t.\t0.03")));
+        Mockito.when(tabixReader.query("1:12344-12344"))
+                .thenReturn(new MockTabixIterator(Collections.singletonList("1\t12344\tAT\tA\t0.03")));
 
         assertThat(instance.getFrequencyData(variant(1, 12345, "T", "-")), equalTo(localFrequencyData(0.03f)));
     }
