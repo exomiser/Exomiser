@@ -131,8 +131,6 @@ public class HiPhiveProteinInteractionScorer {
         low-scoring (0.5) PPI hits to 50640 for other genes with no PPI match
          */
         if (columnIndex == -1){
-            logger.info("No Score for " + entrezGeneId + ", rowIndex " + rowIndex +
-                    ", columnIndex " + columnIndex);
             return GeneMatch.NO_HIT;
         }
 
