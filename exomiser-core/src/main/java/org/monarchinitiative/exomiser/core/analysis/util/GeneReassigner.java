@@ -148,7 +148,7 @@ public class GeneReassigner {
             variantEffects.add(a.getVariantEffect());
             newAnnotations.add(a);
             // hack to deal with fusion protein Jannovar nonsense - ? should the separate genes not be part of the annotation anyway - don't seem to be, should maybe not do this split
-            if (geneSymbol.contains("-")) {
+            if (geneSymbol.contains("-") && !geneSymbol.contains(".")) {// avoid RP11-489C13.1 type annotations
                 String[] separateGeneSymbols = geneSymbol.split("-");
                 for (String separateGeneSymbol : separateGeneSymbols) {
                     geneSymbols.add(separateGeneSymbol);
