@@ -125,6 +125,17 @@ public class HiPhiveProteinInteractionScorer {
         int rowIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
         int columnIndex = getColumnIndexOfMostPhenotypicallySimilarGene(entrezGeneId);
 
+        /* Changed method to return -1 if no hit as otherwise could not distinguish between
+        no hit or hit to 1st entry in column (entrezGene 50640). When querying with 50640 this
+        resulted in a self-hit being returned with a PPI score of 0.5+0.7=1.2 and also lots of
+        low-scoring (0.5) PPI hits to 50640 for other genes with no PPI match
+         */
+        if (columnIndex == -1){
+            logger.info("No Score for " + entrezGeneId + ", rowIndex " + rowIndex +
+                    ", columnIndex " + columnIndex);
+            return GeneMatch.NO_HIT;
+        }
+
         // optimal adjustment based on benchmarking to allow walker scores to compete with low phenotype scores
         double walkerScore = 0.5 + weightedHighQualityMatrix.get(rowIndex, columnIndex);
 
@@ -149,7 +160,7 @@ public class HiPhiveProteinInteractionScorer {
         int geneIndex = dataMatrix.getRowIndexForGene(entrezGeneId);
         int columnIndex = 0;
         double bestScore = 0;
-        int bestHitIndex = 0;
+        int bestHitIndex = -1;
         //TODO: here were walking along all the columns of a row from the high quality matches, i.e. traversing a list to find the value and position of the highest value in that list.
         //The matrix is (12511 rows * 303 columns)
         // The output of this function (assigned to columnIndex) is used to:
