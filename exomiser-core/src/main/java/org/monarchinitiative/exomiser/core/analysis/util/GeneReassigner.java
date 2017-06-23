@@ -192,6 +192,11 @@ public class GeneReassigner {
         if (geneWithHighestPhenotypeScore == null) {
             return;
         }
+
+        if (variantEffectForTopHit == null){
+            // had one variant where this happened in Genomiser runs and breaks a lot of downstream code
+            return;
+        }
         /* Only reassign variant effect if it has not already been flagged by RegFeatureDao as a regulatory region variant.
         Otherwise TAD reassignment and subsequent reg feature filter fail to work as expected
         */
