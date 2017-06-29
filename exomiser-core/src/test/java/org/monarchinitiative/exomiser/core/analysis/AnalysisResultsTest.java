@@ -114,7 +114,7 @@ public class AnalysisResultsTest {
     @Test
     public void testCanReturnUnannotatedVariantEvaluations() {
         VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation.Builder(10, 123353297, "G", "C")
-                .annotations(Collections.singletonList(TranscriptAnnotation.EMPTY))
+                .annotations(Collections.singletonList(TranscriptAnnotation.empty()))
                 .build();
         
         VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation.Builder(7, 155604800, "C", "CTT").build();

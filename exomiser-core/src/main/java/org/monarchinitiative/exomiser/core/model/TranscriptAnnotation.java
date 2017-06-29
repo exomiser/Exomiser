@@ -9,13 +9,14 @@ import java.util.Objects;
  */
 public class TranscriptAnnotation {
 
-    public static final TranscriptAnnotation EMPTY = TranscriptAnnotation.builder().build();
+    private static final TranscriptAnnotation EMPTY = TranscriptAnnotation.builder().build();
 
     private final VariantEffect variantEffect;
 
     private final String geneSymbol;
     private final String accession;
 
+    private final String hgvsGenomic;
     private final String hgvsCdna;
     private final String hgvsProtein;
 
@@ -25,9 +26,14 @@ public class TranscriptAnnotation {
         this.variantEffect = builder.variantEffect;
         this.geneSymbol = builder.geneSymbol;
         this.accession = builder.accession;
+        this.hgvsGenomic = builder.hgvsGenomic;
         this.hgvsCdna = builder.hgvsCdna;
         this.hgvsProtein = builder.hgvsProtein;
         this.distanceFromNearestGene = builder.distanceFromNearestGene;
+    }
+
+    public static TranscriptAnnotation empty() {
+        return EMPTY;
     }
 
     public VariantEffect getVariantEffect() {
@@ -40,6 +46,10 @@ public class TranscriptAnnotation {
 
     public String getAccession() {
         return accession;
+    }
+
+    public String getHgvsGenomic() {
+        return hgvsGenomic;
     }
 
     public String getHgvsCdna() {
@@ -63,24 +73,26 @@ public class TranscriptAnnotation {
                 variantEffect == that.variantEffect &&
                 Objects.equals(geneSymbol, that.geneSymbol) &&
                 Objects.equals(accession, that.accession) &&
+                Objects.equals(hgvsGenomic, that.hgvsGenomic) &&
                 Objects.equals(hgvsCdna, that.hgvsCdna) &&
                 Objects.equals(hgvsProtein, that.hgvsProtein);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variantEffect, geneSymbol, accession, hgvsCdna, hgvsProtein, distanceFromNearestGene);
+        return Objects.hash(variantEffect, geneSymbol, accession, hgvsGenomic, hgvsCdna, hgvsProtein, distanceFromNearestGene);
     }
 
     @Override
     public String toString() {
         return "TranscriptAnnotation{" +
-                "geneSymbol='" + geneSymbol + '\'' +
+                "variantEffect=" + variantEffect +
+                ", geneSymbol='" + geneSymbol + '\'' +
                 ", accession='" + accession + '\'' +
+                ", hgvsGenomic='" + hgvsGenomic + '\'' +
                 ", hgvsCdna='" + hgvsCdna + '\'' +
                 ", hgvsProtein='" + hgvsProtein + '\'' +
                 ", distanceFromNearestGene=" + distanceFromNearestGene +
-                ", variantEffect=" + variantEffect +
                 '}';
     }
 
@@ -95,6 +107,7 @@ public class TranscriptAnnotation {
         private String geneSymbol = "";
         private String accession = "";
 
+        private String hgvsGenomic = "";
         private String hgvsCdna = "";
         private String hgvsProtein = "";
 
@@ -112,6 +125,11 @@ public class TranscriptAnnotation {
 
         public Builder accession(String accession) {
             this.accession = accession;
+            return this;
+        }
+
+        public Builder hgvsGenomic(String hgvsGenomic) {
+            this.hgvsGenomic = hgvsGenomic;
             return this;
         }
 

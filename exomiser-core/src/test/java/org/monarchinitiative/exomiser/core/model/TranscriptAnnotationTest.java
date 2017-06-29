@@ -13,7 +13,7 @@ public class TranscriptAnnotationTest {
 
     @Test
     public void testEmpty() {
-        assertThat(TranscriptAnnotation.EMPTY, equalTo(TranscriptAnnotation.builder().build()));
+        assertThat(TranscriptAnnotation.empty(), equalTo(TranscriptAnnotation.builder().build()));
     }
 
     @Test
@@ -41,6 +41,15 @@ public class TranscriptAnnotationTest {
                 .accession(value)
                 .build();
         assertThat(annotation.getAccession(), equalTo(value));
+    }
+
+    @Test
+    public void testHgvsGeString() {
+        String value = "chr10:g.123256215T>G";
+        TranscriptAnnotation annotation = TranscriptAnnotation.builder()
+                .hgvsGenomic(value)
+                .build();
+        assertThat(annotation.getHgvsGenomic(), equalTo(value));
     }
 
     @Test
@@ -77,6 +86,7 @@ public class TranscriptAnnotationTest {
         TranscriptAnnotation annotation = TranscriptAnnotation.builder()
                 .geneSymbol("FGFR")
                 .accession("uc021pzz.1")
+                .hgvsGenomic("chr10:g.123256215T>G")
                 .hgvsCdna("c.1694A>C")
                 .hgvsProtein("p.(Glu565Ala)")
                 .distanceFromNearestGene(0)
