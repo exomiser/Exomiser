@@ -259,9 +259,8 @@ public class Frequency implements Comparable<Frequency> {
      * into a String.
      */
     public String getDumpLine() {
-        String s = String.format("%d|%d|%s|%s|%d|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f%n", this.chromosome, this.pos, this.ref, this.alt, this.rsId, this.dbSNPmaf, this.espEA,
+        return String.format("%d|%d|%s|%s|%d|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f%n", this.chromosome, this.pos, this.ref, this.alt, this.rsId, this.dbSNPmaf, this.espEA,
                 this.espAA, this.espAll, this.exACAfr, this.exACAmr, this.exACEas, this.exACFin, this.exACNfe, this.exACOth, this.exACSas);
-        return s;
     }
 
     /**
