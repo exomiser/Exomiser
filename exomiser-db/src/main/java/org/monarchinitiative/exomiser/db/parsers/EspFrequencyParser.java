@@ -193,11 +193,11 @@ public class EspFrequencyParser implements ResourceParser {
      * finished, we need to merge the two lists and sort the merged list.
      */
     private void mergeAndSortFrequencyObjects() {
-        logger.info("mergeAndSortFrequencyObjects");
-        logger.info("Original size of frequencyList: " + frequencyList.size());
-        logger.info("Size of ESP derived Frequency list: " + espFrequencyList.size());
+        logger.info("mergeAndSortFrequencyObjects for chromosome {}", chromosome);
+        logger.info("Original size of frequencyList: {}", frequencyList.size());
+        logger.info("Size of ESP derived Frequency list: {}", espFrequencyList.size());
         frequencyList.addAll(espFrequencyList);
-        logger.info("After merge size of frequencyList: " + frequencyList.size());
+        logger.info("After merge size of frequencyList: {}", frequencyList.size());
         Collections.sort(frequencyList);
     }
 
