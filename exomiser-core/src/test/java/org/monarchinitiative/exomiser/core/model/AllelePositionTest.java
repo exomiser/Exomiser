@@ -321,4 +321,33 @@ public class AllelePositionTest {
         assertThat(instance.getRef(), equalTo("TCT"));
         assertThat(instance.getAlt(), equalTo("CCC"));
     }
+
+    @Test
+    public void testStructutalVariant() {
+        assertThat(minimise(4477084, "C", "<DEL:ME:ALU>"), equalTo(AllelePosition.of(4477084, "C", "<DEL:ME:ALU>")));
+    }
+
+    @Test
+    public void testRearrangementBreakends() {
+        assertThat(minimise(321681, "G", "G]17:198982]"), equalTo(AllelePosition.of(321681, "G", "G]17:198982]")));
+        assertThat(minimise(321682, "T", "]13:123456]T"), equalTo(AllelePosition.of(321682, "T", "]13:123456]T")));
+        assertThat(minimise(123456, "C", "C[2:321682["), equalTo(AllelePosition.of(123456, "C", "C[2:321682[")));
+        assertThat(minimise(123457, "A", "[17:198983[A"), equalTo(AllelePosition.of(123457, "A", "[17:198983[A")));
+        assertThat(minimise(198982, "A", "A]2:321681]"), equalTo(AllelePosition.of(198982, "A", "A]2:321681]")));
+        assertThat(minimise(198983, "C", "[13:123457[C"), equalTo(AllelePosition.of(198983, "C", "[13:123457[C")));
+    }
+
+    @Test
+    public void testInsertionBreakends() {
+        assertThat(minimise(32168, "T", "]13 : 123456]AGTNNNNNCAT"), equalTo(AllelePosition.of(32168, "T", "]13 : 123456]AGTNNNNNCAT")));
+        assertThat(minimise(123456, "C", "CAGTNNNNNCA[2 : 321682["), equalTo(AllelePosition.of(123456, "C", "CAGTNNNNNCA[2 : 321682[")));
+    }
+
+    @Test
+    public void testTelomericBreakends() {
+        assertThat(minimise(0, "N", ".[13 : 123457["), equalTo(AllelePosition.of(0, "N", ".[13 : 123457[")));
+        assertThat(minimise(1, "T", "]13 : 123456]T"), equalTo(AllelePosition.of(1, "T", "]13 : 123456]T")));
+        assertThat(minimise(123456, "C", "C[1 : 1["), equalTo(AllelePosition.of(123456, "C", "C[1 : 1[")));
+        assertThat(minimise(123457, "A", "]1 : 0]A"), equalTo(AllelePosition.of(123457, "A", "]1 : 0]A")));
+    }
 }
