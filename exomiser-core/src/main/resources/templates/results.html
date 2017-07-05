@@ -204,16 +204,15 @@ and open the template in the editor.
                   th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
                     <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|">
                         chr10:g.123256215T>G [0/1]</b>
-                    <th:block th:each="frequencyData: ${variantEvaluation.frequencyData}">
-                        <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                           th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}"
+                    <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}" th:if="not ${rsId.isEmpty()}">
+                        <a th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}"
                            th:text="${rsId}">rs141235720
                         </a>
-                        <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
-                           th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}"> (variation
+                        <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">
+                            (variation
                             viewer)
                         </a>
-                         <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                        <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
                     </th:block>
                 </div>
                 <div class="col-sm-6">
