@@ -1,7 +1,6 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import htsjdk.tribble.readers.TabixReader;
-import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,14 +36,7 @@ public class LocalFrequencyDaoTest {
     }
 
     private VariantEvaluation variant(int chr, int pos, String ref, String alt) {
-        if (ref.equals("-") || alt.equals("-")) {
-            //this is used to get round the fact that in real life the variant evaluation
-            //is built from a variantContext and some variantAnnotations
-            return new VariantEvaluation.Builder(chr, pos, ref, alt)
-                    .variantContext(Mockito.mock(VariantContext.class))
-                    .build();
-        }
-        return new VariantEvaluation.Builder(chr, pos, ref, alt).build();
+        return VariantEvaluation.builder(chr, pos, ref, alt).build();
     }
 
     private FrequencyData localFrequencyData(float freq) {
@@ -109,15 +101,15 @@ public class LocalFrequencyDaoTest {
         Mockito.when(tabixReader.query("1:12345-12345"))
                 .thenReturn(new MockTabixIterator(Collections.singletonList("1\t12345\tA\tAT\t0.03")));
 
-        assertThat(instance.getFrequencyData(variant(1, 12345, "-", "T")), equalTo(localFrequencyData(0.03f)));
+        assertThat(instance.getFrequencyData(variant(1, 12345, "A", "AT")), equalTo(localFrequencyData(0.03f)));
     }
 
     @Test
     public void testDeletion(){
         //1 12345   T   .   0.03  (an T->. monomorphic site (no alt allele) on chr1 at position 12345 with frequency of 0.03%)
-        Mockito.when(tabixReader.query("1:12344-12344"))
-                .thenReturn(new MockTabixIterator(Collections.singletonList("1\t12344\tAT\tA\t0.03")));
+        Mockito.when(tabixReader.query("1:12345-12345"))
+                .thenReturn(new MockTabixIterator(Collections.singletonList("1\t12345\tAT\tA\t0.03")));
 
-        assertThat(instance.getFrequencyData(variant(1, 12345, "T", "-")), equalTo(localFrequencyData(0.03f)));
+        assertThat(instance.getFrequencyData(variant(1, 12345, "AT", "A")), equalTo(localFrequencyData(0.03f)));
     }
 }

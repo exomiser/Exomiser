@@ -36,6 +36,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -150,6 +151,7 @@ public class VariantFactory {
         try {
             //builds one annotation list for each alternative allele
             //beware - this needs synchronisation in jannovar versions 0.16 and below
+            //TODO: do we need the VariantContextAnnotator? Should be able to do this directly using each allele. CHECK JANNOVAR INTERNALS FOR THIS.
             synchronized (this) {
                 return variantAnnotator.buildAnnotations(variantContext);
             }
@@ -199,14 +201,15 @@ public class VariantFactory {
      * @return
      */
     private VariantEvaluation buildUnknownVariantEvaluation(VariantContext variantContext, int altAlleleId) {
-        // Build the GenomeChange object.
-        final String chromosomeName = variantContext.getContig();
-        final String ref = variantContext.getReference().getBaseString();
-        final String alt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
-        final int pos = variantContext.getStart();
 
+        AllelePosition minimisedAllele = minimiseVcfAllele(variantContext, altAlleleId);
+        int pos = minimisedAllele.getPos();
+        String ref = minimisedAllele.getRef();
+        String alt = minimisedAllele.getAlt();
+
+        String chromosomeName = variantContext.getContig();
         logger.trace("Building unannotated variant for {} {} {} {} - assigning to chromosome {}", chromosomeName, pos, ref, alt, UNKNOWN_CHROMOSOME);
-        return new VariantEvaluation.Builder(UNKNOWN_CHROMOSOME, pos, ref, alt)
+        return VariantEvaluation.builder(UNKNOWN_CHROMOSOME, pos, ref, alt)
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
@@ -226,11 +229,13 @@ public class VariantFactory {
      * @return
      */
     VariantEvaluation buildAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, VariantAnnotations variantAnnotations) {
-        int chr = variantAnnotations.getChr();
-        int pos = buildPos(variantAnnotations);
-        String ref = buildRef(variantAnnotations);
-        String alt = buildAlt(variantAnnotations);
 
+        AllelePosition minimisedVcfAllele = minimiseVcfAllele(variantContext, altAlleleId);
+        int pos = minimisedVcfAllele.getPos();
+        String ref = minimisedVcfAllele.getRef();
+        String alt = minimisedVcfAllele.getAlt();
+
+        int chr = variantAnnotations.getChr();
         VariantEffect variantEffect = variantAnnotations.getHighestImpactEffect();
         GenomeVariant genomeVariant = variantAnnotations.getGenomeVariant();
         //Attention! highestImpactAnnotation can be null
@@ -238,7 +243,7 @@ public class VariantFactory {
 
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
-        return new VariantEvaluation.Builder(chr, pos, ref, alt)
+        return VariantEvaluation.builder(chr, pos, ref, alt)
                 //HTSJDK derived data are only used for writing out the
                 //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
                 //can be removed from InheritanceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
@@ -259,6 +264,13 @@ public class VariantFactory {
                 .build();
     }
 
+    private AllelePosition minimiseVcfAllele(VariantContext variantContext, int altAlleleId) {
+        int vcfPos = variantContext.getStart();
+        String vcfRef = variantContext.getReference().getBaseString();
+        String vcfAlt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
+        return AllelePosition.minimise(vcfPos, vcfRef, vcfAlt);
+    }
+
     private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {
         List<TranscriptAnnotation> transcriptAnnotations = new ArrayList<>(annotations.size());
         for (Annotation annotation : annotations) {
@@ -272,6 +284,7 @@ public class VariantFactory {
                 .variantEffect(annotation.getMostPathogenicVarType())
                 .accession(getTranscriptAccession(annotation))
                 .geneSymbol(buildGeneSymbol(annotation))
+//                .hgvsGenomic(annotation.getGenomicNTChangeStr())
                 .hgvsCdna(annotation.getCDSNTChangeStr())
                 .hgvsProtein(annotation.getProteinChangeStr())
                 .distanceFromNearestGene(getDistFromNearestGene(annotation))

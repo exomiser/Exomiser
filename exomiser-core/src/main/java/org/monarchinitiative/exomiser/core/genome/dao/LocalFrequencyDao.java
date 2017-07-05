@@ -37,30 +37,11 @@ public class LocalFrequencyDao implements FrequencyDao {
 
     FrequencyData processResults(Variant variant) {
         String chromosome = variant.getChromosomeName();
-        String ref = dotIfEmpty(variant.getRef());
-        String alt = dotIfEmpty(variant.getAlt());
+        String ref = variant.getRef();
+        String alt = variant.getAlt();
         int start = variant.getPosition();
 
-        if (isIndel(ref, alt)) {
-            if (alt.equals(".")) {
-                start -= 1;
-            }
-            return getIndelPositionFrequencyData(chromosome, start, ref, alt);
-        }
-
         return getPositionFrequencyData(chromosome, start, ref, alt);
-    }
-
-    private boolean isIndel(String ref, String alt) {
-        return ref.equals(".") || alt.equals(".");
-    }
-
-
-    private String dotIfEmpty(String allele) {
-        if ("-".equals(allele) || allele.isEmpty()) {
-            return ".";
-        }
-        return allele;
     }
 
     private FrequencyData getPositionFrequencyData(String chromosome, int start, String ref, String alt) {
@@ -84,25 +65,6 @@ public class LocalFrequencyDao implements FrequencyDao {
             }
         } catch (IOException e) {
             logger.error("Unable to read from local frequency tabix file {}", tabixReader.getSource(), e);
-        }
-        return FrequencyData.empty();
-    }
-
-
-    private FrequencyData getIndelPositionFrequencyData(String chromosome, int start, String ref, String alt) {
-        try {
-            TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
-            String line;
-            while ((line = results.next()) != null) {
-                String[] elements = line.split("\t");
-                String refField = dotIfEmpty(elements[2].substring(1));
-                String altField = dotIfEmpty(elements[3].substring(1));
-                if (refField.equals(ref) && altField.equals(alt)) {
-                    return parseLocalFrequency(elements[4]);
-                }
-            }
-        } catch (IOException e) {
-            logger.error("Unable to read from Indel tabix file {}", tabixReader.getSource(), e);
         }
         return FrequencyData.empty();
     }
