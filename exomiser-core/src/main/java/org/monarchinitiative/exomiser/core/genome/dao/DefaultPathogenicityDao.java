@@ -94,8 +94,6 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
                 + "AND alt = ? ";
         PreparedStatement ps = connection.prepareStatement(query);
 
-        // FIXME(holtgrewe): See my comment in {@link DefaultFrequencyDao.createPreparedStatement}.
-        // Note: when we get here, we have tested above that we have a nonsynonymous substitution
         ps.setInt(1, variant.getChromosome());
         ps.setInt(2, variant.getPosition());
         ps.setString(3, variant.getRef());
@@ -135,7 +133,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
     private SiftScore getBestSiftScore(ResultSet rs, SiftScore score) throws SQLException {
         float rowVal = rs.getFloat("sift");
-        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+        if (!rs.wasNull()) {
             if (score == null || rowVal < score.getScore()) {
                 return SiftScore.valueOf(rowVal);
             }
@@ -145,7 +143,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
     private PolyPhenScore getBestPolyPhenScore(ResultSet rs, PolyPhenScore score) throws SQLException {
         float rowVal = rs.getFloat("polyphen");
-        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+        if (!rs.wasNull()) {
             if (score == null || rowVal > score.getScore()) {
                 return PolyPhenScore.valueOf(rowVal);
             }
@@ -155,7 +153,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
     private MutationTasterScore getBestMutationTasterScore(ResultSet rs, MutationTasterScore score) throws SQLException {
         float rowVal = rs.getFloat("mut_taster");
-        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+        if (!rs.wasNull()) {
             if (score == null || rowVal > score.getScore()) {
                 return MutationTasterScore.valueOf(rowVal);
             }
@@ -165,19 +163,12 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
 
     private CaddScore getBestCaddScore(ResultSet rs, CaddScore score) throws SQLException {
         float rowVal = rs.getFloat("cadd");
-        if (valueNotNullOrNoParseFloat(rs, rowVal)) {
+        if (!rs.wasNull()) {
             if (score == null || rowVal > score.getScore()) {
                 return CaddScore.valueOf(rowVal);
             }
         }
         return score;
-    }
-
-    //TODO: this should vanish in the next db build. Check and remove.
-    private static final float NOPARSE_FLOAT = -5f;
-
-    private static boolean valueNotNullOrNoParseFloat(ResultSet rs, float rowVal) throws SQLException {
-        return !rs.wasNull() && rowVal != NOPARSE_FLOAT;
     }
 
 }
