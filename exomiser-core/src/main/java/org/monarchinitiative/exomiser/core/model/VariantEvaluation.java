@@ -683,30 +683,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
-        /**
-         * @return a generic one-based position variant context with a heterozygous genotype having no attributes.
-         */
-        private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual) {
-            Allele refAllele = Allele.create(ref, true);
-            Allele altAllele = Allele.create(alt);
-            List<Allele> alleles = Arrays.asList(refAllele, altAllele);
-
-            VariantContextBuilder vcBuilder = new VariantContextBuilder();
-
-            // build Genotype
-            GenotypeBuilder gtBuilder = new GenotypeBuilder("sample").noAttributes();
-            //default to HETEROZYGOUS
-            gtBuilder.alleles(alleles);
-
-            // build VariantContext
-            vcBuilder.loc("chr" + chr, pos, pos - 1L + ref.length());
-            vcBuilder.alleles(alleles);
-            vcBuilder.genotypes(gtBuilder.make());
-            vcBuilder.log10PError(-0.1 * qual);
-
-            return vcBuilder.make();
-        }
-
         public Builder altAlleleId(int altAlleleId) {
             this.altAlleleId = altAlleleId;
             return this;
@@ -787,6 +763,30 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
                 variantContext = buildVariantContext(chr, pos, ref, alt, phredScore);
             }
             return new VariantEvaluation(this);
+        }
+
+        /**
+         * @return a generic one-based position variant context with a heterozygous genotype having no attributes.
+         */
+        private VariantContext buildVariantContext(int chr, int pos, String ref, String alt, double qual) {
+            Allele refAllele = Allele.create(ref, true);
+            Allele altAllele = Allele.create(alt);
+            List<Allele> alleles = Arrays.asList(refAllele, altAllele);
+
+            VariantContextBuilder vcBuilder = new VariantContextBuilder();
+
+            // build Genotype
+            GenotypeBuilder gtBuilder = new GenotypeBuilder("sample").noAttributes();
+            //default to HETEROZYGOUS
+            gtBuilder.alleles(alleles);
+
+            // build VariantContext
+            vcBuilder.loc("chr" + chr, pos, pos - 1L + ref.length());
+            vcBuilder.alleles(alleles);
+            vcBuilder.genotypes(gtBuilder.make());
+            vcBuilder.log10PError(-0.1 * qual);
+
+            return vcBuilder.make();
         }
 
     }
