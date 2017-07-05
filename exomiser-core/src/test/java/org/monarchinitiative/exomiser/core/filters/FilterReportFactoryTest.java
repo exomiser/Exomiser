@@ -74,15 +74,15 @@ public class FilterReportFactoryTest {
     }
 
     private VariantEvaluation makeFailedVariant(FilterType filterType) {
-        VariantEvaluation failedFilterVariantEvaluation = new VariantEvaluation.Builder(6, 1000000, "C", "T").build();
-        failedFilterVariantEvaluation.addFilterResult(new FailFilterResult(filterType));
-        return failedFilterVariantEvaluation;
+        return VariantEvaluation.builder(6, 1000000, "C", "T")
+                .filterResults(new FailFilterResult(filterType))
+                .build();
     }
 
     private VariantEvaluation makePassedVariant(FilterType filterType) {
-        VariantEvaluation passedFilterVariantEvaluation = new VariantEvaluation.Builder(6, 1000000, "C", "T").build();
-        passedFilterVariantEvaluation.addFilterResult(new PassFilterResult(filterType));
-        return passedFilterVariantEvaluation;
+        return VariantEvaluation.builder(6, 1000000, "C", "T")
+                .filterResults(new PassFilterResult(filterType))
+                .build();
     }
     
     private Gene makeFailedGene(FilterType filterType) {

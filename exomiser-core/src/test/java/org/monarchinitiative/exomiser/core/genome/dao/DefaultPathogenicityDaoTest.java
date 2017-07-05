@@ -63,14 +63,14 @@ public class DefaultPathogenicityDaoTest {
     private final Variant missenseVariantInDatabase = makeMissenseVariant(10, 123256215, "T", "G");
 
     private Variant makeMissenseVariant(int chr, int pos, String ref, String alt) {
-        return new VariantEvaluation.Builder(chr, pos, ref, alt)
+        return VariantEvaluation.builder(chr, pos, ref, alt)
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
     }
 
     @Test
     public void testNonMissenseVariantReturnsAnEmptyPathogenicityData() {
-        Variant nonMissenseVariant = new VariantEvaluation.Builder(0, 0, "A", "T")
+        Variant nonMissenseVariant = VariantEvaluation.builder(0, 0, "A", "T")
                 .variantEffect(VariantEffect.DOWNSTREAM_GENE_VARIANT)
                 .build();
         PathogenicityData result = instance.getPathogenicityData(nonMissenseVariant);

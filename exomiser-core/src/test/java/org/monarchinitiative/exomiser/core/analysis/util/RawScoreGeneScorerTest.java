@@ -71,28 +71,28 @@ public class RawScoreGeneScorerTest {
     }
 
     private VariantEvaluation failFreq() {
-        return new VariantEvaluation.Builder(1, 1, "A", "T")
+        return VariantEvaluation.builder(1, 1, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .filterResults(FAIL_FREQUENCY)
                 .build();
     }
 
     private VariantEvaluation passAllFrameShift() {
-        return new VariantEvaluation.Builder(1, 2, "A", "T")
+        return VariantEvaluation.builder(1, 2, "A", "T")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
                 .filterResults(PASS_FREQUENCY, PASS_PATHOGENICITY)
                 .build();
     }
 
     VariantEvaluation passAllMissense() {
-        return new VariantEvaluation.Builder(1, 3, "A", "T")
+        return VariantEvaluation.builder(1, 3, "A", "T")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .filterResults(PASS_FREQUENCY, PASS_PATHOGENICITY)
                 .build();
     }
 
     VariantEvaluation passAllSynonymous() {
-        return new VariantEvaluation.Builder(1, 4, "A", "T")
+        return VariantEvaluation.builder(1, 4, "A", "T")
                 .variantEffect(VariantEffect.SYNONYMOUS_VARIANT)
                 .filterResults(PASS_FREQUENCY, PASS_PATHOGENICITY)
                 .build();

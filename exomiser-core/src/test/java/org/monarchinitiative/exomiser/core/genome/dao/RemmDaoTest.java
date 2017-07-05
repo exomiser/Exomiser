@@ -67,17 +67,21 @@ public class RemmDaoTest {
         if (ref.equals("-") || alt.equals("-")) {
             //this is used to get round the fact that in real life the variant evaluation 
             //is built from a variantContext and some variantAnnotations
-            return new VariantEvaluation.Builder(chr, pos, ref, alt)
+            return VariantEvaluation.builder(chr, pos, ref, alt)
                     .variantContext(Mockito.mock(VariantContext.class))
                     .build();
         }
-        return new VariantEvaluation.Builder(chr, pos, ref, alt).variantEffect(VariantEffect.REGULATORY_REGION_VARIANT).build();
+        return VariantEvaluation.builder(chr, pos, ref, alt)
+                .variantEffect(VariantEffect.REGULATORY_REGION_VARIANT)
+                .build();
     }
     
     @Test
     public void testGetPathogenicityData_missenseVariant() {
         //missense variants are by definition protein-coding and therefore cannot be non-coding so we expect nothing 
-        VariantEvaluation missenseVariant = new VariantEvaluation.Builder(1, 1, "A", "T").variantEffect(VariantEffect.MISSENSE_VARIANT).build();
+        VariantEvaluation missenseVariant = VariantEvaluation.builder(1, 1, "A", "T")
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .build();
         assertThat(instance.getPathogenicityData(missenseVariant), equalTo(PathogenicityData.empty()));
     }
     

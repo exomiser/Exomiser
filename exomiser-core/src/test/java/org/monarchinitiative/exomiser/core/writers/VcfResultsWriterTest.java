@@ -144,8 +144,8 @@ public class VcfResultsWriterTest {
     private void setUpModel() {
         setUpFgfr2Gene();
         setUpShhGene();
-        unAnnotatedVariantEvaluation1 = new VariantEvaluation.Builder(5, 11, "AC", "AT").quality(1).build();
-        unAnnotatedVariantEvaluation2 = new VariantEvaluation.Builder(5, 14, "T", "TG").quality(1).build();
+        unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "AC", "AT").quality(1).build();
+        unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG").quality(1).build();
     }
 
     private void setUpShhGene() {
@@ -270,7 +270,7 @@ public class VcfResultsWriterTest {
     public void testAlternativeAllelesAreWrittenOnSuccessiveLines() {
         TestVariantFactory varFactory = new TestVariantFactory();
         VariantEvaluation alt1 = varFactory.buildVariant(1, 120612040, "T", "TCCGCCG", Genotype.HETEROZYGOUS, 30, 0, 258.62);
-        VariantEvaluation alt2 = varFactory.buildVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HOMOZYGOUS_ALT, 30, 1, 258.62);
+        VariantEvaluation alt2 = varFactory.buildVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HOMOZYGOUS_ALT, 30, 0, 258.62);
         Gene gene = new Gene("TEST", 12345);
         gene.addVariant(alt1);
         gene.addVariant(alt2);

@@ -26,7 +26,6 @@ package org.monarchinitiative.exomiser.core.filters;
 
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation.Builder;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -47,7 +46,7 @@ public class KnownVariantFilterTest {
     private final FilterResult FAIL_RESULT = new FailFilterResult(FilterType.KNOWN_VARIANT_FILTER);
     
     private VariantEvaluation buildVariantWithFrequencyData(FrequencyData frequencyData) {
-        return new Builder(1, 1, "A", "T").frequencyData(frequencyData).build();
+        return VariantEvaluation.builder(1, 1, "A", "T").frequencyData(frequencyData).build();
     }
 
     @Test

@@ -27,7 +27,6 @@ package org.monarchinitiative.exomiser.core.filters;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation.Builder;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -45,20 +44,17 @@ public class QualityFilterTest {
     private static final double OVER_THRESHOLD = MIN_QUAL_THRESHOLD + 1.0f;
     private static final double UNDER_THRESHOLD = MIN_QUAL_THRESHOLD - 1.0f;
 
-    private static VariantEvaluation highQualityPassesFilter;
-    private static VariantEvaluation lowQualityFailsFilter;
+    private final VariantEvaluation highQualityPassesFilter = VariantEvaluation.builder(1, 1, "A", "T")
+            .quality(OVER_THRESHOLD)
+            .build();
+
+    private final VariantEvaluation lowQualityFailsFilter = VariantEvaluation.builder(1, 1, "A", "T")
+            .quality(UNDER_THRESHOLD)
+            .build();
 
     @Before
     public void setUp() {
-
-        highQualityPassesFilter = testVariantBuilder().quality(OVER_THRESHOLD).build();
-        lowQualityFailsFilter = testVariantBuilder().quality(UNDER_THRESHOLD).build();
-
         instance = new QualityFilter(MIN_QUAL_THRESHOLD);
-    }
-
-    private Builder testVariantBuilder() {
-        return new Builder(1, 1, "A", "T");
     }
 
     @Test

@@ -643,7 +643,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
          * @param ref
          * @param alt
          */
-        public Builder(int chr, int pos, String ref, String alt) {
+        private Builder(int chr, int pos, String ref, String alt) {
             this.chr = chr;
             this.pos = pos;
             this.ref = ref;

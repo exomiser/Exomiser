@@ -78,11 +78,11 @@ public class CaddDaoTest {
         if (ref.equals("-") || alt.equals("-")) {
             //this is used to get round the fact that in real life the variant evaluation 
             //is built from a variantContext and some variantAnnotations
-            return new VariantEvaluation.Builder(chr, pos, ref, alt)
+            return VariantEvaluation.builder(chr, pos, ref, alt)
                     .variantContext(Mockito.mock(VariantContext.class))
                     .build();
         }
-        return new VariantEvaluation.Builder(chr, pos, ref, alt).build();
+        return VariantEvaluation.builder(chr, pos, ref, alt).build();
     }
 
     private void assertThatPathDataHasNoCaddScore(PathogenicityData result) {
