@@ -25,6 +25,7 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -55,11 +56,11 @@ public class FrequencyFilterTest {
 
     private static final Frequency DBSNP_PASS = Frequency.valueOf(PASS_FREQ, FrequencySource.THOUSAND_GENOMES);
 
-    private static final FrequencyData espAllPassData = FrequencyData.of(null, ESP_ALL_PASS);
-    private static final FrequencyData espAllFailData = FrequencyData.of(null, ESP_ALL_FAIL);
-    private static final FrequencyData espAaPassData = FrequencyData.of(null, ESP_AA_PASS);
-    private static final FrequencyData espEaPassData = FrequencyData.of(null, ESP_EA_PASS);
-    private static final FrequencyData dbSnpPassData = FrequencyData.of(null, DBSNP_PASS);
+    private static final FrequencyData espAllPassData = FrequencyData.of(RsId.empty(), ESP_ALL_PASS);
+    private static final FrequencyData espAllFailData = FrequencyData.of(RsId.empty(), ESP_ALL_FAIL);
+    private static final FrequencyData espAaPassData = FrequencyData.of(RsId.empty(), ESP_AA_PASS);
+    private static final FrequencyData espEaPassData = FrequencyData.of(RsId.empty(), ESP_EA_PASS);
+    private static final FrequencyData dbSnpPassData = FrequencyData.of(RsId.empty(), DBSNP_PASS);
     private static final FrequencyData noFreqData = FrequencyData.empty();
 
     @Before

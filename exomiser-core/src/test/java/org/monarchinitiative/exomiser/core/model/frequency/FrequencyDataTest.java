@@ -31,7 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
 
@@ -58,15 +59,26 @@ public class FrequencyDataTest {
 
     @Test
     public void testEmptyData() {
-        assertThat(EMPTY_DATA.getRsId(), nullValue());
+        assertThat(EMPTY_DATA.getRsId(), equalTo(RsId.empty()));
         assertThat(EMPTY_DATA.getKnownFrequencies().isEmpty(), is(true));
         assertThat(EMPTY_DATA.isRepresentedInDatabase(), is(false));
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testThrowsExceptionWithNullRsId() {
+        FrequencyData.of(null, Collections.emptyList());
+    }
+
+    @Test
+    public void testEmptyInputValuesReturnsEmpty() {
+        FrequencyData instance = FrequencyData.of(RsId.empty(), Collections.emptyList());
+        assertThat(instance, equalTo(FrequencyData.empty()));
+    }
+
     @Test
     public void testSingleFrequencyValue() {
-        assertThat(FrequencyData.of(null, Frequency.valueOf(0.001f, FrequencySource.LOCAL))
-                .hasKnownFrequency(), is(true));
+        FrequencyData localFrequency = FrequencyData.of(RsId.empty(), Frequency.valueOf(0.001f, FrequencySource.LOCAL));
+        assertThat(localFrequency.hasKnownFrequency(), is(true));
     }
 
     @Test
@@ -101,18 +113,18 @@ public class FrequencyDataTest {
 
     @Test
     public void testRepresentedInDatabaseEspAllOnly() {
-        FrequencyData instance = FrequencyData.of(RSID, ESP_ALL_PASS);
+        FrequencyData instance = FrequencyData.of(RsId.empty(), ESP_ALL_PASS);
         assertThat(instance.isRepresentedInDatabase(), is(true));
-    }
-
-    @Test
-    public void testHasDbSnpData() {
-        assertThat(FREQUENCY_DATA.hasDbSnpData(), is(true));
     }
 
     @Test
     public void testRepresentedInDatabaseRsIdOnly() {
         assertThat(RS_ID_ONLY_DATA.isRepresentedInDatabase(), is(true));
+    }
+
+    @Test
+    public void testHasDbSnpData() {
+        assertThat(FREQUENCY_DATA.hasDbSnpData(), is(true));
     }
 
     @Test
@@ -235,7 +247,7 @@ public class FrequencyDataTest {
     public void testGetScore_rareVariant() {
         float maxFreq = 0.1f;
         Frequency maxFrequency = Frequency.valueOf(maxFreq, UNKNOWN);
-        FrequencyData instance = FrequencyData.of(null, maxFrequency);
+        FrequencyData instance = FrequencyData.of(RsId.empty(), maxFrequency);
         assertThat(instance.getScore(), equalTo(0.9857672f));
     }
 }

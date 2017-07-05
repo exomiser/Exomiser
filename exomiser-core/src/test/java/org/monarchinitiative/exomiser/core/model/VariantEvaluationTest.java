@@ -601,7 +601,7 @@ public class VariantEvaluationTest {
         zero.setAsContributingToGeneScore();
         VariantEvaluation one = new VariantEvaluation.Builder(2, 1, "C", "T")
                 .variantEffect(VariantEffect.STOP_GAINED)
-                .frequencyData(FrequencyData.of(null, Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
+                .frequencyData(FrequencyData.of(RsId.empty(), Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
         one.setAsContributingToGeneScore();

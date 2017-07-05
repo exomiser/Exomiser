@@ -65,7 +65,7 @@ public class KnownVariantFilterTest {
     
     @Test
     public void testRunFilter_ReturnsFailResultWhenFilteringVariantWithKnownFrequency() {
-        FrequencyData frequencyData = FrequencyData.of(null, Frequency.valueOf(1f, FrequencySource.THOUSAND_GENOMES));
+        FrequencyData frequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(1f, FrequencySource.THOUSAND_GENOMES));
         VariantEvaluation variantEvaluation = buildVariantWithFrequencyData(frequencyData);
         FilterResult filterResult = instance.runFilter(variantEvaluation);
         assertThat(filterResult, equalTo(FAIL_RESULT));

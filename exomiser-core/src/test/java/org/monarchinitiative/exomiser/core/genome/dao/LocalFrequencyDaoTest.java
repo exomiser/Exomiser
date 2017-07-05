@@ -12,6 +12,7 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +48,7 @@ public class LocalFrequencyDaoTest {
     }
 
     private FrequencyData localFrequencyData(float freq) {
-        return FrequencyData.of(null, Frequency.valueOf(freq, FrequencySource.LOCAL));
+        return FrequencyData.of(RsId.empty(), Frequency.valueOf(freq, FrequencySource.LOCAL));
     }
 
     //Local frequency file defined as tab-delimited lines in 'VCF-lite' format:

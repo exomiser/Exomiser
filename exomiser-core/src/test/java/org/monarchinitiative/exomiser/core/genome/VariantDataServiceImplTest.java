@@ -190,7 +190,7 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariant() {
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
@@ -200,7 +200,7 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariantWithRsIdIfKnown() {
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
@@ -213,7 +213,7 @@ public class VariantDataServiceImplTest {
                 .valueOf(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
 
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.LOCAL));
