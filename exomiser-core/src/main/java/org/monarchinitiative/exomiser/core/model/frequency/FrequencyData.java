@@ -19,6 +19,8 @@
 
 package org.monarchinitiative.exomiser.core.model.frequency;
 
+import com.google.common.collect.Maps;
+
 import java.util.*;
 
 /**
@@ -31,34 +33,44 @@ import java.util.*;
  */
 public class FrequencyData {
 
-    private static final FrequencyData EMPTY_DATA = new FrequencyData(null, Collections.emptyList());
+    private static final FrequencyData EMPTY_DATA = new FrequencyData(RsId.empty(), Collections.emptyMap());
 
     private final RsId rsId;
     private final Map<FrequencySource, Frequency> knownFrequencies;
 
-
     public static FrequencyData of(RsId rsId, Collection<Frequency> frequencies) {
-        return new FrequencyData(rsId, frequencies);
+        return validate(rsId, frequencies);
     }
 
     public static FrequencyData of(RsId rsId, Frequency frequency) {
-        return new FrequencyData(rsId, Collections.singletonList(frequency));
+        return validate(rsId, Collections.singletonList(frequency));
     }
 
     public static FrequencyData of(RsId rsId, Frequency... frequency) {
-        return new FrequencyData(rsId, Arrays.asList(frequency));
+        return validate(rsId, Arrays.asList(frequency));
     }
 
     public static FrequencyData empty() {
         return EMPTY_DATA;
     }
 
-    private FrequencyData(RsId rsId, Collection<Frequency> frequencies) {
-        this.rsId = rsId;
-        knownFrequencies = new EnumMap<>(FrequencySource.class);
-        for (Frequency frequency : frequencies) {
-            knownFrequencies.put(frequency.getSource(), frequency);
+    private static FrequencyData validate(RsId rsId, Collection<Frequency> frequencies) {
+        Objects.requireNonNull(rsId, "RsId cannot be null");
+        Objects.requireNonNull(frequencies, "frequencies cannot be null");
+
+        if (rsId.isEmpty() && frequencies.isEmpty()) {
+            return FrequencyData.empty();
         }
+        Map<FrequencySource, Frequency> frequencySourceMap = new EnumMap<>(FrequencySource.class);
+        for (Frequency frequency : frequencies) {
+            frequencySourceMap.put(frequency.getSource(), frequency);
+        }
+        return new FrequencyData(rsId, frequencySourceMap);
+    }
+
+    private FrequencyData(RsId rsId, Map<FrequencySource, Frequency> knownFrequencies) {
+        this.rsId = rsId;
+        this.knownFrequencies = Maps.immutableEnumMap(knownFrequencies);
     }
 
     //RSID ought to belong to the Variant, not the frequencyData, but its here for convenience
@@ -76,10 +88,7 @@ public class FrequencyData {
      * any frequency data at all, return true, otherwise false.
      */
     public boolean isRepresentedInDatabase() {
-        if (rsId != null) {
-            return true;
-        }
-        return !knownFrequencies.isEmpty();
+        return hasDbSnpRsID() || hasKnownFrequency();
     }
 
     public boolean hasDbSnpData() {
@@ -87,7 +96,7 @@ public class FrequencyData {
     }
 
     public boolean hasDbSnpRsID() {
-        return rsId != null;
+        return !rsId.isEmpty();
     }
 
     public boolean hasEspData() {
