@@ -5,8 +5,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.monarchinitiative.exomiser.core.model.AllelePosition.isSnv;
-import static org.monarchinitiative.exomiser.core.model.AllelePosition.minimise;
+import static org.monarchinitiative.exomiser.core.model.AllelePosition.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -51,18 +50,18 @@ public class AllelePositionTest {
 
     @Test
     public void testIsInsertion() {
-        assertThat(isSnv("A", "T"), is(false));
-        assertThat(isSnv("AA", "GT"), is(false));
-        assertThat(isSnv("ATT", "A"), is(false));
-        assertThat(isSnv("T", "TTA"), is(true));
+        assertThat(isInsertion("A", "T"), is(false));
+        assertThat(isInsertion("AA", "GT"), is(false));
+        assertThat(isInsertion("ATT", "A"), is(false));
+        assertThat(isInsertion("T", "TTA"), is(true));
     }
 
     @Test
     public void testIsDeletion() {
-        assertThat(isSnv("A", "T"), is(false));
-        assertThat(isSnv("AA", "GT"), is(false));
-        assertThat(isSnv("ATT", "A"), is(true));
-        assertThat(isSnv("T", "TTA"), is(false));
+        assertThat(isDeletion("A", "T"), is(false));
+        assertThat(isDeletion("AA", "GT"), is(false));
+        assertThat(isDeletion("ATT", "A"), is(true));
+        assertThat(isDeletion("T", "TTA"), is(false));
     }
 
     @Test
