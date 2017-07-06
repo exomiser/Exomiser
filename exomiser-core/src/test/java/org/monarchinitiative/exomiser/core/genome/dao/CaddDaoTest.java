@@ -25,7 +25,6 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import htsjdk.tribble.readers.TabixReader;
-import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,12 +34,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.CaddScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -75,27 +73,12 @@ public class CaddDaoTest {
     }
 
     private static VariantEvaluation variant(int chr, int pos, String ref, String alt) {
-        if (ref.equals("-") || alt.equals("-")) {
-            //this is used to get round the fact that in real life the variant evaluation 
-            //is built from a variantContext and some variantAnnotations
-            return VariantEvaluation.builder(chr, pos, ref, alt)
-                    .variantContext(Mockito.mock(VariantContext.class))
-                    .build();
-        }
         return VariantEvaluation.builder(chr, pos, ref, alt).build();
     }
 
-    private void assertThatPathDataHasNoCaddScore(PathogenicityData result) {
-        assertThat(result.getPredictedPathogenicityScores().isEmpty(), is(true));
-        assertThat(result.hasPredictedScore(PathogenicitySource.CADD), is(false));
-        assertThat(result.getCaddScore(), nullValue());
-    }
-    
     private void assertPathDataContainsCaddScore(PathogenicityData result, float score) {
         CaddScore expected = CaddScore.valueOf(score);
-        assertThat(result.getPredictedPathogenicityScores().size(), equalTo(1));
-        assertThat(result.hasPredictedScore(PathogenicitySource.CADD), is(true));
-        assertThat(result.getCaddScore(), equalTo(expected));
+        assertThat(result, equalTo(PathogenicityData.of(expected)));
     }
 
     @Test
@@ -107,21 +90,19 @@ public class CaddDaoTest {
     @Test
     public void testGetPathogenicityData_snvNoData() {
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
-
-        assertThatPathDataHasNoCaddScore(result);
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test
     public void testGetPathogenicityData_insertionNoData() {
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "-", "A"));
-
-        assertThatPathDataHasNoCaddScore(result);
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "C", "CA"));
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test
     public void testGetPathogenicityData_unableToReadFromInDelSource() {
-        Mockito.when(indelTabixReader.query("1:2-2")).thenThrow(IOException.class);
-        assertThat(instance.getPathogenicityData(variant(1, 2, "-", "A")), equalTo(PathogenicityData.empty()));
+        Mockito.when(indelTabixReader.query("2:14985-14985")).thenThrow(IOException.class);
+        assertThat(instance.getPathogenicityData(variant(2, 14985, "A", "AT")), equalTo(PathogenicityData.empty()));
     }
     
     @Test
@@ -130,17 +111,15 @@ public class CaddDaoTest {
                 "1\t1\tA\tAT\t-0.234\t3.45",
                 "1\t1\tA\tAC\t-0.234\t4.45"));
 
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "-", "A"));
-
-        assertThatPathDataHasNoCaddScore(result);
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "AG"));
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test
     public void testGetPathogenicityData_insertionSingleVariantAtPosition_OneMatch() {
         mockIterator.setValues(Arrays.asList("1\t2\tA\tAA\t-0.234\t3.45"));
 
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "-", "A"));
-
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "AA"));
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
@@ -150,16 +129,14 @@ public class CaddDaoTest {
                 "\t\tA\tAC\t-0.234\t4.45",
                 "\t\tA\tAT\t-0.234\t3.45"));
 
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "-", "T"));
-
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "AT"));
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
     @Test
     public void testGetPathogenicityData_deletionNoData() {
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 3, "A", "-"));
-
-        assertThatPathDataHasNoCaddScore(result);
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "AT", "T"));
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test
@@ -168,17 +145,15 @@ public class CaddDaoTest {
                 "1\t1\tAT\tA\t-0.234\t3.45",
                 "1\t1\tAC\tA\t-0.234\t4.45"));
 
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 3, "A", "-"));
-
-        assertThatPathDataHasNoCaddScore(result);
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "AG", "A"));
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test
     public void testGetPathogenicityData_deletionSingleVariantAtPosition_OneMatch() {
-        mockIterator.setValues(Arrays.asList("1\t2\tAA\tA\t-0.234\t3.45"));
+        mockIterator.setValues(Arrays.asList("1\t2\tGT\tG\t-0.234\t3.45"));
 
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 3, "A", "-"));
-
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "GT", "G"));
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
@@ -188,8 +163,7 @@ public class CaddDaoTest {
                 "\t\tAC\tA\t-0.234\t4.45",
                 "\t\tAT\tA\t-0.234\t3.45"));
 
-        PathogenicityData result = instance.getPathogenicityData(variant(1, 3, "T", "-"));
-
+        PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "AT", "A"));
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
@@ -200,8 +174,7 @@ public class CaddDaoTest {
                 "1\t1\tA\tC\t-0.234\t4.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "G"));
-
-        assertThatPathDataHasNoCaddScore(result);
+        assertThat(result, equalTo(PathogenicityData.empty()));
     }
 
     @Test
@@ -209,7 +182,6 @@ public class CaddDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
-
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
@@ -219,7 +191,6 @@ public class CaddDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(23, 1, "A", "T"));
-
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
@@ -229,7 +200,6 @@ public class CaddDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\tA\tT\t-0.234\t3.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(24, 1, "A", "T"));
-
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
@@ -240,7 +210,6 @@ public class CaddDaoTest {
                 "\t\tA\tC\t-0.234\t4.45"));
 
         PathogenicityData result = instance.getPathogenicityData(variant(1, 2, "A", "T"));
-
         assertPathDataContainsCaddScore(result, 0.54814404f);
     }
 
