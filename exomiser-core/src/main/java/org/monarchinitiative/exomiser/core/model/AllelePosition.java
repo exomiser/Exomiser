@@ -82,6 +82,18 @@ public class AllelePosition {
         return new AllelePosition(pos, ref, alt);
     }
 
+    public static boolean isSnv(String ref, String alt) {
+        return ref.length() == 1 && alt.length() == 1;
+    }
+
+    public static boolean isDeletion(String ref, String alt) {
+        return ref.length() > alt.length();
+    }
+
+    public static boolean isInsertion(String ref, String alt) {
+        return ref.length() < alt.length();
+    }
+
     private static boolean cantTrim(String ref, String alt) {
         return ref.length() == 1 || alt.length() == 1;
     }
