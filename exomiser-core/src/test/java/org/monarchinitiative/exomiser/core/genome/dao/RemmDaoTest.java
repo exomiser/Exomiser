@@ -112,7 +112,7 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "-", "TTT")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "A", "ATTT")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
     
     @Test
@@ -120,6 +120,6 @@ public class RemmDaoTest {
         mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0"));
         Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
-        assertThat(instance.getPathogenicityData(variant(1, 1, "TTT", "-")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
+        assertThat(instance.getPathogenicityData(variant(1, 1, "ATTT", "A")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
 }
