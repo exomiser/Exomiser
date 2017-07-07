@@ -81,9 +81,8 @@ public class DefaultFrequencyDao implements FrequencyDao {
         logger.debug("FrequencySource to columnLabel mappings: {}", frequencySourceColumnMappings);
     }
 
-    
-    
-    @Cacheable(value = "frequency", key = "#variant.hgvsGenome")
+
+    @Cacheable(value = "frequency")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
 

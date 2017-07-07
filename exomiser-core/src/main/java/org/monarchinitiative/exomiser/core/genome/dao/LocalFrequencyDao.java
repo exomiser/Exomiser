@@ -29,7 +29,7 @@ public class LocalFrequencyDao implements FrequencyDao {
         this.tabixReader = localFrequencyTabixReader;
     }
 
-    @Cacheable(value = "local", key = "#variant.hgvsGenome")
+    @Cacheable(value = "local")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
         return processResults(variant);
