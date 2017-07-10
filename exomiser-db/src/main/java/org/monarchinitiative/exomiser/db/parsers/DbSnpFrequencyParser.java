@@ -169,7 +169,10 @@ public class DbSnpFrequencyParser implements ResourceParser {
 
                 String[] fields = line.split("\t");
                 byte chrom = parseChromosomeField(line, fields[0]);
-                if (chrom > chromosome) {
+
+                if (chrom < chromosome) {
+                    continue;
+                } else if (chrom > chromosome) {
                     break;
                 }
 
@@ -199,7 +202,7 @@ public class DbSnpFrequencyParser implements ResourceParser {
                     startTime = now;
                 }
             }
-            logger.info("Got " + numDuplicates + " duplicates");
+            logger.info("Got {} duplicates", numDuplicates);
 
             status = ResourceOperationStatus.SUCCESS;
             is.close();

@@ -135,8 +135,10 @@ public class InheritanceModeAnalyser {
         }
         //it is *CRITICAL* that only the PASSED variantEvaluations are taken into account here.
         List<VariantEvaluation> passedVariantEvaluations = gene.getPassedVariantEvaluations();
-        if (passedVariantEvaluations.size() > 1000)
-            logger.info("Warning - this will take a while. Testing gene " + gene.getGeneSymbol() + " with " + passedVariantEvaluations.size() + " passed variants for inheritance mode compatibility!");
+        if (passedVariantEvaluations.size() > 1000) {
+            logger.info("Warning - this will take a while. Testing gene {} with {} passed variants for inheritance mode compatibility!", gene
+                    .getGeneSymbol(), passedVariantEvaluations.size());
+        }
 
         Multimap<String, VariantEvaluation> geneVariants = mapVariantEvaluationsToVariantContextString(passedVariantEvaluations);
         List<VariantContext> compatibleVariants = getCompatibleVariantContexts(passedVariantEvaluations);

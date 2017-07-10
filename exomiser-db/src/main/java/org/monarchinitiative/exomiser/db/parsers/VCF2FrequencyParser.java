@@ -20,6 +20,7 @@
 package org.monarchinitiative.exomiser.db.parsers;
 
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
+import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.db.reference.Frequency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +50,7 @@ public class VCF2FrequencyParser {
 
     /** The reference dictionary to use for chromosome to name conversion */
     private final ReferenceDictionary refDict;
-    private String ref;
-    private String alt;
-    private int pos;
+
     /**
      * Initialize object with the given <code>refDict</code>.
      * 
@@ -75,7 +74,6 @@ public class VCF2FrequencyParser {
      * @return a
      * <code>Frequency</code> object created from the input line.
      */
-    //TODO: might be an idea to use HTSJDK and new Jannovar like we do in the exomiser-core
     public List<Frequency> parseVCFline(String line, byte chromosome) {
 
         List<Frequency> frequencyList = new ArrayList<>();
@@ -93,7 +91,7 @@ public class VCF2FrequencyParser {
         if (chrom != chromosome){
             return frequencyList;
         }
-        pos = Integer.parseInt(fields[1]);
+        int pos = Integer.parseInt(fields[1]);
         /*
          * Transform rsID to integer to save space. Note that if there are
          * problems with parse we use the constant NO_RSID = -1:
@@ -104,8 +102,7 @@ public class VCF2FrequencyParser {
          * but occasionally one sees VCF files with lower case for part of the
          * sequences, e.g., to show indels.
          */
-        ref = fields[3].toUpperCase();
-        String info = fields[7];
+        String ref = fields[3].toUpperCase();
 
         /*
          * dbSNP has introduced the concept of multiple minor alleles on the
@@ -115,14 +112,15 @@ public class VCF2FrequencyParser {
          * also goes through this method but does not use the CAF field so
          * should be skipped
          */
-
         String[] alts = fields[4].toUpperCase().split(",");
+
+        String info = fields[7];
 
         float ea = 0f;
         float aa = 0f;
         float all = 0f;
-        List<String> minorFreqs = new ArrayList();
-        Map<String, String> exACFreqs = new HashMap();
+        List<String> minorFreqs = new ArrayList<>();
+        Map<String, String> exACFreqs = new HashMap<>();
         String[] infoFields = info.split(";");
         for (String infoField : infoFields) {
             // freq data from dbSNP file
@@ -156,21 +154,22 @@ public class VCF2FrequencyParser {
         }
 
         int minorAlleleCounter = 1;
-        for (String indAlt : alts) {
-            this.alt = indAlt;
-            // VCF files and Annovar-style annotations use different nomenclature for
-            // indel variants. We use Annovar.
-            //TODO - now that we use the new Jannovar which uses a 0-based co-ordinate system investigate is this is necessary
-            transformVCF2AnnovarCoordinates();
-            Frequency freq = new Frequency(chrom, pos, ref, alt, rsId);
+        for (String alt : alts) {
+            //2017-06-09 We're not going to use Annovar style any more. Seems Annovar recommends VCF spec now too:
+            //http://annovar.openbioinformatics.org/en/latest/articles/VCF/
+            //This was causing indels to be missed as the minimising ends up producing output which isn't compatible.
+            //given we're ingesting VCF, outputting VCF and all the frequency data is coming from VCF, we'll use VCF standard.
+            //Annotations will still come from Jannovar and these are right-shifted as opposed to left-shifted.
+            AllelePosition minimisedAllele = AllelePosition.minimise(pos, ref, alt);
+            Frequency freq = new Frequency(chrom, minimisedAllele.getPos(), minimisedAllele.getRef(), minimisedAllele.getAlt(), rsId);
             if (ea != 0f){   
                 freq.setESPFrequencyEA(ea);
                 freq.setESPFrequencyAA(aa);
                 freq.setESPFrequencyAll(all);
-            }        
-            if (minorFreqs.size() > 0) {
+            }
+            if (!minorFreqs.isEmpty()) {
                 if (!minorFreqs.get(minorAlleleCounter).equals(".")) {
-                    float maf =100f *  Float.parseFloat(minorFreqs.get(minorAlleleCounter));
+                    float maf = 100f * Float.parseFloat(minorFreqs.get(minorAlleleCounter));
                     //code here to exclude variants with no freq data
                     if (maf != 0){
                         freq.setDbSnpGmaf(maf);
@@ -221,7 +220,7 @@ public class VCF2FrequencyParser {
      * should be used once for each VCF line and should be called only from the
      * method {@link #parseVCFline}.
      */
-    private void transformVCF2AnnovarCoordinates() {
+    private void transformVCF2AnnovarCoordinates(int pos, String ref, String alt) {
         if (ref.length() == 1 && alt.length() == 1) {
             // i.e., single nucleotide variant
             // In this case, no changes are needed.
@@ -233,7 +232,7 @@ public class VCF2FrequencyParser {
             // deletion, and head is "T"
 
             if (head.equals(alt)) {
-                pos = pos + head.length(); 
+                pos = pos + head.length();
                 //this advances to position of mutation
                 ref = ref.substring(alt.length());
                 alt = "-";

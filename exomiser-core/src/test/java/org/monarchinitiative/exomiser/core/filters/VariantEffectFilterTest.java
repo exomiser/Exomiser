@@ -59,7 +59,7 @@ public class VariantEffectFilterTest {
     }
 
     private VariantEvaluation.Builder testVariantBuilder() {
-        return new VariantEvaluation.Builder(1, 1, "A", "T");
+        return VariantEvaluation.builder(1, 1, "A", "T");
     }
 
     @Test

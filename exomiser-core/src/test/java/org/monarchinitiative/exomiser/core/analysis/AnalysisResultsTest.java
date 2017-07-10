@@ -113,11 +113,11 @@ public class AnalysisResultsTest {
 
     @Test
     public void testCanReturnUnannotatedVariantEvaluations() {
-        VariantEvaluation annotatedVariantEvaluation = new VariantEvaluation.Builder(10, 123353297, "G", "C")
+        VariantEvaluation annotatedVariantEvaluation = VariantEvaluation.builder(10, 123353297, "G", "C")
                 .annotations(Collections.singletonList(TranscriptAnnotation.empty()))
                 .build();
-        
-        VariantEvaluation unAnnotatedVariantEvaluation = new VariantEvaluation.Builder(7, 155604800, "C", "CTT").build();
+
+        VariantEvaluation unAnnotatedVariantEvaluation = VariantEvaluation.builder(7, 155604800, "C", "CTT").build();
 
         List<VariantEvaluation> allVariantEvaluations = Arrays.asList(annotatedVariantEvaluation, unAnnotatedVariantEvaluation);
 

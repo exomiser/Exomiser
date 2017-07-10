@@ -123,7 +123,7 @@ public class PriorityScoreFilterTest {
     public void testRunFilter_VariantInFailedGeneAlsoFailsTheFilter() {
         PriorityResult priorityResult = makeDefaultPriorityResult(minPriorityScore - 0.2f);
         gene.addPriorityResult(priorityResult);
-        VariantEvaluation variant = new VariantEvaluation.Builder(1, 1, "A", "T").build();
+        VariantEvaluation variant = VariantEvaluation.builder(1, 1, "A", "T").build();
         gene.addVariant(variant);
         
         FilterResult result = instance.runFilter(gene);

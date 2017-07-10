@@ -144,8 +144,8 @@ public class VcfResultsWriterTest {
     private void setUpModel() {
         setUpFgfr2Gene();
         setUpShhGene();
-        unAnnotatedVariantEvaluation1 = new VariantEvaluation.Builder(5, 11, "AC", "AT").quality(1).build();
-        unAnnotatedVariantEvaluation2 = new VariantEvaluation.Builder(5, 14, "T", "TG").quality(1).build();
+        unAnnotatedVariantEvaluation1 = VariantEvaluation.builder(5, 11, "AC", "AT").quality(1).build();
+        unAnnotatedVariantEvaluation2 = VariantEvaluation.builder(5, 14, "T", "TG").quality(1).build();
     }
 
     private void setUpShhGene() {
@@ -202,7 +202,7 @@ public class VcfResultsWriterTest {
         String vcf = instance.writeString(analysis, analysisResults, settings);
         final String expected = EXPECTED_HEADER
                 + "chr10\t123256215\t.\tT\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800->TT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
+                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 
@@ -270,7 +270,7 @@ public class VcfResultsWriterTest {
     public void testAlternativeAllelesAreWrittenOnSuccessiveLines() {
         TestVariantFactory varFactory = new TestVariantFactory();
         VariantEvaluation alt1 = varFactory.buildVariant(1, 120612040, "T", "TCCGCCG", Genotype.HETEROZYGOUS, 30, 0, 258.62);
-        VariantEvaluation alt2 = varFactory.buildVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HOMOZYGOUS_ALT, 30, 1, 258.62);
+        VariantEvaluation alt2 = varFactory.buildVariant(1, 120612040, "T", "TCCTCCGCCG", Genotype.HOMOZYGOUS_ALT, 30, 0, 258.62);
         Gene gene = new Gene("TEST", 12345);
         gene.addVariant(alt1);
         gene.addVariant(alt2);
@@ -280,8 +280,8 @@ public class VcfResultsWriterTest {
         String output = instance.writeString(analysis, analysisResults, settings);
         System.out.println(output);
         String expected = EXPECTED_HEADER
-                + "chr1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612040->CCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
-                + "chr1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612040->CCTCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t1/1:30\n";
+                + "chr1\t120612040\t.\tT\tTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612040T>TCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t0/1:30\n"
+                + "chr1\t120612040\t.\tT\tTCCTCCGCCG\t258.62\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=12345;ExGeneSymbol=TEST;ExVarEff=intergenic_variant;ExVarHgvs=1:g.120612040T>TCCTCCGCCG;ExVarScore=0.0;RD=30\tGT:RD\t1/1:30\n";
         assertThat(output, equalTo(expected));
     }
 

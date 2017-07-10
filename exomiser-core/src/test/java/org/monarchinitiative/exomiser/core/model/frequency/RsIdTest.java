@@ -33,7 +33,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class RsIdTest {
 
@@ -74,7 +74,57 @@ public class RsIdTest {
 
     @Test
     public void testToString() {
-        assertThat(instance.toString(), equalTo("rs" + ID));
+        assertThat(instance.toString(), equalTo("rs234567364"));
     }
-    
+
+    @Test
+    public void testValueOfNullReturnsEmpty() {
+        assertThat(RsId.valueOf(null), equalTo(RsId.empty()));
+    }
+
+    @Test
+    public void testValueOfLessThanZeroReturnsEmpty() {
+        assertThat(RsId.valueOf(Integer.MIN_VALUE), equalTo(RsId.empty()));
+    }
+
+    @Test
+    public void testValueOfZeroReturnsEmpty() {
+        assertThat(RsId.valueOf(0), equalTo(RsId.empty()));
+    }
+
+    @Test
+    public void testValueOfEmpty() {
+        assertThat(RsId.valueOf("."), equalTo(RsId.empty()));
+    }
+
+    @Test
+    public void testIsEmpty() {
+        assertThat(RsId.empty().isEmpty(), is(true));
+    }
+
+    @Test
+    public void testNotEmpty() {
+        assertThat(RsId.valueOf(123456).isEmpty(), is(false));
+    }
+
+    @Test
+    public void testEmptyToString() {
+        assertThat(RsId.empty().toString(), equalTo("."));
+    }
+
+    @Test
+    public void testParseValidRsId() {
+        assertThat(RsId.valueOf("rs123456"), equalTo(RsId.valueOf(123456)));
+    }
+
+    @Test
+    public void testParseRsIdFromStringInt() {
+        assertThat(RsId.valueOf("123456"), equalTo(RsId.valueOf(123456)));
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void testValueOfInvalidThrowsException() {
+        RsId.valueOf("wibble");
+    }
+
 }

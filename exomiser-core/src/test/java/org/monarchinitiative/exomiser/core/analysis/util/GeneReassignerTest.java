@@ -105,7 +105,7 @@ public class GeneReassignerTest {
     }
 
     private VariantEvaluation variant(int chr, int pos, String ref, String alt, VariantEffect variantEffect, Gene gene) {
-        return new VariantEvaluation.Builder(chr, pos, ref, alt)
+        return VariantEvaluation.builder(chr, pos, ref, alt)
                 .variantEffect(variantEffect)
                 .geneId(gene.getEntrezGeneID())
                 .geneSymbol(gene.getGeneSymbol())

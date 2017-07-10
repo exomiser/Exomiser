@@ -55,10 +55,10 @@ public class SparseVariantFilterRunnerTest {
     @Before
     public void setUp() {
 
-        passesAllFilters = new VariantEvaluation.Builder(1, 1, "A", "T").build();
-        failsAllFilters = new VariantEvaluation.Builder(2, 2, "A", "T").build();
-        passesQualityFrequencyFilter = new VariantEvaluation.Builder(3, 3, "A", "T").build();
-        passesTargetQualityFilter = new VariantEvaluation.Builder(4, 4, "A", "T").build();
+        passesAllFilters = VariantEvaluation.builder(1, 1, "A", "T").build();
+        failsAllFilters = VariantEvaluation.builder(2, 2, "A", "T").build();
+        passesQualityFrequencyFilter = VariantEvaluation.builder(3, 3, "A", "T").build();
+        passesTargetQualityFilter = VariantEvaluation.builder(4, 4, "A", "T").build();
 
         makeVariantEvaluations();
 

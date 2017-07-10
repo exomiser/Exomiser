@@ -70,9 +70,9 @@ public class GeneTest {
     @Before
     public void setUp() {
         // variant1 is the first one in in FGFR2 gene
-        variantEvaluation1 = new VariantEvaluation.Builder(10, 123353320, "C", "G").build();
+        variantEvaluation1 = VariantEvaluation.builder(10, 123353320, "C", "G").build();
         // variant2 is the second one in in FGFR2 gene
-        variantEvaluation2 = new VariantEvaluation.Builder(10, 123353325, "T", "A").build();
+        variantEvaluation2 = VariantEvaluation.builder(10, 123353325, "T", "A").build();
 
         instance = newGeneOne();
     }
@@ -492,7 +492,7 @@ public class GeneTest {
     @Test
     public void testIsCompatibleWithX_falseWhenVariantIsNotCompatibleWithX() {
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(1, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(1, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(false));
     }
 
@@ -500,7 +500,7 @@ public class GeneTest {
     public void testIsCompatibleWithX_trueWhenVariantIsCompatibleWithX() {
         int X_CHROMOSOME = 23;
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(X_CHROMOSOME, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(X_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isXChromosomal(), is(true));
     }
 
@@ -513,7 +513,7 @@ public class GeneTest {
     @Test
     public void testIsCompatibleWithY_falseWhenVariantIsNotCompatibleWithX() {
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(1, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(1, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(false));
     }
 
@@ -521,7 +521,7 @@ public class GeneTest {
     public void testIsCompatibleWithY_trueWhenVariantIsCompatibleWithX() {
         int Y_CHROMOSOME = 24;
         instance = newGeneOne();
-        instance.addVariant(new VariantEvaluation.Builder(Y_CHROMOSOME, 1, "A", "T").build());
+        instance.addVariant(VariantEvaluation.builder(Y_CHROMOSOME, 1, "A", "T").build());
         assertThat(instance.isYChromosomal(), is(true));
     }
 

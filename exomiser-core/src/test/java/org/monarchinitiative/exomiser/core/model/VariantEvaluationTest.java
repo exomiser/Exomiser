@@ -94,7 +94,7 @@ public class VariantEvaluationTest {
 
     @Before
     public void setUp() {
-        instance = new VariantEvaluation.Builder(CHROMOSOME, POSITION, REF, ALT)
+        instance = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
                 .quality(QUALITY)
                 .geneSymbol(GENE1_GENE_SYMBOL)
                 .geneId(GENE1_ENTREZ_GENE_ID)
@@ -102,7 +102,7 @@ public class VariantEvaluationTest {
     }
 
     private static VariantEvaluation.Builder testVariantBuilder() {
-        return new VariantEvaluation.Builder(CHROMOSOME, POSITION, REF, ALT);
+        return VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT);
     }
     
     @Test
@@ -434,7 +434,7 @@ public class VariantEvaluationTest {
     @Test
     public void testIsXChromosomal_isXchromosomal() {
         int chrX = 23;
-        instance = new VariantEvaluation.Builder(chrX, 1, "A", "T").build();
+        instance = VariantEvaluation.builder(chrX, 1, "A", "T").build();
         assertThat(instance.isXChromosomal(), is(true));
     }
 
@@ -446,7 +446,7 @@ public class VariantEvaluationTest {
     @Test
     public void testIsYChromosomal_isYchromosomal() {
         int chrY = 24;
-        instance = new VariantEvaluation.Builder(chrY, 1, "A", "T").build();
+        instance = VariantEvaluation.builder(chrY, 1, "A", "T").build();
         assertThat(instance.isYChromosomal(), is(true));
     }
 
@@ -463,25 +463,25 @@ public class VariantEvaluationTest {
     
     @Test
     public void testGetChromosomeName_23isX() {
-        instance = new VariantEvaluation.Builder(23, 1, "A", "T").build();
+        instance = VariantEvaluation.builder(23, 1, "A", "T").build();
         assertThat(instance.getChromosomeName(), equalTo("X"));
     }
 
     @Test
     public void testGetChromosomeName_24isY() {
-        instance = new VariantEvaluation.Builder(24, 1, "A", "T").build();
+        instance = VariantEvaluation.builder(24, 1, "A", "T").build();
         assertThat(instance.getChromosomeName(), equalTo("Y"));
     }
 
     @Test
     public void testGetChromosomeName_25isM() {
-        instance = new VariantEvaluation.Builder(25, 1, "A", "T").build();
+        instance = VariantEvaluation.builder(25, 1, "A", "T").build();
         assertThat(instance.getChromosomeName(), equalTo("M"));
     }
 
     @Test
     public void testGetGenotype_Het() {
-        instance = new VariantEvaluation.Builder(25, 1, "A", "T").build();
+        instance = VariantEvaluation.builder(25, 1, "A", "T").build();
         assertThat(instance.getGenotypeString(), equalTo("0/1"));
     }
 
@@ -562,11 +562,11 @@ public class VariantEvaluationTest {
     @Test
     public void testCompareTo() {
         //variants are sorted according to chromosome, position  ref and alt.
-        VariantEvaluation zero = new VariantEvaluation.Builder(1, 1, "A", "C").build();
-        VariantEvaluation one = new VariantEvaluation.Builder(1, 2, "A", "G").build();
-        VariantEvaluation two = new VariantEvaluation.Builder(1, 2, "AC", "G").build();
-        VariantEvaluation three = new VariantEvaluation.Builder(2, 1, "C", "T").build();
-        VariantEvaluation four = new VariantEvaluation.Builder(2, 1, "C", "TT").build();
+        VariantEvaluation zero = VariantEvaluation.builder(1, 1, "A", "C").build();
+        VariantEvaluation one = VariantEvaluation.builder(1, 2, "A", "G").build();
+        VariantEvaluation two = VariantEvaluation.builder(1, 2, "AC", "G").build();
+        VariantEvaluation three = VariantEvaluation.builder(2, 1, "C", "T").build();
+        VariantEvaluation four = VariantEvaluation.builder(2, 1, "C", "TT").build();
 
         List<VariantEvaluation> variants = new ArrayList<>();
         variants.add(zero);
@@ -594,24 +594,24 @@ public class VariantEvaluationTest {
     }
 
     private List<VariantEvaluation> scoredVariantsInDescendingRankOrder() {
-        VariantEvaluation zero = new VariantEvaluation.Builder(2, 1, "C", "TT")
+        VariantEvaluation zero = VariantEvaluation.builder(2, 1, "C", "TT")
                 .variantEffect(VariantEffect.FRAMESHIFT_VARIANT)
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
         zero.setAsContributingToGeneScore();
-        VariantEvaluation one = new VariantEvaluation.Builder(2, 1, "C", "T")
+        VariantEvaluation one = VariantEvaluation.builder(2, 1, "C", "T")
                 .variantEffect(VariantEffect.STOP_GAINED)
-                .frequencyData(FrequencyData.of(null, Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
+                .frequencyData(FrequencyData.of(RsId.empty(), Frequency.valueOf(0.02f, FrequencySource.ESP_ALL)))
                 .pathogenicityData(PathogenicityData.of(PolyPhenScore.valueOf(1.0f)))
                 .build();
         one.setAsContributingToGeneScore();
-        VariantEvaluation two = new VariantEvaluation.Builder(1, 2, "A", "G")
+        VariantEvaluation two = VariantEvaluation.builder(1, 2, "A", "G")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
-        VariantEvaluation three = new VariantEvaluation.Builder(1, 2, "AC", "G")
+        VariantEvaluation three = VariantEvaluation.builder(1, 2, "AC", "G")
                 .variantEffect(VariantEffect.MISSENSE_VARIANT)
                 .build();
-        VariantEvaluation four = new VariantEvaluation.Builder(1, 1, "A", "C")
+        VariantEvaluation four = VariantEvaluation.builder(1, 1, "A", "C")
                 .variantEffect(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT)
                 .build();
 

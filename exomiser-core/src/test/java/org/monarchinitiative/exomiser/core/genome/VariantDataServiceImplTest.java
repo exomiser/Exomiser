@@ -32,7 +32,6 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation.Builder;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -80,20 +79,19 @@ public class VariantDataServiceImplTest {
     private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
     private VariantEvaluation variant;
-    private static final Builder variantBuilder = new Builder(1, 1, "A", "T");
 
     @Before
     public void setUp() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-        Map<String, Gene> allGenes = Collections.EMPTY_MAP;
+        Map<String, Gene> allGenes = Collections.emptyMap();
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
     }
 
-    private static VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
-        return variantBuilder.variantEffect(variantEffect).build();
+    private VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {
+        return VariantEvaluation.builder(1, 1, "A", "T").variantEffect(variantEffect).build();
     }
 
     @Test
@@ -190,7 +188,7 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariant() {
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
@@ -200,7 +198,7 @@ public class VariantDataServiceImplTest {
 
     @Test
     public void serviceReturnsLocalFrequencyDataForVariantWithRsIdIfKnown() {
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
@@ -213,7 +211,7 @@ public class VariantDataServiceImplTest {
                 .valueOf(1f, FrequencySource.ESP_EUROPEAN_AMERICAN));
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(frequencyData);
 
-        FrequencyData localFrequencyData = FrequencyData.of(null, Frequency.valueOf(2f, FrequencySource.LOCAL));
+        FrequencyData localFrequencyData = FrequencyData.of(RsId.empty(), Frequency.valueOf(2f, FrequencySource.LOCAL));
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(localFrequencyData);
 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.ESP_AFRICAN_AMERICAN, FrequencySource.LOCAL));

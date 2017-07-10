@@ -25,6 +25,7 @@
 package org.monarchinitiative.exomiser.core.genome.dao;
 
 import htsjdk.tribble.readers.TabixReader;
+import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.CaddScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -53,8 +54,8 @@ public class CaddDao {
         this.inDelTabixReader = inDelTabixReader;
         this.snvTabixReader = snvTabixReader;
     }
- 
-    @Cacheable(value = "cadd", key = "#variant.hgvsGenome")
+
+    @Cacheable(value = "cadd")
     public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }
@@ -64,56 +65,21 @@ public class CaddDao {
         String ref = variant.getRef();
         String alt = variant.getAlt();
         int start = variant.getPosition();
-        if (isIndel(ref, alt)) {
-            // deal with fact that deletion coordinates are handled differently by Jannovar
-            if (alt.equals("-")) {
-                start -= 1;
-            }
-            return getIndelCaddPathogenicityData(chromosome, start, ref, alt);
+        if (AllelePosition.isSnv(ref, alt)) {
+            return getCaddPathogenicityData(snvTabixReader, chromosome, start, ref, alt);
         }
-        
-        return getSnvCaddPathogenicityData(chromosome, start, ref, alt);
+        return getCaddPathogenicityData(inDelTabixReader, chromosome, start, ref, alt);
     }
- 
-    private boolean isIndel(String ref, String alt) {
-        return ref.equals("-") || alt.equals("-");
-    }
- 
-    private PathogenicityData getIndelCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
+
+    private PathogenicityData getCaddPathogenicityData(TabixReader tabixReader, String chromosome, int start, String ref, String alt) {
         try {
-            TabixReader.Iterator results = inDelTabixReader.query(chromosome + ":" + start + "-" + start);
+            TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
             String line;
-            //there can be 0 - N results
-            while ((line = results.next()) != null) {
-                //return format:
-                //chr   pos ref alt rawS    wantedScore 
-                //1 2000    A   T   -0.324  3.21
-                String[] elements = line.split("\t");
-                // deal with fact that Jannovar represents indels differently
-                String caddRef = elements[2].substring(1);
-                String caddAlt = elements[3].substring(1);
-                if (caddRef.equals("")) {
-                    caddRef = "-";
-                }
-                if (caddAlt.equals("")) {
-                    caddAlt = "-";
-                }
-                if (caddRef.equals(ref) && caddAlt.equals(alt)) {
-                    return makeCaddPathData(elements[5]);
-                }
-                
-            }
-        } catch (IOException e) {
-            logger.error("Unable to read from Indel tabix file {}", inDelTabixReader.getSource(), e);
-        }
-        return PathogenicityData.empty();
-    }
- 
-    private PathogenicityData getSnvCaddPathogenicityData(String chromosome, int start, String ref, String alt) {
-        try {
-            // query SNV file
-            TabixReader.Iterator results = snvTabixReader.query(chromosome + ":" + start + "-" + start);
-            String line;
+            //there can be 0 - N results in this format:
+            //#Chrom  Pos     Ref     Alt     RawScore        PHRED
+            //2       14962   C       CA      -0.138930       1.458
+            //2       14962   C       CAA     -0.155009       1.356
+            //2       14962   CA      C       0.194173        4.618
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
                 String caddRef = elements[2];
@@ -123,7 +89,7 @@ public class CaddDao {
                 }
             }
         } catch (IOException e) {
-            logger.error("Unable to read from SNV tabix file {}", snvTabixReader.getSource(), e);
+            logger.error("Unable to read from CADD tabix file {}", tabixReader.getSource(), e);
         }
         return PathogenicityData.empty();
     }
@@ -132,8 +98,8 @@ public class CaddDao {
         CaddScore caddScore = parseCaddScore(phredScaledCaddScore);
         return PathogenicityData.of(caddScore);
     }
- 
-    private CaddScore parseCaddScore(String phredScaledCaddScore) throws NumberFormatException {
+
+    private CaddScore parseCaddScore(String phredScaledCaddScore) {
         float score = Float.parseFloat(phredScaledCaddScore);
         float cadd = rescaleLogTenBasedScore(score);
         return CaddScore.valueOf(cadd);

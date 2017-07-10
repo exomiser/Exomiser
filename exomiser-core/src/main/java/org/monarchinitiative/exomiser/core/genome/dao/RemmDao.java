@@ -39,7 +39,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @Component
 public class RemmDao {
@@ -53,9 +53,9 @@ public class RemmDao {
         this.remmTabixReader = remmTabixReader;
     }
 
-    @Cacheable(value = "remm", key = "#variant.hgvsGenome")
+    @Cacheable(value = "remm")
     public PathogenicityData getPathogenicityData(Variant variant) {
-        // MNCDS has not been trained on missense variants so skip these
+        // REMM has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
             return PathogenicityData.empty();
         }
@@ -70,44 +70,52 @@ public class RemmDao {
     }
 
     private int calculateEndPosition(Variant variant) {
-        int end = variant.getPosition();
-        //these end positions are calculated according to recommendation by Max and Peter who produced the REMM score
-        //don't change this unless they say. 
-        if (isDeletion(variant)) {
-            // test all deleted bases
-            end += variant.getRef().length();
-        } else if (isInsertion(variant)) {
-            // test bases either side of insertion
-            end += 1;
+        int pos = variant.getPosition();
+
+        //we're doing this here in order not to have to count all this each time we need the value
+        int refLength = variant.getRef().length();
+        int altLength = variant.getAlt().length();
+        //What about MNV?
+        if (refLength == altLength) {
+            return pos;
         }
-        return end;
+        //these end positions are calculated according to recommendation by Max and Peter who produced the REMM score
+        //don't change this unless they say.
+        if (isDeletion(refLength, altLength)) {
+            // test all deleted bases (being 1-based we need to correct the length)
+            return pos + refLength - 1;
+        } else if (isInsertion(refLength, altLength)) {
+            // test bases either side of insertion
+            return pos + 1;
+        }
+        return pos;
     }
 
-    private static boolean isDeletion(Variant variant) {
-        return variant.getAlt().equals("-");
+    private static boolean isDeletion(int refLength, int altLength) {
+        return refLength > altLength;
     }
 
-    private static boolean isInsertion(Variant variant) {
-        return variant.getRef().equals("-");
+    private static boolean isInsertion(int refLength, int altLength) {
+        return refLength < altLength;
     }
     
     private PathogenicityData getRemmData(String chromosome, int start, int end) throws NumberFormatException {
         try {
-            float ncds = Float.NaN;
+            float remm = Float.NaN;
             String line;
 //            logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
             TabixReader.Iterator results = remmTabixReader.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
-                if (Float.isNaN(ncds)) {
-                    ncds = Float.parseFloat(elements[2]);
+                if (Float.isNaN(remm)) {
+                    remm = Float.parseFloat(elements[2]);
                 } else {
-                    ncds = Math.max(ncds, Float.parseFloat(elements[2]));
+                    remm = Math.max(remm, Float.parseFloat(elements[2]));
                 }
             }
-            //logger.info("Final score " + ncds);
-            if (!Float.isNaN(ncds)) {
-                return PathogenicityData.of(RemmScore.valueOf(ncds));
+            //logger.info("Final score " + remm);
+            if (!Float.isNaN(remm)) {
+                return PathogenicityData.of(RemmScore.valueOf(remm));
             }
         } catch (IOException e) {
             logger.error("Unable to read from REMM tabix file {}", remmTabixReader.getSource(), e);

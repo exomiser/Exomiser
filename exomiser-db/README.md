@@ -55,7 +55,7 @@ The application can also be run from the command line. The full download, unpack
 java -jar exomiser-db-${project.version}-SNAPSHOT.jar 
         --data.path=/data/exomiser-build/data 
         --downloadResources=true 
-        --extractResoures=true
+        --extractResources=true
         --parseResources=true 
         --dumpPhenoDigmData=true
         --migrateH2=true

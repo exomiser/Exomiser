@@ -81,9 +81,8 @@ public class DefaultFrequencyDao implements FrequencyDao {
         logger.debug("FrequencySource to columnLabel mappings: {}", frequencySourceColumnMappings);
     }
 
-    
-    
-    @Cacheable(value = "frequency", key = "#variant.hgvsGenome")
+
+    @Cacheable(value = "frequency")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
 
@@ -114,10 +113,6 @@ public class DefaultFrequencyDao implements FrequencyDao {
                 + "ORDER BY dbsnpmaf desc, espeamaf desc, espaamaf desc, espallmaf desc ";
         PreparedStatement ps = connection.prepareStatement(frequencyQuery);
 
-        // FIXME(holtgrewe): The position comes directly from the GenomeChange in variant. This is fine. Currently, I'm
-        // converting from the 0-based positions in new Jannovar's GenomeChange to 1-based for Exomisers (which is what
-        // the old Janovar used). Also, the reference is "" in the case of deletions and alt is "" in the case of
-        // insertions. The old representation for either was "-". Changing this will probably
         ps.setInt(1, variant.getChromosome());
         ps.setInt(2, variant.getPosition());
         ps.setString(3, variant.getRef());
@@ -128,7 +123,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
 
     private FrequencyData processResults(ResultSet rs) throws SQLException {
 
-        RsId rsId = null;
+        RsId rsId = RsId.empty();
         Set<Frequency> frequencies = new HashSet<>();
 
         if (rs.next()) {
@@ -136,11 +131,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
             frequencies = makeFrequencies(rs, frequencies);
         }
 
-        return makeFrequencyData(rsId, frequencies);
-    }
-
-    private FrequencyData makeFrequencyData(RsId rsId, Set<Frequency> frequencies) {
-        if (rsId == null && frequencies.isEmpty()) {
+        if (rsId.isEmpty() && frequencies.isEmpty()) {
             return FrequencyData.empty();
         }
         return FrequencyData.of(rsId, frequencies);
@@ -151,7 +142,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
         if (!rs.wasNull() && dbSNPid != 0) {
             return RsId.valueOf(dbSNPid);
         }
-        return null;
+        return RsId.empty();
     }
     
     private Set<Frequency> makeFrequencies(ResultSet rs, Set<Frequency> frequencies) throws SQLException {

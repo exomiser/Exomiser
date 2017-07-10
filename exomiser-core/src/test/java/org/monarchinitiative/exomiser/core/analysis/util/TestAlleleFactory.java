@@ -26,17 +26,16 @@ public final class TestAlleleFactory {
     }
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult) {
-        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt).build();
-        variant.addFilterResult(filterResult);
-        return variant;
+        return VariantEvaluation.builder(chr, pos, ref, alt)
+                .filterResults(filterResult)
+                .build();
     }
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantEffect variantEffect) {
-        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt)
+        return VariantEvaluation.builder(chr, pos, ref, alt)
                 .variantEffect(variantEffect)
+                .filterResults(filterResult)
                 .build();
-        variant.addFilterResult(filterResult);
-        return variant;
     }
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantContext variantContext) {
@@ -48,12 +47,11 @@ public final class TestAlleleFactory {
             }
         }
 
-        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt)
+        return VariantEvaluation.builder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
                 .variantContext(variantContext)
+                .filterResults(filterResult)
                 .build();
-        variant.addFilterResult(filterResult);
-        return variant;
     }
 
     public static VariantEvaluation filteredVariant(int chr, int pos, String ref, String alt, FilterResult filterResult, VariantContext variantContext, VariantEffect variantEffect) {
@@ -65,13 +63,12 @@ public final class TestAlleleFactory {
             }
         }
 
-        VariantEvaluation variant = new VariantEvaluation.Builder(chr, pos, ref, alt)
+        return VariantEvaluation.builder(chr, pos, ref, alt)
                 .altAlleleId(altAlleleId)
                 .variantContext(variantContext)
                 .variantEffect(variantEffect)
+                .filterResults(filterResult)
                 .build();
-        variant.addFilterResult(filterResult);
-        return variant;
     }
 
     public static List<Allele> buildAlleles(String ref, String... alts) {

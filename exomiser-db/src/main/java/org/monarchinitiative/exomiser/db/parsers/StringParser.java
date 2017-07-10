@@ -149,7 +149,7 @@ public class StringParser implements ResourceParser {
                     logger.error("Malformed score: {} (could not parse field: '{}')", line, split[2]);
                     continue;
                 }
-                logger.info(p1+":"+p2+":"+score);
+//                logger.info(p1+":"+p2+":"+score);
 
                 List<Integer> e1 = this.ensembl2EntrezGene.get(p1);
                 List<Integer> e2 = this.ensembl2EntrezGene.get(p2);
@@ -157,7 +157,7 @@ public class StringParser implements ResourceParser {
                     /* cannot find entrezgene id, just skip */
                     continue;
                 }
-                logger.info(p1+":"+p2+":"+score);
+//                logger.info(p1+":"+p2+":"+score);
                 if (score < 700) {
                     /* Note that STRING high-confidence scores have a score
                      of at least 0.700 (which is stored as 700 in this file). */

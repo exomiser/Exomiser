@@ -3,8 +3,9 @@ package org.monarchinitiative.exomiser.core.model;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.monarchinitiative.exomiser.core.model.AllelePosition.minimise;
+import static org.monarchinitiative.exomiser.core.model.AllelePosition.*;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -37,6 +38,30 @@ public class AllelePositionTest {
         assertThat(instance.getPos(), equalTo(1));
         assertThat(instance.getRef(), equalTo("TA"));
         assertThat(instance.getAlt(), equalTo(""));
+    }
+
+    @Test
+    public void testIsSnv() {
+        assertThat(isSnv("A", "T"), is(true));
+        assertThat(isSnv("AA", "GT"), is(false));
+        assertThat(isSnv("ATT", "A"), is(false));
+        assertThat(isSnv("T", "TTA"), is(false));
+    }
+
+    @Test
+    public void testIsInsertion() {
+        assertThat(isInsertion("A", "T"), is(false));
+        assertThat(isInsertion("AA", "GT"), is(false));
+        assertThat(isInsertion("ATT", "A"), is(false));
+        assertThat(isInsertion("T", "TTA"), is(true));
+    }
+
+    @Test
+    public void testIsDeletion() {
+        assertThat(isDeletion("A", "T"), is(false));
+        assertThat(isDeletion("AA", "GT"), is(false));
+        assertThat(isDeletion("ATT", "A"), is(true));
+        assertThat(isDeletion("T", "TTA"), is(false));
     }
 
     @Test
@@ -320,5 +345,34 @@ public class AllelePositionTest {
         assertThat(instance.getPos(), equalTo(18));
         assertThat(instance.getRef(), equalTo("TCT"));
         assertThat(instance.getAlt(), equalTo("CCC"));
+    }
+
+    @Test
+    public void testStructutalVariant() {
+        assertThat(minimise(4477084, "C", "<DEL:ME:ALU>"), equalTo(AllelePosition.of(4477084, "C", "<DEL:ME:ALU>")));
+    }
+
+    @Test
+    public void testRearrangementBreakends() {
+        assertThat(minimise(321681, "G", "G]17:198982]"), equalTo(AllelePosition.of(321681, "G", "G]17:198982]")));
+        assertThat(minimise(321682, "T", "]13:123456]T"), equalTo(AllelePosition.of(321682, "T", "]13:123456]T")));
+        assertThat(minimise(123456, "C", "C[2:321682["), equalTo(AllelePosition.of(123456, "C", "C[2:321682[")));
+        assertThat(minimise(123457, "A", "[17:198983[A"), equalTo(AllelePosition.of(123457, "A", "[17:198983[A")));
+        assertThat(minimise(198982, "A", "A]2:321681]"), equalTo(AllelePosition.of(198982, "A", "A]2:321681]")));
+        assertThat(minimise(198983, "C", "[13:123457[C"), equalTo(AllelePosition.of(198983, "C", "[13:123457[C")));
+    }
+
+    @Test
+    public void testInsertionBreakends() {
+        assertThat(minimise(32168, "T", "]13 : 123456]AGTNNNNNCAT"), equalTo(AllelePosition.of(32168, "T", "]13 : 123456]AGTNNNNNCAT")));
+        assertThat(minimise(123456, "C", "CAGTNNNNNCA[2 : 321682["), equalTo(AllelePosition.of(123456, "C", "CAGTNNNNNCA[2 : 321682[")));
+    }
+
+    @Test
+    public void testTelomericBreakends() {
+        assertThat(minimise(0, "N", ".[13 : 123457["), equalTo(AllelePosition.of(0, "N", ".[13 : 123457[")));
+        assertThat(minimise(1, "T", "]13 : 123456]T"), equalTo(AllelePosition.of(1, "T", "]13 : 123456]T")));
+        assertThat(minimise(123456, "C", "C[1 : 1["), equalTo(AllelePosition.of(123456, "C", "C[1 : 1[")));
+        assertThat(minimise(123457, "A", "]1 : 0]A"), equalTo(AllelePosition.of(123457, "A", "]1 : 0]A")));
     }
 }

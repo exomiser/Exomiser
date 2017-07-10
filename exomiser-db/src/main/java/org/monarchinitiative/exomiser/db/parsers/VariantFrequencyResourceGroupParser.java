@@ -66,7 +66,7 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
                 /*
                  * First parseResource the dnSNP data.
                  */
-                logger.info("Parsing dbSNP data");
+                logger.info("Parsing chromosome {} dbSNP data", chromosome);
                 //this is the Frequency List we're going to populate and the write out to file
                 ArrayList<Frequency> frequencyList = new ArrayList<>();
                 //provide it to the DbSnpFrequencyParser along with the UCSC data
@@ -80,13 +80,13 @@ public class VariantFrequencyResourceGroupParser extends AbstractResourceGroupPa
                 // Now parseResource the ExAC data using the frequency information generated
                 // from the dbSNP and UCSC known gene data.
                 ExACFrequencyParser exacParser = new ExACFrequencyParser(jannovarData.getRefDict(), frequencyList, chromosome);
-                logger.info("Parsing the ExAC data");
+                logger.info("Parsing chromosome {} ExAC data", chromosome);
                 exacParser.parseResource(exacResource, inDir, outDir);
 
                 // Now parseResource the ESP data using the frequency information generated
                 // from the dbSNP and UCSC known gene data.
                 EspFrequencyParser espParser = new EspFrequencyParser(jannovarData.getRefDict(), frequencyList, chromosome);
-                logger.info("Parsing the ESP data");
+                logger.info("Parsing chromosome {} ESP data", chromosome);
                 espParser.parseResource(espResource, inDir, outDir);
                 
                 for (Frequency f : frequencyList) {
