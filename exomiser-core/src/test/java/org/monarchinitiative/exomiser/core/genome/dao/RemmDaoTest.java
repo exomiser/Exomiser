@@ -45,7 +45,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RemmDaoTest {

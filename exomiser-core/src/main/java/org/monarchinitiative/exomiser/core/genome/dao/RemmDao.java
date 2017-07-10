@@ -39,7 +39,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @Component
 public class RemmDao {
@@ -55,7 +55,7 @@ public class RemmDao {
 
     @Cacheable(value = "remm")
     public PathogenicityData getPathogenicityData(Variant variant) {
-        // MNCDS has not been trained on missense variants so skip these
+        // REMM has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
             return PathogenicityData.empty();
         }
@@ -101,21 +101,21 @@ public class RemmDao {
     
     private PathogenicityData getRemmData(String chromosome, int start, int end) throws NumberFormatException {
         try {
-            float ncds = Float.NaN;
+            float remm = Float.NaN;
             String line;
 //            logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
             TabixReader.Iterator results = remmTabixReader.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
-                if (Float.isNaN(ncds)) {
-                    ncds = Float.parseFloat(elements[2]);
+                if (Float.isNaN(remm)) {
+                    remm = Float.parseFloat(elements[2]);
                 } else {
-                    ncds = Math.max(ncds, Float.parseFloat(elements[2]));
+                    remm = Math.max(remm, Float.parseFloat(elements[2]));
                 }
             }
-            //logger.info("Final score " + ncds);
-            if (!Float.isNaN(ncds)) {
-                return PathogenicityData.of(RemmScore.valueOf(ncds));
+            //logger.info("Final score " + remm);
+            if (!Float.isNaN(remm)) {
+                return PathogenicityData.of(RemmScore.valueOf(remm));
             }
         } catch (IOException e) {
             logger.error("Unable to read from REMM tabix file {}", remmTabixReader.getSource(), e);
