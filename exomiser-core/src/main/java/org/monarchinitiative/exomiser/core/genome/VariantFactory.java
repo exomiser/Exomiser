@@ -268,7 +268,7 @@ public class VariantFactory {
         int vcfPos = variantContext.getStart();
         String vcfRef = variantContext.getReference().getBaseString();
         String vcfAlt = variantContext.getAlternateAllele(altAlleleId).getBaseString();
-        return AllelePosition.minimise(vcfPos, vcfRef, vcfAlt);
+        return AllelePosition.trim(vcfPos, vcfRef, vcfAlt);
     }
 
     private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {

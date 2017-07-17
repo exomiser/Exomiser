@@ -37,12 +37,14 @@ public class AllelePosition {
     }
 
     /**
+     * Trims the right, then left side of the given variant allele.
+     *
      * @param pos
      * @param ref
      * @param alt
      * @return a minimised representation of the input coordinates.
      */
-    public static AllelePosition minimise(int pos, String ref, String alt) {
+    public static AllelePosition trim(int pos, String ref, String alt) {
         Objects.requireNonNull(ref, "REF string cannot be null");
         Objects.requireNonNull(alt, "ALT string cannot be null");
 
@@ -149,4 +151,5 @@ public class AllelePosition {
                 ", alt='" + alt + '\'' +
                 '}';
     }
+
 }
