@@ -134,11 +134,11 @@ public class VariantFactory {
      * @return
      */
     VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId) {
-        AllelePosition minimisedVcfAllele = trimVcfAllele(variantContext, altAlleleId);
-        VariantAnnotations variantAnnotations = getVariantAnnotations(variantContext, minimisedVcfAllele);
+        AllelePosition trimmedAllele = trimVcfAllele(variantContext, altAlleleId);
+        VariantAnnotations variantAnnotations = getVariantAnnotations(variantContext, trimmedAllele);
         if (variantAnnotations.hasAnnotation()) {
-            return annotatedVariantEvaluation(variantContext, altAlleleId, minimisedVcfAllele, variantAnnotations);
-        } else return unAnnotatedVariantEvaluation(variantContext, altAlleleId, minimisedVcfAllele);
+            return annotatedVariantEvaluation(variantContext, altAlleleId, trimmedAllele, variantAnnotations);
+        } else return unAnnotatedVariantEvaluation(variantContext, altAlleleId, trimmedAllele);
     }
 
     private AllelePosition trimVcfAllele(VariantContext variantContext, int altAlleleId) {
@@ -148,15 +148,15 @@ public class VariantFactory {
         return AllelePosition.trim(vcfPos, vcfRef, vcfAlt);
     }
 
-    private VariantAnnotations getVariantAnnotations(VariantContext variantContext, AllelePosition minimisedVcfAllele) {
+    private VariantAnnotations getVariantAnnotations(VariantContext variantContext, AllelePosition allelePosition) {
         String contig = variantContext.getContig();
-        return variantAnnotator.getVariantAnnotations(contig, minimisedVcfAllele);
+        return variantAnnotator.getVariantAnnotations(contig, allelePosition);
     }
 
-    private VariantEvaluation annotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, AllelePosition minimisedVcfAllele, VariantAnnotations variantAnnotations) {
-        int pos = minimisedVcfAllele.getPos();
-        String ref = minimisedVcfAllele.getRef();
-        String alt = minimisedVcfAllele.getAlt();
+    private VariantEvaluation annotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, AllelePosition allelePosition, VariantAnnotations variantAnnotations) {
+        int pos = allelePosition.getPos();
+        String ref = allelePosition.getRef();
+        String alt = allelePosition.getAlt();
 
         int chr = variantAnnotations.getChr();
         VariantEffect variantEffect = variantAnnotations.getHighestImpactEffect();
@@ -196,11 +196,11 @@ public class VariantFactory {
      * @param altAlleleId
      * @return
      */
-    private VariantEvaluation unAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, AllelePosition minimisedAllele) {
+    private VariantEvaluation unAnnotatedVariantEvaluation(VariantContext variantContext, int altAlleleId, AllelePosition allelePosition) {
 
-        int pos = minimisedAllele.getPos();
-        String ref = minimisedAllele.getRef();
-        String alt = minimisedAllele.getAlt();
+        int pos = allelePosition.getPos();
+        String ref = allelePosition.getRef();
+        String alt = allelePosition.getAlt();
 
         String chromosomeName = variantContext.getContig();
         logger.trace("Building unannotated variant for {} {} {} {} - assigning to chromosome {}", chromosomeName, pos, ref, alt, UNKNOWN_CHROMOSOME);
