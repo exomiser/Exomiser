@@ -214,42 +214,6 @@ public class VCF2FrequencyParser {
     }
 
     /**
-     * VCF files and Annovar-style annotations use different nomenclature for
-     * indel variants. This function transforms the {@link #ref},
-     * {@link #alt}, and {@link #pos} fields from VCF style to Annovar style. It
-     * should be used once for each VCF line and should be called only from the
-     * method {@link #parseVCFline}.
-     */
-    private void transformVCF2AnnovarCoordinates(int pos, String ref, String alt) {
-        if (ref.length() == 1 && alt.length() == 1) {
-            // i.e., single nucleotide variant
-            // In this case, no changes are needed.
-            return;
-        } else if (ref.length() > alt.length()) {
-            // deletion or block substitution
-            String head = ref.substring(0, alt.length());
-            //For instance, if we have ref=TCG, alt=T, there is a two nt
-            // deletion, and head is "T"
-
-            if (head.equals(alt)) {
-                pos = pos + head.length();
-                //this advances to position of mutation
-                ref = ref.substring(alt.length());
-                alt = "-";
-            }
-        } else if (alt.length() >= ref.length()) {
-            //insertion or block substitution
-            String head = alt.substring(0, ref.length());
-             // get first L nt of ALT (where L is length of REF)
-            if (head.equals(ref)) {
-                pos = pos + ref.length() - 1;
-                alt = alt.substring(ref.length());
-                ref = "-";
-            }
-        }
-    }
-
-    /**
      * @param rsId A dbSNP rsID such as rs101432848. In rare cases may be
      * multiple e.g., rs200118651;rs202059104 (then just take last id)
      * @return int value of id with the 'rs' removed
