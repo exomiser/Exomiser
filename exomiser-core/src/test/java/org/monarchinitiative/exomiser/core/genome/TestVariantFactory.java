@@ -19,17 +19,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.annotation.AnnotationException;
-import de.charite.compbio.jannovar.annotation.VariantAnnotations;
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.pedigree.Genotype;
-import de.charite.compbio.jannovar.reference.GenomePosition;
-import de.charite.compbio.jannovar.reference.GenomeVariant;
-import de.charite.compbio.jannovar.reference.PositionType;
-import de.charite.compbio.jannovar.reference.Strand;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -40,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Helper class for constructing {@link Variant} objects for tests.
@@ -52,10 +41,6 @@ import java.util.Collections;
 public class TestVariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(TestVariantFactory.class);
-
-    private final JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
-    private final ReferenceDictionary refDict = TestFactory.getDefaultRefDict();
-    private final VariantAnnotator variantAnnotator = new VariantAnnotator(refDict, jannovarData.getChromosomes(), new AnnotationBuilderOptions());
 
     private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
 
@@ -74,25 +59,8 @@ public class TestVariantFactory {
      */
     public VariantEvaluation buildVariant(int chrom, int pos, String ref, String alt, Genotype gt, int readDepth, int altAlleleID, double qual) {
         VariantContext variantContext = buildVariantContext(chrom, pos, ref, alt, gt, readDepth, qual);
-        VariantAnnotations annotations = buildVariantAnnotations(chrom, pos, ref, alt);
 
-        return variantFactory.buildAnnotatedVariantEvaluation(variantContext, altAlleleID, annotations);
-    }
-
-    private VariantAnnotations buildVariantAnnotations(int chrom, int pos, String ref, String alt) {
-        // build annotation list (for the one transcript we have below only)
-        GenomeVariant genomeVariant = buildGenomeVariant(chrom, pos, ref, alt);
-        try {
-            return variantAnnotator.buildAnnotations(genomeVariant);
-        } catch (AnnotationException e) {
-            logger.error("UNABLE TO BUILD ANNOTATIONS FOR {}", genomeVariant, e);
-        }
-        return new VariantAnnotations(genomeVariant, Collections.emptyList());
-    }
-
-    private GenomeVariant buildGenomeVariant(int chrom, int pos, String ref, String alt) {
-        final GenomePosition genomePosition = new GenomePosition(refDict, Strand.FWD, chrom, pos, PositionType.ONE_BASED);
-        return new GenomeVariant(genomePosition, ref, alt);
+        return variantFactory.buildVariantEvaluation(variantContext, altAlleleID);
     }
 
     private VariantContext buildVariantContext(int chrom, int pos, String ref, String alt, Genotype genotype, int readDepth, double qual) {
