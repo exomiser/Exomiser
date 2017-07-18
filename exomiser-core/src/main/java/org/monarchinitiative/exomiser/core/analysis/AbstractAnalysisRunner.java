@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -159,19 +160,18 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         List<VariantFilter> variantFilters = getVariantFilterSteps(analysisGroup);
 
         List<VariantEvaluation> filteredVariants;
-        AtomicInteger streamed = new AtomicInteger();
-        AtomicInteger passed = new AtomicInteger();
+        VariantLogger variantLogger = new VariantLogger();
         try (Stream<VariantEvaluation> variantStream = loadVariants(vcfPath)) {
             filteredVariants = variantStream
-                    .map(logLoadedAndPassedVariants(streamed, passed))
+                    .peek(variantLogger.logLoadedAndPassedVariants())
                     .map(reassignNonCodingVariantToBestGeneInJannovarAnnotations(geneReassigner))
                     .map(reassignNonCodingVariantToBestGeneInTad(geneReassigner))
                     .filter(isAssociatedWithKnownGene(allGenes))
                     .filter(runVariantFilters(variantFilters))
-                    .map(logPassedVariants(passed))
+                    .peek(variantLogger.countPassedVariant())
                     .collect(toList());
         }
-        logger.info("Loaded {} variants - {} passed variant filters", streamed.get(), passed.get());
+        variantLogger.logResults();
         return filteredVariants;
     }
 
@@ -190,17 +190,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                     return (VariantFilter) analysisStep;
                 })
                 .collect(toList());
-    }
-
-    //yep, logging logic
-    private Function<VariantEvaluation, VariantEvaluation> logLoadedAndPassedVariants(AtomicInteger streamed, AtomicInteger passed) {
-        return variantEvaluation -> {
-            streamed.incrementAndGet();
-            if (streamed.get() % 100000 == 0) {
-                logger.info("Loaded {} variants - {} passed variant filters...", streamed.get(), passed.get());
-            }
-            return variantEvaluation;
-        };
     }
 
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
@@ -239,16 +228,6 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
      * @return
      */
     abstract Predicate<VariantEvaluation> runVariantFilters(List<VariantFilter> variantFilters);
-
-    //more logging logic
-    private Function<VariantEvaluation, VariantEvaluation> logPassedVariants(AtomicInteger passed) {
-        return variantEvaluation -> {
-            if (variantEvaluation.passedFilters()) {
-                passed.incrementAndGet();
-            }
-            return variantEvaluation;
-        };
-    }
 
     private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
         List<RegulatoryFeature> regulatoryFeatures = variantDataService.getRegulatoryFeatures();
@@ -352,4 +331,32 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         inheritanceModeAnalyser.analyseInheritanceModes(genes);
     }
 
+    /**
+     * Utility class for logging numbers of processed and passed variants.
+     */
+    private class VariantLogger {
+        private AtomicInteger loaded = new AtomicInteger();
+        private AtomicInteger passed = new AtomicInteger();
+
+        private Consumer<VariantEvaluation> logLoadedAndPassedVariants() {
+            return variantEvaluation -> {
+                loaded.incrementAndGet();
+                if (loaded.get() % 100000 == 0) {
+                    logger.info("Loaded {} variants - {} passed variant filters...", loaded.get(), passed.get());
+                }
+            };
+        }
+
+        private Consumer<VariantEvaluation> countPassedVariant() {
+            return variantEvaluation -> {
+                if (variantEvaluation.passedFilters()) {
+                    passed.incrementAndGet();
+                }
+            };
+        }
+
+        void logResults() {
+            logger.info("Loaded {} variants - {} passed variant filters", loaded.get(), passed.get());
+        }
+    }
 }
