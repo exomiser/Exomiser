@@ -1,6 +1,5 @@
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.annotation.AnnotationException;
 import de.charite.compbio.jannovar.annotation.VariantAnnotations;
 import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
@@ -47,16 +46,15 @@ public class JannovarVariantAnnotator {
             logger.trace("Unknown contig '{}' - mapping to {}", contig, UNKNOWN_CHROMOSOME);
             //Need to check this here and return otherwise the variantAnnotator will throw a NPE.
             return VariantAnnotations.buildEmptyList(genomeVariant);
-        } else {
-            return buildAnnotations(genomeVariant);
         }
+        return buildAnnotations(genomeVariant);
     }
 
     private VariantAnnotations buildAnnotations(GenomeVariant genomeVariant) {
         try {
             return variantAnnotator.buildAnnotations(genomeVariant);
-        } catch (AnnotationException e) {
-            logger.trace("Unable to annotate variant {}-{}-{}-{}", genomeVariant.getChrName(), genomeVariant.getPos(), genomeVariant
+        } catch (Exception e) {
+            logger.debug("Unable to annotate variant {}-{}-{}-{}", genomeVariant.getChrName(), genomeVariant.getPos(), genomeVariant
                     .getRef(), genomeVariant.getAlt(), e);
         }
         return VariantAnnotations.buildEmptyList(genomeVariant);

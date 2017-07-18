@@ -21,6 +21,10 @@ public class JannovarVariantAnnotatorTest {
         System.out.println(annotations);
         assertThat(annotations, not(nullValue()));
         assertThat(annotations.hasAnnotation(), is(false));
+        assertThat(annotations.getChr(), equalTo(0));
+        assertThat(annotations.getPos(), equalTo(0)); //Jannovar uses and returns 0-based coordinates.
+        assertThat(annotations.getRef(), equalTo("A"));
+        assertThat(annotations.getAlt(), equalTo("T"));
     }
 
     @Test
@@ -29,6 +33,9 @@ public class JannovarVariantAnnotatorTest {
         System.out.println(annotations);
         assertThat(annotations.hasAnnotation(), is(true));
         assertThat(annotations.getChr(), equalTo(1));
+        assertThat(annotations.getPos(), equalTo(0));  //Jannovar uses and returns 0-based coordinates.
+        assertThat(annotations.getRef(), equalTo("A"));
+        assertThat(annotations.getAlt(), equalTo("T"));
     }
 
     @Test
