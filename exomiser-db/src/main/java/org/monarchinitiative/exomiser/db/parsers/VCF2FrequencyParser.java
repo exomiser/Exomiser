@@ -160,7 +160,7 @@ public class VCF2FrequencyParser {
             //This was causing indels to be missed as the minimising ends up producing output which isn't compatible.
             //given we're ingesting VCF, outputting VCF and all the frequency data is coming from VCF, we'll use VCF standard.
             //Annotations will still come from Jannovar and these are right-shifted as opposed to left-shifted.
-            AllelePosition minimisedAllele = AllelePosition.minimise(pos, ref, alt);
+            AllelePosition minimisedAllele = AllelePosition.trim(pos, ref, alt);
             Frequency freq = new Frequency(chrom, minimisedAllele.getPos(), minimisedAllele.getRef(), minimisedAllele.getAlt(), rsId);
             if (ea != 0f){   
                 freq.setESPFrequencyEA(ea);
