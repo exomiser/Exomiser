@@ -444,5 +444,6 @@ public class AllelePositionTest {
 
         return AllelePosition.of(pos, ref, alt);
     }
-
+    //See also GATK 4:
+    // https://github.com/broadinstitute/gatk/blob/master/src/main/java/org/broadinstitute/hellbender/utils/variant/GATKVariantContextUtils.java#L1033
 }
