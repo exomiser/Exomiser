@@ -311,9 +311,6 @@ public class VariantFactory {
         }
 
         void logCount() {
-            Duration duration = Duration.between(start, Instant.now());
-            long ms = duration.toMillis();
-            logger.info("Variant annotation finished in {}m {}s {}ms ({} ms)", (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
             if (unannotatedVariants.get() > 0) {
                 logger.info("Processed {} variant records into {} single allele variants, {} are missing annotations, most likely due to non-numeric chromosome designations", variantRecords
                         .get(), annotatedVariants.get(), unannotatedVariants.get());
@@ -321,6 +318,9 @@ public class VariantFactory {
                 logger.info("Processed {} variant records into {} single allele variants", variantRecords.get(), annotatedVariants
                         .get());
             }
+            Duration duration = Duration.between(start, Instant.now());
+            long ms = duration.toMillis();
+            logger.info("Variant annotation finished in {}m {}s {}ms ({} ms)", (ms / 1000) / 60 % 60, ms / 1000 % 60, ms % 1000, ms);
         }
     }
 }
