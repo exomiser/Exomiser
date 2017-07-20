@@ -46,11 +46,11 @@ public class RemmDao {
 
     private final Logger logger = LoggerFactory.getLogger(RemmDao.class);
 
-    private final TabixReader remmTabixReader;
+    private final TabixDataSource remmTabixDataSource;
 
     @Autowired
-    public RemmDao(TabixReader remmTabixReader) {
-        this.remmTabixReader = remmTabixReader;
+    public RemmDao(TabixDataSource remmTabixDataSource) {
+        this.remmTabixDataSource = remmTabixDataSource;
     }
 
     @Cacheable(value = "remm")
@@ -98,13 +98,13 @@ public class RemmDao {
     private static boolean isInsertion(int refLength, int altLength) {
         return refLength < altLength;
     }
-    
-    private PathogenicityData getRemmData(String chromosome, int start, int end) throws NumberFormatException {
+
+    private PathogenicityData getRemmData(String chromosome, int start, int end) {
         try {
             float remm = Float.NaN;
             String line;
 //            logger.info("Running tabix with " + chromosome + ":" + start + "-" + end);
-            TabixReader.Iterator results = remmTabixReader.query(chromosome + ":" + start + "-" + end);
+            TabixReader.Iterator results = remmTabixDataSource.query(chromosome + ":" + start + "-" + end);
             while ((line = results.next()) != null) {
                 String[] elements = line.split("\t");
                 if (Float.isNaN(remm)) {
@@ -118,7 +118,7 @@ public class RemmDao {
                 return PathogenicityData.of(RemmScore.valueOf(remm));
             }
         } catch (IOException e) {
-            logger.error("Unable to read from REMM tabix file {}", remmTabixReader.getSource(), e);
+            logger.error("Unable to read from REMM tabix file {}", remmTabixDataSource.getSource(), e);
         }
         return PathogenicityData.empty();
     }

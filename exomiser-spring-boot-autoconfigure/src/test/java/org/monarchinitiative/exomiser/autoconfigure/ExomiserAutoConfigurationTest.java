@@ -23,10 +23,11 @@ import com.google.common.collect.ImmutableList;
 import com.zaxxer.hikari.HikariConfig;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
-import htsjdk.tribble.readers.TabixReader;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
+import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.cache.CacheManager;
@@ -120,67 +121,67 @@ public class ExomiserAutoConfigurationTest {
     public void loadTabixFileThrowsRuntimeExceptionWhenFileNotFound() {
         String testTabixFilePath = TEST_DATA.resolve("wibble.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.caddSnvPath=" + testTabixFilePath);
-        TabixReader tabixReader = (TabixReader) context.getBean("snvTabixReader");
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("caddSnvTabixDataSource");
     }
 
     @Test
     public void loadCaddSnvTabixFromPlaceholderWhenNotDefined() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        TabixReader tabixReader = (TabixReader) context.getBean("snvTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(TEST_DATA.resolve("placeholder.tsv.gz").toString()));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("caddSnvTabixDataSource");
+        assertThat(tabixDataSource, instanceOf(ErrorThrowingTabixDataSource.class));
     }
 
     @Test
     public void loadCaddSnvTabixFileFromFullPathWhenDefined() {
         String testTabixFilePath = TEST_DATA.resolve("whole_genome_SNVs.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.caddSnvPath=" + testTabixFilePath);
-        TabixReader tabixReader = (TabixReader) context.getBean("snvTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(testTabixFilePath));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("caddSnvTabixDataSource");
+        assertThat(tabixDataSource.getSource(), equalTo(testTabixFilePath));
     }
 
     @Test
     public void loadCaddIndelTabixFromPlaceholderWhenNotDefined() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        TabixReader tabixReader = (TabixReader) context.getBean("inDelTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(TEST_DATA.resolve("placeholder.tsv.gz").toString()));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("caddInDelTabixDataSource");
+        assertThat(tabixDataSource, instanceOf(ErrorThrowingTabixDataSource.class));
     }
 
     @Test
     public void loadCaddIndelTabixFileFromFullPathWhenDefined() {
         String testTabixFilePath = TEST_DATA.resolve("InDels.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.caddInDelPath=" + testTabixFilePath);
-        TabixReader tabixReader = (TabixReader) context.getBean("inDelTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(testTabixFilePath));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("caddInDelTabixDataSource");
+        assertThat(tabixDataSource.getSource(), equalTo(testTabixFilePath));
     }
 
     @Test
     public void loadRemmTabixFromPlaceholderWhenNotDefined() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        TabixReader tabixReader = (TabixReader) context.getBean("remmTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(TEST_DATA.resolve("placeholder.tsv.gz").toString()));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("remmTabixDataSource");
+        assertThat(tabixDataSource, instanceOf(ErrorThrowingTabixDataSource.class));
     }
 
     @Test
     public void loadRemmTabixFileFromFullPathWhenDefined() {
         String testTabixFilePath = TEST_DATA.resolve("remmData.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.remmPath=" + testTabixFilePath);
-        TabixReader tabixReader = (TabixReader) context.getBean("remmTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(testTabixFilePath));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("remmTabixDataSource");
+        assertThat(tabixDataSource.getSource(), equalTo(testTabixFilePath));
     }
 
     @Test
     public void loadLocalFrequencyTabixFromPlaceholderWhenNotDefined() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        TabixReader tabixReader = (TabixReader) context.getBean("localFrequencyTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(TEST_DATA.resolve("placeholder.tsv.gz").toString()));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("localFrequencyTabixDataSource");
+        assertThat(tabixDataSource, instanceOf(ErrorThrowingTabixDataSource.class));
     }
 
     @Test
     public void loadLocalFrequencyTabixFileFromFullPathWhenDefined() {
         String testTabixFilePath = TEST_DATA.resolve("placeholder.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.local-frequency-path=" + testTabixFilePath);
-        TabixReader tabixReader = (TabixReader) context.getBean("localFrequencyTabixReader");
-        assertThat(tabixReader.getSource(), equalTo(testTabixFilePath));
+        TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("localFrequencyTabixDataSource");
+        assertThat(tabixDataSource.getSource(), equalTo(testTabixFilePath));
     }
 
     @Test

@@ -45,14 +45,14 @@ import java.io.IOException;
 public class CaddDao {
  
     private final Logger logger = LoggerFactory.getLogger(CaddDao.class);
- 
-    private final TabixReader inDelTabixReader;
-    private final TabixReader snvTabixReader;
- 
+
+    private final TabixDataSource caddInDelTabixDataSource;
+    private final TabixDataSource caddSnvTabixDataSource;
+
     @Autowired
-    public CaddDao(TabixReader inDelTabixReader, TabixReader snvTabixReader) {
-        this.inDelTabixReader = inDelTabixReader;
-        this.snvTabixReader = snvTabixReader;
+    public CaddDao(TabixDataSource caddInDelTabixDataSource, TabixDataSource caddSnvTabixDataSource) {
+        this.caddInDelTabixDataSource = caddInDelTabixDataSource;
+        this.caddSnvTabixDataSource = caddSnvTabixDataSource;
     }
 
     @Cacheable(value = "cadd")
@@ -66,14 +66,14 @@ public class CaddDao {
         String alt = variant.getAlt();
         int start = variant.getPosition();
         if (AllelePosition.isSnv(ref, alt)) {
-            return getCaddPathogenicityData(snvTabixReader, chromosome, start, ref, alt);
+            return getCaddPathogenicityData(caddSnvTabixDataSource, chromosome, start, ref, alt);
         }
-        return getCaddPathogenicityData(inDelTabixReader, chromosome, start, ref, alt);
+        return getCaddPathogenicityData(caddInDelTabixDataSource, chromosome, start, ref, alt);
     }
 
-    private PathogenicityData getCaddPathogenicityData(TabixReader tabixReader, String chromosome, int start, String ref, String alt) {
+    private PathogenicityData getCaddPathogenicityData(TabixDataSource tabixDataSource, String chromosome, int start, String ref, String alt) {
         try {
-            TabixReader.Iterator results = tabixReader.query(chromosome + ":" + start + "-" + start);
+            TabixReader.Iterator results = tabixDataSource.query(chromosome + ":" + start + "-" + start);
             String line;
             //there can be 0 - N results in this format:
             //#Chrom  Pos     Ref     Alt     RawScore        PHRED
@@ -89,7 +89,7 @@ public class CaddDao {
                 }
             }
         } catch (IOException e) {
-            logger.error("Unable to read from CADD tabix file {}", tabixReader.getSource(), e);
+            logger.error("Unable to read from CADD tabix file {}", tabixDataSource.getSource(), e);
         }
         return PathogenicityData.empty();
     }

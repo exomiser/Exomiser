@@ -27,6 +27,11 @@ import de.charite.compbio.jannovar.data.SerializationException;
 import htsjdk.tribble.readers.TabixReader;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
+import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
+import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
+import org.monarchinitiative.exomiser.core.genome.dao.TabixReaderAdaptor;
+import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrixIO;
 import org.slf4j.Logger;
@@ -140,16 +145,10 @@ public class ExomiserAutoConfiguration {
      */
     @Lazy
     @Bean
-    public TabixReader inDelTabixReader() {
+    public TabixDataSource caddInDelTabixDataSource() {
         String caddInDelPath = properties.getCaddInDelPath();
         logTabixPathIfNotEmpty("Reading CADD InDel file from:", caddInDelPath);
-        return getTabixReaderOrDefaultForProperty(caddInDelPath);
-    }
-
-    private void logTabixPathIfNotEmpty(String prefixMessage, String tabixPath) {
-        if(!tabixPath.isEmpty()){
-            logger.info("{} {}", prefixMessage, tabixPath);
-        }
+        return getTabixDataSourceOrDefaultForProperty(caddInDelPath, PathogenicitySource.CADD.name());
     }
 
     /**
@@ -162,10 +161,10 @@ public class ExomiserAutoConfiguration {
      */
     @Lazy
     @Bean
-    public TabixReader snvTabixReader() {
+    public TabixDataSource caddSnvTabixDataSource() {
         String caddSnvPath = properties.getCaddSnvPath();
         logTabixPathIfNotEmpty("Reading CADD snv file from:", caddSnvPath);
-        return getTabixReaderOrDefaultForProperty(caddSnvPath);
+        return getTabixDataSourceOrDefaultForProperty(caddSnvPath, PathogenicitySource.CADD.name());
     }
 
     /**
@@ -177,10 +176,10 @@ public class ExomiserAutoConfiguration {
      */
     @Lazy
     @Bean
-    public TabixReader remmTabixReader() {
+    public TabixDataSource remmTabixDataSource() {
         String remmPath = properties.getRemmPath();
         logTabixPathIfNotEmpty("Reading REMM data file from:", remmPath);
-        return getTabixReaderOrDefaultForProperty(remmPath);
+        return getTabixDataSourceOrDefaultForProperty(remmPath, PathogenicitySource.REMM.name());
     }
 
     /**
@@ -192,22 +191,32 @@ public class ExomiserAutoConfiguration {
      */
     @Lazy
     @Bean
-    public TabixReader localFrequencyTabixReader() {
+    public TabixDataSource localFrequencyTabixDataSource() {
         String localFrequencyPath = properties.getLocalFrequencyPath();
-        logTabixPathIfNotEmpty("Reading local frequency file from:", localFrequencyPath);
-        return getTabixReaderOrDefaultForProperty(localFrequencyPath);
+        logTabixPathIfNotEmpty("Reading LOCAL frequency file from:", localFrequencyPath);
+        return getTabixDataSourceOrDefaultForProperty(localFrequencyPath, FrequencySource.LOCAL.name());
     }
 
-    private TabixReader getTabixReaderOrDefaultForProperty(String pathToTabixGzFile) {
+    private void logTabixPathIfNotEmpty(String prefixMessage, String tabixPath) {
+        if (!tabixPath.isEmpty()) {
+            logger.info("{} {}", prefixMessage, tabixPath);
+        }
+    }
+
+    private TabixDataSource getTabixDataSourceOrDefaultForProperty(String pathToTabixGzFile, String dataSourceName) {
         String tabixGzPathValue = pathToTabixGzFile;
         if (tabixGzPathValue.isEmpty()) {
-            tabixGzPathValue = resolveRelativeToDataDir("placeholder.tsv.gz").toString();
+            logger.warn("Data for {} is not configured. THIS WILL LEAD TO ERRORS IF REQUIRED DURING ANALYSIS. Check the application.properties is pointing to a valid file.", dataSourceName);
+            String message = "Data for " + dataSourceName + " is not configured. Check the application.properties is pointing to a valid file.";
+            return new ErrorThrowingTabixDataSource(message);
         }
+        TabixReader tabixReader;
         try {
-            return new TabixReader(tabixGzPathValue);
+            tabixReader = new TabixReader(tabixGzPathValue);
         } catch (IOException e) {
             throw new ExomiserAutoConfigurationException(tabixGzPathValue + " file not found. Please check exomiser properties file points to a valid tabix .gz file.", e);
         }
+        return new TabixReaderAdaptor(tabixReader);
     }
 
     //Prioritiser configuration

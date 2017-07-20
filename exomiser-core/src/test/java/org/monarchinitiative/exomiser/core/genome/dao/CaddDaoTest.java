@@ -61,7 +61,9 @@ public class CaddDaoTest {
         //internal call in the Dao:
         //TabixReader.Iterator results = inDelTabixReader.query(chromosome, start, start);
         //The MockTabixIterator will return a list of lines
-        instance = new CaddDao(indelTabixReader, snvTabixReader);
+        TabixDataSource snvTabixDataSource = new TabixReaderAdaptor(snvTabixReader);
+        TabixDataSource inDelTabixDataSource = new TabixReaderAdaptor(indelTabixReader);
+        instance = new CaddDao(inDelTabixDataSource, snvTabixDataSource);
     }
 
     private static VariantEvaluation variant(int chr, int pos, String ref, String alt) {

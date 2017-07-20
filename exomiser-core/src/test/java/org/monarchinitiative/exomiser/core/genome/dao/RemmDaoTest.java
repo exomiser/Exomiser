@@ -56,9 +56,8 @@ public class RemmDaoTest {
 
     @Before
     public void setUp() {
-//        TabixDataSource tabixDataSource = new TabixReaderAdaptor(remmTabixReader);
-//        instance = new RemmDao(tabixDataSource);
-        instance = new RemmDao(remmTabixReader);
+        TabixDataSource tabixDataSource = new TabixReaderAdaptor(remmTabixReader);
+        instance = new RemmDao(tabixDataSource);
     }
 
     private static VariantEvaluation variant(int chr, int pos, String ref, String alt) {

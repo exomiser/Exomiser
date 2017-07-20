@@ -29,7 +29,8 @@ public class LocalFrequencyDaoTest {
 
     @Before
     public void setUp() {
-        instance = new LocalFrequencyDao(tabixReader);
+        TabixDataSource tabixDataSource = new TabixReaderAdaptor(tabixReader);
+        instance = new LocalFrequencyDao(tabixDataSource);
     }
 
     private VariantEvaluation variant(int chr, int pos, String ref, String alt) {
