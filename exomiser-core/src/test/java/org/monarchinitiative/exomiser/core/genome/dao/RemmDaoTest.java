@@ -38,7 +38,6 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.monarchinitiative.exomiser.core.model.pathogenicity.RemmScore;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -54,12 +53,11 @@ public class RemmDaoTest {
     
     @Mock
     private TabixReader remmTabixReader;
-    
-    private MockTabixIterator mockIterator;
 
     @Before
     public void setUp() {
-        mockIterator = new MockTabixIterator();
+//        TabixDataSource tabixDataSource = new TabixReaderAdaptor(remmTabixReader);
+//        instance = new RemmDao(tabixDataSource);
         instance = new RemmDao(remmTabixReader);
     }
 
@@ -93,31 +91,28 @@ public class RemmDaoTest {
     
     @Test
     public void testGetPathogenicityData_singleNucleotideVariationNoData() {
-        mockIterator.setValues(Arrays.asList());
-        Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
+        Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(MockTabixIterator.empty());
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.empty()));
     }
     
     @Test
     public void testGetPathogenicityData_singleNucleotideVariation() {
-        mockIterator.setValues(Arrays.asList("1\t1\t1.0"));
-        Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(mockIterator);
+        Mockito.when(remmTabixReader.query("1:1-1")).thenReturn(MockTabixIterator.of("1\t1\t1.0"));
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "T")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
     
     @Test
     public void testGetPathogenicityData_insertion() {
-        mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t1.0"));
-        Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(mockIterator);
+        Mockito.when(remmTabixReader.query("1:1-2")).thenReturn(MockTabixIterator.of("1\t1\t0.0", "1\t2\t1.0"));
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "A", "ATTT")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));
     }
     
     @Test
     public void testGetPathogenicityData_deletion() {
-        mockIterator.setValues(Arrays.asList("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0"));
+        MockTabixIterator mockIterator = MockTabixIterator.of("1\t1\t0.0", "1\t2\t0.5", "1\t3\t1.0", "1\t4\t0.0");
         Mockito.when(remmTabixReader.query("1:1-4")).thenReturn(mockIterator);
 
         assertThat(instance.getPathogenicityData(variant(1, 1, "ATTT", "A")), equalTo(PathogenicityData.of(RemmScore.valueOf(1f))));

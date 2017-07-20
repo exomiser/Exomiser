@@ -9,7 +9,8 @@ import htsjdk.tribble.readers.TabixReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,24 +23,26 @@ class MockTabixIterator implements TabixReader.Iterator {
 
     private static final Logger logger = LoggerFactory.getLogger(MockTabixIterator.class);
 
-    private List<String> values;
+    private static final MockTabixIterator EMPTY = new MockTabixIterator(Collections.emptyList());
+
+    private final List<String> values;
     private int pos;
 
-    MockTabixIterator() {
-        setUp(new ArrayList<>());
-    }
-
-    MockTabixIterator(List<String> values) {
-        setUp(values);
-    }
-
-    private void setUp(List<String> values) {
+    private MockTabixIterator(List<String> values) {
         this.values = values;
         pos = 0;
     }
 
-    void setValues(List<String> values) {
-        setUp(values);
+    public static MockTabixIterator of(String... values) {
+        return new MockTabixIterator(Arrays.asList(values));
+    }
+
+    public static MockTabixIterator of(List<String> values) {
+        return new MockTabixIterator(values);
+    }
+
+    public static MockTabixIterator empty() {
+        return EMPTY;
     }
 
     @Override
