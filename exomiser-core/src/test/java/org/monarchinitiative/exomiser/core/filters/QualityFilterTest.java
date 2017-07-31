@@ -110,7 +110,7 @@ public class QualityFilterTest {
 
     @Test
     public void testNotEqualAnotherClass() {
-        Object obj = new String();
+        Object obj = new Object();
         assertThat(instance.equals(obj), is(false));
     }
 
