@@ -23,6 +23,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @ConfigurationProperties(prefix = "exomiser")
@@ -35,11 +36,14 @@ public class ExomiserProperties {
     @NestedConfigurationProperty
     private ExomiserProperties.H2 h2 = new H2();
 
+    //exomiser.phenome.data-version=1707
+    @NestedConfigurationProperty
+    private GenomeProperties genomeProperties = new GenomeProperties("1707", GenomeProperties.GenomeBuild.hg19, GenomeProperties.TranscriptSource.ucsc);
+
     //genomiser variant data files
     private String caddSnvPath = "";
     private String caddInDelPath = "";
     private String remmPath = "";
-
     private String localFrequencyPath = "";
 
     //http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html
@@ -49,11 +53,6 @@ public class ExomiserProperties {
      * none/mem/ehcache
      */
     private String cache = "none";
-
-    /**
-     * name of transcript data .ser file created from Jannovar for defining known exon locations
-     */
-    private String transcriptDataFileName = "hg19_ucsc.ser";
 
     //Random walk matrix for hiPhive and exomeWalker
     private String randomWalkFileName = "rw_string_9_05.gz";
@@ -78,14 +77,6 @@ public class ExomiserProperties {
 
     public void setWorkingDirectory(String workingDirectory) {
         this.workingDirectory = workingDirectory;
-    }
-
-    public ExomiserProperties.H2 getH2() {
-        return h2;
-    }
-
-    public void setH2(ExomiserProperties.H2 h2) {
-        this.h2 = h2;
     }
 
     public String getCaddSnvPath() {
@@ -128,14 +119,6 @@ public class ExomiserProperties {
         this.cache = cache;
     }
 
-    public String getTranscriptDataFileName() {
-        return transcriptDataFileName;
-    }
-
-    public void setTranscriptDataFileName(String transcriptDataFileName) {
-        this.transcriptDataFileName = transcriptDataFileName;
-    }
-
     public String getRandomWalkFileName() {
         return randomWalkFileName;
     }
@@ -176,6 +159,22 @@ public class ExomiserProperties {
         this.hpoAnnotationFile = hpoAnnotationFile;
     }
 
+    public GenomeProperties getGenome() {
+        return genomeProperties;
+    }
+
+    public void setGenome(GenomeProperties genomeProperties) {
+        this.genomeProperties = genomeProperties;
+    }
+
+    public ExomiserProperties.H2 getH2() {
+        return h2;
+    }
+
+    public void setH2(ExomiserProperties.H2 h2) {
+        this.h2 = h2;
+    }
+
     public static class H2 {
 
         private String directory = "";
@@ -184,7 +183,6 @@ public class ExomiserProperties {
         private String password = "";
         private String url = "jdbc:h2:file:${h2Path}/exomiser;MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
         private int maxConnections = 3;
-
 
         public String getDirectory() {
             return directory;
@@ -226,4 +224,5 @@ public class ExomiserProperties {
             this.maxConnections = maxConnections;
         }
     }
+
 }

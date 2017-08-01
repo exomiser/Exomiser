@@ -43,6 +43,7 @@ import java.nio.file.Paths;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -93,12 +94,34 @@ public class ExomiserAutoConfigurationTest {
         assertThat(workingDirectory.getParent(), equalTo(TEST_DATA));
     }
 
+    //exomiser.genome.transcript-source=ucsc
+    //exomiser.genome.build=hg19
+    //exomiser.genome.data-version=1707
+    //exomiser.phenome.data-version=1707
+    @Test
+    public void genomeTranscriptSourceDefault() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        Path transcriptFilePath = (Path) this.context.getBean("transcriptFilePath");
+        assertThat(transcriptFilePath.getFileName(), equalTo(Paths.get("1707_hg19_transcripts_ucsc.ser")));
+    }
+
+    @Test
+    public void genomeTranscriptSourceUserDefinedValues() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV,
+                "exomiser.genome.dataVersion=1909",
+                "exomiser.genome.build=hg38",
+                "exomiser.genome.transcriptSource=refseq"
+        );
+        Path transcriptFilePath = (Path) this.context.getBean("transcriptFilePath");
+        assertThat(transcriptFilePath.getFileName(), equalTo(Paths.get("1909_hg38_transcripts_refseq.ser")));
+    }
+
     @Test
     public void transcriptFilePathIsDefinedRelativeToDataPath() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.transcript-data-file-name=ucsc.ser");
-        Path ucscFilePath = (Path) this.context.getBean("transcriptFilePath");
-        assertThat(ucscFilePath.getFileName(), equalTo(Paths.get("ucsc.ser")));
-        assertThat(ucscFilePath.getParent(), equalTo(TEST_DATA));
+        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        Path transcriptFilePath = (Path) this.context.getBean("transcriptFilePath");
+        assertThat(transcriptFilePath.getFileName(), equalTo(Paths.get("1707_hg19_transcripts_ucsc.ser")));
+        assertThat(transcriptFilePath.getParent(), equalTo(TEST_DATA.resolve("1707_hg19")));
     }
 
     /**
@@ -122,6 +145,7 @@ public class ExomiserAutoConfigurationTest {
         String testTabixFilePath = TEST_DATA.resolve("wibble.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.caddSnvPath=" + testTabixFilePath);
         TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("caddSnvTabixDataSource");
+        fail();
     }
 
     @Test
@@ -178,7 +202,7 @@ public class ExomiserAutoConfigurationTest {
 
     @Test
     public void loadLocalFrequencyTabixFileFromFullPathWhenDefined() {
-        String testTabixFilePath = TEST_DATA.resolve("placeholder.tsv.gz").toAbsolutePath().toString();
+        String testTabixFilePath = TEST_DATA.resolve("local_freq.tsv.gz").toAbsolutePath().toString();
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.local-frequency-path=" + testTabixFilePath);
         TabixDataSource tabixDataSource = (TabixDataSource) context.getBean("localFrequencyTabixDataSource");
         assertThat(tabixDataSource.getSource(), equalTo(testTabixFilePath));

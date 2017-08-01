@@ -36,7 +36,6 @@ import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrixIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -76,8 +75,12 @@ public class ExomiserAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserAutoConfiguration.class);
 
-    @Autowired
-    private ExomiserProperties properties;
+    private final ExomiserProperties properties;
+
+    public ExomiserAutoConfiguration(ExomiserProperties properties) {
+        this.properties = properties;
+    }
+
 
     /**
      * This is critical for the application to run as it points to the data
@@ -98,6 +101,20 @@ public class ExomiserAutoConfiguration {
     }
 
     @Bean
+    public Path genomeDataDirectory() {
+        return exomiserDataDirectory().resolve(genomeReleaseBuildPrefix());
+    }
+
+    private String genomeReleaseBuildPrefix() {
+        GenomeProperties genomeProperties = properties.getGenome();
+        return String.format("%s_%s", genomeProperties.getDataVersion(), genomeProperties.getBuild());
+    }
+
+    private Path resolveRelativeToGenomeDir(String fileName) {
+        return genomeDataDirectory().resolve(fileName);
+    }
+
+    @Bean
     public Path exomiserWorkingDirectory() {
         Path workingDir = Paths.get(getWorkingDir());
         logger.info("Exomiser working directory set to: {}", workingDir.toAbsolutePath());
@@ -113,20 +130,26 @@ public class ExomiserAutoConfiguration {
     }
 
     //Variant analysis configuration
+
+    /**
+     * name of transcript data .ser file created from Jannovar for defining known exon locations
+     */
     @Bean
     public Path transcriptFilePath() {
-        String transcriptFileNameValue = properties.getTranscriptDataFileName();
-        Path transcriptFilePath = resolveRelativeToDataDir(transcriptFileNameValue);
+        String releaseBuildPrefix = genomeReleaseBuildPrefix();
+        String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", releaseBuildPrefix, properties.getGenome().transcriptSource);
+        Path transcriptFilePath = resolveRelativeToGenomeDir(transcriptFileNameValue);
         logger.debug("Transcript data file: {}", transcriptFilePath.toAbsolutePath());
         return transcriptFilePath;
     }
 
+
     /**
      * This takes a few seconds to de-serialise. Can be overridden by defining your own bean.
      */
-    @Lazy
     @Bean
     @ConditionalOnMissingBean
+//    @ConditionalOnClass({GeneFactory.class, VariantAnnotationData.class})
     public JannovarData jannovarData(Path transcriptFilePath) {
         try {
             return new JannovarDataSerializer(transcriptFilePath.toString()).load();
