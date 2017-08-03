@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.monarchinitiative</groupId>
         <artifactId>exomiser</artifactId>
-        <version>7.3.0-SNAPSHOT</version>
+        <version>8.0.0</version>
     </parent>
   
     <properties>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.monarchinitiative</groupId>
             <artifactId>exomiser-spring-boot-starter</artifactId>
-            <version>7.3.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
