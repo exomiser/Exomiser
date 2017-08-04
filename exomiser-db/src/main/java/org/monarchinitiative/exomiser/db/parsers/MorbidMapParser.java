@@ -1,4 +1,24 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -32,7 +52,7 @@ public class MorbidMapParser implements ResourceParser {
     private static final Logger logger = LoggerFactory.getLogger(MorbidMapParser.class);
 
     private static final int NO_DISEASE_ID = -10;
-    
+
     private final DiseaseInheritanceCache diseaseInheritanceCache;
     private final Map<Integer, Set<Integer>> mim2geneMap;
 
@@ -65,7 +85,7 @@ public class MorbidMapParser implements ResourceParser {
             logger.info("{}", status);
             return;
         }
-        
+
         if (mim2geneMap.isEmpty()) {
             logger.error("Aborting attempt to parse morbidmap file as the required mim2geneMap is empty.");
             status = ResourceOperationStatus.FAILURE;
@@ -73,12 +93,12 @@ public class MorbidMapParser implements ResourceParser {
             logger.info("{}", status);
             return;
         }
-        
+
         // A heuristic to avoid duplicate entries.
         Set<String> seen = new HashSet<>();
-        
+
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())){
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())){
 
             String line;
             // expected format
@@ -103,7 +123,7 @@ public class MorbidMapParser implements ResourceParser {
                 logger.debug("diseaseString = {}", diseaseString);
                 int i = diseaseString.lastIndexOf(',');
                 /* This means there is probably a MIM number */
-                if (i > 0) { 
+                if (i > 0) {
 
                     disease = diseaseString.substring(0, i).trim();
                     phenMIM = diseaseString.substring(i + 1).trim();
@@ -141,7 +161,7 @@ public class MorbidMapParser implements ResourceParser {
                 }
                 if (associatedEntrezGeneIds == null || associatedEntrezGeneIds.isEmpty()) {
                     // No entrez gene link
-                    continue; 
+                    continue;
                 }
                 if (genemim < 0) {
                     continue;
@@ -173,7 +193,7 @@ public class MorbidMapParser implements ResourceParser {
         }
         resource.setParseStatus(status);
         logger.info("{}", status);
-        
+
     }
 
     /**

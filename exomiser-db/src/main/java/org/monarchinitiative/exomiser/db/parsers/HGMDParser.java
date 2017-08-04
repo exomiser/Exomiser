@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.db.parsers;
 
 
@@ -12,7 +32,7 @@ import java.util.Map;
 
 /**
  * Parse files from the Human Gene Mutation Database. The profile has the following structure.
- * 
+ *
  * <ol>
  * <li>Disease Name (e.g., Hyperinsulinism )
  * <li>Gene symbol (e.g., ABCC8)
@@ -53,9 +73,9 @@ import java.util.Map;
  *
  */
 public class HGMDParser {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(HGMDParser.class);
-        
+
     /* Path to HGMD's allmut.txt pro file.
     private String hgmdProPath=null;
     /** FileWriter for the  hgmd-pro.pg "dump" file */
@@ -66,54 +86,53 @@ public class HGMDParser {
     private int currentNumber;
 
     private Map<String,Integer> id2DiseaseMap=null;
-    
+
     public HGMDParser() {
-	this.id2DiseaseMap = new HashMap<String,Integer>();
-	this.currentNumber = 1;
+        this.id2DiseaseMap = new HashMap<String,Integer>();
+        this.currentNumber = 1;
     }
 
 
     private void initializeOutFileHandle(String outname) throws IOException {
-	this.fstream = new FileWriter(outname);
-	this.out = new BufferedWriter(this.fstream);
+        this.fstream = new FileWriter(outname);
+        this.out = new BufferedWriter(this.fstream);
     }
 
 
     private Integer getDiseaseGeneID(String diseasename, String genesym)   {
-	String s = String.format("%s|%s",diseasename, genesym);
-	Integer id = this.id2DiseaseMap.get(s);
-	if (id == null) { /* We have not seen this string before */
-	    id = new Integer(this.currentNumber);
-	    this.currentNumber++;
-	    this.id2DiseaseMap.put(s,id);
-	}
-	return id;
+        String s = String.format("%s|%s",diseasename, genesym);
+        Integer id = this.id2DiseaseMap.get(s);
+        if (id == null) { /* We have not seen this string before */
+            id = new Integer(this.currentNumber);
+            this.currentNumber++;
+            this.id2DiseaseMap.put(s,id);
+        }
+        return id;
     }
 
     private void outputDiseaseGeneDumpFile() throws IOException {
-	 String outname="hgmddisease.pg";
-	 initializeOutFileHandle(outname);
-	 Iterator<String> it = this.id2DiseaseMap.keySet().iterator();
-	 while (it.hasNext()) {
-	     String disease = it.next();
-	     Integer id = this.id2DiseaseMap.get(disease);
-	     int i = disease.indexOf("|");
-	     if (i<0) {
-		 logger.error("Could not parse HGMD disease/gene string: {}", disease);
-		 System.exit(1);
-	     }
-	     String dis = disease.substring(0,i);
-	     String gs = disease.substring(i+1);
-	     String s = String.format("%d|%s|%s",id,dis,gs);
-	     //System.out.println(s);
-	     out.write(s + "\n");
-	 }
-	 this.out.close();
+        String outname="hgmddisease.pg";
+        initializeOutFileHandle(outname);
+        Iterator<String> it = this.id2DiseaseMap.keySet().iterator();
+        while (it.hasNext()) {
+            String disease = it.next();
+            Integer id = this.id2DiseaseMap.get(disease);
+            int i = disease.indexOf("|");
+            if (i<0) {
+                logger.error("Could not parse HGMD disease/gene string: {}", disease);
+                System.exit(1);
+            }
+            String dis = disease.substring(0,i);
+            String gs = disease.substring(i+1);
+            String s = String.format("%d|%s|%s",id,dis,gs);
+            //System.out.println(s);
+            out.write(s + "\n");
+        }
+        this.out.close();
 
     }
 
 
-    
     /** This function parses the HGMD Pro file and creates a "dump" file that can be used to
      * populate the postgreSQL database.
      * See the setup documentation for instructions on how to import the outputfile, which 
@@ -121,44 +140,44 @@ public class HGMDParser {
      * @param path Path to the allmut.txt file of HGMD.
      */
     public void parseHGMDProFile(String path) {
-	logger.info("Parsing HGMD Pro File: {}", path);
-	try{     
+        logger.info("Parsing HGMD Pro File: {}", path);
+        try{
 	    /* The infile */
-	    FileInputStream fstr = new FileInputStream(path);
-	    //DataInputStream in = new DataInputStream(fstream);
-	    BufferedReader br = new BufferedReader(new InputStreamReader(fstr));
-	    String outname="hgmdpro.pg";
-	    initializeOutFileHandle(outname);
-	    String line = br.readLine();
+            FileInputStream fstr = new FileInputStream(path);
+            //DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fstr));
+            String outname="hgmdpro.pg";
+            initializeOutFileHandle(outname);
+            String line = br.readLine();
 	   
 	    /* Skip up to the first Term stanza. */
-	    String diseasename=null;
-	    String gensym=null; /* Gene Symbol */
-	    String cDNAmut=null; /* e.g., 461A>G */
-	    String aaMut=null; /* e.g., Q154R */
-	    String chr=null;
-	    String start=null;
-	    String end=null;
-	    String pmid=null;
-	    int c = 0;
-	    int bad=0;
-	    int no_pmid=0;
-	    logger.info("Parsing HGMD Pro File ready {}", br.ready() );
-	    while ((line = br.readLine()) != null)   {
-		String[] fields = line.split("!");
-		if (fields.length<27) {
-		    //System.out.println("Error parsing line with less than 30 fields:\n" + line + "\n\t=>Had only " + F.length + " fields");
-		    bad++;
-		    continue;
-		}
-		diseasename=fields[0];
-		gensym=fields[1];
-		cDNAmut=fields[12];
-		aaMut=fields[11];
-		chr=fields[15];
-		start=fields[16];
-		end=fields[17];
-		pmid=fields[25];
+            String diseasename=null;
+            String gensym=null; /* Gene Symbol */
+            String cDNAmut=null; /* e.g., 461A>G */
+            String aaMut=null; /* e.g., Q154R */
+            String chr=null;
+            String start=null;
+            String end=null;
+            String pmid=null;
+            int c = 0;
+            int bad=0;
+            int no_pmid=0;
+            logger.info("Parsing HGMD Pro File ready {}", br.ready() );
+            while ((line = br.readLine()) != null)   {
+                String[] fields = line.split("!");
+                if (fields.length<27) {
+                    //System.out.println("Error parsing line with less than 30 fields:\n" + line + "\n\t=>Had only " + F.length + " fields");
+                    bad++;
+                    continue;
+                }
+                diseasename=fields[0];
+                gensym=fields[1];
+                cDNAmut=fields[12];
+                aaMut=fields[11];
+                chr=fields[15];
+                start=fields[16];
+                end=fields[17];
+                pmid=fields[25];
 
                 switch (chr) {
                     case "X":
@@ -171,40 +190,39 @@ public class HGMDParser {
                         chr="25";
                         break;
                 }
-	
-		Integer pubmedInt = null;
-		try {
-		    pubmedInt = Integer.parseInt(pmid);
-		} catch (NumberFormatException e) {
-		    //System.out.println("Difficulties parsing line:\n"+line);
-		    //e.printStackTrace();
-		    no_pmid++;
-		    pmid="-1"; /* flag for no pmid given */
-		}
-		    
-		if (diseasename==null || gensym == null) {
-		    logger.error("Disease or gene sym null on line\n{}\n", line);
-		    continue;
-		}
-		Integer id = getDiseaseGeneID(diseasename,gensym);
-		String s = String.format("%d|%s|%s|%s|%s|%s",id,cDNAmut,aaMut,chr,start,pmid);
-		//System.out.println(s);
-		out.write(s + "\n");
-		c++;
-		if (c % 5000 == 0)
-		    logger.info("Parsed {} HGMD mutations", c);
-	    }
-	    br.close();
-	    this.out.close();
-	    logger.info("Parsed {} mutations and skipped {} malformed lines, and did not find pmid for {} mutations", c, bad, no_pmid);
-	    outputDiseaseGeneDumpFile();
-	} catch (IOException e) {
-	    logger.error("{}", e);
-	    System.exit(1);
-	}
+
+                Integer pubmedInt = null;
+                try {
+                    pubmedInt = Integer.parseInt(pmid);
+                } catch (NumberFormatException e) {
+                    //System.out.println("Difficulties parsing line:\n"+line);
+                    //e.printStackTrace();
+                    no_pmid++;
+                    pmid="-1"; /* flag for no pmid given */
+                }
+
+                if (diseasename==null || gensym == null) {
+                    logger.error("Disease or gene sym null on line\n{}\n", line);
+                    continue;
+                }
+                Integer id = getDiseaseGeneID(diseasename,gensym);
+                String s = String.format("%d|%s|%s|%s|%s|%s",id,cDNAmut,aaMut,chr,start,pmid);
+                //System.out.println(s);
+                out.write(s + "\n");
+                c++;
+                if (c % 5000 == 0)
+                    logger.info("Parsed {} HGMD mutations", c);
+            }
+            br.close();
+            this.out.close();
+            logger.info("Parsed {} mutations and skipped {} malformed lines, and did not find pmid for {} mutations", c, bad, no_pmid);
+            outputDiseaseGeneDumpFile();
+        } catch (IOException e) {
+            logger.error("{}", e);
+            System.exit(1);
+        }
 
     }
-
 
 
 }

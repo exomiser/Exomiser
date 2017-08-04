@@ -1,4 +1,24 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -44,7 +64,7 @@ import java.util.Set;
  * <li> Gene symbol of the Entrez Gene entry (should match one of the items in
  * field 7).
  * </ol>
- * 
+ *
  * and produces a pipe delimited file of this format:
  * <pre>
  * 614222|Warburg micro syndrome 3|10p12.1|602207|22931|RAB18|600118
@@ -55,8 +75,8 @@ import java.util.Set;
 public class Omim2GeneParser implements ResourceParser {
 
     private static final Logger logger = LoggerFactory.getLogger(Omim2GeneParser.class);
-    
-    
+
+
     @Override
     public void parseResource(Resource resource, Path inDir, Path outDir) {
         //you might notice that the code here is pretty similar to that in the 
@@ -65,40 +85,40 @@ public class Omim2GeneParser implements ResourceParser {
         //But done to fit the parseResource() paradigm. Peter did it better before-hand 
         //(i.e. one class only), but it produced two different tables. Given this is static data we're parsing
         //and it's likely to be depricated at some point this is hopefully not too evil.
-        
+
         Path inFile = inDir.resolve(resource.getExtractedFileName());
         Path outFile = outDir.resolve(resource.getParsedFileName());
 
         logger.info("Parsing {} file: {}. Writing out to: {}", resource.getName(), inFile, outFile);
 
         ResourceOperationStatus status;
-        
+
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.defaultCharset());
-                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-                
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+
             Set<String> uniqueSeriesIds = new HashSet<>();
-            
+
             String line;
             while ((line = reader.readLine()) != null) {
                 logger.debug(line);
                 String[] fields = line.split("\\|");
-        //        "INSERT INTO omim2gene(mimDiseaseID, mimDiseaseName,cytoBand,mimGeneID,entrezGeneID,geneSymbol,seriesID) "+
+                //        "INSERT INTO omim2gene(mimDiseaseID, mimDiseaseName,cytoBand,mimGeneID,entrezGeneID,geneSymbol,seriesID) "+
                 final int expectedFields = 10;
                 if (fields.length != expectedFields) {
                     logger.error("Expected {} fields but got {} for line {}", expectedFields, fields.length, line);
                     continue;
                 }
-                
-		String seriesId = fields[1];
-		String cytoBand = fields[2];
-		String mimDiseaseName = fields[3];
-		String mimDiseaseId = fields[5];
-		String mimGeneId = fields[7];
-		String entrezGeneId = fields[8];
-		String geneSymbol = fields[9];
-                
+
+                String seriesId = fields[1];
+                String cytoBand = fields[2];
+                String mimDiseaseName = fields[3];
+                String mimDiseaseId = fields[5];
+                String mimGeneId = fields[7];
+                String entrezGeneId = fields[8];
+                String geneSymbol = fields[9];
+
                 String uniqueSeriesId = String.format("%s-%s", seriesId, mimDiseaseId);
-                
+
                 if (entrezGeneId.equals("?")) {
                     logger.debug("No Entrez gene mapped for phenoseries: {} diseaseId: {} MIM gene: {} location: {} name:{}", seriesId, mimDiseaseId, mimGeneId, cytoBand, mimDiseaseName); // No gene for this entry
                 } else if (uniqueSeriesIds.contains(uniqueSeriesId)) {
@@ -119,7 +139,7 @@ public class Omim2GeneParser implements ResourceParser {
             logger.error(null, ex);
             status = ResourceOperationStatus.FAILURE;
         }
-        
+
         logger.info("{}", status);
         resource.setParseStatus(status);
     }
