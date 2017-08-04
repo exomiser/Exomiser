@@ -1,8 +1,9 @@
 # The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
-## *New!* Can now perform genome-wide prioritisation including non-coding, regulatory variants (aka. Genomiser).
-See [Analysis file](#analysis_file) section on running analysis yml files for more information and the
-test-analysis-genome.yml file located in the base install directory.
+The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory variants using patient phenotypes as a means of differentiating candidate genes.
+ 
+To perform ana analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also provided. 
+See [Usage](#usage) section for info on running an analysis.
 
 ## Software and Hardware requirements
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
@@ -60,15 +61,28 @@ with
 
     h2Path=/full/path/to/alternative/h2/database/exomiser.h2.db
 
-If you want to run from a Postgres database rather than the default H2 embedded database *Optional*
-  
-1. download exomiser_dump.pg.gz
-2. gunzip exomiser_dump.pg.gz
-3. load into your postgres server: pg_restore -h yourhost -d yourdatabase -U youruser < exomiser_dump.pg
-    You can do 2 and 3 at once by using: gunzip -c exomiser_dump.pg.gz | pg_restore -h yourhost -d yourdatabase -U youruser
-4. edit application.properties with the details of how to connect this new database
+## <a name="usage"></a>Usage
 
-## Usage
+The Exomiser can be run via simply via command line switches (see cli only) or via a yaml analysis file. We strongly recommended using the yaml option as it provides full control over the application. The cli only options are currently a legacy hangover *only* capable of exome analysis.    
+
+### Analysis file (recommended)
+
+Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
+and pathogenicity data sources and the ability to tweak the order that analysis steps are performed. 
+
+See the test-analysis-exome.yml and test-analysis-genome.yml files located in the base install directory for details.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
+
+These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
+a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be greatly reduced by 
+setting the analysisMode option to PASS_ONLY. This will also aid your ability to evaluate the results.
+
+Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch test-analysis-batch.txt
+
+### CLI only (limited to exome analysis only)
 
 (a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk
 
@@ -103,22 +117,9 @@ Output options can be combined, for example:
     --output-format TSV-GENE,VCF (TSV-GENE and VCF)
     --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
 
-### <a name="analysis_file"></a>Analysis file:
+### Settings file (deprecated)
 
-Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
-and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
-
-These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
-a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be substantially reduced by 
-setting the analysisMode option to PASS_ONLY.  
-
-Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch test-analysis-batch.txt
-
-### Settings file:
+This feature is now deprecated and may be subject to removal at a later time. We recommend switching to using an analysis yml file instead.
     
 Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
 
