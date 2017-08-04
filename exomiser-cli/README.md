@@ -53,13 +53,13 @@ OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952)
 
 ## Alternative set-up
 
-If you want to run Exomiser using an H2 database from a location of your choosing edit the line in application.properties:
+If you want to run Exomiser using data from a different release directory edit the line in ```application.properties```:
 
-    h2Path=
+    exomiser.data-directory=
 
 with
 
-    h2Path=/full/path/to/alternative/h2/database/exomiser.h2.db
+    exomiser.data-directory=/full/path/to/alternative/data/directory
 
 ## <a name="usage"></a>Usage
 
