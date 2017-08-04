@@ -46,6 +46,7 @@ analysis:
     #all steps are optional
     steps: [ 
         #intervalFilter: {interval: 'chr10:123256200-123256300'}, 
+        #failedVariantFilter: {},
         #geneIdFilter: {geneIds: [12345, 34567, 98765]},
         hiPhivePrioritiser: {},
         #running the prioritiser followed by a priorityScoreFilter will remove genes
