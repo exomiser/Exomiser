@@ -283,7 +283,7 @@ public class VcfResultsWriter implements ResultsWriter {
      */
     private void updateInfoField(VariantContextBuilder builder, List<VariantEvaluation> variantEvaluations, Gene gene) {
         if (!variantEvaluations.isEmpty() && gene != null) {
-            builder.attribute(ExomiserVcfInfoField.GENE_SYMBOL.getId(), gene.getGeneSymbol());
+            builder.attribute(ExomiserVcfInfoField.GENE_SYMBOL.getId(), gene.getGeneSymbol().replace(" ", "_"));
             builder.attribute(ExomiserVcfInfoField.GENE_ID.getId(), gene.getGeneId());
             builder.attribute(ExomiserVcfInfoField.GENE_COMBINED_SCORE.getId(), gene.getCombinedScore());
             builder.attribute(ExomiserVcfInfoField.GENE_PHENO_SCORE.getId(), gene.getPriorityScore());
