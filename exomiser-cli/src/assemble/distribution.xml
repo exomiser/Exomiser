@@ -23,8 +23,6 @@
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
     <id>distribution</id>
     <formats>
-        <!--<format>tar.gz</format>-->
-        <!--<format>tar.bz2</format>-->
         <format>zip</format>
     </formats>
     <fileSets>
@@ -35,8 +33,8 @@
             <includes>
                 <include>*.jar</include>
                 <include>README*</include>
-                <include>LICENSE*</include>
-                <include>NOTICE*</include>
+                <include>LICENCE*</include>
+                <include>CHANGELOG*</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -50,10 +48,6 @@
             <directory>${project.build.directory}/distribution-resources</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>*.settings</include>
-                <include>*.yml</include>           
-                <include>test-analysis-batch.txt</include>
-                <include>test-batchFiles.txt</include>
                 <include>application.properties</include>
                 <include>ehcache.xml</include>
             </includes>
@@ -62,11 +56,6 @@
             <directory>${project.build.directory}/distribution-resources</directory>
             <outputDirectory>/data</outputDirectory>
             <includes>
-                <include>Pfeiffer.vcf</include>
-                <include>Pfeiffer-quartet.vcf.gz</include>
-                <include>Pfeiffer-quartet.ped</include>
-                <include>NA19722_252900_AR_SGSH_1_NONSYNONYMOUS.vcf</include>
-                <include>NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz</include>
                 <include>hg19_ucsc.ser</include>
                 <include>hg19_refseq.ser</include>
                 <include>hg19_ensembl.ser</include>
@@ -74,8 +63,19 @@
                 <include>rw_string_9_05_id2index.gz</include>
                 <include>exomiser.h2.db</include>
                 <include>phenix/*</include>
-                <include>placeholder.tsv.gz</include>
-                <include>placeholder.tsv.gz.tbi</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/distribution-resources</directory>
+            <outputDirectory>/examples</outputDirectory>
+            <includes>
+                <include>*.yml</include>
+                <include>test-analysis-batch.txt</include>
+                <include>Pfeiffer.vcf</include>
+                <include>Pfeiffer-quartet.vcf.gz</include>
+                <include>Pfeiffer-quartet.ped</include>
+                <include>NA19722_252900_AR_SGSH_1_NONSYNONYMOUS.vcf</include>
+                <include>NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz</include>
             </includes>
         </fileSet>
         <fileSet>

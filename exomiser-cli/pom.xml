@@ -131,7 +131,15 @@
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>src/main/resources/distribution</directory>
+                                    <directory>src/main/resources/data</directory>
+                                    <includes>
+                                        <include>*.ser</include>
+                                        <include>*.tsv.gz</include>
+                                        <include>*.tsv.gz.tbi</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/examples</directory>
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>*.settings</include>
@@ -141,16 +149,13 @@
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>src/main/resources/data</directory>
+                                    <directory>src/main/resources/vcf</directory>
                                     <includes>
                                         <include>Pfeiffer.vcf</include>
                                         <include>Pfeiffer-quartet.vcf.gz</include>
                                         <include>Pfeiffer-quartet.ped</include>
                                         <include>*.vcf</include>
                                         <include>*.vcf.gz</include>
-                                        <include>*.ser</include>
-                                        <include>*.tsv.gz</include>
-                                        <include>*.tsv.gz.tbi</include>
                                     </includes>
                                 </resource>
                             </resources>

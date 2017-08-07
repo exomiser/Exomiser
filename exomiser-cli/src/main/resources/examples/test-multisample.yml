@@ -2,8 +2,8 @@
 # These are all the possible options for running exomiser. Use this as a template for
 # your own set-up.
 analysis:
-    vcf: data/Pfeiffer-quartet.vcf.gz
-    ped: data/Pfeiffer-quartet.ped
+    vcf: examples/Pfeiffer-quartet.vcf.gz
+    ped: examples/Pfeiffer-quartet.ped
     proband: ISDBM322017
     # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE or UNDEFINED
     modeOfInheritance: AUTOSOMAL_DOMINANT

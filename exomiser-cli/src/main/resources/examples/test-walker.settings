@@ -6,7 +6,7 @@
 #for some reason.
 
 #REQUIRED OPTIONS - these need to be filled in either here or on the command-line.
-vcf=data/Pfeiffer.vcf
+vcf=examples/Pfeiffer.vcf
 
 #SAMPLE DATA OPTIONS
 ped=
@@ -21,10 +21,10 @@ keep-off-target=false
 full-analysis=false
 
 #PRIORITISER OPTIONS
-prioritiser=hiphive
+prioritiser=exomewalker
 candidate-gene=
-hpo-ids=HP:0001156, HP:0001363, HP:0011304, HP:0010055
-seed-genes=
+hpo-ids=
+seed-genes=2260,2246,2253
 #disease-id option: OMIM identifier e.g. OMIM:101500
 disease-id=
 #inheritance-mode options: AD, AR or X
@@ -38,6 +38,6 @@ num-genes=0
 # according to the out-format option. If unspecified this will default to the following: 
 # {exomiserDir}/results/input-vcf-name-exomiser-results.html
 # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
-out-prefix=results/Pfeiffer-hiphive
+out-prefix=results/Pfeiffer-walker
 #out-format options: HTML, TSV, VCF (default: HTML)
 out-format=TSV-GENE,TSV-VARIANT,VCF,HTML
