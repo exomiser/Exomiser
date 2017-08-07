@@ -54,14 +54,14 @@ This script will download, verify and extract the exomiser files and then run th
 ## Genomiser data files
 
 In order to run the Genomiser you will also need to download the REMM data file from [here](https://charite.github.io/software-remm-score.html). Once downloaded you'll need to add the path to the ReMM.v0.3.1.tsv.gz file to the ```application.properties``` file. For example if you downloaded the file to the exomiser data directory you could add the entry like this:
-```properties
-exomiser.remm-path=${exomiser.data-directory}/ReMM.v0.3.1.tsv.gz
-``` 
+
+    exomiser.remm-path=${exomiser.data-directory}/ReMM.v0.3.1.tsv.gz
+ 
 If this step is omitted, the application will throw and error and stop any analysis which defines ```REMM``` in the ```pathogenicitySources``` section of an analysis yml file. 
 
 Having done this, run the analysis like this:
  
-```java -Xms4g -Xmx6g -jar exomiser-cli-${project.version}.jar --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml``` 
+    java -Xms4g -Xmx6g -jar exomiser-cli-${project.version}.jar --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml 
 
 This is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952) 
