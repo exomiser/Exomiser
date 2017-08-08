@@ -1,17 +1,18 @@
 <!--
-  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
   ~
-  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~ Copyright (c) 2016-2017. Queen Mary University of London.
+  ~ Copyright (c) 2012-2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
   ~
-  ~  This program is free software: you can redistribute it and/or modify
-  ~  it under the terms of the GNU Affero General Public License as
-  ~  published by the Free Software Foundation, either version 3 of the
-  ~  License, or (at your option) any later version.
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
   ~
-  ~  This program is distributed in the hope that it will be useful,
-  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~  GNU Affero General Public License for more details.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
   ~
   ~  You should have received a copy of the GNU Affero General Public License
   ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -28,9 +29,9 @@
     <url>http://maven.apache.org</url>
 
     <parent>
-        <groupId>de.charite.compbio</groupId>
-        <artifactId>Exomiser</artifactId>
-        <version>7.2.3</version>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
+        <version>8.0.0</version>
     </parent>
   
     <properties>
@@ -39,18 +40,18 @@
     
     <dependencies>
         <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>exomiser-core</artifactId>
+            <groupId>org.monarchinitiative</groupId>
+            <artifactId>exomiser-spring-boot-starter</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
         </dependency>
         <!--commons-cli used for parsing the command line -->
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
         </dependency>
     </dependencies>
  
@@ -63,6 +64,7 @@
                 <excludes>
                     <exclude>log4j2.xml</exclude>
                     <exclude>distribution/*</exclude>
+                    <exclude>data/*</exclude>
                 </excludes>
             </resource>
         </resources> 
@@ -80,7 +82,7 @@
                             <!-- set useUniqueVersions=false in order that the 
                             classpath has the SNAPSHOT instead of the build number prefixed to the dependency -->
                             <useUniqueVersions>false</useUniqueVersions>
-                            <mainClass>de.charite.compbio.exomiser.cli.Main</mainClass>
+                            <mainClass>org.monarchinitiative.exomiser.cli.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -129,7 +131,15 @@
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>src/main/resources/distribution</directory>
+                                    <directory>src/main/resources/data</directory>
+                                    <includes>
+                                        <include>*.ser</include>
+                                        <include>*.tsv.gz</include>
+                                        <include>*.tsv.gz.tbi</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/examples</directory>
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>*.settings</include>
@@ -139,17 +149,14 @@
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>src/main/resources/distribution/data</directory>
+                                    <directory>src/main/resources/vcf</directory>
                                     <includes>
-                                        <include>*.tsv.gz</include>
-                                        <include>*.tsv.gz.tbi</include>
+                                        <include>Pfeiffer.vcf</include>
+                                        <include>Pfeiffer-quartet.vcf.gz</include>
+                                        <include>Pfeiffer-quartet.ped</include>
+                                        <include>*.vcf</include>
+                                        <include>*.vcf.gz</include>
                                     </includes>
-                                </resource>
-                                <resource>
-                                    <directory>src/test/resources</directory>
-                                    <include>Pfeiffer.vcf</include>
-                                    <include>Pfeiffer-quartet.vcf.gz</include>
-                                    <include>Pfeiffer-quartet.ped</include>
                                 </resource>
                             </resources>
                         </configuration>

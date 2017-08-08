@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
+  ~
+  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title>Exomiser :: Results</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel='icon' type='image/x-icon' href="favicon.ico" th:href="@{/favicon.ico}"/>
+        <link href="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+    </head>
+    <body>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/" th:href="@{/}">
+                    <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="index.html" th:href="@{index}">Home</a></li>
+                    <li class="active"><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                    <li><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                    <li><a href="download.html" th:href="@{download}">Download</a></li>
+                    <li><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                    <li><a href="about.html" th:href="@{about}">About</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+        <div id="content" class="container">
+            <h2>
+                Analysis Results for
+                <th:block th:text="${sampleName}"> Slartibartfast</th:block>
+            </h2>
+            <ul class="nav nav-pills" id="tabs">
+                <li><a href="#settings" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-cog"/> Analysis Settings</b></a></li>
+                <li class="active"><a href="#filtering" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-filter"/> Filtering Summary</b></a></li>
+                <li><a href="#distribution" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-align-left"/> Variant Type Distribution</b></a></li>
+                <li><a href="#prioritisation" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-sort"/> Prioritised Genes</b></a></li>
+                <li th:unless="${#lists.isEmpty(unAnalysedVarEvals)}"><a href="#errors" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-warning-sign"/> Unanalysed Variants</b></a></li>
+                <!--<li><a href="#about" role="tab" data-toggle="tab"><b><span class="glyphicon glyphicon-question-sign"/> About</b></a></li>-->
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade" id="settings">
+                    <p>Settings used for this analysis:</p>
+                    <pre th:text="${settings}">ExomiserSettings{vcfFilePath=Pfeiffer.vcf, pedFilePath=null, prioritiser=exomiser-mouse, maximumFrequency=1.0, minimumQuality=0.0, geneticInterval=null, removePathFilterCutOff=false, removeDbSnp=false, removeOffTargetVariants=true, candidateGene=, modeOfInheritance=AUTOSOMAL_DOMINANT, diseaseId=OMIM:101600, hpoIds=[], seedGeneList=[], numberOfGenesToShow=0, outFileName=results/Pfeiffer-exomiser-results, outputFormat=[HTML], diseaseGeneFamilyName=, buildVersion=, buildTimestamp=}</pre>
+                </div>
+
+                <div class="tab-pane fade in active" id="filtering">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Filter</th>
+                                <th>Report</th>
+                                <th>Passed filter</th>
+                                <th>Failed filter</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="report : ${filterReports}">
+                                <td><b th:text="${report.filterType}">Frequency</b></td>
+                                <td>
+                                    <ul th:each="message : ${report.messages}" 
+                                        th:if="${not #lists.isEmpty(report.messages)}" 
+                                        th:text="${message}">Allele frequency &lt; 1.00 %</ul>
+                                </td>
+                                <td th:text="${report.passed}">16916</td>
+                                <td th:text="${report.failed}">20793</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                </div>
+
+                <div class="tab-pane fade" id="distribution">
+                    <table class="table-striped table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Variant Type</th>    
+                                <th:block th:each="sampleName: ${sampleNames}">
+                                    <th th:text="${sampleName}">Slartibartfast</th>
+                                </th:block>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="variantTypeCount: ${variantTypeCounters}">
+                                <td th:text="${variantTypeCount.variantType}">MISSENSE</td>
+                                <th:block th:each="count: ${variantTypeCount.sampleVariantTypeCounts}">
+                                    <td th:text="${count}">1</td>
+                                </th:block>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="errors" th:unless="${#lists.isEmpty(unAnalysedVarEvals)}">
+                    <div class="row" th:each="variantEvaluation: ${unAnalysedVarEvals}"> 
+                        <div class="col-sm-12">
+                            <span class="label label-danger" th:text="${variantEvaluation.variantEffect}">MISSENSE</span>
+                            <b th:text=" |${variantEvaluation.chromosomeName} ${variantEvaluation.position} ${variantEvaluation.ref} ${variantEvaluation.alt} [${variantEvaluation.genotypeAsString}]|"> chr10:g.123256215T>G [0/1]</b>
+                            <b th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}"
+                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/snpview/?source=dbSNP;snp=${rsId}|}" th:text="${rsId}">rs141235720
+                                </a>
+                                <a th:each="rsId: ${#objects.nullSafe(frequencyData.rsId, default)}" 
+                                   th:href="@{|http://www.ensembl.org/Homo_sapiens/Location/View/?v=${rsId};db=core;source=dbSNP;vdb=variation;|}"> (variation viewer)</a>
+                            </b>
+                        </div>
+                    </div>
+                </div>
+                <!--/*-->
+
+                <h2>Analyzed samples</h2>
+                <!--                //if there is a multi-sample pedigree we want to see the analysis:
+                                //HTMLTable.writePedigreeTable()-->
+                <p>affected: red, parent of affected: light blue, unaffected: white</p>
+                <table class="pedigree">
+                    <tr>
+                        <td id="r">Sample name: manuel</td>
+                    </tr>
+                    <tr>
+                        <td>fam</td>
+                        if (this.pedigree.isNthPersonAffected(i)) {
+                        <td id="g">id</td>
+                        } else if (this.pedigree.isNthPersonParentOfAffected(i)) {
+                        <td id="b">id</td>
+                        } else {
+                        <td id="w">id</td>
+                        }
+                        <td>fathID</td>
+                        <td>mothID</td>
+                        <td>sex</td>
+                        <td>disease</td>
+                    </tr>
+                </table>
+                <!--*/-->
+
+                <div class="tab-pane" id="prioritisation">
+                    <table class="table table-striped table-responsive table-condensed table-hover" id="details">
+                        <caption th:if="${geneResultsTruncated} == true"> 
+                            <div class="alert alert-info" role="alert">
+                                For performance reasons only the top <span th:text="${@maxGenes}">300</span> out of a total of <span th:text="${numCandidateGenes}">99999</span> candidate genes are shown here. 
+                                If you want to explore these other genes please try the offline version which you can 
+                                <a href="ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/" class="alert-link">download from the FTP site</a>. 
+                            </div>
+                        </caption>
+                        <tbody>
+                            <tr th:each="gene: ${genes}">
+                                <td>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <h4>
+                                                <a th:href="@{|http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=${gene.geneSymbol}|}" th:text="${gene.geneSymbol}">FGFR2</a>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3 col-sm-offset-3">
+                                            Exomiser Score: <b th:text="${#numbers.formatDecimal(gene.combinedScore,1,3)}">1.005</b>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            Phenotype Score: <b th:text="${#numbers.formatDecimal(gene.priorityScore,1,3)}">1.004</b>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            Variant Score: <b th:text="${#numbers.formatDecimal(gene.variantScore,1,3)}">1.005</b>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <b>Phenotype matches:</b>
+                                        </div>
+                                        <div class="col-sm-12">
+                                            <th:block th:each="priorityResult: ${gene.priorityResults}"
+                                                      th:utext="${priorityResult.value.HTMLCode}">
+                                                <a href="http://www.omim.org/entry/248450">Manitoba oculotrichoanal
+                                                    syndrome</a>
+                                            </th:block>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <b>Top ranked variants:</b>
+                                        </div>
+                                    </div>
+                                    <div class="row"
+                                         th:each="variantEvaluation: ${#lists.sort(gene.getPassedVariantEvaluations(), variantRankComparator)}">
+                                        <div class="col-sm-12">
+                                            <span class="label label-danger" th:text="${variantEvaluation.variantEffect.legacyTerm}">MISSENSE</span>
+                                            <b th:text=" |chr${variantEvaluation.hgvsGenome} [${variantEvaluation.genotypeString}]|"> chr10:g.123256215T>G [0/1]</b>
+                                            <th:block th:each="rsId: ${variantEvaluation.frequencyData.rsId}"
+                                                      th:if="not ${rsId.isEmpty()}">
+                                                <a th:href="@{http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi(rs=${rsId.id})}"
+                                                   th:text="${rsId}">rs141235720
+                                                </a>
+                                                <a th:href="@{http://www.ncbi.nlm.nih.gov/variation/view/(q=${rsId}, assm='GCF_000001405.25')}">(variation
+                                                    viewer)
+                                                </a>
+                                                <!--see https://www.ncbi.nlm.nih.gov/variation/view/help/ GRCh38.p2 (RefSeq: GCF_000001405.28)-->
+                                            </th:block>
+                                        </div>
+                                        <!--<div class="col-sm-12">-->
+                                        <!--</div>-->
+                                        <div class="col-sm-6" >
+                                            <b th:text="'Variant score: ' + ${#numbers.formatDecimal(variantEvaluation.getVariantScore(),1,3)}">Variant score: 0.600</b>
+                                            <span class="label label-info" th:if="${variantEvaluation.contributesToGeneScore()}" th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
+                                            <dl class="list-unstyled" >
+                                                <dt>Transcripts:</dt>
+                                                <dd th:each="annotation: ${variantEvaluation.annotations}"
+                                                    th:switch="${transcriptDb}">
+                                                    <a th:case="'UCSC'"
+                                                       th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:uc001lfg.4:c.518A>C:p.E173A</a>
+                                                    <a th:case="'ENSEMBL'"
+                                                       th:href="@{http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary(t=${annotation.accession})}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:ENST00000429361.1:c.518A>C:p.E173A</a>
+                                                    <a th:case="'REFSEQ'"
+                                                       th:href="@{|https://www.ncbi.nlm.nih.gov/nuccore/${annotation.accession}|}"
+                                                       th:text="${gene.getGeneSymbol() + ':' + annotation.getAccession() + ':' + annotation.getHgvsCdna() + ':' + annotation.getHgvsProtein()}">FGFR2:NM_000141:c.518A>C:p.E173A</a>
+                                                </dd>
+                                            </dl>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <dl class="list-unstyled" th:each="pathogenicityData: ${variantEvaluation.pathogenicityData}">
+                                                <dt>Pathogenicity Data:</dt>
+                                                <dd th:each="mostPathogenicScore: ${pathogenicityData.mostPathogenicScore}" th:text="${#strings.prepend(mostPathogenicScore.score, 'Best Score: ')}">1.00</dd>
+                                                <dd th:if="${#lists.isEmpty(pathogenicityData.predictedPathogenicityScores)}">No pathogenicity data</dd>
+                                                <dd th:each="pathScore: ${pathogenicityData.predictedPathogenicityScores}" th:text="${pathScore}">Mutation Taster: 0.999 (P)</dd>
+                                            </dl>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <dl th:each="frequencyData: ${variantEvaluation.frequencyData}">
+                                                <dt>Frequency Data:</dt>
+                                                <dd th:if="${#lists.isEmpty(frequencyData.knownFrequencies)}">No frequency data</dd>
+                                                <dd th:each="freq: ${frequencyData.knownFrequencies}" th:text="${freq.source.source} + ': ' + ${freq.frequency} + '%'">1000Genomes: 0.02%</dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!--            <script type="text/javascript">
+                                $(document).ready(function () {
+                                    $('#details').DataTable();
+                                });
+                            </script>-->
+                <div class="tab-pane fade" id="about">
+                    <p>Problems, suggestions, or comments? Please <a href="mailto:peter.robinson@jax.org">let us know</a></p>
+                </div>
+            </div>
+        </div>
+
+        <footer th:include="footer :: footer" class="navbar-default navbar-bottom"></footer>
+
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"/>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"/>
+
+        <script type ="text/javascript">
+            $(document).ready(function () {
+                $('#tabs a').click(function (e) {
+                    $(this).tab('show');
+                });
+            });
+        </script>
+    </body>
+</html>

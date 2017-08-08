@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize variants
+  ~
+  ~ Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Affero General Public License as
+  ~  published by the Free Software Foundation, either version 3 of the
+  ~  License, or (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Affero General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Affero General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+ http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>exomiser-spring-boot-autoconfigure</artifactId>
+    <packaging>jar</packaging>
+
+    <name>exomiser-spring-boot-autoconfigure</name>
+    <description>Spring boot auto-configuration for the Exomiser</description>
+
+    <parent>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
+        <version>8.0.0</version>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>${spring-boot.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+        </dependency>
+        <!-- Caffiene is a newer Java 8 rewrite of GuavaCache-->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative</groupId>
+            <artifactId>exomiser-core</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+    </dependencies>
+</project>

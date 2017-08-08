@@ -13,7 +13,7 @@ appender("CONSOLE", ConsoleAppender) {
   }
 }
 
-logger("de.charite.compbio.exomiser", INFO)
+logger("org.monarchinitiative.exomiser", INFO)
 logger("org.thymeleaf", ERROR)
 
 root(INFO, ["CONSOLE", "FILE"])

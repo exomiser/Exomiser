@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Context antiJARLocking="true" path="/exomiser">
-    <ResourceLink global="jdbc/exomiserDataSource" name="jdbc/exomiserDataSource" type="javax.sql.DataSource"/>
-</Context>

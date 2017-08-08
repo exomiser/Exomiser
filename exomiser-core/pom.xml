@@ -26,11 +26,12 @@
     <name>exomiser-core</name>
 
     <parent>    
-        <groupId>de.charite.compbio</groupId>
-        <artifactId>Exomiser</artifactId>
-        <version>7.2.3</version>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
+        <version>8.0.0</version>
     </parent>
-        
+
+
     <dependencies>
         <!--Jannovar is used for providing known gene annotations on variants -->
         <dependency>
@@ -44,16 +45,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>jannovar-inheritance-checker</artifactId>
-            <version>${jannovar.version}</version>
-        </dependency>
+        <!--Guava 0.19 is required by Jannovar-->
         <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
             <version>1.2.3</version>
         </dependency>
+        <!--Phenix dependencies:-->
         <dependency>
             <groupId>de.sonumina</groupId>
             <artifactId>javautil</artifactId>
@@ -64,11 +62,27 @@
             <artifactId>ontologizer</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <!--One day, maybe these can be replaced by the commented out dependencies, once this issue has been closed:-->
+        <!--https://github.com/ontologizer/ontologizerlib/issues/1-->
+        <!--<dependency>-->
+            <!--<groupId>de.ontologizer</groupId>-->
+            <!--<artifactId>ontologizerlib-core</artifactId>-->
+            <!--<version>0.1</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>de.ontologizer</groupId>-->
+            <!--<artifactId>ontologizerlib-io</artifactId>-->
+            <!--<version>0.1</version>-->
+        <!--</dependency>-->
 
         <!--Thymeleaf is a templating engine used for creating the HTML results pages -->
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring4</artifactId>
         </dependency>
         <dependency>
             <!-- jsoup HTML parser library @ http://jsoup.org/ -->
@@ -94,6 +108,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk7</artifactId>
+            <version>2.6.7</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -116,11 +131,21 @@
             <artifactId>logback-classic</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Groovy is required for logback.groovy processing-->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>1.0.8</version>
         </dependency>
     </dependencies>
     

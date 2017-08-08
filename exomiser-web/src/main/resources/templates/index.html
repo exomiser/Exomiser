@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--
+  ~ The Exomiser - A tool to annotate and prioritize genomic variants
+  ~
+  ~ Copyright (c) 2016-2017 Queen Mary University of London.
+  ~ Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Exomiser</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/x-icon" href="../static/favicon.ico" th:href="@{../static/favicon.ico}"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+</head>
+<body>
+<!--<div class="masthead">-->
+<!--<img slogo.png.png" th:src=logo.png.png}"/>-->
+<!--</div>-->
+<nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/" th:href="@{/}">
+                    <img src="../static/logo.png" th:src="@{logo.png}" width="auto" height="30"/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="index.html" th:href="@{index}">Home</a></li>
+                    <li><a href="submit.html" th:href="@{submit}">Analyse</a></li>
+                    <li><a href="publications.html" th:href="@{publications}">Publications</a></li>
+                    <li><a href="download.html" th:href="@{download}">Download</a></li>
+                    <li><a href="legal.html" th:href="@{legal}">Legal</a></li>
+                    <li><a href="about.html" th:href="@{about}">About</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>The Exomiser: A Tool to Annotate and Filter Variants</h1>
+    </div>
+    <div>
+        <p class="lead">
+            The Exomiser is a Java program that functionally annotates variants from whole-exome
+            sequencing data in VCF 4 format. The functional annotation is performed with
+            <a href="https://github.com/charite/jannovar">Jannovar</a> and uses
+            <a href="http://genome.ucsc.edu/">UCSC</a> KnownGene transcript definitions and
+            hg19 genomic coordinates.
+        </p>
+        <p class="">
+            Variants are prioritized according to user-defined criteria on variant frequency, pathogenicity,
+            quality, inheritance pattern, and model organism phenotype data. Predicted pathogenicity data
+            was extracted from the <a href="http://www.ncbi.nlm.nih.gov/pubmed/21520341">dbNSFP</a> resource.
+            Cross-species phenotype comparisons come from our <a href="https://doi.org/10.1093/database/bat025">PhenoDigm</a>
+            tool powered
+            by the <a href="http://code.google.com/p/owltools/wiki/OwlSim">OWLSim</a> algorithm.
+        </p>
+        <p>
+            The Exomiser was developed by the Computational Biology and Bioinformatics group at the
+            <a href="http://genetik.charite.de">Institute for Medical Genetics and Human Genetics</a> of the
+            <a href="http://www.charite.de">Charit&eacute; - Universit&auml;tsmedizin Berlin</a>, the Mouse
+            Informatics Group at the <a href="http://www.sanger.ac.uk/">Sanger Institute</a> and other members of
+            the <a href="http://monarchinitiative.org/">Monarch initiative</a>.
+        </p>
+
+        <form action="submit" method="GET">
+            <button type="submit" class="btn btn-primary" id="button_go_to_submission">
+                <span class="glyphicon glyphicon-arrow-right"></span> Go to data submission and analysis
+            </button>
+        </form>
+    </div>
+</div>
+
+<footer th:include="footer :: footer" class="navbar-default navbar-fixed-bottom"></footer>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/jquery/2.1.4/jquery.min.js" th:src="@{/webjars/jquery/2.1.4/jquery.min.js}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js" th:href="@{/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js}"></script>
+
+</body>
+</html>

@@ -19,70 +19,63 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.charite.compbio.exomiser</groupId>
-	<artifactId>exomiser-rest-analysis</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>exomiser-rest-analysis</artifactId>
+    <packaging>jar</packaging>
 
-	<name>exomiser-rest-analysis</name>
-	<description>Exomiser Analysis REST API </description>
+    <name>exomiser-rest-analysis</name>
+    <description>Exomiser Analysis REST API</description>
 
-	<parent>
-		<groupId>de.charite.compbio</groupId>
-		<artifactId>Exomiser</artifactId>
-		<version>7.2.3</version>
-	</parent>
+    <parent>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
+        <version>8.0.0</version>
+    </parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+    </properties>
 
-	<dependencies>
+    <dependencies>
         <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>exomiser-core</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.monarchinitiative</groupId>
+            <artifactId>exomiser-spring-boot-starter</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-artemis</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jersey</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.restdocs</groupId>
-			<artifactId>spring-restdocs-mockmvc</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.monarchinitiative</groupId>
+            <artifactId>exomiser-spring-boot-test</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-artemis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jersey</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.restdocs</groupId>
+            <artifactId>spring-restdocs-mockmvc</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-
-	<build>
+    <build>
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
@@ -96,13 +89,23 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-			<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>1.2.7.RELEASE</version>
-			</plugin>
-		</plugins>
-	</build>
-
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <executable>true</executable>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -1,6 +1,31 @@
 # The Exomiser Command Line Executable - Changelog
 
-## 7.2.2 2016-07-01
+## 8.0.0 2017-08-08
+- See https://github.com/exomiser/Exomiser/projects/2 for a complete list of changes.
+- ```application.properties``` file has changed to use ```exomiser``` namespace prefix. Will allow property placeholder substitution - e.g. ```exomiser.property=foo``` can be used elsewhere in the file as ```${exomiser.property}```. Will support user-defined property values too. 
+- Analysis file now requires ```proband``` id to be specified. Bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and consistent with autosomal recessive.
+- Analysis file ```scoringMode``` option has now been removed as it was never used.
+- Analysis now supports a new ```failedVariantFilter: {}``` to remove variants without a ```PASS``` or ```.``` in the FILTER field.
+- Can now filter variants by LOCAL frequency source.
+- It is now possible to use UCSC, ENSEMBL or REFSEQ transcript identifiers.
+- REMM data is no longer bundled with the distribution. If you want to use this for non-coding variant pathogenicity scoring you'll need to manually download and install it.
+- Memory requirements are now reduced.
+- Fixed AR comp-het scoring bug.
+- Now partly normalises incoming variant data enabling better performance for multi-allelic sites.
+- Variants contributing to the exomiser score are now flagged in output files.
+- VCF output now has valid headers for info fields and more informative information.
+- VCF output no longer contain invalid values in FILTER field for failed variants.
+- VCF lines containing multiple alleles now contain the field ```ExContribAltAllele``` with an zero-based integer indicating the ALT allele contributing to the score.
+- HTML output now shows individual variant scores and flags contributing variants along with displaying them first.
+- HTML output tweaked to display data more clearly in the genes section.
+
+
+## 7.2.3 2016-11-02 
+- Partial bug-fix for multi-sample VCF files where the proband sample is not the first sample in the genotypes section leading to occasional scores of 0 for the exomiser_gene_variant_score in cases where the variants are heterozygous and consistent with autosomal recessive.
+
+*IMPORTANT!* As a workaround for this issue ensure the proband sample is the first sample in the VCF file. This will be properly fixed in the next major release.
+
+## 7.2.2 2016-07-01 
 - Fix for issue when using OmimPrioritiser with UNDEFINED inheritance mode which led to gene phenotype scores being halved.
 - Fix for VCF output multiple allele line duplications. VCF output will now have alternate alleles written out on the same line if they were originally like that in the input VCF. The variant scores will be concatenated to correspond with the alleles. VCFs containing alleles split onto seperate lines in the input file will continue to have them like this in the output file.
 

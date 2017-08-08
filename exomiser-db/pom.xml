@@ -28,9 +28,9 @@
     <url>http://maven.apache.org</url>
 
     <parent>
-        <groupId>de.charite.compbio</groupId>
-        <artifactId>Exomiser</artifactId>
-        <version>7.2.3</version>
+        <groupId>org.monarchinitiative</groupId>
+        <artifactId>exomiser</artifactId>
+        <version>8.0.0</version>
     </parent>
   
     <properties>
@@ -43,7 +43,8 @@
             <id>migrate-H2</id>
             <properties>
                 <!--this is a write-optimised setting - don't use anything after 'PostgreSQL;' for standard use-->
-                <db.url>jdbc:h2:file:data/exomiser;MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;</db.url>
+                <db.url>jdbc:h2:file:data/exomiser;MODE=PostgreSQL;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;MV_STORE=FALSE;
+                </db.url>
                 <db.username>sa</db.username>
                 <db.password></db.password>
                 <db.location>db.migration.h2</db.location>
@@ -62,14 +63,20 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.charite.compbio</groupId>
+            <groupId>org.monarchinitiative</groupId>
             <artifactId>exomiser-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
         <!-- Database dependencies-->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>4.2.0</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -86,69 +93,33 @@
             <artifactId>jannovar-core</artifactId>
             <version>${jannovar.version}</version>
         </dependency>
-        <!--YamlBeans is a java <-> yml library-->
-        <dependency>
-            <groupId>com.esotericsoftware.yamlbeans</groupId>
-            <artifactId>yamlbeans</artifactId>
-            <version>1.06</version>            
-        </dependency>
         <!--Commons VFS is used for obtaining the required flatfiles-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-vfs2</artifactId>
             <version>2.0</version>            
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-            <version>3.3</version>
-        </dependency>
-        <!--Joda time as we're not using Java 8 yet -->
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>1</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--Use filtering so that maven will replace placeholders with values from the pom e.g. ${project.version} -->
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>repackage</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>de.charite.compbio.exomiser.db.Main</mainClass>
-                    <!--optional--> 
-                    <workingDirectory>${project.build.dir}</workingDirectory>
-                    <!--                    <arguments>
-                        <argument>-X</argument>
-                        <argument>myproject:dist</argument>
-                    </arguments>-->
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>

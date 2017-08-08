@@ -20,27 +20,16 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.charite.compbio</groupId>
-    <artifactId>Exomiser</artifactId>
-    <version>7.2.3</version>
+    <groupId>org.monarchinitiative</groupId>
+    <artifactId>exomiser</artifactId>
+    <version>8.0.0</version>
     <packaging>pom</packaging>
-    <name>Exomiser</name>
 
-    <!--<parent>-->
-        <!--<groupId>org.springframework.boot</groupId>-->
-        <!--<artifactId>spring-boot-starter-parent</artifactId>-->
-        <!--<version>1.3.1.RELEASE</version>-->
-        <!--<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
-    <!--</parent>-->
+    <name>exomiser</name>
+    <description>A toolkit for filtering variants and prioritising genes by phenotype from whole genome or whole exome VCF files.</description>
+    <url>https://github.com/exomiser/Exomiser</url>
+    <inceptionYear>2012</inceptionYear>
 
-    <modules>
-        <module>exomiser-core</module>
-        <module>exomiser-cli</module>
-        <module>exomiser-db</module>
-        <module>exomiser-rest-analysis</module>
-        <module>exomiser-web</module>
-    </modules>
-    
     <licenses>
         <license>
             <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
@@ -48,13 +37,59 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <name>Jules Jacobsen</name>
+            <email>j.jacobsen@qmul.ac.uk</email>
+            <organization>Queen Mary University of London</organization>
+            <organizationUrl>http://qmul.ac.uk</organizationUrl>
+        </developer>
+        <developer>
+            <name>Damian Smedley</name>
+            <email>d.smedley@qmul.ac.uk</email>
+            <organization>Queen Mary University of London</organization>
+            <organizationUrl>http://qmul.ac.uk</organizationUrl>
+        </developer>
+        <developer>
+            <name>Peter Robinson</name>
+            <email>peter.robinson@jax.org</email>
+            <organization>The Jackson Laboratory for Genomic Medicine</organization>
+            <organizationUrl>https://www.jax.org/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/exomiser/Exomiser.git</connection>
+        <developerConnection>scm:git:git@github.com:exomiser/Exomiser.git</developerConnection>
+        <url>https://github.com/exomiser/Exomiser/tree/master</url>
+    </scm>
+
+    <ciManagement>
+        <system>Circle CI</system>
+        <url>https://circleci.com/gh/exomiser/Exomiser</url>
+    </ciManagement>
+
+    <modules>
+        <module>exomiser-core</module>
+        <module>exomiser-spring-boot-autoconfigure</module>
+        <module>exomiser-spring-boot-starter</module>
+        <module>exomiser-spring-boot-test</module>
+        <module>exomiser-cli</module>
+        <module>exomiser-db</module>
+        <module>exomiser-rest-prioritiser</module>
+        <module>exomiser-rest-analysis</module>
+        <module>exomiser-web</module>
+    </modules>
+
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.organization>Genome Research Limited and CharitÃ© UniversitÃ¤tsmedizin Berlin</project.organization>
+        <project.organization>The Monarch Initiative</project.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.16</jannovar.version>
+        <jannovar.version>0.21</jannovar.version>
+        <guava.version>21.0</guava.version>
+        <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
     </properties>
  
     <repositories>
@@ -73,7 +108,7 @@
             <dependency>
                 <groupId>io.spring.platform</groupId>
                 <artifactId>platform-bom</artifactId>
-                <version>2.0.1.RELEASE</version>
+                <version>Athens-RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -112,15 +147,13 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.9.5</version>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
         <!--Logging framework -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
         </dependency>
         <!-- Logging dependencies -->
         <dependency>
@@ -136,6 +169,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>1.4.195</version>
         </dependency>
         <!--https://github.com/brettwooldridge/HikariCP/wiki/FAQ#q-how-to-i-properly-enable-preparedstatement-caching-for-postgresql-->
         <dependency>
@@ -143,17 +177,22 @@
             <artifactId>pgjdbc-ng</artifactId>
             <version>0.4</version>
         </dependency>
+        <!-- Need to override guava to version 21.0 which  contains the Java 8 Collectors support on immutable Collections
+        used by exomiser-core-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
         <!--HikariCP is a "zero-overhead" production ready JDBC connection pool.
         https://github.com/brettwooldridge/HikariCP -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
-        <!--Ehcache for caching-->
         <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <type>jar</type>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
         </dependency>
     </dependencies>
     
@@ -173,10 +212,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.17</version>
                 <configuration>
-                    <skipTests>false</skipTests>
-                    <forkCount>3</forkCount> 
+                    <forkCount>3</forkCount>
                     <reuseForks>true</reuseForks>
-                    <!--<argLine>-Xms512m -Xmx1024m ${argLine}</argLine>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -185,9 +222,9 @@
                 <version>0.7.2.201409121644</version>
                 <configuration>
                     <excludes>
-                        <!--		 Application starter 
+                        <!--		 Application starter
                         <exclude>ac/simons/biking2/Application.class</exclude>
-                         Configuration 
+                         Configuration
                         <exclude>ac/simons/biking2/config/*</exclude>			-->
                     </excludes>
                 </configuration>
@@ -218,7 +255,7 @@
                                         <limit>
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <!--                                                <minimum>0.60</minimum>-->
+                                            <!--<minimum>0.60</minimum>-->
                                         </limit>
                                     </limits>
                                 </rule>
