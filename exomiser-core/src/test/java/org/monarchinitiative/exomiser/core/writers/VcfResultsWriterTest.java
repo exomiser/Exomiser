@@ -1,20 +1,21 @@
 /*
- * The Exomiser - A tool to annotate and prioritize variants
+ * The Exomiser - A tool to annotate and prioritize genomic variants
  *
- * Copyright (C) 2012 - 2016  Charite Universitätsmedizin Berlin and Genome Research Ltd.
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.monarchinitiative.exomiser.core.writers;
@@ -36,6 +37,7 @@ import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.genome.TestVariantFactory;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PolyPhenScore;
@@ -203,6 +205,31 @@ public class VcfResultsWriterTest {
         final String expected = EXPECTED_HEADER
                 + "chr10\t123256215\t.\tT\tG\t2.20\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=2263;ExGeneSymbol=FGFR2;ExVarEff=missense_variant;ExVarHgvs=10:g.123256215T>G;ExVarScore=1.0;RD=30\tGT:RD\t0/1:30\n"
                 + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
+        assertThat(vcf, equalTo(expected));
+    }
+
+    @Test
+    public void testAnnotatedVariantGeneSymbolWhitespaceIsReplacedWithUnderscore() {
+        GeneIdentifier incorrectGeneSymbol = GeneIdentifier.builder()
+                .geneId("6469")
+                //this should not have spaces in the VCF file
+                .geneSymbol("SHH alpha spaces")
+                .hgncId("HGNC:10848")
+                .hgncSymbol("SHH")
+                .entrezId("6469")
+                .ensemblId("ENSG00000164690")
+                .ucscId("uc003wmk.2")
+                .build();
+
+        Gene gene = new Gene(incorrectGeneSymbol);
+        gene.addVariant(indelVariantEvaluation);
+        gene.addPriorityResult(new OMIMPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), 1f, Collections.emptyList()));
+
+        AnalysisResults analysisResults = buildAnalysisResults(gene);
+
+        String vcf = instance.writeString(analysis, analysisResults, settings);
+        final String expected = EXPECTED_HEADER
+                + "chr7\t155604800\t.\tC\tCTT\t1\t.\tExGeneSCombi=0.0;ExGeneSPheno=0.0;ExGeneSVar=0.0;ExGeneSymbId=6469;ExGeneSymbol=SHH_alpha_spaces;ExVarEff=frameshift_variant;ExVarHgvs=7:g.155604800C>CTT;ExVarScore=0.95;RD=30\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 

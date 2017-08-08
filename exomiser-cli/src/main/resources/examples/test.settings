@@ -6,7 +6,7 @@
 #for some reason.
 
 #REQUIRED OPTIONS - these need to be filled in either here or on the command-line.
-vcf=data/Pfeiffer.vcf
+vcf=examples/Pfeiffer.vcf
 
 #SAMPLE DATA OPTIONS
 ped=

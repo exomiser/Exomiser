@@ -1,8 +1,11 @@
 # The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
 
-## *New!* Can now perform genome-wide prioritisation including non-coding, regulatory variants (aka. Genomiser).
-See [Analysis file](#analysis_file) section on running analysis yml files for more information and the
-test-analysis-genome.yml file located in the base install directory.
+The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory variants using patient phenotypes as a means of differentiating candidate genes.
+ 
+To perform ana analysis, Exomiser requires the patient's genome/exome in VCF format and their phenotype encoded in HPO terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also provided. 
+See [Usage](#usage) section for info on running an analysis.
+
+Further information can be found in the [online documentation](http://exomiser.github.io/Exomiser/).
 
 ## Software and Hardware requirements
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
@@ -24,18 +27,18 @@ Windows:
  4. Extract the data files by right-clicking exomiser-cli-${project.version}-data.zip and selecting 7-Zip > Extract Here
    4.1 Allow 7-Zip to overwite any empty data files with the full versions if prompted (remmData for example) 
  5. cd exomiser-cli-${project.version}
- 6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+ 6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
  
 Linux: 
 The following shell script should work-
     
     #download the distribution (won't take long)
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-distribution.zip
+    wget https://data.monarchinitiative.org/exomiser/exomiser-cli-${project.version}-distribution.zip
     #download the data (this is ~20GB and will take a while)
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}-data.zip
+    wget https://data.monarchinitiative.org/exomiser/exomiser-cli-${project.version}-data.zip
 
     #download the checksums and verify the files (optional)
-    wget ftp://ftp.sanger.ac.uk/pub/resources/software/exomiser/downloads/exomiser/exomiser-cli-${project.version}.sha256    
+    wget https://data.monarchinitiative.org/exomiser/exomiser-cli-${project.version}.sha256    
     sha256sum -c exomiser-cli-${project.version}.sha256
     
     #unzip the distribution and data files - this will create a directory called 'exomiser-cli-${project.version}' in the current working directory
@@ -44,31 +47,57 @@ The following shell script should work-
 
     #run a test genomiser analysis
     cd exomiser-cli-${project.version}
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml
+    java -Xms2g -Xmx2g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
 
-This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml'. 
-This file is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
+This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'test-analysis-exome.yml' from the examples sub-directory. This contains a known pathogenic missense variant in the FGFR2 gene.
+
+## Genomiser data files
+
+In order to run the Genomiser you will also need to download the REMM data file from [here](https://charite.github.io/software-remm-score.html). Once downloaded you'll need to add the path to the ReMM.v0.3.1.tsv.gz file to the ```application.properties``` file. For example if you downloaded the file to the exomiser data directory you could add the entry like this:
+
+    exomiser.remm-path=${exomiser.data-directory}/ReMM.v0.3.1.tsv.gz
+ 
+If this step is omitted, the application will throw and error and stop any analysis which defines ```REMM``` in the ```pathogenicitySources``` section of an analysis yml file. 
+
+Having done this, run the analysis like this:
+ 
+    java -Xms4g -Xmx6g -jar exomiser-cli-${project.version}.jar --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml 
+
+This is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952) 
 
 ## Alternative set-up
 
-If you want to run Exomiser using an H2 database from a location of your choosing edit the line in application.properties:
+If you want to run Exomiser using data from a different release directory edit the line in ```application.properties```:
 
-    h2Path=
+    exomiser.data-directory=
 
 with
 
-    h2Path=/full/path/to/alternative/h2/database/exomiser.h2.db
+    exomiser.data-directory=/full/path/to/alternative/data/directory
 
-If you want to run from a Postgres database rather than the default H2 embedded database *Optional*
-  
-1. download exomiser_dump.pg.gz
-2. gunzip exomiser_dump.pg.gz
-3. load into your postgres server: pg_restore -h yourhost -d yourdatabase -U youruser < exomiser_dump.pg
-    You can do 2 and 3 at once by using: gunzip -c exomiser_dump.pg.gz | pg_restore -h yourhost -d yourdatabase -U youruser
-4. edit application.properties with the details of how to connect this new database
+## <a name="usage"></a>Usage
 
-## Usage
+The Exomiser can be run via simply via command line switches (see cli only) or via a yaml analysis file. We strongly recommended using the yaml option as it provides full control over the application. The cli only options are currently a legacy hangover *only* capable of exome analysis.    
+
+### Analysis file (recommended)
+
+Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
+and pathogenicity data sources and the ability to tweak the order that analysis steps are performed. 
+
+See the test-analysis-exome.yml and test-analysis-genome.yml files located in the base install directory for details.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
+
+These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
+a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be greatly reduced by 
+setting the analysisMode option to PASS_ONLY. This will also aid your ability to evaluate the results.
+
+Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
+
+    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch examples/test-analysis-batch.txt
+
+### CLI only (limited to exome analysis only)
 
 (a) Exomiser hiPHIVE algorithm - phenotype comparisons to human, mouse and fish involving disruption of the gene or nearby genes in the interactome using a RandomWalk
 
@@ -103,37 +132,10 @@ Output options can be combined, for example:
     --output-format TSV-GENE,VCF (TSV-GENE and VCF)
     --output-format TSV-GENE, TSV-VARIANT, VCF (TSV-GENE, TSV-VARIANT and VCF)
 
-### <a name="analysis_file"></a>Analysis file:
+### Settings file (deprecated)
 
-Analysis files contain all possible options for running an analysis including the ability to specify variant frequency
-and pathogenicity data sources and the ability to tweak the order that analysis steps are performed.
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis test-analysis-exome.yml
-
-These files an also be used to run full-genomes, however they will require substantially more RAM to do so. For example
-a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be substantially reduced by 
-setting the analysisMode option to PASS_ONLY.  
-
-Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch test-analysis-batch.txt
-
-### Settings file:
+This feature is now deprecated and may be subject to removal at a later time. We recommend switching to using an analysis yml file instead.
     
-Settings files contain all the parameters passed in on the command-line so you can just point exomiser to a file. See example.settings and test.settings.
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --settings-file test.settings
-
-    
-Alternatively you can mix up a settings file and override settings by specifying them on the command line:
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --settings-file test.settings --prioritiser=phenix
-
-    
-Settings can also be run in batch mode. Simply put the path to each settings file in the batch file - one file path per line.
-
-    java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --batch-file batch.txt
-
 ### Want help?
 
     java -jar exomiser-cli-${project.version}.jar --help

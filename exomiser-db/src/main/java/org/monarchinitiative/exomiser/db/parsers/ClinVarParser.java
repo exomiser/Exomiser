@@ -1,3 +1,23 @@
+/*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.monarchinitiative.exomiser.db.parsers;
 
 import org.monarchinitiative.exomiser.db.resources.Resource;
@@ -130,7 +150,7 @@ public class ClinVarParser implements ResourceParser {
         }
 
         private String toDumpLine() {
-           return String.format("%s|%s|%s|%s%n", chromosome, position, accession, significance);
+            return String.format("%s|%s|%s|%s%n", chromosome, position, accession, significance);
         }
 
     }
@@ -147,12 +167,12 @@ public class ClinVarParser implements ResourceParser {
         int wrongBuildVariants = 0;
         int goodVariants = 0;
         ResourceOperationStatus status;
-        
+
         try (BufferedReader reader = Files.newBufferedReader(inFile, Charset.forName("UTF-8"));
-                BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
-        
+             BufferedWriter writer = Files.newBufferedWriter(outFile, Charset.defaultCharset())) {
+
             String line;
-            
+
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
                     logger.info(line);
@@ -225,11 +245,11 @@ public class ClinVarParser implements ResourceParser {
             logger.error(null, ex);
             status = ResourceOperationStatus.FAILURE;
         }
-        
+
         logger.info("No position information for {} variants", noPositionInfoVariants);
         logger.info("Found information for {} variants", goodVariants);
         logger.info("{} variants were skipped because they are not from build {}", wrongBuildVariants, expectedBuild);
-        
+
         resource.setParseStatus(status);
         logger.info("{}", status);
     }

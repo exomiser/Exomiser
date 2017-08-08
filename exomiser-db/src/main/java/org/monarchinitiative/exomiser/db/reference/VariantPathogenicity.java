@@ -1,4 +1,24 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -25,7 +45,7 @@ public class VariantPathogenicity {
     private final Float muttasterScore;
     private final Float caddRawRankScore;
     private final Float caddRawScore;
-    
+
     /**
      * This class encapsulates the information in a single dbNSFP line. In some
      * cases, there are multiple lines for the same chromosomal position. We
@@ -47,8 +67,8 @@ public class VariantPathogenicity {
      * @param caddRawScore
      */
     public VariantPathogenicity(int chromosome, int position, String ref, String alt,
-            Float siftScore, Float polyphen2HVAR, Float muttasterScore,
-            Float caddRawRankScore, Float caddRawScore) {
+                                Float siftScore, Float polyphen2HVAR, Float muttasterScore,
+                                Float caddRawRankScore, Float caddRawScore) {
         this.chromosome = chromosome;
         this.position = position;
         this.ref = ref;
@@ -68,15 +88,15 @@ public class VariantPathogenicity {
      */
     public String toDumpLine() {
         return String.format("%s|%s|%s|%s|%s|%s|%s|%s|%s%n",
-                chromosome, position, ref, alt, 
+                chromosome, position, ref, alt,
                 siftScore, polyphenScore, muttasterScore, caddRawRankScore, caddRawScore);
     }
 
     @Override
     public String toString() {
-        return "VariantPathogenicity{" + "chromosome=" + chromosome + 
-                ", position=" + position + ", ref=" + ref + ", alt=" + alt + 
-                ", sift=" + siftScore + ", polyphen=" + polyphenScore + 
+        return "VariantPathogenicity{" + "chromosome=" + chromosome +
+                ", position=" + position + ", ref=" + ref + ", alt=" + alt +
+                ", sift=" + siftScore + ", polyphen=" + polyphenScore +
                 ", muttaster=" + muttasterScore + ", caddRawRank=" + caddRawRankScore + ", caddRaw=" + caddRawScore + '}';
     }
 }
