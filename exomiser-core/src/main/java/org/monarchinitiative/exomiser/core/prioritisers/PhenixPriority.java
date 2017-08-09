@@ -21,15 +21,16 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import hpo.HPOutils;
+import hpo.similarity.SimilarityUtilities;
+import hpo.similarity.objects.InformationContentObjectSimilarity;
 import ontologizer.go.*;
+import ontologizer.util.OntologyConstants;
+
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.util.ScoreDistribution;
 import org.monarchinitiative.exomiser.core.prioritisers.util.ScoreDistributionContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import similarity.SimilarityUtilities;
-import similarity.concepts.ResnikSimilarity;
-import similarity.objects.InformationContentObjectSimilarity;
 import sonumina.math.graph.SlimDirectedGraphView;
 
 import java.io.BufferedReader;
@@ -142,8 +143,9 @@ public class PhenixPriority implements Prioritiser {
 
     private InformationContentObjectSimilarity calculateInformationContentSimilarityMeasures(boolean symmetric, Ontology hpo, SlimDirectedGraphView<Term> hpoSlim, Map<String, List<Term>> geneId2annotations) {
         Map<Term, Double> term2ic = calculateTermIC(hpo, hpoSlim, geneId2annotations);
-        ResnikSimilarity resnik = new ResnikSimilarity(hpo, (HashMap<Term, Double>) term2ic);
-        return new InformationContentObjectSimilarity(resnik, symmetric, false);
+      InformationContentObjectSimilarity resnik = new InformationContentObjectSimilarity(hpo, (HashMap<Term, Double>) term2ic, false);
+
+        return resnik;
     }
 
     /**
@@ -162,9 +164,9 @@ public class PhenixPriority implements Prioritiser {
             logger.error("Error parsing HPO OBO file", e);
         }
 
-        TermContainer termContainer = new TermContainer(oboParser.getTermMap(), oboParser.getFormatVersion(), oboParser.getDate());
-        Ontology hpoOntology = new Ontology(termContainer);
-        hpoOntology.setRelevantSubontology(termContainer.get(HPOutils.organAbnormalityRootId).getName());
+        TermContainer termContainer = new TermContainer(oboParser.getTermMap(), oboParser.getFormatVersion(), oboParser.getDataVersion());
+        Ontology hpoOntology = Ontology.create(termContainer);
+        hpoOntology.setRelevantSubontology(termContainer.get(OntologyConstants.organAbnormalityRootId).getName());
         return hpoOntology;
     }
 

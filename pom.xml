@@ -94,10 +94,6 @@
  
     <repositories>
         <repository>
-            <id>sonumina</id>
-            <url>http://sonumina.de/maven</url>
-        </repository>
-        <repository>
             <id>compbio</id>
             <url>http://compbio.charite.de/tl_files/maven</url>
         </repository>

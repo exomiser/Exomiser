@@ -88,4 +88,9 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
     public List<String> getHpoIdsForDiseaseId(String diseaseId) {
         return Collections.emptyList();
     }
+
+	@Override
+	public BOQAPriority makeBOQAPrioritiser() {
+		return new BOQAPriority("");
+	}
 }

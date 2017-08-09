@@ -21,24 +21,25 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 /**
+ * Bayes Similarity in HPO
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
+ * @author Max Schubach <max.schubach@bihealth.de>
+ * @author Jules Jacobsen
+ * @version 0.01 (August, 2017).
  */
-public enum PriorityType {
+public class BOQAPriorityResult extends AbstractPriorityResult {
 
-    //Prioritises against PPI-RandomWalk-proximity and dynamic human, mouse and fish phenotypes
-    HIPHIVE_PRIORITY,
-    //Prioritises against PPI-RandomWalk-proximity A.K.A "GeneWanderer"
-    EXOMEWALKER_PRIORITY,
-    //Prioritises against human phenotypes A.K.A. "HPO Phenomizer prioritizer"
-    PHENIX_PRIORITY,
-    //BOQA algorithm, baysian prioritiser using human phenotypes
-    BOQA_PRIORITY,
-    //Prioritises against human-mouse phenotype similarities
-    PHIVE_PRIORITY,
-    //Prioritises against OMIM data
-    OMIM_PRIORITY,
-    //None - for when you don't want to run any prioritisation
-    NONE
+
+    public BOQAPriorityResult(int geneId, String geneSymbol, double propability) {
+        super(PriorityType.BOQA_PRIORITY, geneId, geneSymbol, propability);
+    }
+
+    /**
+     */
+    @Override
+    public String getHTMLCode() {
+        return String.format("<dl><dt>BOQA semantic similarity score: %.2f </dt></dl>", this.score);
+    }
 
 }

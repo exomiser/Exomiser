@@ -54,4 +54,6 @@ public interface PriorityFactory {
     HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions);
 
     List<String> getHpoIdsForDiseaseId(String diseaseId);
+
+	BOQAPriority makeBOQAPrioritiser();
 }

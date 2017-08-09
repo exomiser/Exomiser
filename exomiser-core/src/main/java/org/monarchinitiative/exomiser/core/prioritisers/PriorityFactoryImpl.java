@@ -82,6 +82,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
                 return makeOmimPrioritiser();
             case PHENIX_PRIORITY:
                 return makePhenixPrioritiser();
+            case BOQA_PRIORITY:
+                return makeBOQAPrioritiser();
             case HIPHIVE_PRIORITY:
                 HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
                         .diseaseId(diseaseId)
@@ -114,6 +116,13 @@ public class PriorityFactoryImpl implements PriorityFactory {
     public OMIMPriority makeOmimPrioritiser() {
         return new OMIMPriority(priorityService);
     }
+    
+    
+    @Override
+    public BOQAPriority makeBOQAPrioritiser() {
+    	 return new BOQAPriority(phenixDataDirectory.toString());
+    }
+
 
     @Override
     public PhenixPriority makePhenixPrioritiser() {
