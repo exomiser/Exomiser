@@ -20,58 +20,50 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
+import drseb.BoqaService;
+import drseb.BoqaService.ResultEntry;
 import ontologizer.association.AssociationParser.Type;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import drseb.BoqaService;
-import drseb.BoqaService.ResultEntry;
-
+import java.io.File;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
 
-import java.io.File;
-
 /**
- * Score variants by BOQA
+ * Score genes by BOQA
  *
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @author Max Schubach <max.schubach@bihealth.de>
-
- * @version 0.01 (9 December, 2013)
  */
 public class BOQAPriority implements Prioritiser {
 
     private static final Logger logger = LoggerFactory.getLogger(BOQAPriority.class);
 
     private static final PriorityType PRIORITY_TYPE = PriorityType.BOQA_PRIORITY;
-    
-    private BoqaService boqaService;
 
     private static final double DEFAULT_SCORE = 0;
 
-
+    private final BoqaService boqaService;
 
     /**
      * Create a new instance of the BOQA-Priority.
-     *
      */
     public BOQAPriority(String dataFolder) {
 
-    	 if (!dataFolder.endsWith(File.separator)) {
-    		 dataFolder += File.separator;
-         }
+        if (!dataFolder.endsWith(File.separator)) {
+            dataFolder += File.separator;
+        }
         String hpoOboFile = String.format("%s%s", dataFolder, "hp.obo");
         String hpoAnnotationFile = String.format("%s%s", dataFolder, "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt");
-        
-        boqaService = new BoqaService(hpoOboFile, hpoAnnotationFile, Type.GPAF);
-        
-    }
 
+        boqaService = new BoqaService(hpoOboFile, hpoAnnotationFile, Type.GPAF);
+
+    }
 
     /**
      * Flag to output results of filtering against Uberpheno data.
@@ -101,31 +93,24 @@ public class BOQAPriority implements Prioritiser {
                 });
     }
 
-
     private Function<Gene, Double> scoreGene(ArrayList<String> queryTerms) {
-    	
-    	HashMap<String, ResultEntry> scoredGenesRaw = boqaService.scoreItems(queryTerms);
-    	HashMap<Integer, Double> scoredGenes = new HashMap<>();
-    	for (ResultEntry result : scoredGenesRaw.values()){
-    		String key = result.getItemRealId();
-    		String entrezIdStr = key.replaceAll("NCBIENTREZ:", "");
-    		int entrezId = Integer.parseInt(entrezIdStr);
-    		
-    		scoredGenes.put(entrezId, result.getScore());
-    	}
-    	
+
+        HashMap<String, ResultEntry> scoredGenesRaw = boqaService.scoreItems(queryTerms);
+        HashMap<Integer, Double> scoredGenes = new HashMap<>();
+        for (ResultEntry result : scoredGenesRaw.values()) {
+            String key = result.getItemRealId();
+            String entrezIdStr = key.replaceAll("NCBIENTREZ:", "");
+            int entrezId = Integer.parseInt(entrezIdStr);
+
+            scoredGenes.put(entrezId, result.getScore());
+        }
+
         return gene -> {
             int entrezGeneId = gene.getEntrezGeneID();
-            
-            if (!scoredGenes.containsKey(entrezGeneId)) {
-                return DEFAULT_SCORE;
-            }
-
-            return scoredGenes.get(entrezGeneId);
+            return scoredGenes.getOrDefault(entrezGeneId, DEFAULT_SCORE);
         };
     }
 
-  
 
     @Override
     public int hashCode() {
@@ -136,8 +121,8 @@ public class BOQAPriority implements Prioritiser {
     public String toString() {
         return "BOQAPriority{}";
     }
-    
-    
+
+
     private static class BoqaException extends RuntimeException {
 
         private BoqaException(String message) {
