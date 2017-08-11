@@ -65,6 +65,8 @@ public class ExomiserProperties {
     private String hpoFileName = "hp.obo";
     private String hpoAnnotationFile = "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt";
 
+    private String boqaDataDir = "boqa";
+
     public String getDataDirectory() {
         return dataDirectory;
     }
@@ -159,6 +161,14 @@ public class ExomiserProperties {
 
     public void setPhenixDataDir(String phenixDataDir) {
         this.phenixDataDir = phenixDataDir;
+    }
+
+    public String getBoqaDataDir() {
+        return boqaDataDir;
+    }
+
+    public void setBoqaDataDir(String boqaDataDir) {
+        this.boqaDataDir = boqaDataDir;
     }
 
     public String getHpoFileName() {

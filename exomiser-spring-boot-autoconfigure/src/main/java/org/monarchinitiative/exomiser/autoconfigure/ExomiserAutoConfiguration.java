@@ -231,6 +231,14 @@ public class ExomiserAutoConfiguration {
     }
 
     @Bean
+    public Path boqaDataDirectory() {
+        String boqaDataDirValue = properties.getBoqaDataDir();
+        Path boqaDataDirectory = resolveRelativeToDataDir(boqaDataDirValue);
+        logger.debug("boqaDataDirectory: {}", boqaDataDirectory.toAbsolutePath());
+        return boqaDataDirectory;
+    }
+
+    @Bean
     @ConditionalOnMissingBean(name = "hpoOboFilePath")
     public Path hpoOboFilePath() {
         String hpoFileName = properties.getHpoFileName();

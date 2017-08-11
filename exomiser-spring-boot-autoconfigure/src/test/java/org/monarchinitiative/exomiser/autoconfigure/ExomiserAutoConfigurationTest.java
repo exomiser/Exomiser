@@ -201,6 +201,22 @@ public class ExomiserAutoConfigurationTest {
         assertThat(phenixDataDirectory.getParent(), equalTo(TEST_DATA));
     }
 
+    @Test
+    public void boqaDirectoryDefaultNameIsDefinedRelativeToDataPath() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        Path boqaDataDirectory = (Path) this.context.getBean("boqaDataDirectory");
+        assertThat(boqaDataDirectory.getFileName(), equalTo(Paths.get("boqa")));
+        assertThat(boqaDataDirectory.getParent(), equalTo(TEST_DATA));
+    }
+
+    @Test
+    public void boqaDirectoryIsDefinedRelativeToDataPath() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.boqaDataDir=wibble");
+        Path boqaDataDirectory = (Path) this.context.getBean("boqaDataDirectory");
+        assertThat(boqaDataDirectory.getFileName(), equalTo(Paths.get("wibble")));
+        assertThat(boqaDataDirectory.getParent(), equalTo(TEST_DATA));
+    }
+
 
     @Test
     public void hpoFileDefaultIsDefinedRelativeToPhenixPath() {
