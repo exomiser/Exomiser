@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
+import com.google.common.collect.ImmutableMap;
 import drseb.BoqaService;
 import drseb.BoqaService.ResultEntry;
 import ontologizer.association.AssociationParser.Type;
@@ -29,11 +30,12 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Score genes by BOQA. This will return the probability of the gene matching the set of input phenotypes.
@@ -81,32 +83,28 @@ public class BOQAPriority implements Prioritiser {
             throw new BoqaException("Please supply some HPO terms. BOQA is unable to prioritise genes without these.");
         }
 
-        Map<Gene, Double> geneScores = genes.stream()
-                .collect(toMap(Function.identity(), scoreGene(new ArrayList<>(hpoIds))));
+        Map<Integer, Double> geneScores = calculateGenePhenotypeScores(hpoIds);
 
-        return geneScores.entrySet().stream()
-                .map(entry -> {
-                    Gene gene = entry.getKey();
-                    double boqaScore = entry.getValue();
-                    return new BOQAPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), boqaScore);
-                });
+        return genes.stream().map(toBoqaPriorityResult(geneScores));
     }
 
-    private Function<Gene, Double> scoreGene(ArrayList<String> queryTerms) {
+    private Map<Integer, Double> calculateGenePhenotypeScores(List<String> hpoIds) {
+        return boqaService.scoreItems(new ArrayList<>(hpoIds)).values().stream()
+                .collect(ImmutableMap.toImmutableMap(getEntrezId(), ResultEntry::getScore));
+    }
 
-        HashMap<String, ResultEntry> scoredGenesRaw = boqaService.scoreItems(queryTerms);
-        HashMap<Integer, Double> scoredGenes = new HashMap<>();
-        for (ResultEntry result : scoredGenesRaw.values()) {
-            String key = result.getItemRealId();
-            String entrezIdStr = key.replaceAll("NCBIENTREZ:", "");
-            int entrezId = Integer.parseInt(entrezIdStr);
+    private Function<ResultEntry, Integer> getEntrezId() {
+        return resultEntry -> {
+            String key = resultEntry.getItemRealId();
+            String entrezIdStr = key.replace("NCBIENTREZ:", "");
+            return Integer.parseInt(entrezIdStr);
+        };
+    }
 
-            scoredGenes.put(entrezId, result.getScore());
-        }
-
+    private Function<Gene, BOQAPriorityResult> toBoqaPriorityResult(Map<Integer, Double> geneScores) {
         return gene -> {
-            int entrezGeneId = gene.getEntrezGeneID();
-            return scoredGenes.getOrDefault(entrezGeneId, DEFAULT_SCORE);
+            double boqaScore = geneScores.getOrDefault(gene.getEntrezGeneID(), DEFAULT_SCORE);
+            return new BOQAPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), boqaScore);
         };
     }
 

@@ -86,7 +86,7 @@ public class BOQAPriorityTest {
         List<String> phenotypes = Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055", "HP:0001770");
         List<Gene> genes = TestFactory.buildGenes();
 
-        instance.prioritise(phenotypes, genes).forEach(result -> {
+        instance.prioritise(phenotypes, genes).sorted().forEach(result -> {
             System.out.println(result);
             //GNRHR2 is not in the genes_to_phenotypes file so will have a score of zero.
             if (result.geneSymbol.equals("GNRHR2")) {
