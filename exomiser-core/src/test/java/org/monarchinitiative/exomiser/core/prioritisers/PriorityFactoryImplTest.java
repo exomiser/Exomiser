@@ -137,6 +137,15 @@ public class PriorityFactoryImplTest {
         assertThat(prioritiser.getPriorityType(), equalTo(type));
     }
 
+    @Test(expected = RuntimeException.class)
+    public void testmakePrioritiserForBoqaPriorityThrowsRuntimeExceptionDueToMissingData() {
+        PriorityType type = PriorityType.BOQA_PRIORITY;
+        PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
+
+        Prioritiser prioritiser = instance.makePrioritiser(settings);
+        assertThat(prioritiser.getPriorityType(), equalTo(type));
+    }
+
     @Test
     public void testmakePrioritiserNonePriorityReturnsNoneTypePrioritiser() {
         PriorityType type = PriorityType.NONE;

@@ -36,10 +36,7 @@ import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
-import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePriorityFactoryStub;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 import org.monarchinitiative.exomiser.core.writers.OutputSettings;
 
@@ -332,6 +329,13 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
         analysisSteps.add(priorityFactory.makePhenixPrioritiser());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
+    }
+
+    @Test
+    public void testParseAnalysisStep_BoqaPrioritiser() {
+        //this is a crappy test as BOQAPrioritiser will throw an exception without data on disk
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("boqaPrioritiser: {}"));
+        assertThat(analysis.getAnalysisSteps().stream().anyMatch(BOQAPriority.class::isInstance), is(true));
     }
 
     @Test

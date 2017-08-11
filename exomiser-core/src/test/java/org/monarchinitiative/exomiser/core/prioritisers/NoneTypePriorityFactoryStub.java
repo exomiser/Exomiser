@@ -91,6 +91,6 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
 
 	@Override
 	public BOQAPriority makeBOQAPrioritiser() {
-		return new BOQAPriority("");
-	}
+        return new BOQAPriority();
+    }
 }

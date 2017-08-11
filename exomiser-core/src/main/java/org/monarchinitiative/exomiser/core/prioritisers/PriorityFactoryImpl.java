@@ -120,7 +120,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
     
     @Override
     public BOQAPriority makeBOQAPrioritiser() {
-    	 return new BOQAPriority(phenixDataDirectory.toString());
+        //TODO: change this to use separate directory
+        return new BOQAPriority(phenixDataDirectory);
     }
 
 
