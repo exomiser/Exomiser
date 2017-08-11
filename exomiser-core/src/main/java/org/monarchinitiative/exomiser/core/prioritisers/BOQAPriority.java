@@ -27,7 +27,8 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toMap;
 
 /**
- * Score genes by BOQA
+ * Score genes by BOQA. This will return the probability of the gene matching the set of input phenotypes.
  *
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @author Max Schubach <max.schubach@bihealth.de>
@@ -54,23 +55,23 @@ public class BOQAPriority implements Prioritiser {
      * Create a new instance of the BOQA-Priority.
      */
     public BOQAPriority(String dataFolder) {
+        this(Paths.get(dataFolder));
+    }
 
-        if (!dataFolder.endsWith(File.separator)) {
-            dataFolder += File.separator;
-        }
-        String hpoOboFile = String.format("%s%s", dataFolder, "hp.obo");
-        String hpoAnnotationFile = String.format("%s%s", dataFolder, "ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt");
+    public BOQAPriority(Path dataDirectory) {
+        Path dataDirAbsolutePath = dataDirectory.toAbsolutePath();
 
-        boqaService = new BoqaService(hpoOboFile, hpoAnnotationFile, Type.GPAF);
+        Path hpoOboFile = dataDirAbsolutePath.resolve("hp.obo");
+        Path hpoAnnotationFile = dataDirAbsolutePath.resolve("ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt");
 
+        boqaService = new BoqaService(hpoOboFile.toString(), hpoAnnotationFile.toString(), Type.GPAF);
     }
 
     /**
-     * Flag to output results of filtering against Uberpheno data.
+     * STUB CONSTRUCTOR - ONLY USED FOR TESTING PURPOSES TO AVOID NULL POINTERS FROM ORIGINAL CONSTRUCTOR. DO NOT USE FOR PRODUCTION CODE - WILL THROW NPE!!!!
      */
-    @Override
-    public PriorityType getPriorityType() {
-        return PRIORITY_TYPE;
+    protected BOQAPriority() {
+        boqaService = null;
     }
 
     @Override
@@ -80,10 +81,8 @@ public class BOQAPriority implements Prioritiser {
             throw new BoqaException("Please supply some HPO terms. BOQA is unable to prioritise genes without these.");
         }
 
-
-        ArrayList<String> hpoIdsAl = new ArrayList<>(hpoIds);
-        Map<Gene, Double> geneScores = genes.stream().collect(toMap(Function.identity(), scoreGene(hpoIdsAl)));
-
+        Map<Gene, Double> geneScores = genes.stream()
+                .collect(toMap(Function.identity(), scoreGene(new ArrayList<>(hpoIds))));
 
         return geneScores.entrySet().stream()
                 .map(entry -> {
@@ -111,10 +110,23 @@ public class BOQAPriority implements Prioritiser {
         };
     }
 
+    @Override
+    public PriorityType getPriorityType() {
+        return PRIORITY_TYPE;
+    }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BOQAPriority that = (BOQAPriority) o;
+        return Objects.equals(boqaService, that.boqaService);
+    }
+
+    //equals and hashCode should really be produced from the ontology and gene-phenotype associations
+    @Override
     public int hashCode() {
-        return Objects.hash(BOQAPriority.class.getName());
+        return Objects.hash(boqaService);
     }
 
     @Override

@@ -29,11 +29,11 @@ abstract class AbstractPriorityResult implements PriorityResult {
 
     private final PriorityType priorityType;
 
-    final int geneId;
-    final String geneSymbol;
-    final double score;
+    protected final int geneId;
+    protected final String geneSymbol;
+    protected final double score;
 
-    AbstractPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) {
+    protected AbstractPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) {
         this.priorityType = priorityType;
         this.geneId = geneId;
         this.geneSymbol = geneSymbol;
