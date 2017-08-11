@@ -42,4 +42,12 @@ public class BOQAPriorityResult extends AbstractPriorityResult {
         return String.format("<dl><dt>BOQA semantic similarity score: %s </dt></dl>", this.score);
     }
 
+    @Override
+    public String toString() {
+        return "BOQAPriorityResult{" +
+                "geneId=" + geneId +
+                ", geneSymbol='" + geneSymbol + '\'' +
+                ", score=" + score +
+                '}';
+    }
 }
