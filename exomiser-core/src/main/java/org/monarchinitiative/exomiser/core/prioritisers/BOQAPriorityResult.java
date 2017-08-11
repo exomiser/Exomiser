@@ -31,15 +31,15 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 public class BOQAPriorityResult extends AbstractPriorityResult {
 
 
-    public BOQAPriorityResult(int geneId, String geneSymbol, double propability) {
-        super(PriorityType.BOQA_PRIORITY, geneId, geneSymbol, propability);
+    public BOQAPriorityResult(int geneId, String geneSymbol, double probability) {
+        super(PriorityType.BOQA_PRIORITY, geneId, geneSymbol, probability);
     }
 
     /**
      */
     @Override
     public String getHTMLCode() {
-        return String.format("<dl><dt>BOQA semantic similarity score: %.2f </dt></dl>", this.score);
+        return String.format("<dl><dt>BOQA semantic similarity score: %s </dt></dl>", this.score);
     }
 
 }
