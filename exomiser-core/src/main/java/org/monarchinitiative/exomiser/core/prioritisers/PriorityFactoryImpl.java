@@ -50,15 +50,17 @@ public class PriorityFactoryImpl implements PriorityFactory {
     private final PriorityService priorityService;
     private final DataMatrix randomWalkMatrix;
     private final Path phenixDataDirectory;
+    private final Path boqaDataDirectory;
 
     // The randomWalkMatrix takes about 1min to load into RAM and isn't always required, so @Lazy is used to defer loading
     // until it is required.
     @Lazy
     @Autowired
-    public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory) {
+    public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory, Path boqaDataDirectory) {
         this.priorityService = priorityService;
         this.randomWalkMatrix = randomWalkMatrix;
         this.phenixDataDirectory = phenixDataDirectory;
+        this.boqaDataDirectory = boqaDataDirectory;
     }
 
     /**
@@ -116,14 +118,11 @@ public class PriorityFactoryImpl implements PriorityFactory {
     public OMIMPriority makeOmimPrioritiser() {
         return new OMIMPriority(priorityService);
     }
-    
-    
+
     @Override
     public BOQAPriority makeBOQAPrioritiser() {
-        //TODO: change this to use separate directory
-        return new BOQAPriority(phenixDataDirectory);
+        return new BOQAPriority(boqaDataDirectory);
     }
-
 
     @Override
     public PhenixPriority makePhenixPrioritiser() {

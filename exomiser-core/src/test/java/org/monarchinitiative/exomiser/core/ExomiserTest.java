@@ -50,7 +50,7 @@ public class ExomiserTest {
     private static final Path VCF_PATH = Paths.get("src/test/resources/smallTest.vcf");
 
     private final VariantDataService stubDataService = new VariantDataServiceStub();
-    private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.TEST_SERVICE, null, null);
+    private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.TEST_SERVICE, null, null, null);
 
     private final AnalysisFactory analysisFactory = new AnalysisFactory(TestFactory.buildDefaultGeneFactory(), TestFactory
             .buildDefaultVariantFactory(), priorityFactory, stubDataService);

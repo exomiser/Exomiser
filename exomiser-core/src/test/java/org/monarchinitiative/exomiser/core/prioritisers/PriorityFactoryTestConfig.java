@@ -74,4 +74,8 @@ public class PriorityFactoryTestConfig {
         return Paths.get("stubPhenixDataDir");
     }
 
+    @Bean
+    Path boqaDataDirectory() {
+        return Paths.get("stubBoqaDataDir");
+    }
 }
