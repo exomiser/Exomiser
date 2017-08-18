@@ -162,6 +162,22 @@ public class GeneReassignerTest {
         assertThat(variant, isAssignedTo(gene1));
     }
 
+    @Test
+    public void assignsRegulatoryVariantToBestPhenotypicMatch_variantInTadButNotAssignedToKnownGene() {
+        addPriorityResultWithScore(gene1, 1d);
+        addPriorityResultWithScore(gene2, 0d);
+
+        TopologicalDomain tad = makeTad(1, 1, 20000, gene1, gene2);
+        instance = makeInstance(PriorityType.HIPHIVE_PRIORITY, tad);
+
+        Gene noKnownGene = new Gene(".", -1);
+
+        VariantEvaluation variant = regulatoryVariantInTad(tad, noKnownGene);
+        instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
+
+        assertThat(variant, isAssignedTo(gene1));
+    }
+
 
     @Test
     public void noneTypePrioritiser() {
