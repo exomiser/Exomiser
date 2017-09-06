@@ -33,7 +33,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  *
- * @author jj8
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class SelectOptionTest {
     
