@@ -90,6 +90,7 @@
         <jannovar.version>0.21</jannovar.version>
         <guava.version>21.0</guava.version>
         <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+        <ontolib.version>0.4</ontolib.version>
     </properties>
  
     <repositories>
