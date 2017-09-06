@@ -56,11 +56,11 @@ import static java.util.stream.Collectors.toMap;
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.06 (6 December, 2013)
  */
-public class PhenixPriority implements Prioritiser {
+public class LegacyPhenixPriority implements Prioritiser {
 
-    private static final Logger logger = LoggerFactory.getLogger(PhenixPriority.class);
+    private static final Logger logger = LoggerFactory.getLogger(LegacyPhenixPriority.class);
 
-    private static final PriorityType PRIORITY_TYPE = PriorityType.PHENIX_PRIORITY;
+    private static final PriorityType PRIORITY_TYPE = PriorityType.LEGACY_PHENIX_PRIORITY;
     /**
      * The HPO as Ontologizer-Ontology object
      */
@@ -113,7 +113,7 @@ public class PhenixPriority implements Prioritiser {
      * @see <a href="http://purl.obolibrary.org/obo/hp/uberpheno/">Uberpheno
      * Hudson page</a>
      */
-    public PhenixPriority(String scoreDistributionFolder, boolean symmetric) {
+    public LegacyPhenixPriority(String scoreDistributionFolder, boolean symmetric) {
 
         if (!scoreDistributionFolder.endsWith(File.separator)) {
             scoreDistributionFolder += File.separator;
@@ -136,7 +136,7 @@ public class PhenixPriority implements Prioritiser {
      * STUB CONSTRUCTOR - ONLY USED FOR TESTING PURPOSES TO AVOID NULL POINTERS FROM ORIGINAL CONSTRUCTOR. DO NOT USE FOR PRODUCTION CODE!!!!
      * @param symmetric
      */
-    protected PhenixPriority(boolean symmetric) {
+    protected LegacyPhenixPriority(boolean symmetric) {
         this.symmetric = symmetric;
     }
 
@@ -385,13 +385,13 @@ public class PhenixPriority implements Prioritiser {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PhenixPriority that = (PhenixPriority) o;
+        LegacyPhenixPriority that = (LegacyPhenixPriority) o;
         return symmetric == that.symmetric;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(PhenixPriority.class.getName(), symmetric);
+        return Objects.hash(LegacyPhenixPriority.class.getName(), symmetric);
     }
 
     @Override

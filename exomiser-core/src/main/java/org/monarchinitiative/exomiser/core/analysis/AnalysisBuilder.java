@@ -229,7 +229,7 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder addPhenixPrioritiser() {
-        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makePhenixPrioritiser());
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeLegacyPhenixPrioritiser());
         return this;
     }
 

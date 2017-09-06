@@ -162,7 +162,7 @@ public class RawScoreGeneScorer implements GeneScorer {
             //NB this is based on raw walker score
             double logitScore = 1 / (1 + Math.exp(-(-8.67972 + 219.40082 * priorityScore + 8.54374 * filterScore)));
             return (float) logitScore;
-        } else if (prioritiesRun.contains(PriorityType.PHENIX_PRIORITY)) {
+        } else if (prioritiesRun.contains(PriorityType.LEGACY_PHENIX_PRIORITY)) {
             double logitScore = 1 / (1 + Math.exp(-(-11.15659 + 13.21835 * priorityScore + 4.08667 * filterScore)));
             return (float) logitScore;
         } else {

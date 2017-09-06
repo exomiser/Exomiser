@@ -369,7 +369,7 @@ public class AnalysisBuilderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddPhenixPrioritiserThrowsExceptionWhenNoHpoIdsDefined() {
-        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser();
+        Prioritiser prioritiser = priorityFactory.makeLegacyPhenixPrioritiser();
 
         analysisBuilder.addPhenixPrioritiser();
 
@@ -378,7 +378,7 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testCanSpecifyPhenixPrioritiser() {
-        Prioritiser prioritiser = priorityFactory.makePhenixPrioritiser();
+        Prioritiser prioritiser = priorityFactory.makeLegacyPhenixPrioritiser();
 
         analysisBuilder.hpoIds(hpoIds)
                 .addPhenixPrioritiser();

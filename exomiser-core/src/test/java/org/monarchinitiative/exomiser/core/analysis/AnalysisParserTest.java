@@ -330,7 +330,7 @@ public class AnalysisParserTest {
     @Test
     public void testParseAnalysisStep_PhenixPrioritiser() {
         Analysis analysis = instance.parseAnalysis(addStepToAnalysis("phenixPrioritiser: {}"));
-        analysisSteps.add(priorityFactory.makePhenixPrioritiser());
+        analysisSteps.add(priorityFactory.makeLegacyPhenixPrioritiser());
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 

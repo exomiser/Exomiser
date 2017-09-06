@@ -108,7 +108,7 @@ public class PrioritiserController {
     private Prioritiser parsePrioritser(String prioritiserName, String prioritiserParams) {
         switch(prioritiserName) {
             case "phenix":
-                return priorityFactory.makePhenixPrioritiser();
+                return priorityFactory.makeLegacyPhenixPrioritiser();
             case "phive":
                 return priorityFactory.makePhivePrioritiser();
             case "hiphive":

@@ -341,7 +341,7 @@ public class AnalysisParser {
                 case "phivePrioritiser":
                     return prioritiserFactory.makePhivePrioritiser();
                 case "phenixPrioritiser":
-                    return prioritiserFactory.makePhenixPrioritiser();
+                    return prioritiserFactory.makeLegacyPhenixPrioritiser();
                 case "exomeWalkerPrioritiser":
                     return makeWalkerPrioritiser(analysisStepMap);
                 default:

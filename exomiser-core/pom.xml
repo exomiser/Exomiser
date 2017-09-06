@@ -51,7 +51,7 @@
             <artifactId>jblas</artifactId>
             <version>1.2.3</version>
         </dependency>
-        <!--Phenix dependencies:-->
+        <!--LegacyPhenix dependencies:-->
         <dependency>
             <groupId>de.sonumina</groupId>
             <artifactId>javautil</artifactId>

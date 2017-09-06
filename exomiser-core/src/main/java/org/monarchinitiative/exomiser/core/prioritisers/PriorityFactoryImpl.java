@@ -80,8 +80,8 @@ public class PriorityFactoryImpl implements PriorityFactory {
         switch (priorityType) {
             case OMIM_PRIORITY:
                 return makeOmimPrioritiser();
-            case PHENIX_PRIORITY:
-                return makePhenixPrioritiser();
+            case LEGACY_PHENIX_PRIORITY:
+                return makeLegacyPhenixPrioritiser();
             case HIPHIVE_PRIORITY:
                 HiPhiveOptions hiPhiveOptions = HiPhiveOptions.builder()
                         .diseaseId(diseaseId)
@@ -116,9 +116,9 @@ public class PriorityFactoryImpl implements PriorityFactory {
     }
 
     @Override
-    public PhenixPriority makePhenixPrioritiser() {
+    public LegacyPhenixPriority makeLegacyPhenixPrioritiser() {
         boolean symmetric = false;
-        return new PhenixPriority(phenixDataDirectory.toString(), symmetric);
+        return new LegacyPhenixPriority(phenixDataDirectory.toString(), symmetric);
     }
 
     @Override
