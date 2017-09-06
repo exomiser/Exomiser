@@ -3,22 +3,14 @@
 # your own set-up.
 ---
 analysis:
-    vcf: data/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz
+    vcf: examples/Pfeiffer.vcf
     ped:
+    proband:
     # AUTOSOMAL_DOMINANT, AUTOSOMAL_RECESSIVE, X_RECESSIVE or UNDEFINED
-    modeOfInheritance: AUTOSOMAL_RECESSIVE
+    modeOfInheritance: UNDEFINED
     #FULL, SPARSE or PASS_ONLY
-    analysisMode: PASS_ONLY
-    hpoIds: ['HP:0000982',
-            'HP:0001036',
-            'HP:0001367',
-            'HP:0001795',
-            'HP:0007465',
-            'HP:0007479',
-            'HP:0007490',
-            'HP:0008064',
-            'HP:0008404',
-            'HP:0009775']
+    analysisMode: SPARSE
+    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
     #Possible frequencySources:
     #Thousand Genomes project http://www.1000genomes.org/
     #   THOUSAND_GENOMES,
@@ -38,24 +30,24 @@ analysis:
         EXAC_OTHER
         ]
     #Possible pathogenicitySources: POLYPHEN, MUTATION_TASTER, SIFT, CADD, REMM
-    #REMM is trained on non-coding regulatory regions
     #*WARNING* if you enable CADD, ensure that you have downloaded and installed the CADD tabix files
-    #and updated their location in the application.properties. Exomiser will not run without this.
-    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT, REMM]
-    #this is the recommended order for a genome-sized analysis.
+    #and updated their location in the application.properties. Exomiser will not run without this. 
+    pathogenicitySources: [POLYPHEN, MUTATION_TASTER, SIFT]
+    #this is the standard exomiser order.
     #all steps are optional
     steps: [ 
         #intervalFilter: {interval: 'chr10:123256200-123256300'}, 
         #geneIdFilter: {geneIds: [12345, 34567, 98765]},
-        hiPhivePrioritiser: {},
-        #running the prioritiser followed by a priorityScoreFilter will remove genes
-        #which are least likely to contribute to the phenotype defined in hpoIds, this will
-        #dramatically reduce the time and memory required to analyse a genome.
-        # 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive
-        priorityScoreFilter: {priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501},
-        #variantEffectFilter: {remove: [SYNONYMOUS_VARIANT]},
-        #regulatoryFeatureFilter removes all non-regulatory non-coding variants over 20Kb from a known gene.
-        regulatoryFeatureFilter: {},
+        #failedVariantFilter: {},
+        #qualityFilter: {minQuality: 50.0},
+        variantEffectFilter: {remove: [UPSTREAM_GENE_VARIANT,
+            INTERGENIC_VARIANT,
+            REGULATORY_REGION_VARIANT,
+            CODING_TRANSCRIPT_INTRON_VARIANT,
+            NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+            SYNONYMOUS_VARIANT,
+            DOWNSTREAM_GENE_VARIANT,
+            SPLICE_REGION_VARIANT]},
         #knownVariantFilter: {}, #removes variants represented in the database
         frequencyFilter: {maxFrequency: 1.0},
         pathogenicityFilter: {keepNonPathogenic: true},
@@ -63,12 +55,14 @@ analysis:
         #they will analyse genes according to the specified modeOfInheritance above- UNDEFINED will not be analysed.
         inheritanceFilter: {},
         #omimPrioritiser isn't mandatory.
-        omimPrioritiser: {}
+        omimPrioritiser: {},
+        #priorityScoreFilter: {minPriorityScore: 0.4},
         #Other prioritisers: Only combine omimPrioritiser with one of these.
         #Don't include any if you only want to filter the variants.
-        #hiPhivePrioritiser: {},
+        hiPhivePrioritiser: {},
         # or run hiPhive in benchmarking mode: 
-        #hiPhivePrioritiser: {diseaseId: 'OMIM:101600', candidateGeneSymbol: FGFR2, runParams: 'human,mouse,fish,ppi'},
+        #hiPhivePrioritiser: {runParams: 'mouse'},
+        #phivePrioritiser: {}
         #phenixPrioritiser: {}
         #exomeWalkerPrioritiser: {seedGeneIds: [11111, 22222, 33333]}
     ]
@@ -80,7 +74,6 @@ outputOptions:
     # according to the outputFormats option. If unspecified this will default to the following: 
     # {exomiserDir}/results/input-vcf-name-exomiser-results.html
     # alternatively, specify a fully qualifed path only. e.g. /users/jules/exomes/analysis    
-    outputPrefix: results/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38
+    outputPrefix: results/Pfeiffer-hiphive-exome-SPARSE
     #out-format options: HTML, TSV-GENE, TSV-VARIANT, VCF (default: HTML)
-    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]
-    
+    outputFormats: [TSV-GENE, TSV-VARIANT, VCF, HTML]

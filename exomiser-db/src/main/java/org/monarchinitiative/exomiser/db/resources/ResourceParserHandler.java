@@ -1,4 +1,24 @@
 /*
+ * The Exomiser - A tool to annotate and prioritize genomic variants
+ *
+ * Copyright (c) 2016-2017 Queen Mary University of London.
+ * Copyright (c) 2012-2016 Charité Universitätsmedizin Berlin and Genome Research Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -33,7 +53,7 @@ public class ResourceParserHandler {
         Map<Class, ResourceGroup> resourceGroupMap = new HashMap<>();
         //...and the MetaData 'file' this is really a special case
         Resource metaDataResource = null;
-        
+
         logger.info("Parsing resources:");
         for (Resource resource : externalResources) {
             //we're using the resourseGroupParserClass as the key here as this is less likely to
@@ -61,7 +81,7 @@ public class ResourceParserHandler {
                 }
             }
         }
-        
+
         //parse the ResourceGroups
         logger.info("Parsing resourceGroups:");
         for (ResourceGroup resourceGroup : resourceGroupMap.values()) {
@@ -72,7 +92,7 @@ public class ResourceParserHandler {
         if (metaDataResource != null) {
             parseMetaData(metaDataResource, externalResources, outDir);
         }
-        
+
         //and we're done!
         logger.info("Done parsing.");
     }
@@ -111,7 +131,7 @@ public class ResourceParserHandler {
             logger.error("Error parsing resource {}", resourceGroup.getName(), ex);
         }
     }
-    
+
     /**
      * Parses out the file version info from the supplied ExternalResources and
      * dumps them out to a dump file.
@@ -122,10 +142,10 @@ public class ResourceParserHandler {
     private static void parseMetaData(Resource metaDataResource, Iterable<Resource> externalResources, Path outPath) {
 
         logger.info("Handling resource: {}", metaDataResource.getName());
-                
+
         ResourceParser metaDataParser = new MetaDataParser(metaDataResource, externalResources);
         metaDataParser.parseResource(metaDataResource, null, outPath);
         logger.info("{} {}", metaDataResource.getStatus(), metaDataParser.getClass().getCanonicalName());
-        
+
     }
 }
