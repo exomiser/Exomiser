@@ -40,6 +40,10 @@ For further instructions on installing and running please refer to the [README.m
 
 Please refer to the [manual](http://exomiser.github.io/Exomiser/) for details on how to configure and run the Exomiser.
 
+#### Demo site
+
+There is a limited [demo version](http://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/) of the exomiser hosted by the [Monarch Initiative](https://monarchinitiative.org/). This instance is for teaching purposes only and is limited to small exome analysis.
+
 #### Using The Exomiser in your code
 
 The exomiser can also be used as a library in Spring Java applications. Add the ```exomiser-spring-boot-starter``` library to your pom/gradle build script.
