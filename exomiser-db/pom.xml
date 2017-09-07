@@ -65,12 +65,12 @@
         <dependency>
             <groupId>org.monarchinitiative</groupId>
             <artifactId>exomiser-core</artifactId>
-            <version>${project.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>${spring-boot.version}</version>
+            <!--<version>${spring-boot.version}</version>-->
         </dependency>
         <!-- Database dependencies-->
         <dependency>
