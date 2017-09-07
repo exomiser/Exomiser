@@ -87,9 +87,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.organization>The Monarch Initiative</project.organization>
         <sonar.language>java</sonar.language>
-        <jannovar.version>0.21</jannovar.version>
-        <guava.version>21.0</guava.version>
-        <spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+        <jannovar.version>0.23</jannovar.version>
+        <guava.version>22.0</guava.version>
+        <spring-boot.version>1.5.6.RELEASE</spring-boot.version>
     </properties>
  
     <repositories>
@@ -104,7 +104,7 @@
             <dependency>
                 <groupId>io.spring.platform</groupId>
                 <artifactId>platform-bom</artifactId>
-                <version>Athens-RELEASE</version>
+                <version>Brussels-SR4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

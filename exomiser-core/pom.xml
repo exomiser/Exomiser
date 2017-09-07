@@ -45,7 +45,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--Guava 0.19 is required by Jannovar-->
         <dependency>
             <groupId>org.jblas</groupId>
             <artifactId>jblas</artifactId>
