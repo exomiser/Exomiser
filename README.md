@@ -43,7 +43,7 @@ Please refer to the [manual](http://exomiser.github.io/Exomiser/) for details on
 
 #### Demo site
 
-There is a limited [demo version](http://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/) of the exomiser hosted by the [Monarch Initiative](https://monarchinitiative.org/). This instance is for teaching purposes only and is limited to small exome analysis.
+There is a limited [demo version](http://exomiser.monarchinitiative.org/exomiser/) of the exomiser hosted by the [Monarch Initiative](https://monarchinitiative.org/). This instance is for teaching purposes only and is limited to small exome analysis.
 
 #### Using The Exomiser in your code
 
