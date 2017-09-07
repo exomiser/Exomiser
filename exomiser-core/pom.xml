@@ -51,7 +51,7 @@
             <artifactId>jblas</artifactId>
             <version>1.2.3</version>
         </dependency>
-        <!--Phenix dependencies:-->
+        <!--LegacyPhenix dependencies:-->
         <dependency>
             <groupId>de.sonumina</groupId>
             <artifactId>javautil</artifactId>
@@ -61,6 +61,17 @@
             <groupId>ontologizer</groupId>
             <artifactId>ontologizer</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <!-- Phenix dependencies -->
+        <dependency>
+            <groupId>com.github.phenomics</groupId>
+            <artifactId>ontolib-core</artifactId>
+            <version>${ontolib.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.phenomics</groupId>
+            <artifactId>ontolib-io</artifactId>
+            <version>${ontolib.version}</version>
         </dependency>
         <!--One day, maybe these can be replaced by the commented out dependencies, once this issue has been closed:-->
         <!--https://github.com/ontologizer/ontologizerlib/issues/1-->

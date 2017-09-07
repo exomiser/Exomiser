@@ -41,7 +41,7 @@ public class PhenixPriorityResult extends AbstractPriorityResult {
     private final double negativeLogP;
 
     public PhenixPriorityResult(int geneId, String geneSymbol, double score, double semanticSimilarityScore, double negLogP) {
-        super(PriorityType.PHENIX_PRIORITY, geneId, geneSymbol, score);
+        super(PriorityType.LEGACY_PHENIX_PRIORITY, geneId, geneSymbol, score);
         this.hpoSemSimScore = semanticSimilarityScore;
         this.negativeLogP = negLogP;
     }

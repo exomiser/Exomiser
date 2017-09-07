@@ -129,8 +129,8 @@ public class PriorityFactoryImplTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void testmakePrioritiserForPhenixPriorityThrowsRuntimeExceptionDueToMissingPhenixData() {
-        PriorityType type = PriorityType.PHENIX_PRIORITY;
+    public void testmakePrioritiserForLegacyPhenixPriorityThrowsRuntimeExceptionDueToMissingPhenixData() {
+        PriorityType type = PriorityType.LEGACY_PHENIX_PRIORITY;
         PrioritiserSettings settings = buildValidSettingsWithPrioritiser(type);
 
         Prioritiser prioritiser = instance.makePrioritiser(settings);
