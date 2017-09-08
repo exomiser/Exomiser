@@ -20,27 +20,16 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 @Configuration
-@ConditionalOnClass({Exomiser.class, AnalysisFactory.class})
-@EnableConfigurationProperties(ExomiserProperties.class)
-@Import({DataDirectoryAutoConfiguration.class,
-        ExomiserCacheAutoConfiguration.class,
-        PhenotypeDataSourceAutoConfiguration.class,
-        PrioritiserAutoConfiguration.class,
-        VariantDataServiceAutoConfiguration.class,
-        TranscriptSourceAutoConfiguration.class})
-@ComponentScan({"org.monarchinitiative.exomiser.core"})
-public class ExomiserAutoConfiguration {
-
+@ConditionalOnClass(PhenotypeMatchService.class)
+@ComponentScan("org.monarchinitiative.exomiser.core.phenotype")
+public class PhenotypeMatchServiceAutoConfiguration {
 }

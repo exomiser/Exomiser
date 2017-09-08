@@ -20,13 +20,9 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,38 +33,27 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest {
+public class PhenotypeMatchServiceAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
     @Test
-    public void testExomiserIsAutoConfigured() throws Exception {
+    public void testAutoConfiguresPhenotypeMatchService() throws Exception {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        Exomiser exomiser = (Exomiser) context.getBean("exomiser");
-        assertThat(exomiser, instanceOf(Exomiser.class));
-    }
-
-    @Test
-    public void testAnalysisFactoryIsAutoConfigured() throws Exception {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
-        AnalysisFactory exomiser = (AnalysisFactory) context.getBean("analysisFactory");
-        assertThat(exomiser, instanceOf(AnalysisFactory.class));
+        PhenotypeMatchService phenotypeMatchService = (PhenotypeMatchService) context.getBean("phenotypeMatchService");
+        assertThat(phenotypeMatchService, instanceOf(PhenotypeMatchService.class));
     }
 
     @Configuration
-    @ImportAutoConfiguration(ExomiserAutoConfiguration.class)
+    @ImportAutoConfiguration(PhenotypeMatchServiceAutoConfiguration.class)
     protected static class EmptyConfiguration {
-
+        /*
+         * Mock this otherwise we'll try connecting to a non-existent database.
+         */
         @Bean
         public DataSource dataSource() {
             return Mockito.mock(DataSource.class);
         }
 
-        @Bean
-        public JannovarData jannovarData() {
-            return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.of());
-        }
-
     }
-
 }

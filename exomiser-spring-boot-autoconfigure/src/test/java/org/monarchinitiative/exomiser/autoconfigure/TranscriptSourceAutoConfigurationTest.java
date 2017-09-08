@@ -24,51 +24,55 @@ import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest {
+public class TranscriptSourceAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
-    @Test
-    public void testExomiserIsAutoConfigured() throws Exception {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
-        Exomiser exomiser = (Exomiser) context.getBean("exomiser");
-        assertThat(exomiser, instanceOf(Exomiser.class));
+
+    /**
+     * We're testing against empty placeholder files here so we're expecting an error
+     */
+    @Test(expected = BeanCreationException.class)
+    public void testJannovarData() {
+        load(TranscriptSourceAutoConfiguration.class, TEST_DATA_ENV, "exomiser.transcript-data-file-name=ucsc.ser");
     }
 
     @Test
-    public void testAnalysisFactoryIsAutoConfigured() throws Exception {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
-        AnalysisFactory exomiser = (AnalysisFactory) context.getBean("analysisFactory");
-        assertThat(exomiser, instanceOf(AnalysisFactory.class));
+    public void testJannovarDataCanBeOverridden() {
+        load(BeanOverrideConfiguration.class, TEST_DATA_ENV);
+        JannovarData jannovarData = (JannovarData) this.context.getBean("jannovarData");
+        assertThat(jannovarData, not(nullValue()));
+    }
+
+    @Test
+    public void transcriptFilePathIsDefinedRelativeToDataPath() {
+        load(BeanOverrideConfiguration.class, TEST_DATA_ENV, "exomiser.transcript-data-file-name=ucsc.ser");
+        Path ucscFilePath = (Path) this.context.getBean("transcriptFilePath");
+        assertThat(ucscFilePath.getFileName(), equalTo(Paths.get("ucsc.ser")));
+        assertThat(ucscFilePath.getParent(), equalTo(TEST_DATA));
     }
 
     @Configuration
-    @ImportAutoConfiguration(ExomiserAutoConfiguration.class)
-    protected static class EmptyConfiguration {
-
-        @Bean
-        public DataSource dataSource() {
-            return Mockito.mock(DataSource.class);
-        }
+    @ImportAutoConfiguration(TranscriptSourceAutoConfiguration.class)
+    protected static class BeanOverrideConfiguration {
 
         @Bean
         public JannovarData jannovarData() {
             return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.of());
         }
-
     }
-
 }

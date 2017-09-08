@@ -43,7 +43,7 @@ public class ExomiserStubDataConfig {
 
     @Bean
     public HikariConfig h2Config() {
-        logger.info("Creating in memory H2 databasegit stash");
+        logger.info("Creating in memory H2 database");
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.h2.Driver");
         config.setJdbcUrl("jdbc:h2:mem:exomiser");

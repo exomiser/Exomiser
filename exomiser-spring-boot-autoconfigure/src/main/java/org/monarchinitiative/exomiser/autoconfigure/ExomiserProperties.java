@@ -55,6 +55,19 @@ public class ExomiserProperties {
      */
     private String cache = "none";
 
+    /**
+     * name of transcript data .ser file created from Jannovar for defining known exon locations
+     */
+    private String transcriptDataFileName = "hg19_ucsc.ser";
+
+    public String getTranscriptDataFileName() {
+        return transcriptDataFileName;
+    }
+
+    public void setTranscriptDataFileName(String transcriptDataFileName) {
+        this.transcriptDataFileName = transcriptDataFileName;
+    }
+
     //Random walk matrix for hiPhive and exomeWalker
     private String randomWalkFileName = "rw_string_9_05.gz";
     private String randomWalkIndexFileName = "rw_string_9_05_id2index.gz";
