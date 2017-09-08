@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.monarchinitiative</groupId>
             <artifactId>exomiser-spring-boot-starter</artifactId>
-            <version>${project.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

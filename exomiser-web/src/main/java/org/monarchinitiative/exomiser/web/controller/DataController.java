@@ -41,13 +41,8 @@ public class DataController {
     
     private final ExomiserDao exomiserDao;
 
-    private Map<String, String> hpoTerms;
     private Set<SelectOption> hpoSelectOptions;
-
-    private Map<String, String> diseases;
     private Set<SelectOption> diseaseSelectOptions;
-    
-    private Map<String, String> genes;
     private Set<SelectOption> geneSelectOptions;
 
     @Autowired
@@ -57,13 +52,13 @@ public class DataController {
 
     @PostConstruct
     private void setUp() {
-        hpoTerms = exomiserDao.getHpoTerms();
+        Map<String, String> hpoTerms = exomiserDao.getHpoTerms();
         hpoSelectOptions = makeSelectOptionsFromMap(hpoTerms);
-        
-        diseases = exomiserDao.getDiseases();
+
+        Map<String, String> diseases = exomiserDao.getDiseases();
         diseaseSelectOptions = makeSelectOptionsFromMap(diseases);
-        
-        genes = exomiserDao.getGenes();
+
+        Map<String, String> genes = exomiserDao.getGenes();
         geneSelectOptions = makeSelectOptionsFromMap(genes);
         
         logger.info("Loaded {} HPO, {} disease and {} gene select options", hpoSelectOptions.size(), diseaseSelectOptions.size(), geneSelectOptions.size());
