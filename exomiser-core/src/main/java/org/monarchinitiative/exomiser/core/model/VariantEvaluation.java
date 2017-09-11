@@ -178,7 +178,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return variantEffect;
     }
     
-    @Override
     public void setVariantEffect (VariantEffect ve){
         variantEffect = ve;
     }
@@ -191,7 +190,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return geneSymbol;
     }
 
-    @Override
     public void setGeneSymbol(String symbol) {
         geneSymbol = symbol;
     }
@@ -201,7 +199,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return entrezGeneId;
     }
     
-    @Override
     public void setEntrezGeneId(int id) {
         entrezGeneId = id;
     }
@@ -242,7 +239,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return annotations;
     }
     
-    @Override
     public void setAnnotations(List<TranscriptAnnotation> annotations) {
         this.annotations = annotations;
     }
@@ -254,7 +250,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     /**
      * @return a String such as chr6:g.29911092G>T
      */
-    @Override
     public String getHgvsGenome() {
         return chr + ":g." + pos + ref + ">" + alt;
     }
