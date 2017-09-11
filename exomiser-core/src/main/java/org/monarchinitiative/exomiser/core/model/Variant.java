@@ -77,8 +77,6 @@ public interface Variant extends VariantCoordinates {
     default boolean isNonCodingVariant() {
         return !codingVariantEffects.contains(getVariantEffect());
     }
-    
-    double getPhredScore();
 
     boolean isXChromosomal();
 

@@ -164,7 +164,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         return altAlleleId;
     }
 
-    @Override
     public double getPhredScore() {
         return phredScore;
     }
