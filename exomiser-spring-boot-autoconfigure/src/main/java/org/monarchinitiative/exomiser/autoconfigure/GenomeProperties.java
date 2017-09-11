@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
+import org.monarchinitiative.exomiser.core.genome.GenomeBuild;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -27,13 +28,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("exomiser.genome")
 public class GenomeProperties {
-
-    /**
-     * genome build version - hg19/hg38
-     */
-    public enum GenomeBuild {
-        hg19, hg38
-    }
 
     /**
      * source of the transcripts - ucsc/ensembl/refseq
@@ -56,7 +50,7 @@ public class GenomeProperties {
      */
     public GenomeProperties() {
         this.dataVersion = "1707";
-        this.build = GenomeBuild.hg19;
+        this.build = GenomeBuild.HG19;
         this.transcriptSource = TranscriptSource.ucsc;
     }
 
@@ -83,7 +77,7 @@ public class GenomeProperties {
     }
 
     public void setBuild(String build) {
-        this.build = GenomeBuild.valueOf(build);
+        this.build = GenomeBuild.fromValue(build);
     }
 
     public TranscriptSource getTranscriptSource() {
