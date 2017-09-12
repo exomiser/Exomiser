@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
@@ -83,6 +84,14 @@ public class AnalysisTest {
                 .probandSampleName(probandSampleName)
                 .build();
         assertThat(instance.getProbandSampleName(), equalTo(probandSampleName));
+    }
+
+    @Test
+    public void canSetGenomeAssembly() {
+        Analysis instance = Analysis.builder()
+                .genomeAssembly(GenomeAssembly.HG19)
+                .build();
+        assertThat(instance.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
     }
 
     @Test

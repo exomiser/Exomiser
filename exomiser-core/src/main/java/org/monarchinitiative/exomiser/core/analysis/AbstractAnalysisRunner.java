@@ -66,8 +66,8 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private final GeneFactory geneFactory;
     private final VariantFactory variantFactory;
-
     private final VariantDataService variantDataService;
+
     final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 

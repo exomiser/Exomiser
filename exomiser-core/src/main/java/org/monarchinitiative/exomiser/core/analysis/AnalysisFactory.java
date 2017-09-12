@@ -47,9 +47,9 @@ public class AnalysisFactory {
 
     private final GeneFactory geneFactory;
     private final VariantFactory variantFactory;
+    private final VariantDataService variantDataService;
 
     private final PriorityFactory priorityFactory;
-    private final VariantDataService variantDataService;
 
     @Autowired
     public AnalysisFactory(GeneFactory geneFactory, VariantFactory variantFactory, PriorityFactory priorityFactory, VariantDataService variantDataService) {
@@ -59,6 +59,7 @@ public class AnalysisFactory {
         this.priorityFactory = priorityFactory;
     }
 
+    //TODO - will require the correct GenomeDataService/ GenomeAnalysisService for the user-specified GenomeBuild
     public AnalysisRunner getAnalysisRunnerForMode(AnalysisMode analysisMode) {
         //This class primarily exists as an external interface for the Exomiser class to be able to create and run analyses
         //without having to expose too much of the Analysis package implementation. e.g. the AnalysisRunner implementations

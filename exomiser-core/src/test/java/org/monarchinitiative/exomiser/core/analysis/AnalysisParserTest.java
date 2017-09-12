@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -78,6 +79,7 @@ public class AnalysisParserTest {
     private static String addStepToAnalysis(String step) {
         return String.format("analysis:\n"
                 + "    vcf: test.vcf\n"
+                + "    genomeAssembly: hg19\n"
                 + "    ped:\n"
                 + "    modeOfInheritance: AUTOSOMAL_DOMINANT\n"
                 + "    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']\n"
@@ -130,6 +132,44 @@ public class AnalysisParserTest {
                 + "    analysisMode: FULL \n"
                 + "    ");
         assertThat(analysis.getAnalysisMode(), equalTo(AnalysisMode.FULL));
+    }
+
+    @Test
+    public void testParseAnalysisNotSettingGenomeBuildReturnsDefault() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    ");
+        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
+    }
+
+    @Test
+    public void testParseAnalysisCanSetGenomeBuildUsingUcscName() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: hg38\n"
+                        + "    ");
+        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+    }
+
+    @Test
+    public void testParseAnalysisCanSetGenomeBuildUsingGrcName() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: GRCh38\n"
+                        + "    ");
+        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+    }
+
+    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
+    public void testParseAnalysisUnrecognisedGenomeBuild() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: invalid\n"
+                        + "    ");
     }
 
     @Test

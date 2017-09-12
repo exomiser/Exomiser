@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import org.monarchinitiative.exomiser.core.genome.GenomeBuild;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -40,7 +40,7 @@ public class ExomiserProperties {
 
     //exomiser.phenome.data-version=1707
     @NestedConfigurationProperty
-    private GenomeProperties genomeProperties = new GenomeProperties("1707", GenomeBuild.HG19, GenomeProperties.TranscriptSource.ucsc);
+    private GenomeProperties genomeProperties = new GenomeProperties("1707", GenomeAssembly.HG19, GenomeProperties.TranscriptSource.ucsc);
 
     //genomiser variant data files
     private String caddSnvPath = "";

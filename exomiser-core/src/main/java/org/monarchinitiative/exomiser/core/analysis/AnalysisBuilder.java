@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -76,6 +77,11 @@ public class AnalysisBuilder {
 
     public AnalysisBuilder vcfPath(Path vcfPath) {
         builder.vcfPath(vcfPath);
+        return this;
+    }
+
+    public AnalysisBuilder genomeAssembly(GenomeAssembly genomeAssembly) {
+        builder.genomeAssembly(genomeAssembly);
         return this;
     }
 

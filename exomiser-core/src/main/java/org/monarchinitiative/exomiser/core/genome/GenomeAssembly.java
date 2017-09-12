@@ -23,24 +23,23 @@ package org.monarchinitiative.exomiser.core.genome;
 import java.util.Objects;
 
 /**
- * genome build version - hg19/hg38
+ * genome reference assembly version - hg19/hg38.
  */
-public enum GenomeBuild {
+public enum GenomeAssembly {
 
     HG19("hg19"), HG38("hg38");
 
-
     private final String value;
 
-    GenomeBuild(String value) {
+    GenomeAssembly(String value) {
         this.value = value;
     }
 
-    public static GenomeBuild defaultBuild() {
-        return GenomeBuild.HG19;
+    public static GenomeAssembly defaultBuild() {
+        return GenomeAssembly.HG19;
     }
 
-    public static GenomeBuild fromValue(String value) {
+    public static GenomeAssembly fromValue(String value) {
         Objects.requireNonNull(value, "Genome build cannot be null");
         switch (value.toLowerCase()) {
             case "hg19":

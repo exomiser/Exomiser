@@ -24,6 +24,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -194,6 +195,7 @@ public class AnalysisParser {
 
             Analysis analysis = Analysis.builder()
                     .vcfPath(parseVcf(analysisMap))
+                    .genomeAssembly(parseGenomeAssembly(analysisMap))
                     .pedPath(parsePed(analysisMap))
                     .probandSampleName(parseProbandSampleName(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
@@ -235,6 +237,16 @@ public class AnalysisParser {
                 throw new AnalysisParserException("VCF path cannot be null.", analysisMap);
             }
             return Paths.get(vcfValue);
+        }
+
+        private GenomeAssembly parseGenomeAssembly(Map<String, String> analysisMap) {
+            String genomeAssemblyValue = analysisMap.get("genomeAssembly");
+            //VCF file paths are not allowed to be null
+            if (genomeAssemblyValue == null || genomeAssemblyValue.isEmpty()) {
+                logger.info("genomeAssembly not specified - will use default: {}", GenomeAssembly.defaultBuild());
+                return GenomeAssembly.defaultBuild();
+            }
+            return GenomeAssembly.fromValue(genomeAssemblyValue);
         }
 
         private Path parsePed(Map<String, String> analysisMap) {
@@ -363,7 +375,7 @@ public class AnalysisParser {
             return new IntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), interval));
         }
 
-        private EntrezGeneIdFilter makeGeneIdFilter(Map<String, List> options) {
+        private EntrezGeneIdFilter makeGeneIdFilter(Map<String, List<Integer>> options) {
             List<Integer> geneIds = options.get("geneIds");
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("GeneId filter requires a list of ENTREZ geneIds e.g. {geneIds: [12345, 34567, 98765]}", options);
@@ -371,7 +383,7 @@ public class AnalysisParser {
             return new EntrezGeneIdFilter(new LinkedHashSet<>(geneIds));
         }
 
-        private VariantEffectFilter makeVariantEffectFilter(Map<String, List> options) {
+        private VariantEffectFilter makeVariantEffectFilter(Map<String, List<String>> options) {
             List<String> effectsToRemove = options.get("remove");
             if (effectsToRemove == null) {
                 throw new AnalysisParserException("VariantEffect filter requires a list of VariantEffects to be removed e.g. {remove: [UPSTREAM_GENE_VARIANT, INTERGENIC_VARIANT, SYNONYMOUS_VARIANT]}", options);
@@ -419,9 +431,9 @@ public class AnalysisParser {
             }
             return maxFreq;
         }
-        
-        private Set<FrequencySource> parseFrequencySources(Map<String, Object> options) {
-            List<String> frequencySources = (List<String>) options.get("frequencySources");
+
+        private Set<FrequencySource> parseFrequencySources(Map<String, List<String>> options) {
+            List<String> frequencySources = options.get("frequencySources");
             if (frequencySources == null) {
                 return EnumSet.noneOf(FrequencySource.class);
             }
@@ -451,8 +463,8 @@ public class AnalysisParser {
             return new PathogenicityDataProvider(variantDataService, EnumSet.copyOf(sources), new PathogenicityFilter(keepNonPathogenic));
         }
 
-        private Set<PathogenicitySource> parsePathogenicitySources(Map<String, Object> options) {
-            List<String> pathogenicitySources = (List<String>) options.get("pathogenicitySources");
+        private Set<PathogenicitySource> parsePathogenicitySources(Map<String, List<String>> options) {
+            List<String> pathogenicitySources = options.get("pathogenicitySources");
             if (pathogenicitySources == null) {
                 return EnumSet.noneOf(PathogenicitySource.class);
             }
@@ -505,18 +517,10 @@ public class AnalysisParser {
 
         private HiPhiveOptions makeHiPhiveOptions(Map<String, String> options) {
             if (!options.isEmpty()) {
-                String diseaseId = options.get("diseaseId");
-                if (diseaseId == null) {
-                    diseaseId = "";
-                }
-                String candidateGeneSymbol = options.get("candidateGeneSymbol");
-                if (candidateGeneSymbol == null) {
-                    candidateGeneSymbol = "";
-                }
-                String runParams = options.get("runParams");
-                if (runParams == null) {
-                    runParams = "";
-                }
+                String diseaseId = options.getOrDefault("diseaseId", "");
+                String candidateGeneSymbol = options.getOrDefault("candidateGeneSymbol", "");
+                String runParams = options.getOrDefault("runParams", "");
+
                 return HiPhiveOptions.builder()
                         .diseaseId(diseaseId)
                         .candidateGeneSymbol(candidateGeneSymbol)
@@ -526,8 +530,8 @@ public class AnalysisParser {
             return HiPhiveOptions.DEFAULT;
         }
 
-        private ExomeWalkerPriority makeWalkerPrioritiser(Map<String, List> options) {
-            List geneIds = options.get("seedGeneIds");
+        private ExomeWalkerPriority makeWalkerPrioritiser(Map<String, List<Integer>> options) {
+            List<Integer> geneIds = options.get("seedGeneIds");
             if (geneIds == null || geneIds.isEmpty()) {
                 throw new AnalysisParserException("ExomeWalker prioritiser requires a list of ENTREZ geneIds e.g. {seedGeneIds: [11111, 22222, 33333]}", options);
             }

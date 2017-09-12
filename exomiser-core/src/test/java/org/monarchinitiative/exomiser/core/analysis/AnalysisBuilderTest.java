@@ -26,6 +26,7 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
@@ -90,6 +91,13 @@ public class AnalysisBuilderTest {
         Path vcfPath = Paths.get("test.vcf");
         analysisBuilder.vcfPath(vcfPath);
         assertThat(analysisBuilder.build().getVcfPath(), equalTo(vcfPath));
+    }
+
+    @Test
+    public void testAnalysisBuilderGenomeAssembly() {
+        GenomeAssembly genomeAssembly = GenomeAssembly.HG38;
+        analysisBuilder.genomeAssembly(genomeAssembly);
+        assertThat(analysisBuilder.build().getGenomeAssembly(), equalTo(genomeAssembly));
     }
 
     @Test

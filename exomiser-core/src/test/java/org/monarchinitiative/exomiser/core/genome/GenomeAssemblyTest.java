@@ -28,52 +28,52 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class GenomeBuildTest {
+public class GenomeAssemblyTest {
 
     @Test
     public void testDefaultBuild() {
-        assertThat(GenomeBuild.defaultBuild(), equalTo(GenomeBuild.HG19));
+        assertThat(GenomeAssembly.defaultBuild(), equalTo(GenomeAssembly.HG19));
     }
 
     @Test
     public void testNamesIncludeHg19() {
-        assertThat(GenomeBuild.fromValue("hg19"), equalTo(GenomeBuild.HG19));
+        assertThat(GenomeAssembly.fromValue("hg19"), equalTo(GenomeAssembly.HG19));
     }
 
     @Test
     public void testNamesIncludeHg37() {
-        assertThat(GenomeBuild.fromValue("hg37"), equalTo(GenomeBuild.HG19));
+        assertThat(GenomeAssembly.fromValue("hg37"), equalTo(GenomeAssembly.HG19));
     }
 
     @Test
     public void testNamesIncludeHg38() {
-        assertThat(GenomeBuild.fromValue("hg38"), equalTo(GenomeBuild.HG38));
+        assertThat(GenomeAssembly.fromValue("hg38"), equalTo(GenomeAssembly.HG38));
     }
 
     @Test
     public void testCanUseGrchNomenclature() {
-        assertThat(GenomeBuild.fromValue("GRCh37"), equalTo(GenomeBuild.HG19));
-        assertThat(GenomeBuild.fromValue("GRCh38"), equalTo(GenomeBuild.HG38));
+        assertThat(GenomeAssembly.fromValue("GRCh37"), equalTo(GenomeAssembly.HG19));
+        assertThat(GenomeAssembly.fromValue("GRCh38"), equalTo(GenomeAssembly.HG38));
     }
 
-    @Test(expected = GenomeBuild.InvalidGenomeAssemblyException.class)
+    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
     public void testEmptyNameThrowsException() throws Exception {
-        GenomeBuild.fromValue("");
+        GenomeAssembly.fromValue("");
     }
 
     @Test(expected = NullPointerException.class)
     public void testNullNameThrowsException() throws Exception {
-        GenomeBuild.fromValue(null);
+        GenomeAssembly.fromValue(null);
     }
 
-    @Test(expected = GenomeBuild.InvalidGenomeAssemblyException.class)
+    @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
     public void testUnrecognisedNameThrowsException() throws Exception {
-        GenomeBuild.fromValue("unrecognised build number");
+        GenomeAssembly.fromValue("unrecognised build number");
     }
 
     @Test
     public void testToString() {
-        assertThat(GenomeBuild.HG19.toString(), equalTo("hg19"));
-        assertThat(GenomeBuild.HG38.toString(), equalTo("hg38"));
+        assertThat(GenomeAssembly.HG19.toString(), equalTo("hg19"));
+        assertThat(GenomeAssembly.HG38.toString(), equalTo("hg38"));
     }
 }
