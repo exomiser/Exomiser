@@ -41,7 +41,7 @@ public enum GenomeBuild {
     }
 
     public static GenomeBuild fromValue(String value) {
-        Objects.requireNonNull(value, "'null' is not a valid value for the genome build");
+        Objects.requireNonNull(value, "Genome build cannot be null");
         switch (value.toLowerCase()) {
             case "hg19":
             case "hg37":
@@ -51,12 +51,34 @@ public enum GenomeBuild {
             case "grch38":
                 return HG38;
             default:
-                return defaultBuild();
+                throw new InvalidGenomeAssemblyException(String.format("'%s' is not a valid/supported genome assembly.", value));
         }
     }
 
     @Override
     public String toString() {
         return value;
+    }
+
+    public static class InvalidGenomeAssemblyException extends RuntimeException {
+
+        public InvalidGenomeAssemblyException() {
+        }
+
+        public InvalidGenomeAssemblyException(String message) {
+            super(message);
+        }
+
+        public InvalidGenomeAssemblyException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        public InvalidGenomeAssemblyException(Throwable cause) {
+            super(cause);
+        }
+
+        public InvalidGenomeAssemblyException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+            super(message, cause, enableSuppression, writableStackTrace);
+        }
     }
 }

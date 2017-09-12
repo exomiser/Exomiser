@@ -51,18 +51,24 @@ public class GenomeBuildTest {
     }
 
     @Test
-    public void testNameEmptyNameReturnsDefault() {
-        assertThat(GenomeBuild.fromValue(""), equalTo(GenomeBuild.defaultBuild()));
+    public void testCanUseGrchNomenclature() {
+        assertThat(GenomeBuild.fromValue("GRCh37"), equalTo(GenomeBuild.HG19));
+        assertThat(GenomeBuild.fromValue("GRCh38"), equalTo(GenomeBuild.HG38));
+    }
+
+    @Test(expected = GenomeBuild.InvalidGenomeAssemblyException.class)
+    public void testEmptyNameThrowsException() throws Exception {
+        GenomeBuild.fromValue("");
     }
 
     @Test(expected = NullPointerException.class)
-    public void testNameNullDefault() throws Exception {
+    public void testNullNameThrowsException() throws Exception {
         GenomeBuild.fromValue(null);
     }
 
-    @Test
-    public void testUnrecognisedNameReturnsDefault() {
-        assertThat(GenomeBuild.fromValue("unrecognised build number"), equalTo(GenomeBuild.defaultBuild()));
+    @Test(expected = GenomeBuild.InvalidGenomeAssemblyException.class)
+    public void testUnrecognisedNameThrowsException() throws Exception {
+        GenomeBuild.fromValue("unrecognised build number");
     }
 
     @Test
