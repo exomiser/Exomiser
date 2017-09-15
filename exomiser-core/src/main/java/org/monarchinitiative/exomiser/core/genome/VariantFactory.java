@@ -34,7 +34,6 @@ import de.charite.compbio.jannovar.reference.TranscriptModel;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -75,7 +74,7 @@ public class VariantFactory {
     }
 
     public Stream<VariantEvaluation> streamVariantEvaluations(Path vcfPath) {
-        return streamVariantEvaluations(streamVariantContexts(vcfPath));
+        return streamVariantEvaluations(VcfFiles.readVariantContexts(vcfPath));
     }
 
     public Stream<VariantEvaluation> streamVariantEvaluations(Stream<VariantContext> variantContextStream) {
@@ -86,13 +85,6 @@ public class VariantFactory {
                 .flatMap(toVariantEvaluations())
                 .peek(counter.countAnnotatedVariant())
                 .onClose(counter::logCount);
-    }
-
-    public Stream<VariantContext> streamVariantContexts(Path vcfPath) {
-        logger.info("Streaming variants from file {}", vcfPath);
-        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath.toFile(), false)) {
-            return vcfReader.iterator().stream();
-        }
     }
 
     /**

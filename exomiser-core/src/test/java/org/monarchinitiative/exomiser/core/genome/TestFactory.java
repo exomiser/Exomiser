@@ -113,4 +113,15 @@ public class TestFactory {
 
     public static Gene newGeneSHH() { return new Gene(TestGeneFactory.SHH_IDENTIFIER);}
 
+    public static GenomeDataService buildDefaultGenomeDataService() {
+        return TestGenomeDataService.builder().genes(buildGenes()).geneIdentifiers(buildGeneIdentifiers()).build();
+    }
+
+    public static GenomeAnalysisService buildDefaultHg19GenomeAnalysisService() {
+        return new GenomeAnalysisServiceImpl(GenomeAssembly.HG19, buildDefaultGenomeDataService(), new VariantDataServiceStub());
+    }
+
+    public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {
+        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub());
+    }
 }

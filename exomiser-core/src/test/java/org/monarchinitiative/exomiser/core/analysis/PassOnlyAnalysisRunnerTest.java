@@ -43,7 +43,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
-    private final PassOnlyAnalysisRunner instance = new PassOnlyAnalysisRunner(geneFactory, variantFactory, stubDataService);
+    private final PassOnlyAnalysisRunner instance = new PassOnlyAnalysisRunner(variantFactory, genomeAnalysisService);
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {

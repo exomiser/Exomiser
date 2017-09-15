@@ -18,35 +18,65 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.model.Variant;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 
+import java.util.List;
 import java.util.Set;
 
 /**
- *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class VariantDataServiceStub implements VariantDataService {
+public class GenomeAnalysisServiceImpl implements GenomeAnalysisService {
+
+    private final GenomeAssembly genomeAssembly;
+
+    private final GenomeDataService genomeDataService;
+    private final VariantDataService variantDataService;
+
+    public GenomeAnalysisServiceImpl(GenomeAssembly genomeAssembly, GenomeDataService genomeDataService, VariantDataService variantDataService) {
+        this.genomeAssembly = genomeAssembly;
+        this.genomeDataService = genomeDataService;
+        this.variantDataService = variantDataService;
+    }
+
+    @Override
+    public GenomeAssembly getGenomeAssembly() {
+        return genomeAssembly;
+    }
+
+    @Override
+    public List<Gene> getKnownGenes() {
+        return genomeDataService.getKnownGenes();
+    }
+
+    @Override
+    public Set<GeneIdentifier> getKnownGeneIdentifiers() {
+        return genomeDataService.getKnownGeneIdentifiers();
+    }
+
+    @Override
+    public List<RegulatoryFeature> getRegulatoryFeatures() {
+        return genomeDataService.getRegulatoryFeatures();
+    }
+
+    @Override
+    public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
+        return genomeDataService.getTopologicallyAssociatedDomains();
+    }
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
-        return FrequencyData.empty();
+        return variantDataService.getVariantFrequencyData(variant, frequencySources);
     }
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
-        return PathogenicityData.empty();
+        return variantDataService.getVariantPathogenicityData(variant, pathogenicitySources);
     }
-
 }

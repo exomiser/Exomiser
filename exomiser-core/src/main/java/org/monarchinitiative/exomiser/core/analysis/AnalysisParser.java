@@ -153,9 +153,10 @@ public class AnalysisParser {
         }
 
         private Set<OutputFormat> parseOutputFormats(Map<String, List<String>> analysisMap) {
-            List<String> givenOutputFormats = analysisMap.get("outputFormats");
-            if (givenOutputFormats == null) {
-                givenOutputFormats = new ArrayList<>();
+            List<String> givenOutputFormats = analysisMap.getOrDefault("outputFormats", Collections.emptyList());
+            if (givenOutputFormats == null || givenOutputFormats.isEmpty()) {
+                logger.info("No output format options supplied.");
+                return EnumSet.noneOf(OutputFormat.class);
             }
             Set<OutputFormat> parsedOutputFormats = new LinkedHashSet<>();
             for (String name : givenOutputFormats) {

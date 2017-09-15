@@ -25,7 +25,9 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import org.monarchinitiative.exomiser.core.genome.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -54,9 +56,8 @@ public abstract class AnalysisRunnerTestBase {
     final Path childAffectedPedPath = Paths.get("src/test/resources/inheritance/childAffected.ped");
     final Path inheritanceFilterVCFPath = Paths.get("src/test/resources/inheritance/inheritanceFilterTest.vcf");
 
-    final GeneFactory geneFactory = TestFactory.buildDefaultGeneFactory();
+    final GenomeAnalysisService genomeAnalysisService = TestFactory.buildDefaultHg19GenomeAnalysisService();
     final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-    final VariantDataService stubDataService = new VariantDataServiceStub();
 
     Analysis makeAnalysis(Path vcfPath, AnalysisStep... analysisSteps) {
         return Analysis.builder()

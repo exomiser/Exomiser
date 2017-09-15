@@ -27,7 +27,6 @@ package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.JannovarData;
-import htsjdk.tribble.TribbleException;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
@@ -78,32 +77,6 @@ public class VariantFactoryTest {
         assertThat(alternateFactory, notNullValue());
     }
 
-    @Test(expected = TribbleException.class)
-    public void testCreateVariantContexts_NonExistentFile() {
-        Path vcfPath = Paths.get("src/test/resources/wibble.vcf");
-        instance.streamVariantContexts(vcfPath);
-    }
-
-    @Test
-    public void testCreateVariantContexts_SingleAlleles() {
-        Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
-        long numVariants;
-        try (Stream<VariantContext> variantStream = instance.streamVariantContexts(vcfPath)) {
-            numVariants = variantStream.count();
-        }
-        assertThat(numVariants, equalTo(3L));
-    }
-
-    @Test
-    public void testStreamVariantContexts_SingleAlleles() {
-        Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
-        List<VariantContext> variants = instance.streamVariantContexts(vcfPath)
-                .filter(variantContext -> (variantContext.getContig().equals("1")))
-                .collect(toList());
-
-        assertThat(variants.size(), equalTo(3));
-    }
-
     @Test
     public void testStreamCreateVariants_SingleAlleles() {
         Path vcfPath = Paths.get("src/test/resources/smallTest.vcf");
@@ -114,13 +87,6 @@ public class VariantFactoryTest {
                     .count();
         }
         assertThat(numVariants, equalTo(3L));
-    }
-
-    @Test
-    public void testCreateVariantContexts_MultipleAlleles() {
-        Path vcfPath = Paths.get("src/test/resources/altAllele.vcf");
-        List<VariantContext> variants = instance.streamVariantContexts(vcfPath).collect(toList());
-        assertThat(variants.size(), equalTo(1));
     }
 
     @Test

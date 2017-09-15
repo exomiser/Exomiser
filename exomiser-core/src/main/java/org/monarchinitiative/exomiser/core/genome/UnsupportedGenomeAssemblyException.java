@@ -18,29 +18,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.monarchinitiative.exomiser.core.genome;
 
-import org.monarchinitiative.exomiser.core.model.Variant;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
-
-import java.util.Set;
-
 /**
- *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface VariantDataService {
+public class UnsupportedGenomeAssemblyException extends RuntimeException {
 
-    FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources);
+    public UnsupportedGenomeAssemblyException() {
+        super();
+    }
 
-    PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources);
+    public UnsupportedGenomeAssemblyException(String message) {
+        super(message);
+    }
 
+    public UnsupportedGenomeAssemblyException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public UnsupportedGenomeAssemblyException(Throwable cause) {
+        super(cause);
+    }
 }

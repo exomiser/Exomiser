@@ -28,10 +28,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.monarchinitiative.exomiser.core.genome.dao.*;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
+import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
+import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
+import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -41,7 +41,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumSet;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -66,17 +67,22 @@ public class VariantDataServiceImplTest {
     private RemmDao mockRemmDao;
     @Mock
     private CaddDao mockCaddDao;
-    @Mock
-    private RegulatoryFeatureDao mockRegulatoryFeatureDao;
-    @Mock
-    private TadDao mockTadDao;
 
     private static final Logger logger = LoggerFactory.getLogger(VariantDataServiceImplTest.class);
 
-    private static final PathogenicityData PATH_DATA = PathogenicityData.of(PolyPhenScore.valueOf(1), MutationTasterScore
-            .valueOf(1), SiftScore.valueOf(0));
-    private static final FrequencyData FREQ_DATA = FrequencyData.of(RsId.valueOf(1234567), Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN));
+    private static final PathogenicityData PATH_DATA = PathogenicityData.of(
+            PolyPhenScore.valueOf(1),
+            MutationTasterScore.valueOf(1),
+            SiftScore.valueOf(0)
+    );
+
+    private static final FrequencyData FREQ_DATA = FrequencyData.of(
+            RsId.valueOf(1234567),
+            Frequency.valueOf(100.0f, FrequencySource.ESP_AFRICAN_AMERICAN)
+    );
+
     private static final PathogenicityData CADD_DATA = PathogenicityData.of(CaddScore.valueOf(1));
+
     private static final VariantEffect REGULATORY_REGION = VariantEffect.REGULATORY_REGION_VARIANT;
 
     private VariantEvaluation variant;
@@ -84,7 +90,6 @@ public class VariantDataServiceImplTest {
     @Before
     public void setUp() {
         variant = buildVariantOfType(VariantEffect.MISSENSE_VARIANT);
-        Map<String, Gene> allGenes = Collections.emptyMap();
         Mockito.when(mockPathogenicityDao.getPathogenicityData(variant)).thenReturn(PATH_DATA);
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
@@ -226,24 +231,6 @@ public class VariantDataServiceImplTest {
                 
         FrequencyData result = instance.getVariantFrequencyData(variant, EnumSet.of(FrequencySource.LOCAL));
         assertThat(result, equalTo(FrequencyData.empty()));
-    }
-
-    @Test
-    public void serviceReturnsRegulatoryFeatures() {
-        List<RegulatoryFeature> regulatoryFeatures = Arrays.asList(new RegulatoryFeature(1, 10, 100, RegulatoryFeature.FeatureType.ENHANCER));
-        Mockito.when(mockRegulatoryFeatureDao.getRegulatoryFeatures()).thenReturn(regulatoryFeatures);
-
-        List<RegulatoryFeature> result = instance.getRegulatoryFeatures();
-        assertThat(result, equalTo(regulatoryFeatures));
-    }
-
-    @Test
-    public void serviceReturnsTopologicalDomains(){
-        List<TopologicalDomain> tads = Arrays.asList(new TopologicalDomain(1, 1, 2, Collections.emptyMap()));
-        Mockito.when(mockTadDao.getAllTads()).thenReturn(tads);
-
-        List<TopologicalDomain> topologicalDomains = instance.getTopologicallyAssociatedDomains();
-        assertThat(topologicalDomains, equalTo(tads));
     }
 
 }

@@ -21,8 +21,9 @@
 package org.monarchinitiative.exomiser.core.analysis;
 
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.genome.GeneFactory;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.slf4j.Logger;
@@ -45,39 +46,38 @@ public class AnalysisFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisFactory.class);
 
-    private final GeneFactory geneFactory;
     private final VariantFactory variantFactory;
-    private final VariantDataService variantDataService;
+    private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
 
     private final PriorityFactory priorityFactory;
 
     @Autowired
-    public AnalysisFactory(GeneFactory geneFactory, VariantFactory variantFactory, PriorityFactory priorityFactory, VariantDataService variantDataService) {
-        this.geneFactory = geneFactory;
+    public AnalysisFactory(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, VariantFactory variantFactory, PriorityFactory priorityFactory) {
+        this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
         this.variantFactory = variantFactory;
-        this.variantDataService = variantDataService;
         this.priorityFactory = priorityFactory;
     }
 
-    //TODO - will require the correct GenomeDataService/ GenomeAnalysisService for the user-specified GenomeBuild
-    public AnalysisRunner getAnalysisRunnerForMode(AnalysisMode analysisMode) {
+    public AnalysisRunner getAnalysisRunner(GenomeAssembly genomeAssembly, AnalysisMode analysisMode) {
         //This class primarily exists as an external interface for the Exomiser class to be able to create and run analyses
         //without having to expose too much of the Analysis package implementation. e.g. the AnalysisRunner implementations
         // below are package-private.
+        GenomeAnalysisService genomeAnalysisService = genomeAnalysisServiceProvider.get(genomeAssembly);
+
         switch (analysisMode) {
             case FULL:
-                return new SimpleAnalysisRunner(geneFactory, variantFactory, variantDataService);
+                return new SimpleAnalysisRunner(variantFactory, genomeAnalysisService);
             case SPARSE:
-                return new SparseAnalysisRunner(geneFactory, variantFactory, variantDataService);
+                return new SparseAnalysisRunner(variantFactory, genomeAnalysisService);
             case PASS_ONLY:
             default:
                 //this guy takes up the least RAM
-                return new PassOnlyAnalysisRunner(geneFactory, variantFactory, variantDataService);
+                return new PassOnlyAnalysisRunner(variantFactory, genomeAnalysisService);
         }
     }
 
     public AnalysisBuilder getAnalysisBuilder() {
-        return new AnalysisBuilder(priorityFactory, variantDataService);
+        return new AnalysisBuilder(priorityFactory, genomeAnalysisServiceProvider);
     }
 
 }

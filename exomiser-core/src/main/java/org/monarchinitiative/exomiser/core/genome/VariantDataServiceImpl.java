@@ -22,9 +22,10 @@
 package org.monarchinitiative.exomiser.core.genome;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.genome.dao.*;
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
+import org.monarchinitiative.exomiser.core.genome.dao.CaddDao;
+import org.monarchinitiative.exomiser.core.genome.dao.FrequencyDao;
+import org.monarchinitiative.exomiser.core.genome.dao.PathogenicityDao;
+import org.monarchinitiative.exomiser.core.genome.dao.RemmDao;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -64,10 +65,6 @@ public class VariantDataServiceImpl implements VariantDataService {
     private CaddDao caddDao;
     @Resource(name = "remmDao")
     private RemmDao remmDao;
-    @Autowired
-    private RegulatoryFeatureDao regulatoryFeatureDao;
-    @Autowired
-    private TadDao tadDao;
 
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
@@ -130,16 +127,6 @@ public class VariantDataServiceImpl implements VariantDataService {
             return PathogenicityData.empty();
         }
         return PathogenicityData.of(wanted);
-    }
-
-    @Override
-    public List<RegulatoryFeature> getRegulatoryFeatures() {
-        return regulatoryFeatureDao.getRegulatoryFeatures();
-    }
-
-    @Override
-    public List<TopologicalDomain> getTopologicallyAssociatedDomains() {
-        return tadDao.getAllTads();
     }
 
 }

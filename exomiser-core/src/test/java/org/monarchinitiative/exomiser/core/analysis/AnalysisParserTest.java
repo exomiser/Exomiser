@@ -115,6 +115,16 @@ public class AnalysisParserTest {
     }
 
     @Test
+    public void testParseAnalysisPedPathSpecified() {
+        Analysis analysis = instance.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    ped: test.ped\n"
+                        + "    ");
+        assertThat(analysis.getPedPath(), equalTo(Paths.get("test.ped")));
+    }
+
+    @Test
     public void testParseAnalysisProbandSampleNameSpecified() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
@@ -462,7 +472,7 @@ public class AnalysisParserTest {
     }
 
     @Test
-    public void testParseOutputSettings_OutputFormats() {
+    public void testParseOutputSettingsAllSupportedOutputFormats() {
         OutputSettings outputSettings = instance.parseOutputSettings(
                 "outputOptions:\n"
                 + "    outputPassVariantsOnly: true\n"
@@ -470,6 +480,30 @@ public class AnalysisParserTest {
                 + "    outputPrefix: results/Pfeiffer-hiphive\n"
                 + "    outputFormats: [HTML, TSV-GENE, TSV-VARIANT, VCF]\n");
         Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF);
+        assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
+    }
+
+    @Test
+    public void testParseOutputSettingsNoOutputFormats() {
+        OutputSettings outputSettings = instance.parseOutputSettings(
+                "outputOptions:\n"
+                        + "    outputPassVariantsOnly: true\n"
+                        + "    numGenes: 1\n"
+                        + "    outputPrefix: results/Pfeiffer-hiphive\n"
+                        + "    outputFormats:\n");
+        Set<OutputFormat> outputFormats = EnumSet.noneOf(OutputFormat.class);
+        assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
+    }
+
+    @Test
+    public void testParseOutputSettingsUnsupportedOutputFormatDefaultsToHtml() {
+        OutputSettings outputSettings = instance.parseOutputSettings(
+                "outputOptions:\n"
+                        + "    outputPassVariantsOnly: true\n"
+                        + "    numGenes: 1\n"
+                        + "    outputPrefix: results/Pfeiffer-hiphive\n"
+                        + "    outputFormats: [WIBBLE!]\n");
+        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML);
         assertThat(outputSettings.getOutputFormats(), equalTo((outputFormats)));
     }
 

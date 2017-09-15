@@ -25,8 +25,9 @@ import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -50,7 +51,7 @@ public class AnalysisBuilder {
     private static final Logger logger = LoggerFactory.getLogger(AnalysisBuilder.class);
 
     private final PriorityFactory priorityFactory;
-    private final VariantDataService variantDataService;
+    private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
 
     private final Analysis.Builder builder;
 
@@ -58,14 +59,15 @@ public class AnalysisBuilder {
     private List<String> hpoIds = new ArrayList<>();
     private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
     //Source-data-related variables
+    private GenomeAnalysisService genomeAnalysisService;
     private Set<FrequencySource> frequencySources = EnumSet.noneOf(FrequencySource.class);
     private Set<PathogenicitySource> pathogenicitySources = EnumSet.noneOf(PathogenicitySource.class);
 
     private List<AnalysisStep> analysisSteps = new ArrayList<>();
 
-    AnalysisBuilder(PriorityFactory priorityFactory, VariantDataService variantDataService) {
+    AnalysisBuilder(PriorityFactory priorityFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
         this.priorityFactory = priorityFactory;
-        this.variantDataService = variantDataService;
+        this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
         this.builder = Analysis.builder();
     }
 
@@ -81,9 +83,17 @@ public class AnalysisBuilder {
     }
 
     public AnalysisBuilder genomeAssembly(GenomeAssembly genomeAssembly) {
+        this.genomeAnalysisService = genomeAnalysisServiceProvider.get(genomeAssembly);
         builder.genomeAssembly(genomeAssembly);
         return this;
     }
+
+//    private GenomeAnalysisService setGenomeAnalysisService(GenomeAssembly genomeAssembly) {
+//        if (genomeAnalysisServiceProvider.hasServiceFor(genomeAssembly)){
+//            return genomeAnalysisServiceProvider.get(genomeAssembly);
+//        }
+//        throw new UnsupportedGenomeAssemblyException(String.format("Genome assembly %s is not configured for this exomiser instance. Supported assemblies are: %s", genomeAssembly, genomeAnalysisServiceProvider.getProvidedAssemblies()));
+//    }
 
     public AnalysisBuilder pedPath(Path pedPath) {
         builder.pedPath(pedPath);
@@ -166,7 +176,15 @@ public class AnalysisBuilder {
         if (frequencySources.isEmpty()) {
             throw new IllegalArgumentException("Frequency sources have not yet been defined. Add some frequency sources before defining the analysis steps.");
         }
-        return new FrequencyDataProvider(variantDataService, frequencySources, filter);
+        GenomeAnalysisService genomeAnalysisService = getGenomeAnalysisService();
+        return new FrequencyDataProvider(genomeAnalysisService, frequencySources, filter);
+    }
+
+    private GenomeAnalysisService getGenomeAnalysisService() {
+        if (genomeAnalysisService != null) {
+            return genomeAnalysisService;
+        }
+        throw new UndefinedGenomeAssemblyException("Genome assembly has not yet been defined. This is required before adding an assembly-dependant step.");
     }
 
     public AnalysisBuilder addFrequencyFilter(float cutOff) {
@@ -183,7 +201,8 @@ public class AnalysisBuilder {
         if (pathogenicitySources.isEmpty()) {
             throw new IllegalArgumentException("Pathogenicity sources have not yet been defined. Add some pathogenicity sources before defining the analysis steps.");
         }
-        return new PathogenicityDataProvider(variantDataService, pathogenicitySources, pathogenicityFilter);
+        GenomeAnalysisService genomeAnalysisService = getGenomeAnalysisService();
+        return new PathogenicityDataProvider(genomeAnalysisService, pathogenicitySources, pathogenicityFilter);
     }
 
     public AnalysisBuilder addPriorityScoreFilter(PriorityType priorityType, float minPriorityScore) {
@@ -251,4 +270,5 @@ public class AnalysisBuilder {
         analysisSteps.add(analysisStep);
         return this;
     }
+
 }
