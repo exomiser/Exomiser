@@ -24,8 +24,9 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.filters.*;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -61,12 +62,12 @@ public class AnalysisParser {
     private static final Logger logger = LoggerFactory.getLogger(AnalysisParser.class);
 
     private final PriorityFactory prioritiserFactory;
-    private final VariantDataService variantDataService;
+    private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
 
     @Autowired
-    public AnalysisParser(PriorityFactory prioritiserFactory, VariantDataService variantDataService) {
+    public AnalysisParser(PriorityFactory prioritiserFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
         this.prioritiserFactory = prioritiserFactory;
-        this.variantDataService = variantDataService;
+        this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
     }
 
     public Analysis parseAnalysis(Path analysisScript) {
@@ -192,11 +193,19 @@ public class AnalysisParser {
 
     private class AnalysisConstructor {
 
+        private GenomeAssembly defaultAssembly = genomeAnalysisServiceProvider.getDefaultGenomeAssembly();
+        private GenomeAnalysisService defaultGenomeAnalysisService = genomeAnalysisServiceProvider.getDefaultAssemblyAnalysisService();
+
+        private GenomeAnalysisService genomeAnalysisService;
+
         public Analysis construct(Map analysisMap) {
+
+            GenomeAssembly requestedAssembly = parseGenomeAssembly(analysisMap);
+            genomeAnalysisService = genomeAnalysisServiceProvider.get(requestedAssembly);
 
             Analysis analysis = Analysis.builder()
                     .vcfPath(parseVcf(analysisMap))
-                    .genomeAssembly(parseGenomeAssembly(analysisMap))
+                    .genomeAssembly(requestedAssembly)
                     .pedPath(parsePed(analysisMap))
                     .probandSampleName(parseProbandSampleName(analysisMap))
                     .hpoIds(parseHpoIds(analysisMap))
@@ -244,8 +253,8 @@ public class AnalysisParser {
             String genomeAssemblyValue = analysisMap.get("genomeAssembly");
             //VCF file paths are not allowed to be null
             if (genomeAssemblyValue == null || genomeAssemblyValue.isEmpty()) {
-                logger.info("genomeAssembly not specified - will use default: {}", GenomeAssembly.defaultBuild());
-                return GenomeAssembly.defaultBuild();
+                logger.info("genomeAssembly not specified - will use default: {}", defaultAssembly);
+                return defaultAssembly;
             }
             return GenomeAssembly.fromValue(genomeAssemblyValue);
         }
@@ -414,7 +423,7 @@ public class AnalysisParser {
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Known variant filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
             }
-            return new FrequencyDataProvider(variantDataService, EnumSet.copyOf(sources), new KnownVariantFilter());
+            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new KnownVariantFilter());
         }
 
         private VariantFilter makeFrequencyFilter(Map<String, Object> options, Set<FrequencySource> sources) {
@@ -422,7 +431,8 @@ public class AnalysisParser {
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Frequency filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]", options);
             }
-            return new FrequencyDataProvider(variantDataService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq.floatValue()));
+            return new FrequencyDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new FrequencyFilter(maxFreq
+                    .floatValue()));
         }
 
         private Double getMaxFrequency(Map<String, Object> options) {
@@ -461,7 +471,7 @@ public class AnalysisParser {
             if (sources.isEmpty()) {
                 throw new AnalysisParserException("Pathogenicity filter requires a list of pathogenicity sources for the analysis e.g. {pathogenicitySources: [SIFT, POLYPHEN, MUTATION_TASTER]}", options);
             }
-            return new PathogenicityDataProvider(variantDataService, EnumSet.copyOf(sources), new PathogenicityFilter(keepNonPathogenic));
+            return new PathogenicityDataProvider(genomeAnalysisService, EnumSet.copyOf(sources), new PathogenicityFilter(keepNonPathogenic));
         }
 
         private Set<PathogenicitySource> parsePathogenicitySources(Map<String, List<String>> options) {

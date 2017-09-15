@@ -88,13 +88,6 @@ public class AnalysisBuilder {
         return this;
     }
 
-//    private GenomeAnalysisService setGenomeAnalysisService(GenomeAssembly genomeAssembly) {
-//        if (genomeAnalysisServiceProvider.hasServiceFor(genomeAssembly)){
-//            return genomeAnalysisServiceProvider.get(genomeAssembly);
-//        }
-//        throw new UnsupportedGenomeAssemblyException(String.format("Genome assembly %s is not configured for this exomiser instance. Supported assemblies are: %s", genomeAssembly, genomeAnalysisServiceProvider.getProvidedAssemblies()));
-//    }
-
     public AnalysisBuilder pedPath(Path pedPath) {
         builder.pedPath(pedPath);
         return this;

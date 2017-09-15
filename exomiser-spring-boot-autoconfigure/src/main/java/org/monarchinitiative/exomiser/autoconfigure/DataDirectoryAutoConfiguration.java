@@ -75,6 +75,20 @@ public class DataDirectoryAutoConfiguration {
         return workingDir;
     }
 
+//    @Bean
+//    Path analysisPath() {
+//        Path analysisPath = Paths.get(environment.getProperty("exomiser.working-directory"));
+//        try {
+//            if (!analysisPath.toFile().exists()) {
+//                logger.info("Setting up analysis path at {}", analysisPath);
+//                Files.createDirectory(analysisPath);
+//            }
+//        } catch (IOException ex) {
+//            logger.error("Unable to create directory for analyses {}", analysisPath, ex);
+//        }
+//        return analysisPath;
+//    }
+
     private String getWorkingDir() {
         if (properties.getWorkingDirectory() != null) {
             return properties.getWorkingDirectory();

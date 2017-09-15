@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
+import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
@@ -32,8 +33,7 @@ import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisFileNotFoundException;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisParser.AnalysisParserException;
 import org.monarchinitiative.exomiser.core.filters.*;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.VariantDataServiceStub;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
@@ -68,7 +68,8 @@ public class AnalysisParserTest {
     @Before
     public void setUp() {
         priorityFactory = new NoneTypePriorityFactoryStub();
-        instance = new AnalysisParser(priorityFactory, new VariantDataServiceStub());
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory.buildDefaultHg19GenomeAnalysisService());
+        instance = new AnalysisParser(priorityFactory, genomeAnalysisServiceProvider);
 
         analysisSteps = new ArrayList<>();
         hpoIds = new ArrayList<>(Arrays.asList("HP:0001156", "HP:0001363", "HP:0011304", "HP:0010055"));
@@ -153,14 +154,41 @@ public class AnalysisParserTest {
         assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.defaultBuild()));
     }
 
-    @Test
-    public void testParseAnalysisCanSetGenomeBuildUsingUcscName() {
+    @Test(expected = UnsupportedGenomeAssemblyException.class)
+    public void testParseAnalysisThrowsExceptionForUnsupportedGenomeBuild() {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
                         + "    genomeAssembly: hg38\n"
                         + "    ");
-        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+    }
+
+    @Test
+    public void testParseAnalysisCanSetAlternativeGenomeAssemblyUsingUcscName() {
+        AnalysisParser hg19And38SupportedParser = getHg19and38SupportedParser();
+
+        Analysis hg38Analysis = hg19And38SupportedParser.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: hg38\n"
+                        + "    ");
+        assertThat(hg38Analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+
+        Analysis hg19Analysis = hg19And38SupportedParser.parseAnalysis(
+                "analysis:\n"
+                        + "    vcf: test.vcf\n"
+                        + "    genomeAssembly: hg19\n"
+                        + "    ");
+        assertThat(hg19Analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
+    }
+
+    private AnalysisParser getHg19and38SupportedParser() {
+        GenomeAnalysisService hg19AnalysisService = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
+        GenomeAnalysisService hg38AnalysisService = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
+
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(hg19AnalysisService, Sets
+                .newHashSet(hg38AnalysisService));
+        return new AnalysisParser(priorityFactory, genomeAnalysisServiceProvider);
     }
 
     @Test
@@ -168,9 +196,9 @@ public class AnalysisParserTest {
         Analysis analysis = instance.parseAnalysis(
                 "analysis:\n"
                         + "    vcf: test.vcf\n"
-                        + "    genomeAssembly: GRCh38\n"
+                        + "    genomeAssembly: GRCh37\n"
                         + "    ");
-        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+        assertThat(analysis.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
     }
 
     @Test(expected = GenomeAssembly.InvalidGenomeAssemblyException.class)
