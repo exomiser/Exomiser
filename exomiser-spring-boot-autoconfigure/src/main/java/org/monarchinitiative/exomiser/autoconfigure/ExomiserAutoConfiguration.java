@@ -46,7 +46,7 @@ import org.springframework.context.annotation.Import;
         PrioritiserAutoConfiguration.class,
         VariantDataServiceAutoConfiguration.class,
         TranscriptSourceAutoConfiguration.class})
-@ComponentScan({"org.monarchinitiative.exomiser.core"})
+@ComponentScan(basePackageClasses = {Exomiser.class}, basePackages = {"org.monarchinitiative.exomiser.core.analysis"})
 public class ExomiserAutoConfiguration {
 
     @Bean
