@@ -62,6 +62,7 @@ public class VariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(VariantFactory.class);
 
+    private final GenomeAssembly genomeAssembly;
     private final JannovarVariantAnnotator variantAnnotator;
 
     //in cases where a variant cannot be positioned on a chromosome we're going to use 0 in order to fulfil the
@@ -69,7 +70,8 @@ public class VariantFactory {
     private static final int UNKNOWN_CHROMOSOME = 0;
 
     @Autowired
-    public VariantFactory(JannovarData jannovarData) {
+    public VariantFactory(GenomeAssembly genomeAssembly, JannovarData jannovarData) {
+        this.genomeAssembly = genomeAssembly;
         this.variantAnnotator = new JannovarVariantAnnotator(jannovarData);
     }
 
@@ -78,7 +80,7 @@ public class VariantFactory {
     }
 
     public Stream<VariantEvaluation> streamVariantEvaluations(Stream<VariantContext> variantContextStream) {
-        logger.info("Annotating variant records, trimming sequences and normalising positions...");
+        logger.info("Annotating variant records against {} assembly, trimming sequences and normalising positions...", genomeAssembly);
         VariantCounter counter = new VariantCounter();
         return variantContextStream
                 .peek(counter.countVariantContext())
@@ -159,6 +161,7 @@ public class VariantFactory {
         List<TranscriptAnnotation> annotations = buildTranscriptAnnotations(variantAnnotations.getAnnotations());
 
         return VariantEvaluation.builder(chr, pos, ref, alt)
+                .genomeAssembly(genomeAssembly)
                 //HTSJDK derived data are only used for writing out the
                 //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
                 //can be removed from InheritanceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
@@ -198,6 +201,7 @@ public class VariantFactory {
         String chromosomeName = variantContext.getContig();
         logger.trace("Building unannotated variant for {} {} {} {} - assigning to chromosome {}", chromosomeName, pos, ref, alt, UNKNOWN_CHROMOSOME);
         return VariantEvaluation.builder(UNKNOWN_CHROMOSOME, pos, ref, alt)
+                .genomeAssembly(genomeAssembly)
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())

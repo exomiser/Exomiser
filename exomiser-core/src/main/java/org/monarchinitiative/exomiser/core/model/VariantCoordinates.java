@@ -25,6 +25,8 @@
  */
 package org.monarchinitiative.exomiser.core.model;
 
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+
 /**
  *
  *
@@ -32,32 +34,34 @@ package org.monarchinitiative.exomiser.core.model;
  */
 public interface VariantCoordinates {
 
+    public GenomeAssembly getGenomeAssembly();
+
     /**
      * @return integer representation of the chromosome
      */
-    int getChromosome();
+    public int getChromosome();
 
     /**
      * @return String representation of the chromosome. Chromosomes 1-22 will return
      * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=M.
      */
-    String getChromosomeName();
+    public String getChromosomeName();
 
     /**
      * @return 1-based position of the variant on the chromosome
      */
-    int getPosition();
+    public int getPosition();
 
     /**
      * @return String with the reference allele in the variant, without common
      * suffix or prefix to reference allele.
      */
-    String getRef();
+    public String getRef();
 
     /**
      * @return String with the alternative allele in the variant, without common
      * suffix or prefix to reference allele.
      */
-    String getAlt();
+    public String getAlt();
 
 }

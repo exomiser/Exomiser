@@ -29,10 +29,12 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.pedigree.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -54,6 +56,7 @@ public class VariantEvaluationTest {
 
     private VariantEvaluation instance;
 
+    private static final GenomeAssembly GENOME_ASSEMBLY = GenomeAssembly.HG19;
     private static final int CHROMOSOME = 1;
     private static final String CHROMOSOME_NAME = "1";
     private static final int POSITION = 1;
@@ -105,7 +108,36 @@ public class VariantEvaluationTest {
     private static VariantEvaluation.Builder testVariantBuilder() {
         return VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT);
     }
-    
+
+    @Test
+    public void testDefaultGenomeAssembly() {
+        assertThat(instance.getGenomeAssembly(), equalTo(GENOME_ASSEMBLY));
+    }
+
+    @Test
+    public void testSpecifiedGenomeAssembly() {
+        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+                .genomeAssembly(GenomeAssembly.HG38)
+                .build();
+        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+    }
+
+    @Test
+    public void testSpecifiedGenomeAssemblyFromValue() {
+        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+                .genomeAssembly("GRCh38")
+                .build();
+        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testSpecifiedGenomeAssemblyUnrecognisedAssemblyThrowsException() {
+        VariantEvaluation variantEvaluation = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
+                .genomeAssembly("wibble")
+                .build();
+        assertThat(variantEvaluation.getGenomeAssembly(), equalTo(GenomeAssembly.HG38));
+    }
+
     @Test
     public void testGetChromosome() {
         assertThat(instance.getChromosome(), equalTo(CHROMOSOME));
@@ -114,6 +146,12 @@ public class VariantEvaluationTest {
     @Test
     public void testGetChromosomeName() {
         assertThat(instance.getChromosomeName(), equalTo(CHROMOSOME_NAME));
+    }
+
+    @Test
+    public void testBuilderChromosomeName() {
+        VariantEvaluation variantEvaluation = testVariantBuilder().chromosomeName("Can be anything").build();
+        assertThat(variantEvaluation.getChromosomeName(), equalTo("Can be anything"));
     }
 
     @Test
@@ -166,6 +204,33 @@ public class VariantEvaluationTest {
     @Test
     public void canGetEntrezGeneID() {
         assertThat(instance.getEntrezGeneId(), equalTo(GENE1_ENTREZ_GENE_ID));
+    }
+
+    @Test
+    public void testCanSetVariantEffectAfterConstruction() {
+        VariantEvaluation variantEvaluation = testVariantBuilder().variantEffect(VariantEffect.FEATURE_TRUNCATION)
+                .build();
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.FEATURE_TRUNCATION));
+
+        variantEvaluation.setVariantEffect(VariantEffect.MISSENSE_VARIANT);
+        assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
+    }
+
+    @Test
+    public void testTranscriptAnnotationsAreEmptyByDefault() {
+        VariantEvaluation variantEvaluation = testVariantBuilder().build();
+        assertThat(variantEvaluation.getAnnotations(), equalTo(Collections.emptyList()));
+    }
+
+    @Test
+    public void testAddTranscriptAnnotations() {
+        TranscriptAnnotation transcriptAnnotation = TranscriptAnnotation.builder().geneSymbol("GENE1").build();
+        List<TranscriptAnnotation> annotations = Collections.singletonList(transcriptAnnotation);
+        VariantEvaluation variantEvaluation = testVariantBuilder()
+                .annotations(annotations)
+                .build();
+        System.out.println(annotations);
+        assertThat(variantEvaluation.getAnnotations(), equalTo(annotations));
     }
 
     @Test
@@ -499,6 +564,15 @@ public class VariantEvaluationTest {
     }
 
     @Test
+    public void testBuilderVariantContext() {
+        VariantContext variantContext = new VariantContextBuilder().chr("M").start(1).stop(1).alleles("A", "T").make();
+        VariantEvaluation variantEvaluation = VariantEvaluation.builder(25, 1, "A", "T")
+                .variantContext(variantContext)
+                .build();
+        assertThat(variantEvaluation.getVariantContext(), equalTo(variantContext));
+    }
+
+    @Test
     public void getAltAlleleId_EqualsZeroWhenNotSet() {
         assertThat(instance.getAltAlleleId(), equalTo(0));
     }
@@ -663,14 +737,14 @@ public class VariantEvaluationTest {
 
     @Test
     public void testToString() {
-        String expected = "VariantEvaluation{chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));
     }
 
     @Test
     public void testToStringVariant_ContributesToGeneScore() {
-        String expected = "VariantEvaluation{chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
+        String expected = "VariantEvaluation{assembly=hg19 chr=1 pos=1 ref=C alt=T qual=2.2 SEQUENCE_VARIANT * score=0.0 UNFILTERED failedFilters=[] passedFilters=[] compatibleWith=[]}";
         instance.setAsContributingToGeneScore();
         System.out.println(instance);
         assertThat(instance.toString(), equalTo(expected));

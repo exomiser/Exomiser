@@ -46,13 +46,18 @@ public class TestFactory {
     private static final TranscriptModel tmRBM8A = TestTranscriptModelFactory.buildTMForRBM8A();
     private static final TranscriptModel tmSHH = TestTranscriptModelFactory.buildTMForSHH();
 
+    private static final GenomeAssembly DEFAULT_GENOME_ASSEMBLY = GenomeAssembly.HG19;
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
     private static final GeneFactory DEFAULT_GENE_FACTORY = new GeneFactory(DEFAULT_JANNOVAR_DATA);
-    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(DEFAULT_JANNOVAR_DATA);
+    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA);
     private static final VariantAnnotationData DEFAULT_VARIANT_ANNOTATION_DATA = new VariantAnnotationData(DEFAULT_JANNOVAR_DATA);
 
     private TestFactory() {
         //this class should be used in a static context.
+    }
+
+    public static GenomeAssembly getDefaultGenomeAssembly() {
+        return DEFAULT_GENOME_ASSEMBLY;
     }
 
     public static ReferenceDictionary getDefaultRefDict() {
@@ -77,11 +82,11 @@ public class TestFactory {
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {
         final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return new VariantFactory(jannovarData);
+        return new VariantFactory(DEFAULT_GENOME_ASSEMBLY, jannovarData);
     }
 
     public static VariantFactory buildVariantFactory(JannovarData jannovarData) {
-        return new VariantFactory(jannovarData);
+        return new VariantFactory(DEFAULT_GENOME_ASSEMBLY, jannovarData);
     }
 
     public static VariantAnnotationData buildVariantAnnotationData(TranscriptModel... transcriptModels) {
@@ -118,10 +123,11 @@ public class TestFactory {
     }
 
     public static GenomeAnalysisService buildDefaultHg19GenomeAnalysisService() {
-        return new GenomeAnalysisServiceImpl(GenomeAssembly.HG19, buildDefaultGenomeDataService(), new VariantDataServiceStub());
+        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), new VariantDataServiceStub());
     }
 
     public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {
         return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub());
     }
+
 }

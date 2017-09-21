@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.genome.GeneTranscriptModelBuilder;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
-import org.monarchinitiative.exomiser.core.genome.VariantContextBuilder;
+import org.monarchinitiative.exomiser.core.genome.TestVcfParser;
 import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
@@ -396,11 +396,12 @@ public class GeneReassignerTest {
 
     @Test
     public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_MissenseAnnotationsAreNotReassigned() {
-        VariantContextBuilder multiSampleBuilder = new VariantContextBuilder("Adam", "Eve");
-        VariantContext variantContext = multiSampleBuilder.build("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
+        Stream<VariantContext> variantContext = TestVcfParser
+                .forSamples("Adam", "Eve")
+                .parseVariantContext("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
 
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(Stream.of(variantContext)).collect(toList());
+        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(variantContext).collect(toList());
 
         Gene GNRHR2 = TestFactory.newGeneGNRHR2();
 
@@ -432,11 +433,11 @@ public class GeneReassignerTest {
     @Test
     public void testReassignGeneToMostPhenotypicallySimilarGeneInAnnotations_AnnotationsOverlapTwoGenesShouldOnlyHaveTopPhenotypeGeneMatchAnnotations() {
         //in this scenario the annotations for the variant overlap both the GNRHR2 and RBM8A genes.
-        VariantContextBuilder multiSampleBuilder = new VariantContextBuilder("Adam", "Eve");
-        VariantContext variantContext = multiSampleBuilder.build("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
+        Stream<VariantContext> variantContext = TestVcfParser.forSamples("Adam", "Eve")
+                .parseVariantContext("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
 
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(Stream.of(variantContext))
+        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(variantContext)
                 .collect(toList());
 
         Gene topPhenotypeMatchGene = TestFactory.newGeneRBM8A();
@@ -498,7 +499,6 @@ public class GeneReassignerTest {
 
         VariantFactory variantFactory = TestFactory.buildVariantFactory(gene1TranscriptModel);
 
-        VariantContextBuilder sampleBuilder = new VariantContextBuilder("Sample");
         String gene1VarUpstream = "1 50 . A T 0 . GENE=GENE1 GT 0/1";
         String gene1VarUtr5 = "1 117 . A T 0 . GENE=GENE1 GT 0/1";
         String gene1VarMissense1Exon1 = "1 129 . C A 0 . GENE=GENE1 GT 0/1";
@@ -507,12 +507,18 @@ public class GeneReassignerTest {
         String gene1VarMissense1Exon2 = "1 160 . C T 0 . GENE=GENE1 GT 0/1";
         String gene1VarUtr3 = "1 181 . A TGTT 0 . GENE=GENE1 GT 0/1";
 
-        List<VariantContext> variantContexts = sampleBuilder.build(gene1VarUpstream, gene1VarUtr5, gene1VarMissense1Exon1, gene1Var1SpliceRegion1, gene1Var1Intron1, gene1VarMissense1Exon2, gene1VarUtr3);
-        variantContexts.forEach(variantContext -> logger.info("{}", variantContext));
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample")
+                .parseVariantContext(gene1VarUpstream,
+                        gene1VarUtr5,
+                        gene1VarMissense1Exon1,
+                        gene1Var1SpliceRegion1,
+                        gene1Var1Intron1,
+                        gene1VarMissense1Exon2,
+                        gene1VarUtr3);
 
-        List<VariantEvaluation> variantEvaluations = variantFactory.streamVariantEvaluations(variantContexts.stream()).collect(toList());
-
-        variantEvaluations.forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getAnnotations()));
+        variantFactory.streamVariantEvaluations(variantContexts)
+                .peek(variantContext -> logger.info("{}", variantContext))
+                .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getAnnotations()));
 
     }
 //    gene lies within two overlapping TADs

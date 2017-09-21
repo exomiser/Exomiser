@@ -31,22 +31,18 @@ import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFCodec;
-import htsjdk.variant.vcf.VCFHeader;
-import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -58,7 +54,7 @@ public class VariantFactoryTest {
 
     public VariantFactoryTest() {
         JannovarData jannovarData = TestFactory.buildDefaultJannovarData();
-        instance = new VariantFactory(jannovarData);
+        instance = new VariantFactory(TestFactory.getDefaultGenomeAssembly(), jannovarData);
     }
 
     private Consumer<VariantEvaluation> printVariant() {
@@ -69,12 +65,6 @@ public class VariantFactoryTest {
                     .getRef(), variant.getAlt(), variant.getGenotypeString(), genotypes, genotypeTypes, variant.isOffExome(), variant
                     .getGeneSymbol(), variant.getVariantContext());
         };
-    }
-
-    @Test
-    public void alternateConstructor() {
-        VariantFactory alternateFactory = new VariantFactory(TestFactory.buildDefaultJannovarData());
-        assertThat(alternateFactory, notNullValue());
     }
 
     @Test
@@ -143,8 +133,8 @@ public class VariantFactoryTest {
 
     @Test
     public void testKnownSingleSampleSnp() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples("Sample")
-                .parse("10\t123256215\t.\tT\tG\t100\tPASS\tGENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1|0");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample")
+                .parseVariantContext("10\t123256215\t.\tT\tG\t100\tPASS\tGENE=FGFR2;INHERITANCE=AD;MIM=101600\tGT\t1|0");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -165,8 +155,8 @@ public class VariantFactoryTest {
 
     @Test
     public void testUnKnownSingleSampleSnp() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples("Sample")
-                .parse("UNKNOWN\t12345\t.\tT\tC\t0\tPASS\t.\tGT:DP\t0/1:21");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample")
+                .parseVariantContext("UNKNOWN\t12345\t.\tT\tC\t0\tPASS\t.\tGT:DP\t0/1:21");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -190,8 +180,8 @@ public class VariantFactoryTest {
      */
     @Test
     public void testSingleSampleDeletion() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples("Sample")
-                .parse("1\t123256213\t.\tCA\tC\t100.15\tPASS\tGENE=RBM8A\tGT:DP\t0/1:33");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample")
+                .parseVariantContext("1\t123256213\t.\tCA\tC\t100.15\tPASS\tGENE=RBM8A\tGT:DP\t0/1:33");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -212,7 +202,8 @@ public class VariantFactoryTest {
 
     @Test
     public void testSnpWithNoGenotypeReturnsNothing() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples().parse("UNKNOWN\t12345\t.\tT\tC\t0\tPASS\t.");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples()
+                .parseVariantContext("UNKNOWN\t12345\t.\tT\tC\t0\tPASS\t.");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -221,8 +212,8 @@ public class VariantFactoryTest {
 
     @Test
     public void testSingleSampleHomVar() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples("Sample")
-                .parse("1\t120612040\t.\tT\tTCCGCCG\t258.62\tPASS\t.\tGT\t1/1");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample")
+                .parseVariantContext("1\t120612040\t.\tT\tTCCGCCG\t258.62\tPASS\t.\tGT\t1/1");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -231,8 +222,8 @@ public class VariantFactoryTest {
 
     @Test
     public void testSingleSampleMultiPosition() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples("Sample")
-                .parse("1\t120612040\t.\tT\tTCCGCCG,TCCTCCGCCG\t258.62\tPASS\t.\tGT\t1/2");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample")
+                .parseVariantContext("1\t120612040\t.\tT\tTCCGCCG,TCCTCCGCCG\t258.62\tPASS\t.\tGT\t1/2");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -242,8 +233,8 @@ public class VariantFactoryTest {
 
     @Test
     public void testMultiSampleMultiPositionAlleleIsSplitIntoAlternateAlleles() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples("Sample1", "Sample2")
-                .parse("1\t120612040\t.\tT\tTCCGCCG,TCCTCCGCCG\t258.62\tPASS\t.\tGT\t0/1\t0/2");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1", "Sample2")
+                .parseVariantContext("1\t120612040\t.\tT\tTCCGCCG,TCCTCCGCCG\t258.62\tPASS\t.\tGT\t0/1\t0/2");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -278,8 +269,8 @@ public class VariantFactoryTest {
 
     @Test
     public void testMultiSampleMultiPositionOnlyOneAltAlleleIsPresentInSamplesProducesOneVariantEvaluation() {
-        Stream<VariantContext> variantContexts = VcfParser.forSamples("Sample1", "Sample2")
-                .parse("1\t120612040\t.\tT\tTCCGCCG,TCCTCCGCCG\t258.62\tPASS\t.\tGT\t0/1\t0/1");
+        Stream<VariantContext> variantContexts = TestVcfParser.forSamples("Sample1", "Sample2")
+                .parseVariantContext("1\t120612040\t.\tT\tTCCGCCG,TCCTCCGCCG\t258.62\tPASS\t.\tGT\t0/1\t0/1");
         List<VariantEvaluation> variants = instance.streamVariantEvaluations(variantContexts)
                 .peek(printVariant())
                 .collect(toList());
@@ -298,30 +289,4 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
     }
 
-    private static class VcfParser {
-
-        private final VCFCodec vcfCodec;
-
-        static VcfParser forSamples(String... sampleNames) {
-            return new VcfParser(sampleNames);
-        }
-
-        private VcfParser(String... sampleNames) {
-            vcfCodec = getVcfCodecForSamples(sampleNames);
-        }
-
-        private VCFCodec getVcfCodecForSamples(String... sampleNames) {
-            VCFCodec vcfCodec = new VCFCodec();
-            vcfCodec.setVCFHeader(new VCFHeader(Collections.emptySet(), Arrays.asList(sampleNames)), VCFHeaderVersion.VCF4_2);
-            return vcfCodec;
-        }
-
-        Stream<VariantContext> parse(String... lines) {
-            return Stream.of(lines).map(vcfCodec::decode);
-        }
-
-        Stream<VariantContext> parse(String line) {
-            return Stream.of(line).map(vcfCodec::decode);
-        }
-    }
 }
