@@ -20,22 +20,26 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.ImmutableMap;
-import drseb.BoqaService;
-import drseb.BoqaService.ResultEntry;
-import ontologizer.association.AssociationParser.Type;
-import org.monarchinitiative.exomiser.core.model.Gene;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.monarchinitiative.exomiser.core.model.Gene;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+
+import drseb.BoqaService;
+import drseb.BoqaService.ResultEntry;
+import ontologizer.association.AssociationParser.Type;
+import ontologizer.go.Term;
 
 /**
  * Score genes by BOQA. This will return the probability of the gene matching the set of input phenotypes.
@@ -89,8 +93,25 @@ public class BOQAPriority implements Prioritiser {
     }
 
     private Map<Integer, Double> calculateGenePhenotypeScores(List<String> hpoIds) {
-        return boqaService.scoreItems(new ArrayList<>(hpoIds)).values().stream()
+    	HashSet<Term> ids =makeHpoQueryTerms(hpoIds);
+    	 if (ids.isEmpty())
+             throw new BoqaException("Please supply some HPO terms. BOQA is unable to prioritise genes without these.");
+        return boqaService.scoreItems(ids).values().stream()
                 .collect(ImmutableMap.toImmutableMap(getEntrezId(), ResultEntry::getScore));
+    }
+    
+    private HashSet<Term> makeHpoQueryTerms(List<String> hpoIds) {
+        return hpoIds.stream()
+                .map(termIdString -> {
+                    Term term = boqaService.getOntology().getTermIncludingAlternatives(termIdString);
+                    if (term == null) {
+                        logger.error("Unrecognised HPO input term {}. This will not be used in the analysis.", termIdString);
+                    }
+                    return term;
+                })
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toCollection(HashSet::new));
     }
 
     private Function<ResultEntry, Integer> getEntrezId() {
@@ -135,7 +156,12 @@ public class BOQAPriority implements Prioritiser {
 
     private static class BoqaException extends RuntimeException {
 
-        private BoqaException(String message) {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		private BoqaException(String message) {
             super(message);
         }
     }
