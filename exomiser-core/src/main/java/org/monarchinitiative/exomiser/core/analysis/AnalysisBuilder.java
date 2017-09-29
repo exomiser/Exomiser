@@ -227,6 +227,11 @@ public class AnalysisBuilder {
         addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeHiPhivePrioritiser(hiPhiveOptions));
         return this;
     }
+    
+    public AnalysisBuilder addBOQAPrioritiser() {
+        addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makeBOQAPrioritiser());
+        return this;
+    }
 
     public AnalysisBuilder addPhenixPrioritiser() {
         addPrioritiserStepIfHpoIdsNotEmpty(priorityFactory.makePhenixPrioritiser());
