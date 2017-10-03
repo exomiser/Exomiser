@@ -656,7 +656,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
                 case 24:
                     return "Y";
                 case 25:
-                    return "M";
+                    return "MT";
                 default:
                     return String.valueOf(chr);
             }

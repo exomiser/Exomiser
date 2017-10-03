@@ -540,9 +540,9 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void testGetChromosomeName_25isM() {
+    public void testGetChromosomeName_25isMT() {
         instance = VariantEvaluation.builder(25, 1, "A", "T").build();
-        assertThat(instance.getChromosomeName(), equalTo("M"));
+        assertThat(instance.getChromosomeName(), equalTo("MT"));
     }
 
     @Test
