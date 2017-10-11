@@ -193,9 +193,7 @@ public class AnalysisParser {
 
     private class AnalysisConstructor {
 
-        private GenomeAssembly defaultAssembly = genomeAnalysisServiceProvider.getDefaultGenomeAssembly();
-        private GenomeAnalysisService defaultGenomeAnalysisService = genomeAnalysisServiceProvider.getDefaultAssemblyAnalysisService();
-
+        private GenomeAssembly defaultAssembly = GenomeAssembly.HG19;
         private GenomeAnalysisService genomeAnalysisService;
 
         public Analysis construct(Map analysisMap) {
@@ -338,8 +336,8 @@ public class AnalysisParser {
                     return makeFailedVariantFilter();
                 case "intervalFilter":
                     return makeIntervalFilter(analysisStepMap);
-                case "geneIdFilter":
-                    return makeGeneIdFilter(analysisStepMap);
+                case "genePanelFilter":
+                    return makeGeneSymbolFilter(analysisStepMap);
                 case "variantEffectFilter":
                     return makeVariantEffectFilter(analysisStepMap);
                 case "qualityFilter":
@@ -385,12 +383,12 @@ public class AnalysisParser {
             return new IntervalFilter(GeneticInterval.parseString(HG19RefDictBuilder.build(), interval));
         }
 
-        private EntrezGeneIdFilter makeGeneIdFilter(Map<String, List<Integer>> options) {
-            List<Integer> geneIds = options.get("geneIds");
-            if (geneIds == null || geneIds.isEmpty()) {
-                throw new AnalysisParserException("GeneId filter requires a list of ENTREZ geneIds e.g. {geneIds: [12345, 34567, 98765]}", options);
+        private GeneSymbolFilter makeGeneSymbolFilter(Map<String, List<String>> options) {
+            List<String> geneSymbols = options.get("geneSymbols");
+            if (geneSymbols == null || geneSymbols.isEmpty()) {
+                throw new AnalysisParserException("Gene panel filter requires a list of HGNC gene symbols e.g. {geneSymbols: [FGFR1, FGFR2]}", options);
             }
-            return new EntrezGeneIdFilter(new LinkedHashSet<>(geneIds));
+            return new GeneSymbolFilter(new LinkedHashSet<>(geneSymbols));
         }
 
         private VariantEffectFilter makeVariantEffectFilter(Map<String, List<String>> options) {

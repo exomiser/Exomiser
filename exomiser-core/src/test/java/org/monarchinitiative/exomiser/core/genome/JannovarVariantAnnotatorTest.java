@@ -33,7 +33,8 @@ import static org.junit.Assert.assertThat;
  */
 public class JannovarVariantAnnotatorTest {
 
-    private JannovarVariantAnnotator instance = new JannovarVariantAnnotator(TestFactory.buildDefaultJannovarData());
+    private JannovarVariantAnnotator instance = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
+            .buildDefaultJannovarData());
 
     @Test
     public void testGetAnnotationsForUnknownContigVariant() {

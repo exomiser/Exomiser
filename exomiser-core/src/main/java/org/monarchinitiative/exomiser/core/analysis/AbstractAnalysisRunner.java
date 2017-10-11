@@ -30,7 +30,6 @@ import org.monarchinitiative.exomiser.core.filters.GeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
 import org.monarchinitiative.exomiser.core.filters.VariantFilterRunner;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
@@ -63,14 +62,13 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
-    private final VariantFactory variantFactory;
+    //arguably this shouldn't even be exposed here...
     private final GenomeAnalysisService genomeAnalysisService;
 
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 
-    public AbstractAnalysisRunner(VariantFactory variantFactory, GenomeAnalysisService genomeAnalysisService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
-        this.variantFactory = variantFactory;
+    public AbstractAnalysisRunner(GenomeAnalysisService genomeAnalysisService, VariantFilterRunner variantFilterRunner, GeneFilterRunner geneFilterRunner) {
         this.genomeAnalysisService = genomeAnalysisService;
 
         this.variantFilterRunner = variantFilterRunner;
@@ -144,7 +142,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .pedPath(pedigreeFilePath)
                 .vcfHeader(vcfHeader)
                 .probandSampleName(probandSampleName)
-                .sampleNames(vcfHeader.getGenotypeSamples())
+                .sampleNames(sampleNames)
                 .pedigree(pedigree)
                 .genes(genes)
                 .variantEvaluations(variants)
@@ -193,19 +191,19 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .collect(toList());
     }
 
-    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
-        //todo: this won't function correctly if run before a prioritiser has been run
-        return variantEvaluation -> {
-            geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
-            return variantEvaluation;
-        };
-    }
-
     private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInJannovarAnnotations(GeneReassigner geneReassigner) {
         return variantEvaluation -> {
             if (variantEvaluation.isNonCodingVariant()){
                 geneReassigner.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
             }
+            return variantEvaluation;
+        };
+    }
+
+    private Function<VariantEvaluation, VariantEvaluation> reassignNonCodingVariantToBestGeneInTad(GeneReassigner geneReassigner) {
+        //todo: this won't function correctly if run before a prioritiser has been run
+        return variantEvaluation -> {
+            geneReassigner.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variantEvaluation);
             return variantEvaluation;
         };
     }
@@ -233,7 +231,8 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private Stream<VariantEvaluation> loadVariants(Path vcfPath) {
         ChromosomalRegionIndex<RegulatoryFeature> regulatoryRegionIndex = genomeAnalysisService.getRegulatoryRegionIndex();
         //WARNING!!! THIS IS NOT THREADSAFE DO NOT USE PARALLEL STREAMS
-        return variantFactory.streamVariantEvaluations(vcfPath).map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
+        return genomeAnalysisService.createVariantEvaluations(vcfPath)
+                .map(setRegulatoryRegionVariantEffect(regulatoryRegionIndex));
     }
 
     //Adds the missing REGULATORY_REGION_VARIANT effect to variants - this isn't in the Jannovar data set.

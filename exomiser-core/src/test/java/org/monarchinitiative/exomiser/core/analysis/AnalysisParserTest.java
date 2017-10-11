@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core.analysis;
 
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.Before;
@@ -186,8 +185,7 @@ public class AnalysisParserTest {
         GenomeAnalysisService hg19AnalysisService = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
         GenomeAnalysisService hg38AnalysisService = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
-        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(hg19AnalysisService, Sets
-                .newHashSet(hg38AnalysisService));
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(hg19AnalysisService, hg38AnalysisService);
         return new AnalysisParser(priorityFactory, genomeAnalysisServiceProvider);
     }
 
@@ -267,8 +265,8 @@ public class AnalysisParserTest {
 
     @Test
     public void testParseAnalysisStep_GeneIdFilter() {
-        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("geneIdFilter: {geneIds: [12345, 34567, 98765]}"));
-        analysisSteps.add(new EntrezGeneIdFilter(new LinkedHashSet<>(Arrays.asList(12345, 34567, 98765))));
+        Analysis analysis = instance.parseAnalysis(addStepToAnalysis("genePanelFilter: {geneSymbols: [FGFR1, FGFR2]}"));
+        analysisSteps.add(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))));
         assertThat(analysis.getAnalysisSteps(), equalTo(analysisSteps));
     }
 
@@ -432,7 +430,7 @@ public class AnalysisParserTest {
         assertThat(analysis.getFrequencySources(), equalTo(frequencySources));
         assertThat(analysis.getPathogenicitySources(), equalTo(pathogenicitySources));
         analysisSteps.add(new IntervalFilter(new GeneticInterval(10, 123256200, 123256300)));
-        analysisSteps.add(new EntrezGeneIdFilter(new LinkedHashSet<>(Arrays.asList(12345, 34567, 98765))));
+        analysisSteps.add(new GeneSymbolFilter(new LinkedHashSet<>(Arrays.asList("FGFR1", "FGFR2"))));
         analysisSteps.add(new QualityFilter(50.0f));
         analysisSteps.add(new VariantEffectFilter(EnumSet.of(VariantEffect.SYNONYMOUS_VARIANT)));
         analysisSteps.add(new KnownVariantFilter());

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
+import com.google.common.collect.ImmutableSortedSet;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.monarchinitiative.exomiser.core.Exomiser;
@@ -191,7 +192,7 @@ public class SubmitJobController {
         return variantCount;
     }
 
-    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<Integer> genesToKeep, String prioritiser) {
+    private Analysis buildAnalysis(Path vcfPath, Path pedPath, String proband, String diseaseId, List<String> phenotypes, String geneticInterval, Float minimumQuality, Boolean removeDbSnp, Boolean keepOffTarget, Boolean keepNonPathogenic, String modeOfInheritance, String frequency, Set<String> genesToKeep, String prioritiser) {
 
         Settings settings = Settings.builder()
                 .vcfFilePath(vcfPath)
@@ -301,22 +302,9 @@ public class SubmitJobController {
         }
     }
 
-    private Set<Integer> makeGenesToKeep(List<String> genesToFilter) {
+    private Set<String> makeGenesToKeep(List<String> genesToFilter) {
         logger.info("Genes to filter: {}", genesToFilter);
-        if (genesToFilter == null) {
-            return new HashSet<>();
-        }
-        Set<Integer> genesToKeep = new TreeSet<>();
-        for (String geneId : genesToFilter) {
-            try {
-                Integer entrezId = Integer.parseInt(geneId);
-                logger.info("Adding gene {} to genesToFilter", entrezId);
-                genesToKeep.add(entrezId);
-            } catch (NumberFormatException ex) {
-                logger.error("'{}' not added to genesToKeep as this is not a number.", geneId);
-            }
-        }
-        return genesToKeep;
+        return ImmutableSortedSet.copyOf(genesToFilter);
     }
 
     private Path createVcfPathFromMultipartFile(MultipartFile multipartVcfFile) {

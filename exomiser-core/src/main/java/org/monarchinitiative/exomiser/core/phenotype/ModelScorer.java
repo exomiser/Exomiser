@@ -20,6 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.phenotype;
 
+import java.util.stream.Stream;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -27,5 +29,9 @@ package org.monarchinitiative.exomiser.core.phenotype;
 public interface ModelScorer {
 
     ModelPhenotypeMatch scoreModel(Model model);
+
+    default Stream<ModelPhenotypeMatch> scoreModels(Stream<Model> models) {
+        return models.map(this::scoreModel);
+    }
 
 }

@@ -24,7 +24,6 @@ import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,15 +45,13 @@ public class AnalysisFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisFactory.class);
 
-    private final VariantFactory variantFactory;
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
 
     private final PriorityFactory priorityFactory;
 
     @Autowired
-    public AnalysisFactory(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, VariantFactory variantFactory, PriorityFactory priorityFactory) {
+    public AnalysisFactory(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, PriorityFactory priorityFactory) {
         this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
-        this.variantFactory = variantFactory;
         this.priorityFactory = priorityFactory;
     }
 
@@ -66,13 +63,13 @@ public class AnalysisFactory {
 
         switch (analysisMode) {
             case FULL:
-                return new SimpleAnalysisRunner(variantFactory, genomeAnalysisService);
+                return new SimpleAnalysisRunner(genomeAnalysisService);
             case SPARSE:
-                return new SparseAnalysisRunner(variantFactory, genomeAnalysisService);
+                return new SparseAnalysisRunner(genomeAnalysisService);
             case PASS_ONLY:
             default:
                 //this guy takes up the least RAM
-                return new PassOnlyAnalysisRunner(variantFactory, genomeAnalysisService);
+                return new PassOnlyAnalysisRunner(genomeAnalysisService);
         }
     }
 

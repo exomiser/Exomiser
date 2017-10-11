@@ -25,7 +25,6 @@
  */
 package org.monarchinitiative.exomiser.core;
 
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.monarchinitiative.exomiser.core.analysis.*;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
@@ -55,8 +54,7 @@ public class ExomiserTest {
             .buildDefaultHg19GenomeAnalysisService());
     private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.TEST_SERVICE, null, null);
 
-    private final AnalysisFactory analysisFactory = new AnalysisFactory(genomeAnalysisServiceProvider, TestFactory
-            .buildDefaultVariantFactory(), priorityFactory);
+    private final AnalysisFactory analysisFactory = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory);
     //AnalysisFactory is only ever used here, but it provides a clean interface to the Analysis module
     private Exomiser instance = new Exomiser(analysisFactory);
 
@@ -93,8 +91,8 @@ public class ExomiserTest {
         GenomeAnalysisService grch37Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
         GenomeAnalysisService grch38Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
-        GenomeAnalysisServiceProvider twoAssemblyProvider = new GenomeAnalysisServiceProvider(grch37Service, Sets.newHashSet(grch38Service));
-        AnalysisFactory analysisFactory = new AnalysisFactory(twoAssemblyProvider, TestFactory.buildDefaultVariantFactory(), priorityFactory);
+        GenomeAnalysisServiceProvider twoAssemblyProvider = new GenomeAnalysisServiceProvider(grch37Service, grch38Service);
+        AnalysisFactory analysisFactory = new AnalysisFactory(twoAssemblyProvider, priorityFactory);
 
         Exomiser twoAssembliesSupportedExomiser = new Exomiser(analysisFactory);
 

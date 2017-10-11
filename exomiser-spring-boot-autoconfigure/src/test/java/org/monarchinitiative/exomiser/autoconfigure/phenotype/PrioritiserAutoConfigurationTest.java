@@ -18,11 +18,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.autoconfigure;
+package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
+import org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfiguration;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,26 +46,54 @@ import static org.junit.Assert.assertThat;
  */
 public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationTest {
 
-    @Test
-    public void phenixDirectoryDefaultNameIsDefinedRelativeToDataPath() {
+    private static final String DATA_VERSION = "exomiser.phenotype.data-version=1710";
+
+    @Test(expected = NoSuchBeanDefinitionException.class)
+    public void doesNotLoadWhenPhenotypeDataVersionIsAbsent() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        Path phenixDataDirectory = (Path) this.context.getBean("phenixDataDirectory");
-        assertThat(phenixDataDirectory.getFileName(), equalTo(Paths.get("phenix")));
-        assertThat(phenixDataDirectory.getParent(), equalTo(TEST_DATA));
+        context.getBean("phenotypeDataDirectory");
+    }
+
+    @Ignore //TODO
+    @Test(expected = IllegalArgumentException.class)
+    public void throwsExceptionWhenPhenotypeDataVersionIsEmpty() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.phenotype.data-version=");
     }
 
     @Test
-    public void phenixDirectoryIsDefinedRelativeToDataPath() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.phenixDataDir=wibble");
+    public void onlyLoadsWhenPhenotypeDataVersionIsPresent() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION);
+        assertThat(context.getBean("phenotypeDataDirectory"), not(nullValue()));
+    }
+
+    @Test
+    public void canDefinePhenotypeDataDirectory() {
+        Path definedDir = TEST_DATA.resolve("wibble");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.data-directory=" + definedDir);
+        Path phenotypeDataDirectory = (Path) this.context.getBean("phenotypeDataDirectory");
+        assertThat(phenotypeDataDirectory, equalTo(definedDir));
+    }
+
+    @Test
+    public void phenixDirectoryDefaultNameIsDefinedRelativeToPhenotypeDataDirectory() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION);
+        Path phenixDataDirectory = (Path) this.context.getBean("phenixDataDirectory");
+        assertThat(phenixDataDirectory.getFileName(), equalTo(Paths.get("phenix")));
+        assertThat(phenixDataDirectory.getParent(), equalTo((Path) this.context.getBean("phenotypeDataDirectory")));
+    }
+
+    @Test
+    public void phenixDirectoryIsDefinedRelativeToPhenotypeDataDirectory() {
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.phenixDataDir=wibble");
         Path phenixDataDirectory = (Path) this.context.getBean("phenixDataDirectory");
         assertThat(phenixDataDirectory.getFileName(), equalTo(Paths.get("wibble")));
-        assertThat(phenixDataDirectory.getParent(), equalTo(TEST_DATA));
+        assertThat(phenixDataDirectory.getParent(), equalTo((Path) this.context.getBean("phenotypeDataDirectory")));
     }
 
 
     @Test
     public void hpoFileDefaultIsDefinedRelativeToPhenixPath() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION);
         Path path = (Path) this.context.getBean("hpoOboFilePath");
         assertThat(path.getFileName(), equalTo(Paths.get("hp.obo")));
         assertThat(path.getParent(), equalTo((Path) this.context.getBean("phenixDataDirectory")));
@@ -69,7 +101,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
     @Test
     public void hpoFileIsDefinedRelativeToPhenixPath() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hpoFileName=wibble");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.hpoFileName=wibble");
         Path path = (Path) this.context.getBean("hpoOboFilePath");
         assertThat(path.getFileName(), equalTo(Paths.get("wibble")));
         assertThat(path.getParent(), equalTo((Path) this.context.getBean("phenixDataDirectory")));
@@ -77,7 +109,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
     @Test
     public void hpoFileBeanCanBeOverridden() {
-        load(UserConfiguration.class, TEST_DATA_ENV, "exomiser.hpoFileName=wibble");
+        load(UserConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.hpoFileName=wibble");
         Path path = (Path) this.context.getBean("hpoOboFilePath");
         assertThat(path.getFileName(), equalTo(Paths.get("hpo.obo")));
         assertThat(path.getParent(), equalTo((Paths.get("/another/data/dir"))));
@@ -85,7 +117,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
     @Test
     public void hpoAnnotationFileDefaultIsDefinedRelativeToPhenixPath() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION);
         Path path = (Path) this.context.getBean("hpoAnnotationFilePath");
         assertThat(path.getFileName(), equalTo(Paths.get("ALL_SOURCES_ALL_FREQUENCIES_genes_to_phenotype.txt")));
         assertThat(path.getParent(), equalTo((Path) this.context.getBean("phenixDataDirectory")));
@@ -93,7 +125,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
     @Test
     public void hpoAnnotationFileIsDefinedRelativeToDataPath() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.hpoAnnotationFile=wibble");
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.hpoAnnotationFile=wibble");
         Path path = (Path) this.context.getBean("hpoAnnotationFilePath");
         assertThat(path.getFileName(), equalTo(Paths.get("wibble")));
         assertThat(path.getParent(), equalTo((Path) this.context.getBean("phenixDataDirectory")));
@@ -101,7 +133,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
     @Test
     public void hpoAnnotationFileBeanCanBeOverridden() {
-        load(UserConfiguration.class, TEST_DATA_ENV, "exomiser.hpoAnnotationFile=wibble");
+        load(UserConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.hpoAnnotationFile=wibble");
         Path path = (Path) this.context.getBean("hpoAnnotationFilePath");
         assertThat(path.getFileName(), equalTo(Paths.get("hpo.annotations")));
         assertThat(path.getParent(), equalTo((Paths.get("/another/data/dir"))));
@@ -109,13 +141,13 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
 
     @Test(expected = Exception.class)
     public void randomWalkMatrixDefault() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV);
+        load(EmptyConfiguration.class, TEST_DATA_ENV, DATA_VERSION);
         DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");
     }
 
     @Test
     public void randomWalkMatrixCanBeOverriden() {
-        load(UserConfiguration.class, TEST_DATA_ENV, "exomiser.randomWalkFileName=wibble", "exomiser.randomWalkIndexFileName=wibbleIndex");
+        load(UserConfiguration.class, TEST_DATA_ENV, DATA_VERSION, "exomiser.phenotype.randomWalkFileName=wibble", "exomiser.randomWalkIndexFileName=wibbleIndex");
         DataMatrix dataMatrix = (DataMatrix) context.getBean("randomWalkMatrix");
         assertThat(dataMatrix, not(nullValue()));
     }
@@ -127,7 +159,7 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
          * Mock this otherwise we'll try connecting to a non-existent database.
          */
         @Bean
-        public DataSource dataSource() {
+        public DataSource phenotypeDataSource() {
             return Mockito.mock(DataSource.class);
         }
 

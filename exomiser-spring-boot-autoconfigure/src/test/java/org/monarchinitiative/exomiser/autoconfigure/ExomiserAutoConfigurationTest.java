@@ -20,13 +20,10 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import com.google.common.collect.ImmutableList;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.core.Exomiser;
-import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,26 +46,26 @@ public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest
     }
 
     @Test
-    public void testAnalysisFactoryIsAutoConfigured() throws Exception {
+    public void testGenomeAnalysisServiceProviderIsAutoConfigured() throws Exception {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
-        AnalysisFactory exomiser = (AnalysisFactory) context.getBean("analysisFactory");
-        assertThat(exomiser, instanceOf(AnalysisFactory.class));
+        GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = (GenomeAnalysisServiceProvider) context.getBean("genomeAnalysisServiceProvider");
+        assertThat(genomeAnalysisServiceProvider, instanceOf(GenomeAnalysisServiceProvider.class));
     }
 
     @Configuration
-    @ImportAutoConfiguration(ExomiserAutoConfiguration.class)
+    @ImportAutoConfiguration(value = ExomiserAutoConfiguration.class)
     protected static class EmptyConfiguration {
 
         @Bean
-        public DataSource dataSource() {
-            return Mockito.mock(DataSource.class);
+        public GenomeAnalysisService genomeAnalysisService() {
+            return new GenomeAnalysisServiceImpl(GenomeAssembly.HG19, Mockito.mock(GenomeAnalysisService.class), Mockito
+                    .mock(VariantDataService.class), Mockito.mock(VariantFactory.class));
         }
 
         @Bean
-        public JannovarData jannovarData() {
-            return new JannovarData(HG19RefDictBuilder.build(), ImmutableList.of());
+        public DataSource phenotypeDataSource() {
+            return Mockito.mock(DataSource.class);
         }
-
     }
 
 }

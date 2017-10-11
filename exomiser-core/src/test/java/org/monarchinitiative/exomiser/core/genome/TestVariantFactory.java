@@ -43,7 +43,7 @@ public class TestVariantFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(TestVariantFactory.class);
 
-    private final VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
+    private final VariantFactoryJannovarImpl variantFactory = (VariantFactoryJannovarImpl) TestFactory.buildDefaultVariantFactory();
 
     /**
      * Construct a new {@link Variant} object with the given values. n.b. this follows the VCF standard of being 1-based.

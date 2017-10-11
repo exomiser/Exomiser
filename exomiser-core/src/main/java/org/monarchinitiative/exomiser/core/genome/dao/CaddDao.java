@@ -32,9 +32,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.CaddScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
  
@@ -42,7 +40,6 @@ import java.io.IOException;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Component
 public class CaddDao {
  
     private final Logger logger = LoggerFactory.getLogger(CaddDao.class);
@@ -50,7 +47,6 @@ public class CaddDao {
     private final TabixDataSource caddInDelTabixDataSource;
     private final TabixDataSource caddSnvTabixDataSource;
 
-    @Autowired
     public CaddDao(TabixDataSource caddInDelTabixDataSource, TabixDataSource caddSnvTabixDataSource) {
         this.caddInDelTabixDataSource = caddInDelTabixDataSource;
         this.caddSnvTabixDataSource = caddSnvTabixDataSource;
@@ -60,8 +56,8 @@ public class CaddDao {
     public PathogenicityData getPathogenicityData(Variant variant) {
         return processResults(variant);
     }
- 
-    PathogenicityData processResults(Variant variant) {
+
+    private PathogenicityData processResults(Variant variant) {
         String chromosome = variant.getChromosomeName();
         String ref = variant.getRef();
         String alt = variant.getAlt();

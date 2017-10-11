@@ -28,23 +28,19 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Component
 public class LocalFrequencyDao implements FrequencyDao {
 
     private final Logger logger = LoggerFactory.getLogger(LocalFrequencyDao.class);
 
     private final TabixDataSource tabixDataSource;
 
-    @Autowired
     public LocalFrequencyDao(TabixDataSource localFrequencyTabixDataSource) {
         this.tabixDataSource = localFrequencyTabixDataSource;
     }
@@ -55,7 +51,8 @@ public class LocalFrequencyDao implements FrequencyDao {
         return processResults(variant);
     }
 
-    FrequencyData processResults(Variant variant) {
+    private FrequencyData processResults(Variant variant) {
+//        logger.info("Fetching data for {}", variant);
         String chromosome = variant.getChromosomeName();
         String ref = variant.getRef();
         String alt = variant.getAlt();

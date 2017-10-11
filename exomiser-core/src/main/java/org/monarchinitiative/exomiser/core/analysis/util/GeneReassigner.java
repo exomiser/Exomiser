@@ -144,7 +144,7 @@ public class GeneReassigner {
                 .getGeneSymbol(), gene.getGeneSymbol());
 
         variant.setGeneSymbol(gene.getGeneSymbol());
-        variant.setEntrezGeneId(gene.getEntrezGeneID());
+        variant.setGeneId(gene.getGeneId());
         variant.setAnnotations(matchingGeneAnnotations);
     }
 

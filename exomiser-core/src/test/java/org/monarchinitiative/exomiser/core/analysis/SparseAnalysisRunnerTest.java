@@ -44,7 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class SparseAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
-    private final SparseAnalysisRunner instance = new SparseAnalysisRunner(variantFactory, genomeAnalysisService);
+    private final SparseAnalysisRunner instance = new SparseAnalysisRunner(genomeAnalysisService);
 
     @Test
     public void testRunAnalysis_NoFiltersNoPrioritisers() {

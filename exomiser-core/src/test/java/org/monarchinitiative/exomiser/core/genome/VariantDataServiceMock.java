@@ -43,7 +43,7 @@ import java.util.Set;
  *
  * @author Jules Jacobsen<jules.jacobsen@sanger.ac.uk>
  */
-public class VariantDataServiceMock extends VariantDataServiceImpl {
+public class VariantDataServiceMock implements VariantDataService {
 
     private final Map<Variant, FrequencyData> expectedFrequencyData;
     private final Map<Variant, PathogenicityData> expectedPathogenicityData;
@@ -83,13 +83,13 @@ public class VariantDataServiceMock extends VariantDataServiceImpl {
     @Override
     public FrequencyData getVariantFrequencyData(Variant variant, Set<FrequencySource> frequencySources) {
         FrequencyData allFrequencyData = expectedFrequencyData.getOrDefault(variant, FrequencyData.empty());
-        return frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencyData.getKnownFrequencies(), frequencySources);
+        return VariantDataServiceImpl.frequencyDataFromSpecifiedSources(allFrequencyData.getRsId(), allFrequencyData.getKnownFrequencies(), frequencySources);
     }
 
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         PathogenicityData pathData = expectedPathogenicityData.getOrDefault(variant, PathogenicityData.empty());
-        return pathDataFromSpecifiedDataSources(pathData.getPredictedPathogenicityScores(), pathogenicitySources);
+        return VariantDataServiceImpl.pathDataFromSpecifiedDataSources(pathData.getPredictedPathogenicityScores(), pathogenicitySources);
     }
 
 }

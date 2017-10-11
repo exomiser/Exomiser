@@ -52,7 +52,7 @@ public class GenomeDataServiceImpl implements GenomeDataService {
 
     @Override
     public Set<GeneIdentifier> getKnownGeneIdentifiers() {
-        return geneFactory.createKnownGeneIds();
+        return geneFactory.getGeneIdentifiers();
     }
 
     @Override

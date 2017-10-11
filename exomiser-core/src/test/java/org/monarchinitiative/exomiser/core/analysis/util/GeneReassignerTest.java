@@ -84,9 +84,9 @@ public class GeneReassignerTest {
             @Override
             protected boolean matchesSafely(final VariantEvaluation variantEvaluation, final Description mismatchDescription) {
                 mismatchDescription.appendText("was variant with geneSymbol=").appendValue(variantEvaluation.getGeneSymbol());
-                mismatchDescription.appendText(" geneId=").appendValue(variantEvaluation.getEntrezGeneId());
+                mismatchDescription.appendText(" geneId=").appendValue(variantEvaluation.getGeneId());
 
-                return gene.getEntrezGeneID() == variantEvaluation.getEntrezGeneId() && gene.getGeneSymbol()
+                return gene.getGeneId() == variantEvaluation.getGeneId() && gene.getGeneSymbol()
                         .equals(variantEvaluation.getGeneSymbol());
             }
         };
@@ -107,7 +107,7 @@ public class GeneReassignerTest {
     private VariantEvaluation variant(int chr, int pos, String ref, String alt, VariantEffect variantEffect, Gene gene) {
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .variantEffect(variantEffect)
-                .geneId(gene.getEntrezGeneID())
+                .geneId(gene.getGeneId())
                 .geneSymbol(gene.getGeneSymbol())
                 .build();
     }
@@ -401,7 +401,7 @@ public class GeneReassignerTest {
                 .parseVariantContext("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
 
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(variantContext).collect(toList());
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(variantContext).collect(toList());
 
         Gene GNRHR2 = TestFactory.newGeneGNRHR2();
 
@@ -437,7 +437,7 @@ public class GeneReassignerTest {
                 .parseVariantContext("1 145510730 . T C,A 123.15 PASS GENE=GNRHR2 GT 1/1 0/2");
 
         VariantFactory variantFactory = TestFactory.buildDefaultVariantFactory();
-        List<VariantEvaluation> variants = variantFactory.streamVariantEvaluations(variantContext)
+        List<VariantEvaluation> variants = variantFactory.createVariantEvaluations(variantContext)
                 .collect(toList());
 
         Gene topPhenotypeMatchGene = TestFactory.newGeneRBM8A();
@@ -516,7 +516,7 @@ public class GeneReassignerTest {
                         gene1VarMissense1Exon2,
                         gene1VarUtr3);
 
-        variantFactory.streamVariantEvaluations(variantContexts)
+        variantFactory.createVariantEvaluations(variantContexts)
                 .peek(variantContext -> logger.info("{}", variantContext))
                 .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getAnnotations()));
 

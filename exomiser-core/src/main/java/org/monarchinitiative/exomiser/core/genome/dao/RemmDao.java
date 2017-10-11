@@ -32,9 +32,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.monarchinitiative.exomiser.core.model.pathogenicity.RemmScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -42,14 +40,12 @@ import java.io.IOException;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Component
 public class RemmDao {
 
     private final Logger logger = LoggerFactory.getLogger(RemmDao.class);
 
     private final TabixDataSource remmTabixDataSource;
 
-    @Autowired
     public RemmDao(TabixDataSource remmTabixDataSource) {
         this.remmTabixDataSource = remmTabixDataSource;
     }

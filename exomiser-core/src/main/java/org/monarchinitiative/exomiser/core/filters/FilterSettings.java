@@ -58,5 +58,5 @@ public interface FilterSettings {
 
     ModeOfInheritance getModeOfInheritance();
 
-    Set<Integer> getGenesToKeep();
+    Set<String> getGenesToKeep();
 }

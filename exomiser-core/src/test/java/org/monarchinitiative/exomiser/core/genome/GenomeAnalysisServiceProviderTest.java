@@ -35,23 +35,14 @@ public class GenomeAnalysisServiceProviderTest {
     private static final GenomeAnalysisService HG19_SERVICE = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
     private static final GenomeAnalysisService HG38_SERVICE = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG38);
 
-    @Test
-    public void testDefaultService() {
-        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE);
-        assertThat(instance.getDefaultGenomeAssembly(), equalTo(HG19_SERVICE.getGenomeAssembly()));
-        assertThat(instance.getDefaultAssemblyAnalysisService(), equalTo(HG19_SERVICE));
-    }
-
-    @Test
-    public void testDifferentDefaultService() {
-        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG38_SERVICE);
-        assertThat(instance.getDefaultGenomeAssembly(), equalTo(HG38_SERVICE.getGenomeAssembly()));
-        assertThat(instance.getDefaultAssemblyAnalysisService(), equalTo(HG38_SERVICE));
+    @Test(expected = NullPointerException.class)
+    public void testWontInstantiateWithNullDefaultInput() {
+        new GenomeAnalysisServiceProvider((GenomeAnalysisService) null);
     }
 
     @Test(expected = NullPointerException.class)
-    public void testWontInstantiateWithNullDefaultInput() {
-        new GenomeAnalysisServiceProvider(null);
+    public void testWontInstantiateWithNullDefaultInputArray() {
+        new GenomeAnalysisServiceProvider((GenomeAnalysisService[]) null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -59,25 +50,25 @@ public class GenomeAnalysisServiceProviderTest {
         new GenomeAnalysisServiceProvider(HG19_SERVICE, null);
     }
 
-    @Test
-    public void testCanAddAlternateServices() {
-        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE, Sets.newHashSet(HG38_SERVICE));
-        assertThat(instance.get(GenomeAssembly.HG38), equalTo(HG38_SERVICE));
+    @Test(expected = IllegalArgumentException.class)
+    public void testWontInstantiateWithEmptyInput() {
+        new GenomeAnalysisServiceProvider();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testThrowsExceptionWhen() {
-        new GenomeAnalysisServiceProvider(HG19_SERVICE, Sets.newHashSet(HG19_SERVICE));
+    @Test
+    public void testCanAddAlternateServices() {
+        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE, HG38_SERVICE);
+        assertThat(instance.get(GenomeAssembly.HG38), equalTo(HG38_SERVICE));
     }
 
     @Test
     public void testGetProvidedAssemblies() {
-        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE, Sets.newHashSet(HG38_SERVICE));
+        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE, HG38_SERVICE);
         assertThat(instance.getProvidedAssemblies(), equalTo(Sets.immutableEnumSet(GenomeAssembly.HG19, GenomeAssembly.HG38)));
     }
 
     @Test
-    public void testHasServiceForDefaultAssembly() {
+    public void testHasServiceForSingleAssembly() {
         GenomeAnalysisService hg19Service = TestFactory.buildStubGenomeAnalysisService(GenomeAssembly.HG19);
         GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(hg19Service);
         assertThat(instance.hasServiceFor(GenomeAssembly.HG19), is(true));
@@ -85,8 +76,8 @@ public class GenomeAnalysisServiceProviderTest {
     }
 
     @Test
-    public void testHasServiceForDefaultAndAlternateAssembly() {
-        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE, Sets.newHashSet(HG38_SERVICE));
+    public void testHasServiceForMultipleAssemblies() {
+        GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE, HG38_SERVICE);
         assertThat(instance.hasServiceFor(GenomeAssembly.HG19), is(true));
         assertThat(instance.hasServiceFor(GenomeAssembly.HG38), is(true));
     }
@@ -102,17 +93,17 @@ public class GenomeAnalysisServiceProviderTest {
     public void testGetOrDefaultReturnsExpectedService() {
         GenomeAssembly defaultAssembly = HG19_SERVICE.getGenomeAssembly();
         GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE);
-        assertThat(instance.getOrDefault(defaultAssembly), equalTo(HG19_SERVICE));
+        assertThat(instance.getOrDefault(defaultAssembly, HG19_SERVICE), equalTo(HG19_SERVICE));
     }
 
     @Test
     public void testGetOrDefaultReturnsDefaultWhenRequestedAssemblyNotPresent() {
         GenomeAnalysisServiceProvider instance = new GenomeAnalysisServiceProvider(HG19_SERVICE);
-        assertThat(instance.getOrDefault(GenomeAssembly.HG38), equalTo(HG19_SERVICE));
+        assertThat(instance.getOrDefault(GenomeAssembly.HG38, HG19_SERVICE), equalTo(HG19_SERVICE));
     }
 
     @Test
     public void testToString() {
-        System.out.println(new GenomeAnalysisServiceProvider(HG19_SERVICE, Sets.newHashSet(HG38_SERVICE)));
+        System.out.println(new GenomeAnalysisServiceProvider(HG19_SERVICE, HG38_SERVICE));
     }
 }

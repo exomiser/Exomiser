@@ -26,6 +26,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.reference.HG19RefDictBuilder;
 import htsjdk.tribble.readers.TabixReader;
 import org.mockito.Mockito;
+import org.monarchinitiative.exomiser.core.genome.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,12 @@ import org.springframework.context.annotation.Configuration;
 public class ExomiserStubDataConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserStubDataConfig.class);
+
+    @Bean
+    public GenomeAnalysisService genomeAnalysisService() {
+        return new GenomeAnalysisServiceImpl(GenomeAssembly.HG19, Mockito.mock(GenomeAnalysisService.class), Mockito.mock(VariantDataService.class), Mockito
+                .mock(VariantFactory.class));
+    }
 
     @Bean
     public HikariConfig h2Config() {

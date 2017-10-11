@@ -35,19 +35,13 @@ import java.util.List;
  */
 public interface Variant extends VariantCoordinates {
 
+    public String getGeneSymbol();
+
+    public String getGeneId();
+
     public VariantEffect getVariantEffect();
 
     public List<TranscriptAnnotation> getAnnotations();
-
-    public String getGeneSymbol();
-
-    public int getEntrezGeneId();
-
-    public boolean isXChromosomal();
-
-    public boolean isYChromosomal();
-
-    public boolean isOffExome();
 
     public default boolean isNonCodingVariant() {
         return VariantEffectUtility.isNonCodingVariant(getVariantEffect());

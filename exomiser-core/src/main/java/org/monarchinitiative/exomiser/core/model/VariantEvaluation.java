@@ -70,12 +70,11 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     private final int numIndividuals;
     private final double phredScore;
 
-    //Jannovar annotations
-    private final boolean isOffExome;
+    //VariantAnnotation
     private VariantEffect variantEffect;
     private List<TranscriptAnnotation> annotations;
     private String geneSymbol;
-    private int entrezGeneId;
+    private String geneId;
 
     //results from filters
     private final Set<FilterType> passedFilterTypes;
@@ -101,11 +100,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
 
         numIndividuals = builder.numIndividuals;
         phredScore = builder.phredScore;
-        isOffExome = builder.isOffExome;
         variantEffect = builder.variantEffect;
         annotations = builder.annotations;
         geneSymbol = builder.geneSymbol;
-        entrezGeneId = builder.entrezGeneId;
+        geneId = builder.geneId;
 
         variantContext = builder.variantContext;
         altAlleleId = builder.altAlleleId;
@@ -201,33 +199,14 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     public void setGeneSymbol(String symbol) {
         geneSymbol = symbol;
     }
-    
-    @Override
-    public int getEntrezGeneId() {
-        return entrezGeneId;
-    }
-    
-    public void setEntrezGeneId(int id) {
-        entrezGeneId = id;
-    }
 
     @Override
-    public boolean isXChromosomal() {
-        return chr == 23;
+    public String getGeneId() {
+        return geneId;
     }
 
-    @Override
-    public boolean isYChromosomal() {
-        return chr == 24;
-    }
-
-    /**
-     * @return true if the variant belongs to a class that is non-exonic and
-     * non-splicing.
-     */
-    @Override
-    public boolean isOffExome() {
-        return isOffExome;
+    public void setGeneId(String geneId) {
+        this.geneId = geneId;
     }
 
     /**
@@ -594,11 +573,10 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         private int numIndividuals = 1;
         private double phredScore = 0;
 
-        private boolean isOffExome;
         private VariantEffect variantEffect = VariantEffect.SEQUENCE_VARIANT;
         private List<TranscriptAnnotation> annotations = Collections.emptyList();
         private String geneSymbol = ".";
-        private int entrezGeneId = GeneIdentifier.NULL_ENTREZ_ID;
+        private String geneId = GeneIdentifier.EMPTY_FIELD;
 
         private VariantContext variantContext;
         private int altAlleleId;
@@ -682,11 +660,6 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return this;
         }
 
-        public Builder isOffExome(boolean isOffExome) {
-            this.isOffExome = isOffExome;
-            return this;
-        }
-
         public Builder variantEffect(VariantEffect variantEffect) {
             this.variantEffect = variantEffect;
             return this;
@@ -707,8 +680,8 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
             return (commaIndex > -1) ? geneSymbol.substring(0, commaIndex) : geneSymbol;
         }
 
-        public Builder geneId(int geneId) {
-            this.entrezGeneId = geneId;
+        public Builder geneId(String geneId) {
+            this.geneId = geneId;
             return this;
         }
 

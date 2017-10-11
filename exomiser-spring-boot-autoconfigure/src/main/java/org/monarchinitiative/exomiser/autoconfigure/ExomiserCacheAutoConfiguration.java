@@ -53,6 +53,7 @@ public class ExomiserCacheAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserCacheAutoConfiguration.class);
 
+    //TODO: move this bean to the phenotype package? Can we have 2 @EnableCaching @Configurations?
     @Bean
     public CacheResolver modelCacheResolver() {
         NamedCacheResolver modelCacheResolver = new NamedCacheResolver();

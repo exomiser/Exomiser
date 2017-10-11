@@ -30,9 +30,7 @@ import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -44,21 +42,20 @@ import java.sql.SQLException;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Repository
 public class DefaultPathogenicityDao implements PathogenicityDao {
 
     private final Logger logger = LoggerFactory.getLogger(DefaultPathogenicityDao.class);
 
     private final DataSource dataSource;
 
-    @Autowired
-    public DefaultPathogenicityDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public DefaultPathogenicityDao(DataSource genomeDataSource) {
+        this.dataSource = genomeDataSource;
     }
 
     @Cacheable(value = "pathogenicity")
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
+//        logger.info("Fetching data for {}", variant);
 
         //if a variant is not classified as missense then we don't need to hit 
         //the database as we're going to assign it a constant pathogenicity score.
@@ -72,7 +69,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
                 PreparedStatement preparedStatement = createPreparedStatement(connection, variant);
                 ResultSet rs = preparedStatement.executeQuery()) {
 
-            return processResults(rs, variant);
+            return processResults(rs);
 
         } catch (SQLException e) {
             logger.error("Error executing pathogenicity query: ", e);
@@ -88,7 +85,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
                 //As of 20150511 we're not going to use the CADD data from the database as it requires normalising and hasn't been
                 //using it will COMPLETELY FUBAR THE PATHOGENICITY FILTER, so don't add it back until it's normalised on a 0-1 scale.
 //                + "cadd "
-                + "FROM variant "
+                + "FROM pathogenicity " //renamed from 'variant' which was a poor name
                 + "WHERE chromosome = ? "
                 + "AND position = ? "
                 + "AND ref = ? "
@@ -103,7 +100,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         return ps;
     }
 
-    PathogenicityData processResults(ResultSet rs, Variant variant) throws SQLException {
+    private PathogenicityData processResults(ResultSet rs) throws SQLException {
 
         SiftScore siftScore = null;
         PolyPhenScore polyPhenScore = null;

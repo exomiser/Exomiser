@@ -69,7 +69,7 @@ public class GenomeDataServiceImplTest {
     @Test
     public void getKnownGeneIdentifiers() throws Exception {
         Set<GeneIdentifier> geneIdentifiers = ImmutableSet.copyOf(TestGeneFactory.buildGeneIdentifiers());
-        Mockito.when(geneFactory.createKnownGeneIds()).thenReturn(geneIdentifiers);
+        Mockito.when(geneFactory.getGeneIdentifiers()).thenReturn(geneIdentifiers);
 
         assertThat(instance.getKnownGeneIdentifiers(), equalTo(geneIdentifiers));
     }

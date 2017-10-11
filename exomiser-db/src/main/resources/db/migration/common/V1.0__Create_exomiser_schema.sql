@@ -66,9 +66,9 @@ create table tad (
 -- TOC entry 173 (class 1259 OID 16445)
 -- Name: variant; Type: TABLE; Schema: public; Owner: -
 --
-DROP TABLE IF EXISTS variant;
+DROP TABLE IF EXISTS pathogenicity;
 
-CREATE TABLE variant (
+CREATE TABLE pathogenicity (
     chromosome smallint NOT NULL,
     "position" integer NOT NULL,
     ref character(1) NOT NULL,
@@ -368,7 +368,8 @@ ALTER TABLE phenoseries
 --    ADD CONSTRAINT variant_pkey PRIMARY KEY (chromosome, "position", ref, alt);
 
 
-CREATE INDEX variant1 ON variant (chromosome, "position", ref, alt);
+CREATE INDEX path_idx
+  ON pathogenicity (chromosome, "position", ref, alt);
 
 
 -- CREATE INDEX disease_hit ON disease_disease_summary (disease_hit);

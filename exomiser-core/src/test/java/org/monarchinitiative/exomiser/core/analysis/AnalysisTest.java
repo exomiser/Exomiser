@@ -51,7 +51,7 @@ public class AnalysisTest {
     }
 
     private List<AnalysisStep> getAnalysisSteps() {
-        VariantFilter geneIdFilter = new EntrezGeneIdFilter(new HashSet<>());
+        VariantFilter geneIdFilter = new GeneSymbolFilter(new HashSet<>());
         Prioritiser noneTypePrioritiser = new NoneTypePrioritiser();
         GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.ANY);
         VariantFilter targetFilter = new PassAllVariantEffectsFilter();

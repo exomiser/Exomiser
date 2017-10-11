@@ -38,13 +38,13 @@ import java.sql.Connection;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class V2_4__Insert_variant implements JdbcMigration {
+public class V2_4__Insert_pathogenicity implements JdbcMigration {
     
     @Override
     public void migrate(Connection connection) throws Exception {
         CopyManager copyManager = new CopyManager((BaseConnection) connection);
         try (FileReader fileReader = new FileReader("data/variant.pg")) {
-            copyManager.copyIn("COPY variant from STDIN WITH DELIMITER '|' NULL as 'null';", fileReader, 1024);
+            copyManager.copyIn("COPY pathogenicity from STDIN WITH DELIMITER '|' NULL as 'null';", fileReader, 1024);
         }
     }
 }

@@ -24,7 +24,6 @@ import org.monarchinitiative.exomiser.core.filters.SimpleGeneFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.SparseVariantFilterRunner;
 import org.monarchinitiative.exomiser.core.filters.VariantFilter;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
-import org.monarchinitiative.exomiser.core.genome.VariantFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.slf4j.Logger;
@@ -46,8 +45,8 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(PassOnlyAnalysisRunner.class);
 
-    PassOnlyAnalysisRunner(VariantFactory variantFactory, GenomeAnalysisService genomeAnalysisService) {
-        super(variantFactory, genomeAnalysisService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
+    PassOnlyAnalysisRunner(GenomeAnalysisService genomeAnalysisService) {
+        super(genomeAnalysisService, new SparseVariantFilterRunner(), new SimpleGeneFilterRunner());
     }
 
     @Override

@@ -67,10 +67,10 @@ public class VariantEvaluationTest {
     private static final int READ_DEPTH = 6;
     private static final Genotype HETEROZYGOUS = Genotype.HETEROZYGOUS;
     private static final String GENE1_GENE_SYMBOL = "GENE1";
-    private static final int GENE1_ENTREZ_GENE_ID = 1234567;
+    private static final String GENE1_GENE_ID = "1234567";
 
     private static final String GENE2_GENE_SYMBOL = "GENE2";
-    private static final int GENE2_ENTREZ_GENE_ID = 7654321;
+    private static final String GENE2_GENE_ID = "7654321";
 
     private static final FilterResult FAIL_FREQUENCY_RESULT = FilterResult.fail(FilterType.FREQUENCY_FILTER);
     private static final FilterResult PASS_FREQUENCY_RESULT = FilterResult.pass(FilterType.FREQUENCY_FILTER);
@@ -101,7 +101,7 @@ public class VariantEvaluationTest {
         instance = VariantEvaluation.builder(CHROMOSOME, POSITION, REF, ALT)
                 .quality(QUALITY)
                 .geneSymbol(GENE1_GENE_SYMBOL)
-                .geneId(GENE1_ENTREZ_GENE_ID)
+                .geneId(GENE1_GENE_ID)
                 .build();
     }
 
@@ -202,8 +202,8 @@ public class VariantEvaluationTest {
     }
 
     @Test
-    public void canGetEntrezGeneID() {
-        assertThat(instance.getEntrezGeneId(), equalTo(GENE1_ENTREZ_GENE_ID));
+    public void canGetGeneId() {
+        assertThat(instance.getGeneId(), equalTo(GENE1_GENE_ID));
     }
 
     @Test
@@ -490,41 +490,6 @@ public class VariantEvaluationTest {
     @Test
     public void testHasAnnotationsIsFalseByDefault() {
         assertThat(instance.hasAnnotations(), is(false));
-    }
-
-    @Test
-    public void testIsXChromosomal_notXchromosomal() {
-        assertThat(instance.isXChromosomal(), is(false));
-    }
-
-    @Test
-    public void testIsXChromosomal_isXchromosomal() {
-        int chrX = 23;
-        instance = VariantEvaluation.builder(chrX, 1, "A", "T").build();
-        assertThat(instance.isXChromosomal(), is(true));
-    }
-
-    @Test
-    public void testIsYChromosomal_notYchromosomal() {
-        assertThat(instance.isYChromosomal(), is(false));
-    }
-
-    @Test
-    public void testIsYChromosomal_isYchromosomal() {
-        int chrY = 24;
-        instance = VariantEvaluation.builder(chrY, 1, "A", "T").build();
-        assertThat(instance.isYChromosomal(), is(true));
-    }
-
-    @Test
-    public void testIsOffExome_isFalseByDefault() {
-        assertThat(instance.isOffExome(), is(false));
-    }
-    
-    @Test
-    public void testIsOffExome_EqualsBuilderValue() {
-        instance = testVariantBuilder().isOffExome(true).build();
-        assertThat(instance.isOffExome(), is(true));
     }
     
     @Test

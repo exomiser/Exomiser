@@ -24,7 +24,6 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -55,7 +54,6 @@ import static org.junit.Assert.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class VariantDataServiceImplTest {
 
-    @InjectMocks
     private VariantDataServiceImpl instance;
     @Mock
     private FrequencyDao defaultFrequencyDao;
@@ -94,6 +92,14 @@ public class VariantDataServiceImplTest {
         Mockito.when(defaultFrequencyDao.getFrequencyData(variant)).thenReturn(FREQ_DATA);
         Mockito.when(localFrequencyDao.getFrequencyData(variant)).thenReturn(FrequencyData.empty());
         Mockito.when(mockCaddDao.getPathogenicityData(variant)).thenReturn(CADD_DATA);
+
+        instance = VariantDataServiceImpl.builder()
+                .defaultFrequencyDao(defaultFrequencyDao)
+                .localFrequencyDao(localFrequencyDao)
+                .pathogenicityDao(mockPathogenicityDao)
+                .caddDao(mockCaddDao)
+                .remmDao(mockRemmDao)
+                .build();
     }
 
     private VariantEvaluation buildVariantOfType(VariantEffect variantEffect) {

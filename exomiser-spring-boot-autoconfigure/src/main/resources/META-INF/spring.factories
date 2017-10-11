@@ -1,10 +1,9 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfiguration\
-  ,org.monarchinitiative.exomiser.autoconfigure.TranscriptSourceAutoConfiguration\
   ,org.monarchinitiative.exomiser.autoconfigure.ExomiserCacheAutoConfiguration\
-  ,org.monarchinitiative.exomiser.autoconfigure.PhenotypeDataSourceAutoConfiguration\
-  ,org.monarchinitiative.exomiser.autoconfigure.PrioritiserAutoConfiguration\
-  ,org.monarchinitiative.exomiser.autoconfigure.PhenotypeMatchServiceAutoConfiguration\
-  ,org.monarchinitiative.exomiser.autoconfigure.VariantDataServiceAutoConfiguration\
+  ,org.monarchinitiative.exomiser.autoconfigure.phenotype.PrioritiserAutoConfiguration\
+  ,org.monarchinitiative.exomiser.autoconfigure.phenotype.PhenotypeMatchServiceAutoConfiguration\
+  ,org.monarchinitiative.exomiser.autoconfigure.genome.Hg19GenomeAnalysisServiceAutoConfiguration\
+  ,org.monarchinitiative.exomiser.autoconfigure.genome.Hg38GenomeAnalysisServiceAutoConfiguration\
   ,org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfiguration
 org.springframework.boot.diagnostics.FailureAnalyzer=org.monarchinitiative.exomiser.autoconfigure.UndefinedDataDirectoryFailureAnalyzer

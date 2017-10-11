@@ -31,7 +31,7 @@ import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import java.util.List;
 
 /**
- * Allows the easy creation of {@link JannovarData} {@link VariantFactory} and {@link VariantAnnotationData} objects for testing.
+ * Allows the easy creation of {@link JannovarData} {@link VariantFactoryJannovarImpl} objects for testing.
  *
  * The default data contains one transcript each for the genes FGFR2, GNRHR2A, RBM8A (overlaps with GNRHR2A), and SHH based on the HG19/GRCh37 build.
  *
@@ -49,8 +49,7 @@ public class TestFactory {
     private static final GenomeAssembly DEFAULT_GENOME_ASSEMBLY = GenomeAssembly.HG19;
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
     private static final GeneFactory DEFAULT_GENE_FACTORY = new GeneFactory(DEFAULT_JANNOVAR_DATA);
-    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactory(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA);
-    private static final VariantAnnotationData DEFAULT_VARIANT_ANNOTATION_DATA = new VariantAnnotationData(DEFAULT_JANNOVAR_DATA);
+    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA));
 
     private TestFactory() {
         //this class should be used in a static context.
@@ -72,30 +71,13 @@ public class TestFactory {
         return DEFAULT_VARIANT_FACTORY;
     }
 
-    public static VariantAnnotationData buildDefaultVariantAnnotationData() {
-        return DEFAULT_VARIANT_ANNOTATION_DATA;
-    }
-
     public static JannovarData buildJannovarData(TranscriptModel... transcriptModels) {
         return new JannovarData(DEFAULT_REF_DICT, ImmutableList.copyOf(transcriptModels));
     }
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {
         final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return new VariantFactory(DEFAULT_GENOME_ASSEMBLY, jannovarData);
-    }
-
-    public static VariantFactory buildVariantFactory(JannovarData jannovarData) {
-        return new VariantFactory(DEFAULT_GENOME_ASSEMBLY, jannovarData);
-    }
-
-    public static VariantAnnotationData buildVariantAnnotationData(TranscriptModel... transcriptModels) {
-        final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return buildVariantAnnotationData(jannovarData);
-    }
-
-    public static VariantAnnotationData buildVariantAnnotationData(JannovarData jannovarData) {
-        return new VariantAnnotationData(jannovarData);
+        return new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData));
     }
 
     public static GeneFactory buildDefaultGeneFactory() {
@@ -123,11 +105,11 @@ public class TestFactory {
     }
 
     public static GenomeAnalysisService buildDefaultHg19GenomeAnalysisService() {
-        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), new VariantDataServiceStub());
+        return new GenomeAnalysisServiceImpl(DEFAULT_GENOME_ASSEMBLY, buildDefaultGenomeDataService(), new VariantDataServiceStub(), DEFAULT_VARIANT_FACTORY);
     }
 
     public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {
-        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub());
+        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub(), new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA)));
     }
 
 }

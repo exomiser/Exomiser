@@ -1,4 +1,4 @@
-insert into variant values
+INSERT INTO pathogenicity VALUES
 --CHROMOSOME, position, REF, ALT, SIFT, POLYPHEN, MUT_TASTER, CADD, CADD_RAW
 -- tests for null scores
 (1, 1, 'A', 'T', null, 0.998, 1.0, 23.7, 4.452675),

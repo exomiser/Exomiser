@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.genome;
 
+import htsjdk.variant.variantcontext.VariantContext;
 import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -28,6 +29,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySour
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -38,11 +40,13 @@ public class GenomeAnalysisServiceImpl implements GenomeAnalysisService {
 
     private final GenomeDataService genomeDataService;
     private final VariantDataService variantDataService;
+    private final VariantFactory variantFactory;
 
-    public GenomeAnalysisServiceImpl(GenomeAssembly genomeAssembly, GenomeDataService genomeDataService, VariantDataService variantDataService) {
+    public GenomeAnalysisServiceImpl(GenomeAssembly genomeAssembly, GenomeDataService genomeDataService, VariantDataService variantDataService, VariantFactory variantFactory) {
         this.genomeAssembly = genomeAssembly;
         this.genomeDataService = genomeDataService;
         this.variantDataService = variantDataService;
+        this.variantFactory = variantFactory;
     }
 
     @Override
@@ -78,5 +82,10 @@ public class GenomeAnalysisServiceImpl implements GenomeAnalysisService {
     @Override
     public PathogenicityData getVariantPathogenicityData(Variant variant, Set<PathogenicitySource> pathogenicitySources) {
         return variantDataService.getVariantPathogenicityData(variant, pathogenicitySources);
+    }
+
+    @Override
+    public Stream<VariantEvaluation> createVariantEvaluations(Stream<VariantContext> variantContextStream) {
+        return variantFactory.createVariantEvaluations(variantContextStream);
     }
 }

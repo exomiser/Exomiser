@@ -43,7 +43,7 @@ public interface VariantCoordinates {
 
     /**
      * @return String representation of the chromosome. Chromosomes 1-22 will return
-     * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=M.
+     * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=MT.
      */
     public String getChromosomeName();
 

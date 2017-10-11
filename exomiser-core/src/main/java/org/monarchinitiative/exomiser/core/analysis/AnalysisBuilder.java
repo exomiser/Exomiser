@@ -145,8 +145,8 @@ public class AnalysisBuilder {
         return this;
     }
 
-    public AnalysisBuilder addGeneIdFilter(Set<Integer> entrezIds) {
-        analysisSteps.add(new EntrezGeneIdFilter(new LinkedHashSet<>(entrezIds)));
+    public AnalysisBuilder addGeneIdFilter(Set<String> entrezIds) {
+        analysisSteps.add(new GeneSymbolFilter(new LinkedHashSet<>(entrezIds)));
         return this;
     }
 

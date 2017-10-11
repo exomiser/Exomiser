@@ -33,9 +33,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.frequency.RsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -53,7 +51,6 @@ import java.util.Set;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Repository
 public class DefaultFrequencyDao implements FrequencyDao {
 
     private final Logger logger = LoggerFactory.getLogger(DefaultFrequencyDao.class);
@@ -62,9 +59,8 @@ public class DefaultFrequencyDao implements FrequencyDao {
 
     private final Map<FrequencySource, String> frequencySourceColumnMappings;
 
-    @Autowired
-    public DefaultFrequencyDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public DefaultFrequencyDao(DataSource genomeDataSource) {
+        this.dataSource = genomeDataSource;
 
         Map<FrequencySource, String> frequencyMap = new EnumMap<>(FrequencySource.class);
         frequencyMap.put(FrequencySource.THOUSAND_GENOMES, "dbSNPmaf");
@@ -86,7 +82,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
     @Cacheable(value = "frequency")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-
+//        logger.info("Fetching data for {}", variant);
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement preparedFrequencyQuery = createPreparedStatement(connection, variant);

@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.rest.prioritiser.api;
 
-import org.monarchinitiative.exomiser.core.genome.GeneFactory;
+import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions;
@@ -59,9 +59,9 @@ public class PrioritiserController {
     private final Map<Integer, GeneIdentifier> geneIdentifiers;
 
     @Autowired
-    public PrioritiserController(PriorityFactory priorityFactory, GeneFactory geneFactory) {
+    public PrioritiserController(PriorityFactory priorityFactory, GenomeAnalysisService genomeAnalysisService) {
         this.priorityFactory = priorityFactory;
-        this.geneIdentifiers = geneFactory.createKnownGeneIds().stream()
+        this.geneIdentifiers = genomeAnalysisService.getKnownGeneIdentifiers().stream()
                 .filter(GeneIdentifier::hasEntrezId)
                 .collect(toImmutableMap(GeneIdentifier::getEntrezIdAsInteger, Function.identity()));
         logger.info("Created GeneIdentifier cache with {} entries", geneIdentifiers.size());

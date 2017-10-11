@@ -18,10 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.autoconfigure;
+package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Bean;

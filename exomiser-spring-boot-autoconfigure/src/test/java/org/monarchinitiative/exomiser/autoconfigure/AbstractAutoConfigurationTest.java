@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-abstract class AbstractAutoConfigurationTest {
+public abstract class AbstractAutoConfigurationTest {
 
     protected static final Path TEST_DATA = Paths.get("src/test/resources/data");
     protected static final String TEST_DATA_ENV = "exomiser.data-directory=" + TEST_DATA;

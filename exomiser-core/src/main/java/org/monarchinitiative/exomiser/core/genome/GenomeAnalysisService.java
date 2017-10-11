@@ -25,7 +25,7 @@ package org.monarchinitiative.exomiser.core.genome;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface GenomeAnalysisService extends VariantDataService, GenomeDataService {
+public interface GenomeAnalysisService extends VariantFactory, VariantDataService, GenomeDataService {
 
     public GenomeAssembly getGenomeAssembly();
 

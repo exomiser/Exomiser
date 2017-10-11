@@ -33,74 +33,63 @@ import java.util.*;
  */
 public class GenomeAnalysisServiceProvider {
 
-    private final GenomeAnalysisService defaultAssemblyAnalysisService;
-    private final GenomeAssembly defaultAssembly;
-    private final Map<GenomeAssembly, GenomeAnalysisService> alternateAssemblyServices;
+    private final Map<GenomeAssembly, GenomeAnalysisService> genomeAnalysisServices;
 
-    public GenomeAnalysisServiceProvider(GenomeAnalysisService defaultGenomeAnalysisService) {
-        this(defaultGenomeAnalysisService, Collections.emptySet());
-    }
+    public GenomeAnalysisServiceProvider(GenomeAnalysisService... genomeAnalysisServices) {
+        Objects.requireNonNull(genomeAnalysisServices, "genomeAnalysisServices cannot be null.");
+        if (genomeAnalysisServices.length == 0) {
+            throw new IllegalArgumentException("genomeAnalysisServices cannot be empty.");
+        }
 
-    public GenomeAnalysisServiceProvider(GenomeAnalysisService defaultGenomeAnalysisService, Set<GenomeAnalysisService> alternateGenomeAnalysisServices) {
-        Objects.requireNonNull(defaultGenomeAnalysisService, "default GenomeAnalysisService cannot be null.");
-        Objects.requireNonNull(alternateGenomeAnalysisServices, "alternate GenomeAnalysisServices cannot be null.");
-        this.defaultAssemblyAnalysisService = defaultGenomeAnalysisService;
-        this.defaultAssembly = defaultGenomeAnalysisService.getGenomeAssembly();
-
-        this.alternateAssemblyServices = new EnumMap<>(GenomeAssembly.class);
-        alternateGenomeAnalysisServices.forEach(this::addService);
+        this.genomeAnalysisServices = new EnumMap<>(GenomeAssembly.class);
+        for (GenomeAnalysisService genomeAnalysisService : genomeAnalysisServices) {
+            addService(genomeAnalysisService);
+        }
     }
 
     private void addService(GenomeAnalysisService genomeAnalysisService) {
         GenomeAssembly genomeAssembly = genomeAnalysisService.getGenomeAssembly();
-        if (genomeAssembly == defaultAssembly) {
-            String message = String.format("%s cannot be provided as an alternative assembly as this is already defined as the default.", genomeAssembly);
-            throw new IllegalArgumentException(message);
-        }
-        alternateAssemblyServices.put(genomeAssembly, genomeAnalysisService);
-    }
-
-    public GenomeAssembly getDefaultGenomeAssembly() {
-        return defaultAssembly;
+        genomeAnalysisServices.put(genomeAssembly, genomeAnalysisService);
     }
 
     public Set<GenomeAssembly> getProvidedAssemblies() {
-        Set<GenomeAssembly> providedAssemblies = new HashSet<>(alternateAssemblyServices.keySet());
-        providedAssemblies.add(defaultAssembly);
+        Set<GenomeAssembly> providedAssemblies = new HashSet<>(genomeAnalysisServices.keySet());
         return Sets.immutableEnumSet(providedAssemblies);
     }
 
-    public GenomeAnalysisService getDefaultAssemblyAnalysisService() {
-        return defaultAssemblyAnalysisService;
-    }
-
     /**
-     * @param genomeAssembly
-     * @return A {@link GenomeAnalysisService} instance for the supplied {@link GenomeAssembly}. Will throw an
-     * {@link UnsupportedGenomeAssemblyException} if the specified {@link GenomeAssembly} is not available. For cases where
-     * an unspecified default is acceptable use the {@link #getOrDefault(GenomeAssembly)} or {@link #getDefaultGenomeAssembly()}
-     * methods instead.
+     * @param genomeAssembly the genomeAssembly whose associated value is to be returned.
+     * @return A {@link GenomeAnalysisService} instance for the supplied {@link GenomeAssembly}.
+     * @throws UnsupportedGenomeAssemblyException if the specified {@link GenomeAssembly} is not available.
      */
     public GenomeAnalysisService get(GenomeAssembly genomeAssembly) {
         if (hasServiceFor(genomeAssembly)) {
-            return genomeAssembly == defaultAssembly ? defaultAssemblyAnalysisService : alternateAssemblyServices.get(genomeAssembly);
+            return genomeAnalysisServices.get(genomeAssembly);
         }
         throw new UnsupportedGenomeAssemblyException(String.format("Genome assembly %s is not configured for this exomiser instance. Supported assemblies are: %s", genomeAssembly, getProvidedAssemblies()));
     }
 
-    public GenomeAnalysisService getOrDefault(GenomeAssembly genomeAssembly) {
-        return alternateAssemblyServices.getOrDefault(genomeAssembly, defaultAssemblyAnalysisService);
+    /**
+     * Returns the value to which the specified key is mapped, or
+     * {@code defaultAnalysisService} if this provider contains no mapping for the key.
+     *
+     * @param genomeAssembly         the genomeAssembly whose associated value is to be returned
+     * @param defaultAnalysisService the default genomeAssembly of the key
+     * @return the genomeAnalysisService to which the specified genomeAssembly is mapped, or
+     * {@code defaultAnalysisService} if this provider contains no genomeAnalysisService for the genomeAssembly.
+     */
+    public GenomeAnalysisService getOrDefault(GenomeAssembly genomeAssembly, GenomeAnalysisService defaultAnalysisService) {
+        return genomeAnalysisServices.getOrDefault(genomeAssembly, defaultAnalysisService);
     }
 
     public boolean hasServiceFor(GenomeAssembly genomeAssembly) {
-        return (defaultAssembly == genomeAssembly) || alternateAssemblyServices.containsKey(genomeAssembly);
+        return genomeAnalysisServices.containsKey(genomeAssembly);
     }
 
     @Override
     public String toString() {
         return "GenomeAnalysisServiceProvider{" +
-                "defaultAssembly=" + defaultAssemblyAnalysisService.getGenomeAssembly() +
-                " alternateAssemblies=" + alternateAssemblyServices.keySet() +
+                "assemblies=" + genomeAnalysisServices.keySet() +
                 '}';
     }
 }

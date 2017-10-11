@@ -21,6 +21,7 @@
 package org.monarchinitiative.exomiser.core.analysis.util;
 
 import org.junit.Test;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.SimpleVariantCoordinates;
 import org.monarchinitiative.exomiser.core.model.TopologicalDomain;
 import org.monarchinitiative.exomiser.core.model.VariantCoordinates;
@@ -40,7 +41,7 @@ public class ChromosomalRegionIndexTest {
 
     private ChromosomalRegionIndex<TopologicalDomain> instance;
 
-    private final VariantCoordinates variant = new SimpleVariantCoordinates(1, 50, "A", "T");
+    private final VariantCoordinates variant = new SimpleVariantCoordinates(GenomeAssembly.HG19, 1, 50, "A", "T");
 
     private void createInstance(TopologicalDomain... tad) {
         instance = new ChromosomalRegionIndex<>(Arrays.asList(tad));
@@ -51,7 +52,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 100, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Collections.singletonList(tad)));
         assertThat(instance.hasRegionContainingVariant(variant), is(true));
     }
 
@@ -69,7 +70,8 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 1, 10, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsContainingVariant(new SimpleVariantCoordinates(100, 50, "A", "T")), equalTo(Collections.emptyList()));
+        assertThat(instance.getRegionsContainingVariant(new SimpleVariantCoordinates(GenomeAssembly.HG19, 100, 50, "A", "T")), equalTo(Collections
+                .emptyList()));
     }
 
     @Test
@@ -85,7 +87,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsOverlappingPosition(1, 10), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsOverlappingPosition(1, 10), equalTo(Collections.singletonList(tad)));
     }
 
     @Test
@@ -93,7 +95,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsOverlappingPosition(1, 11), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsOverlappingPosition(1, 11), equalTo(Collections.singletonList(tad)));
     }
 
     @Test
@@ -101,7 +103,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad = new TopologicalDomain(1, 10, 12, new HashMap<>());
         createInstance(tad);
 
-        assertThat(instance.getRegionsOverlappingPosition(1, 12), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsOverlappingPosition(1, 12), equalTo(Collections.singletonList(tad)));
     }
 
     @Test
@@ -118,7 +120,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad1 = new TopologicalDomain(2, 200, 300, new HashMap<>());
         createInstance(tad, tad1);
 
-        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Collections.singletonList(tad)));
     }
 
     @Test
@@ -136,7 +138,7 @@ public class ChromosomalRegionIndexTest {
         TopologicalDomain tad1 = new TopologicalDomain(1, 75, 200, new HashMap<>());
         createInstance(tad, tad1);
 
-        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Arrays.asList(tad)));
+        assertThat(instance.getRegionsContainingVariant(variant), equalTo(Collections.singletonList(tad)));
     }
 
 }

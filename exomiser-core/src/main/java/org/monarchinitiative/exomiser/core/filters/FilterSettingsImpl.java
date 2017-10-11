@@ -46,7 +46,7 @@ class FilterSettingsImpl implements FilterSettings {
     private final boolean removeFailedVariants;
     private final boolean removeKnownVariants;
     private final boolean keepOffTargetVariants;
-    private final Set<Integer> genesToKeep;
+    private final Set<String> genesToKeep;
     private final ModeOfInheritance modeOfInheritance;
     
     private FilterSettingsImpl(FilterSettingsBuilder builder) {
@@ -74,7 +74,7 @@ class FilterSettingsImpl implements FilterSettings {
         private boolean removeFailedVariants = false;
         private boolean removeKnownVariants = false;
         private boolean keepOffTargetVariants = false;
-        private Set<Integer> geneIdsToKeep = Collections.emptySet();
+        private Set<String> geneIdsToKeep = Collections.emptySet();
         private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
 
         private FilterSettingsBuilder() {}
@@ -117,8 +117,8 @@ class FilterSettingsImpl implements FilterSettings {
             this.keepOffTargetVariants = keepOffTargetVariants;
             return this;
         }
-        
-        public FilterSettingsBuilder genesToKeep(Set<Integer> geneIds) {
+
+        public FilterSettingsBuilder genesToKeep(Set<String> geneIds) {
             this.geneIdsToKeep = geneIds;
             return this;
         }
@@ -165,7 +165,7 @@ class FilterSettingsImpl implements FilterSettings {
     }
 
     @Override
-    public Set<Integer> getGenesToKeep() {
+    public Set<String> getGenesToKeep() {
         return genesToKeep;
     }
 

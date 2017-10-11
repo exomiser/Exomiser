@@ -18,18 +18,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.autoconfigure;
+package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Configuration
-@ConditionalOnClass(PhenotypeMatchService.class)
-@ComponentScan("org.monarchinitiative.exomiser.core.phenotype")
-public class PhenotypeMatchServiceAutoConfiguration {
+@ConfigurationProperties("exomiser.hg38")
+public class Hg38GenomeProperties extends AbstractGenomeProperties {
+
+    public Hg38GenomeProperties() {
+        super(GenomeAssembly.HG38);
+    }
 }

@@ -18,38 +18,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.monarchinitiative.exomiser.core.genome;
 
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
 
 /**
- * Provides a wrapper around the variant annotations in JannovarData.
- *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@Component
-public class VariantAnnotationData {
+public interface VariantAnnotator {
 
-    private static final Logger logger = LoggerFactory.getLogger(VariantAnnotationData.class);
+    public VariantAnnotation annotate(String chr, int pos, String ref, String alt);
 
-    private final JannovarData jannovarData;
-
-    @Autowired
-    public VariantAnnotationData(JannovarData jannovarData) {
-        this.jannovarData = jannovarData;
-    }
-
-    public JannovarData getJannovarData() {
-        return jannovarData;
-    }
+//    //TODO move to a new VariantContextAnnotationService
+//    public Stream<VariantEvaluation> annotate(VariantContext variantContext);
+//
+//    //TODO move to a new VariantContextAnnotationService
+//    public Stream<VariantEvaluation> annotate(Stream<VariantContext> variantContextStream);
 
 }

@@ -199,9 +199,9 @@ public class AnalysisBuilderTest {
 
     @Test
     public void testAddEntrezGeneIdFilter() {
-        Set<Integer> entrezIds = Sets.newHashSet(123345, 67890);
+        Set<String> entrezIds = Sets.newHashSet("FGFR1", "FGFR2");
         analysisBuilder.addGeneIdFilter(entrezIds);
-        assertThat(buildAndGetSteps(), equalTo(singletonList(new EntrezGeneIdFilter(entrezIds))));
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new GeneSymbolFilter(entrezIds))));
     }
 
     @Test
