@@ -75,7 +75,7 @@ public class ExomiserCacheAutoConfiguration {
                 cacheManager = noOpCacheManager();
                 break;
             case "mem":
-                cacheManager = new ConcurrentMapCacheManager("pathogenicity", "frequency", "diseaseHp", "diseases", "hpo", "mpo", "zpo", "cadd", "remm");
+                cacheManager = new ConcurrentMapCacheManager("pathogenicity", "frequency", "diseaseHp", "diseases", "hpo", "mpo", "zpo", "cadd", "remm", "local");
                 cacheNames.addAll(cacheManager.getCacheNames());
                 break;
             case "ehcache":
