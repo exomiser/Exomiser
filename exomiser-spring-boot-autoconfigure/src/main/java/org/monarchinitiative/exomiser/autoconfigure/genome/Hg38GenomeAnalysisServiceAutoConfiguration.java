@@ -52,13 +52,13 @@ public class Hg38GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg38defaultFrequencyDao")
     @Override
     public FrequencyDao defaultFrequencyDao() {
-        return new DefaultFrequencyDao(dataSource);
+        return super.defaultFrequencyDao();
     }
 
     @Bean("hg38pathogenicityDao")
     @Override
     public PathogenicityDao pathogenicityDao() {
-        return new DefaultPathogenicityDao(dataSource);
+        return super.pathogenicityDao();
     }
 
     @Bean("hg38localFrequencyDao")

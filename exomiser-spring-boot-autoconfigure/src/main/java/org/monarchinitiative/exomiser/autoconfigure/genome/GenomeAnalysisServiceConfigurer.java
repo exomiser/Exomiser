@@ -27,10 +27,7 @@ import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
 import org.monarchinitiative.exomiser.core.genome.*;
-import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
-import org.monarchinitiative.exomiser.core.genome.dao.RegulatoryFeatureDao;
-import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
-import org.monarchinitiative.exomiser.core.genome.dao.TadDao;
+import org.monarchinitiative.exomiser.core.genome.dao.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.slf4j.Logger;
@@ -101,6 +98,33 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         return new GenomeAnalysisServiceImpl(genomeProperties.getAssembly(), genomeDataService(), variantDataService(), variantFactory());
     }
 
+    @Override
+    public FrequencyDao defaultFrequencyDao() {
+        if (genomeProperties.getFrequencyPath().isEmpty()) {
+            return new DefaultFrequencyDao(dataSource);
+        }
+        return new DefaultFrequencyDaoTabix(defaultFrequencyTabixDataSource());
+    }
+
+    @Override
+    public PathogenicityDao pathogenicityDao() {
+        if (genomeProperties.getPathogenicityPath().isEmpty()) {
+            return new DefaultPathogenicityDao(dataSource);
+        }
+        return new DefaultPathogenicityDaoTabix(defaultPathogenicityTabixDataSource());
+    }
+
+    protected TabixDataSource defaultFrequencyTabixDataSource() {
+        String frequencyPath = genomeProperties.getFrequencyPath();
+        logger.info("Reading variant frequency data from tabix {}", frequencyPath);
+        return TabixDataSourceLoader.load(frequencyPath);
+    }
+
+    protected TabixDataSource defaultPathogenicityTabixDataSource() {
+        String pathogenicityPath = genomeProperties.getPathogenicityPath();
+        logger.info("Reading variant pathogenicity data from tabix {}", pathogenicityPath);
+        return TabixDataSourceLoader.load(pathogenicityPath);
+    }
 
     /**
      * Optional full system path to CADD InDels.tsv.gz and InDels.tsv.gz.tbi file pair.

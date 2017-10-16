@@ -34,6 +34,9 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
     private String dataVersion = "";
 
     //Tabix variant data files
+    private String frequencyPath = "";
+    private String pathogenicityPath = "";
+    //Optional tabix variant data
     private String caddSnvPath = "";
     private String caddInDelPath = "";
     private String remmPath = "";
@@ -80,6 +83,22 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
 
 
     //Tabix variant data files
+    public String getFrequencyPath() {
+        return frequencyPath;
+    }
+
+    public void setFrequencyPath(String frequencyPath) {
+        this.frequencyPath = frequencyPath;
+    }
+
+    public String getPathogenicityPath() {
+        return pathogenicityPath;
+    }
+
+    public void setPathogenicityPath(String pathogenicityPath) {
+        this.pathogenicityPath = pathogenicityPath;
+    }
+
     public String getCaddSnvPath() {
         return caddSnvPath;
     }

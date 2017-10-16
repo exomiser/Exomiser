@@ -53,13 +53,13 @@ public class Hg19GenomeAnalysisServiceAutoConfiguration extends GenomeAnalysisSe
     @Bean("hg19defaultFrequencyDao")
     @Override
     public FrequencyDao defaultFrequencyDao() {
-        return new DefaultFrequencyDao(dataSource);
+        return super.defaultFrequencyDao();
     }
 
     @Bean("hg19pathogenicityDao")
     @Override
     public PathogenicityDao pathogenicityDao() {
-        return new DefaultPathogenicityDao(dataSource);
+        return super.pathogenicityDao();
     }
 
     @Bean("hg19localFrequencyDao")

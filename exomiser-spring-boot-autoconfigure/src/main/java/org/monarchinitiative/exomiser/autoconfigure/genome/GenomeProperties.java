@@ -51,6 +51,15 @@ interface GenomeProperties {
     public void setDatasource(DataSourceProperties dataSourceProperties);
 
     //Tabix variant data files
+    public String getFrequencyPath();
+
+    public void setFrequencyPath(String frequencyPath);
+
+    public String getPathogenicityPath();
+
+    public void setPathogenicityPath(String pathogenicityPath);
+
+    //Optional tabix variant data
     public String getCaddSnvPath();
 
     public void setCaddSnvPath(String caddSnvPath);
