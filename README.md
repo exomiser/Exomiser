@@ -58,10 +58,9 @@ public class MainConfig {
 }
 ```
 
-Or if using Spring boot for your application, you can add it on your main class
+Or if using Spring boot for your application, the exomiser wll be autoconfigured if it is on your classpath.
 
 ```java
-@EnableExomiser
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
@@ -107,4 +106,25 @@ private final Exomiser exomiser;
 
 Analysing whole genomes using the ``AnalysisMode.FULL`` or ``AnalysisMode.SPARSE`` will use a lot of RAM (~16GB for 4.5 million variants without any extra variant data being loaded) the standard Java GC will fail to cope well with these.
 Using the G1GC should solve this issue. e.g. add ``-XX:+UseG1GC`` to your ``java -jar -Xmx...`` incantation. 
+
+#### Caching
+
+Since 8.0.2 caching is disabled by default when using the ```exomiser-spring-boot-starter```. It is still possible to use the ```exomiser.cache``` in your ```application.properties``` file, but the caches and their sizes are restricted to the bundled ehcache.xml.
  
+To enable and configure your own caching in your Spring application, make sure you do *not* specify ```exomiser.cache``` in your ```application.properties```. Instead, use the ```@EnableCaching``` annotation as usual in a ```@Configuration``` class. 
+However in doing so this will trigger Spring to pick up the bundled ehcache.xml, so you will need to add the ```spring.cache.type``` and any implementation specific properties to the ```application.properties``` as well.
+
+For example, to use [Caffeine](https://github.com/ben-manes/caffeine) just add the dependency to your pom:
+
+```xml
+<dependency>
+    <groupId>com.github.ben-manes.caffeine</groupId>
+    <artifactId>caffeine</artifactId>
+</dependency>
+```
+and these lines to the ```application.properties```:
+```properties
+# make sure you don't have exomiser.cache in here
+spring.cache.type=caffeine
+spring.cache.caffeine.spec=maximumSize=300000
+```
