@@ -56,7 +56,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         this.dataSource = dataSource;
     }
 
-    @Cacheable(value = "pathogenicity")
+    @Cacheable(value = "pathogenicity", key = "#variant.hgvsGenome")
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
 
