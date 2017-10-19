@@ -30,6 +30,8 @@ import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.core.genome.dao.ErrorThrowingTabixDataSource;
 import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
@@ -324,11 +326,10 @@ public class ExomiserAutoConfigurationTest {
         assertThat(dataSource.getConnection().isValid(1), is(true));
     }
 
-    @Test
+    @Test(expected = NoSuchBeanDefinitionException.class)
     public void cachingDisabledByDefault() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
         CacheManager cache = context.getBean(CacheManager.class);
-        assertThat(cache.getCacheNames().isEmpty(), is(true));
     }
 
     @Test(expected = RuntimeException.class)
@@ -347,7 +348,7 @@ public class ExomiserAutoConfigurationTest {
     public void cachingInMemCanBeDefined() {
         load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.cache=mem");
         CacheManager cache = context.getBean(CacheManager.class);
-        assertThat(cache.getCacheNames(), hasItems("pathogenicity", "frequency", "diseaseHp", "diseases","hpo", "mpo", "zpo", "cadd", "remm"));
+        assertThat(cache, notNullValue());
     }
 
     @Test
@@ -376,6 +377,7 @@ public class ExomiserAutoConfigurationTest {
     }
 
     @Configuration
+    @ImportAutoConfiguration(ExomiserAutoConfiguration.class)
     static class EmptyConfiguration {
 
         /*
