@@ -52,10 +52,10 @@ public class PhenotypeMatchServiceTest {
         List<PhenotypeTerm> queryTerms = instance.makePhenotypeTermsFromHpoIds(hpoIds);
         PhenotypeMatcher hpHpQueryMatcher = instance.getHumanPhenotypeMatcherForTerms(queryTerms);
 
-        ModelScorer modelScorer = PhenodigmModelScorer.forSameSpecies(hpHpQueryMatcher);
+        ModelScorer<TestModel> modelScorer = PhenodigmModelScorer.forSameSpecies(hpHpQueryMatcher);
 
-        Model exactMatch = new TestModel("EXACT_MATCH", hpoIds);
-        Model noMatch = new TestModel("NO_MATCH", Collections.emptyList());
+        TestModel exactMatch = new TestModel("EXACT_MATCH", hpoIds);
+        TestModel noMatch = new TestModel("NO_MATCH", Collections.emptyList());
 
         List<ModelPhenotypeMatch> matches = Stream.of(exactMatch, noMatch)
                 .map(modelScorer::scoreModel)
