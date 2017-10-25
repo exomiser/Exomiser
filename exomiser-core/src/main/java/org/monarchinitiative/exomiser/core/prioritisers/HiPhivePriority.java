@@ -149,7 +149,7 @@ public class HiPhivePriority implements Prioritiser {
 
             List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = scoreModels(bestQueryPhenotypeMatch, organismPhenotypeMatcher, modelsToScore);
             Map<Integer, GeneModelPhenotypeMatch> bestGeneModelsForOrganism = mapBestModelByGene(geneModelPhenotypeMatches);
-            bestGeneModelsForOrganism.entrySet().forEach(entry -> bestGeneModels.put(entry.getKey(), entry.getValue()));
+            bestGeneModelsForOrganism.forEach(bestGeneModels::put);
         }
 
         return bestGeneModels;
@@ -201,16 +201,14 @@ public class HiPhivePriority implements Prioritiser {
     private List<GeneModelPhenotypeMatch> scoreModels(QueryPhenotypeMatch bestQueryPhenotypeMatch, PhenotypeMatcher organismPhenotypeMatcher, Collection<GeneModel> models) {
         Organism organism = organismPhenotypeMatcher.getOrganism();
 
-        ModelScorer modelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, organismPhenotypeMatcher);
+        ModelScorer<GeneModel> modelScorer = PhenodigmModelScorer.forMultiCrossSpecies(bestQueryPhenotypeMatch, organismPhenotypeMatcher);
 
         logger.info("Scoring {} models", organism);
         Instant timeStart = Instant.now();
         //running this in parallel here can cut the overall time for this method in half or better - ~650ms -> ~350ms on Pfeiffer test set.
         List<GeneModelPhenotypeMatch> geneModelPhenotypeMatches = models.parallelStream()
-                .map(model -> {
-                    ModelPhenotypeMatch score = modelScorer.scoreModel(model);
-                    return new GeneModelPhenotypeMatch(score.getScore(), model, score.getBestPhenotypeMatches());
-                })
+                .map(modelScorer::scoreModel)
+                .map(GeneModelPhenotypeMatch::new)
                 .collect(toList());
 
         Duration duration = Duration.between(timeStart, Instant.now());
