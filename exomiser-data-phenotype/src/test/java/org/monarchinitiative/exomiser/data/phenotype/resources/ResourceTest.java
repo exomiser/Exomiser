@@ -18,18 +18,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.monarchinitiative.exomiser.data.phenotype;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.monarchinitiative.exomiser.data.phenotype.resources;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-//@SpringBootTest
-public class ExomiserDataPhenotypeApplicationTest {
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
+/**
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ */
+public class ResourceTest {
+
+    /**
+     * Test of getStatus method, of class Resource.
+     */
     @Test
-    public void contextLoads() {
+    public void testGetStatus() {
+        Resource instance = new Resource("test");
+        assertThat(instance.getStatus(), equalTo("Status for: test                    Download: UNTRIED, Extract: UNTRIED, Parse: UNTRIED"));
     }
-
 }
