@@ -43,7 +43,7 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Component
-public class OmimResourceGroupParser extends AbstractResourceGroupParser implements ResourceGroupParser {
+public class OmimResourceGroupParser extends AbstractResourceGroupParser {
 
     public static final String NAME = "OMIM";
 

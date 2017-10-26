@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public abstract class AbstractResourceGroupParser {
+public abstract class AbstractResourceGroupParser implements ResourceGroupParser {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
