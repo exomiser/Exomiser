@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.prioritisers.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 
@@ -41,6 +42,10 @@ public class GeneModelPhenotypeMatch implements GeneModel {
         this.score = score;
         this.model = model;
         this.bestModelPhenotypeMatches = ImmutableList.copyOf(bestModelPhenotypeMatches);
+    }
+
+    public GeneModelPhenotypeMatch(ModelPhenotypeMatch<GeneModel> match) {
+        this(match.getScore(), match.getModel(), match.getBestPhenotypeMatches());
     }
 
     public double getScore() {

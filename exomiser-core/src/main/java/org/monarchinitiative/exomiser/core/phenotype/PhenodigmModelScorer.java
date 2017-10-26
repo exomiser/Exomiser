@@ -36,7 +36,7 @@ import java.util.Set;
  * @since 8.0.0
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class PhenodigmModelScorer implements ModelScorer {
+public class PhenodigmModelScorer<T extends Model> implements ModelScorer<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(PhenodigmModelScorer.class);
 
@@ -81,9 +81,9 @@ public class PhenodigmModelScorer implements ModelScorer {
      *
      * @param phenotypeMatcher The HP to HP PhenotypeMatches for the query Phenotypes.
      */
-    public static PhenodigmModelScorer forSameSpecies(PhenotypeMatcher phenotypeMatcher) {
+    public static <T extends Model> PhenodigmModelScorer<T> forSameSpecies(PhenotypeMatcher phenotypeMatcher) {
         int numQueryPhenotypes = phenotypeMatcher.getQueryTerms().size();
-        return new PhenodigmModelScorer(phenotypeMatcher, numQueryPhenotypes);
+        return new PhenodigmModelScorer<>(phenotypeMatcher, numQueryPhenotypes);
     }
 
     /**
@@ -92,9 +92,9 @@ public class PhenodigmModelScorer implements ModelScorer {
      *
      * @param phenotypeMatcher The HP to MP/ZP PhenotypeMatches for the query Phenotypes.
      */
-    public static PhenodigmModelScorer forSingleCrossSpecies(PhenotypeMatcher phenotypeMatcher) {
+    public static <T extends Model> PhenodigmModelScorer<T> forSingleCrossSpecies(PhenotypeMatcher phenotypeMatcher) {
         int numQueryPhenotypes = phenotypeMatcher.getBestPhenotypeMatches().size();
-        return new PhenodigmModelScorer(phenotypeMatcher, numQueryPhenotypes);
+        return new PhenodigmModelScorer<>(phenotypeMatcher, numQueryPhenotypes);
     }
 
     /**
@@ -104,9 +104,9 @@ public class PhenodigmModelScorer implements ModelScorer {
      * @param referenceOrganismQueryPhenotypeMatch {@link QueryPhenotypeMatch} for the reference organism - this should be for the HP-HP hits.
      * @param phenotypeMatcher                     the {@link PhenotypeMatcher} for the relevant organism i.e. HP-HP, HP-MP or HP-ZP matches.
      */
-    public static PhenodigmModelScorer forMultiCrossSpecies(QueryPhenotypeMatch referenceOrganismQueryPhenotypeMatch, PhenotypeMatcher phenotypeMatcher) {
+    public static <T extends Model> PhenodigmModelScorer<T> forMultiCrossSpecies(QueryPhenotypeMatch referenceOrganismQueryPhenotypeMatch, PhenotypeMatcher phenotypeMatcher) {
         int numQueryPhenotypes = referenceOrganismQueryPhenotypeMatch.getQueryTerms().size();
-        return new PhenodigmModelScorer(referenceOrganismQueryPhenotypeMatch, phenotypeMatcher, numQueryPhenotypes);
+        return new PhenodigmModelScorer<>(referenceOrganismQueryPhenotypeMatch, phenotypeMatcher, numQueryPhenotypes);
     }
 
     private void logOrganismPhenotypeMatches() {
@@ -130,7 +130,7 @@ public class PhenodigmModelScorer implements ModelScorer {
     }
 
     @Override
-    public ModelPhenotypeMatch scoreModel(Model model) {
+    public ModelPhenotypeMatch<T> scoreModel(T model) {
         PhenodigmMatchRawScore rawModelScore = organismPhenotypeMatcher.matchPhenotypeIds(model.getPhenotypeIds());
         double score = calculateCombinedScore(rawModelScore);
         return ModelPhenotypeMatch.of(score, model, rawModelScore.getBestPhenotypeMatches());
