@@ -52,8 +52,9 @@ public class CaddDao {
         this.caddSnvTabixDataSource = caddSnvTabixDataSource;
     }
 
-    @Cacheable(value = "cadd")
+    @Cacheable(value = "cadd", keyGenerator = "variantKeyGenerator")
     public PathogenicityData getPathogenicityData(Variant variant) {
+        logger.debug("Getting CADD data for {}", variant);
         return processResults(variant);
     }
 

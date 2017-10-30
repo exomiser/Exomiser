@@ -67,9 +67,10 @@ public class DefaultFrequencyDaoTabix implements FrequencyDao {
         this.tabixDataSource = tabixDataSource;
     }
 
-    @Cacheable(value = "frequency")
+    @Cacheable(value = "frequency", keyGenerator = "variantKeyGenerator")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
+        logger.debug("Getting FREQ data for {}", variant);
         //the exomiser tabix files use the integer representation of the chromosome
         String chromosome = Integer.toString(variant.getChromosome());
 //        String chromosome = variant.getChromosomeName();

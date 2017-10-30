@@ -79,7 +79,7 @@ public class DefaultFrequencyDao implements FrequencyDao {
     }
 
 
-    @Cacheable(value = "frequency")
+    @Cacheable(value = "frequency", keyGenerator = "variantKeyGenerator")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
 //        logger.info("Fetching data for {}", variant);

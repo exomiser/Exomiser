@@ -45,9 +45,10 @@ public class LocalFrequencyDao implements FrequencyDao {
         this.tabixDataSource = localFrequencyTabixDataSource;
     }
 
-    @Cacheable(value = "local")
+    @Cacheable(value = "local", keyGenerator = "variantKeyGenerator")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
+        logger.debug("Getting LOCAL_FREQ data for {}", variant);
         return processResults(variant);
     }
 

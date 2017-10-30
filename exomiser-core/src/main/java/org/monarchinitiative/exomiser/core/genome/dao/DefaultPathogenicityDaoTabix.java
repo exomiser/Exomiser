@@ -50,9 +50,11 @@ public class DefaultPathogenicityDaoTabix implements PathogenicityDao {
         this.tabixDataSource = tabixDataSource;
     }
 
-    @Cacheable(value = "pathogenicity")
+    @Cacheable(value = "pathogenicity", keyGenerator = "variantKeyGenerator")
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
+        logger.debug("Getting PATH data for {}", variant);
+
         //if a variant is not classified as missense then we don't need to hit
         //the database as we're going to assign it a constant pathogenicity score.
         VariantEffect variantEffect = variant.getVariantEffect();

@@ -50,8 +50,9 @@ public class RemmDao {
         this.remmTabixDataSource = remmTabixDataSource;
     }
 
-    @Cacheable(value = "remm")
+    @Cacheable(value = "remm", keyGenerator = "variantKeyGenerator")
     public PathogenicityData getPathogenicityData(Variant variant) {
+        logger.debug("Getting REMM data for {}", variant);
         // REMM has not been trained on missense variants so skip these
         if (variant.getVariantEffect() == VariantEffect.MISSENSE_VARIANT) {
             return PathogenicityData.empty();

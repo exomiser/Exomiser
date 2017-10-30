@@ -52,7 +52,7 @@ public class DefaultPathogenicityDao implements PathogenicityDao {
         this.dataSource = genomeDataSource;
     }
 
-    @Cacheable(value = "pathogenicity")
+    @Cacheable(value = "pathogenicity", keyGenerator = "variantKeyGenerator")
     @Override
     public PathogenicityData getPathogenicityData(Variant variant) {
 //        logger.info("Fetching data for {}", variant);
