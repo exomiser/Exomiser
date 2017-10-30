@@ -20,18 +20,14 @@
 
 package org.monarchinitiative.exomiser.autoconfigure;
 
-import org.monarchinitiative.exomiser.autoconfigure.genome.Hg19GenomeAnalysisServiceAutoConfiguration;
-import org.monarchinitiative.exomiser.autoconfigure.genome.Hg38GenomeAnalysisServiceAutoConfiguration;
+import org.monarchinitiative.exomiser.autoconfigure.genome.GenomeAnalysisServiceAutoConfiguration;
 import org.monarchinitiative.exomiser.autoconfigure.phenotype.PrioritiserAutoConfiguration;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisFactory;
 import org.monarchinitiative.exomiser.core.analysis.SettingsParser;
-import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisService;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -44,24 +40,16 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConditionalOnClass({Exomiser.class, AnalysisFactory.class})
-@EnableConfigurationProperties({ExomiserProperties.class}) //, Hg19GenomeProperties.class, Hg38GenomeProperties.class
-@Import({DataDirectoryAutoConfiguration.class,
-        ExomiserCacheAutoConfiguration.class,
+@EnableConfigurationProperties({ExomiserProperties.class})
+@Import({
         PrioritiserAutoConfiguration.class,
-        Hg19GenomeAnalysisServiceAutoConfiguration.class,
-        Hg38GenomeAnalysisServiceAutoConfiguration.class
+        GenomeAnalysisServiceAutoConfiguration.class
 })
 @ComponentScan(basePackageClasses = {Exomiser.class}, basePackages = {"org.monarchinitiative.exomiser.core.analysis"})
 public class ExomiserAutoConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExomiserAutoConfiguration.class);
-
-    @Bean
-    public GenomeAnalysisServiceProvider genomeAnalysisServiceProvider(GenomeAnalysisService... genomeAnalysisServices) {
-        return new GenomeAnalysisServiceProvider(genomeAnalysisServices);
-    }
-
     //TODO: This is a hack in order to wire this up in the interim - probably going to remove this class as its no longer used.
+    //TODO: Alternatively add genomeAssembly to Settings and fix this properly.
     @Bean
     public SettingsParser settingsParser(PriorityFactory priorityFactory, GenomeAnalysisServiceProvider genomeAnalysisServiceProvider) {
         return new SettingsParser(priorityFactory, genomeAnalysisServiceProvider.get(GenomeAssembly.HG19));

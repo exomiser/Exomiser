@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.phenotype;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.autoconfigure.AbstractAutoConfigurationTest;
@@ -28,6 +27,8 @@ import org.monarchinitiative.exomiser.autoconfigure.DataDirectoryAutoConfigurati
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -52,12 +53,6 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
     public void doesNotLoadWhenPhenotypeDataVersionIsAbsent() {
         load(EmptyConfiguration.class, TEST_DATA_ENV);
         context.getBean("phenotypeDataDirectory");
-    }
-
-    @Ignore //TODO
-    @Test(expected = IllegalArgumentException.class)
-    public void throwsExceptionWhenPhenotypeDataVersionIsEmpty() {
-        load(EmptyConfiguration.class, TEST_DATA_ENV, "exomiser.phenotype.data-version=");
     }
 
     @Test
@@ -161,6 +156,11 @@ public class PrioritiserAutoConfigurationTest extends AbstractAutoConfigurationT
         @Bean
         public DataSource phenotypeDataSource() {
             return Mockito.mock(DataSource.class);
+        }
+
+        @Bean
+        public CacheManager noOpCacheManager() {
+            return new NoOpCacheManager();
         }
 
     }
