@@ -20,26 +20,19 @@
 
 package org.monarchinitiative.exomiser.cli.config;
 
-import org.monarchinitiative.exomiser.autoconfigure.EnableExomiser;
+import org.monarchinitiative.exomiser.autoconfigure.UndefinedDataDirectoryException;
+import org.monarchinitiative.exomiser.cli.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationHome;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.PathResource;
-import org.springframework.core.io.Resource;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 /**
@@ -49,9 +42,6 @@ import java.nio.file.Paths;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 @Configuration
-@ComponentScan(basePackages = {"org.monarchinitiative.exomiser.cli"})
-@PropertySource("file:${jarFilePath}/application.properties")
-@EnableExomiser
 public class MainConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
@@ -66,16 +56,16 @@ public class MainConfig {
      * @return
      */
     @Bean
-    public Path jarFilePath() {
-        Path jarFilePath = Paths.get(env.getProperty("jarFilePath"));
-        logger.info("Jar file is running from location: {}", jarFilePath);
-        return jarFilePath;
+    public Path exomiserHome() {
+        ApplicationHome home = new ApplicationHome(Main.class);
+        logger.info("Exomiser home: {}", home.getDir());
+        return home.getDir().toPath();
     }
 
     @Bean
-    public Path resultsDir(Path jarFilePath) {
+    public Path resultsDir(Path exomiserHome) {
         //TODO: get this from env i.e. exomiser.properties? Will help with server too
-        Path defaultOutputDir = jarFilePath.resolve("results");
+        Path defaultOutputDir = exomiserHome.resolve("results");
         try {
             if (!defaultOutputDir.toFile().exists()) {
                 Files.createDirectory(defaultOutputDir);
@@ -88,33 +78,25 @@ public class MainConfig {
     }
 
     @Bean
-    public Path exomiserDataDirectory(Path jarFilePath) {
+    public Path exomiserDataDirectory(Path exomiserHome) {
         String dataDirValue = env.getProperty("exomiser.data-directory");
+        if (dataDirValue == null || dataDirValue.isEmpty()) {
+            return findDefaultDataDir(exomiserHome);
+        }
         logger.info("Data source directory defined in properties as: {}", dataDirValue);
-        Path dataPath = jarFilePath.resolve(dataDirValue);
-        logger.info("Root data source directory set to: {}", dataPath.toAbsolutePath());
+        Path dataPath = exomiserHome.resolve(dataDirValue).toAbsolutePath();
+        logger.info("Root data source directory set to: {}", dataPath);
         return dataPath;
     }
 
-    @Bean
-    public Resource ehCacheConfig(Path jarFilePath) {
-      return new PathResource(jarFilePath.resolve("ehcache.xml"));
-    }
-
-    @Bean
-    public String banner() {
-        Resource banner = new ClassPathResource("banner.txt");
-        StringBuilder stringBuilder = new StringBuilder();
-        try (InputStream inputStream = banner.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
-            String line;
-            while((line = reader.readLine()) != null) {
-                stringBuilder.append(line + "\n");
-            }
-        } catch (IOException ex) {
-            logger.error("Error reading banner.txt {}", ex);
+    private Path findDefaultDataDir(Path exomiserHome) {
+        logger.info("Exomiser data directory not defined in properties. Checking for default...");
+        Path dataPath = exomiserHome.resolve("data").toAbsolutePath();
+        if (dataPath.toFile().exists()) {
+            logger.info("Found default data directory: {}", dataPath);
+            return dataPath;
         }
-        return stringBuilder.toString();
+        throw new UndefinedDataDirectoryException("Please provide a valid path for the exomiser.data-directory");
     }
 
 }
