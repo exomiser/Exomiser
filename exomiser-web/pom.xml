@@ -88,6 +88,11 @@
             <artifactId>jackson-annotations</artifactId>
             <type>jar</type>
         </dependency>
+        <!-- Caffiene is a newer Java 8 rewrite of GuavaCache-->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
         <!--WebJars-->
         <dependency>
             <groupId>org.webjars</groupId>

@@ -304,6 +304,9 @@ public class SubmitJobController {
 
     private Set<String> makeGenesToKeep(List<String> genesToFilter) {
         logger.info("Genes to filter: {}", genesToFilter);
+        if (genesToFilter == null) {
+            return Collections.emptySet();
+        }
         return ImmutableSortedSet.copyOf(genesToFilter);
     }
 
