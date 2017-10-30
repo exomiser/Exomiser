@@ -54,4 +54,47 @@ public class GenomeDataTest {
         assertThat(instance.getPath(), equalTo(Paths.get("src/test/resources/user-defined").toAbsolutePath()));
     }
 
+    @Test
+    public void getAssemblyVersion() throws Exception {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+
+        GenomeData instance = new GenomeData(genomeProperties, exomiserDataDirectory);
+        assertThat(instance.getVersionAssemblyPrefix(), equalTo("1710_hg19"));
+    }
+
+    @Test
+    public void testResolveAbsoluteResourcePathFromRelativePath() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+        genomeProperties.setDataDirectory("src/test/resources/data");
+
+        GenomeData instance = new GenomeData(genomeProperties, exomiserDataDirectory);
+        Path relativeFilePath = Paths.get("exomiser.h2.db");
+        assertThat(instance.resolveAbsoluteResourcePath(relativeFilePath), equalTo(Paths.get("src/test/resources/data/exomiser.h2.db")
+                .toAbsolutePath()));
+    }
+
+    @Test
+    public void testResolveAbsoluteResourcePathFromAbsolutePath() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+        genomeProperties.setDataDirectory("src/test/resources/data");
+
+        GenomeData instance = new GenomeData(genomeProperties, exomiserDataDirectory);
+        Path absoluteFilePath = Paths.get("src/test/resources/user-defined/exomiser.h2.db").toAbsolutePath();
+        assertThat(instance.resolveAbsoluteResourcePath(absoluteFilePath), equalTo(Paths.get("src/test/resources/user-defined/exomiser.h2.db")
+                .toAbsolutePath()));
+    }
+
+    @Test
+    public void testResolveAbsoluteResourcePathFromString() {
+        GenomeProperties genomeProperties = new Hg19GenomeProperties();
+        genomeProperties.setDataVersion("1710");
+        genomeProperties.setDataDirectory("src/test/resources/user-defined");
+
+        GenomeData instance = new GenomeData(genomeProperties, exomiserDataDirectory);
+        assertThat(instance.resolveAbsoluteResourcePath("exomiser.h2.db"), equalTo(Paths.get("src/test/resources/user-defined/exomiser.h2.db")
+                .toAbsolutePath()));
+    }
 }

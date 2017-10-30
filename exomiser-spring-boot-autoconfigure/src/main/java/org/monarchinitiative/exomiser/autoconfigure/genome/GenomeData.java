@@ -33,26 +33,41 @@ public class GenomeData {
 
     private static final Logger logger = LoggerFactory.getLogger(GenomeData.class);
 
+    private final String versionAssemblyPrefix;
     private final Path assemblyDataDirectory;
 
     public GenomeData(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
-        this.assemblyDataDirectory = findAssemblyDataDirectory(genomeProperties, exomiserDataDirectory);
+        this.versionAssemblyPrefix = String.format("%s_%s", genomeProperties.getDataVersion(), genomeProperties.getAssembly());
+        this.assemblyDataDirectory = findAssemblyDataDirectory(versionAssemblyPrefix, genomeProperties, exomiserDataDirectory);
     }
 
-    private Path findAssemblyDataDirectory(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
-        String versionDir = String.format("%s_%s", genomeProperties.getDataVersion(), genomeProperties.getAssembly());
+    private Path findAssemblyDataDirectory(String versionDir, GenomeProperties genomeProperties, Path exomiserDataDirectory) {
 
-        String assemblyDataDir = genomeProperties.getDataDirectory();
+        Path assemblyDataDir = genomeProperties.getDataDirectory();
 
-        if (assemblyDataDir == null || assemblyDataDir.isEmpty()) {
+        if (assemblyDataDir == null) {
             return exomiserDataDirectory.resolve(versionDir).toAbsolutePath();
         } else {
-            return Paths.get(assemblyDataDir).toAbsolutePath();
+            return assemblyDataDir.toAbsolutePath();
         }
+    }
+
+    public String getVersionAssemblyPrefix() {
+        return versionAssemblyPrefix;
     }
 
     public Path getPath() {
         return assemblyDataDirectory;
     }
 
+    public Path resolveAbsoluteResourcePath(String fileResource) {
+        return resolveAbsoluteResourcePath(Paths.get(fileResource));
+    }
+
+    public Path resolveAbsoluteResourcePath(Path fileResourcePath) {
+        if (fileResourcePath.isAbsolute()) {
+            return fileResourcePath;
+        }
+        return assemblyDataDirectory.resolve(fileResourcePath).toAbsolutePath();
+    }
 }
