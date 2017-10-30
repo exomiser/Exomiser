@@ -25,6 +25,8 @@ import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -65,6 +67,11 @@ public class ExomiserAutoConfigurationTest extends AbstractAutoConfigurationTest
         @Bean
         public DataSource phenotypeDataSource() {
             return Mockito.mock(DataSource.class);
+        }
+
+        @Bean
+        public CacheManager noOpCacheManager() {
+            return new NoOpCacheManager();
         }
     }
 

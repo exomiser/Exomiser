@@ -51,7 +51,7 @@ import java.util.List;
 @Configuration
 @ConditionalOnClass(PriorityFactory.class)
 @ConditionalOnProperty("exomiser.phenotype.data-version")
-@Import({DataDirectoryAutoConfiguration.class, PhenotypeMatchServiceAutoConfiguration.class})
+@Import({DataDirectoryAutoConfiguration.class, PhenotypeMatchServiceAutoConfiguration.class, PhenotypeCacheConfiguration.class})
 @EnableConfigurationProperties(PhenotypeProperties.class)
 @ComponentScan("org.monarchinitiative.exomiser.core.prioritisers")
 public class PrioritiserAutoConfiguration {
@@ -172,7 +172,7 @@ public class PrioritiserAutoConfiguration {
         return new HikariDataSource(phenotypeDataSourceConfig());
     }
 
-    public HikariConfig phenotypeDataSourceConfig() {
+    private HikariConfig phenotypeDataSourceConfig() {
         String version = phenotypeProperties.getDataVersion();
         //omit the .h2.db extensions
         String dbFileName = String.format("%s_exomiser_phenotype", version);
