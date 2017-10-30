@@ -23,6 +23,8 @@ package org.monarchinitiative.exomiser.autoconfigure.genome;
 import org.monarchinitiative.exomiser.autoconfigure.DataSourceProperties;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 
+import java.nio.file.Path;
+
 /**
  * Package-private interface. Required for polymorphic dispatch in the {@link GenomeAnalysisServiceConfigurer} constructor.
  * <p>
@@ -32,17 +34,23 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
  */
 interface GenomeProperties {
 
-    GenomeAssembly getAssembly();
+    public GenomeAssembly getAssembly();
 
-    String getDataVersion();
+    public String getDataVersion();
 
-    void setDataVersion(String dataVersion);
+    public void setDataVersion(String dataVersion);
 
-    TranscriptSource getTranscriptSource();
+    public TranscriptSource getTranscriptSource();
 
-    void setTranscriptSource(TranscriptSource transcriptSource);
+    public void setTranscriptSource(TranscriptSource transcriptSource);
 
-    void setTranscriptSource(String name);
+    public void setTranscriptSource(String name);
+
+    public Path getDataDirectory();
+
+    public void setDataDirectory(Path dataDirectory);
+
+    public void setDataDirectory(String dataDirectory);
 
     //IMPORTANT! Do not change this name to match the usual java conventions as this will break the application.properties parsing
     //where the property path is exomiser.hg19.datasource....

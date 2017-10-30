@@ -20,35 +20,30 @@
 
 package org.monarchinitiative.exomiser.autoconfigure.genome;
 
-import htsjdk.tribble.readers.TabixReader;
+import org.junit.Test;
 import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
 import org.monarchinitiative.exomiser.core.genome.dao.TabixDataSource;
-import org.monarchinitiative.exomiser.core.genome.dao.TabixReaderAdaptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class TabixDataSourceLoader {
+public class TabixDataSourceLoaderTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(TabixDataSourceLoader.class);
-
-    private TabixDataSourceLoader() {
-        //uninstantiable - static helper class.
+    @Test(expected = ExomiserAutoConfigurationException.class)
+    public void testUnresolvableResource() throws Exception {
+        TabixDataSourceLoader.load(Paths.get("wibble"));
     }
 
-    public static TabixDataSource load(Path pathToTabixGzFile) {
-        TabixReader tabixReader;
-        try {
-            logger.debug("Loading TabixDataSource from {}", pathToTabixGzFile);
-            tabixReader = new TabixReader(pathToTabixGzFile.toAbsolutePath().toString());
-        } catch (IOException e) {
-            throw new ExomiserAutoConfigurationException("Failed to load/find file " + pathToTabixGzFile + ". Please check exomiser properties file points to a valid tabix .gz file.", e);
-        }
-        return new TabixReaderAdaptor(tabixReader);
+    @Test
+    public void testLoadResource() throws Exception {
+        Path remmTabixFilePath = Paths.get("src/test/resources/data/remmData.tsv.gz");
+        TabixDataSource tabixDataSource = TabixDataSourceLoader.load(remmTabixFilePath);
+        assertThat(tabixDataSource.getSource(), equalTo(remmTabixFilePath.toAbsolutePath().toString()));
     }
 }

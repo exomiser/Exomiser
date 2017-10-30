@@ -49,23 +49,19 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     private static final Logger logger = LoggerFactory.getLogger(GenomeAnalysisServiceConfigurer.class);
 
     private final GenomeProperties genomeProperties;
-
-    private final String filePrefix;
-    private final Path assemblyDataDirectory;
+    private final GenomeData genomeData;
 
     protected final DataSource dataSource;
     private final JannovarData jannovarData;
 
     public GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
-        logger.info("Configuring {} GenomeAnalysisService (data-version={}, transcript-source={})", genomeProperties.getAssembly(), genomeProperties
+        logger.info("Configuring {} assembly (data-version={}, transcript-source={})", genomeProperties.getAssembly(), genomeProperties
                 .getDataVersion(), genomeProperties.getTranscriptSource());
-        filePrefix = String.format("%s_%s", genomeProperties.getDataVersion(), genomeProperties.getAssembly());
-        //exomiser-cli/data/1710_hg19/ //TODO: provide the path directly?
-        assemblyDataDirectory = exomiserDataDirectory.resolve(filePrefix);
+        this.genomeData = new GenomeData(genomeProperties, exomiserDataDirectory);
 
-        jannovarData = loadJannovarData();
-        dataSource = loadGenomeDataSource();
+        this.jannovarData = loadJannovarData();
+        this.dataSource = loadGenomeDataSource();
 
         logger.info("{}", genomeProperties.getDatasource());
     }
@@ -101,6 +97,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     @Override
     public FrequencyDao defaultFrequencyDao() {
         if (genomeProperties.getFrequencyPath().isEmpty()) {
+            //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
             return new DefaultFrequencyDao(dataSource);
         }
         return new DefaultFrequencyDaoTabix(defaultFrequencyTabixDataSource());
@@ -109,6 +106,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
     @Override
     public PathogenicityDao pathogenicityDao() {
         if (genomeProperties.getPathogenicityPath().isEmpty()) {
+            //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
             return new DefaultPathogenicityDao(dataSource);
         }
         return new DefaultPathogenicityDaoTabix(defaultPathogenicityTabixDataSource());
@@ -116,14 +114,16 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     protected TabixDataSource defaultFrequencyTabixDataSource() {
         String frequencyPath = genomeProperties.getFrequencyPath();
-        logger.info("Reading variant frequency data from tabix {}", frequencyPath);
-        return TabixDataSourceLoader.load(frequencyPath);
+        Path pathToTabixGzFile = genomeData.resolveAbsoluteResourcePath(frequencyPath);
+        logger.info("Reading variant frequency data from {}", pathToTabixGzFile);
+        return TabixDataSourceLoader.load(pathToTabixGzFile);
     }
 
     protected TabixDataSource defaultPathogenicityTabixDataSource() {
         String pathogenicityPath = genomeProperties.getPathogenicityPath();
-        logger.info("Reading variant pathogenicity data from tabix {}", pathogenicityPath);
-        return TabixDataSourceLoader.load(pathogenicityPath);
+        Path pathToTabixGzFile = genomeData.resolveAbsoluteResourcePath(pathogenicityPath);
+        logger.info("Reading variant pathogenicity data from {}", pathToTabixGzFile);
+        return TabixDataSourceLoader.load(pathToTabixGzFile);
     }
 
     /**
@@ -193,17 +193,8 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
             String message = "Data for " + dataSourceName + " is not configured. Check the application.properties is pointing to a valid file.";
             return new ErrorThrowingTabixDataSource(message);
         }
-        return TabixDataSourceLoader.load(pathToTabixGzFile);
-    }
-
-    //TODO: test this can be overridden in the properties
-    private Path transcriptFilePath() {
-        TranscriptSource transcriptSource = genomeProperties.getTranscriptSource();
-        //e.g 1710_hg19_transcripts_ucsc.ser
-        String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", filePrefix, transcriptSource.toString());
-        Path transcriptFilePath = assemblyDataDirectory.resolve(transcriptFileNameValue);
-        logger.info("Using {} transcript source for {}", transcriptSource, genomeProperties.getAssembly());
-        return transcriptFilePath;
+        Path resourceFilePath = genomeData.resolveAbsoluteResourcePath(pathToTabixGzFile);
+        return TabixDataSourceLoader.load(resourceFilePath);
     }
 
     /**
@@ -218,15 +209,25 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         }
     }
 
+    private Path transcriptFilePath() {
+        TranscriptSource transcriptSource = genomeProperties.getTranscriptSource();
+        //e.g 1710_hg19_transcripts_ucsc.ser
+        String transcriptFileNameValue = String.format("%s_transcripts_%s.ser", genomeData.getVersionAssemblyPrefix(), transcriptSource
+                .toString());
+        Path transcriptFilePath = genomeData.getPath().resolve(transcriptFileNameValue);
+        logger.info("Using {} transcript source for {}", transcriptSource, genomeProperties.getAssembly());
+        return transcriptFilePath;
+    }
+
     private DataSource loadGenomeDataSource() {
         return new HikariDataSource(genomeDataSourceConfig());
     }
 
     private HikariConfig genomeDataSourceConfig() {
         //omit the .h2.db extensions
-        String dbFileName = String.format("%s_exomiser_genome", filePrefix);
+        String dbFileName = String.format("%s_exomiser_genome", genomeData.getVersionAssemblyPrefix());
 
-        Path dbPath = assemblyDataDirectory.resolve(dbFileName);
+        Path dbPath = genomeData.getPath().resolve(dbFileName);
 
         String startUpArgs = ";MODE=PostgreSQL;SCHEMA=EXOMISER;DATABASE_TO_UPPER=FALSE;IFEXISTS=TRUE;AUTO_RECONNECT=TRUE;ACCESS_MODE_DATA=r;";
 

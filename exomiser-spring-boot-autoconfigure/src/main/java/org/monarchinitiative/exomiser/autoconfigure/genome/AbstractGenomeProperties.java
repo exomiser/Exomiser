@@ -24,6 +24,9 @@ import org.monarchinitiative.exomiser.autoconfigure.DataSourceProperties;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
@@ -33,14 +36,31 @@ public abstract class AbstractGenomeProperties implements GenomeProperties {
     private TranscriptSource transcriptSource = TranscriptSource.ucsc;
     private String dataVersion = "";
 
+    private Path dataDirectory;
+
     //Tabix variant data files
-    private String frequencyPath = "";
-    private String pathogenicityPath = "";
+    private String frequencyPath = "exomiser-freq.vcf.gz";
+    private String pathogenicityPath = "exomiser-path.vcf.gz";
     //Optional tabix variant data
     private String caddSnvPath = "";
     private String caddInDelPath = "";
     private String remmPath = "";
     private String localFrequencyPath = "";
+
+    @Override
+    public Path getDataDirectory() {
+        return dataDirectory;
+    }
+
+    @Override
+    public void setDataDirectory(Path dataDirectory) {
+        this.dataDirectory = dataDirectory;
+    }
+
+    @Override
+    public void setDataDirectory(String dataDirectory) {
+        this.dataDirectory = Paths.get(dataDirectory);
+    }
 
     @NestedConfigurationProperty
     private DataSourceProperties datasource = new DataSourceProperties();
