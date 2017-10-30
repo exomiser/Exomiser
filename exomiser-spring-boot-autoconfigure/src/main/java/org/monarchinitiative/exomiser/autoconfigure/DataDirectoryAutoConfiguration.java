@@ -54,17 +54,16 @@ public class DataDirectoryAutoConfiguration {
      * directory where all the required resources are found. Without this being
      * correctly set, the application will fail.
      *
-     * @return
      */
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = "exomiserDataDirectory")
     public Path exomiserDataDirectory() {
         String dataDirectory = properties.getDataDirectory();
         if (dataDirectory == null || dataDirectory.isEmpty()) {
-            throw new UndefinedDataDirectoryException(dataDirectory);
+            throw new UndefinedDataDirectoryException("Exomiser data directory not defined. Please provide a valid path.");
         }
-        Path dataPath = Paths.get(dataDirectory);
-        logger.info("Exomiser data directory set to: {}", dataPath.toAbsolutePath());
+        Path dataPath = Paths.get(dataDirectory).toAbsolutePath();
+        logger.info("Exomiser data directory set to: {}", dataPath);
         return dataPath;
     }
 

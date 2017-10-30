@@ -28,6 +28,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -42,8 +43,20 @@ public class DataDirectoryAutoConfigurationTest extends AbstractAutoConfiguratio
     @Test
     public void testUndefinedDataPath() {
         thrown.expect(BeanCreationException.class);
-        thrown.expectMessage("Invalid data directory ''");
+        thrown.expectMessage("Exomiser data directory not defined. Please provide a valid path.");
+        load(DataDirectoryAutoConfiguration.class);
+        Path exomiserDataDirectory = (Path) this.context.getBean("exomiserDataDirectory");
+        assertThat(exomiserDataDirectory, nullValue());
+    }
+
+    @Test
+    public void testEmptyDataPath() {
+        thrown.expect(BeanCreationException.class);
+//        thrown.expectMessage("Invalid data directory ''");
+        thrown.expectMessage("Exomiser data directory not defined. Please provide a valid path.");
         load(DataDirectoryAutoConfiguration.class, "exomiser.data-directory=");
+        Path exomiserDataDirectory = (Path) this.context.getBean("exomiserDataDirectory");
+        assertThat(exomiserDataDirectory, nullValue());
     }
 
     @Test
