@@ -66,12 +66,12 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         if (strings.length == 0) {
-            printHelp();
             logger.error("Please supply some command line arguments - none found");
+            printHelpAndExit();
         }
         CommandLine commandLine = parseCommandLineOptions(strings);
         if (commandLine.hasOption("help")) {
-            printHelp();
+            printHelpAndExit();
         }
         runAnalyses(commandLine);
     }
@@ -123,10 +123,11 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
         }
     }
 
-    private void printHelp() {
+    private void printHelpAndExit() {
         HelpFormatter formatter = new HelpFormatter();
         String launchCommand = String.format("java -jar exomiser-cli-%s.jar [...]", buildVersion);
         formatter.printHelp(launchCommand, options);
+        System.exit(0);
     }
 
     private void runAnalysisFromScript(Path analysisScript) {
