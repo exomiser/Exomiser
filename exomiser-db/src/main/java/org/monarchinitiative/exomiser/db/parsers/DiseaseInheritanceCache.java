@@ -62,7 +62,7 @@ public class DiseaseInheritanceCache implements ResourceParser {
     }
 
     private Map<String,InheritanceMode> setUpHpoInheritanceCodes() {
-        Map map = new HashMap<>();
+        Map<String, InheritanceMode> map = new HashMap<>();
         //HP:0000005 is the root inheritance term - 'Mode of inheritance'. So not
         //really unknown, but vague enough.
         map.put("HP:0000005", InheritanceMode.UNKNOWN);

@@ -26,7 +26,7 @@
 
 package org.monarchinitiative.exomiser.db.resources;
 
-import org.junit.*;
+import org.junit.Test;
 import org.monarchinitiative.exomiser.db.parsers.ResourceGroupParser;
 import org.monarchinitiative.exomiser.db.parsers.ResourceParser;
 
@@ -39,25 +39,6 @@ import static org.junit.Assert.*;
  * @author jj8
  */
 public class ResourceGroupTest {
-
-    public ResourceGroupTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Test of getName method, of class ResourceGroup.
