@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.09 (3 November, 2013)
  */
-public class ExomeWalkerPriority implements Prioritiser {
+public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomeWalkerPriority.class);
 

@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  * @author Peter N Robinson
  * @version 0.16 (28 January,2014)
  */
-public class OMIMPriority implements Prioritiser {
+public class OMIMPriority implements Prioritiser<OMIMPriorityResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(OMIMPriority.class);
 

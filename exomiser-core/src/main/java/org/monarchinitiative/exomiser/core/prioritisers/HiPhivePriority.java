@@ -51,7 +51,7 @@ import static java.util.stream.Collectors.*;
  * @author Damian Smedley <damian.smedley@sanger.ac.uk>
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class HiPhivePriority implements Prioritiser {
+public class HiPhivePriority implements Prioritiser<HiPhivePriorityResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(HiPhivePriority.class);
 

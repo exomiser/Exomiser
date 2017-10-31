@@ -53,7 +53,7 @@ import static java.util.stream.Collectors.*;
  * @author Jules Jacobsen
  * @version 0.05 (April 6, 2013)
  */
-public class PhivePriority implements Prioritiser {
+public class PhivePriority implements Prioritiser<PhivePriorityResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(PhivePriority.class);
 
