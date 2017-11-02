@@ -181,20 +181,6 @@ public class ResourceConfig {
     }
 
     @Bean
-    public Resource stringProteinLinksResource() {
-        logger.info("Making STRING_protein_links resource");
-        Resource resource = new Resource("STRING_protein_links");
-        populateResourceFromProperty("string", resource);
-        //
-        resource.setParserClass(StringParser.class);
-        //
-        resource.setResourceGroupName(StringResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(StringResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
     public Resource fantomEnhancerResource() {
         logger.info("Making FANTOM enhancer resource");
         Resource resource = new Resource("FANTOM_enhancers");
