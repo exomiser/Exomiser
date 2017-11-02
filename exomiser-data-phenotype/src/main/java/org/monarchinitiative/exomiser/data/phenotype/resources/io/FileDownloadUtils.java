@@ -24,7 +24,7 @@
  * and open the template in the editor.
  */
 
-package org.monarchinitiative.exomiser.data.phenotype.io;
+package org.monarchinitiative.exomiser.data.phenotype.resources.io;
 
 import org.apache.commons.io.FileUtils;
 import org.monarchinitiative.exomiser.data.phenotype.resources.ResourceOperationStatus;

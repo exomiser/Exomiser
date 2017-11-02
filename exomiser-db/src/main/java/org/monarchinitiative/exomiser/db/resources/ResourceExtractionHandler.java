@@ -158,10 +158,17 @@ public class ResourceExtractionHandler {
         //then extract the archive files
         ResourceOperationStatus returnStatus = extractArchive(intermediateTarArchive, outFile);
         //finally clean-up the intermediate file
-        intermediateTarArchive.delete();
+        deleteFile(intermediateTarArchive);
         return returnStatus;
     }
 
+    private static void deleteFile(File intermediateTarArchive) {
+        try {
+            Files.delete(intermediateTarArchive.toPath());
+        } catch (IOException e) {
+            logger.warn("Unable to delete file {}", intermediateTarArchive.getAbsolutePath());
+        }
+    }
 
     private static ResourceOperationStatus copyFile(File inFile, File outFile) {
         logger.info("Copying file {} to {}", inFile, outFile);

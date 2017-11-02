@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 
 /**
  *
@@ -55,30 +56,33 @@ public class FileDownloadUtils {
      * @return
      */
     public static ResourceOperationStatus fetchFile(URL source, File destination) {
-        ResourceOperationStatus status = ResourceOperationStatus.FAILURE;
 
         try {
             logger.info("Creating new file: {}", destination.getAbsolutePath());
+            if (!destination.createNewFile()) {
+                logger.error("Unable to create new file {}", destination.getAbsolutePath());
+                return ResourceOperationStatus.FAILURE;
+            }
+            if (!destination.setWritable(true)) {
+                logger.error("Unable to set file {} permissions as writable", destination.getAbsolutePath());
+                return ResourceOperationStatus.FAILURE;
+            }
             logger.info("Transferring data from: {}", source);
-            destination.createNewFile();
-            destination.setWritable(true);
-//            logger.info("Protocol: {}", source.getProtocol());
-//            SocketAddress socketAddress = new InetSocketAddress("wwwcache.sanger.ac.uk", 3128);
-//            Proxy proxy = new Proxy(Proxy.Type.HTTP, socketAddress);
             FileUtils.copyURLToFile(source, destination, 2500, 15000);
         } catch (IOException ex) {
             logger.error("Unable to copy file from external resource due to error: ", ex);
             return ResourceOperationStatus.FAILURE;
         }
 
-        //always the optimist
         if (destination.length() == 0 ) {
             logger.info("{} is empty - deleting file.", destination.getAbsolutePath());
-            destination.delete();
-        } else {
-            status = ResourceOperationStatus.SUCCESS;
+            try {
+                Files.delete(destination.toPath());
+            } catch (IOException e) {
+                logger.error("Unable to delete empty file {}", destination.getAbsolutePath());
+                return ResourceOperationStatus.FAILURE;
+            }
         }
-
-        return status;
+        return ResourceOperationStatus.SUCCESS;
     }
 }
