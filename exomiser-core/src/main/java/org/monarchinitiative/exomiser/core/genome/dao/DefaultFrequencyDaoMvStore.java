@@ -20,7 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.genome.dao;
 
-import htsjdk.tribble.readers.TabixReader;
+import org.h2.mvstore.MVMap;
+import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.model.Variant;
 import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
@@ -30,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,11 +39,12 @@ import java.util.Map;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class DefaultFrequencyDaoTabix implements FrequencyDao {
+public class DefaultFrequencyDaoMvStore implements FrequencyDao {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultFrequencyDaoTabix.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultFrequencyDaoMvStore.class);
 
-    private static final String EMPTY_FIELD = ".";
+    private final MVMap<String, String> map;
+
     private static final Map<String, FrequencySource> FREQUENCY_SOURCE_MAP;
 
     static {
@@ -61,80 +62,54 @@ public class DefaultFrequencyDaoTabix implements FrequencyDao {
         FREQUENCY_SOURCE_MAP.put("EXAC_OTH", FrequencySource.EXAC_OTHER);
     }
 
-    private final TabixDataSource tabixDataSource;
+    public DefaultFrequencyDaoMvStore(MVStore mvStore) {
+        String frequencyMapName = "alleles";
+        if (!mvStore.hasMap(frequencyMapName)) {
+            logger.warn("MVStore does not contain map {}", frequencyMapName);
+        }
 
-    public DefaultFrequencyDaoTabix(TabixDataSource tabixDataSource) {
-        this.tabixDataSource = tabixDataSource;
+        this.map = mvStore.openMap(frequencyMapName);
+
+        if (map.isEmpty()) {
+            logger.warn("MVStore map {} does not contain any data", frequencyMapName);
+        }
     }
 
     @Cacheable(value = "frequency", keyGenerator = "variantKeyGenerator")
     @Override
     public FrequencyData getFrequencyData(Variant variant) {
-        logger.debug("Getting FREQ data for {}", variant);
-        //the exomiser tabix files use the integer representation of the chromosome
-        String chromosome = Integer.toString(variant.getChromosome());
-//        String chromosome = variant.getChromosomeName();
-        int start = variant.getPosition();
-        int end = variant.getPosition();
-        return getFrequencyData(chromosome, start, end, variant.getRef(), variant.getAlt());
-    }
-
-    private FrequencyData getFrequencyData(String chromosome, int start, int end, String ref, String alt) {
-
-        List<String> results = getTabixLines(chromosome, start, end);
-        for (String line : results) {
-            String[] elements = line.split("\t");
-            if (ref.equals(elements[3]) && alt.equals(elements[4])) {
-                if (EMPTY_FIELD.equals(elements[2]) && EMPTY_FIELD.equals(elements[7])) {
-                    return FrequencyData.empty();
-                }
-                RsId rsId = RsId.valueOf(elements[2]);
-                Map<String, Float> values = infoFieldToMap(elements[7]);
-                List<Frequency> frequencies = parseFrequencyData(values);
-                return FrequencyData.of(rsId, frequencies);
-            }
+        String info = getInfoField(variant);
+        logger.debug(info);
+        if (info.isEmpty()) {
+            return FrequencyData.empty();
         }
-        return FrequencyData.empty();
+        return parseFrequencyData(info);
     }
 
-    private Map<String, Float> infoFieldToMap(String info) {
-        String[] infoFields = info.split(";");
-        Map<String, Float> values = new HashMap<>();
-        for (String infoField : infoFields) {
-            String[] keyValue = infoField.split("=");
-            if (keyValue.length == 2) {
-                values.put(keyValue[0], Float.valueOf(keyValue[1]));
-            }
-        }
-        return values;
+    private String getInfoField(Variant variant) {
+        String key = VariantSerialiser.generateKey(variant);
+        logger.debug("Getting FREQ data for {}", key);
+        return map.getOrDefault(key, "");
     }
 
-    private List<Frequency> parseFrequencyData(Map<String, Float> values) {
+    private FrequencyData parseFrequencyData(String info) {
+        Map<String, String> values = VariantSerialiser.infoFieldToMap(info);
+
+        RsId rsId = RsId.valueOf(values.get("RS"));
+        List<Frequency> frequencies = parseFrequencyData(values);
+        return FrequencyData.of(rsId, frequencies);
+    }
+
+    private List<Frequency> parseFrequencyData(Map<String, String> values) {
         List<Frequency> frequencies = new ArrayList<>();
-        for (Map.Entry<String, Float> field : values.entrySet()) {
+        for (Map.Entry<String, String> field : values.entrySet()) {
             String key = field.getKey();
-            Float value = field.getValue();
             if (FREQUENCY_SOURCE_MAP.containsKey(key)) {
+                float value = Float.parseFloat(field.getValue());
                 FrequencySource source = FREQUENCY_SOURCE_MAP.get(key);
                 frequencies.add(Frequency.valueOf(value, source));
             }
         }
         return frequencies;
     }
-
-    //add this to the TabixDataSource? List<String> TabixDataSource.query(String chromosome, int start, int end)
-    private List<String> getTabixLines(String chromosome, int start, int end) {
-        List<String> lines = new ArrayList<>();
-        try {
-            String line;
-            TabixReader.Iterator results = tabixDataSource.query(chromosome + ":" + start + "-" + end);
-            while ((line = results.next()) != null) {
-                lines.add(line);
-            }
-        } catch (IOException e) {
-            logger.error("Unable to read from exomiser tabix file {}", tabixDataSource.getSource(), e);
-        }
-        return lines;
-    }
-
 }
