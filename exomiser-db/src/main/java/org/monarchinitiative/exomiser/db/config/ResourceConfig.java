@@ -63,18 +63,6 @@ public class ResourceConfig {
     public Set<Resource> resources() {
         logger.info("Making new set of Resources");
         Set<Resource> resources = new LinkedHashSet<>();
-//            resources.add(exampleResource());
-        resources.add(hpoResource());
-        //OMIM group
-        resources.add(omimMimToGeneResource());
-        resources.add(omimMorbidMapResource());
-        resources.add(hpoPhenotypeAnnotationsResource());
-        //StringDB group
-        resources.add(stringEntrezToSymResource());
-        resources.add(stringProteinLinksResource());
-        //Exome Walker
-        resources.add(exomeWalkerPhenotypicSeriesResource());
-        resources.add(exomeWalkerOmimToGeneResource());
         //Regulatory features
         resources.add(fantomEnhancerResource());
         resources.add(ensemblEnhancerResource());
@@ -120,20 +108,6 @@ public class ResourceConfig {
         resource.setExtractedFileName(env.getProperty(resourcePropertyId + ".extractedName"));
         resource.setExtractionScheme(env.getProperty(resourcePropertyId + ".extractScheme"));
         resource.setParsedFileName(env.getProperty(resourcePropertyId + ".parsedName"));
-    }
-
-    @Bean
-    public Resource hpoResource() {
-        logger.info("Making HPO resource");
-        Resource resource = new Resource("HPO");
-        populateResourceFromProperty("hpo", resource);
-        //parsing
-        resource.setParserClass(HPOOntologyFileParser.class);
-        //resource groups
-        resource.setResourceGroupName("");
-        resource.setResourceGroupParserClass(null);
-
-        return resource;
     }
 
     @Bean
@@ -207,62 +181,6 @@ public class ResourceConfig {
     }
 
     @Bean
-    public Resource omimMimToGeneResource() {
-        logger.info("Making OMIM_mim2gene resource");
-        Resource resource = new Resource("OMIM_mim2gene");
-        populateResourceFromProperty("omim2gene", resource);
-        //
-        resource.setParserClass(MimToGeneParser.class);
-        //part of the OMIM ResourceGroup
-        resource.setResourceGroupName(OmimResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource omimMorbidMapResource() {
-        logger.info("Making OMIM_morbidmap resource");
-        Resource resource = new Resource("OMIM_morbidmap");
-        populateResourceFromProperty("morbidmap", resource);
-        //
-        resource.setParserClass(MorbidMapParser.class);
-        //part of the OMIM ResourceGroup
-        resource.setResourceGroupName(OmimResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource hpoPhenotypeAnnotationsResource() {
-        logger.info("Making HPO_phenotype_annotations resource");
-        Resource resource = new Resource("HPO_phenotype_annotations");
-        populateResourceFromProperty("omimpheno", resource);
-        //
-        resource.setParserClass(DiseaseInheritanceCache.class);
-        //part of the OMIM ResourceGroup
-        resource.setResourceGroupName(OmimResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(OmimResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource stringEntrezToSymResource() {
-        logger.info("Making STRING_entrez2sym resource");
-        Resource resource = new Resource("STRING_entrez2sym");
-        populateResourceFromProperty("string2entrez", resource);
-        //
-        resource.setParserClass(EntrezParser.class);
-        //
-        resource.setResourceGroupName(StringResourceGroupParser.NAME);
-        resource.setResourceGroupParserClass(StringResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
     public Resource stringProteinLinksResource() {
         logger.info("Making STRING_protein_links resource");
         Resource resource = new Resource("STRING_protein_links");
@@ -272,21 +190,6 @@ public class ResourceConfig {
         //
         resource.setResourceGroupName(StringResourceGroupParser.NAME);
         resource.setResourceGroupParserClass(StringResourceGroupParser.class);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource exomeWalkerPhenotypicSeriesResource() {
-        logger.info("Making ExomeWalker_phenotypic_series resource");
-        Resource resource = new Resource("ExomeWalker_phenotypic_series");
-        populateResourceFromProperty("walkerpheno", resource);
-
-        //
-        resource.setParserClass(PhenoSeriesParser.class);
-        //
-        resource.setResourceGroupName(null);
-        resource.setResourceGroupParserClass(null);
 
         return resource;
     }
@@ -316,20 +219,6 @@ public class ResourceConfig {
         resource.setParserClass(EnsemblEnhancerParser.class);
         //
         resource.setResourceGroupName(null);
-        resource.setResourceGroupParserClass(null);
-
-        return resource;
-    }
-
-    @Bean
-    public Resource exomeWalkerOmimToGeneResource() {
-        logger.info("Making ExomeWalker_omim2gene resource");
-        Resource resource = new Resource("ExomeWalker_omim2gene");
-        populateResourceFromProperty("walkergene", resource);
-        //
-        resource.setParserClass(Omim2GeneParser.class);
-        //
-        resource.setResourceGroupName("");
         resource.setResourceGroupParserClass(null);
 
         return resource;

@@ -24,7 +24,7 @@
  * and open the template in the editor.
  */
 
-package org.monarchinitiative.exomiser.db.io;
+package org.monarchinitiative.exomiser.db.resources.io;
 
 import org.apache.commons.io.FileUtils;
 import org.monarchinitiative.exomiser.db.resources.ResourceOperationStatus;

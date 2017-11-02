@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.db.resources;
 
-import org.monarchinitiative.exomiser.db.io.FileDownloadUtils;
+import org.monarchinitiative.exomiser.db.resources.io.FileDownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
