@@ -174,7 +174,6 @@ public class ResourceExtractionHandler {
         }
     }
 
-
     private static ResourceOperationStatus copyFile(File inFile, File outFile) {
         logger.info("Copying file {} to {}", inFile, outFile);
 

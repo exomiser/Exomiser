@@ -25,7 +25,7 @@
  */
 package org.monarchinitiative.exomiser.data.phenotype.resources;
 
-import org.monarchinitiative.exomiser.data.phenotype.io.FileDownloadUtils;
+import org.monarchinitiative.exomiser.data.phenotype.resources.io.FileDownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
