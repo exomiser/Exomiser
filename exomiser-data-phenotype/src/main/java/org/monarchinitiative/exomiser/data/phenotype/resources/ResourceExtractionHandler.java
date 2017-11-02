@@ -48,6 +48,10 @@ public class ResourceExtractionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceExtractionHandler.class);
 
+    private ResourceExtractionHandler() {
+        //static utility class
+    }
+
     public static void extractResources(Iterable<Resource> externalResources, Path inDir, Path outDir) {
         for (Resource externalResource : externalResources) {
             extractResource(externalResource, inDir, outDir);
@@ -121,7 +125,7 @@ public class ResourceExtractionHandler {
     /**
      * Will extract a .zip or .tar archive to the specified outFile location 
      * @param inFile
-     * @param outPath
+     * @param outFile
      * @return
      */
     private static ResourceOperationStatus extractArchive(File inFile, File outFile) {
@@ -158,8 +162,16 @@ public class ResourceExtractionHandler {
         //then extract the archive files
         ResourceOperationStatus returnStatus = extractArchive(intermediateTarArchive, outFile);
         //finally clean-up the intermediate file
-        intermediateTarArchive.delete();
+        deleteFile(intermediateTarArchive);
         return returnStatus;
+    }
+
+    private static void deleteFile(File intermediateTarArchive) {
+        try {
+            Files.delete(intermediateTarArchive.toPath());
+        } catch (IOException e) {
+            logger.warn("Unable to delete file {}", intermediateTarArchive.getAbsolutePath());
+        }
     }
 
 
