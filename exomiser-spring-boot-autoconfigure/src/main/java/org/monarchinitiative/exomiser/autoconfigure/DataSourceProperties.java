@@ -89,8 +89,7 @@ public class DataSourceProperties {
         return "DataSourceProperties{" +
                 "driverClassName='" + driverClassName + '\'' +
                 ", url='" + url + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
+                ", username='" + username +
                 '}';
     }
 }
