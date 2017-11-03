@@ -188,8 +188,6 @@ public class JannovarVariantAnnotator implements org.monarchinitiative.exomiser.
         if (transcriptModel == null) {
             return "";
         }
-//        Map<String, String> altGeneIds = transcriptModel.getAltGeneIDs();
-//        return altGeneIds.getOrDefault("ENTREZ_ID", "");
         //this will now return the id from the user-specified data source. Previously would only return the Entrez id.
         String geneId = transcriptModel.getGeneID();
         return geneId == null ? "" : geneId;
