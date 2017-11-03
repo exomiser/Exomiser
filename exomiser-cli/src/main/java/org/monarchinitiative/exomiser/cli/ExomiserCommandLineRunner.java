@@ -65,6 +65,7 @@ public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
+        logger.info("Exomiser running...");
         if (strings.length == 0) {
             logger.error("Please supply some command line arguments - none found");
             printHelpAndExit();

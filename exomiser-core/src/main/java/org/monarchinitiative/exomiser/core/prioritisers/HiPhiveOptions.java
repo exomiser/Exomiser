@@ -108,7 +108,6 @@ public class HiPhiveOptions {
     private boolean matchesDisease(Model model) {
         // human model ID is now disease plus entrezgene to ensure uniqueness in HiPhive code
         return model.getId() == null ? diseaseId  == null : model.getId().split("_")[0].equals(diseaseId);
-//        return model.getId() == null ? diseaseId  == null : model.getId().equals(diseaseId + "_" + model.getEntrezGeneId());
     }
 
     public Set<Organism> getOrganismsToRun() {
