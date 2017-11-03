@@ -39,7 +39,7 @@ public class VariantEffectCounter {
     VariantEffectCounter(int numSamples) {
         this.counters = new ArrayList<>();
         for (int i = 0; i < numSamples; ++i) {
-            counters.add(new EnumMap<VariantEffect, Integer>(VariantEffect.class));
+            counters.add(new EnumMap<>(VariantEffect.class));
         }
     }
 
@@ -74,7 +74,7 @@ public class VariantEffectCounter {
             if (!counters.get(sampleIdx).containsKey(effect)) {
                 counters.get(sampleIdx).put(effect, 1);
             } else {
-                counters.get(sampleIdx).put(effect, counters.get(sampleIdx).get(effect).intValue() + 1);
+                counters.get(sampleIdx).put(effect, counters.get(sampleIdx).get(effect) + 1);
             }
         }
     }
@@ -106,7 +106,7 @@ public class VariantEffectCounter {
         ImmutableList.Builder<Map<VariantEffect, Integer>> listBuilder = new ImmutableList.Builder<>();
 
         for (Map<VariantEffect, Integer> map : counters) {
-            Map<VariantEffect, Integer> counters2 = new HashMap<>();
+            Map<VariantEffect, Integer> counters2 = new EnumMap<>(VariantEffect.class);
             for (VariantEffect effect : effects) {
                 counters2.put(effect, 0);
             }
