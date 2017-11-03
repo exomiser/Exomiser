@@ -43,6 +43,10 @@ public class ResourceDownloadHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceDownloadHandler.class);
 
+    private ResourceDownloadHandler() {
+        //static utility class
+    }
+
     public static void downloadResources(Iterable<Resource> externalResources, Path downloadPath) {
 
         int numResources = 0;

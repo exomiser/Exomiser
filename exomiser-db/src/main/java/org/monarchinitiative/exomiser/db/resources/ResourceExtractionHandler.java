@@ -48,6 +48,10 @@ public class ResourceExtractionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceExtractionHandler.class);
 
+    private ResourceExtractionHandler() {
+        //static utility class
+    }
+
     public static void extractResources(Iterable<Resource> externalResources, Path inDir, Path outDir) {
         for (Resource externalResource : externalResources) {
             extractResource(externalResource, inDir, outDir);
@@ -178,7 +182,9 @@ public class ResourceExtractionHandler {
             //update the last modified time to now so that it's easy to see when the file was 
             //copied over otherwise the last modified time will be when the file was downloaded.
             //this is merely a nicety for when manually inspecting the db build process. 
-            outFile.setLastModified(System.currentTimeMillis());
+            if (!outFile.setLastModified(System.currentTimeMillis())) {
+                logger.info("Unable to set last modified property on file {}", outFile);
+            }
             return ResourceOperationStatus.SUCCESS;
         } catch (IOException ex) {
             logger.error(null, ex);

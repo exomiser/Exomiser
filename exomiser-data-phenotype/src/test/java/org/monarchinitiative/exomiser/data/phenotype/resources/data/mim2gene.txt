@@ -1,0 +1,16 @@
+# TEST file for OMIM MIM2GENE file. These numbers are completely fictitious.
+# MIM Number	MIM Entry Type (see FAQ 1.3 at https://omim.org/help/faq)	Entrez Gene ID (NCBI)	Approved Gene Symbol (HGNC)	Ensembl Gene ID (Ensembl)
+123456	predominantly phenotypes
+123457	phenotype	123456789
+123458	phenotype
+123459	predominantly phenotypes
+123460	phenotype
+123461	phenotype
+123462	moved/removed
+123463	gene/phenotype	124	GENE3A4	ENSG00000123456
+123464	gene	123	GENE2	ENSG00000654321
+123465	phenotype
+123466	gene	216	GENE23	ENSG12345678901
+123467	moved/removed
+123468	gene	87	GENE1	ENSG12345678902
+123469	predominantly phenotypes

@@ -44,6 +44,10 @@ public class ResourceParserHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceParserHandler.class.getName());
 
+    private ResourceParserHandler() {
+        //static utility class
+    }
+
     public static void parseResources(Iterable<Resource> externalResources, Path inDir, Path outDir) {
 
         //there are a lot of resources which need parsing together as a group
