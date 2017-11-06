@@ -25,6 +25,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.autoconfigure.ExomiserAutoConfigurationException;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.genome.dao.*;
@@ -53,6 +54,7 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
 
     protected final DataSource dataSource;
     private final JannovarData jannovarData;
+    private final MVStore mvStore;
 
     public GenomeAnalysisServiceConfigurer(GenomeProperties genomeProperties, Path exomiserDataDirectory) {
         this.genomeProperties = genomeProperties;
@@ -63,11 +65,17 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
         this.jannovarData = loadJannovarData();
         this.dataSource = loadGenomeDataSource();
 
+        mvStore = new MVStore.Builder()
+                .fileName("C:/Users/hhx640/Documents/exomiser-build/data/allele_importer/mvStore/alleles.mv.db")
+                .readOnly()
+                .open();
+        logger.info("MVStore opened with maps: {}", mvStore.getMapNames());
+
         logger.info("{}", genomeProperties.getDatasource());
     }
 
     private VariantFactory variantFactory() {
-        return new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData));
+        return new VariantFactoryImpl(new JannovarVariantAnnotator(genomeProperties.getAssembly(), jannovarData));
     }
 
     private GenomeDataService genomeDataService() {
@@ -100,7 +108,8 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
             //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
             return new DefaultFrequencyDao(dataSource);
         }
-        return new DefaultFrequencyDaoTabix(defaultFrequencyTabixDataSource());
+        return new DefaultFrequencyDaoMvStore(mvStore);
+//        return new DefaultFrequencyDaoTabix(defaultFrequencyTabixDataSource());
     }
 
     @Override
@@ -109,7 +118,8 @@ public abstract class GenomeAnalysisServiceConfigurer implements GenomeAnalysisS
             //TODO: Once we've finished testing tabix - remove this check and go straight to tabix
             return new DefaultPathogenicityDao(dataSource);
         }
-        return new DefaultPathogenicityDaoTabix(defaultPathogenicityTabixDataSource());
+        return new DefaultPathogenicityDaoMvStore(mvStore);
+//        return new DefaultPathogenicityDaoTabix(defaultPathogenicityTabixDataSource());
     }
 
     protected TabixDataSource defaultFrequencyTabixDataSource() {
