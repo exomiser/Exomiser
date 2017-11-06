@@ -41,7 +41,9 @@ public interface Variant extends VariantCoordinates {
 
     public VariantEffect getVariantEffect();
 
-    public List<TranscriptAnnotation> getAnnotations();
+    public List<TranscriptAnnotation> getTranscriptAnnotations();
+
+    public boolean hasTranscriptAnnotations();
 
     public default boolean isNonCodingVariant() {
         return VariantEffectUtility.isNonCodingVariant(getVariantEffect());

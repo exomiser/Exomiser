@@ -179,7 +179,7 @@ public class GeneReassignerTest {
         instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
-        assertThat(variant.getAnnotations(), equalTo(originalAnnotations));
+        assertThat(variant.getTranscriptAnnotations(), equalTo(originalAnnotations));
     }
 
     @Test
@@ -198,7 +198,7 @@ public class GeneReassignerTest {
         instance.reassignRegulatoryRegionVariantToMostPhenotypicallySimilarGeneInTad(variant);
 
         assertThat(variant, isAssignedTo(gene1));
-        assertThat(variant.getAnnotations(), equalTo(Collections.singletonList(gene1Annotation)));
+        assertThat(variant.getTranscriptAnnotations(), equalTo(Collections.singletonList(gene1Annotation)));
     }
 
     @Test
@@ -360,7 +360,7 @@ public class GeneReassignerTest {
 
         assertThat(variant, isAssignedTo(gene2));
         assertThat(variant.getVariantEffect(), equalTo(originalVariantEffect));
-        assertThat(variant.getAnnotations(), equalTo(originalAnnotations));
+        assertThat(variant.getTranscriptAnnotations(), equalTo(originalAnnotations));
     }
 
     @Test
@@ -386,12 +386,13 @@ public class GeneReassignerTest {
         instance.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variant);
 
         logger.info("{} {}:{} {} {} {} {}", variant.getGeneSymbol(), variant.getChromosome(), variant.getPosition(),
-                variant.getRef(), variant.getAlt(), variant.getVariantEffect(), variant.getAnnotations().size());
-        variant.getAnnotations().forEach(transcriptAnnotation -> logger.info("{}", transcriptAnnotation));
+                variant.getRef(), variant.getAlt(), variant.getVariantEffect(), variant.getTranscriptAnnotations()
+                        .size());
+        variant.getTranscriptAnnotations().forEach(transcriptAnnotation -> logger.info("{}", transcriptAnnotation));
 
         assertThat(variant, isAssignedTo(gene1));
         assertThat(variant.getVariantEffect(), equalTo(VariantEffect.CUSTOM));
-        assertThat(variant.getAnnotations(), equalTo(Collections.emptyList()));
+        assertThat(variant.getTranscriptAnnotations(), equalTo(Collections.emptyList()));
     }
 
     @Test
@@ -413,20 +414,20 @@ public class GeneReassignerTest {
         variants.forEach(variantEvaluation -> {
             logger.info("{} {}:{} {} {} {} {}", variantEvaluation.getGeneSymbol(), variantEvaluation.getChromosome(), variantEvaluation
                     .getPosition(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
-                    .getAnnotations()
+                    .getTranscriptAnnotations()
                     .size());
             VariantEffect originalVariantEffect = VariantEffect.MISSENSE_VARIANT;
-            List<TranscriptAnnotation> originalAnnotations = new ArrayList<>(variantEvaluation.getAnnotations());
+            List<TranscriptAnnotation> originalAnnotations = new ArrayList<>(variantEvaluation.getTranscriptAnnotations());
 
             assertThat(variantEvaluation, isAssignedTo(GNRHR2));
             assertThat(variantEvaluation.getVariantEffect(), equalTo(originalVariantEffect));
-            assertThat(variantEvaluation.getAnnotations(), equalTo(originalAnnotations));
+            assertThat(variantEvaluation.getTranscriptAnnotations(), equalTo(originalAnnotations));
 
             instance.reassignGeneToMostPhenotypicallySimilarGeneInAnnotations(variantEvaluation);
 
             assertThat(variantEvaluation, isAssignedTo(GNRHR2));
             assertThat(variantEvaluation.getVariantEffect(), equalTo(originalVariantEffect));
-            assertThat(variantEvaluation.getAnnotations(), equalTo(originalAnnotations));
+            assertThat(variantEvaluation.getTranscriptAnnotations(), equalTo(originalAnnotations));
         });
     }
 
@@ -455,13 +456,14 @@ public class GeneReassignerTest {
             logger.info("Before re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
             logger.info("{} {}:{} {} {} {} {}", variantEvaluation.getGeneSymbol(), variantEvaluation.getChromosome(), variantEvaluation
                     .getPosition(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
-                    .getAnnotations()
+                    .getTranscriptAnnotations()
                     .size());
             assertThat(variantEvaluation, isAssignedTo(GNRHR2));
             assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
-            variantEvaluation.getAnnotations().forEach(transcriptAnnotation -> logger.info("{}", transcriptAnnotation));
+            variantEvaluation.getTranscriptAnnotations()
+                    .forEach(transcriptAnnotation -> logger.info("{}", transcriptAnnotation));
 
-            List<TranscriptAnnotation> reassignedAnnotations = variantEvaluation.getAnnotations().stream()
+            List<TranscriptAnnotation> reassignedAnnotations = variantEvaluation.getTranscriptAnnotations().stream()
                     .filter(transcriptAnnotation -> transcriptAnnotation.getGeneSymbol()
                             .equals(topPhenotypeMatchGene.getGeneSymbol()))
                     .collect(toList());
@@ -471,12 +473,13 @@ public class GeneReassignerTest {
             logger.info("After re-assigning variant to best phenotype match ({})", topPhenotypeMatchGene.getGeneSymbol());
             logger.info("{} {}:{} {} {} {} {}", variantEvaluation.getGeneSymbol(), variantEvaluation.getChromosome(), variantEvaluation
                     .getPosition(), variantEvaluation.getRef(), variantEvaluation.getAlt(), variantEvaluation.getVariantEffect(), variantEvaluation
-                    .getAnnotations()
+                    .getTranscriptAnnotations()
                     .size());
             assertThat(variantEvaluation, isAssignedTo(topPhenotypeMatchGene));
             assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.THREE_PRIME_UTR_EXON_VARIANT));
-            assertThat(variantEvaluation.getAnnotations(), equalTo(reassignedAnnotations));
-            variantEvaluation.getAnnotations().forEach(transcriptAnnotation -> logger.info("{}", transcriptAnnotation));
+            assertThat(variantEvaluation.getTranscriptAnnotations(), equalTo(reassignedAnnotations));
+            variantEvaluation.getTranscriptAnnotations()
+                    .forEach(transcriptAnnotation -> logger.info("{}", transcriptAnnotation));
         });
     }
 
@@ -518,7 +521,7 @@ public class GeneReassignerTest {
 
         variantFactory.createVariantEvaluations(variantContexts)
                 .peek(variantContext -> logger.info("{}", variantContext))
-                .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getAnnotations()));
+                .forEach(variantEvaluation -> logger.info("{} {}", variantEvaluation, variantEvaluation.getTranscriptAnnotations()));
 
     }
 //    gene lies within two overlapping TADs

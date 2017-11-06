@@ -54,7 +54,7 @@ public class RegulatoryFeatureFilter implements VariantFilter {
         // TODO make below nicer using a Jannovar method hopefully 
         if (effect.equals(VariantEffect.INTERGENIC_VARIANT) || effect.equals(VariantEffect.UPSTREAM_GENE_VARIANT)){
             // GeneReassigner can assign a new empty list
-            if (variantEvaluation.getAnnotations().isEmpty()){
+            if (variantEvaluation.getTranscriptAnnotations().isEmpty()) {
                 return FAIL;
             }
             int dist = getDistFromNearestGene(variantEvaluation);
@@ -67,7 +67,7 @@ public class RegulatoryFeatureFilter implements VariantFilter {
     }
 
     private int getDistFromNearestGene(VariantEvaluation variantEvaluation) {
-        TranscriptAnnotation annotation = variantEvaluation.getAnnotations().get(0);
+        TranscriptAnnotation annotation = variantEvaluation.getTranscriptAnnotations().get(0);
         return Math.abs(annotation.getDistanceFromNearestGene());
     }
 

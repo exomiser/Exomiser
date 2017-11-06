@@ -51,13 +51,13 @@ import java.util.stream.Stream;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantFactoryJannovarImpl implements VariantFactory {
+public class VariantFactoryImpl implements VariantFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(VariantFactoryJannovarImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariantFactoryImpl.class);
 
     private final VariantAnnotator variantAnnotator;
 
-    public VariantFactoryJannovarImpl(VariantAnnotator variantAnnotator) {
+    public VariantFactoryImpl(VariantAnnotator variantAnnotator) {
         this.variantAnnotator = variantAnnotator;
     }
 
@@ -145,7 +145,7 @@ public class VariantFactoryJannovarImpl implements VariantFactory {
         String geneSymbol = variantAnnotation.getGeneSymbol();
         String geneId = variantAnnotation.getGeneId();
         VariantEffect variantEffect = variantAnnotation.getVariantEffect();
-        List<TranscriptAnnotation> annotations = variantAnnotation.getAnnotations();
+        List<TranscriptAnnotation> annotations = variantAnnotation.getTranscriptAnnotations();
 
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .genomeAssembly(genomeAssembly)
@@ -185,7 +185,7 @@ public class VariantFactoryJannovarImpl implements VariantFactory {
 
         Consumer<VariantEvaluation> countAnnotatedVariant() {
             return variantEvaluation -> {
-                if (variantEvaluation.hasAnnotations()) {
+                if (variantEvaluation.hasTranscriptAnnotations()) {
                     annotatedVariants.incrementAndGet();
                 } else {
                     unannotatedVariants.incrementAndGet();

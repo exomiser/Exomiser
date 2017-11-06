@@ -31,7 +31,7 @@ import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import java.util.List;
 
 /**
- * Allows the easy creation of {@link JannovarData} {@link VariantFactoryJannovarImpl} objects for testing.
+ * Allows the easy creation of {@link JannovarData} {@link VariantFactoryImpl} objects for testing.
  *
  * The default data contains one transcript each for the genes FGFR2, GNRHR2A, RBM8A (overlaps with GNRHR2A), and SHH based on the HG19/GRCh37 build.
  *
@@ -49,7 +49,7 @@ public class TestFactory {
     private static final GenomeAssembly DEFAULT_GENOME_ASSEMBLY = GenomeAssembly.HG19;
     private static final JannovarData DEFAULT_JANNOVAR_DATA = new JannovarData(DEFAULT_REF_DICT, ImmutableList.of(tmFGFR2, tmGNRHR2A, tmRBM8A, tmSHH));
     private static final GeneFactory DEFAULT_GENE_FACTORY = new GeneFactory(DEFAULT_JANNOVAR_DATA);
-    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA));
+    private static final VariantFactory DEFAULT_VARIANT_FACTORY = new VariantFactoryImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, DEFAULT_JANNOVAR_DATA));
 
     private TestFactory() {
         //this class should be used in a static context.
@@ -77,7 +77,7 @@ public class TestFactory {
 
     public static VariantFactory buildVariantFactory(TranscriptModel... transcriptModels) {
         final JannovarData jannovarData = buildJannovarData(transcriptModels);
-        return new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData));
+        return new VariantFactoryImpl(new JannovarVariantAnnotator(DEFAULT_GENOME_ASSEMBLY, jannovarData));
     }
 
     public static GeneFactory buildDefaultGeneFactory() {
@@ -109,7 +109,7 @@ public class TestFactory {
     }
 
     public static GenomeAnalysisService buildStubGenomeAnalysisService(GenomeAssembly genomeAssembly) {
-        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub(), new VariantFactoryJannovarImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA)));
+        return new GenomeAnalysisServiceImpl(genomeAssembly, buildDefaultGenomeDataService(), new VariantDataServiceStub(), new VariantFactoryImpl(new JannovarVariantAnnotator(genomeAssembly, DEFAULT_JANNOVAR_DATA)));
     }
 
 }

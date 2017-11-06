@@ -252,7 +252,7 @@
                                           th:text="'CONTRIBUTING VARIANT'">CONTRIBUTING VARIANT</span>
                                     <dl class="list-unstyled">
                                         <dt>Transcripts:</dt>
-                                        <dd th:each="annotation: ${variantEvaluation.annotations}"
+                                        <dd th:each="annotation: ${variantEvaluation.transcriptAnnotations}"
                                             th:switch="${transcriptDb}">
                                             <a th:case="'UCSC'"
                                                th:href="@{http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19(position=${annotation.accession})}"

@@ -128,7 +128,7 @@ public class VariantAnnotationTest {
         VariantAnnotation instance = VariantAnnotation.builder()
                 .annotations(Collections.singletonList(TranscriptAnnotation.empty()))
                 .build();
-        assertThat(instance.getAnnotations(), equalTo(Collections.singletonList(TranscriptAnnotation.empty())));
+        assertThat(instance.getTranscriptAnnotations(), equalTo(Collections.singletonList(TranscriptAnnotation.empty())));
     }
 
     @Test

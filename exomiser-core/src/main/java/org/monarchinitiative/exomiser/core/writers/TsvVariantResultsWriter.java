@@ -144,7 +144,7 @@ public class TsvVariantResultsWriter implements ResultsWriter {
         // FUNCTIONAL_CLASS
         record.add(ve.getVariantEffect().getSequenceOntologyTerm());
         // HGVS
-        record.add(getRepresentativeAnnotation(ve.getAnnotations()));
+        record.add(getRepresentativeAnnotation(ve.getTranscriptAnnotations()));
         // EXOMISER_GENE
         record.add(ve.getGeneSymbol());
         // CADD

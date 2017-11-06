@@ -222,7 +222,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      * <p>
      */
     @Override
-    public List<TranscriptAnnotation> getAnnotations() {
+    public List<TranscriptAnnotation> getTranscriptAnnotations() {
         return annotations;
     }
     
@@ -230,8 +230,9 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         this.annotations = annotations;
     }
 
-    public boolean hasAnnotations() {
-        return !getAnnotations().isEmpty();
+    @Override
+    public boolean hasTranscriptAnnotations() {
+        return !annotations.isEmpty();
     }
 
     /**

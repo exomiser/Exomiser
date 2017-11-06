@@ -59,7 +59,7 @@ public class VariantFactoryTest {
     public VariantFactoryTest() {
         JannovarVariantAnnotator variantAnnotator = new JannovarVariantAnnotator(TestFactory.getDefaultGenomeAssembly(), TestFactory
                 .buildDefaultJannovarData());
-        instance = new VariantFactoryJannovarImpl(variantAnnotator);
+        instance = new VariantFactoryImpl(variantAnnotator);
     }
 
     private Consumer<VariantEvaluation> printVariant() {
@@ -125,7 +125,7 @@ public class VariantFactoryTest {
 
         for (VariantEvaluation variant : variants) {
             System.out.println(variant.getChromosomeName() + " " + variant);
-            assertThat(variant.hasAnnotations(), is(false));
+            assertThat(variant.hasTranscriptAnnotations(), is(false));
         }
     }
 
@@ -151,8 +151,8 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getPosition(), equalTo(123256215));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("G"));
-        assertThat(variantEvaluation.hasAnnotations(), is(true));
-        System.out.println(variantEvaluation.getAnnotations());
+        assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
+        System.out.println(variantEvaluation.getTranscriptAnnotations());
         assertThat(variantEvaluation.getGeneId(), equalTo("2263"));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("FGFR2"));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.MISSENSE_VARIANT));
@@ -173,8 +173,8 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getPosition(), equalTo(12345));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
-        assertThat(variantEvaluation.hasAnnotations(), is(false));
-        System.out.println(variantEvaluation.getAnnotations());
+        assertThat(variantEvaluation.hasTranscriptAnnotations(), is(false));
+        System.out.println(variantEvaluation.getTranscriptAnnotations());
         assertThat(variantEvaluation.getGeneId(), equalTo(""));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("."));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.SEQUENCE_VARIANT));
@@ -198,8 +198,8 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getPosition(), equalTo(123256213));
         assertThat(variantEvaluation.getRef(), equalTo("CA"));
         assertThat(variantEvaluation.getAlt(), equalTo("C"));
-        assertThat(variantEvaluation.hasAnnotations(), is(true));
-        System.out.println(variantEvaluation.getAnnotations());
+        assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
+        System.out.println(variantEvaluation.getTranscriptAnnotations());
         assertThat(variantEvaluation.getGeneId(), equalTo("9939"));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
@@ -251,8 +251,8 @@ public class VariantFactoryTest {
         assertThat(firstAllele.getPosition(), equalTo(120612040));
         assertThat(firstAllele.getRef(), equalTo("T"));
         assertThat(firstAllele.getAlt(), equalTo("TCCGCCG"));
-        assertThat(firstAllele.hasAnnotations(), is(true));
-        System.out.println(firstAllele.getAnnotations());
+        assertThat(firstAllele.hasTranscriptAnnotations(), is(true));
+        System.out.println(firstAllele.getTranscriptAnnotations());
         assertThat(firstAllele.getGeneId(), equalTo("9939"));
         assertThat(firstAllele.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(firstAllele.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
@@ -265,8 +265,8 @@ public class VariantFactoryTest {
         assertThat(secondAllele.getPosition(), equalTo(120612040));
         assertThat(secondAllele.getRef(), equalTo("T"));
         assertThat(secondAllele.getAlt(), equalTo("TCCTCCGCCG"));
-        assertThat(secondAllele.hasAnnotations(), is(true));
-        System.out.println(secondAllele.getAnnotations());
+        assertThat(secondAllele.hasTranscriptAnnotations(), is(true));
+        System.out.println(secondAllele.getTranscriptAnnotations());
         assertThat(secondAllele.getGeneId(), equalTo("9939"));
         assertThat(secondAllele.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(secondAllele.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
@@ -287,8 +287,8 @@ public class VariantFactoryTest {
         assertThat(variantEvaluation.getPosition(), equalTo(120612040));
         assertThat(variantEvaluation.getRef(), equalTo("T"));
         assertThat(variantEvaluation.getAlt(), equalTo("TCCGCCG"));
-        assertThat(variantEvaluation.hasAnnotations(), is(true));
-        System.out.println(variantEvaluation.getAnnotations());
+        assertThat(variantEvaluation.hasTranscriptAnnotations(), is(true));
+        System.out.println(variantEvaluation.getTranscriptAnnotations());
         assertThat(variantEvaluation.getGeneId(), equalTo("9939"));
         assertThat(variantEvaluation.getGeneSymbol(), equalTo("RBM8A"));
         assertThat(variantEvaluation.getVariantEffect(), equalTo(VariantEffect.INTERGENIC_VARIANT));
@@ -299,7 +299,7 @@ public class VariantFactoryTest {
     public void testGenome() {
 
         VariantAnnotator variantAnnotator = new StubVariantAnnotator();
-        VariantFactory variantFactory = new VariantFactoryJannovarImpl(variantAnnotator);
+        VariantFactory variantFactory = new VariantFactoryImpl(variantAnnotator);
 
         Path vcfPath = Paths.get("C:/Users/hhx640/Documents/exomiser-cli-dev/examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.vcf.gz");
         long numVariants;
@@ -311,7 +311,7 @@ public class VariantFactoryTest {
 
 
         VariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(GenomeAssembly.HG19, loadJannovarData());
-        VariantFactory jannovarVariantFactory = new VariantFactoryJannovarImpl(jannovarVariantAnnotator);
+        VariantFactory jannovarVariantFactory = new VariantFactoryImpl(jannovarVariantAnnotator);
 
         long numJannovarVariants;
         try (Stream<VariantEvaluation> variants = jannovarVariantFactory.createVariantEvaluations(vcfPath)) {
