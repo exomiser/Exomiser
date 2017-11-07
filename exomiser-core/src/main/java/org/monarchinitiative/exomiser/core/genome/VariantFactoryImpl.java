@@ -108,9 +108,6 @@ public class VariantFactoryImpl implements VariantFactory {
         return genotype -> genotype.getAlleles().stream().anyMatch(allele::equals);
     }
 
-    // TODO: Move everything below this into a VariantAnnotationService or something.
-    // TODO: This is mainly all about working with the Jannovar annotations to create the VariantEvaluation
-
     /**
      * Creates a VariantEvaluation made from all the relevant bits of the
      * VariantContext and VariantAnnotations for a given alternative allele.
@@ -119,7 +116,7 @@ public class VariantFactoryImpl implements VariantFactory {
      * @param altAlleleId
      * @return
      */
-    //ARGH! this is package-privae as it is used by the TestVariantFactory FIX THIS!!
+    //This is package-private as it is used by the TestVariantFactory
     VariantEvaluation buildVariantEvaluation(VariantContext variantContext, int altAlleleId) {
         VariantAnnotation variantAnnotation = annotateVariantAllele(variantContext, altAlleleId);
         return buildVariantEvaluation(variantContext, altAlleleId, variantAnnotation);
@@ -149,12 +146,12 @@ public class VariantFactoryImpl implements VariantFactory {
 
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .genomeAssembly(genomeAssembly)
-                //HTSJDK derived data are only used for writing out the
+                //HTSJDK derived data are used for writing out the
                 //HTML (VariantEffectCounter) VCF/TSV-VARIANT formatted files
                 //can be removed from InheritanceModeAnalyser as Jannovar 0.18+ is not reliant on the VariantContext
                 //need most/all of the info in order to write it all out again.
-                //TODO: remove this direct dependency without it the RAM usage can be halved such that a SPARSE analysis of the POMP sample can be held comfortably in 8GB RAM
-                //could just store the string value here - it can be re-hydrated later. See TestVcfParser
+                //If we could remove this direct dependency the RAM usage can be halved such that a SPARSE analysis of the POMP sample can be held comfortably in 8GB RAM
+                //To do this we could just store the string value here - it can be re-hydrated later. See TestVcfParser
                 .variantContext(variantContext)
                 .altAlleleId(altAlleleId)
                 .numIndividuals(variantContext.getNSamples())
